@@ -31,6 +31,8 @@
   programs.hyprland.enable = true;
   security.polkit.enable = true;
 
+  services.gvfs.enable = true;
+
   # --- LOCALIZATION ---
   time.timeZone = "Pacific/Auckland";
   i18n.defaultLocale = "en_NZ.UTF-8";
@@ -47,7 +49,7 @@
   # --- USER ---
   users.users.josh = {
     isNormalUser = true;
-    extraGroups = [ "networkmanager" "wheel" "video" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "adbusers" ];
   };
 
   environment.systemPackages = with pkgs; [
