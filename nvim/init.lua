@@ -57,9 +57,9 @@ local function map(mode, lhs, rhs, desc)
 end
 
 map("n", "<Esc>", "<cmd>nohlsearch<CR>", "Clear search")
-map("n", "<leader>v", "<C-w>v", "Split vertical")
-map("n", "<leader>h", "<C-w>s", "Split horizontal")
-map("n", "<leader>c", "<C-w>c", "Close window")
+map("n", "<leader>wv", "<C-w>v", "Split vertical")
+map("n", "<leader>wh", "<C-w>s", "Split horizontal")
+map("n", "<leader>wx", "<C-w>c", "Close window")
 
 -- LSP & Diagnostics
 map("n", "gd", vim.lsp.buf.definition, "Go to definition")
@@ -165,6 +165,10 @@ lsp.nixd.setup({
 lsp.lua_ls.setup({
   capabilities = caps,
   settings = { Lua = { diagnostics = { globals = { "vim" } }, workspace = { checkThirdParty = false } } }
+})
+
+lsp.kotlin_language_server.setup({
+  capabilities = caps,
 })
 
 -- ============================================================================

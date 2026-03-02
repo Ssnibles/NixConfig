@@ -5,7 +5,14 @@
     viAlias = true;
     vimAlias = true;
     plugins = with pkgs.vimPlugins; [
-      (nvim-treesitter.withPlugins (p: with p; [ lua nix vim bash markdown ]))
+      (nvim-treesitter.withPlugins (p: with p; [
+        lua
+        nix
+        vim
+        bash
+        markdown
+        kotlin-vim
+      ]))
       plenary-nvim
       nvim-lspconfig
       blink-cmp
@@ -15,6 +22,7 @@
       statuscol-nvim
       smart-splits-nvim
     ];
-    extraLuaConfig = ''dofile("/home/josh/NixConfig/nvim/init.lua")'';
+    # Use builtins.readFile with a relative path so the config is portable
+    extraLuaConfig = builtins.readFile ../nvim/init.lua;
   };
 }

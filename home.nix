@@ -14,24 +14,42 @@
   ];
 
   home.packages = with pkgs; [
-    picard
-    beets
-    strawberry
-    easytag
-    localsend
-    android-tools
+    # Core
+    kotlin
+    kotlin-language-server
+    jdk
     nixd
     nixpkgs-fmt
     lua-language-server
     code2prompt
     wl-clipboard
-    firefox
+    libnotify
+    brightnessctl
+
+    # UI & Shell
+    swww
+    swaynotificationcenter
     ghostty
     yazi
-    mission-center
     ripgrep
-    nerd-fonts.fira-code
+    mission-center
     grc
+    nerd-fonts.fira-code
+
+    # Media & Apps
+    picard
+    beets
+    strawberry
+    easytag
+    firefox
+    localsend
+    android-tools
+    impala
+    bluetui
+    blueman
+
+    # Other
+    flatpak
   ];
 
   home.sessionVariables = {

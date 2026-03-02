@@ -17,14 +17,14 @@
         "swaync"
       ];
       bind = [
-        # Original Binds [cite: 118]
+        # Applications 
         "$mod, RETURN, exec, ghostty"
         "$mod, Q, killactive,"
         "$mod, E, exec, nautilus"
         "$mod, V, togglefloating,"
         "$mod, SPACE, exec, vicinae toggle"
 
-        # New Ricing Binds
+        # System
         "$mod, N, exec, swaync-client -t -sw"
         "$mod, F, fullscreen,"
         "$mod, H, movefocus, l"
@@ -47,6 +47,17 @@
         "$mod SHIFT, H, resizeactive, -10 0"
         "$mod SHIFT, K, resizeactive, 0 -10"
         "$mod SHIFT, J, resizeactive, 0 10"
+
+        ", XF86MonBrightnessUp, exec, brightnessctl set +5%"
+        ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
+      ];
+      bindel = [
+        # Audio
+        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
+        ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+        ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+        ", XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
+        ", XF86AudioPlay, exec, playerctl play-pause"
       ];
       monitor = ", 1920x1080, auto, 1";
       general = {
