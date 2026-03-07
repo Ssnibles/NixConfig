@@ -1,18 +1,23 @@
-{ pkgs, self, ... }: {
+{ pkgs, ... }: {
   programs.fish = {
     enable = true;
+    
+    # Use fishAbbrs instead of aliases for better shell integration
+    # (they expand in real-time)
+    shellAbbrs = {
+      v = "nvim";
+      # Update the path below to the absolute path of your flake directory
+      rebuild = "git -C ~/NixConfig/ add . && sudo nixos-rebuild switch --flake ~/NixConfig/#nixos";
+    };
+
     interactiveShellInit = ''
       set -g fish_greeting ""
     '';
-    plugins = [
-      { name = "grc"; src = pkgs.fishPlugins.grc.src; }
-      { name = "z"; src = pkgs.fishPlugins.z.src; }
-      { name = "pure"; src = pkgs.fishPlugins.pure.src; }
+
+    plugins = with pkgs.fishPlugins; [
+      { name = "grc"; src = grc.src; }
+      { name = "z"; src = z.src; }
+      { name = "pure"; src = pure.src; }
     ];
-    shellAliases = {
-      v = "nvim";
-      # Fixed: Use self.outPath instead of hardcoded /home/josh/NixConfig
-      rebuild = "git -C ${self.outPath} add . && sudo nixos-rebuild switch --flake ${self.outPath}#nixos";
-    };
   };
 }
