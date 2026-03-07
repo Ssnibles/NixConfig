@@ -1,8 +1,8 @@
-{ pkgs, ... }: {
+{ pkgs, self, ... }: {
   programs.fish = {
     enable = true;
     interactiveShellInit = ''
-      set -g fish_greeting "" 
+      set -g fish_greeting ""
     '';
     plugins = [
       { name = "grc"; src = pkgs.fishPlugins.grc.src; }
@@ -11,7 +11,8 @@
     ];
     shellAliases = {
       v = "nvim";
-      rebuild = "git -C /home/josh/NixConfig add . && sudo nixos-rebuild switch --flake /home/josh/NixConfig#nixos";
+      # Fixed: Use self.outPath instead of hardcoded /home/josh/NixConfig
+      rebuild = "git -C ${self.outPath} add . && sudo nixos-rebuild switch --flake ${self.outPath}#nixos";
     };
   };
 }

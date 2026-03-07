@@ -1,52 +1,47 @@
 -- ============================================================================
--- CORE OPTIONS
+-- OPTIONS
 -- ============================================================================
-vim.g.mapleader = " "
-local opt = vim.opt
-opt.number = true
+vim.g.mapleader    = " "
+
+local opt          = vim.opt
+opt.number         = true
 opt.relativenumber = true
-opt.mouse = "a"
-opt.shiftwidth = 2
-opt.tabstop = 2
-opt.expandtab = true
-opt.smartindent = true
-opt.termguicolors = true
-opt.cursorline = true
-opt.scrolloff = 8
-opt.signcolumn = "yes"
-opt.ignorecase = true
-opt.smartcase = true
-opt.updatetime = 200
-opt.undofile = true
-opt.clipboard = "unnamedplus"
+opt.mouse          = "a"
+opt.shiftwidth     = 2
+opt.tabstop        = 2
+opt.expandtab      = true
+opt.smartindent    = true
+opt.termguicolors  = true
+opt.cursorline     = true
+opt.scrolloff      = 8
+opt.signcolumn     = "yes"
+opt.ignorecase     = true
+opt.smartcase      = true
+opt.updatetime     = 200
+opt.undofile       = true
+opt.clipboard      = "unnamedplus"
 
 -- ============================================================================
--- DIAGNOSTIC UI & LINE HIGHLIGHTING
+-- COLORSCHEME
 -- ============================================================================
-vim.api.nvim_set_hl(0, "DiagLineError", { bg = "#2d1a1a" })
-vim.api.nvim_set_hl(0, "DiagLineWarn", { bg = "#2d2a1a" })
+vim.cmd.colorscheme("catppuccin-mocha")
 
+-- ============================================================================
+-- DIAGNOSTICS
+-- ============================================================================
 vim.diagnostic.config({
-  virtual_text = { prefix = "●", spacing = 4 },
-  signs = {
+  virtual_text  = { prefix = "●", spacing = 4 },
+  signs         = {
     text = {
       [vim.diagnostic.severity.ERROR] = "󰅚",
       [vim.diagnostic.severity.WARN]  = "󰀪",
       [vim.diagnostic.severity.HINT]  = "󰌶",
       [vim.diagnostic.severity.INFO]  = "󰋽",
     },
-    linehl = {
-      [vim.diagnostic.severity.ERROR] = "DiagLineError",
-      [vim.diagnostic.severity.WARN]  = "DiagLineWarn",
-    },
-    numhl = {
-      [vim.diagnostic.severity.ERROR] = "DiagnosticError",
-      [vim.diagnostic.severity.WARN]  = "DiagnosticWarn",
-    },
   },
-  underline = true,
+  underline     = true,
   severity_sort = true,
-  float = { border = "rounded", source = "always" },
+  float         = { border = "rounded", source = "always" },
 })
 
 -- ============================================================================
@@ -60,143 +55,140 @@ map("n", "<Esc>", "<cmd>nohlsearch<CR>", "Clear search")
 map("n", "<leader>wv", "<C-w>v", "Split vertical")
 map("n", "<leader>wh", "<C-w>s", "Split horizontal")
 map("n", "<leader>wx", "<C-w>c", "Close window")
+map("n", "-", "<cmd>Oil<CR>", "Open Oil")
 
--- LSP & Diagnostics
-map("n", "gd", vim.lsp.buf.definition, "Go to definition")
-map("n", "K", vim.lsp.buf.hover, "Hover")
-map("n", "<leader>a", vim.lsp.buf.code_action, "Code action")
-map("n", "<leader>r", vim.lsp.buf.rename, "Rename")
-map("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, "Format")
-map("n", "[d", vim.diagnostic.goto_prev, "Prev diagnostic")
-map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
-
--- Navigation (smart-splits)
-local function move(dir)
-  local ok, ss = pcall(require, "smart-splits")
-  if ok then
-    ss["move_cursor_" .. dir]()
-  else
-    vim.cmd("wincmd " .. ({ left = "h", down = "j", up = "k", right = "l" })[dir])
-  end
-end
-map("n", "<C-h>", function() move("left") end)
-map("n", "<C-j>", function() move("down") end)
-map("n", "<C-k>", function() move("up") end)
-map("n", "<C-l>", function() move("right") end)
-
--- ============================================================================
--- PLUGINS SETUP
--- ============================================================================
-
--- Statuscol
-local has_statuscol, statuscol = pcall(require, "statuscol")
-if has_statuscol then
-  local builtin = require("statuscol.builtin")
-  statuscol.setup({
-    relculright = true,
-    segments = {
-      { text = { builtin.diagnostic_signs }, click = "v:lua.ScSa" },
-      { text = { "%s" },                     click = "v:lua.ScSa" },
-      { text = { builtin.lnumfunc, " " },    click = "v:lua.ScLa" },
-    },
-  })
-end
-
--- Blink
-local has_blink, blink = pcall(require, "blink.cmp")
-if has_blink then
-  blink.setup({
-    keymap = { preset = 'super-tab' },
-    appearance = { use_nvim_cmp_as_default = true, nerd_font_variant = 'mono' },
-    completion = {
-      ghost_text = { enabled = true },
-      menu = { draw = { columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind" } } } },
-      documentation = { auto_show = true, window = { border = 'rounded' } },
-    },
-    signature = { enabled = true, window = { border = 'rounded' } },
-    sources = { default = { 'lsp', 'path', 'snippets', 'buffer' } },
-  })
-end
-
--- Oil
-if pcall(require, "oil") then
-  require("oil").setup({ view_options = { show_hidden = true } })
-  map("n", "-", "<cmd>Oil<CR>", "Open Oil")
-end
-
--- Telescope
-if pcall(require, "telescope") then
-  require("telescope").setup({ defaults = { borderchars = { "─", "│", "─", "│", "┌", "┐", "┘", "└" } } })
-  local tel = require("telescope.builtin")
-  map("n", "<leader>ff", tel.find_files)
-  map("n", "<leader>fg", tel.live_grep)
-  map("n", "<leader>fb", tel.buffers)
-end
-
--- Autopairs
-if pcall(require, "nvim-autopairs") then require("nvim-autopairs").setup({ check_ts = true }) end
-
--- Treesitter
-local has_ts, ts_configs = pcall(require, "nvim-treesitter.configs")
-if has_ts then
-  ts_configs.setup({ highlight = { enable = true }, indent = { enable = true }, auto_install = false })
+-- Window navigation with smart-splits fallback
+local dirs = { h = "left", j = "down", k = "up", l = "right" }
+for key, dir in pairs(dirs) do
+  map("n", "<C-" .. key .. ">", function()
+    local ok, ss = pcall(require, "smart-splits")
+    if ok then
+      ss["move_cursor_" .. dir]()
+    else
+      vim.cmd("wincmd " .. key)
+    end
+  end, "Move " .. dir)
 end
 
 -- ============================================================================
--- LSP (Nixd + LuaLS)
+-- PLUGINS
 -- ============================================================================
-local lsp = require("lspconfig")
-local caps = has_blink and blink.get_lsp_capabilities() or nil
+require("which-key").setup({ window = { border = "rounded" } })
+require("gitsigns").setup({})
+require("noice").setup()
+require("oil").setup({ view_options = { show_hidden = true } })
+require("nvim-autopairs").setup({ check_ts = true })
+require("luasnip.loaders.from_vscode").lazy_load()
 
--- Nixd Fix for Flakes
-lsp.nixd.setup({
-  capabilities = caps,
-  settings = {
-    nixd = {
-      nixpkgs = { expr = "import (builtins.getFlake \"/home/josh/NixConfig\").inputs.nixpkgs { }" },
-      formatting = { command = { "nixpkgs-fmt" } },
-      options = {
-        nixos = { expr = "(builtins.getFlake \"/home/josh/NixConfig\").nixosConfigurations.nixos.options" },
-      },
-    },
+require("fidget").setup({
+  notification = { window = { winblend = 0, border = "rounded" } },
+})
+
+require("blink.cmp").setup({
+  keymap     = { preset = "super-tab" },
+  completion = { ghost_text = { enabled = true } },
+  sources    = { default = { "lsp", "path", "snippets", "buffer" } },
+})
+
+local builtin = require("statuscol.builtin")
+require("statuscol").setup({
+  relculright = true,
+  segments = {
+    { text = { builtin.foldfunc },      click = "v:lua.ScFa" },
+    { text = { "%s" },                  click = "v:lua.ScSa" },
+    { text = { builtin.lnumfunc, " " }, click = "v:lua.ScLa" },
   },
+  ft_ignore = { "neo-tree", "lazy", "mason" },
 })
 
-lsp.lua_ls.setup({
-  capabilities = caps,
-  settings = { Lua = { diagnostics = { globals = { "vim" } }, workspace = { checkThirdParty = false } } }
-})
+local ok, ts = pcall(require, "nvim-treesitter.configs")
+if ok then
+  ts.setup({ highlight = { enable = true }, indent = { enable = true }, auto_install = false })
+end
 
-lsp.kotlin_language_server.setup({
-  capabilities = caps,
-})
+local tel = require("telescope.builtin")
+map("n", "<leader>ff", tel.find_files, "Find files")
+map("n", "<leader>fg", tel.live_grep, "Live grep")
+map("n", "<leader>fb", tel.buffers, "Buffers")
+
+-- ============================================================================
+-- LSP
+-- ============================================================================
+local lsp         = require("lspconfig")
+local base_caps   = vim.lsp.protocol.make_client_capabilities()
+
+-- Merge blink.cmp capabilities once, reuse everywhere
+local ok_b, blink = pcall(require, "blink.cmp")
+local caps        = ok_b
+    and vim.tbl_deep_extend("force", base_caps, blink.get_lsp_capabilities())
+    or base_caps
+
+local function on_attach(_, bufnr)
+  local o = { buffer = bufnr, noremap = true, silent = true }
+  vim.keymap.set("n", "gd", vim.lsp.buf.definition, vim.tbl_extend("force", o, { desc = "Go to definition" }))
+  vim.keymap.set("n", "K", vim.lsp.buf.hover, vim.tbl_extend("force", o, { desc = "Hover" }))
+  vim.keymap.set("n", "<leader>a", vim.lsp.buf.code_action, vim.tbl_extend("force", o, { desc = "Code action" }))
+  vim.keymap.set("n", "<leader>r", vim.lsp.buf.rename, vim.tbl_extend("force", o, { desc = "Rename" }))
+  vim.keymap.set("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end,
+    vim.tbl_extend("force", o, { desc = "Format" }))
+end
+
+local function setup_lsp(name, config)
+  lsp[name].setup(vim.tbl_deep_extend("force", { on_attach = on_attach, capabilities = caps }, config or {}))
+end
+
+setup_lsp("nixd", {})
+setup_lsp("lua_ls", { settings = { Lua = { diagnostics = { globals = { "vim" } } } } })
+setup_lsp("kotlin_language_server", {})
+setup_lsp("jdtls", { cmd = { "jdtls" } })
 
 -- ============================================================================
 -- AUTOCOMMANDS
 -- ============================================================================
-local group = vim.api.nvim_create_augroup("NixOSConfig", { clear = true })
+local group = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 
-vim.api.nvim_create_autocmd("BufWritePre", {
-  group = group,
-  callback = function(ev)
-    if not ev.match:match("^%w+://") then
-      local dir = vim.fn.fnamemodify(ev.file, ":h")
-      if vim.fn.isdirectory(dir) == 0 then vim.fn.mkdir(dir, "p") end
-    end
-    local ft = vim.bo[ev.buf].filetype
-    if ft == "nix" or ft == "lua" then
-      vim.lsp.buf.format({ bufnr = ev.buf, async = false })
-    end
-  end,
+vim.api.nvim_create_autocmd("TextYankPost", {
+  group    = group,
+  callback = function() vim.highlight.on_yank({ higroup = "IncSearch", timeout = 200 }) end,
 })
 
-vim.api.nvim_create_autocmd("TextYankPost", { group = group, callback = function() vim.highlight.on_yank() end })
-vim.api.nvim_create_autocmd("BufReadPost", {
-  group = group,
-  callback = function()
-    local mark = vim.api.nvim_buf_get_mark(0, '"')
-    if mark[1] > 0 and mark[1] <= vim.api.nvim_buf_line_count(0) then
-      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+-- ============================================================================
+-- DIAGNOSTIC LINE NUMBER HIGHLIGHTS
+-- ============================================================================
+local diag_ns = vim.api.nvim_create_namespace("diag_linenum_hl")
+
+local severity_hl = {
+  [vim.diagnostic.severity.ERROR] = { sign = "DiagnosticSignError", line = "DiagnosticVirtualTextError" },
+  [vim.diagnostic.severity.WARN]  = { sign = "DiagnosticSignWarn",  line = "DiagnosticVirtualTextWarn"  },
+  [vim.diagnostic.severity.INFO]  = { sign = "DiagnosticSignInfo",  line = "DiagnosticVirtualTextInfo"  },
+  [vim.diagnostic.severity.HINT]  = { sign = "DiagnosticSignHint",  line = "DiagnosticVirtualTextHint"  },
+}
+
+local function update_diag_linenum_hl(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  if not vim.api.nvim_buf_is_valid(bufnr) then return end
+
+  vim.api.nvim_buf_clear_namespace(bufnr, diag_ns, 0, -1)
+
+  -- Track highest severity per line (lower value = higher severity)
+  local line_severity = {}
+  for _, diag in ipairs(vim.diagnostic.get(bufnr)) do
+    local l = diag.lnum
+    if not line_severity[l] or diag.severity < line_severity[l] then
+      line_severity[l] = diag.severity
     end
-  end,
+  end
+
+  for line, severity in pairs(line_severity) do
+    local hl = severity_hl[severity]
+    vim.api.nvim_buf_set_extmark(bufnr, diag_ns, line, 0, {
+      number_hl_group = hl.sign,
+      line_hl_group   = hl.line,
+    })
+  end
+end
+
+vim.api.nvim_create_autocmd({ "DiagnosticChanged", "BufEnter" }, {
+  group    = group,
+  callback = function(ev) update_diag_linenum_hl(ev.buf) end,
 })

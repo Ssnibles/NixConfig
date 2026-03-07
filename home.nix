@@ -1,6 +1,4 @@
-{ config, pkgs, ... }:
-
-{
+{ config, pkgs, ... }: {
   home.username = "josh";
   home.homeDirectory = "/home/josh";
   home.stateVersion = "25.05";
@@ -14,36 +12,38 @@
   ];
 
   home.packages = with pkgs; [
-    # Core
+    # Core & Languages
     kotlin
     kotlin-language-server
-    jdk
+    jdk21
     nixd
+    jdt-language-server
     nixpkgs-fmt
     lua-language-server
     code2prompt
     wl-clipboard
-    libnotify
-    brightnessctl
+    fzf
+    ripgrep
+    android-tools
+    grc
 
     # UI & Shell
-    swww
-    swaynotificationcenter
     ghostty
     yazi
-    ripgrep
     mission-center
-    grc
+    btop
     nerd-fonts.fira-code
+    nerd-fonts.zed-mono
+    nerd-fonts.jetbrains-mono
 
     # Media & Apps
     picard
-    beets
+    # beets
     strawberry
     easytag
+    spotify
     firefox
     localsend
-    android-tools
     impala
     bluetui
     blueman
