@@ -47,6 +47,7 @@
     impala
     bluetui
     blueman
+    vnote
 
     # Other
     flatpak

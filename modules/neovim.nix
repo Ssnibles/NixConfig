@@ -45,6 +45,7 @@
       which-key-nvim
       noice-nvim
       catppuccin-nvim
+      markview-nvim
     ];
 
     initLua = builtins.readFile ../nvim/init.lua;

@@ -105,6 +105,10 @@
         "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
       };
 
+      misc = {
+        disable_hyprland_logo = true;
+      };
+
       decoration = {
         rounding = 10;
         blur = {

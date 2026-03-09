@@ -11,20 +11,33 @@
   boot.kernelPackages = pkgs.linuxPackages_latest;
   hardware.enableRedistributableFirmware = true;
 
-  # Networking - Fixed: removed standalone iwd (conflicts with NetworkManager)
+  # Networking
   networking.hostName = "nixos";
   networking.networkmanager = {
     enable = true;
     wifi.backend = "iwd";
+    wifi.powersave = false;
     dns = "systemd-resolved";
   };
-  # REMOVED: networking.wireless.iwd.enable = true;
+  
+  networking.wireless.iwd = {
+    enable = true;
+    settings = {
+      General = {
+        EnableNetworkConfiguration = true;
+      };
+      Network = {
+        EnableIPv6 = true;
+      };
+    };
+  };
+  
   services.resolved.enable = true;
 
-  # Display & Desktop - Fixed: updated renamed options
+  # Display & Desktop
   services.xserver.enable = true;
-  services.displayManager.gdm.enable = true;  # Was: services.xserver.displayManager.gdm.enable
-  services.desktopManager.gnome.enable = true;  # Was: services.xserver.desktopManager.gnome.enable
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
   programs.hyprland.enable = true;
 
   # Services
@@ -45,7 +58,7 @@
     extraGroups = [ "networkmanager" "wheel" "video" "adbusers" ];
   };
 
-  # System Packages - REMOVED: programs.fish.enable (managed by Home Manager)
+  # System Packages
   environment.systemPackages = with pkgs; [
     git
     vim

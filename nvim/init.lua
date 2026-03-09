@@ -56,6 +56,8 @@ map("n", "<leader>wv", "<C-w>v", "Split vertical")
 map("n", "<leader>wh", "<C-w>s", "Split horizontal")
 map("n", "<leader>wx", "<C-w>c", "Close window")
 map("n", "-", "<cmd>Oil<CR>", "Open Oil")
+map("n", "<leader>o", "<cmd>Oil<CR>", "Open Oil")
+map("n", "n", "%")
 
 -- Window navigation with smart-splits fallback
 local dirs = { h = "left", j = "down", k = "up", l = "right" }
@@ -75,13 +77,17 @@ end
 -- ============================================================================
 require("which-key").setup({ window = { border = "rounded" } })
 require("gitsigns").setup({})
-require("noice").setup()
+require("markview").setup()
 require("oil").setup({ view_options = { show_hidden = true } })
 require("nvim-autopairs").setup({ check_ts = true })
 require("luasnip.loaders.from_vscode").lazy_load()
 
 require("fidget").setup({
   notification = { window = { winblend = 0, border = "rounded" } },
+})
+
+require("noice").setup({
+  messages = { enabled = false }
 })
 
 require("blink.cmp").setup({
@@ -159,9 +165,9 @@ local diag_ns = vim.api.nvim_create_namespace("diag_linenum_hl")
 
 local severity_hl = {
   [vim.diagnostic.severity.ERROR] = { sign = "DiagnosticSignError", line = "DiagnosticVirtualTextError" },
-  [vim.diagnostic.severity.WARN]  = { sign = "DiagnosticSignWarn",  line = "DiagnosticVirtualTextWarn"  },
-  [vim.diagnostic.severity.INFO]  = { sign = "DiagnosticSignInfo",  line = "DiagnosticVirtualTextInfo"  },
-  [vim.diagnostic.severity.HINT]  = { sign = "DiagnosticSignHint",  line = "DiagnosticVirtualTextHint"  },
+  [vim.diagnostic.severity.WARN]  = { sign = "DiagnosticSignWarn", line = "DiagnosticVirtualTextWarn" },
+  [vim.diagnostic.severity.INFO]  = { sign = "DiagnosticSignInfo", line = "DiagnosticVirtualTextInfo" },
+  [vim.diagnostic.severity.HINT]  = { sign = "DiagnosticSignHint", line = "DiagnosticVirtualTextHint" },
 }
 
 local function update_diag_linenum_hl(bufnr)
