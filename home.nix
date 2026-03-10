@@ -1,4 +1,6 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, ... }:
+
+{
   home.username = "josh";
   home.homeDirectory = "/home/josh";
   home.stateVersion = "25.05";
@@ -23,22 +25,24 @@
     code2prompt
     wl-clipboard
     fzf
+    fd
     ripgrep
     android-tools
     grc
 
     # UI & Shell
+    foot
     ghostty
     yazi
     mission-center
     btop
+    lazygit
     nerd-fonts.fira-code
     nerd-fonts.zed-mono
     nerd-fonts.jetbrains-mono
 
     # Media & Apps
     picard
-    # beets
     strawberry
     easytag
     spotify
@@ -48,6 +52,8 @@
     bluetui
     blueman
     vnote
+    super-productivity
+    zen-browser
 
     # Other
     flatpak
@@ -56,10 +62,6 @@
   home.sessionVariables = {
     SHELL = "${pkgs.fish}/bin/fish";
   };
-
-  xdg.configFile."ghostty/config".text = ''
-    command = ${pkgs.fish}/bin/fish
-  '';
 
   programs.home-manager.enable = true;
 }

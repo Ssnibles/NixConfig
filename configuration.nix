@@ -19,7 +19,7 @@
     wifi.powersave = false;
     dns = "systemd-resolved";
   };
-  
+
   networking.wireless.iwd = {
     enable = true;
     settings = {
@@ -31,8 +31,24 @@
       };
     };
   };
-  
+
   services.resolved.enable = true;
+
+  services.logind.lidSwitch = "suspend";
+  services.logind.lidSwitchExternalPower = "suspend";
+
+  # Bluetooth Configuration
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = false; # This prevents Bluetooth from forcing itself on at boot
+    settings = {
+      General = {
+        Experimental = true;
+        # This helps bluez remember the state from the previous session
+        AutoEnable = false;
+      };
+    };
+  };
 
   # Display & Desktop
   services.xserver.enable = true;

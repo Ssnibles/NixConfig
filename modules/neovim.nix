@@ -1,21 +1,24 @@
-{ pkgs, self, ... }: {
+{ pkgs, ... }: {
   programs.neovim = {
     enable = true;
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
 
-    # Corrected: Use jdt-language-server for jdtls
+    # Define your required packages
     extraPackages = with pkgs; [
       nixd
       kotlin-language-server
       jdt-language-server
       nixpkgs-fmt
       lua-language-server
+      stylua
+      black
+      prettier
     ];
 
+    # Define your plugins
     plugins = with pkgs.vimPlugins; [
-      # Added nvim-treesitter core plugin to fix module load error
       nvim-treesitter
       (nvim-treesitter.withPlugins (p: with p; [
         lua
@@ -36,6 +39,7 @@
       luasnip
       friendly-snippets
       telescope-nvim
+      fzf-lua
       oil-nvim
       statuscol-nvim
       smart-splits-nvim
@@ -44,10 +48,16 @@
       gitsigns-nvim
       which-key-nvim
       noice-nvim
+      conform-nvim
       catppuccin-nvim
       markview-nvim
     ];
+  };
 
-    initLua = builtins.readFile ../nvim/init.lua;
+  # Link the local nvim directory to ~/.config/nvim 
+  # This avoids path resolution issues with initLua and builtins.readFile 
+  xdg.configFile."nvim" = {
+    source = ../nvim;
+    recursive = true;
   };
 }

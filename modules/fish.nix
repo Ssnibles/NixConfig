@@ -1,7 +1,7 @@
 { pkgs, ... }: {
   programs.fish = {
     enable = true;
-    
+
     # Use fishAbbrs instead of aliases for better shell integration
     # (they expand in real-time)
     shellAbbrs = {
@@ -20,4 +20,19 @@
       { name = "pure"; src = pure.src; }
     ];
   };
+  xdg.configFile."ghostty/config".text = ''
+    command = ${pkgs.fish}/bin/fish
+    font-size = 12
+    cursor-style = bar
+    background = 282c34
+    foreground = ffffff
+    window-decoration = false
+    window-save-state = default
+    window-theme = dark
+    command-color = true
+    terminal-version = "xterm-256color"
+    renderer = opengl
+    clipboard-read = allow
+    clipboard-write = allow
+  '';
 }
