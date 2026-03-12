@@ -1,21 +1,29 @@
--- /home/josh/NixConfig/nvim/lua/plugins/conform.lua
+-- ============================================================================
+-- CONFORM (AUTO-FORMATTER)
+-- Runs formatters on save and provides a manual format keymap.
+-- Formatters are installed via neovim.nix extraPackages, not here.
+-- ============================================================================
 local conform = require("conform")
 
 conform.setup({
-  formatters_by_ft = {
-   lua = { "stylua" },
-    python = { "isort", "black" },
-    javascript = { "prettier" },
-    nix = { "nixpkgs_fmt" },
-  },
-  -- This is the crucial part for automatic formatting on save
-  format_on_save = {
-    timeout_ms = 500,
-    lsp_fallback = true,
-  },
+	-- Map filetypes to their formatters. Multiple formatters run in order.
+	formatters_by_ft = {
+		lua = { "stylua" },
+		python = { "isort", "black" }, -- isort first so black doesn't reorder imports
+		javascript = { "prettier" },
+		nix = { "nixpkgs_fmt" },
+	},
+
+	-- Automatically format on save. lsp_fallback tries the LSP formatter if no
+	-- conform formatter matches (e.g. for filetypes not listed above).
+	format_on_save = {
+		timeout_ms = 500,
+		lsp_fallback = true,
+	},
 })
 
-  -- Map for manual formatting
+-- Manual format: useful when you want to format without saving,
+-- or when format-on-save is intentionally disabled for a buffer.
 vim.keymap.set("n", "f", function()
-  conform.format({ async = true, lsp_fallback = true })
+	conform.format({ async = true, lsp_fallback = true })
 end, { desc = "Format buffer" })

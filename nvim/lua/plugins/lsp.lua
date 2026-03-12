@@ -1,23 +1,46 @@
 -- ============================================================================
--- MODERN LSP CONFIGURATION (Using built-in vim.lsp.config)
+-- LSP CONFIGURATION
+-- Uses Neovim 0.11's built-in vim.lsp.config / vim.lsp.enable API.
+-- No lspconfig plugin required for the core setup — nvim-lspconfig is only
+-- pulled in for its helper utilities (e.g. :LspInfo).
+--
+-- To add a new language server:
+--   1. Add it to ft_to_server (filetype → server name)
+--   2. Add its config to server_configs (cmd, settings, etc.)
+--   3. Add the server binary to extraPackages in neovim.nix
 -- ============================================================================
 
 local lsp = vim.lsp
 
--- 1. Capabilities & On Attach (Same as before)
-local ok_b, blink = pcall(require, "blink.cmp")
-local caps = ok_b and blink.get_lsp_capabilities() or lsp.protocol.make_client_capabilities()
+-- ============================================================================
+-- CAPABILITIES
+-- Merge blink.cmp's extra completion capabilities into the base LSP caps.
+-- This tells servers that the client supports completion item snippets,
+-- lazy documentation, etc.
+-- ============================================================================
+local ok, blink = pcall(require, "blink.cmp")
+local caps = ok and blink.get_lsp_capabilities() or lsp.protocol.make_client_capabilities()
 
+-- ============================================================================
+-- ON ATTACH
+-- Called every time an LSP server attaches to a buffer.
+-- Only buffer-local keymaps go here — global LSP config goes in init.lua.
+-- ============================================================================
 local on_attach = function(_, bufnr)
-	local opts = { buffer = bufnr, silent = true }
-	vim.keymap.set("n", "gd", lsp.buf.definition, { buffer = bufnr, desc = "Go to definition" })
-	vim.keymap.set("n", "K", lsp.buf.hover, { buffer = bufnr, desc = "Hover Docs" })
-	vim.keymap.set("n", "<leader>a", lsp.buf.code_action, { buffer = bufnr, desc = "Code action" })
-	vim.keymap.set("n", "<leader>r", lsp.buf.rename, { buffer = bufnr, desc = "Rename symbol" })
+	local function map(lhs, rhs, desc)
+		vim.keymap.set("n", lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
+	end
+
+	map("gd", lsp.buf.definition, "Go to definition")
+	map("K", lsp.buf.hover, "Hover docs")
+	map("<leader>a", lsp.buf.code_action, "Code action")
+	map("<leader>r", lsp.buf.rename, "Rename symbol")
 end
 
--- 2. Configuration Map
--- We define a map of filetype -> server_name to ensure they match correctly.
+-- ============================================================================
+-- FILETYPE → SERVER MAPPING
+-- Controls which server is started when a file of that type is opened.
+-- ============================================================================
 local ft_to_server = {
 	nix = "nixd",
 	lua = "lua_ls",
@@ -25,39 +48,59 @@ local ft_to_server = {
 	java = "jdtls",
 }
 
--- 3. Server Settings
+-- ============================================================================
+-- SERVER CONFIGS
+-- Per-server settings. cmd must match the binary name on $PATH.
+-- ============================================================================
 local server_configs = {
+
 	nixd = {
 		cmd = { "nixd" },
 		settings = {
 			nixd = {
 				nixpkgs = { expr = "import <nixpkgs> {}" },
+				-- Point nixd at your flake so it understands your custom options/modules.
 				flake = { flakePath = "/home/josh/NixConfig/flake.nix" },
 			},
 		},
 	},
+
 	lua_ls = {
 		cmd = { "lua-language-server" },
-		settings = { Lua = { diagnostics = { globals = { "vim" } } } },
+		settings = {
+			Lua = {
+				-- Suppress "undefined global `vim`" warnings in neovim config files.
+				diagnostics = { globals = { "vim" } },
+			},
+		},
 	},
+
 	kotlin_language_server = { cmd = { "kotlin-language-server" } },
+
 	jdtls = { cmd = { "jdtls" } },
 }
 
--- 4. Initialization
+-- ============================================================================
+-- REGISTER SERVERS
+-- Attach shared capabilities and on_attach, then register with vim.lsp.config.
+-- ============================================================================
 for name, config in pairs(server_configs) do
 	config.capabilities = caps
 	config.on_attach = on_attach
 	lsp.config[name] = config
 end
 
--- 5. Fixed Autostart Logic
+-- ============================================================================
+-- AUTOSTART
+-- Enable the matching server when a file of a recognised filetype is opened.
+-- vim.lsp.enable() is the 0.11+ preferred API (replaces lspconfig's setup()).
+-- ============================================================================
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = vim.tbl_keys(ft_to_server),
 	callback = function(ev)
-		local server_name = ft_to_server[ev.match]
-		if server_name then
-			lsp.enable(server_name) -- This is the preferred way in 0.11 to start/attach
+		local server = ft_to_server[ev.match]
+		if server then
+			lsp.enable(server)
 		end
 	end,
 })
