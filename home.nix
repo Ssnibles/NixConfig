@@ -67,6 +67,7 @@
     strawberry # Music player / library manager
     picard # MusicBrainz tagger
     easytag # Tag editor
+    pavucontrol # PulseAudio Volume Control
 
     # --- System / Networking ---
     localsend # LAN file sharing (no cloud)

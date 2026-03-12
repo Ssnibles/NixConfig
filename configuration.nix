@@ -27,6 +27,7 @@
   # NZ Wi-Fi regulatory domain — survives sleep/resume (unlike localCommands).
   boot.extraModprobeConfig = ''
     options cfg80211 ieee80211_regdom=NZ
+    options iwlwifi bt_coex_active=1
   '';
 
   # ===========================================================================
@@ -47,14 +48,22 @@
     wifi.powersave = false;
 
     dns = "systemd-resolved";
+
   };
 
   services.resolved = {
     enable = true;
     # Fallback DNS if DHCP-assigned servers are unreliable.
-    # Renamed from `fallbackDns` in recent NixOS — old name still works but warns.
     settings.Resolve.FallbackDNS = [ "1.1.1.1" "8.8.8.8" ];
   };
+
+  #   environment.etc."iwd/main.conf".text = ''
+  #   [Scan]
+  #   DisablePeriodScan=true
+  #
+  #   [General]
+  #   RoamingThreshhold=70
+  # '';
 
   # ===========================================================================
   # BLUETOOTH
@@ -122,6 +131,24 @@
     enable = true;
     alsa.enable = true; # ALSA compatibility
     pulse.enable = true; # PulseAudio compatibility (most apps expect this)
+    wireplumber.enable = true;
+  };
+
+  # ===========================================================================
+  # KEYD
+  # ===========================================================================
+
+  services.keyd = {
+    enable = true;
+    keyboards.default = {
+      ids = [ "*" ];
+      settings = {
+        main = {
+          capslock = "esc";
+          esc = "capslock";
+        };
+      };
+    };
   };
 
   # ===========================================================================
