@@ -19,7 +19,7 @@ require("plugins.conform")
 -- COLORSCHEME
 -- Set after plugins so catppuccin's highlights overwrite plugin defaults.
 -- ============================================================================
-vim.cmd.colorscheme("catppuccin-mocha")
+vim.cmd.colorscheme("vague")
 
 -- ============================================================================
 -- DIAGNOSTICS

@@ -70,7 +70,7 @@
       conform-nvim
 
       # Colorscheme
-      catppuccin-nvim
+      vague-nvim
     ];
   };
 

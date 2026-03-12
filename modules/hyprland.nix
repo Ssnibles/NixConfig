@@ -1,7 +1,7 @@
 { pkgs, ... }: {
 
   home.packages = with pkgs; [
-    swww
+    awww
     swaynotificationcenter
     libnotify
     networkmanagerapplet
@@ -47,9 +47,73 @@
       # WINDOW RULES
       # -----------------------------------------------------------------------
       windowrule = [
-        "match:class ^(nm-connection-editor|blueman-manager)$, float on"
-        "match:class ^(org.gnome.Nautilus)$, match:title ^(File Operation Progress)$, float on"
-        "match:class ^(org.gnome.Nautilus)$, match:title ^(Confirm to replace files)$, float on"
+        #------------------------#
+        # Monitor Assignment
+        #------------------------#
+        "match:class ^(gamescope)$, monitor DP-1"
+
+        #------------------------#
+        # Tiling (terminals)
+        #------------------------#
+        "match:class ^(kitty|alacritty|foot)$, tile on"
+
+        #------------------------#
+        # Floating - catch-all default (explicit rules below override)
+        #------------------------#
+        "match:float true, size (monitor_w*0.65) (monitor_h*0.6)"
+        "match:float true, center on"
+
+        #------------------------#
+        # Floating Windows - explicit overrides
+        #------------------------#
+        # Picture-in-Picture
+        "match:title ^Picture-in-Picture$, float on"
+        "match:title ^Picture-in-Picture$, size 960 540"
+        "match:title ^Picture-in-Picture$, center on"
+        "match:title ^Picture-in-Picture$, pin on"
+
+        # Media players
+        "match:class ^(imv|mpv)$, float on"
+        "match:class ^(imv|mpv)$, size (monitor_w*0.65) (monitor_h*0.6)"
+        "match:class ^(imv|mpv)$, center on"
+
+        # Utilities, file manager, system dialogs
+        "match:class ^(danmufloat|termfloat|ncmpcpp|nemo|pavucontrol|.blueman-manager-wrapped)$, float on"
+        "match:class ^(danmufloat|termfloat|ncmpcpp|nemo|pavucontrol|.blueman-manager-wrapped)$, size (monitor_w*0.3) (monitor_h*0.3)"
+        "match:class ^(danmufloat|termfloat|ncmpcpp|nemo|pavucontrol|.blueman-manager-wrapped)$, center on"
+
+        # Desktop portal / auth / welcome dialogs
+        "match:class ^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|xdg-desktop-portal-hyprland|org.kde.polkit-kde-authentication-agent-1|zenity)$, float on"
+        "match:class ^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|xdg-desktop-portal-hyprland|org.kde.polkit-kde-authentication-agent-1|zenity)$, size (monitor_h*0.3) (monitor_w*0.3)"
+        "match:class ^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|xdg-desktop-portal-hyprland|org.kde.polkit-kde-authentication-agent-1|zenity)$, center on"
+
+        # Brave file dialogs
+        "match:class ^brave$, match:title ^(Save File|Open File)$, float on"
+        "match:class ^brave$, match:title ^(Save File|Open File)$, size (monitor_w*0.6) (monitor_h*0.65)"
+        "match:class ^brave$, match:title ^(Save File|Open File)$, center on"
+
+        # Steam updater
+        "match:title ^Steam - Self Updater$, float on"
+        "match:title ^Steam - Self Updater$, size (monitor_h*0.4) (monitor_w*0.3)"
+        "match:title ^Steam - Self Updater$, center on"
+
+        #------------------------#
+        # Floating border
+        #------------------------#
+        "match:float true, border_size 2"
+
+        #------------------------#
+        # Opacity
+        #------------------------#
+        "match:title ^(Telegram|QQ|NetEase Cloud Music Gtk4)$, opacity 0.95 0.95"
+        "match:class ^alacritty$, opacity 0.85 0.85"
+        "match:title ^Picture-in-Picture$, opacity 1.0 override 1.0 override"
+
+        #------------------------#
+        # Blur
+        #------------------------#
+        "match:class ^(firefox|waybar)$, no_blur on"
+        "match:title ^Picture-in-Picture$, no_blur on"
       ];
 
       # -----------------------------------------------------------------------
@@ -122,23 +186,24 @@
 
       # -----------------------------------------------------------------------
       # MONITOR
-      # Add entries for external displays as needed:
-      #   "HDMI-A-1, 2560x1440, 1920x0, 1"
       # -----------------------------------------------------------------------
       monitor = [
-        ", 1920x1080, auto, 1"
-        "HDMI-A-1, 2560x1440, 1920x0, 1"
+        ", 1920x1080, 0x0, 1"
+        "HDMI-A-1, 2560x1440, 320x-1440, 1"
       ];
 
       # -----------------------------------------------------------------------
       # APPEARANCE
+      # vague.nvim palette:
+      #   active border   → keyword  #6e94b2  (blue accent)
+      #   inactive border → line     #252530  (barely visible)
       # -----------------------------------------------------------------------
       general = {
-        gaps_in = 5;
-        gaps_out = 10;
-        border_size = 2;
-        "col.active_border" = "rgb(254,250,220)";
-        "col.inactive_border" = "rgb(237,237,237)";
+        gaps_in = 8;
+        gaps_out = 16;
+        border_size = 0;
+        "col.active_border" = "rgb(6e94b2)";
+        "col.inactive_border" = "rgb(252530)";
       };
 
       misc.disable_hyprland_logo = true;
@@ -149,6 +214,9 @@
           enabled = false;
           size = 3;
           passes = 1;
+        };
+        shadow = {
+          enabled = false;
         };
       };
 
@@ -164,172 +232,42 @@
     };
   };
 
-  # ===========================================================================
-  # WAYBAR
-  # ===========================================================================
-  programs.waybar = {
-    enable = true;
-    settings.main = {
-      layer = "top";
-      position = "top";
-      margin-top = 8;
-      margin-left = 10;
-      margin-right = 10;
-      spacing = 4;
-
-      modules-left = [ "hyprland/workspaces" "hyprland/window" ];
-      modules-center = [ "clock" ];
-      modules-right = [ "bluetooth" "pulseaudio" "network" "battery" "tray" ];
-
-      "hyprland/workspaces" = {
-        format = "{name}";
-        on-click = "activate";
-        all-outputs = true;
-        format-icons = { active = ""; default = ""; };
-      };
-
-      "hyprland/window" = {
-        format = " | {initialTitle}";
-        rewrite = {
-          "(.*) — Mozilla Firefox" = "󰈹 Firefox";
-          "(.*) - Ghostty" = "󰊠 Terminal";
-          "(.*) - Nautilus" = "󰉋 Files";
-        };
-        separate-outputs = true;
-      };
-
-      "clock" = {
-        format = "󰥔 {:%H:%M}";
-        format-alt = "󰃭 {:%a, %d %b}";
-        tooltip-format = "<tt><small>{calendar}</small></tt>";
-      };
-
-      "bluetooth" = {
-        format = "󰂯";
-        format-disabled = "󰂲";
-        format-connected = "󰂱 {device_alias}";
-        on-click = "blueman-manager";
-        tooltip-format = "{controller_alias} — {num_connections} connected";
-      };
-
-      "pulseaudio" = {
-        format = "{icon} {volume}%";
-        format-muted = "󰝟";
-        format-icons = {
-          headphone = "󰋋";
-          default = [ "󰕿" "󰖀" "󰕾" ];
-        };
-        on-click = "pavucontrol";
-      };
-
-      "network" = {
-        format-wifi = "󰤨";
-        format-ethernet = "󰈀";
-        format-disconnected = "󰤮";
-        tooltip-format = "{essid} {signalStrength}%";
-      };
-
-      "battery" = {
-        states = { warning = 30; critical = 15; };
-        format = "{icon} {capacity}%";
-        format-icons = [ "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ];
-      };
-    };
-
-    style = ''
-      * {
-        font-family: "JetBrains Mono Nerd Font", "Roboto", sans-serif;
-        font-size: 13px;
-        font-weight: bold;
-        min-height: 0;
-      }
-
-      window#waybar {
-        background: transparent;
-        color: #cdd6f4;
-      }
-
-      #workspaces, #window, #clock,
-      #bluetooth, #pulseaudio, #network, #battery, #tray {
-        background: rgba(30, 30, 46, 0.85);
-        padding: 0 12px;
-        margin: 0 4px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      #workspaces button {
-        padding: 0 5px;
-        color: #6c7086;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-      }
-
-      #workspaces button.active {
-        color: #89b4fa;
-        background: rgba(137, 180, 250, 0.15);
-      }
-
-      #workspaces button:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-
-      #window {
-        background: transparent;
-        border: none;
-        font-weight: normal;
-        color: #a6adc8;
-      }
-
-      #clock      { color: #f9e2af; }
-      #bluetooth  { color: #cba6f7; }
-      #pulseaudio { color: #89b4fa; }
-      #network    { color: #94e2d5; }
-      #battery    { color: #a6e3a1; }
-
-      #battery.warning  { color: #fab387; }
-      #battery.critical { color: #f38ba8; }
-
-      #tray { padding: 0 8px; }
-    '';
-  };
 
   # ===========================================================================
-  # VICINAE (App launcher)
+  # VICINAE (App launcher) — vague theme
   # ===========================================================================
   programs.vicinae = {
     enable = true;
     settings = {
-      theme = { dark.name = "catppuccin-mocha"; };
+      theme = { dark.name = "vague"; };
     };
   };
 
-  xdg.configFile."vicinae/themes/catppuccin-mocha.json".text = builtins.toJSON {
+  xdg.configFile."vicinae/themes/vague.json".text = builtins.toJSON {
     meta = {
       version = 1;
-      name = "Catppuccin Mocha";
-      description = "Cozy feeling with color-rich accents";
+      name = "Vague";
+      description = "A cool, dark, low contrast theme. Pastel yet vivid, like a fleeting memory.";
       variant = "dark";
-      icon = "icons/catppuccin-mocha.png";
       inherits = "vicinae-dark";
     };
     colors = {
       core = {
-        background = "#1E1E2E";
-        foreground = "#CDD6F4";
-        secondary_background = "#181825";
-        border = "#313244";
-        accent = "#89B4FA";
+        background = "#141415"; # bg
+        foreground = "#cdcdcd"; # fg
+        secondary_background = "#1c1c24"; # inactiveBg
+        border = "#252530"; # line
+        accent = "#6e94b2"; # keyword
       };
       accents = {
-        blue = "#89B4FA";
-        green = "#A6E3A1";
-        magenta = "#F5C2E7";
-        orange = "#FAB387";
-        purple = "#CBA6F7";
-        red = "#F38BA8";
-        yellow = "#F9E2AF";
-        cyan = "#94E2D5";
+        blue = "#6e94b2"; # keyword
+        cyan = "#b4d4cf"; # builtin
+        purple = "#bb9dbd"; # parameter
+        green = "#7fa563"; # plus
+        yellow = "#f3be7c"; # warning
+        red = "#d8647e"; # error
+        orange = "#e8b589"; # string
+        magenta = "#c48282"; # func
       };
     };
   };

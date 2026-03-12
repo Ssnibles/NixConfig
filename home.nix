@@ -12,10 +12,11 @@
   # ===========================================================================
   imports = [
     ./modules/fish.nix # Shell, terminal emulators (foot, ghostty)
-    ./modules/hyprland.nix # Window manager, waybar, vicinae
+    ./modules/hyprland.nix # Window manager, vicinae
     ./modules/neovim.nix # Editor, plugins, LSP packages
     ./modules/git.nix # Git identity and settings
     ./modules/other.nix # Spotify, Java, miscellaneous
+    ./modules/waybar.nix # Waybar
   ];
 
   # ===========================================================================
@@ -49,6 +50,7 @@
     nerd-fonts.fira-code
     nerd-fonts.zed-mono
     nerd-fonts.jetbrains-mono
+    rPackages.ggplayfair
 
     # --- GUI Apps ---
     ghostty # Primary terminal emulator
@@ -70,7 +72,6 @@
     impala # TUI Wi-Fi manager (uses iwd)
     bluetui # TUI Bluetooth manager
     blueman # GTK Bluetooth manager (for GUI dialogs)
-    awww # Efficient animated wallpaper daemon for wayland
 
     # --- Productivity ---
     super-productivity # To-do / time tracker
