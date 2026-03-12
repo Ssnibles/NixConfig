@@ -2,7 +2,6 @@
 
   home.packages = with pkgs; [
     awww
-    swaynotificationcenter
     libnotify
     networkmanagerapplet
     brightnessctl
@@ -40,7 +39,6 @@
         "sleep 2 && awww img ~/NixConfig/wallpapers/400556mtsdl.jpg"
         "waybar"
         "nm-applet --indicator"
-        "swaync"
       ];
 
       # -----------------------------------------------------------------------

@@ -22,16 +22,21 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- Colour the line number (and line background) of any line that has a
 -- diagnostic, using the highest-severity colour on that line.
 -- This gives you at-a-glance diagnostic awareness without covering code.
+--
+-- sign  → DiagnosticSign*   — built-in groups, colours the gutter number
+-- line  → DiagnosticLine*   — custom groups defined in plugins/highlights.lua
+--                             using explicit bg tints so the theme can't
+--                             override them the way it does DiagnosticVirtualText*.
 -- ============================================================================
 
 local diag_ns = vim.api.nvim_create_namespace("diag_linenum_hl")
 
 -- Map diagnostic severity → highlight groups for the number and line.
 local severity_hl = {
-	[vim.diagnostic.severity.ERROR] = { sign = "DiagnosticSignError", line = "DiagnosticVirtualTextError" },
-	[vim.diagnostic.severity.WARN] = { sign = "DiagnosticSignWarn", line = "DiagnosticVirtualTextWarn" },
-	[vim.diagnostic.severity.INFO] = { sign = "DiagnosticSignInfo", line = "DiagnosticVirtualTextInfo" },
-	[vim.diagnostic.severity.HINT] = { sign = "DiagnosticSignHint", line = "DiagnosticVirtualTextHint" },
+	[vim.diagnostic.severity.ERROR] = { sign = "DiagnosticSignError", line = "DiagnosticLineError" },
+	[vim.diagnostic.severity.WARN] = { sign = "DiagnosticSignWarn", line = "DiagnosticLineWarn" },
+	[vim.diagnostic.severity.INFO] = { sign = "DiagnosticSignInfo", line = "DiagnosticLineInfo" },
+	[vim.diagnostic.severity.HINT] = { sign = "DiagnosticSignHint", line = "DiagnosticLineHint" },
 }
 
 local function update_diag_linenum_hl(bufnr)

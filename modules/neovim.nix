@@ -66,6 +66,24 @@
       noice-nvim
       markview-nvim
 
+      # Icons — required by lualine and used by oil, fzf-lua, etc.
+      # nvim-web-devicons reads your Nerd Font (JetBrains Mono is already
+      # installed) and provides file-type icons across plugins.
+      nvim-web-devicons
+
+      # Statusline — lualine replaces the default statusline with a themed bar
+      # built from the vague.nvim palette. globalstatus = true (set in init.lua)
+      # gives a single bar at the bottom instead of one per split.
+      lualine-nvim
+
+      # Indent guides — draws subtle │ lines at each indent level and
+      # highlights the active scope in vague keyword blue.
+      indent-blankline-nvim
+
+      # Smooth scrolling — animates <C-u>/<C-d> and friends so large jumps
+      # are easier to follow visually.
+      neoscroll-nvim
+
       # Formatting
       conform-nvim
 

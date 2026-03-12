@@ -4,6 +4,9 @@
 -- No lspconfig plugin required for the core setup — nvim-lspconfig is only
 -- pulled in for its helper utilities (e.g. :LspInfo).
 --
+-- Completion capabilities are sourced from plugins/blink.lua, which owns all
+-- blink.cmp configuration and exposes a capabilities() helper.
+--
 -- To add a new language server:
 --   1. Add it to ft_to_server (filetype → server name)
 --   2. Add its config to server_configs (cmd, settings, etc.)
@@ -11,15 +14,7 @@
 -- ============================================================================
 
 local lsp = vim.lsp
-
--- ============================================================================
--- CAPABILITIES
--- Merge blink.cmp's extra completion capabilities into the base LSP caps.
--- This tells servers that the client supports completion item snippets,
--- lazy documentation, etc.
--- ============================================================================
-local ok, blink = pcall(require, "blink.cmp")
-local caps = ok and blink.get_lsp_capabilities() or lsp.protocol.make_client_capabilities()
+local caps = require("plugins.blink").capabilities()
 
 -- ============================================================================
 -- ON ATTACH
@@ -104,3 +99,14 @@ vim.api.nvim_create_autocmd("FileType", {
 		end
 	end,
 })
+
+-- ============================================================================
+-- FLOAT BORDERS
+-- Override the default hover and signature-help handlers so they always use
+-- rounded borders, matching the rest of the UI (which-key, diagnostics, etc.).
+-- This is a safety net for servers that bypass noice via direct vim.lsp.buf
+-- calls — noice overrides the same handlers but only for its markdown engine.
+-- ============================================================================
+lsp.handlers["textDocument/hover"] = lsp.with(lsp.handlers.hover, { border = "rounded" })
+
+lsp.handlers["textDocument/signatureHelp"] = lsp.with(lsp.handlers.signature_help, { border = "rounded" })

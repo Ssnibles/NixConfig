@@ -17,6 +17,7 @@
     ./modules/git.nix # Git identity and settings
     ./modules/other.nix # Spotify, Java, miscellaneous
     ./modules/waybar.nix # Waybar
+    ./modules/swaync.nix # Notification daemon + control centre
   ];
 
   # ===========================================================================

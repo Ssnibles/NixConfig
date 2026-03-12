@@ -14,12 +14,22 @@ require("autocommands")
 require("plugins.lsp")
 require("plugins.fzf")
 require("plugins.conform")
+require("plugins.lualine")
+require("plugins.ibl")
+require("plugins.neoscroll")
+require("plugins.blink")
 
 -- ============================================================================
 -- COLORSCHEME
--- Set after plugins so catppuccin's highlights overwrite plugin defaults.
+-- Set after plugins so vague's highlights overwrite plugin defaults.
 -- ============================================================================
 vim.cmd.colorscheme("vague")
+
+-- ============================================================================
+-- HIGHLIGHT OVERRIDES
+-- Loaded after the colorscheme so vague doesn't reset custom groups.
+-- ============================================================================
+require("plugins.highlights")
 
 -- ============================================================================
 -- DIAGNOSTICS
@@ -81,40 +91,6 @@ require("noice").setup({
 			["vim.lsp.util.convert_input_to_markdown_lines"] = true,
 			["vim.lsp.util.stylize_markdown"] = true,
 		},
-	},
-})
-
--- ============================================================================
--- BLINK.CMP (completion engine)
--- ============================================================================
-require("blink.cmp").setup({
-	keymap = { preset = "super-tab" },
-
-	cmdline = {
-		keymap = {
-			["<Tab>"] = { "accept", "fallback" },
-			["<S-Tab>"] = { "select_prev", "fallback" },
-			["<Up>"] = { "select_prev", "fallback" },
-			["<Down>"] = { "select_next", "fallback" },
-		},
-		completion = {
-			menu = {
-				auto_show = true,
-				draw = {
-					columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind" } },
-				},
-			},
-			ghost_text = { enabled = true },
-		},
-	},
-
-	completion = {
-		menu = { auto_show = true },
-		ghost_text = { enabled = true },
-	},
-
-	sources = {
-		default = { "lsp", "path", "snippets", "buffer" },
 	},
 })
 
