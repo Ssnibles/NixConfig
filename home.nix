@@ -60,6 +60,8 @@
     firefox
     zen-browser # Firefox fork (from flake input)
     sioyek # Keyboard-driven PDF reader
+    kdePackages.okular
+    zathura
     vnote # Markdown note-taking
 
     # --- Media ---
