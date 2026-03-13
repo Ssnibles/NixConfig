@@ -21,7 +21,6 @@ opt.termguicolors = true -- Enable 24-bit colour (required by most themes)
 opt.cursorline = true -- Highlight the current line
 opt.scrolloff = 8 -- Keep 8 lines visible above/below cursor
 opt.signcolumn = "yes" -- Always show the gutter (prevents layout shifts)
-opt.cmdheight = 0
 
 -- Floating windows & completion popup.
 -- A small blend value adds just enough depth to distinguish floats from the

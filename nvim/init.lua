@@ -19,6 +19,8 @@ require("plugins.ibl")
 require("plugins.neoscroll")
 require("plugins.blink")
 
+vim.opt.cmdheight = 0
+
 -- ============================================================================
 -- COLORSCHEME
 -- Set after plugins so vague's highlights overwrite plugin defaults.

@@ -118,3 +118,5 @@ set_hl(0, "BlinkCmpKindEnum", { fg = "#f3be7c" }) -- warning amber
 set_hl(0, "BlinkCmpKindEnumMember", { fg = "#f3be7c" }) -- warning amber
 set_hl(0, "BlinkCmpKindSnippet", { fg = "#606079" }) -- comment / dimmed
 set_hl(0, "BlinkCmpKindText", { fg = "#606079" }) -- comment / dimmed
+
+set_hl(0, "NonText", { fg = "bg" })
