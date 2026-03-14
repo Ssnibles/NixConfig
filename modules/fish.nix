@@ -1,5 +1,5 @@
-{ pkgs, ... }: {
-
+{ pkgs, ... }:
+{
   # ===========================================================================
   # FISH SHELL
   # Note: programs.fish.enable must also be set in configuration.nix so that
@@ -23,7 +23,7 @@
       # The `git add -u` flag updates the index for files already tracked by
       # git (modifications + deletions), which is enough for nixos-rebuild to
       # see your changes without risk of committing stray files.
-      rebuild = "git -C ~/NixConfig/ add -u && sudo nixos-rebuild switch --flake ~/NixConfig/#nixos";
+      rebuild = "echo -n 'Untracked files? Stage with: git add <file>  ' && git -C ~/NixConfig/ add -u && sudo nixos-rebuild switch --flake ~/NixConfig/#nixos";
 
       # update: refresh all flake inputs then rebuild. Always runs from
       # ~/NixConfig so the flake path is explicit and predictable.
@@ -34,13 +34,6 @@
 
     # Suppress the default fish greeting and apply vague.nvim colours to the
     # pure prompt (https://github.com/pure-fish/pure).
-    #
-    # vague.nvim mapping:
-    #   prompt symbol / cwd  → keyword   #6e94b2
-    #   git branch           → parameter #bb9dbd
-    #   git dirty            → warning   #f3be7c
-    #   command duration     → comment   #606079
-    #   error                → error     #d8647e
     interactiveShellInit = ''
       set -g fish_greeting ""
 
@@ -54,10 +47,22 @@
     '';
 
     plugins = with pkgs.fishPlugins; [
-      { name = "grc"; src = grc.src; } # Colourises common command output
-      { name = "z"; src = z.src; } # Jump to frecent directories
-      { name = "pure"; src = pure.src; } # Minimal async prompt
-      { name = "done"; src = done.src; } # Desktop notification when long commands finish
+      {
+        name = "grc";
+        src = grc.src;
+      } # Colourises common command output
+      {
+        name = "z";
+        src = z.src;
+      } # Jump to frecent directories
+      {
+        name = "pure";
+        src = pure.src;
+      } # Minimal async prompt
+      {
+        name = "done";
+        src = done.src;
+      } # Desktop notification when long commands finish
     ];
   };
 
@@ -65,28 +70,8 @@
   # TERMINAL EMULATORS
   # ghostty is the primary terminal; foot is a lightweight Wayland-native
   # fallback (also used as the default terminal in hyprland.nix keybinds).
-  # Both are themed with the full vague.nvim 16-colour ANSI palette so that
-  # terminal applications (ls, diff, bat, etc.) look consistent with Neovim.
-  #
-  # vague.nvim ANSI palette mapping:
-  #   0  black          #141415  bg
-  #   1  red            #d8647e  error
-  #   2  green          #7fa563  plus
-  #   3  yellow         #f3be7c  warning
-  #   4  blue           #6e94b2  keyword
-  #   5  magenta        #bb9dbd  parameter
-  #   6  cyan           #b4d4cf  builtin
-  #   7  white          #cdcdcd  fg
-  #   8  bright-black   #252530  line (dark separator)
-  #   9  bright-red     #d8647e  error (same)
-  #   10 bright-green   #7fa563  plus  (same)
-  #   11 bright-yellow  #e8b589  string (warmer yellow)
-  #   12 bright-blue    #7e98e8  hint
-  #   13 bright-magenta #c48282  func
-  #   14 bright-cyan    #9bb4bc  type
-  #   15 bright-white   #cdcdcd  fg (same)
+  # Both are themed with the full vague.nvim 16-colour ANSI palette.
   # ===========================================================================
-
   xdg.configFile."foot/foot.ini".text = ''
     shell=${pkgs.fish}/bin/fish
     font=JetBrainsMono Nerd Font:size=12
@@ -124,10 +109,7 @@
     font-size       = 12
     cursor-style    = bar
     window-decoration = false
-
-    # Restore window size/position across sessions.
     window-save-state = default
-
     window-theme    = dark
 
     # Allow clipboard access from within the terminal (e.g. for neovim yank).
@@ -162,4 +144,3 @@
     palette = 15=#cdcdcd
   '';
 }
-
