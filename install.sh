@@ -81,6 +81,7 @@ fi
 
 [[ -b "$DISK" ]] || die "Disk '$DISK' not found."
 
+# Work out partition naming (nvme/mmcblk use p1/p2, sata/virtio use 1/2)
 if [[ "$DISK" == *"nvme"* || "$DISK" == *"mmcblk"* ]]; then
   PART_ESP="${DISK}p1"
   PART_ROOT="${DISK}p2"
@@ -91,6 +92,7 @@ else
   PART_SWAP="${DISK}3"
 fi
 
+# If swap requested, root moves to partition 3
 if [[ "$SWAP_GB" -gt 0 ]]; then
   if [[ "$DISK" == *"nvme"* || "$DISK" == *"mmcblk"* ]]; then
     PART_ROOT="${DISK}p3"; PART_SWAP="${DISK}p2"
@@ -174,6 +176,17 @@ info "Generating hardware-configuration.nix for this machine..."
 nixos-generate-config --root "$MOUNT" --show-hardware-config \
   > "$TARGET/hardware-configuration.nix"
 
+# Fix /boot mount permissions — FAT32 doesn't support Unix permissions so
+# systemd-boot warns about world-accessible files unless fmask/dmask are set.
+# Replace the default 0022 masks if present, then verify 0077 is in place.
+info "Fixing /boot mount permissions..."
+sed -i 's/fmask=0022/fmask=0077/g; s/dmask=0022/dmask=0077/g' \
+  "$TARGET/hardware-configuration.nix"
+if ! grep -q "fmask=0077" "$TARGET/hardware-configuration.nix"; then
+  sed -i '/fsType = "vfat"/a\      options = [ "fmask=0077" "dmask=0077" ];' \
+    "$TARGET/hardware-configuration.nix"
+fi
+
 success "Config ready"
 
 # =============================================================================
@@ -195,7 +208,7 @@ heading "[ 7 / 7 ]  Post-install setup"
 echo
 info "Set a password for root:"
 until nixos-enter --root "$MOUNT" -- passwd root; do
-  warn "Passwords didn't match or entry failed — try again."
+  warn "Something went wrong — try again."
 done
 success "Root password set"
 
@@ -203,11 +216,11 @@ success "Root password set"
 echo
 info "Set a password for ${USERNAME}:"
 until nixos-enter --root "$MOUNT" -- passwd "$USERNAME"; do
-  warn "Passwords didn't match or entry failed — try again."
+  warn "Something went wrong — try again."
 done
 success "Password set for ${USERNAME}"
 
-# Clone config into the user's home directory so the `rebuild` abbreviation works
+# Clone config into the user's home so the `rebuild` fish abbreviation works
 info "Cloning config into /home/${USERNAME}/NixConfig..."
 nixos-enter --root "$MOUNT" -- \
   su - "$USERNAME" -c "git clone $REPO_URL /home/$USERNAME/NixConfig"
@@ -217,8 +230,8 @@ success "Config cloned to ~/NixConfig"
 # DONE
 # =============================================================================
 echo
-echo -e "${GREEN}${BOLD}  All done — removing USB and rebooting in 5 seconds...${NC}"
-echo "  (Ctrl-C to cancel the reboot)"
+echo -e "${GREEN}${BOLD}  All done — rebooting in 5 seconds...${NC}"
+echo "  (Ctrl-C to cancel)"
 echo
 sleep 5
 reboot

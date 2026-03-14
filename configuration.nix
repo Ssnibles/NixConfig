@@ -162,6 +162,7 @@
       "networkmanager"
       "wheel"
       "video"
+      "input"
       "adbusers"
     ];
   };
