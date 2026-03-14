@@ -3,7 +3,7 @@
 
   # ===========================================================================
   # INPUTS
-  # To update a single input:  nix flake lock --update-input <name>
+  # To update a single input:  nix flake lock --update-input <n>
   # To update everything:      nix flake update
   # ===========================================================================
   inputs = {
@@ -55,6 +55,7 @@
         {
           home-manager.useGlobalPkgs = true; # Share system nixpkgs (no extra eval)
           home-manager.useUserPackages = true; # Install packages into /etc/profiles
+
           home-manager.users.josh = import ./home.nix;
         }
       ];

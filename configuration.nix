@@ -2,6 +2,7 @@
   imports = [
     ./hardware-configuration.nix
     ./modules/host-profile.nix
+    ./modules/nvidia.nix # internally gated on hostProfile.hasNvidia
   ];
 
   # ===========================================================================

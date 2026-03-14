@@ -1,5 +1,14 @@
-{ config, pkgs, ... }: {
+{ pkgs, ... }:
 
+let
+  # Re-run the same battery detection as host-profile.nix. This is simpler
+  # than trying to thread the NixOS config into home-manager, and since it's
+  # a pure builtins.pathExists check there's no recursion risk.
+  hasBat = name: builtins.pathExists "/sys/class/power_supply/${name}/capacity";
+  isLaptop = hasBat "BAT0" || hasBat "BAT1";
+  isDesktop = !isLaptop;
+in
+{
   home.username = "josh";
   home.homeDirectory = "/home/josh";
 
@@ -8,44 +17,57 @@
 
   # ===========================================================================
   # MODULES
-  # Split into separate files to keep things manageable.
   # ===========================================================================
   imports = [
-    ./modules/fish.nix # Shell, terminal emulators (foot, ghostty)
-    ./modules/hyprland.nix # Window manager, vicinae
-    ./modules/neovim.nix # Editor, plugins, LSP packages
-    ./modules/git.nix # Git identity and settings
-    ./modules/other.nix # Spotify, Java, miscellaneous
-    ./modules/waybar.nix # Waybar
-    ./modules/swaync.nix # Notification daemon + control centre
+    ./modules/fish.nix
+    ./modules/hyprland.nix
+    ./modules/neovim.nix
+    ./modules/git.nix
+    ./modules/other.nix
+    ./modules/waybar.nix
+    ./modules/swaync.nix
   ];
 
   # ===========================================================================
+  # CURSOR
+  # ===========================================================================
+  home.pointerCursor = {
+    package = pkgs.bibata-cursors;
+    name = "Bibata-Modern-Classic";
+    size = 24;
+    gtk.enable = true;
+    x11.enable = true;
+  };
+
+  # ===========================================================================
   # PACKAGES
-  # Add per-user packages here. System-wide packages live in configuration.nix.
   # ===========================================================================
   home.packages = with pkgs; [
+
+    # -------------------------------------------------------------------------
+    # SHARED — installed on both laptop and desktop
+    # -------------------------------------------------------------------------
 
     # --- Languages & Dev Tools ---
     kotlin
     kotlin-language-server
     jdk21
-    nixd # Nix language server
-    jdt-language-server # Java LSP
-    nixpkgs-fmt # Nix formatter
+    nixd
+    jdt-language-server
+    nixpkgs-fmt
     lua-language-server
-    code2prompt # Format a codebase for pasting into an LLM
+    code2prompt
 
     # --- CLI Utilities ---
-    wl-clipboard # Wayland clipboard (wl-copy / wl-paste)
-    fzf # Fuzzy finder (used by shell and neovim)
-    fd # Fast `find` replacement
-    ripgrep # Fast `grep` replacement (used by neovim live grep)
-    grc # Generic colouriser for command output
-    android-tools # adb, fastboot, etc.
-    lazygit # Terminal Git UI
-    btop # Resource monitor
-    yazi # Terminal file manager
+    wl-clipboard
+    fzf
+    fd
+    ripgrep
+    grc
+    android-tools
+    lazygit
+    btop
+    yazi
 
     # --- Fonts ---
     nerd-fonts.fira-code
@@ -54,32 +76,67 @@
     rPackages.ggplayfair
 
     # --- GUI Apps ---
-    ghostty # Primary terminal emulator
-    foot # Fallback terminal emulator
-    mission-center # GNOME system monitor
+    ghostty
+    foot
+    mission-center
     firefox
-    zen-browser # Firefox fork (from flake input)
-    sioyek # Keyboard-driven PDF reader
+    zen-browser
+    sioyek
     kdePackages.okular
     zathura
-    vnote # Markdown note-taking
+    vnote
     trilium-desktop
 
     # --- Media ---
     spotify
-    strawberry # Music player / library manager
-    picard # MusicBrainz tagger
-    easytag # Tag editor
-    pavucontrol # PulseAudio Volume Control
+    strawberry
+    picard
+    easytag
+    pavucontrol
 
     # --- System / Networking ---
-    localsend # LAN file sharing (no cloud)
-    impala # TUI Wi-Fi manager (uses iwd)
-    bluetui # TUI Bluetooth manager
-    blueman # GTK Bluetooth manager (for GUI dialogs)
+    localsend
+    impala
+    bluetui
+    blueman
 
     # --- Misc ---
-    flatpak # For apps not yet in nixpkgs
+    flatpak
+
+  ]
+
+  # -------------------------------------------------------------------------
+  # DESKTOP-ONLY packages
+  # -------------------------------------------------------------------------
+  ++ pkgs.lib.optionals isDesktop [
+
+    # --- Gaming ---
+    steam
+    heroic # GOG / Epic launcher
+    lutris # Wine-based game manager
+    mangohud # In-game overlay (FPS, GPU temp, etc.)
+    gamemode # CPU/GPU optimisation daemon for games
+    protonup-qt # Manage Proton-GE versions for Steam
+
+    # --- Desktop utilities ---
+    mission-center # System monitor (more useful with a beefy desktop GPU)
+    virt-manager # VM management GUI (less common on a laptop)
+
+  ]
+
+  # -------------------------------------------------------------------------
+  # LAPTOP-ONLY packages
+  # -------------------------------------------------------------------------
+  ++ pkgs.lib.optionals isLaptop [
+
+    # --- Power & battery ---
+    powertop # Interactive power analysis
+    acpi # Battery / AC status from the terminal
+
+    # --- Display ---
+    brightnessctl # Already in hyprland keybinds; ensure it's in the profile
+    wlsunset # Blue-light filter (less useful on a desktop)
+
   ];
 
   # Make the fish shell available to programs that read $SHELL.

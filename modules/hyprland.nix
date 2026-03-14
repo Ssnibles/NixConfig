@@ -185,7 +185,7 @@
       # MONITOR
       # -----------------------------------------------------------------------
       monitor = [
-        "DP-1, 2560x1440, 0x0, 1"
+        ", preferred, auto, 1"
       ];
 
       # -----------------------------------------------------------------------
@@ -205,7 +205,7 @@
       misc.disable_hyprland_logo = true;
 
       decoration = {
-        rounding = 16;
+        rounding = 18;
         blur = {
           enabled = false;
           size = 3;
