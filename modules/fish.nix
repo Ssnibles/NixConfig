@@ -77,7 +77,7 @@
     font=JetBrainsMono Nerd Font:size=12
     pad=20x20
 
-    [colors]
+    [colors-dark]
     background=141415
     foreground=cdcdcd
     selection-background=333738

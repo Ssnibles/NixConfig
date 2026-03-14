@@ -13,11 +13,11 @@
         "rev": "2c86d41d07471f518e24f5cd1f586e4d2a32d12c",
         "revCount": 1331,
         "type": "git",
-        "url": "https://codeberg.org/LGFae/awww"
+        "url": "https://codeberg.org/LGFae/awww.git"
       },
       "original": {
         "type": "git",
-        "url": "https://codeberg.org/LGFae/awww"
+        "url": "https://codeberg.org/LGFae/awww.git"
       }
     },
     "flake-compat": {
