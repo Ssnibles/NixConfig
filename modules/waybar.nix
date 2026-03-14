@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ ... }: {
   programs.waybar = {
     enable = true;
     settings.main = {
@@ -109,37 +109,37 @@
          plus        #7fa563  — green
       ──────────────────────────────────────────────────────────── */
 
-      @define-color bg          #141415;
-      @define-color bg-raised   #1c1c24;
-      @define-color border      #252530;
-      @define-color fg          #cdcdcd;
-      @define-color fg-dim      #606079;
-      @define-color fg-mid      #878787;
-      @define-color accent      #6e94b2;
-      @define-color teal        #b4d4cf;
-      @define-color purple      #bb9dbd;
-      @define-color warn        #f3be7c;
-      @define-color error       #d8647e;
-      @define-color plus        #7fa563;
+      @define-color bg        #141415;
+      @define-color bg-raised #1c1c24;
+      @define-color border    #252530;
+      @define-color fg        #cdcdcd;
+      @define-color fg-dim    #606079;
+      @define-color fg-mid    #878787;
+      @define-color accent    #6e94b2;
+      @define-color teal      #b4d4cf;
+      @define-color purple    #bb9dbd;
+      @define-color warn      #f3be7c;
+      @define-color error     #d8647e;
+      @define-color plus      #7fa563;
 
       /* ── reset ─────────────────────────────────────────────── */
       * {
         font-family: "JetBrains Mono", "Iosevka", monospace;
-        font-size: 11px;
+        font-size:   11px;
         font-weight: 400;
-        min-height: 0;
-        border: none;
-        border-radius: 0;
-        padding: 0;
-        margin: 0;
+        min-height:  0;
+        border:         none;
+        border-radius:  0;
+        padding:        0;
+        margin:         0;
       }
 
       /* ── bar ───────────────────────────────────────────────── */
       window#waybar {
-        background: @bg;
-        color: @fg;
+        background:    @bg;
+        color:         @fg;
         border-radius: 8px;
-        border: 1px solid @border;
+        border:        1px solid @border;
       }
 
       /* ── shared ────────────────────────────────────────────── */
@@ -147,71 +147,71 @@
       #mpris, #pulseaudio, #bluetooth,
       #network, #battery {
         background: transparent;
-        color: @fg;
-        padding: 0 10px;
-        margin: 0;
+        color:      @fg;
+        padding:    0 10px;
+        margin:     0;
       }
 
       /* ── workspaces ────────────────────────────────────────── */
       #workspaces {
-        padding: 0 6px;
+        padding:      0 6px;
         border-right: 1px solid @border;
       }
 
       #workspaces button {
-        font-size: 10px;
-        color: @fg-dim;
-        padding: 0 8px;
-        background: transparent;
+        font-size:     10px;
+        color:         @fg-dim;
+        padding:       0 8px;
+        background:    transparent;
         border-bottom: 2px solid transparent;
-        min-width: 24px;
-        min-height: 0;
-        transition: color 150ms ease, border-color 150ms ease;
+        min-width:     24px;
+        min-height:    0;
+        transition:    color 150ms ease, border-color 150ms ease;
       }
 
       #workspaces button.active {
-        color: @accent;
+        color:         @accent;
         border-bottom: 2px solid @accent;
       }
 
       #workspaces button.urgent {
-        color: @error;
+        color:         @error;
         border-bottom: 2px solid @error;
       }
 
       #workspaces button:hover {
-        color: @fg;
+        color:      @fg;
         background: transparent;
       }
 
       /* ── window title ──────────────────────────────────────── */
       #window {
         font-style: italic;
-        color: @fg-dim;
-        padding: 0 8px;
+        color:      @fg-dim;
+        padding:    0 8px;
       }
 
       /* ── clock ─────────────────────────────────────────────── */
       #clock {
-        font-weight: 600;
+        font-weight:    600;
         letter-spacing: 1px;
-        color: @teal;
+        color:          @teal;
       }
 
       /* ── mpris ─────────────────────────────────────────────── */
       #mpris {
-        font-style: italic;
-        color: @purple;
+        font-style:   italic;
+        color:        @purple;
         padding-right: 12px;
-        border-right: 1px solid @border;
-        margin-right: 2px;
+        border-right:  1px solid @border;
+        margin-right:  2px;
       }
 
       /* ── right modules ─────────────────────────────────────── */
       #pulseaudio,
       #bluetooth,
       #network {
-        color: @fg-mid;
+        color:   @fg-mid;
         padding: 0 8px;
       }
 
@@ -221,8 +221,8 @@
 
       #bluetooth.disabled,
       #bluetooth.off {
-        opacity: 0;
-        padding: 0;
+        opacity:   0;
+        padding:   0;
         min-width: 0;
       }
 
@@ -232,10 +232,10 @@
 
       /* ── battery ───────────────────────────────────────────── */
       #battery {
-        color: @fg-mid;
-        border-left: 1px solid @border;
+        color:        @fg-mid;
+        border-left:  1px solid @border;
         padding-left: 12px;
-        margin-left: 2px;
+        margin-left:  2px;
       }
 
       #battery.charging,
@@ -253,4 +253,3 @@
     '';
   };
 }
-

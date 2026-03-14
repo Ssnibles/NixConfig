@@ -7,14 +7,10 @@
   # To update everything:      nix flake update
   # ===========================================================================
   inputs = {
-    # Unstable gives you the freshest packages. Swap to "nixos-25.05" etc.
-    # for a stable channel if you want slower, more predictable updates.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     home-manager = {
       url = "github:nix-community/home-manager";
-      # Pin home-manager to the same nixpkgs as the rest of the system to
-      # avoid pulling in a second copy of the package set.
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -29,38 +25,73 @@
   # ===========================================================================
   # OUTPUTS
   # ===========================================================================
-  outputs = { self, nixpkgs, home-manager, zen-browser, awww, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, zen-browser, awww, ... }@inputs:
+    let
+      system = "x86_64-linux";
 
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      modules = [
-        # Set the platform explicitly so hardware-configuration.nix can use
-        # lib.mkDefault without conflicting with this declaration.
-        { nixpkgs.hostPlatform = "x86_64-linux"; }
+      # -------------------------------------------------------------------------
+      # Hardware detection — evaluated once here at flake level.
+      #
+      # home-manager runs in its own module system and cannot see NixOS
+      # config.hostProfile. Instead we run the same builtins.pathExists checks
+      # here (pure /sys reads, available during nixos-rebuild) and pass the
+      # results into both NixOS and home-manager via specialArgs /
+      # extraSpecialArgs so every module shares one set of values without
+      # duplication. The host-profile.nix NixOS module still defines the options
+      # (allowing manual overrides in configuration.nix), but its defaults also
+      # come from these same checks so everything stays consistent.
+      # -------------------------------------------------------------------------
+      hasBat = name: builtins.pathExists "/sys/class/power_supply/${name}/capacity";
+      isLaptop = hasBat "BAT0" || hasBat "BAT1";
+      isDesktop = !isLaptop;
 
-        ./configuration.nix
+      pciBase = "/sys/bus/pci/devices";
+      pciDevices =
+        if builtins.pathExists pciBase
+        then builtins.attrNames (builtins.readDir pciBase)
+        else [ ];
+      readVendor = dev:
+        let r = builtins.tryEval (builtins.readFile "${pciBase}/${dev}/vendor");
+        in if r.success then r.value else "";
+      hasNvidia = builtins.any
+        (dev: nixpkgs.lib.hasPrefix "0x10de"
+          (nixpkgs.lib.trim (readVendor dev)))
+        pciDevices;
 
-        # Expose flake inputs as overlays so modules can reference them as packages.
-        # Fix: use stdenv.hostPlatform.system — `prev.system` is deprecated and warns.
-        {
-          nixpkgs.overlays = [
-            (final: prev: {
-              zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
-              awww = awww.packages.${prev.stdenv.hostPlatform.system}.default;
-            })
-          ];
-        }
+      # Collected into a single attrset so both specialArgs blocks stay tidy.
+      hostProfile = { inherit isLaptop isDesktop hasNvidia; };
+    in
+    {
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = { inherit inputs hostProfile; };
 
-        # Wire home-manager into the NixOS system build.
-        home-manager.nixosModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true; # Share system nixpkgs (no extra eval)
-          home-manager.useUserPackages = true; # Install packages into /etc/profiles
+        modules = [
+          ./configuration.nix
 
-          home-manager.users.josh = import ./home.nix;
-        }
-      ];
+          # Expose flake inputs as packages via overlays.
+          {
+            nixpkgs.overlays = [
+              (final: prev: {
+                zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
+                awww = awww.packages.${prev.stdenv.hostPlatform.system}.default;
+              })
+            ];
+          }
+
+          # Wire home-manager into the NixOS system build.
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+
+            # Pass the same hostProfile values into home.nix so it can branch
+            # on laptop/desktop without re-detecting or touching NixOS config.
+            home-manager.extraSpecialArgs = { inherit inputs hostProfile; };
+
+            home-manager.users.josh = import ./home.nix;
+          }
+        ];
+      };
     };
-
-  };
 }
-

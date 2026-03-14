@@ -118,11 +118,16 @@
   # DESKTOP-ONLY: always keep the CPU in performance mode.
   # On laptops this is handled per-state by TLP above.
   # ---------------------------------------------------------------------------
-  powerManagement.cpuFreqGovernor = lib.mkIf config.hostProfile.isDesktop "performance";
+  powerManagement.cpuFreqGovernor =
+    lib.mkIf config.hostProfile.isDesktop "performance";
 
   # powertop auto-tune is useful for laptops; on desktops it can interfere
   # with peripherals and isn't worth the tradeoff.
   powerManagement.powertop.enable = config.hostProfile.isLaptop;
+
+  # zram swap: a small compressed swap in RAM. Near-zero cost on a desktop,
+  # useful insurance against OOM kills when running memory-heavy workloads.
+  zramSwap.enable = true;
 
   # Prevent udev from marking USB HID devices (keyboards, mice) as
   # candidates for autosuspend regardless of other power management settings.
@@ -138,6 +143,13 @@
   services.displayManager.ly.enable = true;
 
   programs.hyprland.enable = true;
+
+  # Flatpak support — enables the portal and daemon so flatpak apps work.
+  services.flatpak.enable = true;
+
+  # Fish must be enabled at the system level so it appears in /etc/shells
+  # and can be used as a login shell (home-manager alone is not enough).
+  programs.fish.enable = true;
 
   # ---------------------------------------------------------------------------
   # LAPTOP-ONLY: lid switch behaviour.
@@ -162,18 +174,16 @@
   };
 
   # ===========================================================================
-  # KEYD
+  # KEYD — key remapping (swap Caps Lock ↔ Escape)
   # ===========================================================================
 
   services.keyd = {
     enable = true;
     keyboards.default = {
       ids = [ "*" ];
-      settings = {
-        main = {
-          capslock = "esc";
-          esc = "capslock";
-        };
+      settings.main = {
+        capslock = "esc";
+        esc = "capslock";
       };
     };
   };
@@ -185,6 +195,7 @@
   users.users.josh = {
     isNormalUser = true;
     description = "Josh";
+    shell = pkgs.fish;
     extraGroups = [
       "networkmanager"
       "wheel"
@@ -214,4 +225,3 @@
   time.timeZone = "Pacific/Auckland";
   i18n.defaultLocale = "en_NZ.UTF-8";
 }
-

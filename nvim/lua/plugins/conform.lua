@@ -11,6 +11,10 @@ conform.setup({
 		lua = { "stylua" },
 		python = { "isort", "black" }, -- isort first so black doesn't reorder imports
 		javascript = { "prettier" },
+		typescript = { "prettier" },
+		json = { "prettier" },
+		yaml = { "prettier" },
+		markdown = { "prettier" },
 		nix = { "nixpkgs_fmt" },
 	},
 
@@ -24,6 +28,6 @@ conform.setup({
 
 -- Manual format: useful when you want to format without saving,
 -- or when format-on-save is intentionally disabled for a buffer.
-vim.keymap.set("n", "f", function()
+vim.keymap.set("n", "<leader>f", function()
 	conform.format({ async = true, lsp_fallback = true })
 end, { desc = "Format buffer" })

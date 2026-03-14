@@ -2,6 +2,8 @@
 
   # ===========================================================================
   # FISH SHELL
+  # Note: programs.fish.enable must also be set in configuration.nix so that
+  # fish is added to /etc/shells and available as a login shell.
   # ===========================================================================
   programs.fish = {
     enable = true;
@@ -10,10 +12,15 @@
     # discoverability — you can still see and edit the real command).
     shellAbbrs = {
       v = "nvim";
-      # Stage everything, then rebuild. The `git add .` ensures new untracked
-      # files in the flake directory are included before nixos-rebuild runs.
+
+      # Stage everything, then rebuild. `git add .` ensures new untracked
+      # files in the flake directory are picked up before nixos-rebuild runs.
       rebuild = "git -C ~/NixConfig/ add . && sudo nixos-rebuild switch --flake ~/NixConfig/#nixos";
-      update = "nix flake update && sudo nixos-rebuild switch --flake .";
+
+      # Always run update from the NixConfig directory so the flake path is
+      # explicit and predictable regardless of where you happen to be.
+      update = "cd ~/NixConfig && nix flake update && sudo nixos-rebuild switch --flake .";
+
       get-class = "hyprctl clients | grep -A5 'class:'";
     };
 
@@ -30,12 +37,12 @@
       set -g fish_greeting ""
 
       # pure prompt — vague.nvim colours
-      set -g pure_color_primary        6e94b2  # keyword  — prompt symbol & cwd
-      set -g pure_color_info           bb9dbd  # parameter — git branch
-      set -g pure_color_mute           606079  # comment  — command duration / secondary
-      set -g pure_color_danger         d8647e  # error    — non-zero exit / git dirty
-      set -g pure_color_warning        f3be7c  # warning  — git stash indicator
-      set -g pure_color_success        7fa563  # plus     — git clean / ok states
+      set -g pure_color_primary  6e94b2  # keyword  — prompt symbol & cwd
+      set -g pure_color_info     bb9dbd  # parameter — git branch
+      set -g pure_color_mute     606079  # comment  — command duration / secondary
+      set -g pure_color_danger   d8647e  # error    — non-zero exit / git dirty
+      set -g pure_color_warning  f3be7c  # warning  — git stash indicator
+      set -g pure_color_success  7fa563  # plus     — git clean / ok states
     '';
 
     plugins = with pkgs.fishPlugins; [
@@ -54,22 +61,22 @@
   # terminal applications (ls, diff, bat, etc.) look consistent with Neovim.
   #
   # vague.nvim ANSI palette mapping:
-  #   0  black         #141415  bg
-  #   1  red           #d8647e  error
-  #   2  green         #7fa563  plus
-  #   3  yellow        #f3be7c  warning
-  #   4  blue          #6e94b2  keyword
-  #   5  magenta       #bb9dbd  parameter
-  #   6  cyan          #b4d4cf  builtin
-  #   7  white         #cdcdcd  fg
-  #   8  bright-black  #252530  line (dark separator)
-  #   9  bright-red    #d8647e  error (same)
-  #   10 bright-green  #7fa563  plus  (same)
-  #   11 bright-yellow #e8b589  string (warmer yellow)
-  #   12 bright-blue   #7e98e8  hint
-  #   13 bright-magenta #c48282 func
-  #   14 bright-cyan   #9bb4bc  type
-  #   15 bright-white  #cdcdcd  fg (same)
+  #   0  black          #141415  bg
+  #   1  red            #d8647e  error
+  #   2  green          #7fa563  plus
+  #   3  yellow         #f3be7c  warning
+  #   4  blue           #6e94b2  keyword
+  #   5  magenta        #bb9dbd  parameter
+  #   6  cyan           #b4d4cf  builtin
+  #   7  white          #cdcdcd  fg
+  #   8  bright-black   #252530  line (dark separator)
+  #   9  bright-red     #d8647e  error (same)
+  #   10 bright-green   #7fa563  plus  (same)
+  #   11 bright-yellow  #e8b589  string (warmer yellow)
+  #   12 bright-blue    #7e98e8  hint
+  #   13 bright-magenta #c48282  func
+  #   14 bright-cyan    #9bb4bc  type
+  #   15 bright-white   #cdcdcd  fg (same)
   # ===========================================================================
 
   xdg.configFile."foot/foot.ini".text = ''

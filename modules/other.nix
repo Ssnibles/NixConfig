@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ config, ... }: {
 
   # ===========================================================================
   # SPOTIFY (TUI client)
@@ -27,10 +27,9 @@
 
   # ===========================================================================
   # JAVA
-  # Enables a JDK and sets JAVA_HOME. The specific JDK version is picked by
-  # nixpkgs defaults (currently jdk21 as set in home.nix extraPackages).
+  # Enables a JDK and sets JAVA_HOME. The specific JDK version is set in
+  # home.nix (jdk21).
   # ===========================================================================
   programs.java.enable = true;
 
 }
-

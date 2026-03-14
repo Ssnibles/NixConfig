@@ -14,6 +14,13 @@ end
 -- Clear search highlight without moving the cursor.
 map("n", "<Esc>", "<cmd>nohlsearch<CR>", "Clear search highlight")
 
+-- Save buffer with Ctrl-S (works in normal and insert mode).
+map("n", "<C-s>", "<cmd>write<CR>", "Save buffer")
+map("i", "<C-s>", "<cmd>write<CR><Esc>", "Save buffer")
+
+-- Quick-exit insert mode without reaching for Escape.
+map("i", "jk", "<Esc>", "Exit insert mode")
+
 -- ============================================================================
 -- WINDOW MANAGEMENT
 -- ============================================================================
@@ -21,6 +28,7 @@ map("n", "<Esc>", "<cmd>nohlsearch<CR>", "Clear search highlight")
 map("n", "<leader>wv", "<C-w>v", "Split vertical")
 map("n", "<leader>wh", "<C-w>s", "Split horizontal")
 map("n", "<leader>wx", "<C-w>c", "Close window")
+map("n", "<leader>we", "<C-w>=", "Equalise splits")
 
 -- ============================================================================
 -- FILE NAVIGATION (Oil)
@@ -49,3 +57,11 @@ for key, dir in pairs(dirs) do
 		end
 	end, "Move to " .. dir .. " window")
 end
+
+-- ============================================================================
+-- BUFFER NAVIGATION
+-- ============================================================================
+
+map("n", "<Tab>", "<cmd>bnext<CR>", "Next buffer")
+map("n", "<S-Tab>", "<cmd>bprevious<CR>", "Previous buffer")
+map("n", "<leader>bd", "<cmd>bdelete<CR>", "Delete buffer")

@@ -5,7 +5,7 @@
 #
 # This module is imported unconditionally from configuration.nix, but every
 # option inside is wrapped in `lib.mkIf config.hostProfile.hasNvidia` so
-# nothing is applied on machines without an Nvidia GPU (e.g. the AMD APU
+# nothing is applied on machines without an Nvidia GPU (e.g. an AMD APU
 # laptop). This avoids the infinite-recursion error that occurs when you
 # try to gate an import on a config value.
 #
@@ -97,4 +97,3 @@
 
   }; # end mkIf hasNvidia
 }
-

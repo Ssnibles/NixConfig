@@ -4,8 +4,8 @@
 -- handled via highlight group overrides in plugins/highlights.lua so it sits
 -- alongside the rest of the post-colorscheme tweaks.
 --
--- This module returns get_lsp_capabilities() so that plugins/lsp.lua can
--- merge blink's extra completion capabilities into its server configs without
+-- This module returns capabilities() so that plugins/lsp.lua can merge
+-- blink's extra completion capabilities into its server configs without
 -- either file having to reach into the other.
 -- ============================================================================
 
@@ -20,12 +20,7 @@ require("blink.cmp").setup({
 			["<Down>"] = { "select_next", "fallback" },
 		},
 		completion = {
-			menu = {
-				auto_show = true,
-				-- draw = {
-				-- 	columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind" } },
-				-- },
-			},
+			menu = { auto_show = true },
 			ghost_text = { enabled = true },
 		},
 	},
@@ -36,8 +31,7 @@ require("blink.cmp").setup({
 			-- Rounded border — matches the 8px border-radius on the Waybar window
 			-- and the rounded borders used on all other floats (which-key, diagnostics).
 			border = "rounded",
-			-- Raised surface (#1c1c24) so the menu lifts off the buffer, same as
-			-- how Waybar's bg-raised colour separates it from the desktop.
+			-- Surface highlight — blends with the buffer via BlinkMenuNormal.
 			winhighlight = "Normal:BlinkMenuNormal,FloatBorder:BlinkMenuBorder,CursorLine:BlinkMenuSel,Search:None",
 		},
 		documentation = {

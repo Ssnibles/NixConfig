@@ -8,7 +8,11 @@
 
     # ===========================================================================
     # EXTERNAL TOOLS
-    # Language servers, formatters, and linters placed on $PATH for neovim.
+    # Language servers and formatters placed on $PATH for neovim.
+    # These are intentionally NOT duplicated in home.nix — if you want a tool
+    # available in your shell as well as inside neovim, add it only here:
+    # neovim's extraPackages are visible on the PATH that neovim itself sees,
+    # and with `useUserPackages = true` they also land in your profile.
     # ===========================================================================
     extraPackages = with pkgs; [
       # Language servers
@@ -50,7 +54,7 @@
       luasnip # Snippet engine required by blink-cmp
       friendly-snippets # VS Code-format snippet collection
 
-      # Fuzzy finding — fzf-lua is the primary picker; telescope removed.
+      # Fuzzy finding
       fzf-lua
 
       # File management
@@ -66,22 +70,16 @@
       noice-nvim
       markview-nvim
 
-      # Icons — required by lualine and used by oil, fzf-lua, etc.
-      # nvim-web-devicons reads your Nerd Font (JetBrains Mono is already
-      # installed) and provides file-type icons across plugins.
+      # Icons — required by lualine; used by oil, fzf-lua, etc.
       nvim-web-devicons
 
-      # Statusline — lualine replaces the default statusline with a themed bar
-      # built from the vague.nvim palette. globalstatus = true (set in init.lua)
-      # gives a single bar at the bottom instead of one per split.
+      # Statusline
       lualine-nvim
 
-      # Indent guides — draws subtle │ lines at each indent level and
-      # highlights the active scope in vague keyword blue.
+      # Indent guides
       indent-blankline-nvim
 
-      # Smooth scrolling — animates <C-u>/<C-d> and friends so large jumps
-      # are easier to follow visually.
+      # Smooth scrolling
       neoscroll-nvim
 
       # Formatting
@@ -101,4 +99,3 @@
     recursive = true;
   };
 }
-

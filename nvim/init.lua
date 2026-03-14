@@ -19,6 +19,7 @@ require("plugins.ibl")
 require("plugins.neoscroll")
 require("plugins.blink")
 
+-- Hide the command-line bar when not in use (cleaner look).
 vim.opt.cmdheight = 0
 
 -- ============================================================================

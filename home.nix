@@ -1,13 +1,9 @@
-{ pkgs, ... }:
+# hostProfile is passed in via home-manager.extraSpecialArgs in flake.nix.
+# It contains { isLaptop, isDesktop, hasNvidia } — the same values used by
+# the NixOS modules — so laptop/desktop branching works without needing to
+# touch the NixOS config from within home-manager's module system.
+{ pkgs, hostProfile, ... }:
 
-let
-  # Re-run the same battery detection as host-profile.nix. This is simpler
-  # than trying to thread the NixOS config into home-manager, and since it's
-  # a pure builtins.pathExists check there's no recursion risk.
-  hasBat = name: builtins.pathExists "/sys/class/power_supply/${name}/capacity";
-  isLaptop = hasBat "BAT0" || hasBat "BAT1";
-  isDesktop = !isLaptop;
-in
 {
   home.username = "josh";
   home.homeDirectory = "/home/josh";
@@ -50,12 +46,7 @@ in
 
     # --- Languages & Dev Tools ---
     kotlin
-    kotlin-language-server
     jdk21
-    nixd
-    jdt-language-server
-    nixpkgs-fmt
-    lua-language-server
     code2prompt
 
     # --- CLI Utilities ---
@@ -73,7 +64,6 @@ in
     nerd-fonts.fira-code
     nerd-fonts.zed-mono
     nerd-fonts.jetbrains-mono
-    rPackages.ggplayfair
 
     # --- GUI Apps ---
     ghostty
@@ -100,15 +90,12 @@ in
     bluetui
     blueman
 
-    # --- Misc ---
-    flatpak
-
   ]
 
   # -------------------------------------------------------------------------
   # DESKTOP-ONLY packages
   # -------------------------------------------------------------------------
-  ++ pkgs.lib.optionals isDesktop [
+  ++ pkgs.lib.optionals hostProfile.isDesktop [
 
     # --- Gaming ---
     steam
@@ -119,7 +106,6 @@ in
     protonup-qt # Manage Proton-GE versions for Steam
 
     # --- Desktop utilities ---
-    mission-center # System monitor (more useful with a beefy desktop GPU)
     virt-manager # VM management GUI (less common on a laptop)
 
   ]
@@ -127,7 +113,7 @@ in
   # -------------------------------------------------------------------------
   # LAPTOP-ONLY packages
   # -------------------------------------------------------------------------
-  ++ pkgs.lib.optionals isLaptop [
+  ++ pkgs.lib.optionals hostProfile.isLaptop [
 
     # --- Power & battery ---
     powertop # Interactive power analysis
@@ -139,12 +125,9 @@ in
 
   ];
 
-  # Make the fish shell available to programs that read $SHELL.
-  home.sessionVariables = {
-    SHELL = "${pkgs.fish}/bin/fish";
-  };
+  # Make fish available to programs that read $SHELL.
+  home.sessionVariables.SHELL = "${pkgs.fish}/bin/fish";
 
   # Let home-manager manage itself.
   programs.home-manager.enable = true;
 }
-

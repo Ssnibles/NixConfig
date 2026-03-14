@@ -3,6 +3,10 @@
 -- ============================================================================
 local opt = vim.opt
 
+-- Leader key: <Space> — must be set before any plugin or keymap loads.
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
 -- Line numbers: show absolute on current line, relative on others.
 -- Relative numbers make it easy to jump with e.g. `5j` or `12k`.
 opt.number = true
@@ -31,6 +35,11 @@ opt.pumblend = 8 -- completion popup menu
 -- Search
 opt.ignorecase = true -- Case-insensitive search by default…
 opt.smartcase = true -- …unless the query contains uppercase letters
+opt.hlsearch = true -- Highlight all matches (cleared by <Esc> in keymaps)
+
+-- Splits open in a more natural direction.
+opt.splitright = true
+opt.splitbelow = true
 
 -- Performance / reliability
 opt.updatetime = 200 -- Faster CursorHold events (used by LSP highlights)
@@ -39,6 +48,3 @@ opt.undofile = true -- Persist undo history across sessions
 -- Use the system clipboard for all yank/paste operations.
 -- Requires wl-clipboard (Wayland) or xclip/xsel (X11) to be installed.
 opt.clipboard = "unnamedplus"
-
--- Leader key: <Space> — set before any plugin or keymap loads.
-vim.g.mapleader = " "

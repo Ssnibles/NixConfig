@@ -90,3 +90,16 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 		end
 	end,
 })
+
+-- ============================================================================
+-- TRIM TRAILING WHITESPACE ON SAVE
+-- Applies to all buffers. Preserves cursor position.
+-- ============================================================================
+vim.api.nvim_create_autocmd("BufWritePre", {
+	group = group,
+	callback = function()
+		local pos = vim.api.nvim_win_get_cursor(0)
+		vim.cmd([[%s/\s\+$//e]])
+		vim.api.nvim_win_set_cursor(0, pos)
+	end,
+})

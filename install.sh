@@ -38,7 +38,7 @@ DRY_RUN=false
 # =============================================================================
 cleanup() {
   local exit_code=$?
-  if [[ $exit_code -ne 0 && "$DRY_RUN" == false ]]; do
+  if [[ $exit_code -ne 0 && "$DRY_RUN" == false ]]; then
     echo
     warn "Install failed (exit $exit_code) — cleaning up mounts..."
     # Unmount in reverse order; ignore errors (partitions may not be mounted yet)

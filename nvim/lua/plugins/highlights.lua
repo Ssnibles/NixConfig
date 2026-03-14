@@ -18,10 +18,15 @@
 --   warning     #f3be7c  — amber
 --   error       #d8647e  — red
 --   plus        #7fa563  — green
+--   func        #c48282  — muted red (functions)
+--   type        #9bb4bc  — muted teal (types)
 -- ============================================================================
 
 local set_hl = vim.api.nvim_set_hl
 local normal = vim.api.nvim_get_hl(0, { name = "Normal" })
+
+-- Shared border fg — slightly brighter than the vague fg-mid to give floats
+-- a clean edge without competing with content.
 local border_fg = "#565f89"
 
 -- ============================================================================
@@ -45,8 +50,8 @@ set_hl(0, "DiagnosticLineHint", { bg = "#141e1d" })
 
 -- ============================================================================
 -- FLOAT BORDERS
--- All floating window borders use the same muted tone as the Blink.cmp
--- borders, keeping every popup surface visually consistent.
+-- All floating window borders use the same muted tone, keeping every popup
+-- surface visually consistent.
 -- ============================================================================
 set_hl(0, "FloatBorder", { bg = normal.bg, fg = border_fg })
 set_hl(0, "NormalFloat", { bg = normal.bg, fg = normal.fg })
@@ -64,7 +69,7 @@ set_hl(0, "IblIndent", { fg = "#252530" }) -- line / border colour
 set_hl(0, "IblScope", { fg = "#6e94b2" }) -- keyword blue
 
 -- ============================================================================
--- BLINK.CMP
+-- BLINK.CMP — menu surfaces
 -- The completion menu is styled to match the normal buffer surface so it
 -- doesn't feel like a foreign overlay — bg and fg are pulled directly from
 -- the Normal highlight group, and borders use the same muted tone used
@@ -75,8 +80,6 @@ set_hl(0, "IblScope", { fg = "#6e94b2" }) -- keyword blue
 set_hl(0, "BlinkMenuNormal", { bg = normal.bg, fg = normal.fg })
 set_hl(0, "BlinkCmpMenu", { bg = normal.bg, fg = border_fg })
 set_hl(0, "BlinkCmpMenuBorder", { bg = normal.bg, fg = border_fg })
-
--- Border — muted, consistent with FloatBorder across the rest of the UI
 set_hl(0, "BlinkMenuBorder", { bg = normal.bg, fg = border_fg })
 
 -- Selected item — one step lighter than the surface
@@ -119,4 +122,5 @@ set_hl(0, "BlinkCmpKindEnumMember", { fg = "#f3be7c" }) -- warning amber
 set_hl(0, "BlinkCmpKindSnippet", { fg = "#606079" }) -- comment / dimmed
 set_hl(0, "BlinkCmpKindText", { fg = "#606079" }) -- comment / dimmed
 
-set_hl(0, "NonText", { fg = "bg" })
+-- Hide NonText characters (e.g. listchars) — blends them into the background.
+set_hl(0, "NonText", { fg = normal.bg })

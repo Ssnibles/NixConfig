@@ -19,8 +19,6 @@
 -- THEME
 -- All sections share the same #141415 background so the bar looks like a
 -- single flat surface — exactly how the Waybar window sits on screen.
--- The mode pill uses a subtle fg tint rather than a filled block so it
--- doesn't feel heavier than the rest of the bar.
 -- ============================================================================
 local vague_lualine = {
 	normal = {
@@ -68,10 +66,9 @@ require("lualine").setup({
 		-- Mode: coloured text only, no pill background.
 		lualine_a = { "mode" },
 
-		-- Left group: branch + diff + diagnostics, separated from mode by the
-		-- thin #252530 line colour — mirrors Waybar's border-right dividers.
+		-- Left group: branch + diff + diagnostics.
 		lualine_b = {
-			{ "branch", icon = "", color = { fg = "#878787" } }, -- floatBorder mid-tone
+			{ "branch", icon = "", color = { fg = "#878787" } },
 			{
 				"diff",
 				symbols = { added = " ", modified = " ", removed = " " },
@@ -93,27 +90,25 @@ require("lualine").setup({
 			},
 		},
 
-		-- Centre: relative file path in dimmed text, italic like the Waybar
-		-- window-title module.
+		-- Centre: relative file path in dimmed italic text.
 		lualine_c = {
 			{
 				"filename",
 				path = 1, -- relative path
-				color = { fg = "#606079", gui = "italic" }, -- comment / fg-dim
+				color = { fg = "#606079", gui = "italic" },
 				symbols = { modified = " ●", readonly = " 󰌾", unnamed = "[no name]" },
 			},
 		},
 
-		-- Right group: filetype in mid-tone, progress + location in fg-dim —
-		-- mirrors how Waybar dims secondary status indicators.
+		-- Right group: filetype, progress, location.
 		lualine_x = {
-			{ "filetype", color = { fg = "#878787" } }, -- floatBorder mid-tone
+			{ "filetype", color = { fg = "#878787" } },
 		},
 		lualine_y = {
-			{ "progress", color = { fg = "#606079" } }, -- comment / fg-dim
+			{ "progress", color = { fg = "#606079" } },
 		},
 		lualine_z = {
-			{ "location", color = { fg = "#606079" } }, -- comment / fg-dim
+			{ "location", color = { fg = "#606079" } },
 		},
 	},
 
