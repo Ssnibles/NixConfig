@@ -78,9 +78,6 @@
     bluetui # TUI Bluetooth manager
     blueman # GTK Bluetooth manager (for GUI dialogs)
 
-    # --- Productivity ---
-    super-productivity # To-do / time tracker
-
     # --- Misc ---
     flatpak # For apps not yet in nixpkgs
   ];
