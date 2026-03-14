@@ -4,14 +4,14 @@
 # Run this from the minimal ISO after connecting to WiFi.
 #
 # Usage:
-#   bash install.sh [--disk /dev/sdX] [--swap <GB>]
+#   sudo bash install.sh [--disk /dev/sdX] [--swap <GB>]
 #
 # What it does:
 #   1. Checks you're running from the NixOS ISO
 #   2. Lists disks and asks which one to use
 #   3. Partitions, formats, and mounts (ESP + root + optional swap)
 #   4. Clones your NixOS config from GitHub
-#   5. Generates hardware-configuration.nix for this machine
+#   5. Generates hardware-configuration.nix for this machine (overwrites repo copy)
 #   6. Runs nixos-install
 # =============================================================================
 
@@ -47,7 +47,6 @@ heading "=== NixOS Bootstrap Installer ==="
 
 [[ $EUID -ne 0 ]] && die "Run as root: sudo bash install.sh"
 
-# Check we're on the NixOS live ISO
 [[ -f /etc/nixos/configuration.nix || -d /nix/store ]] \
   || die "This doesn't look like a NixOS live environment."
 
@@ -72,13 +71,11 @@ fi
 success "Network OK"
 
 # =============================================================================
-# DISK SELECTION
+# ARGUMENT PARSING
 # =============================================================================
-heading "[ 2 / 6 ]  Disk"
-
 DISK=""
+SWAP_GB=0
 
-# Allow --disk flag
 while [[ $# -gt 0 ]]; do
   case $1 in
     --disk) DISK="$2"; shift 2 ;;
@@ -86,6 +83,11 @@ while [[ $# -gt 0 ]]; do
     *) shift ;;
   esac
 done
+
+# =============================================================================
+# DISK SELECTION
+# =============================================================================
+heading "[ 2 / 6 ]  Disk"
 
 if [[ -z "$DISK" ]]; then
   echo
@@ -98,18 +100,25 @@ fi
 
 [[ -b "$DISK" ]] || die "Disk '$DISK' not found."
 
-# Work out partition naming (nvme uses p1/p2, sata/virtio uses 1/2)
+# Work out partition naming (nvme/mmcblk use p1/p2, sata/virtio use 1/2)
 if [[ "$DISK" == *"nvme"* || "$DISK" == *"mmcblk"* ]]; then
   PART_ESP="${DISK}p1"
-  PART_ROOT="${DISK}p2"
-  PART_SWAP="${DISK}p3"
+  PART_SWAP="${DISK}p2"
+  PART_ROOT="${DISK}p3"
 else
   PART_ESP="${DISK}1"
-  PART_ROOT="${DISK}2"
-  PART_SWAP="${DISK}3"
+  PART_SWAP="${DISK}2"
+  PART_ROOT="${DISK}3"
 fi
 
-SWAP_GB="${SWAP_GB:-0}"
+# If no swap, root is partition 2
+if [[ "$SWAP_GB" -eq 0 ]]; then
+  if [[ "$DISK" == *"nvme"* || "$DISK" == *"mmcblk"* ]]; then
+    PART_ROOT="${DISK}p2"
+  else
+    PART_ROOT="${DISK}2"
+  fi
+fi
 
 echo
 warn "This will ERASE all data on ${DISK}!"
@@ -121,24 +130,18 @@ read -rp "  Type 'yes' to continue: " CONFIRM
 # =============================================================================
 heading "[ 3 / 6 ]  Partitioning & formatting"
 
-info "Wiping and partitioning $DISK..."
-
-# Wipe existing partition table
+info "Wiping $DISK..."
 wipefs -a "$DISK" &>/dev/null || true
 sgdisk --zap-all "$DISK" &>/dev/null || true
 
 if [[ "$SWAP_GB" -gt 0 ]]; then
-  info "Creating ESP + root + ${SWAP_GB}GB swap..."
+  info "Creating ESP + ${SWAP_GB}GB swap + root..."
   parted -s "$DISK" -- \
     mklabel gpt \
     mkpart ESP fat32 1MB 512MB \
     set 1 esp on \
     mkpart swap linux-swap 512MB "$((512 + SWAP_GB * 1024))MB" \
     mkpart primary ext4 "$((512 + SWAP_GB * 1024))MB" 100%
-  PART_ROOT="${DISK}$([ "$DISK" == *nvme* ] && echo p3 || echo 3)"
-  PART_SWAP="${DISK}$([ "$DISK" == *nvme* ] && echo p2 || echo 2)"
-  PART_ROOT="${DISK}$([ "$DISK" == *"nvme"* ] && echo p3 || echo 3)"
-  PART_SWAP="${DISK}$([ "$DISK" == *"nvme"* ] && echo p2 || echo 2)"
 else
   info "Creating ESP + root (no swap)..."
   parted -s "$DISK" -- \
@@ -148,12 +151,9 @@ else
     mkpart primary ext4 512MB 100%
 fi
 
-# Give the kernel a moment to see the new partitions
-sleep 1
-partprobe "$DISK" 2>/dev/null || true
-sleep 1
+sleep 1; partprobe "$DISK" 2>/dev/null || true; sleep 1
 
-info "Formatting partitions..."
+info "Formatting..."
 mkfs.fat -F 32 -n ESP "$PART_ESP"
 mkfs.ext4 -L nixos "$PART_ROOT" -F
 
@@ -165,10 +165,7 @@ info "Mounting..."
 mount "$PART_ROOT" "$MOUNT"
 mkdir -p "$MOUNT/boot"
 mount "$PART_ESP" "$MOUNT/boot"
-
-if [[ "$SWAP_GB" -gt 0 ]]; then
-  swapon "$PART_SWAP"
-fi
+[[ "$SWAP_GB" -gt 0 ]] && swapon "$PART_SWAP"
 
 success "Disk ready"
 
@@ -191,20 +188,21 @@ heading "[ 5 / 6 ]  Cloning NixOS config"
 TARGET="$MOUNT/etc/nixos"
 
 if [[ -d "$TARGET/.git" ]]; then
-  warn "Config already cloned at $TARGET — pulling latest..."
+  warn "Config already cloned — pulling latest..."
   git -C "$TARGET" pull
 else
   info "Cloning $REPO_URL → $TARGET"
   git clone "$REPO_URL" "$TARGET"
 fi
 
-# Generate hardware config for this machine and drop it into the cloned repo.
-# hardware-configuration.nix is in .gitignore so this file stays local.
+# Overwrite the repo's hardware-configuration.nix with one generated for
+# this specific machine. The repo copy is just a placeholder that keeps
+# home-manager and configuration.nix happy — it always gets replaced here.
 info "Generating hardware-configuration.nix for this machine..."
 nixos-generate-config --root "$MOUNT" --show-hardware-config \
   > "$TARGET/hardware-configuration.nix"
 
-success "Config ready"
+success "Config ready  (hardware-configuration.nix written for this machine)"
 
 # =============================================================================
 # INSTALL
@@ -212,7 +210,7 @@ success "Config ready"
 heading "[ 6 / 6 ]  Installing NixOS"
 
 info "Running nixos-install --flake ${TARGET}#${FLAKE_HOST}"
-info "This will take a while on first install (downloading packages)..."
+info "This will take a while on first install..."
 echo
 
 nixos-install --flake "${TARGET}#${FLAKE_HOST}" --no-root-passwd
@@ -227,5 +225,5 @@ echo "  Next steps:"
 echo "    1. Set a root password:   nixos-enter --root $MOUNT -- passwd"
 echo "    2. Reboot:                reboot"
 echo "    3. Clone your config:     git clone $REPO_URL ~/NixConfig"
-echo "    4. Future rebuilds:       rebuild  (fish abbreviation)"
+echo "    4. Future rebuilds:       rebuild  (your fish abbreviation)"
 echo
