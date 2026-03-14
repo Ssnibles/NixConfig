@@ -1,5 +1,8 @@
-{ config, pkgs, ... }: {
-  imports = [ ./hardware-configuration.nix ];
+{ config, pkgs, lib, ... }: {
+  imports = [
+    ./hardware-configuration.nix
+    ./modules/host-profile.nix
+  ];
 
   # ===========================================================================
   # NIX SETTINGS
@@ -26,6 +29,7 @@
 
   # Disable USB autosuspend globally — fixes input devices randomly dropping
   # on the X570 chipset's PCIe-connected USB controller.
+  # On desktops this is always applied; on laptops TLP also enforces it below.
   boot.kernelParams = [ "usbcore.autosuspend=-1" ];
 
   # NZ Wi-Fi regulatory domain — survives sleep/resume (unlike localCommands).
@@ -48,8 +52,9 @@
     # daemon internally; two instances fight over the interface.
     wifi.backend = "iwd";
 
-    # Disable Wi-Fi power saving — negligible savings, causes latency spikes.
-    wifi.powersave = false;
+    # Disable Wi-Fi power saving on desktops unconditionally.
+    # On laptops, TLP manages this per AC/battery state instead.
+    wifi.powersave = config.hostProfile.isLaptop;
 
     dns = "systemd-resolved";
   };
@@ -78,9 +83,14 @@
   # power-profiles-daemon conflicts with TLP.
   services.power-profiles-daemon.enable = false;
 
-  services.tlp = {
+  # ---------------------------------------------------------------------------
+  # LAPTOP-ONLY: TLP battery / power management
+  # TLP is a laptop tool and doesn't make sense on a desktop.
+  # ---------------------------------------------------------------------------
+  services.tlp = lib.mkIf config.hostProfile.isLaptop {
     enable = true;
     settings = {
+      # Prefer performance when plugged in, save power on battery.
       CPU_BOOST_ON_AC = 1;
       CPU_BOOST_ON_BAT = 0;
       CPU_SCALING_GOVERNOR_ON_AC = "performance";
@@ -89,9 +99,10 @@
       # Stop charging at 85% to extend battery lifespan.
       STOP_CHARGE_THRESH_BAT0 = 85;
 
-      # Belt-and-suspenders: TLP can override NM's powersave = false.
+      # Belt-and-suspenders: TLP can override NM's powersave setting.
+      # Keep Wi-Fi power saving off on AC; allow it on battery.
       WIFI_PWR_ON_AC = "off";
-      WIFI_PWR_ON_BAT = "off";
+      WIFI_PWR_ON_BAT = "on";
 
       # Don't let TLP touch Bluetooth power — let the BT stack manage itself.
       DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE = "";
@@ -102,7 +113,15 @@
     };
   };
 
-  powerManagement.powertop.enable = true;
+  # ---------------------------------------------------------------------------
+  # DESKTOP-ONLY: always keep the CPU in performance mode.
+  # On laptops this is handled per-state by TLP above.
+  # ---------------------------------------------------------------------------
+  powerManagement.cpuFreqGovernor = lib.mkIf config.hostProfile.isDesktop "performance";
+
+  # powertop auto-tune is useful for laptops; on desktops it can interfere
+  # with peripherals and isn't worth the tradeoff.
+  powerManagement.powertop.enable = config.hostProfile.isLaptop;
 
   # Prevent udev from marking USB HID devices (keyboards, mice) as
   # candidates for autosuspend regardless of other power management settings.
@@ -119,8 +138,11 @@
 
   programs.hyprland.enable = true;
 
-  # Lid behaviour: suspend on close, ignore when on AC.
-  services.logind.settings = {
+  # ---------------------------------------------------------------------------
+  # LAPTOP-ONLY: lid switch behaviour.
+  # A desktop has no lid; applying these on a desktop is harmless but noisy.
+  # ---------------------------------------------------------------------------
+  services.logind.settings = lib.mkIf config.hostProfile.isLaptop {
     Login = {
       HandleLidSwitch = "suspend";
       HandleLidSwitchExternalPower = "ignore";
