@@ -37,15 +37,33 @@
       # here (pure /sys reads, available during nixos-rebuild) and pass the
       # results into both NixOS and home-manager via specialArgs /
       # extraSpecialArgs so every module shares one set of values without
-      # duplication. The host-profile.nix NixOS module still defines the options
+      # duplication. The host-profile.nix NixOS module still declares the options
       # (allowing manual overrides in configuration.nix), but its defaults also
       # come from these same checks so everything stays consistent.
+      #
+      # Edge-cases handled:
+      #   • VMs / containers — /sys/class/power_supply may exist but be empty,
+      #     or the whole /sys tree may be absent. Both are handled gracefully:
+      #     hasBat returns false when the path is missing, and isLaptop stays
+      #     false, giving you desktop behaviour (which is the safer default for
+      #     a headless VM).
+      #   • Desktops with a UPS — a UPS typically exposes itself under
+      #     /sys/class/power_supply/ACAD or similar, NOT as BAT0/BAT1, so the
+      #     battery check won't misfire. If it does on your hardware, override
+      #     hostProfile.isLaptop = false in configuration.nix.
       # -------------------------------------------------------------------------
       hasBat = name: builtins.pathExists "/sys/class/power_supply/${name}/capacity";
       isLaptop = hasBat "BAT0" || hasBat "BAT1";
       isDesktop = !isLaptop;
 
+      # Detect whether we're running inside a VM or container by checking
+      # whether the PCI bus is present at all. Bare-metal machines always have
+      # it; most hypervisors either omit it or emulate a very small device tree.
+      # This flag lets modules skip hardware-specific tuning that would be
+      # meaningless (or harmful) inside a VM.
       pciBase = "/sys/bus/pci/devices";
+      isVM = !(builtins.pathExists pciBase);
+
       pciDevices =
         if builtins.pathExists pciBase
         then builtins.attrNames (builtins.readDir pciBase)
@@ -59,7 +77,7 @@
         pciDevices;
 
       # Collected into a single attrset so both specialArgs blocks stay tidy.
-      hostProfile = { inherit isLaptop isDesktop hasNvidia; };
+      hostProfile = { inherit isLaptop isDesktop hasNvidia isVM; };
     in
     {
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
@@ -95,3 +113,4 @@
       };
     };
 }
+

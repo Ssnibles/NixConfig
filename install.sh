@@ -35,6 +35,10 @@ DRY_RUN=false
 # CLEANUP TRAP
 # If anything fails mid-install, unmount cleanly so the disk isn't left in a
 # partial state that makes re-running the script awkward.
+#
+# PART_SWAP may be unset if the user chose no swap (SWAP_GB=0) or if the
+# script failed before argument parsing completed. The ${VAR:-} expansion
+# substitutes an empty string in that case so `swapoff ""` is never called.
 # =============================================================================
 cleanup() {
   local exit_code=$?
@@ -42,7 +46,7 @@ cleanup() {
     echo
     warn "Install failed (exit $exit_code) — cleaning up mounts..."
     # Unmount in reverse order; ignore errors (partitions may not be mounted yet)
-    swapoff "$PART_SWAP" 2>/dev/null || true
+    [[ -n "${PART_SWAP:-}" ]] && swapoff "${PART_SWAP}" 2>/dev/null || true
     umount "$MOUNT/boot"  2>/dev/null || true
     umount "$MOUNT"       2>/dev/null || true
     echo -e "${RED}  ✗ Aborted. Disk has been unmounted.${NC}"
@@ -63,6 +67,7 @@ heading "NixOS Bootstrap Installer"
 # =============================================================================
 DISK=""
 SWAP_GB=""  # empty = not yet decided
+PART_SWAP="" # declared early so the cleanup trap can always reference it safely
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -147,7 +152,7 @@ if [[ "$SWAP_GB" -gt 0 ]]; then
 else
   PART_ESP="${PART_PREFIX}1"
   PART_ROOT="${PART_PREFIX}2"
-  PART_SWAP=""
+  # PART_SWAP intentionally left empty — no swap partition requested.
 fi
 
 # Summary before the point of no return
@@ -177,7 +182,7 @@ if [[ "$DRY_RUN" == true ]]; then
   info "Dry-run: would partition, format, and mount ${DISK}."
 else
   info "Wiping $DISK..."
-  wipefs -a "$DISK"       &>/dev/null || true
+  wipefs -a "$DISK"        &>/dev/null || true
   sgdisk --zap-all "$DISK" &>/dev/null || true
 
   if [[ "$SWAP_GB" -gt 0 ]]; then
@@ -198,10 +203,10 @@ else
   fi
 
   # Wait for the kernel to register the new partitions before formatting.
-  # udevadm settle is more reliable than a bare sleep.
+  # udevadm settle blocks until the kernel has processed all pending uevents,
+  # which is the correct signal to wait for — no extra sleep needed.
   partprobe "$DISK" 2>/dev/null || true
   udevadm settle
-  sleep 1
 
   info "Formatting..."
   mkfs.fat -F 32 -n ESP "$PART_ESP"
@@ -372,3 +377,4 @@ fi
 echo -e "${GREEN}${BOLD}  Rebooting in 5 seconds...${NC}  (Ctrl-C to cancel)"
 sleep 5
 reboot
+

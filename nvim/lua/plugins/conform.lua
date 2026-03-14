@@ -15,7 +15,9 @@ conform.setup({
 		json = { "prettier" },
 		yaml = { "prettier" },
 		markdown = { "prettier" },
-		nix = { "nixpkgs_fmt" },
+		-- nixfmt is the RFC-style formatter adopted by nixpkgs upstream.
+		-- The conform formatter name is "nixfmt" (binary: nixfmt).
+		nix = { "nixfmt" },
 	},
 
 	-- Automatically format on save. lsp_fallback tries the LSP formatter if no

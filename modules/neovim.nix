@@ -22,7 +22,9 @@
       lua-language-server
 
       # Formatters (used by conform.nvim)
-      nixpkgs-fmt # nix
+      # nixfmt-rfc-style is the community-standard Nix formatter (replaces
+      # the older nixpkgs-fmt). It is what nixpkgs itself uses upstream.
+      nixfmt-rfc-style # nix
       stylua # lua
       black # python
       prettier # js/ts/json/yaml/etc.
@@ -99,3 +101,4 @@
     recursive = true;
   };
 }
+

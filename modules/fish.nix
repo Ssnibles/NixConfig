@@ -13,12 +13,20 @@
     shellAbbrs = {
       v = "nvim";
 
-      # Stage everything, then rebuild. `git add .` ensures new untracked
-      # files in the flake directory are picked up before nixos-rebuild runs.
-      rebuild = "git -C ~/NixConfig/ add . && sudo nixos-rebuild switch --flake ~/NixConfig/#nixos";
+      # rebuild: stages all tracked modifications (but NOT new untracked files)
+      # before rebuilding. This avoids the footgun of `git add .` silently
+      # staging files you didn't intend to commit.
+      #
+      # If you have new files you want to include in the flake, stage them
+      # manually first with `git add <file>`, then run `rebuild`.
+      #
+      # The `git add -u` flag updates the index for files already tracked by
+      # git (modifications + deletions), which is enough for nixos-rebuild to
+      # see your changes without risk of committing stray files.
+      rebuild = "git -C ~/NixConfig/ add -u && sudo nixos-rebuild switch --flake ~/NixConfig/#nixos";
 
-      # Always run update from the NixConfig directory so the flake path is
-      # explicit and predictable regardless of where you happen to be.
+      # update: refresh all flake inputs then rebuild. Always runs from
+      # ~/NixConfig so the flake path is explicit and predictable.
       update = "cd ~/NixConfig && nix flake update && sudo nixos-rebuild switch --flake .";
 
       get-class = "hyprctl clients | grep -A5 'class:'";
@@ -55,8 +63,8 @@
 
   # ===========================================================================
   # TERMINAL EMULATORS
-  # foot is a lightweight Wayland-native terminal (good fallback).
-  # ghostty is the primary terminal.
+  # ghostty is the primary terminal; foot is a lightweight Wayland-native
+  # fallback (also used as the default terminal in hyprland.nix keybinds).
   # Both are themed with the full vague.nvim 16-colour ANSI palette so that
   # terminal applications (ls, diff, bat, etc.) look consistent with Neovim.
   #
@@ -126,7 +134,7 @@
     clipboard-read  = allow
     clipboard-write = allow
 
-    # ── vague.nvim colour palette ──────────────────────────────
+    # ── vague.nvim colour palette ──────────────────────────────────────
     background = 141415
     foreground = cdcdcd
     cursor-color = 6e94b2
@@ -154,3 +162,4 @@
     palette = 15=#cdcdcd
   '';
 }
+

@@ -12,6 +12,15 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
 
+  # Automatic garbage collection — removes store paths unreachable from any
+  # GC root, keeping disk usage in check without manual `nix-collect-garbage`.
+  # Runs weekly; keeps the last 7 days of generations as a safety net.
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
+
   # Never change this after the initial install.
   system.stateVersion = "25.05";
 
@@ -31,7 +40,8 @@
   # Disable USB autosuspend globally — fixes input devices randomly dropping
   # on the X570 chipset's PCIe-connected USB controller.
   # On desktops this is always applied; on laptops TLP also enforces it below.
-  boot.kernelParams = [ "usbcore.autosuspend=-1" ];
+  # Skipped in VMs where there are no physical USB controllers to worry about.
+  boot.kernelParams = lib.mkIf (!config.hostProfile.isVM) [ "usbcore.autosuspend=-1" ];
 
   # NZ Wi-Fi regulatory domain — survives sleep/resume (unlike localCommands).
   boot.extraModprobeConfig = ''
@@ -86,9 +96,9 @@
 
   # ---------------------------------------------------------------------------
   # LAPTOP-ONLY: TLP battery / power management
-  # TLP is a laptop tool and doesn't make sense on a desktop.
+  # TLP is a laptop tool and doesn't make sense on a desktop or VM.
   # ---------------------------------------------------------------------------
-  services.tlp = lib.mkIf config.hostProfile.isLaptop {
+  services.tlp = lib.mkIf (config.hostProfile.isLaptop && !config.hostProfile.isVM) {
     enable = true;
     settings = {
       # Prefer performance when plugged in, save power on battery.
@@ -117,13 +127,15 @@
   # ---------------------------------------------------------------------------
   # DESKTOP-ONLY: always keep the CPU in performance mode.
   # On laptops this is handled per-state by TLP above.
+  # Skipped in VMs — the hypervisor controls scheduling, not the guest.
   # ---------------------------------------------------------------------------
   powerManagement.cpuFreqGovernor =
-    lib.mkIf config.hostProfile.isDesktop "performance";
+    lib.mkIf (config.hostProfile.isDesktop && !config.hostProfile.isVM) "performance";
 
-  # powertop auto-tune is useful for laptops; on desktops it can interfere
-  # with peripherals and isn't worth the tradeoff.
-  powerManagement.powertop.enable = config.hostProfile.isLaptop;
+  # powertop auto-tune is useful for laptops; on desktops or VMs it can
+  # interfere with peripherals and isn't worth the tradeoff.
+  powerManagement.powertop.enable =
+    config.hostProfile.isLaptop && !config.hostProfile.isVM;
 
   # zram swap: a small compressed swap in RAM. Near-zero cost on a desktop,
   # useful insurance against OOM kills when running memory-heavy workloads.
@@ -131,6 +143,7 @@
 
   # Prevent udev from marking USB HID devices (keyboards, mice) as
   # candidates for autosuspend regardless of other power management settings.
+  # No-op in VMs but harmless to leave in.
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/control}="on"
   '';
@@ -225,3 +238,4 @@
   time.timeZone = "Pacific/Auckland";
   i18n.defaultLocale = "en_NZ.UTF-8";
 }
+
