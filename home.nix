@@ -2,13 +2,15 @@
 # It contains { isLaptop, isDesktop, hasNvidia, isVM } — the same values used
 # by the NixOS modules — so laptop/desktop branching works without needing to
 # touch the NixOS config from within home-manager's module system.
-{ pkgs, hostProfile, ... }:
-
+{
+  pkgs,
+  hostProfile,
+  inputs,
+  ...
+}:
 {
   home.username = "josh";
   home.homeDirectory = "/home/josh";
-
-  # Same rule as system.stateVersion — set once, never touch again.
   home.stateVersion = "25.05";
 
   # ===========================================================================
@@ -22,6 +24,7 @@
     ./modules/other.nix
     ./modules/waybar.nix
     ./modules/swaync.nix
+    inputs.agenix.homeManagerModules.default
   ];
 
   # ===========================================================================
@@ -41,11 +44,9 @@
   home.packages =
     with pkgs;
     [
-
       # -------------------------------------------------------------------------
       # SHARED — installed on both laptop and desktop
       # -------------------------------------------------------------------------
-
       # --- Languages & Dev Tools ---
       kotlin
       jdk21
@@ -68,17 +69,17 @@
       nerd-fonts.jetbrains-mono
 
       # --- GUI Apps ---
-      ghostty # primary terminal
-      foot # fallback terminal (used in hyprland.nix default keybind)
+      ghostty
+      foot
       mission-center
       firefox
       zen-browser
-      # PDF viewers: sioyek is the primary (keyboard-driven, great for papers).
-      # zathura is a lighter fallback. okular removed to reduce redundancy.
+
+      # --- PDF viewers ---
       sioyek
       zathura
-      # Notes: trilium-desktop chosen as the single note app (hierarchical,
-      # self-hostable). vnote removed to reduce redundancy.
+
+      # --- Notes ---
       trilium-desktop
 
       # --- Media ---
@@ -93,41 +94,34 @@
       impala
       bluetui
       blueman
-
     ]
-
     # -------------------------------------------------------------------------
     # DESKTOP-ONLY packages
     # -------------------------------------------------------------------------
     ++ pkgs.lib.optionals hostProfile.isDesktop [
-
       # --- Gaming ---
       steam
-      # modrinth-app
-      heroic # GOG / Epic launcher
-      lutris # Wine-based game manager
-      mangohud # In-game overlay (FPS, GPU temp, etc.)
-      gamemode # CPU/GPU optimisation daemon for games
-      protonup-qt # Manage Proton-GE versions for Steam
+      modrinth-app
+      heroic
+      lutris
+      mangohud
+      gamemode
+      protonup-qt
 
       # --- Desktop utilities ---
-      virt-manager # VM management GUI (less common on a laptop)
-
+      virt-manager
     ]
-
     # -------------------------------------------------------------------------
     # LAPTOP-ONLY packages
     # -------------------------------------------------------------------------
     ++ pkgs.lib.optionals hostProfile.isLaptop [
-
       # --- Power & battery ---
-      powertop # Interactive power analysis
-      acpi # Battery / AC status from the terminal
+      powertop
+      acpi
 
       # --- Display ---
-      brightnessctl # Already in hyprland keybinds; ensure it's in the profile
-      wlsunset # Blue-light filter (less useful on a desktop)
-
+      brightnessctl
+      wlsunset
     ];
 
   # Make fish available to programs that read $SHELL.
