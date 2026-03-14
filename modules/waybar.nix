@@ -1,4 +1,5 @@
-{ ... }: {
+{ ... }:
+{
   programs.waybar = {
     enable = true;
     settings.main = {
@@ -10,9 +11,18 @@
       height = 32;
       spacing = 0;
 
-      modules-left = [ "hyprland/workspaces" "hyprland/window" ];
+      modules-left = [
+        "hyprland/workspaces"
+        "hyprland/window"
+      ];
       modules-center = [ "clock" ];
-      modules-right = [ "mpris" "pulseaudio" "bluetooth" "network" "battery" ];
+      modules-right = [
+        "mpris"
+        "pulseaudio"
+        "bluetooth"
+        "network"
+        "battery"
+      ];
 
       "hyprland/workspaces" = {
         format = "{name}";
@@ -42,13 +52,19 @@
       "mpris" = {
         format = "{dynamic}";
         dynamic-len = 28;
-        dynamic-order = [ "title" "artist" ];
+        dynamic-order = [
+          "title"
+          "artist"
+        ];
         player-icons = {
           default = "";
           spotify = "";
           "spotify-player" = "";
         };
-        status-icons = { paused = ""; playing = ""; };
+        status-icons = {
+          paused = "";
+          playing = "";
+        };
         on-click = "playerctl play-pause";
         on-scroll-up = "playerctl next";
         on-scroll-down = "playerctl previous";
@@ -60,7 +76,11 @@
         format-icons = {
           headphone = "󰋋";
           headset = "󰋎";
-          default = [ "󰕿" "󰖀" "󰕾" ];
+          default = [
+            "󰕿"
+            "󰖀"
+            "󰕾"
+          ];
         };
         on-click = "pavucontrol";
         scroll-step = 2;
@@ -84,9 +104,23 @@
       };
 
       "battery" = {
-        states = { warning = 30; critical = 15; };
+        states = {
+          warning = 30;
+          critical = 15;
+        };
         format = "{icon} {capacity}%";
-        format-icons = [ "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ];
+        format-icons = [
+          "󰁺"
+          "󰁻"
+          "󰁼"
+          "󰁽"
+          "󰁾"
+          "󰁿"
+          "󰂀"
+          "󰂁"
+          "󰂂"
+          "󰁹"
+        ];
         format-charging = "󰂄 {capacity}%";
         format-plugged = "󰚥 {capacity}%";
         tooltip-format = "{timeTo}";
