@@ -20,12 +20,24 @@
     };
 
     awww.url = "git+https://codeberg.org/LGFae/awww.git";
+
+    # agenix for secret management
+    agenix.url = "github:ryantm/agenix";
   };
 
   # ===========================================================================
   # OUTPUTS
   # ===========================================================================
-  outputs = { self, nixpkgs, home-manager, zen-browser, awww, ... }@inputs:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      zen-browser,
+      awww,
+      agenix,
+      ...
+    }@inputs:
     let
       system = "x86_64-linux";
 
@@ -34,58 +46,49 @@
       #
       # home-manager runs in its own module system and cannot see NixOS
       # config.hostProfile. Instead we run the same builtins.pathExists checks
-      # here (pure /sys reads, available during nixos-rebuild) and pass the
-      # results into both NixOS and home-manager via specialArgs /
-      # extraSpecialArgs so every module shares one set of values without
-      # duplication. The host-profile.nix NixOS module still declares the options
-      # (allowing manual overrides in configuration.nix), but its defaults also
-      # come from these same checks so everything stays consistent.
-      #
-      # Edge-cases handled:
-      #   • VMs / containers — /sys/class/power_supply may exist but be empty,
-      #     or the whole /sys tree may be absent. Both are handled gracefully:
-      #     hasBat returns false when the path is missing, and isLaptop stays
-      #     false, giving you desktop behaviour (which is the safer default for
-      #     a headless VM).
-      #   • Desktops with a UPS — a UPS typically exposes itself under
-      #     /sys/class/power_supply/ACAD or similar, NOT as BAT0/BAT1, so the
-      #     battery check won't misfire. If it does on your hardware, override
-      #     hostProfile.isLaptop = false in configuration.nix.
+      # here and pass the results into both NixOS and home-manager via
+      # specialArgs / extraSpecialArgs so every module shares one set of values.
       # -------------------------------------------------------------------------
       hasBat = name: builtins.pathExists "/sys/class/power_supply/${name}/capacity";
       isLaptop = hasBat "BAT0" || hasBat "BAT1";
       isDesktop = !isLaptop;
 
       # Detect whether we're running inside a VM or container by checking
-      # whether the PCI bus is present at all. Bare-metal machines always have
-      # it; most hypervisors either omit it or emulate a very small device tree.
-      # This flag lets modules skip hardware-specific tuning that would be
-      # meaningless (or harmful) inside a VM.
+      # whether the PCI bus is present at all.
       pciBase = "/sys/bus/pci/devices";
       isVM = !(builtins.pathExists pciBase);
 
       pciDevices =
-        if builtins.pathExists pciBase
-        then builtins.attrNames (builtins.readDir pciBase)
-        else [ ];
-      readVendor = dev:
-        let r = builtins.tryEval (builtins.readFile "${pciBase}/${dev}/vendor");
-        in if r.success then r.value else "";
-      hasNvidia = builtins.any
-        (dev: nixpkgs.lib.hasPrefix "0x10de"
-          (nixpkgs.lib.trim (readVendor dev)))
-        pciDevices;
+        if builtins.pathExists pciBase then builtins.attrNames (builtins.readDir pciBase) else [ ];
+
+      readVendor =
+        dev:
+        let
+          r = builtins.tryEval (builtins.readFile "${pciBase}/${dev}/vendor");
+        in
+        if r.success then r.value else "";
+
+      hasNvidia = builtins.any (
+        dev: nixpkgs.lib.hasPrefix "0x10de" (nixpkgs.lib.trim (readVendor dev))
+      ) pciDevices;
 
       # Collected into a single attrset so both specialArgs blocks stay tidy.
-      hostProfile = { inherit isLaptop isDesktop hasNvidia isVM; };
+      hostProfile = {
+        inherit
+          isLaptop
+          isDesktop
+          hasNvidia
+          isVM
+          ;
+      };
     in
     {
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs hostProfile; };
-
         modules = [
           ./configuration.nix
+          agenix.nixosModules.default
 
           # Expose flake inputs as packages via overlays.
           {
@@ -102,15 +105,10 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-
-            # Pass the same hostProfile values into home.nix so it can branch
-            # on laptop/desktop without re-detecting or touching NixOS config.
             home-manager.extraSpecialArgs = { inherit inputs hostProfile; };
-
             home-manager.users.josh = import ./home.nix;
           }
         ];
       };
     };
 }
-
