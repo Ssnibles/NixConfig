@@ -21,8 +21,12 @@
   # Latest kernel for better hardware support.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  # Firmware blobs required by most laptops (Wi-Fi, Bluetooth, etc.)
+  # Firmware blobs required by most hardware (Wi-Fi, Bluetooth, GPU, etc.)
   hardware.enableRedistributableFirmware = true;
+
+  # Disable USB autosuspend globally — fixes input devices randomly dropping
+  # on the X570 chipset's PCIe-connected USB controller.
+  boot.kernelParams = [ "usbcore.autosuspend=-1" ];
 
   # NZ Wi-Fi regulatory domain — survives sleep/resume (unlike localCommands).
   boot.extraModprobeConfig = ''
@@ -48,7 +52,6 @@
     wifi.powersave = false;
 
     dns = "systemd-resolved";
-
   };
 
   services.resolved = {
@@ -57,24 +60,15 @@
     settings.Resolve.FallbackDNS = [ "1.1.1.1" "8.8.8.8" ];
   };
 
-  #   environment.etc."iwd/main.conf".text = ''
-  #   [Scan]
-  #   DisablePeriodScan=true
-  #
-  #   [General]
-  #   RoamingThreshhold=70
-  # '';
-
   # ===========================================================================
   # BLUETOOTH
   # ===========================================================================
 
   hardware.bluetooth = {
     enable = true;
-    powerOnBoot = true; # Adapter comes up automatically after boot/resume
+    powerOnBoot = true;
   };
 
-  # blueman-applet and blueman-manager need this service running.
   services.blueman.enable = true;
 
   # ===========================================================================
@@ -101,10 +95,20 @@
 
       # Don't let TLP touch Bluetooth power — let the BT stack manage itself.
       DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE = "";
+
+      # Disable USB autosuspend via TLP as well — belt-and-suspenders alongside
+      # the usbcore.autosuspend=-1 kernel param above.
+      USB_AUTOSUSPEND = 0;
     };
   };
 
   powerManagement.powertop.enable = true;
+
+  # Prevent udev from marking USB HID devices (keyboards, mice) as
+  # candidates for autosuspend regardless of other power management settings.
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/control}="on"
+  '';
 
   # ===========================================================================
   # DISPLAY & DESKTOP
@@ -129,8 +133,8 @@
 
   services.pipewire = {
     enable = true;
-    alsa.enable = true; # ALSA compatibility
-    pulse.enable = true; # PulseAudio compatibility (most apps expect this)
+    alsa.enable = true;
+    pulse.enable = true;
     wireplumber.enable = true;
   };
 
@@ -139,7 +143,7 @@
   # ===========================================================================
 
   services.keyd = {
-    enable = false;
+    enable = true;
     keyboards.default = {
       ids = [ "*" ];
       settings = {
@@ -162,7 +166,7 @@
       "networkmanager"
       "wheel"
       "video"
-      "input"
+      "input" # required for Wayland/Hyprland input device access
       "adbusers"
     ];
   };
@@ -174,8 +178,8 @@
   # ===========================================================================
 
   environment.systemPackages = with pkgs; [
-    git # Needed early for flake operations
-    vim # Emergency editor if neovim breaks
+    git # needed early for flake operations
+    vim # emergency editor if neovim breaks
     networkmanagerapplet
     iw # Wi-Fi debugging: `iw dev`, `iw reg get`, etc.
   ];
