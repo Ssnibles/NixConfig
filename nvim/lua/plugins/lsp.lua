@@ -12,7 +12,6 @@
 --   2. Add its config to server_configs (cmd, settings, etc.)
 --   3. Add the server binary to extraPackages in neovim.nix
 -- ============================================================================
-
 local lsp = vim.lsp
 local caps = require("plugins.blink").capabilities()
 
@@ -48,18 +47,16 @@ local ft_to_server = {
 -- Per-server settings. cmd must match the binary name on $PATH.
 -- ============================================================================
 local server_configs = {
-
 	nixd = {
 		cmd = { "nixd" },
 		settings = {
 			nixd = {
 				nixpkgs = { expr = "import <nixpkgs> {}" },
 				-- Point nixd at your flake so it understands your custom options/modules.
-				flake = { flakePath = "/home/josh/NixConfig/flake.nix" },
+				flake = { flakePath = vim.env.HOME .. "/NixConfig/flake.nix" },
 			},
 		},
 	},
-
 	lua_ls = {
 		cmd = { "lua-language-server" },
 		settings = {
@@ -69,9 +66,7 @@ local server_configs = {
 			},
 		},
 	},
-
 	kotlin_language_server = { cmd = { "kotlin-language-server" } },
-
 	jdtls = { cmd = { "jdtls" } },
 }
 
@@ -104,9 +99,6 @@ vim.api.nvim_create_autocmd("FileType", {
 -- FLOAT BORDERS
 -- Override the default hover and signature-help handlers so they always use
 -- rounded borders, matching the rest of the UI (which-key, diagnostics, etc.).
--- This is a safety net for servers that bypass noice via direct vim.lsp.buf
--- calls — noice overrides the same handlers but only for its markdown engine.
 -- ============================================================================
 lsp.handlers["textDocument/hover"] = lsp.with(lsp.handlers.hover, { border = "rounded" })
-
 lsp.handlers["textDocument/signatureHelp"] = lsp.with(lsp.handlers.signature_help, { border = "rounded" })

@@ -103,7 +103,7 @@
 
       # --- Gaming ---
       steam
-      modrinth-app
+      # modrinth-app
       heroic # GOG / Epic launcher
       lutris # Wine-based game manager
       mangohud # In-game overlay (FPS, GPU temp, etc.)
