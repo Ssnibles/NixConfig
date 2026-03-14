@@ -46,72 +46,71 @@
       # -----------------------------------------------------------------------
       windowrule = [
         #------------------------#
+        # Global: suppress maximize/fullscreen requests from apps
+        # This is CRITICAL - without it, apps can override your float sizes
+        #------------------------#
+        # "match:float true, suppress_event maximize"
+        # "match:float true, suppress_event fullscreen"
+        # "match:float true, fullscreen off"
+
+        #------------------------#
         # Monitor Assignment
         #------------------------#
-        "match:class ^(gamescope)$, monitor DP-1"
+        # "match:class ^(gamescope)$, monitor DP-1"
 
         #------------------------#
         # Tiling (terminals)
         #------------------------#
-        "match:class ^(kitty|alacritty|foot)$, tile on"
+        # "match:class ^(kitty|alacritty|foot)$, tile on"
 
         #------------------------#
-        # Floating - catch-all default (explicit rules below override)
+        # Floating catch-all
+        # Applies to any window that opens floating (not toggled post-creation)
         #------------------------#
-        "match:float true, size (monitor_w*0.65) (monitor_h*0.6)"
-        "match:float true, center on"
+        "match:float 0, size 60% 60%"
+        "match:float 0, center on"
 
-        #------------------------#
-        # Floating Windows - explicit overrides
         #------------------------#
         # Picture-in-Picture
-        "match:title ^Picture-in-Picture$, float on"
-        "match:title ^Picture-in-Picture$, size 960 540"
-        "match:title ^Picture-in-Picture$, center on"
-        "match:title ^Picture-in-Picture$, pin on"
+        #------------------------#
+        # "match:title ^Picture-in-Picture$, float on, pin on, size 960 540, center on"
 
+        #------------------------#
         # Media players
-        "match:class ^(imv|mpv)$, float on"
-        "match:class ^(imv|mpv)$, size (monitor_w*0.65) (monitor_h*0.6)"
-        "match:class ^(imv|mpv)$, center on"
+        #------------------------#
+        # "match:class ^(imv|mpv)$, float on, size 60% 60%, center on"
 
+        #------------------------#
         # Utilities, file manager, system dialogs
-        "match:class ^(danmufloat|termfloat|ncmpcpp|nemo|pavucontrol|.blueman-manager-wrapped)$, float on"
-        "match:class ^(danmufloat|termfloat|ncmpcpp|nemo|pavucontrol|.blueman-manager-wrapped)$, size (monitor_w*0.3) (monitor_h*0.3)"
-        "match:class ^(danmufloat|termfloat|ncmpcpp|nemo|pavucontrol|.blueman-manager-wrapped)$, center on"
+        #------------------------#
+        # "match:class ^(danmufloat|termfloat|ncmpcpp|nemo|pavucontrol|.blueman-manager-wrapped)$, float on, size 30% 30%, center on"
 
+        #------------------------#
         # Desktop portal / auth / welcome dialogs
-        "match:class ^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|xdg-desktop-portal-hyprland|org.kde.polkit-kde-authentication-agent-1|zenity)$, float on"
-        "match:class ^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|xdg-desktop-portal-hyprland|org.kde.polkit-kde-authentication-agent-1|zenity)$, size (monitor_h*0.3) (monitor_w*0.3)"
-        "match:class ^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|xdg-desktop-portal-hyprland|org.kde.polkit-kde-authentication-agent-1|zenity)$, center on"
+        #------------------------#
+        # "match:class ^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|xdg-desktop-portal-hyprland|org.kde.polkit-kde-authentication-agent-1|zenity)$, float on, size 30% 30%, center on"
 
+        #------------------------#
         # Brave file dialogs
-        "match:class ^brave$, match:title ^(Save File|Open File)$, float on"
-        "match:class ^brave$, match:title ^(Save File|Open File)$, size (monitor_w*0.6) (monitor_h*0.65)"
-        "match:class ^brave$, match:title ^(Save File|Open File)$, center on"
+        #------------------------#
+        # "match:class ^brave$, match:title ^(Save File|Open File)$, float on, size 60% 65%, center on"
 
+        #------------------------#
         # Steam updater
-        "match:title ^Steam - Self Updater$, float on"
-        "match:title ^Steam - Self Updater$, size (monitor_h*0.4) (monitor_w*0.3)"
-        "match:title ^Steam - Self Updater$, center on"
+        #------------------------#
+        # "match:title ^Steam - Self Updater$, float on, size 40% 30%, center on"
 
         #------------------------#
-        # Floating border
+        # Floating border (dynamic — re-evaluates when float state changes)
         #------------------------#
-        "match:float true, border_size 2"
+        # "match:float true, border_size 2"
 
         #------------------------#
         # Opacity
         #------------------------#
-        "match:title ^(Telegram|QQ|NetEase Cloud Music Gtk4)$, opacity 0.95 0.95"
-        "match:class ^alacritty$, opacity 0.85 0.85"
-        "match:title ^Picture-in-Picture$, opacity 1.0 override 1.0 override"
-
-        #------------------------#
-        # Blur
-        #------------------------#
-        "match:class ^(firefox|waybar)$, no_blur on"
-        "match:title ^Picture-in-Picture$, no_blur on"
+        # "match:title ^(Telegram|QQ|NetEase Cloud Music Gtk4)$, opacity 0.95 0.95"
+        # "match:class ^alacritty$, opacity 0.85 0.85"
+        # "match:title ^Picture-in-Picture$, opacity 1.0 override 1.0 override"
       ];
 
       # -----------------------------------------------------------------------
@@ -125,7 +124,7 @@
         "$mod, RETURN, exec, foot"
         "$mod, Q, killactive,"
         "$mod, E, exec, nautilus"
-        "$mod, V, togglefloating,"
+        "$mod, V, togglefloating"
         "$mod, SPACE, exec, vicinae toggle"
         "$mod, N, exec, swaync-client -t -sw"
         "$mod, F, fullscreen,"

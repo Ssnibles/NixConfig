@@ -13,6 +13,7 @@
       # Stage everything, then rebuild. The `git add .` ensures new untracked
       # files in the flake directory are included before nixos-rebuild runs.
       rebuild = "git -C ~/NixConfig/ add . && sudo nixos-rebuild switch --flake ~/NixConfig/#nixos";
+      update = "nix flake update && sudo nixos-rebuild switch --flake .";
       get-class = "hyprctl clients | grep -A5 'class:'";
     };
 

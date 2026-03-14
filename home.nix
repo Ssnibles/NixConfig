@@ -63,6 +63,7 @@
     kdePackages.okular
     zathura
     vnote # Markdown note-taking
+    trilium-desktop
 
     # --- Media ---
     spotify
