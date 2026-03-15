@@ -1,35 +1,58 @@
--- Load order:
---   1. options       — vim.opt + mapleader  (must precede everything)
---   2. keymaps       — global mappings
---   3. autocommands  — event hooks
---   4. colorscheme   — set before plugins so highlight overrides stick
---   5. plugins       — each file requires + configures one plugin group
+-- =============================================================================
+-- Neovim Initialization
+-- =============================================================================
+-- Load order is critical for proper plugin initialization and highlight
+-- group inheritance. The colorscheme must load before any plugins that
+-- define highlight overrides.
 
+-- ── Version Check ──────────────────────────────────────────────────────────
+-- Ensure Neovim 0.11+ for vim.lsp.config and vim.lsp.enable APIs
+local function check_version()
+	local major, minor = vim.version().major, vim.version().minor
+	if major < 0 or (major == 0 and minor < 11) then
+		vim.notify(
+			"This configuration requires Neovim 0.11 or higher. You are running "
+				.. vim.version().major
+				.. "."
+				.. vim.version().minor,
+			vim.log.levels.ERROR
+		)
+		return false
+	end
+	return true
+end
+
+if not check_version() then
+	return
+end
+
+-- Phase 1: Core Vim options and keymaps (must load first)
 require("options")
 require("keymaps")
 require("autocommands")
 
--- Colorscheme before plugins so highlight overrides in completion.lua
--- are not reset by vague's own initialisation.
+-- Phase 2: Colorscheme (before plugins so highlight overrides persist)
 vim.cmd.colorscheme("vague")
 
--- completion.lua runs first: it sets every highlight group override
--- (blink menus, floats, diagnostic tints, ibl) that other plugins reference.
-require("plugins.completion") -- blink.cmp + luasnip + all hl overrides
+-- Phase 2.5: Apply centralized highlight overrides
+require("lib.highlights").apply()
 
-require("plugins.ui") -- which-key, gitsigns, oil, autopairs, markview, noice
-require("plugins.mini") -- mini.nvim suite
-require("plugins.lsp") -- LSP servers (uses blink capabilities, already loaded)
-require("plugins.fzf") -- fzf-lua
-require("plugins.conform") -- formatter
-require("plugins.treesitter") -- treesitter + treesitter-context
-require("plugins.statusline") -- lualine + ibl + neoscroll + statuscol + fidget
+-- Phase 3: Plugin configuration
+-- completion.lua loads first because it defines blink.cmp setup
+require("plugins.completion")
+require("plugins.ui")
+require("plugins.mini")
+require("plugins.lsp")
+require("plugins.fzf")
+require("plugins.conform")
+require("plugins.treesitter")
+require("plugins.statusline")
 
--- ── Cmdline ───────────────────────────────────────────────────────────────
--- Hide cmdline bar when inactive (noice handles the active state).
+-- Phase 4: Final global configuration
+-- Hide the command-line bar when inactive (noice.nvim handles active state)
 vim.opt.cmdheight = 0
 
--- ── Diagnostics ───────────────────────────────────────────────────────────
+-- Configure diagnostic display with rounded floats and severity-sorted signs
 vim.diagnostic.config({
 	virtual_text = { prefix = "●", spacing = 4 },
 	signs = {
@@ -43,5 +66,5 @@ vim.diagnostic.config({
 	underline = true,
 	severity_sort = true,
 	float = { border = "rounded", source = true },
-	update_in_insert = false, -- don't flicker diagnostics while typing
+	update_in_insert = false,
 })

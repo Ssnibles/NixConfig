@@ -1,5 +1,9 @@
--- nvim-treesitter — syntax highlighting, smart indentation, and text objects.
--- Parsers are installed via modules/neovim.nix (withPlugins), not here.
+-- =============================================================================
+-- Treesitter Configuration
+-- =============================================================================
+-- Syntax highlighting, text objects, and context display. Parsers are
+-- installed via Nix modules/neovim.nix withPlugins, not here.
+-- Note: indent is disabled to allow IBL to handle scope detection correctly.
 
 local ok, ts = pcall(require, "nvim-treesitter.configs")
 if not ok then
@@ -7,10 +11,13 @@ if not ok then
 end
 
 ts.setup({
+	-- Enable syntax highlighting
 	highlight = { enable = true },
-	indent = { enable = true },
 
-	-- nvim-treesitter-textobjects: @function.outer / @class.inner etc.
+	-- Disable indent (IBL handles scope detection instead)
+	indent = { enable = false },
+
+	-- Text objects for functions, classes, parameters, and blocks
 	textobjects = {
 		select = {
 			enable = true,
@@ -43,17 +50,18 @@ ts.setup({
 	},
 })
 
--- nvim-treesitter-context: sticky scope header at the top of the window.
--- Highlight colours are left entirely to the active colourscheme.
+-- ── Treesitter Context ─────────────────────────────────────────────────────
+-- Sticky scope header at top of window showing current function/class context
 local ctx_ok, ctx = pcall(require, "treesitter-context")
 if ctx_ok then
 	ctx.setup({
-		max_lines = 5, -- show up to 5 lines of nesting context
-		min_window_height = 20, -- only show in tall enough windows
+		max_lines = 3,
+		min_window_height = 15,
 		trim_scope = "outer",
 		multiline_threshold = 1,
-		separator = "─", -- subtle separator line below the context block
-		mode = "cursor", -- updates as cursor moves, not just on scroll
+		separator = "",
+		mode = "cursor",
+		zindex = 1,
 	})
 	vim.keymap.set("n", "[C", function()
 		ctx.go_to_context(vim.v.count1)

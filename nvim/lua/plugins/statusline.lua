@@ -1,13 +1,12 @@
--- Statusline and UI chrome:
---   lualine   — statusline
---   ibl       — indent guides + scope highlighting
---   neoscroll — smooth scrolling
---   statuscol — custom status column (folds + signs + line numbers)
---   fidget    — LSP progress spinner
+-- =============================================================================
+-- Statusline and UI Chrome Configuration
+-- =============================================================================
+-- lualine (statusline), ibl (indent guides), neoscroll (smooth scrolling),
+-- statuscol (fold/sign/line column).
+-- Note: fidget configuration moved to plugins/ui.lua
 
--- ── lualine ───────────────────────────────────────────────────────────────
--- Flat single-surface theme; mode colour maps to vague semantic palette.
-
+-- ── lualine Theme ──────────────────────────────────────────────────────────
+-- Flat single-surface theme matching vague colorscheme semantic palette
 local theme = {
 	normal = {
 		a = { fg = "#6e94b2", bg = "#141415", gui = "bold" },
@@ -41,7 +40,8 @@ local theme = {
 	},
 }
 
--- Mini diff hunk counts for the statusline
+-- ── mini.diff Status ───────────────────────────────────────────────────────
+-- Show git hunk counts in statusline from mini.diff
 local function mini_diff_status()
 	local ok, data = pcall(require("mini.diff").get_buf_data)
 	if not ok or not data or not data.summary then
@@ -61,6 +61,7 @@ local function mini_diff_status()
 	return #parts > 0 and table.concat(parts, " ") or ""
 end
 
+-- ── lualine Setup ──────────────────────────────────────────────────────────
 require("lualine").setup({
 	options = {
 		theme = theme,
@@ -114,49 +115,47 @@ require("lualine").setup({
 	},
 })
 
--- ── indent-blankline ──────────────────────────────────────────────────────
--- ibl handles both the static indent guide lines and the active scope line.
---
--- Scope detection: ibl v3 attaches its own treesitter LanguageTree listener
--- per buffer. It works correctly only when treesitter's indent module is OFF
--- (see treesitter.lua — indent = { enable = false }). With that in place ibl
--- reliably highlights the indent guide column of the innermost scope, and
--- draws an underline on the scope's opening and closing lines.
---
--- ^I fix: with 'list' on but no 'tab' entry in listchars, Neovim renders raw
--- tab characters as ^I. Adding tab = "  " tells Neovim to render tabs as two
--- spaces in list mode, which eliminates the ^I bleed-through on tab-indented
--- files (e.g. Go, Makefiles).
-vim.opt.listchars:append({ tab = "  " })
-
--- IblIndent  — dim guide lines (all indent levels)
--- IblScope   — the active scope's guide line (brighter)
--- IblScopeUnderline — underline sp colour on the scope open/close lines
-vim.api.nvim_set_hl(0, "IblIndent", { fg = "#252530" })
-vim.api.nvim_set_hl(0, "IblScope", { fg = "#4a4a6a" })
-vim.api.nvim_set_hl(0, "IblScopeUnderline", { sp = "#4a4a6a", underline = true })
+-- ── indent-blankline Configuration ─────────────────────────────────────────
+-- Indent guides with scope highlighting. Treesitter indent must be disabled
+-- (see treesitter.lua) for IBL scope detection to work correctly.
+-- Render tabs as two spaces to prevent ^I bleed-through
+-- vim.opt.listchars:append({ tab = "  " })
 
 require("ibl").setup({
+	enabled = true,
 	indent = {
 		char = "│",
 		highlight = "IblIndent",
+		smart_indent_cap = true,
 	},
 	scope = {
 		enabled = true,
 		highlight = "IblScope",
-		-- show_start / show_end draw an underline on the opening and closing
-		-- lines of the current scope, making the block boundary visible.
 		show_start = true,
 		show_end = true,
-		-- Use the dedicated underline group so the boundary lines don't need
-		-- to change the guide colour — only the sp (underline colour) matters.
-		show_exact_scope = false,
+		show_exact_scope = true,
+		include = {
+			node_type = {
+				["*"] = {
+					"function",
+					"function_definition",
+					"class",
+					"class_definition",
+					"if_statement",
+					"for_statement",
+					"while_statement",
+					"block",
+				},
+			},
+		},
 	},
 	exclude = {
-		filetypes = { "help", "dashboard", "alpha", "lazy", "mason", "oil" },
+		filetypes = { "help", "dashboard", "alpha", "lazy", "mason", "oil", "neo-tree" },
 	},
 })
--- ── neoscroll ─────────────────────────────────────────────────────────────
+
+-- ── neoscroll Configuration ────────────────────────────────────────────────
+-- Smooth scrolling for Ctrl+u/d/b/f and zz/zt/zb
 require("neoscroll").setup({
 	mappings = { "<C-u>", "<C-d>", "<C-b>", "<C-f>", "zt", "zz", "zb" },
 	easing = "quadratic",
@@ -164,7 +163,8 @@ require("neoscroll").setup({
 	respect_scrolloff = true,
 })
 
--- ── statuscol ─────────────────────────────────────────────────────────────
+-- ── statuscol Configuration ────────────────────────────────────────────────
+-- Custom status column with fold, sign, and line number segments
 local builtin = require("statuscol.builtin")
 require("statuscol").setup({
 	relculright = true,
@@ -174,9 +174,4 @@ require("statuscol").setup({
 		{ text = { builtin.lnumfunc, " " }, click = "v:lua.ScLa" },
 	},
 	ft_ignore = { "neo-tree", "lazy", "mason", "oil" },
-})
-
--- ── fidget ────────────────────────────────────────────────────────────────
-require("fidget").setup({
-	notification = { window = { winblend = 0, border = "none" } },
 })

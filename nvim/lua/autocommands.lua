@@ -1,6 +1,12 @@
+-- =============================================================================
+-- Autocommand Configuration
+-- =============================================================================
+-- Event-driven behaviors for yank highlighting, cursor restoration,
+-- whitespace trimming, and diagnostic display.
 local group = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 
--- ── Yank highlight ────────────────────────────────────────────────────────
+-- ── Yank Highlight ─────────────────────────────────────────────────────────
+-- Flash highlight on yanked text for visual feedback
 vim.api.nvim_create_autocmd("TextYankPost", {
 	group = group,
 	callback = function()
@@ -8,7 +14,8 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	end,
 })
 
--- ── Restore cursor position ───────────────────────────────────────────────
+-- ── Restore Cursor Position ────────────────────────────────────────────────
+-- Return to last edit position when reopening a file
 vim.api.nvim_create_autocmd("BufReadPost", {
 	group = group,
 	callback = function()
@@ -20,8 +27,8 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 	end,
 })
 
--- ── Trim trailing whitespace on save ─────────────────────────────────────
--- mini.trailspace highlights it; we call its trim() here for a clean API.
+-- ── Trim Trailing Whitespace ───────────────────────────────────────────────
+-- Remove trailing whitespace on save using mini.trailspace with fallback
 vim.api.nvim_create_autocmd("BufWritePre", {
 	group = group,
 	callback = function()
@@ -30,7 +37,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 			ts.trim()
 			ts.trim_last_lines()
 		else
-			-- Fallback: manual trim preserving cursor
+			-- Fallback: manual trim while preserving cursor position
 			local pos = vim.api.nvim_win_get_cursor(0)
 			vim.cmd([[%s/\s\+$//e]])
 			vim.api.nvim_win_set_cursor(0, pos)
@@ -38,7 +45,8 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 	end,
 })
 
--- ── Close certain buffers with q ──────────────────────────────────────────
+-- ── Close Help and Utility Buffers ─────────────────────────────────────────
+-- Press 'q' to close read-only and utility buffers
 vim.api.nvim_create_autocmd("FileType", {
 	group = group,
 	pattern = { "help", "man", "qf", "lspinfo", "checkhealth", "notify", "oil" },
@@ -47,7 +55,8 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
--- ── Auto-resize splits when terminal is resized ───────────────────────────
+-- ── Auto-Resize Splits ─────────────────────────────────────────────────────
+-- Equalize window sizes when terminal is resized
 vim.api.nvim_create_autocmd("VimResized", {
 	group = group,
 	callback = function()
@@ -55,7 +64,8 @@ vim.api.nvim_create_autocmd("VimResized", {
 	end,
 })
 
--- ── Strip ^M carriage returns on open ─────────────────────────────────────
+-- ── Strip Carriage Returns ─────────────────────────────────────────────────
+-- Remove Windows-style line endings on file open
 vim.api.nvim_create_autocmd("BufReadPost", {
 	group = group,
 	callback = function()
@@ -65,7 +75,8 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 	end,
 })
 
--- ── Disable auto-comment continuation ────────────────────────────────────
+-- ── Disable Auto-Comment ───────────────────────────────────────────────────
+-- Prevent automatic comment continuation on new lines
 vim.api.nvim_create_autocmd("FileType", {
 	group = group,
 	callback = function()
@@ -73,7 +84,8 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
--- ── Spell + wrap in prose filetypes ───────────────────────────────────────
+-- ── Prose Filetypes ────────────────────────────────────────────────────────
+-- Enable spell check and wrapping for text files
 vim.api.nvim_create_autocmd("FileType", {
 	group = group,
 	pattern = { "markdown", "text", "gitcommit" },
@@ -83,11 +95,9 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
--- ── Diagnostic line-number highlights ─────────────────────────────────────
--- Tints the line number and background for every diagnostic line.
--- Colour groups are defined in plugins/completion.lua after the colorscheme.
+-- ── Diagnostic Line Highlights ─────────────────────────────────────────────
+-- Apply background tint to lines with diagnostics for visibility
 local diag_ns = vim.api.nvim_create_namespace("diag_linenum_hl")
-
 local severity_hl = {
 	[vim.diagnostic.severity.ERROR] = { sign = "DiagnosticSignError", line = "DiagnosticLineError" },
 	[vim.diagnostic.severity.WARN] = { sign = "DiagnosticSignWarn", line = "DiagnosticLineWarn" },
@@ -119,6 +129,6 @@ end
 vim.api.nvim_create_autocmd({ "DiagnosticChanged", "BufEnter" }, {
 	group = group,
 	callback = function(ev)
-		update_diag_hl(ev.buf)
+		pcall(update_diag_hl, ev.buf)
 	end,
 })

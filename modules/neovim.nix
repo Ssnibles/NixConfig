@@ -75,6 +75,7 @@
       vague-nvim
 
       mini-nvim
+      nvim-treesitter-context
     ];
   };
 

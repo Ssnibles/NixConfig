@@ -1,80 +1,121 @@
+-- =============================================================================
+-- Vim Options Configuration
+-- =============================================================================
+-- All vim.opt settings for editor behavior, appearance, and performance.
+-- These load before any plugins to establish base behavior.
+
 local opt = vim.opt
 
+-- Leader key configuration (space for normal, backslash for local)
 vim.g.mapleader = " "
-vim.g.maplocalleader = "\\" -- distinct from mapleader; used by filetype plugins
+vim.g.maplocalleader = "\\"
 
--- ── Line numbers ──────────────────────────────────────────────────────────
+-- ── Line Numbers ───────────────────────────────────────────────────────────
+-- Show absolute line numbers with relative numbers for easy navigation
 opt.number = true
 opt.relativenumber = true
 
--- ── Indentation (2-space soft tabs) ───────────────────────────────────────
+-- ── Indentation ────────────────────────────────────────────────────────────
+-- 2-space soft tabs with smart indentation behavior
 opt.shiftwidth = 2
 opt.tabstop = 2
 opt.expandtab = true
 opt.smartindent = true
-opt.shiftround = true -- always indent to a multiple of shiftwidth
+opt.shiftround = true
 
--- ── Appearance ────────────────────────────────────────────────────────────
+-- ── Appearance ─────────────────────────────────────────────────────────────
+-- Enable true color support and visual enhancements
 opt.termguicolors = true
 opt.cursorline = true
 opt.scrolloff = 8
 opt.sidescrolloff = 8
 opt.signcolumn = "yes"
-opt.winblend = 8 -- floating window transparency
-opt.pumblend = 8 -- completion popup transparency
-opt.showmode = false -- lualine shows mode already
-opt.conceallevel = 2 -- hide markup chars (markview, etc.)
-opt.concealcursor = "nc" -- reveal on cursor in insert/visual
+
+-- Disable transparency for flat, opaque UI (no shadows or blending)
+opt.winblend = 0
+opt.pumblend = 0
+
+-- Hide mode display (lualine shows mode in statusline)
+opt.showmode = false
+
+-- Conceal markup characters in markdown and similar filetypes
+opt.conceallevel = 2
+opt.concealcursor = "nc"
+
+-- Custom fill characters for folds, diffs, and end-of-buffer
 opt.fillchars = {
 	fold = " ",
 	foldopen = "▾",
 	foldclose = "▸",
 	foldsep = " ",
 	diff = "╱",
-	eob = " ", -- suppress ~ at end-of-buffer
+	eob = " ",
 }
+
+-- List characters for whitespace visualization
+opt.list = false
 opt.listchars = {
 	trail = "·",
 	nbsp = "␣",
 	extends = "›",
 	precedes = "‹",
+	tab = "  ",
 }
-opt.list = true
 
--- ── Search ────────────────────────────────────────────────────────────────
+-- ── Search ─────────────────────────────────────────────────────────────────
+-- Case-insensitive search with smart case exception
 opt.ignorecase = true
 opt.smartcase = true
 opt.hlsearch = true
-opt.inccommand = "split" -- live preview for :s substitutions
+opt.inccommand = "split"
 
--- ── Splits ────────────────────────────────────────────────────────────────
+-- ── Window Splits ──────────────────────────────────────────────────────────
+-- New splits open to the right and below
 opt.splitright = true
 opt.splitbelow = true
-opt.splitkeep = "screen" -- keep text on screen when splitting
+opt.splitkeep = "screen"
 
--- ── Folds ─────────────────────────────────────────────────────────────────
+-- ── Folds ──────────────────────────────────────────────────────────────────
+-- Use treesitter for fold expressions, start with all folds open
 opt.foldmethod = "expr"
 opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-opt.foldlevelstart = 99 -- open all folds by default
+opt.foldlevelstart = 99
 
--- ── Performance / reliability ─────────────────────────────────────────────
+-- ── Performance ────────────────────────────────────────────────────────────
+-- Faster update times for plugins and LSP
 opt.updatetime = 200
 opt.timeoutlen = 400
+
+-- Enable persistent undo history
 opt.undofile = true
+
+-- Disable swap and backup files
 opt.swapfile = false
 opt.backup = false
 opt.writebackup = false
 
--- ── Wrapping ──────────────────────────────────────────────────────────────
+-- ── Text Wrapping ──────────────────────────────────────────────────────────
+-- Disable wrapping by default (can toggle per-filetype)
 opt.wrap = false
-opt.linebreak = true -- if wrap is toggled, break at word boundaries
-opt.breakindent = true -- wrapped lines indent to match the parent
+opt.linebreak = true
+opt.breakindent = true
 
--- ── Misc ──────────────────────────────────────────────────────────────────
-opt.clipboard = "unnamedplus" -- use system clipboard (needs wl-clipboard)
+-- ── Miscellaneous ──────────────────────────────────────────────────────────
+-- Use system clipboard for all yank/delete operations
+opt.clipboard = "unnamedplus"
+
+-- Enable mouse support in all modes
 opt.mouse = "a"
-opt.confirm = true -- ask instead of erroring on unsaved changes
-opt.virtualedit = "block" -- free-move in visual-block mode
+
+-- Confirm before exiting with unsaved changes
+opt.confirm = true
+
+-- Allow free cursor movement in visual block mode
+opt.virtualedit = "block"
+
+-- Configure grep to use ripgrep with vimgrep output format
 opt.grepprg = "rg --vimgrep --smart-case"
 opt.grepformat = "%f:%l:%c:%m"
-opt.shortmess:append("sIc") -- suppress intro / ins-completion messages
+
+-- Suppress startup and completion messages
+opt.shortmess:append("sIc")

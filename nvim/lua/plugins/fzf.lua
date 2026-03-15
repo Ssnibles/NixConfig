@@ -1,8 +1,12 @@
--- fzf-lua — fuzzy finder for files, grep, LSP, git, and more.
+-- =============================================================================
+-- fzf-lua Configuration
+-- =============================================================================
+-- Fuzzy finder for files, grep, LSP symbols, git history, and more.
+-- Uses fd for file search and rg for grep with optimized arguments.
 
 local fzf = require("fzf-lua")
-
 fzf.setup({
+	-- Window appearance and layout
 	winopts = {
 		height = 0.92,
 		width = 0.92,
@@ -11,16 +15,16 @@ fzf.setup({
 			layout = "vertical",
 			vertical = "right:55%",
 			scrollbar = true,
-			border = "border-left",
+			border = "none",
 		},
 	},
 
-	-- fd: respects .gitignore, hidden files, skips noise dirs
+	-- File search with fd (respects .gitignore, includes hidden files)
 	files = {
 		cmd = "fd --type f --hidden --exclude .git --exclude node_modules",
 	},
 
-	-- rg: no colour codes, include hidden, skip .git/node_modules
+	-- Grep with ripgrep (no color codes, smart case)
 	grep = {
 		rg_opts = table.concat({
 			"--color=never",
@@ -33,10 +37,10 @@ fzf.setup({
 		}, " "),
 	},
 
-	-- Consistent key overrides across all pickers
+	-- Keybindings for fzf interface
 	keymap = {
 		fzf = {
-			["ctrl-q"] = "select-all+accept", -- send all to quickfix
+			["ctrl-q"] = "select-all+accept",
 			["ctrl-u"] = "half-page-up",
 			["ctrl-d"] = "half-page-down",
 		},
@@ -49,40 +53,38 @@ fzf.setup({
 	},
 })
 
--- ── Keymaps ───────────────────────────────────────────────────────────────
+-- ── Keymaps ────────────────────────────────────────────────────────────────
 local map = function(lhs, fn, desc)
 	vim.keymap.set("n", lhs, fn, { desc = desc })
 end
 
--- Files
+-- File search
 map("<leader>ff", fzf.files, "Find files")
 map("<leader>fr", fzf.oldfiles, "Recent files")
 map("<leader>fb", fzf.buffers, "Find buffers")
 
--- Search
+-- Text search
 map("<leader>fg", fzf.live_grep, "Live grep")
 map("<leader>fw", fzf.grep_cword, "Grep word under cursor")
 map("<leader>fW", fzf.grep_cWORD, "Grep WORD under cursor")
 map("<leader>f/", fzf.blines, "Search current buffer")
 map("<leader>f?", fzf.search_history, "Search history")
 
--- LSP
+-- LSP symbols and diagnostics
 map("<leader>fs", fzf.lsp_document_symbols, "Document symbols")
 map("<leader>fS", fzf.lsp_workspace_symbols, "Workspace symbols")
 map("<leader>fd", fzf.diagnostics_document, "Buffer diagnostics")
 map("<leader>fD", fzf.diagnostics_workspace, "Workspace diagnostics")
 
--- Git
+-- Git operations
 map("<leader>gc", fzf.git_commits, "Git commits")
 map("<leader>gC", fzf.git_bcommits, "Git buffer commits")
 map("<leader>gt", fzf.git_status, "Git status")
 
--- Meta
+-- Meta commands
 map("<leader>fh", fzf.help_tags, "Help tags")
 map("<leader>fk", fzf.keymaps, "Keymaps")
 map("<leader>fc", fzf.commands, "Commands")
 map("<leader>fm", fzf.marks, "Marks")
 map("<leader>fq", fzf.quickfix, "Quickfix list")
-
--- Resume last picker
 map("<leader>f.", fzf.resume, "Resume last picker")

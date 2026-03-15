@@ -1,11 +1,14 @@
--- blink.cmp — async completion engine.
--- Also owns all highlight-group overrides (floats, diagnostics, ibl, noice,
--- blink menus) so they load in one shot after the colorscheme.
+-- =============================================================================
+-- Completion and Highlight Configuration
+-- =============================================================================
+-- blink.cmp setup for async completion.
+-- Highlight overrides are now centralized in lib/highlights.lua
 
--- ── blink.cmp ─────────────────────────────────────────────────────────────
+-- ── blink.cmp Configuration ────────────────────────────────────────────────
 require("blink.cmp").setup({
+	-- Use Super-Tab style keybindings for completion navigation
 	keymap = { preset = "super-tab" },
-
+	-- Command-line completion settings
 	cmdline = {
 		keymap = {
 			["<Tab>"] = { "accept", "fallback" },
@@ -18,7 +21,7 @@ require("blink.cmp").setup({
 			ghost_text = { enabled = true },
 		},
 	},
-
+	-- Completion menu and documentation window settings
 	completion = {
 		menu = {
 			auto_show = true,
@@ -35,77 +38,11 @@ require("blink.cmp").setup({
 		},
 		ghost_text = { enabled = true },
 	},
-
+	-- Completion sources in priority order
 	sources = {
 		default = { "lsp", "path", "snippets", "buffer" },
 	},
 })
 
--- Load VS Code-format snippets from friendly-snippets.
+-- Load VS Code-format snippets from friendly-snippets
 require("luasnip.loaders.from_vscode").lazy_load()
-
--- ── Highlight overrides ───────────────────────────────────────────────────
--- All highlights live here so they apply once after vague initialises.
-
-local hl = vim.api.nvim_set_hl
-local nor = vim.api.nvim_get_hl(0, { name = "Normal" })
-local bdr = "#565f89" -- border: slightly brighter than fg-mid
-
--- ── Float surfaces ────────────────────────────────────────────────────────
-hl(0, "FloatBorder", { bg = nor.bg, fg = bdr })
-hl(0, "NormalFloat", { bg = nor.bg, fg = nor.fg })
-hl(0, "FzfLuaBorder", { bg = nor.bg, fg = bdr })
-hl(0, "FzfLuaNormal", { bg = nor.bg, fg = nor.fg })
-
--- ── Diagnostic line backgrounds (blended tints against #141415) ───────────
-hl(0, "DiagnosticLineError", { bg = "#2a1720" })
-hl(0, "DiagnosticLineWarn", { bg = "#271f10" })
-hl(0, "DiagnosticLineInfo", { bg = "#131c27" })
-hl(0, "DiagnosticLineHint", { bg = "#141e1d" })
-
--- ── Indent-blankline ──────────────────────────────────────────────────────
--- Single colour for all guide lines — dim, non-distracting.
-hl(0, "IblIndent", { fg = "#252530" })
-
--- ── Noice ─────────────────────────────────────────────────────────────────
-hl(0, "NoiceCmdline", { bg = nor.bg, fg = bdr })
-hl(0, "NoiceCmdlinePopup", { bg = nor.bg })
-hl(0, "NoiceCmdlinePopupBorder", { bg = nor.bg, fg = bdr })
-
--- ── blink.cmp menus ───────────────────────────────────────────────────────
-hl(0, "BlinkMenuNormal", { bg = nor.bg, fg = nor.fg })
-hl(0, "BlinkCmpMenu", { bg = nor.bg, fg = bdr })
-hl(0, "BlinkCmpMenuBorder", { bg = nor.bg, fg = bdr })
-hl(0, "BlinkMenuBorder", { bg = nor.bg, fg = bdr })
-hl(0, "BlinkMenuSel", { bg = "#252530", fg = nor.fg })
-
--- ── blink.cmp docs ────────────────────────────────────────────────────────
-hl(0, "BlinkCmpDoc", { bg = nor.bg, fg = bdr })
-hl(0, "BlinkCmpDocBorder", { bg = nor.bg, fg = bdr })
-hl(0, "BlinkCmpDocSeparator", { bg = nor.bg, fg = bdr })
-hl(0, "BlinkCmpSignatureHelp", { bg = nor.bg, fg = bdr })
-hl(0, "BlinkCmpSignatureHelpBorder", { bg = nor.bg, fg = bdr })
-
--- ── blink.cmp kind icons ──────────────────────────────────────────────────
-hl(0, "BlinkCmpKindFunction", { fg = "#c48282" })
-hl(0, "BlinkCmpKindMethod", { fg = "#c48282" })
-hl(0, "BlinkCmpKindKeyword", { fg = "#6e94b2" })
-hl(0, "BlinkCmpKindVariable", { fg = nor.fg })
-hl(0, "BlinkCmpKindConstant", { fg = "#bb9dbd" })
-hl(0, "BlinkCmpKindClass", { fg = "#9bb4bc" })
-hl(0, "BlinkCmpKindInterface", { fg = "#9bb4bc" })
-hl(0, "BlinkCmpKindStruct", { fg = "#9bb4bc" })
-hl(0, "BlinkCmpKindModule", { fg = "#b4d4cf" })
-hl(0, "BlinkCmpKindField", { fg = "#bb9dbd" })
-hl(0, "BlinkCmpKindProperty", { fg = "#bb9dbd" })
-hl(0, "BlinkCmpKindEnum", { fg = "#f3be7c" })
-hl(0, "BlinkCmpKindEnumMember", { fg = "#f3be7c" })
-hl(0, "BlinkCmpKindSnippet", { fg = "#606079" })
-hl(0, "BlinkCmpKindText", { fg = "#606079" })
-
--- ── Misc ──────────────────────────────────────────────────────────────────
--- Suppress listchars — they should blend into the background, not shout.
-hl(0, "NonText", { fg = "#252530" })
-
--- mini.trailspace: make trailing whitespace visible but subtle
-hl(0, "MiniTrailspace", { bg = "#3a1c28" })

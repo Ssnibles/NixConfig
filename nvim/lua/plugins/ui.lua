@@ -1,9 +1,15 @@
--- Miscellaneous UI plugins.
+-- =============================================================================
+-- UI Plugin Configuration
+-- =============================================================================
+-- Miscellaneous UI plugins: which-key, gitsigns, oil, autopairs, markview,
+-- noice, and fidget. Each provides visual enhancements without redundancy.
 
--- ── which-key ─────────────────────────────────────────────────────────────
+-- ── which-key ──────────────────────────────────────────────────────────────
+-- Show keybinding hints after leader key press
 require("which-key").setup({ win = { border = "rounded" } })
 
--- ── gitsigns ──────────────────────────────────────────────────────────────
+-- ── gitsigns ───────────────────────────────────────────────────────────────
+-- Git integration with sign column indicators and inline blame
 require("gitsigns").setup({
 	signs = {
 		add = { text = "▎" },
@@ -13,7 +19,7 @@ require("gitsigns").setup({
 		changedelete = { text = "▎" },
 		untracked = { text = "▎" },
 	},
-	-- Inline blame at end of line (toggle with <leader>gb)
+	-- Inline blame disabled by default (toggle with <leader>gb)
 	current_line_blame = false,
 	current_line_blame_opts = {
 		virt_text = true,
@@ -25,40 +31,44 @@ require("gitsigns").setup({
 	preview_config = { border = "rounded" },
 })
 
--- ── oil ───────────────────────────────────────────────────────────────────
+-- ── Oil ────────────────────────────────────────────────────────────────────
+-- File explorer that edits directories as buffers
 require("oil").setup({
 	view_options = {
 		show_hidden = true,
 		is_always_hidden = function(name, _)
-			-- hide .git directory clutter but keep dotfiles
+			-- Hide .git directory but show other dotfiles
 			return name == ".git"
 		end,
 	},
 	float = { border = "rounded" },
 	keymaps = {
-		["<C-s>"] = false, -- don't steal our save binding
-		["<C-h>"] = false, -- don't steal our window nav binding
+		["<C-s>"] = false,
+		["<C-h>"] = false,
 		["<C-v>"] = { "actions.select", opts = { vertical = true } },
 		["<C-x>"] = { "actions.select", opts = { horizontal = true } },
 	},
 })
 
--- ── nvim-autopairs ────────────────────────────────────────────────────────
+-- ── nvim-autopairs ─────────────────────────────────────────────────────────
+-- Automatic bracket, quote, and parenthesis pairing
 require("nvim-autopairs").setup({
 	check_ts = true,
 	ts_config = { lua = { "string" }, javascript = { "template_string" } },
-	fast_wrap = { map = "<M-e>" }, -- <Alt-e> to fast-wrap the next word
+	fast_wrap = { map = "<M-e>" },
 })
 
--- ── markview ──────────────────────────────────────────────────────────────
+-- ── markview ───────────────────────────────────────────────────────────────
+-- Markdown preview with rendered formatting
 require("markview").setup()
 
--- ── noice ─────────────────────────────────────────────────────────────────
+-- ── noice ──────────────────────────────────────────────────────────────────
+-- Modern command-line and notification UI
 require("noice").setup({
-	notify = { enabled = false }, -- fidget handles notifications
-	messages = { enabled = false }, -- keep standard message area
+	notify = { enabled = false },
+	messages = { enabled = true, view = "mini" },
 	lsp = {
-		progress = { enabled = false }, -- fidget handles LSP progress
+		progress = { enabled = false },
 		override = {
 			["vim.lsp.util.convert_input_to_markdown_lines"] = true,
 			["vim.lsp.util.stylize_markdown"] = true,
@@ -67,9 +77,15 @@ require("noice").setup({
 		signature = { enabled = true },
 	},
 	presets = {
-		bottom_search = true, -- use a classic bottom cmdline for search
+		bottom_search = true,
 		command_palette = false,
-		long_message_to_split = true, -- long messages go to a split
-		inc_rename = true, -- shows the rename UI inline
+		long_message_to_split = true,
+		inc_rename = true,
 	},
+})
+
+-- ── fidget ─────────────────────────────────────────────────────────────────
+-- LSP progress indicator in top-right corner
+require("fidget").setup({
+	notification = { window = { winblend = 0, border = "none" } },
 })
