@@ -41,74 +41,94 @@
     let
       system = "x86_64-linux";
 
-      # -------------------------------------------------------------------------
-      # Hardware detection — evaluated once here at flake level.
+      # =========================================================================
+      # OVERLAYS
+      # Expose flake inputs as packages so home.nix / modules can use them
+      # the same way they use anything else from nixpkgs.
+      # =========================================================================
+      overlays = [
+        (final: prev: {
+          zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
+          awww = awww.packages.${prev.stdenv.hostPlatform.system}.default;
+        })
+      ];
+
+      # =========================================================================
+      # mkHost — build a NixOS system from an explicit host profile.
       #
-      # home-manager runs in its own module system and cannot see NixOS
-      # config.hostProfile. Instead we run the same builtins.pathExists checks
-      # here and pass the results into both NixOS and home-manager via
-      # specialArgs / extraSpecialArgs so every module shares one set of values.
-      # -------------------------------------------------------------------------
-      hasBat = name: builtins.pathExists "/sys/class/power_supply/${name}/capacity";
-      isLaptop = hasBat "BAT0" || hasBat "BAT1";
-      isDesktop = !isLaptop;
-
-      # Detect whether we're running inside a VM or container by checking
-      # whether the PCI bus is present at all.
-      pciBase = "/sys/bus/pci/devices";
-      isVM = !(builtins.pathExists pciBase);
-
-      pciDevices =
-        if builtins.pathExists pciBase then builtins.attrNames (builtins.readDir pciBase) else [ ];
-
-      readVendor =
-        dev:
+      # hostProfile fields:
+      #   hostName  string  — the machine's hostname
+      #   isLaptop  bool    — true for laptops, false for desktops
+      #   hasNvidia bool    — true if the machine has an Nvidia GPU
+      #   isVM      bool    — true for VMs / containers (disables hw tuning)
+      #
+      # isDesktop is derived automatically as !isLaptop so you never have to
+      # keep two booleans in sync.
+      #
+      # Why explicit declarations instead of builtins.pathExists detection?
+      # builtins.pathExists is evaluated on the *building* machine, not the
+      # target. If you build your laptop config on your desktop (or in the
+      # installer ISO), /sys/class/power_supply/BAT0 won't exist there, so
+      # isLaptop silently becomes false and the laptop gets the desktop package
+      # set (Steam, Lutris, etc.). Explicit declarations are evaluated once,
+      # are always correct, and are easy to read in version control.
+      # =========================================================================
+      mkHost =
+        hostProfile:
         let
-          r = builtins.tryEval (builtins.readFile "${pciBase}/${dev}/vendor");
+          # Derive isDesktop so callers only need to set one field.
+          profile = hostProfile // {
+            isDesktop = !hostProfile.isLaptop;
+          };
         in
-        if r.success then r.value else "";
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+          specialArgs = {
+            inherit inputs;
+            hostProfile = profile;
+          };
+          modules = [
+            ./configuration.nix
+            agenix.nixosModules.default
+            { nixpkgs.overlays = overlays; }
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = {
+                inherit inputs;
+                hostProfile = profile;
+              };
+              home-manager.users.josh = import ./home.nix;
+            }
+          ];
+        };
 
-      hasNvidia = builtins.any (
-        dev: nixpkgs.lib.hasPrefix "0x10de" (nixpkgs.lib.trim (readVendor dev))
-      ) pciDevices;
-
-      # Collected into a single attrset so both specialArgs blocks stay tidy.
-      hostProfile = {
-        inherit
-          isLaptop
-          isDesktop
-          hasNvidia
-          isVM
-          ;
-      };
     in
     {
-      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs = { inherit inputs hostProfile; };
-        modules = [
-          ./configuration.nix
-          agenix.nixosModules.default
+      nixosConfigurations = {
 
-          # Expose flake inputs as packages via overlays.
-          {
-            nixpkgs.overlays = [
-              (final: prev: {
-                zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
-                awww = awww.packages.${prev.stdenv.hostPlatform.system}.default;
-              })
-            ];
-          }
+        # -----------------------------------------------------------------------
+        # DESKTOP — main machine, Nvidia GPU, no battery
+        # -----------------------------------------------------------------------
+        nixos = mkHost {
+          hostName = "nixos";
+          isLaptop = true;
+          hasNvidia = false;
+          isVM = false;
+        };
 
-          # Wire home-manager into the NixOS system build.
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = { inherit inputs hostProfile; };
-            home-manager.users.josh = import ./home.nix;
-          }
-        ];
+        # -----------------------------------------------------------------------
+        # Add more hosts here as needed, e.g.:
+        # laptop = mkHost {
+        #   hostName  = "laptop";
+        #   isLaptop  = true;
+        #   hasNvidia = false;
+        #   isVM      = false;
+        # };
+        # Then rebuild with: nixos-rebuild switch --flake ~/NixConfig#laptop
+        # -----------------------------------------------------------------------
+
       };
     };
 }

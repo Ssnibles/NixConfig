@@ -9,6 +9,7 @@
 # defaults to the pre-computed values from the flake.
 #
 # Any value can be manually overridden in configuration.nix:
+#   hostProfile.hostName  = "mydesktop";
 #   hostProfile.isLaptop  = true;
 #   hostProfile.hasNvidia = false;
 #   hostProfile.isVM      = false;
@@ -16,6 +17,15 @@
 
 {
   options.hostProfile = {
+
+    hostName = lib.mkOption {
+      type = lib.types.str;
+      default = hostProfile.hostName or "nixos";
+      description = ''
+        The hostname for this machine. Set in flake.nix per host so that
+        configuration.nix stays generic across all machines.
+      '';
+    };
 
     isLaptop = lib.mkOption {
       type = lib.types.bool;
@@ -59,4 +69,3 @@
 
   };
 }
-

@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
 
   home.packages = with pkgs; [
     awww
@@ -139,15 +140,14 @@
       # -----------------------------------------------------------------------
       # APPEARANCE
       # vague.nvim palette:
-      #   active border   → keyword  #6e94b2  (blue accent)
-      #   inactive border → line     #252530  (barely visible)
+      #   rounding → matches the 8px border-radius used in Waybar and swaync
+      # border_size is 0 (borderless), so col.active_border / col.inactive_border
+      # have no visible effect and are omitted.
       # -----------------------------------------------------------------------
       general = {
         gaps_in = 8;
         gaps_out = 16;
         border_size = 0;
-        "col.active_border" = "rgb(6e94b2)";
-        "col.inactive_border" = "rgb(252530)";
       };
 
       misc.disable_hyprland_logo = true;
@@ -173,7 +173,6 @@
       };
     };
   };
-
 
   # ===========================================================================
   # VICINAE (App launcher) — vague theme

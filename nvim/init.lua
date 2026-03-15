@@ -4,13 +4,34 @@
 --   1. options        — vim.opt + vim.g.mapleader before anything else
 --   2. keymaps        — global keymaps (buffer-local ones live in lsp.lua)
 --   3. autocommands   — event-driven behaviour
---   4. plugins        — each file requires + configures one plugin group
+--   4. colorscheme    — set early so highlight overrides in step 5 win
+--   5. highlights     — custom groups defined before plugins that reference
+--                       them (e.g. blink.cmp's winhighlight config)
+--   6. plugins        — each file requires + configures one plugin group
 -- ============================================================================
 
 require("options")
 require("keymaps")
 require("autocommands")
 
+-- ============================================================================
+-- COLORSCHEME
+-- Set before plugins so highlight overrides in the next step are not reset
+-- by vague's own setup when it loads later as a plugin dep.
+-- ============================================================================
+vim.cmd.colorscheme("vague")
+
+-- ============================================================================
+-- HIGHLIGHT OVERRIDES
+-- Loaded immediately after the colorscheme and before any plugin that
+-- references custom highlight groups (blink.cmp uses BlinkMenu* in its
+-- winhighlight option — those groups must exist before blink.setup runs).
+-- ============================================================================
+require("plugins.highlights")
+
+-- ============================================================================
+-- PLUGINS
+-- ============================================================================
 require("plugins.lsp")
 require("plugins.fzf")
 require("plugins.conform")
@@ -21,18 +42,6 @@ require("plugins.blink")
 
 -- Hide the command-line bar when not in use (cleaner look).
 vim.opt.cmdheight = 0
-
--- ============================================================================
--- COLORSCHEME
--- Set after plugins so vague's highlights overwrite plugin defaults.
--- ============================================================================
-vim.cmd.colorscheme("vague")
-
--- ============================================================================
--- HIGHLIGHT OVERRIDES
--- Loaded after the colorscheme so vague doesn't reset custom groups.
--- ============================================================================
-require("plugins.highlights")
 
 -- ============================================================================
 -- DIAGNOSTICS

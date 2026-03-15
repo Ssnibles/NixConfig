@@ -101,7 +101,7 @@
     ++ pkgs.lib.optionals hostProfile.isDesktop [
       # --- Gaming ---
       steam
-      modrinth-app
+      # modrinth-app
       heroic
       lutris
       mangohud
