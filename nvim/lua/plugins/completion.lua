@@ -46,3 +46,5 @@ require("blink.cmp").setup({
 
 -- Load VS Code-format snippets from friendly-snippets
 require("luasnip.loaders.from_vscode").lazy_load()
+
+require("_copilot")

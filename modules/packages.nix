@@ -8,6 +8,7 @@
       kotlin
       jdk21
       code2prompt
+      nodejs
 
       # ── CLI utilities ───────────────────────────────────────────────────────
       wl-clipboard

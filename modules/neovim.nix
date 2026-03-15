@@ -45,6 +45,7 @@
       blink-cmp
       luasnip
       friendly-snippets
+      copilot-vim
 
       # Fuzzy finding
       fzf-lua
