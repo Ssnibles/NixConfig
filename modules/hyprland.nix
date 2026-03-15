@@ -37,6 +37,8 @@
         gaps_in = 8;
         gaps_out = 16;
         border_size = 0;
+        "col.inactive_border" = "rgb(120,120,120)";
+        "col.active_border" = "rgb(120,120,120)";
       };
 
       decoration = {
@@ -58,9 +60,7 @@
       misc.disable_hyprland_logo = true;
 
       windowrule = [
-        # "match:class waybar, no_blur on"
-        # "match:class waybar, no_shadow on"
-        "match:float true, center on"
+        "match:float true, border_size 2"
       ];
 
       monitor = [ ",preferred,auto,1" ]; # auto-detect; replace with "DP-1,2560x1440@120,auto,1" once driver is confirmed
