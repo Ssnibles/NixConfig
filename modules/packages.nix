@@ -1,4 +1,5 @@
 { pkgs, hostProfile, ... }:
+
 {
   home.packages =
     with pkgs;
@@ -32,10 +33,12 @@
       firefox
       zen-browser
       onlyoffice-desktopeditors
+      libreoffice
 
       # ── PDF viewers ─────────────────────────────────────────────────────────
       sioyek
       zathura
+      kdePackages.okular
 
       # ── Notes ───────────────────────────────────────────────────────────────
       trilium-desktop
