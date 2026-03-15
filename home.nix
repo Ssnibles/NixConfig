@@ -21,6 +21,7 @@
     ./modules/waybar.nix
     ./modules/swaync.nix
     ./modules/spotify.nix
+    ./modules/scripts.nix
   ];
 
   home.pointerCursor = {

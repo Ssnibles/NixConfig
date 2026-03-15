@@ -1,22 +1,4 @@
 { pkgs, ... }:
-
-let
-  toggleFloat = pkgs.writeShellScriptBin "toggle-float" ''
-    # Use jq to check if the window is currently floating
-    IS_FLOATING=$(${pkgs.hyprland}/bin/hyprctl activewindow -j | ${pkgs.jq}/bin/jq -r '.floating')
-
-    if [ "$IS_FLOATING" = "true" ]; then
-        # If it's floating, just toggle it back to tiling
-        ${pkgs.hyprland}/bin/hyprctl dispatch togglefloating
-    else
-        # If it's tiling, float it, resize it, and center it
-        ${pkgs.hyprland}/bin/hyprctl dispatch togglefloating
-        ${pkgs.hyprland}/bin/hyprctl dispatch resizeactive exact 60% 60%
-        ${pkgs.hyprland}/bin/hyprctl dispatch centerwindow
-    fi
-  '';
-in
-
 {
   home.packages = with pkgs; [
     awww
@@ -25,7 +7,6 @@ in
     brightnessctl
     playerctl
     adwaita-icon-theme
-    toggleFloat
   ];
 
   wayland.windowManager.hyprland = {
