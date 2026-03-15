@@ -2,205 +2,127 @@
   config,
   pkgs,
   lib,
+  hostProfile,
   ...
 }:
 {
   imports = [
     ./hardware-configuration.nix
-    ./modules/host-profile.nix
-    ./modules/nvidia.nix # internally gated on hostProfile.hasNvidia
+    ./modules/nvidia.nix
   ];
 
-  # ===========================================================================
-  # NIX SETTINGS
-  # ===========================================================================
+  # ── Nix ───────────────────────────────────────────────────────────────────
 
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
-  nixpkgs.config.allowUnfree = true;
+  nix.settings = {
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+    auto-optimise-store = true;
+  };
 
-  # Automatic garbage collection — removes store paths unreachable from any
-  # GC root, keeping disk usage in check without manual `nix-collect-garbage`.
-  # Runs weekly; keeps the last 7 days of generations as a safety net.
   nix.gc = {
     automatic = true;
     dates = "weekly";
     options = "--delete-older-than 7d";
   };
 
-  # Never change this after the initial install.
-  system.stateVersion = "25.05";
+  nixpkgs.config.allowUnfree = true;
+  system.stateVersion = "25.05"; # do not change
 
-  # ===========================================================================
-  # BOOT & HARDWARE
-  # ===========================================================================
+  # ── Boot ──────────────────────────────────────────────────────────────────
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader = {
+    systemd-boot.enable = true;
+    efi.canTouchEfiVariables = true;
+  };
 
-  # Kernel selection:
-  #   Nvidia machines use the LTS kernel. The proprietary Nvidia driver builds
-  #   a kernel module at evaluation time — linuxPackages_latest tracks the
-  #   bleeding edge (currently 6.19) and frequently outpaces the driver,
-  #   causing "Module nvidia not found" failures at build time.
-  #   Non-Nvidia machines (laptops, VMs) can safely track latest for better
-  #   hardware support without that constraint.
-  boot.kernelPackages =
-    if config.hostProfile.hasNvidia then
-      pkgs.linuxPackages # LTS — stable Nvidia module compatibility
-    else
-      pkgs.linuxPackages_latest; # Latest — best hardware support otherwise
+  # mkDefault lets nvidia.nix override this with the stable LTS kernel.
+  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
 
-  # Firmware blobs required by most hardware (Wi-Fi, Bluetooth, GPU, etc.)
   hardware.enableRedistributableFirmware = true;
 
-  # Disable USB autosuspend globally — fixes input devices randomly dropping
-  # on the X570 chipset's PCIe-connected USB controller.
-  # On desktops this is always applied; on laptops TLP also enforces it below.
-  # Skipped in VMs where there are no physical USB controllers to worry about.
-  boot.kernelParams = lib.mkIf (!config.hostProfile.isVM) [ "usbcore.autosuspend=-1" ];
+  # Disable USB autosuspend — prevents input-device drop-outs.
+  boot.kernelParams = lib.mkIf (!hostProfile.isVM) [ "usbcore.autosuspend=-1" ];
 
-  # NZ Wi-Fi regulatory domain — survives sleep/resume (unlike localCommands).
   boot.extraModprobeConfig = ''
     options cfg80211 ieee80211_regdom=NZ
     options iwlwifi bt_coex_active=1
   '';
 
-  # ===========================================================================
-  # NETWORKING & WI-FI
-  # ===========================================================================
+  # ── Networking ────────────────────────────────────────────────────────────
 
-  # Hostname comes from hostProfile, declared per-host in flake.nix.
-  networking.hostName = config.hostProfile.hostName;
-
-  networking.networkmanager = {
-    enable = true;
-
-    # iwd: modern Wi-Fi backend, faster and more reliable than wpa_supplicant.
-    # Do NOT also set networking.wireless.iwd.enable — NM manages the iwd
-    # daemon internally; two instances fight over the interface.
-    wifi.backend = "iwd";
-
-    # Disable Wi-Fi power saving on desktops unconditionally.
-    # On laptops, TLP manages this per AC/battery state instead.
-    wifi.powersave = config.hostProfile.isLaptop;
-
-    dns = "systemd-resolved";
+  networking = {
+    hostName = hostProfile.hostName;
+    networkmanager = {
+      enable = true;
+      wifi.backend = "iwd";
+      wifi.powersave = hostProfile.isLaptop;
+      dns = "systemd-resolved";
+    };
   };
 
   services.resolved = {
     enable = true;
-    # Fallback DNS if DHCP-assigned servers are unreliable.
     settings.Resolve.FallbackDNS = [
       "1.1.1.1"
       "8.8.8.8"
     ];
   };
 
-  # ===========================================================================
-  # BLUETOOTH
-  # ===========================================================================
+  # ── Bluetooth ─────────────────────────────────────────────────────────────
 
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
   };
-
   services.blueman.enable = true;
 
-  # ===========================================================================
-  # POWER MANAGEMENT
-  # ===========================================================================
+  # ── Power ─────────────────────────────────────────────────────────────────
 
   # power-profiles-daemon conflicts with TLP.
   services.power-profiles-daemon.enable = false;
 
-  # ---------------------------------------------------------------------------
-  # LAPTOP-ONLY: TLP battery / power management
-  # TLP is a laptop tool and doesn't make sense on a desktop or VM.
-  # ---------------------------------------------------------------------------
-  services.tlp = lib.mkIf (config.hostProfile.isLaptop && !config.hostProfile.isVM) {
+  services.tlp = lib.mkIf (hostProfile.isLaptop && !hostProfile.isVM) {
     enable = true;
     settings = {
-      # Prefer performance when plugged in, save power on battery.
       CPU_BOOST_ON_AC = 1;
       CPU_BOOST_ON_BAT = 0;
       CPU_SCALING_GOVERNOR_ON_AC = "performance";
       CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
-
-      # Stop charging at 85% to extend battery lifespan.
       STOP_CHARGE_THRESH_BAT0 = 85;
-
-      # Belt-and-suspenders: TLP can override NM's powersave setting.
-      # Keep Wi-Fi power saving off on AC; allow it on battery.
       WIFI_PWR_ON_AC = "off";
       WIFI_PWR_ON_BAT = "on";
-
-      # Don't let TLP touch Bluetooth power — let the BT stack manage itself.
-      DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE = "";
-
-      # Disable USB autosuspend via TLP as well — belt-and-suspenders alongside
-      # the usbcore.autosuspend=-1 kernel param above.
       USB_AUTOSUSPEND = 0;
     };
   };
 
-  # ---------------------------------------------------------------------------
-  # DESKTOP-ONLY: always keep the CPU in performance mode.
-  # On laptops this is handled per-state by TLP above.
-  # Skipped in VMs — the hypervisor controls scheduling, not the guest.
-  # ---------------------------------------------------------------------------
-  powerManagement.cpuFreqGovernor = lib.mkIf (
-    config.hostProfile.isDesktop && !config.hostProfile.isVM
-  ) "performance";
+  powerManagement = {
+    cpuFreqGovernor = lib.mkIf (hostProfile.isDesktop && !hostProfile.isVM) "performance";
+    powertop.enable = hostProfile.isLaptop && !hostProfile.isVM;
+  };
 
-  # powertop auto-tune is useful for laptops; on desktops or VMs it can
-  # interfere with peripherals and isn't worth the tradeoff.
-  powerManagement.powertop.enable = config.hostProfile.isLaptop && !config.hostProfile.isVM;
-
-  # zram swap: a small compressed swap in RAM. Near-zero cost on a desktop,
-  # useful insurance against OOM kills when running memory-heavy workloads.
   zramSwap.enable = true;
 
-  # Prevent udev from marking USB HID devices (keyboards, mice) as
-  # candidates for autosuspend regardless of other power management settings.
-  # No-op in VMs but harmless to leave in.
+  # Keep HID devices (keyboards, mice) awake — class 0x03 = HID.
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/control}="on"
   '';
 
-  # ===========================================================================
-  # DISPLAY & DESKTOP
-  # ===========================================================================
+  # ── Display / desktop ─────────────────────────────────────────────────────
 
-  # ly: minimal TUI display manager. Picks up Hyprland from wayland-sessions.
   services.displayManager.ly.enable = true;
-
   programs.hyprland.enable = true;
-
-  # Flatpak support — enables the portal and daemon so flatpak apps work.
   services.flatpak.enable = true;
 
-  # Fish must be enabled at the system level so it appears in /etc/shells
-  # and can be used as a login shell (home-manager alone is not enough).
-  programs.fish.enable = true;
-
-  # ---------------------------------------------------------------------------
-  # LAPTOP-ONLY: lid switch behaviour.
-  # A desktop has no lid; applying these on a desktop is harmless but noisy.
-  # ---------------------------------------------------------------------------
-  services.logind.settings = lib.mkIf config.hostProfile.isLaptop {
+  services.logind.settings = lib.mkIf hostProfile.isLaptop {
     Login = {
       HandleLidSwitch = "suspend";
       HandleLidSwitchExternalPower = "ignore";
     };
   };
 
-  # ===========================================================================
-  # AUDIO (PipeWire)
-  # ===========================================================================
+  # ── Audio ─────────────────────────────────────────────────────────────────
 
   services.pipewire = {
     enable = true;
@@ -209,10 +131,9 @@
     wireplumber.enable = true;
   };
 
-  # ===========================================================================
-  # KEYD — key remapping (swap Caps Lock ↔ Escape)
-  # ===========================================================================
+  # ── Key remapping ─────────────────────────────────────────────────────────
 
+  # Swap CapsLock ↔ Escape system-wide (works in TTY, Wayland, X).
   services.keyd = {
     enable = true;
     keyboards.default = {
@@ -224,9 +145,11 @@
     };
   };
 
-  # ===========================================================================
-  # USER
-  # ===========================================================================
+  # ── Shell ─────────────────────────────────────────────────────────────────
+
+  programs.fish.enable = true;
+
+  # ── User ──────────────────────────────────────────────────────────────────
 
   users.users.josh = {
     isNormalUser = true;
@@ -236,27 +159,20 @@
       "networkmanager"
       "wheel"
       "video"
-      "input" # required for Wayland/Hyprland input device access
+      "input"
       "adbusers"
     ];
   };
 
-  # ===========================================================================
-  # SYSTEM PACKAGES
-  # Prefer home.nix for per-user packages. Only put things here that must exist
-  # before home-manager runs, or need to be available system-wide.
-  # ===========================================================================
+  # ── System packages — keep minimal, prefer home.nix ──────────────────────
 
   environment.systemPackages = with pkgs; [
-    git # needed early for flake operations
-    vim # emergency editor if neovim breaks
-    networkmanagerapplet
-    iw # Wi-Fi debugging: `iw dev`, `iw reg get`, etc.
+    git
+    vim
+    iw
   ];
 
-  # ===========================================================================
-  # LOCALE & TIMEZONE
-  # ===========================================================================
+  # ── Locale / timezone ─────────────────────────────────────────────────────
 
   time.timeZone = "Pacific/Auckland";
   i18n.defaultLocale = "en_NZ.UTF-8";

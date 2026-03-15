@@ -2,13 +2,14 @@
 {
   programs.waybar = {
     enable = true;
+
     settings.main = {
       layer = "top";
       position = "top";
+      height = 32;
       margin-top = 8;
       margin-left = 16;
       margin-right = 16;
-      height = 32;
       spacing = 0;
 
       modules-left = [
@@ -128,21 +129,6 @@
     };
 
     style = ''
-      /* ── vague.nvim palette ────────────────────────────────────
-         bg          #141415  — main background
-         inactiveBg  #1c1c24  — raised surface
-         line        #252530  — borders
-         fg          #cdcdcd  — primary text
-         comment     #606079  — dimmed text
-         floatBorder #878787  — mid-tone text
-         keyword     #6e94b2  — blue accent
-         builtin     #b4d4cf  — teal accent
-         parameter   #bb9dbd  — muted purple
-         warning     #f3be7c  — amber
-         error       #d8647e  — red
-         plus        #7fa563  — green
-      ──────────────────────────────────────────────────────────── */
-
       @define-color bg        #141415;
       @define-color bg-raised #1c1c24;
       @define-color border    #252530;
@@ -156,134 +142,82 @@
       @define-color error     #d8647e;
       @define-color plus      #7fa563;
 
-      /* ── reset ─────────────────────────────────────────────── */
       * {
-        font-family: "JetBrains Mono", "Iosevka", monospace;
+        font-family: "JetBrains Mono", monospace;
         font-size:   11px;
         font-weight: 400;
         min-height:  0;
-        border:         none;
-        border-radius:  0;
-        padding:        0;
-        margin:         0;
+        border: none; border-radius: 0; padding: 0; margin: 0;
+        background: transparent;
       }
 
-      /* ── bar ───────────────────────────────────────────────── */
       window#waybar {
-        background:    @bg;
+        background:    transparent;
         color:         @fg;
+      }
+
+      /* The top-level box inside the waybar window is the right place to
+         paint the background + border — the compositor sees the window as
+         transparent so the rounded corners are clean, and the box draws
+         the visible surface on top. */
+      window#waybar > box {
+        background:    @bg;
         border-radius: 8px;
         border:        1px solid @border;
       }
 
-      /* ── shared ────────────────────────────────────────────── */
       #workspaces, #window, #clock,
       #mpris, #pulseaudio, #bluetooth,
       #network, #battery {
         background: transparent;
         color:      @fg;
         padding:    0 10px;
-        margin:     0;
       }
 
-      /* ── workspaces ────────────────────────────────────────── */
       #workspaces {
         padding:      0 6px;
         border-right: 1px solid @border;
       }
 
       #workspaces button {
-        font-size:     10px;
-        color:         @fg-dim;
-        padding:       0 8px;
-        background:    transparent;
-        border-bottom: 2px solid transparent;
-        min-width:     24px;
-        min-height:    0;
-        transition:    color 150ms ease, border-color 150ms ease;
+        font-size:      10px;
+        color:          @fg-dim;
+        padding:        0 8px;
+        background:     transparent;
+        border-bottom:  2px solid transparent;
+        min-width:      24px;
+        min-height:     0;
+        transition:     color 150ms ease, border-color 150ms ease;
       }
+      #workspaces button.active { color: @accent; border-bottom: 2px solid @accent; }
+      #workspaces button.urgent { color: @error;  border-bottom: 2px solid @error;  }
+      #workspaces button:hover  { color: @fg;     background: transparent; }
 
-      #workspaces button.active {
-        color:         @accent;
-        border-bottom: 2px solid @accent;
-      }
+      #window { font-style: italic; color: @fg-dim; padding: 0 8px; }
+      #clock  { font-weight: 600; letter-spacing: 1px; color: @teal; }
 
-      #workspaces button.urgent {
-        color:         @error;
-        border-bottom: 2px solid @error;
-      }
-
-      #workspaces button:hover {
-        color:      @fg;
-        background: transparent;
-      }
-
-      /* ── window title ──────────────────────────────────────── */
-      #window {
-        font-style: italic;
-        color:      @fg-dim;
-        padding:    0 8px;
-      }
-
-      /* ── clock ─────────────────────────────────────────────── */
-      #clock {
-        font-weight:    600;
-        letter-spacing: 1px;
-        color:          @teal;
-      }
-
-      /* ── mpris ─────────────────────────────────────────────── */
       #mpris {
         font-style:   italic;
         color:        @purple;
         padding-right: 12px;
-        border-right:  1px solid @border;
-        margin-right:  2px;
+        border-right: 1px solid @border;
+        margin-right: 2px;
       }
 
-      /* ── right modules ─────────────────────────────────────── */
-      #pulseaudio,
-      #bluetooth,
-      #network {
-        color:   @fg-mid;
-        padding: 0 8px;
-      }
+      #pulseaudio, #bluetooth, #network { color: @fg-mid; padding: 0 8px; }
+      #pulseaudio.muted { opacity: 0.4; }
+      #bluetooth.disabled, #bluetooth.off { opacity: 0; padding: 0; min-width: 0; }
+      #network.disconnected { color: @error; }
 
-      #pulseaudio.muted {
-        opacity: 0.4;
-      }
-
-      #bluetooth.disabled,
-      #bluetooth.off {
-        opacity:   0;
-        padding:   0;
-        min-width: 0;
-      }
-
-      #network.disconnected {
-        color: @error;
-      }
-
-      /* ── battery ───────────────────────────────────────────── */
       #battery {
         color:        @fg-mid;
         border-left:  1px solid @border;
         padding-left: 12px;
         margin-left:  2px;
       }
-
-      #battery.charging,
-      #battery.plugged {
-        color: @plus;
-      }
-
-      #battery.warning {
-        color: @warn;
-      }
-
-      #battery.critical {
-        color: @error;
-      }
+      #battery.charging, #battery.plugged { color: @plus; }
+      #battery.warning  { color: @warn;  }
+      #battery.critical { color: @error; }
     '';
   };
 }
