@@ -31,6 +31,7 @@
       mission-center
       firefox
       zen-browser
+      onlyoffice-desktopeditors
 
       # ── PDF viewers ─────────────────────────────────────────────────────────
       sioyek
