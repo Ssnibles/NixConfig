@@ -4,7 +4,6 @@
     awww
     libnotify
     networkmanagerapplet
-    brightnessctl
     playerctl
     adwaita-icon-theme
   ];
@@ -42,7 +41,7 @@
       };
 
       decoration = {
-        rounding = 26;
+        rounding = 16;
         blur.enabled = false;
         shadow.enabled = false;
       };
