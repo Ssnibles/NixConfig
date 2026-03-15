@@ -1,25 +1,52 @@
 -- LSP configuration using Neovim 0.11's built-in vim.lsp.config / vim.lsp.enable API.
--- Completion capabilities come from blink.cmp via plugins/completion.lua.
+-- Completion capabilities come from blink.cmp (plugins/completion.lua).
 
 local lsp = vim.lsp
 
+-- ── Capabilities (blink.cmp or built-in fallback) ─────────────────────────
+local capabilities = (function()
+	local ok, blink = pcall(require, "blink.cmp")
+	return ok and blink.get_lsp_capabilities() or lsp.protocol.make_client_capabilities()
+end)()
+
+-- Enable folding via LSP if the server supports it
+capabilities.textDocument.foldingRange = {
+	dynamicRegistration = false,
+	lineFoldingOnly = true,
+}
+
 -- ── On-attach keymaps ─────────────────────────────────────────────────────
 lsp.config("*", {
-	on_attach = function(_, bufnr)
-		local opts = { buffer = bufnr, silent = true }
-		vim.keymap.set("n", "gd", lsp.buf.definition, vim.tbl_extend("force", opts, { desc = "Go to definition" }))
-		vim.keymap.set("n", "K", lsp.buf.hover, vim.tbl_extend("force", opts, { desc = "Hover docs" }))
-		vim.keymap.set("n", "<leader>a", lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "Code action" }))
-		vim.keymap.set("n", "<leader>r", lsp.buf.rename, vim.tbl_extend("force", opts, { desc = "Rename symbol" }))
-		vim.keymap.set("n", "gr", lsp.buf.references, vim.tbl_extend("force", opts, { desc = "References" }))
+	on_attach = function(client, bufnr)
+		-- nvim-navic: breadcrumb location in statusline
+		local navic_ok, navic = pcall(require, "nvim-navic")
+		if navic_ok and client.server_capabilities.documentSymbolProvider then
+			navic.attach(client, bufnr)
+		end
+
+		local opts = function(desc)
+			return { buffer = bufnr, silent = true, desc = desc }
+		end
+
+		vim.keymap.set("n", "gd", lsp.buf.definition, opts("Go to definition"))
+		vim.keymap.set("n", "gD", lsp.buf.declaration, opts("Go to declaration"))
+		vim.keymap.set("n", "gi", lsp.buf.implementation, opts("Go to implementation"))
+		vim.keymap.set("n", "gy", lsp.buf.type_definition, opts("Go to type definition"))
+		vim.keymap.set("n", "gr", lsp.buf.references, opts("References"))
+		vim.keymap.set("n", "K", lsp.buf.hover, opts("Hover docs"))
+		-- <C-k> in normal mode is reserved for smart-splits window navigation (keymaps.lua).
+		-- Signature help is available in insert mode and via the LSP info float.
+		vim.keymap.set("i", "<C-k>", lsp.buf.signature_help, opts("Signature help"))
+		vim.keymap.set("n", "<leader>a", lsp.buf.code_action, opts("Code action"))
+		vim.keymap.set("v", "<leader>a", lsp.buf.code_action, opts("Code action (range)"))
+		vim.keymap.set("n", "<leader>r", lsp.buf.rename, opts("Rename symbol"))
+		vim.keymap.set("n", "<leader>ls", lsp.buf.document_symbol, opts("Document symbols"))
+		vim.keymap.set("n", "<leader>lS", lsp.buf.workspace_symbol, opts("Workspace symbols"))
 	end,
-	capabilities = (function()
-		local ok, blink = pcall(require, "blink.cmp")
-		return ok and blink.get_lsp_capabilities() or lsp.protocol.make_client_capabilities()
-	end)(),
+	capabilities = capabilities,
 })
 
--- ── Rounded borders on hover / signature help ─────────────────────────────
+-- ── Float styling ─────────────────────────────────────────────────────────
 lsp.handlers["textDocument/hover"] = lsp.with(lsp.handlers.hover, { border = "rounded" })
 lsp.handlers["textDocument/signatureHelp"] = lsp.with(lsp.handlers.signature_help, { border = "rounded" })
 
@@ -36,7 +63,14 @@ lsp.config("nixd", {
 
 lsp.config("lua_ls", {
 	cmd = { "lua-language-server" },
-	settings = { Lua = { diagnostics = { globals = { "vim" } } } },
+	settings = {
+		Lua = {
+			runtime = { version = "LuaJIT" },
+			workspace = { checkThirdParty = false },
+			diagnostics = { globals = { "vim" } },
+			telemetry = { enable = false },
+		},
+	},
 })
 
 lsp.config("kotlin_language_server", { cmd = { "kotlin-language-server" } })

@@ -73,6 +73,8 @@
 
       # Colourscheme
       vague-nvim
+
+      mini-nvim
     ];
   };
 

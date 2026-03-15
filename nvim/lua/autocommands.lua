@@ -21,18 +21,71 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 })
 
 -- ── Trim trailing whitespace on save ─────────────────────────────────────
+-- mini.trailspace highlights it; we call its trim() here for a clean API.
 vim.api.nvim_create_autocmd("BufWritePre", {
 	group = group,
 	callback = function()
-		local pos = vim.api.nvim_win_get_cursor(0)
-		vim.cmd([[%s/\s\+$//e]])
-		vim.api.nvim_win_set_cursor(0, pos)
+		local ok, ts = pcall(require, "mini.trailspace")
+		if ok then
+			ts.trim()
+			ts.trim_last_lines()
+		else
+			-- Fallback: manual trim preserving cursor
+			local pos = vim.api.nvim_win_get_cursor(0)
+			vim.cmd([[%s/\s\+$//e]])
+			vim.api.nvim_win_set_cursor(0, pos)
+		end
 	end,
 })
 
--- ── Diagnostic line-number highlights ────────────────────────────────────
+-- ── Close certain buffers with q ──────────────────────────────────────────
+vim.api.nvim_create_autocmd("FileType", {
+	group = group,
+	pattern = { "help", "man", "qf", "lspinfo", "checkhealth", "notify", "oil" },
+	callback = function(ev)
+		vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = ev.buf, silent = true, desc = "Close window" })
+	end,
+})
+
+-- ── Auto-resize splits when terminal is resized ───────────────────────────
+vim.api.nvim_create_autocmd("VimResized", {
+	group = group,
+	callback = function()
+		vim.cmd("tabdo wincmd =")
+	end,
+})
+
+-- ── Strip ^M carriage returns on open ─────────────────────────────────────
+vim.api.nvim_create_autocmd("BufReadPost", {
+	group = group,
+	callback = function()
+		if vim.bo.fileformat == "dos" then
+			vim.cmd([[silent! %s/\r//g]])
+		end
+	end,
+})
+
+-- ── Disable auto-comment continuation ────────────────────────────────────
+vim.api.nvim_create_autocmd("FileType", {
+	group = group,
+	callback = function()
+		vim.opt_local.formatoptions:remove({ "c", "r", "o" })
+	end,
+})
+
+-- ── Spell + wrap in prose filetypes ───────────────────────────────────────
+vim.api.nvim_create_autocmd("FileType", {
+	group = group,
+	pattern = { "markdown", "text", "gitcommit" },
+	callback = function()
+		vim.opt_local.spell = true
+		vim.opt_local.wrap = true
+	end,
+})
+
+-- ── Diagnostic line-number highlights ─────────────────────────────────────
 -- Tints the line number and background for every diagnostic line.
--- Colour groups are defined in plugins/ui.lua after the colorscheme loads.
+-- Colour groups are defined in plugins/completion.lua after the colorscheme.
 local diag_ns = vim.api.nvim_create_namespace("diag_linenum_hl")
 
 local severity_hl = {
