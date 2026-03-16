@@ -47,4 +47,20 @@ require("blink.cmp").setup({
 -- Load VS Code-format snippets from friendly-snippets
 require("luasnip.loaders.from_vscode").lazy_load()
 
-require("_copilot")
+-- require("_copilot")
+
+require("copilot").setup({
+	suggestion = {
+		enabled = true,
+		auto_trigger = true,
+		keymap = {
+			accept = "<C-tab>",
+		},
+	},
+})
+
+require("avante").setup({
+	opts = {
+		provider = "copilot",
+	},
+})

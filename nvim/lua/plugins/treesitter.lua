@@ -55,6 +55,7 @@ ts.setup({
 local ctx_ok, ctx = pcall(require, "treesitter-context")
 if ctx_ok then
 	ctx.setup({
+		enable = true,
 		max_lines = 3,
 		min_window_height = 15,
 		trim_scope = "outer",

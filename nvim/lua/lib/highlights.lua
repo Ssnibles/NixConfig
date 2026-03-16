@@ -61,7 +61,7 @@ function M.apply()
 	hl(0, "BlinkCmpKindText", { fg = "#606079" })
 
 	-- Misc
-	hl(0, "NonText", { fg = "#2a2a30" })
+	-- hl(0, "NonText", { fg = "#2a2a30" })
 	hl(0, "MiniTrailspace", { bg = "#3a1c28" })
 end
 

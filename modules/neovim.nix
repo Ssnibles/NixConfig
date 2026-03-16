@@ -40,12 +40,17 @@
         ]
       ))
 
+      # Utility
+      plenary-nvim
+
       # LSP / completion
       nvim-lspconfig
       blink-cmp
       luasnip
       friendly-snippets
-      copilot-vim
+      # copilot-vim
+      copilot-lua
+      avante-nvim
 
       # Fuzzy finding
       fzf-lua
@@ -67,6 +72,7 @@
       # Statusline / indent
       lualine-nvim
       indent-blankline-nvim
+      nvim-treesitter-context
 
       # Scrolling / formatting
       neoscroll-nvim
@@ -75,8 +81,8 @@
       # Colourscheme
       vague-nvim
 
+      # Misc
       mini-nvim
-      nvim-treesitter-context
     ];
   };
 
