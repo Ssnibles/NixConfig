@@ -4,7 +4,6 @@
 -- Load order is critical for proper plugin initialization and highlight
 -- group inheritance. The colorscheme must load before any plugins that
 -- define highlight overrides.
-
 -- ── Version Check ──────────────────────────────────────────────────────────
 -- Ensure Neovim 0.11+ for vim.lsp.config and vim.lsp.enable APIs
 local function check_version()
@@ -21,22 +20,17 @@ local function check_version()
 	end
 	return true
 end
-
 if not check_version() then
 	return
 end
-
 -- Phase 1: Core Vim options and keymaps (must load first)
 require("options")
 require("keymaps")
 require("autocommands")
-
 -- Phase 2: Colorscheme (before plugins so highlight overrides persist)
 vim.cmd.colorscheme("vague")
-
 -- Phase 2.5: Apply centralized highlight overrides
 require("lib.highlights").apply()
-
 -- Phase 3: Plugin configuration
 -- completion.lua loads first because it defines blink.cmp setup
 require("plugins.completion")
@@ -47,11 +41,9 @@ require("plugins.fzf")
 require("plugins.conform")
 require("plugins.treesitter")
 require("plugins.statusline")
-
 -- Phase 4: Final global configuration
--- Hide the command-line bar when inactive (noice.nvim handles active state)
-vim.opt.cmdheight = 0
-
+-- Set cmdheight to 1 for better compatibility (noice handles display)
+vim.opt.cmdheight = 1
 -- Configure diagnostic display with rounded floats and severity-sorted signs
 vim.diagnostic.config({
 	virtual_text = { prefix = "●", spacing = 4 },
