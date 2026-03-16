@@ -4,46 +4,60 @@
 -- Load order is critical for proper plugin initialization and highlight
 -- group inheritance. The colorscheme must load before any plugins that
 -- define highlight overrides.
+
 -- ── Version Check ──────────────────────────────────────────────────────────
--- Ensure Neovim 0.11+ for vim.lsp.config and vim.lsp.enable APIs
 local function check_version()
 	local major, minor = vim.version().major, vim.version().minor
 	if major < 0 or (major == 0 and minor < 11) then
 		vim.notify(
-			"This configuration requires Neovim 0.11 or higher. You are running "
-				.. vim.version().major
-				.. "."
-				.. vim.version().minor,
+			"This configuration requires Neovim 0.11 or higher. You are running " .. major .. "." .. minor,
 			vim.log.levels.ERROR
 		)
 		return false
 	end
 	return true
 end
+
 if not check_version() then
 	return
 end
+
 -- Phase 1: Core Vim options and keymaps (must load first)
 require("options")
 require("keymaps")
 require("autocommands")
+
 -- Phase 2: Colorscheme (before plugins so highlight overrides persist)
-vim.cmd.colorscheme("vague")
+local function load_colorscheme()
+	local schemes = { "vague", "tokyonight", "gruvbox", "default" }
+	for _, scheme in ipairs(schemes) do
+		if pcall(vim.cmd.colorscheme, scheme) then
+			return scheme
+		end
+	end
+	return "default"
+end
+
+load_colorscheme()
+
 -- Phase 2.5: Apply centralized highlight overrides
 require("lib.highlights").apply()
+
 -- Phase 3: Plugin configuration
--- completion.lua loads first because it defines blink.cmp setup
-require("plugins.completion")
+-- UI plugins load first (noice must load before statusline for cmdline)
 require("plugins.ui")
 require("plugins.mini")
+require("plugins.treesitter")
+require("plugins.statusline")
+require("plugins.completion")
 require("plugins.lsp")
 require("plugins.fzf")
 require("plugins.conform")
-require("plugins.treesitter")
-require("plugins.statusline")
+
 -- Phase 4: Final global configuration
--- Set cmdheight to 1 for better compatibility (noice handles display)
-vim.opt.cmdheight = 1
+-- Set cmdheight to 0 so noice can replace the cmdline area
+vim.opt.cmdheight = 0
+
 -- Configure diagnostic display with rounded floats and severity-sorted signs
 vim.diagnostic.config({
 	virtual_text = { prefix = "●", spacing = 4 },
