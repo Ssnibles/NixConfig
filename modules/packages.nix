@@ -58,6 +58,7 @@
     ++ pkgs.lib.optionals hostProfile.isDesktop [
       # Gaming
       steam
+      steam-run
       heroic
       lutris
       mangohud

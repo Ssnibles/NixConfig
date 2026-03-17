@@ -62,6 +62,7 @@
     };
     firewall = {
       enable = true;
+      # Keep these ports open for localsend
       allowedTCPPorts = [ 53317 ];
       allowedUDPPorts = [ 53317 ];
     };

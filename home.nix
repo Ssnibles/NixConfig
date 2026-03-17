@@ -20,7 +20,7 @@
     ./modules/packages.nix
     ./modules/waybar.nix
     ./modules/swaync.nix
-    ./modules/spotify.nix
+    ./modules/other.nix
     ./modules/scripts.nix
   ];
 
