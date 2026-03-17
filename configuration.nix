@@ -60,6 +60,11 @@
       wifi.powersave = hostProfile.isLaptop;
       dns = "systemd-resolved";
     };
+    firewall = {
+      enable = true;
+      allowedTCPPorts = [ 53317 ];
+      allowedUDPPorts = [ 53317 ];
+    };
   };
 
   services.resolved = {
