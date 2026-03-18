@@ -70,7 +70,7 @@
       gamemode
       protonup-qt
       # Virtualization
-      virt-manager
+      quickemu
     ]
     ++ pkgs.lib.optionals hostProfile.isLaptop [
       # Power management

@@ -45,6 +45,7 @@
       luasnip
       friendly-snippets
       copilot-lua
+      copilot-vim
       avante-nvim
       fzf-lua
       oil-nvim

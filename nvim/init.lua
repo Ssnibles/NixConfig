@@ -8,7 +8,6 @@
 -- 4. Colorscheme (before plugins for highlight inheritance)
 -- 5. Plugins (in dependency order)
 -- =============================================================================
-
 -- ── Version Check ──────────────────────────────────────────────────────────
 -- Requires Neovim 0.10+ for stable LSP and treesitter APIs
 local version = vim.version()
@@ -34,7 +33,6 @@ local function load_colorscheme()
 	end
 	return "default"
 end
-
 load_colorscheme()
 require("lib.highlights").apply()
 

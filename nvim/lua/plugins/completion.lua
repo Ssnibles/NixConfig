@@ -1,101 +1,109 @@
 -- =============================================================================
--- Completion & AI Configuration
+-- Completion & AI Configuration (NixOS Optimized)
 -- =============================================================================
--- blink.cmp for completions, luasnip for snippets, copilot for AI suggestions.
--- All completion sources integrated through blink.cmp's unified interface.
+-- Plugins: blink.cmp (Completion), luasnip (Snippets), copilot.lua (AI)
 -- =============================================================================
 
 local loader = require("lib.loader")
 
--- ── blink.cmp ─────────────────────────────────────────────────────────────
+-- ── luasnip (snippet engine) ──────────────────────────────────────────────
+loader.setup("luasnip", function(luasnip)
+	luasnip.setup({
+		history = true,
+		delete_check_events = "TextChanged",
+		updateevents = "TextChanged,TextChangedI",
+	})
+	-- Load VSCode style snippets
+	require("luasnip.loaders.from_vscode").lazy_load()
+end)
+
+-- ── blink.cmp (Completion Engine) ─────────────────────────────────────────
 loader.setup("blink.cmp", function(blink)
 	blink.setup({
 		keymap = { preset = "super-tab" },
+		sources = {
+			default = { "lsp", "path", "snippets", "buffer" },
+		},
 		cmdline = {
 			keymap = {
 				["<Tab>"] = { "accept", "fallback" },
 				["<S-Tab>"] = { "select_prev", "fallback" },
+				["<Up>"] = { "select_prev", "fallback" },
+				["<Down>"] = { "select_next", "fallback" },
+				["<C-n>"] = { "select_next", "fallback" },
+				["<C-p>"] = { "select_prev", "fallback" },
 			},
 			completion = {
 				menu = { auto_show = true },
-				ghost_text = { enabled = true },
+				ghost_text = { enabled = false },
 			},
 		},
 		completion = {
 			menu = {
 				auto_show = true,
 				border = "rounded",
+				draw = {
+					components = {
+						kind_icon = {
+							text = function(ctx)
+								local icons = {
+									Text = "󰉿",
+									Method = "󰆧",
+									Function = "󰆧",
+									Constructor = "󰆧",
+									Field = "󰜢",
+									Variable = "󰀫",
+									Class = "󰠱",
+									Interface = "󰠱",
+									Module = "󰕳",
+									Property = "󰜢",
+									Unit = "󰑭",
+									Value = "󰎠",
+									Enum = "󰕘",
+									Keyword = "󰌋",
+									Snippet = "󰩫",
+									Color = "󰏘",
+									File = "󰈙",
+									Reference = "󰈇",
+									Folder = "󰉋",
+									EnumMember = "󰕘",
+									Constant = "󰏿",
+									Struct = "󰠱",
+									Event = "󱐋",
+									Operator = "󰆕",
+									TypeParameter = "󰊄",
+								}
+								return icons[ctx.kind] or "󰌋"
+							end,
+						},
+					},
+				},
 			},
 			documentation = {
 				auto_show = true,
-				auto_show_delay_ms = 100,
+				auto_show_delay_ms = 200,
 				window = { border = "rounded" },
 			},
 			ghost_text = { enabled = true },
 		},
-		sources = {
-			default = { "lsp", "path", "snippets", "buffer" },
-		},
-		appearance = {
-			kind_icons = {
-				Text = "󰉿",
-				Method = "󰆧",
-				Function = "󰆧",
-				Constructor = "󰆧",
-				Field = "󰜢",
-				Variable = "󰀫",
-				Class = "󰠱",
-				Interface = "󰠱",
-				Module = "󰕳",
-				Property = "󰜢",
-				Unit = "󰑭",
-				Value = "󰎠",
-				Enum = "󰕘",
-				Keyword = "󰌋",
-				Snippet = "󰩫",
-				Color = "󰏘",
-				File = "󰈙",
-				Reference = "󰈇",
-				Folder = "󰉋",
-				EnumMember = "󰕘",
-				Constant = "󰏿",
-				Struct = "󰠱",
-				Event = "󱐋",
-				Operator = "󰆕",
-				TypeParameter = "󰊄",
-			},
-		},
 	})
 end)
 
--- ── luasnip (snippet engine) ──────────────────────────────────────────────
-loader.setup("luasnip.loaders.from_vscode", function(loaders)
-	loaders.lazy_load()
-end)
-
--- ── copilot.lua (AI suggestions) ──────────────────────────────────────────
+-- ── copilot.lua (AI Inline Suggestions) ───────────────────────────────────
 loader.setup("copilot", function(copilot)
 	copilot.setup({
 		panel = {
-			enabled = true,
+			enabled = false,
 			auto_refresh = true,
-			keymap = {
-				jump_next = "<C-j>",
-				jump_prev = "<C-k>",
-				accept = "<CR>",
-				refresh = "r",
-				open = "<M-CR>",
-			},
-			layout = { position = "bottom", ratio = 0.4 },
 		},
 		suggestion = {
 			enabled = true,
 			auto_trigger = true,
 			hide_during_completion = true,
 			keymap = {
-				accept = "<C-Tab>",
-				next = "<M-]>",
-				prev = "<M-[>",
+				accept = "<C-y>",
+				next = "<C-n>",
+				prev = "<C-p>",
 				dismiss = "<C-]>",
 			},
 		},
@@ -107,24 +115,5 @@ loader.setup("copilot", function(copilot)
 			gitrebase = false,
 			["."] = false,
 		},
-		copilot_node_command = "node",
 	})
-end)
-
--- ── copilot-chat ──────────────────────────────────────────────────────────
-loader.setup("copilot.chat", function(copilot_chat)
-	copilot_chat.setup({
-		panel = { layout = "float", auto_focus = true },
-		prompts = {
-			Explain = "Please explain how the selected code works:",
-			Review = "Please review the selected code for potential issues:",
-			Tests = "Please generate tests for the selected code:",
-		},
-	})
-	vim.keymap.set("n", "<leader>aa", function()
-		copilot_chat.open()
-	end, { desc = "Copilot Chat" })
-	vim.keymap.set("v", "<leader>aa", function()
-		copilot_chat.open({ selection = true })
-	end, { desc = "Copilot Chat (selection)" })
 end)
