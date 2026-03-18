@@ -1,19 +1,20 @@
+# =============================================================================
+# Fish Shell Configuration
+# =============================================================================
+# Includes plugins and terminal emulator configs (Ghostty/Foot).
+# =============================================================================
 { pkgs, ... }:
 {
   programs.fish = {
     enable = true;
-
     shellAbbrs = {
       v = "nvim";
       rebuild = "git -C ~/NixConfig add -u && sudo nixos-rebuild switch --flake ~/NixConfig#nixos";
       update = "cd ~/NixConfig && nix flake update && sudo nixos-rebuild switch --flake .";
       get-class = "hyprctl clients | grep -A5 'class:'";
     };
-
     interactiveShellInit = ''
       set -g fish_greeting ""
-
-      # pure prompt — vague colour palette
       set -g pure_color_primary  6e94b2
       set -g pure_color_info     bb9dbd
       set -g pure_color_mute     606079
@@ -21,7 +22,6 @@
       set -g pure_color_warning  f3be7c
       set -g pure_color_success  7fa563
     '';
-
     plugins = with pkgs.fishPlugins; [
       {
         name = "grc";
@@ -42,8 +42,6 @@
     ];
   };
 
-  # ── Ghostty ───────────────────────────────────────────────────────────────
-
   xdg.configFile."ghostty/config".text = ''
     command           = ${pkgs.fish}/bin/fish
     font-size         = 12
@@ -53,13 +51,11 @@
     window-theme      = dark
     clipboard-read    = allow
     clipboard-write   = allow
-
     background = 141415
     foreground = cdcdcd
     cursor-color = 6e94b2
     selection-background = 333738
     selection-foreground = cdcdcd
-
     palette = 0=#141415
     palette = 1=#d8647e
     palette = 2=#7fa563
@@ -78,19 +74,15 @@
     palette = 15=#cdcdcd
   '';
 
-  # ── foot ──────────────────────────────────────────────────────────────────
-
   xdg.configFile."foot/foot.ini".text = ''
     shell=${pkgs.fish}/bin/fish
     font=JetBrainsMono Nerd Font:size=12
     pad=20x20
-
     [colors-dark]
     background=141415
     foreground=cdcdcd
     selection-background=333738
     selection-foreground=cdcdcd
-
     regular0=141415
     regular1=d8647e
     regular2=7fa563
@@ -99,7 +91,6 @@
     regular5=bb9dbd
     regular6=b4d4cf
     regular7=cdcdcd
-
     bright0=252530
     bright1=d8647e
     bright2=7fa563

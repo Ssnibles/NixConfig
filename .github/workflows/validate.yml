@@ -1,0 +1,76 @@
+# =============================================================================
+# GitHub Actions - Nix Flake Validation
+# Runs on every push and pull request to catch configuration errors early
+# =============================================================================
+name: Validate Nix Flake
+
+on:
+  # Run on all pushes to main branch
+  push:
+    branches: [main]
+  # Run on all pull requests
+  pull_request:
+    branches: [main]
+  # Allow manual triggering from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  # Job 1: Check flake syntax and evaluate configurations
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Install Nix package manager
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      # Enable Nix flakes and caching
+      - name: Enable Nix flakes
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      # Check flake syntax without building
+      - name: Check flake syntax
+        run: nix flake check --no-build --print-build-logs
+
+      # Evaluate all NixOS configurations (catches type errors)
+      - name: Evaluate NixOS configurations
+        run: |
+          nix eval .#nixosConfigurations.desktop.config.system.build.toplevel
+          nix eval .#nixosConfigurations.laptop.config.system.build.toplevel
+
+      # Evaluate Home Manager configurations
+      - name: Evaluate Home Manager configurations
+        run: |
+          nix eval .#homeConfigurations.josh@desktop.activationPackage
+          nix eval .#homeConfigurations.josh@laptop.activationPackage
+
+      # Check for common issues (unused inputs, formatting)
+      - name: Run nix flake show
+        run: nix flake show
+
+  # Job 2: Build configurations (optional - slower but catches more issues)
+  build:
+    runs-on: ubuntu-latest
+    needs: validate
+    # Only run on main branch pushes, not PRs (saves CI time)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Enable Nix flakes
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      # Build desktop configuration (doesn't deploy, just verifies build)
+      - name: Build desktop configuration
+        run: nix build .#nixosConfigurations.desktop.config.system.build.toplevel
+
+      # Build laptop configuration
+      - name: Build laptop configuration
+        run: nix build .#nixosConfigurations.laptop.config.system.build.toplevel

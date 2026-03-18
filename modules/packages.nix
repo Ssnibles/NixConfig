@@ -1,16 +1,24 @@
-{ pkgs, hostProfile, ... }:
-
+# =============================================================================
+# Package Configuration
+# =============================================================================
+# Defines the set of packages installed for the user.
+# Uses hostProfile to differentiate between desktop and laptop needs.
+# =============================================================================
+{
+  pkgs,
+  hostProfile,
+  ...
+}:
 {
   home.packages =
     with pkgs;
     [
-      # ── Dev ────────────────────────────────────────────────────────────────
+      # Development
       kotlin
       jdk21
       code2prompt
       nodejs
-
-      # ── CLI utilities ───────────────────────────────────────────────────────
+      # CLI utilities
       wl-clipboard
       fzf
       fd
@@ -21,35 +29,29 @@
       btop
       yazi
       jq
-
-      # ── Fonts ───────────────────────────────────────────────────────────────
+      # Fonts
       nerd-fonts.fira-code
       nerd-fonts.zed-mono
       nerd-fonts.jetbrains-mono
-
-      # ── GUI apps ────────────────────────────────────────────────────────────
+      # GUI applications
       ghostty
       foot
       mission-center
       firefox
       zen-browser
       onlyoffice-desktopeditors
-
-      # ── PDF viewers ─────────────────────────────────────────────────────────
+      # PDF viewers
       sioyek
       zathura
-
-      # ── Notes ───────────────────────────────────────────────────────────────
+      # Notes
       trilium-desktop
-
-      # ── Media ───────────────────────────────────────────────────────────────
+      # Media
       spotify
       strawberry
       picard
       easytag
       pavucontrol
-
-      # ── System / networking ─────────────────────────────────────────────────
+      # System / networking
       localsend
       impala
       bluetui
@@ -64,11 +66,11 @@
       mangohud
       gamemode
       protonup-qt
-
-      # Virtualisation
+      # Virtualization
       virt-manager
     ]
     ++ pkgs.lib.optionals hostProfile.isLaptop [
+      # Power management
       powertop
       acpi
       brightnessctl

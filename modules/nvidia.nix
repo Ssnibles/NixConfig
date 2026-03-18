@@ -1,9 +1,10 @@
-# NVIDIA proprietary driver stack.
-# Only applied when hostProfile.hasNvidia = true (set in flake.nix / mkHost).
-#
-# Both the kernel and the driver are sourced from stablePkgs (nixos-25.05)
-# so the out-of-tree .ko is always compiled against the correct kernel headers.
-# stablePkgs is injected via specialArgs in flake.nix.
+# =============================================================================
+# NVIDIA Driver Module
+# =============================================================================
+# Configures proprietary NVIDIA drivers.
+# Only activates when hostProfile.hasNvidia = true.
+# Uses stable kernel and drivers for maximum compatibility.
+# =============================================================================
 {
   pkgs,
   lib,
@@ -11,13 +12,8 @@
   hostProfile,
   ...
 }:
-
 lib.mkIf hostProfile.hasNvidia {
-
-  # Use the stable LTS kernel — must match the driver below.
-  # This overrides the lib.mkDefault in configuration.nix.
   boot.kernelPackages = stablePkgs.linuxPackages;
-
   boot.blacklistedKernelModules = [ "nouveau" ];
   boot.kernelModules = [
     "nvidia"
@@ -30,8 +26,6 @@ lib.mkIf hostProfile.hasNvidia {
     "nvidia-drm.fbdev=1"
   ];
 
-  # Tell the display stack to use the nvidia driver.
-  # Required even on Wayland — without this the driver won't bind.
   services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
@@ -40,7 +34,6 @@ lib.mkIf hostProfile.hasNvidia {
     powerManagement.enable = true;
     powerManagement.finegrained = false;
     nvidiaSettings = true;
-    # Driver package must come from the same nixpkgs as the kernel above.
     package = stablePkgs.linuxPackages.nvidiaPackages.stable;
   };
 
@@ -57,7 +50,6 @@ lib.mkIf hostProfile.hasNvidia {
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     WLR_NO_HARDWARE_CURSORS = "1";
-    # Helps the GBM backend locate the nvidia gbm library
     __EGL_VENDOR_LIBRARY_DIRS = "/run/opengl-driver/share/glvnd/egl_vendor.d";
   };
 }

@@ -1,14 +1,10 @@
+# =============================================================================
+# Miscellaneous Modules
+# =============================================================================
+# Includes Spotify Player and Java configuration.
+# =============================================================================
 { config, ... }:
 {
-  # spotify-player: TUI Spotify client.
-  # Store credentials in ~/.secrets/spotify/ (never in the Nix store).
-  #
-  #   mkdir -p ~/.secrets/spotify && chmod 700 ~/.secrets/spotify
-  #   echo "CLIENT_ID"     > ~/.secrets/spotify/id.txt
-  #   echo "CLIENT_SECRET" > ~/.secrets/spotify/secret.txt
-  #   chmod 600 ~/.secrets/spotify/*.txt
-  #
-  # Get credentials at: https://developer.spotify.com/dashboard
   programs.spotify-player = {
     enable = true;
     settings = {
@@ -20,6 +16,5 @@
       };
     };
   };
-
   programs.java.enable = true;
 }
