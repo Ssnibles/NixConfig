@@ -56,6 +56,9 @@
       impala
       bluetui
       blueman
+      satty
+      grim
+      slurp
     ]
     ++ pkgs.lib.optionals hostProfile.isDesktop [
       # Gaming
