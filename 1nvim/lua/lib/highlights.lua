@@ -3,9 +3,6 @@
 -- =============================================================================
 -- Centralized highlight definitions for consistent UI appearance.
 -- Only override what's necessary - let colorscheme handle the rest.
--- Applied after colorscheme loads to ensure proper inheritance.
--- =============================================================================
-
 local M = {}
 
 function M.apply()
@@ -14,6 +11,7 @@ function M.apply()
 	local border_color = "#4a4a5a"
 
 	-- ── Cursor & Selection ─────────────────────────────────────────────────
+	-- Don't override foreground on CursorLine - only background
 	hl(0, "Cursor", { bg = "#6e94b2", fg = "#141415" })
 	hl(0, "CursorLine", { bg = "#1a1a1c", blend = 0 })
 	hl(0, "CursorColumn", { bg = "#1a1a1c" })
@@ -32,6 +30,7 @@ function M.apply()
 	hl(0, "PmenuThumb", { bg = "#4a4a5a" })
 
 	-- ── Diagnostics ────────────────────────────────────────────────────────
+	-- Subtle background tints for lines with diagnostics
 	hl(0, "DiagnosticLineError", { bg = "#2a1720" })
 	hl(0, "DiagnosticLineWarn", { bg = "#271f10" })
 	hl(0, "DiagnosticLineInfo", { bg = "#131c27" })

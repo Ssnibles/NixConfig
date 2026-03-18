@@ -1,13 +1,9 @@
 -- =============================================================================
--- Autocommands Configuration
+-- Autocommands
 -- =============================================================================
--- Event-driven behaviors for file operations, diagnostics, and UI enhancements.
--- All autocommands are grouped under "UserConfig" for easy management.
--- =============================================================================
-
 local group = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 
--- ── Yank Highlight ─────────────────────────────────────────────────────────
+-- Yank highlight
 vim.api.nvim_create_autocmd("TextYankPost", {
 	group = group,
 	callback = function()
@@ -15,7 +11,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	end,
 })
 
--- ── Restore Cursor Position ────────────────────────────────────────────────
+-- Restore cursor position
 vim.api.nvim_create_autocmd("BufReadPost", {
 	group = group,
 	callback = function()
@@ -27,7 +23,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 	end,
 })
 
--- ── Trim Trailing Whitespace ───────────────────────────────────────────────
+-- Trim trailing whitespace
 vim.api.nvim_create_autocmd("BufWritePre", {
 	group = group,
 	callback = function()
@@ -39,7 +35,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 	end,
 })
 
--- ── Close Utility Buffers with 'q' ─────────────────────────────────────────
+-- Close utility buffers with 'q'
 vim.api.nvim_create_autocmd("FileType", {
 	group = group,
 	pattern = { "help", "man", "qf", "lspinfo", "checkhealth", "notify", "oil" },
@@ -48,7 +44,7 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
--- ── Auto-resize Splits ─────────────────────────────────────────────────────
+-- Auto-resize splits
 vim.api.nvim_create_autocmd("VimResized", {
 	group = group,
 	callback = function()
@@ -56,7 +52,7 @@ vim.api.nvim_create_autocmd("VimResized", {
 	end,
 })
 
--- ── Strip Carriage Returns (DOS → Unix) ────────────────────────────────────
+-- Strip carriage returns
 vim.api.nvim_create_autocmd("BufReadPost", {
 	group = group,
 	callback = function()
@@ -66,7 +62,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 	end,
 })
 
--- ── Disable Auto-comment on New Lines ──────────────────────────────────────
+-- Disable auto-comment
 vim.api.nvim_create_autocmd("FileType", {
 	group = group,
 	callback = function()
@@ -74,7 +70,7 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
--- ── Prose Filetypes (spell check + wrap) ───────────────────────────────────
+-- Prose filetypes
 vim.api.nvim_create_autocmd("FileType", {
 	group = group,
 	pattern = { "markdown", "text", "gitcommit" },
@@ -84,7 +80,7 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
--- ── Diagnostic Line Highlights ─────────────────────────────────────────────
+-- Diagnostic line highlights
 local diag_ns = vim.api.nvim_create_namespace("diag_linenum_hl")
 local severity_hl = {
 	[vim.diagnostic.severity.ERROR] = { sign = "DiagnosticSignError", line = "DiagnosticLineError" },

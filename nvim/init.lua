@@ -1,37 +1,34 @@
 -- =============================================================================
--- Neovim Initialization
+-- Neovim Entry Point
 -- =============================================================================
--- Load order is critical for proper plugin initialization and highlight
--- group inheritance. The colorscheme must load before any plugins that
--- define highlight overrides.
+-- This is the main initialization file. Load order matters:
+-- 1. Options (basic vim settings)
+-- 2. Keymaps (before plugins so they can override)
+-- 3. Autocommands (event handlers)
+-- 4. Colorscheme (before plugins for highlight inheritance)
+-- 5. Plugins (in dependency order)
+-- =============================================================================
 
 -- ── Version Check ──────────────────────────────────────────────────────────
-local function check_version()
-	local major, minor = vim.version().major, vim.version().minor
-	if major < 0 or (major == 0 and minor < 11) then
-		vim.notify(
-			"This configuration requires Neovim 0.11 or higher. You are running " .. major .. "." .. minor,
-			vim.log.levels.ERROR
-		)
-		return false
-	end
-	return true
-end
-
-if not check_version() then
+-- Requires Neovim 0.10+ for stable LSP and treesitter APIs
+local version = vim.version()
+if version.major < 0 or (version.major == 0 and version.minor < 10) then
+	vim.notify("Neovim 0.10+ required. Found: " .. version.major .. "." .. version.minor, vim.log.levels.ERROR)
 	return
 end
 
--- Phase 1: Core Vim options and keymaps (must load first)
+-- ── Phase 1: Core Configuration ───────────────────────────────────────────
 require("options")
 require("keymaps")
 require("autocommands")
 
--- Phase 2: Colorscheme (before plugins so highlight overrides persist)
+-- ── Phase 2: Colorscheme & Highlights ─────────────────────────────────────
 local function load_colorscheme()
 	local schemes = { "vague", "tokyonight", "gruvbox", "default" }
 	for _, scheme in ipairs(schemes) do
-		if pcall(vim.cmd.colorscheme, scheme) then
+		local ok = pcall(vim.cmd.colorscheme, scheme)
+		if ok then
+			vim.g.colors_name = scheme
 			return scheme
 		end
 	end
@@ -39,12 +36,10 @@ local function load_colorscheme()
 end
 
 load_colorscheme()
-
--- Phase 2.5: Apply centralized highlight overrides
 require("lib.highlights").apply()
 
--- Phase 3: Plugin configuration
--- UI plugins load first (noice must load before statusline for cmdline)
+-- ── Phase 3: Plugins (load in dependency order) ───────────────────────────
+-- UI first (noice affects cmdline before statusline renders)
 require("plugins.ui")
 require("plugins.mini")
 require("plugins.treesitter")
@@ -54,11 +49,11 @@ require("plugins.lsp")
 require("plugins.fzf")
 require("plugins.conform")
 
--- Phase 4: Final global configuration
--- Set cmdheight to 0 so noice can replace the cmdline area
+-- ── Phase 4: Final Configuration ──────────────────────────────────────────
+-- Enable noice cmdline replacement
 vim.opt.cmdheight = 0
 
--- Configure diagnostic display with rounded floats and severity-sorted signs
+-- Configure diagnostics with consistent styling
 vim.diagnostic.config({
 	virtual_text = { prefix = "●", spacing = 4 },
 	signs = {
@@ -74,3 +69,8 @@ vim.diagnostic.config({
 	float = { border = "rounded", source = true },
 	update_in_insert = false,
 })
+
+-- Add health check keymap
+vim.keymap.set("n", "<leader>ch", function()
+	require("lib.health").check()
+end, { desc = "Check configuration health" })

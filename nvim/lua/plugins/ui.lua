@@ -1,13 +1,15 @@
 -- =============================================================================
--- UI Plugin Configuration
+-- UI Plugins Configuration
 -- =============================================================================
--- Miscellaneous UI plugins: which-key, gitsigns, oil, autopairs, markview,
--- noice, and fidget. Each provides visual enhancements without redundancy.
+-- Visual enhancements: which-key, gitsigns, oil, autopairs, markview, noice.
+-- These plugins improve the editing experience without adding redundancy.
+-- =============================================================================
 
--- ── which-key ──────────────────────────────────────────────────────────────
-local which_key_ok = pcall(require, "which-key")
-if which_key_ok then
-	require("which-key").setup({
+local loader = require("lib.loader")
+
+-- ── which-key (keybinding hints) ──────────────────────────────────────────
+loader.setup("which-key", function(which_key)
+	which_key.setup({
 		win = { border = "rounded" },
 		plugins = {
 			marks = true,
@@ -24,12 +26,11 @@ if which_key_ok then
 			},
 		},
 	})
-end
+end)
 
--- ── gitsigns ───────────────────────────────────────────────────────────────
-local gitsigns_ok = pcall(require, "gitsigns")
-if gitsigns_ok then
-	require("gitsigns").setup({
+-- ── gitsigns (git integration) ────────────────────────────────────────────
+loader.setup("gitsigns", function(gitsigns)
+	gitsigns.setup({
 		signs = {
 			add = { text = "▎" },
 			change = { text = "▎" },
@@ -39,25 +40,14 @@ if gitsigns_ok then
 			untracked = { text = "▎" },
 		},
 		current_line_blame = false,
-		current_line_blame_opts = {
-			virt_text = true,
-			virt_text_pos = "eol",
-			delay = 600,
-			ignore_whitespace = true,
-		},
-		current_line_blame_formatter = " <author>, <author_time:%Y-%m-%d> · <summary>",
 		preview_config = { border = "rounded" },
 		signcolumn = true,
-		numhl = false,
-		linehl = false,
-		word_diff = false,
 	})
-end
+end)
 
--- ── Oil ────────────────────────────────────────────────────────────────────
-local oil_ok = pcall(require, "oil")
-if oil_ok then
-	require("oil").setup({
+-- ── Oil (file navigation) ─────────────────────────────────────────────────
+loader.setup("oil", function(oil)
+	oil.setup({
 		view_options = {
 			show_hidden = true,
 			is_always_hidden = function(name, _)
@@ -75,42 +65,34 @@ if oil_ok then
 			cursorline = false,
 		},
 	})
-end
+end)
 
--- ── nvim-autopairs ─────────────────────────────────────────────────────────
-local autopairs_ok = pcall(require, "nvim-autopairs")
-if autopairs_ok then
-	require("nvim-autopairs").setup({
+-- ── nvim-autopairs ────────────────────────────────────────────────────────
+loader.setup("nvim-autopairs", function(autopairs)
+	autopairs.setup({
 		check_ts = true,
 		ts_config = { lua = { "string" }, javascript = { "template_string" } },
 		fast_wrap = { map = "<M-e>" },
 		completion = true,
 	})
-end
+end)
 
--- ── markview ───────────────────────────────────────────────────────────────
-local markview_ok = pcall(require, "markview")
-if markview_ok then
-	require("markview").setup({
+-- ── markview (markdown preview) ───────────────────────────────────────────
+loader.setup("markview", function(markview)
+	markview.setup({
 		modes = { "n", "no", "c" },
 		hybrid_modes = { "n", "no" },
 	})
-end
+end)
 
--- ── noice ──────────────────────────────────────────────────────────────────
--- Modern command-line and notification UI
--- Cmdline view replaces the statusline area at the bottom (not a popup)
-local noice_ok = pcall(require, "noice")
-if noice_ok then
-	require("noice").setup({
-		-- Disable noice notifications (fidget handles LSP progress)
+-- ── noice (cmdline & notifications) ───────────────────────────────────────
+loader.setup("noice", function(noice)
+	noice.setup({
 		notify = { enabled = false },
-		-- Messages shown in mini view
 		messages = {
 			enabled = true,
 			view = "mini",
 		},
-		-- LSP integration
 		lsp = {
 			progress = { enabled = false },
 			override = {
@@ -120,12 +102,9 @@ if noice_ok then
 			hover = { enabled = true },
 			signature = { enabled = true },
 		},
-		-- Command line replacement - displays in statusline area at bottom
 		cmdline = {
 			enabled = true,
-			-- Use 'cmdline' view to replace statusline area (not popup)
 			view = "cmdline",
-			-- Format patterns for different command types
 			format = {
 				cmdline = { pattern = "^:", icon = "", lang = "vim" },
 				search_down = { pattern = "^/", icon = " ", lang = "regex" },
@@ -136,17 +115,14 @@ if noice_ok then
 				input = { view = "cmdline_input", icon = "󰥻 " },
 			},
 		},
-		-- Search highlighting and incrementality
 		inc_rename = { enabled = true },
-		-- Presets for common UI patterns
 		presets = {
-			bottom_search = true, -- Search appears at bottom (statusline area)
-			command_palette = false, -- Don't use command palette popup
+			bottom_search = true,
+			command_palette = false,
 			long_message_to_split = true,
 			inc_rename = true,
 			lsp_doc_border = true,
 		},
-		-- Routes to suppress or redirect messages
 		routes = {
 			{
 				filter = {
@@ -162,24 +138,4 @@ if noice_ok then
 			},
 		},
 	})
-end
-
--- ── fidget ─────────────────────────────────────────────────────────────────
-local fidget_ok = pcall(require, "fidget")
-if fidget_ok then
-	require("fidget").setup({
-		notification = {
-			window = { winblend = 0, border = "none" },
-			override_vim_notify = true,
-		},
-		progress = {
-			display = {
-				done_icon = "✓",
-				done_ttl = 3000,
-			},
-		},
-		integration = {
-			["nvim-notify"] = { enabled = false },
-		},
-	})
-end
+end)

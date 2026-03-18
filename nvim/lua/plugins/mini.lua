@@ -1,13 +1,12 @@
 -- =============================================================================
 -- mini.nvim Suite Configuration
 -- =============================================================================
--- Comprehensive text editing utilities from the mini.nvim library.
--- Uses vim.schedule to ensure all modules are available after Nix runtimepath
--- population.
+-- Comprehensive text editing utilities. Loaded with vim.schedule to ensure
+-- all modules are available after Nix runtimepath population.
+-- =============================================================================
 
 vim.schedule(function()
-	-- ── Text Objects (mini.ai) ───────────────────────────────────────────────
-	-- Enhanced text object selections including custom whole-buffer object
+	-- ── Text Objects (mini.ai) ─────────────────────────────────────────────
 	require("mini.ai").setup({
 		custom_textobjects = {
 			B = function()
@@ -18,8 +17,7 @@ vim.schedule(function()
 		},
 	})
 
-	-- ── Surround (mini.surround) ─────────────────────────────────────────────
-	-- Add, delete, and replace surrounding characters (brackets, quotes, etc.)
+	-- ── Surround ────────────────────────────────────────────────────────────
 	require("mini.surround").setup({
 		mappings = {
 			add = "sa",
@@ -33,14 +31,12 @@ vim.schedule(function()
 		search_method = "cover_or_next",
 	})
 
-	-- ── Align (mini.align) ───────────────────────────────────────────────────
-	-- Align text on delimiters with ga / gA
+	-- ── Align ───────────────────────────────────────────────────────────────
 	require("mini.align").setup({
 		mappings = { start = "ga", start_with_preview = "gA" },
 	})
 
-	-- ── Move (mini.move) ─────────────────────────────────────────────────────
-	-- Move lines and selections with Alt+hjkl
+	-- ── Move ────────────────────────────────────────────────────────────────
 	require("mini.move").setup({
 		mappings = {
 			left = "<M-h>",
@@ -54,8 +50,7 @@ vim.schedule(function()
 		},
 	})
 
-	-- ── Operators (mini.operators) ───────────────────────────────────────────
-	-- Exchange, multiply, evaluate, replace, and sort operations
+	-- ── Operators ───────────────────────────────────────────────────────────
 	require("mini.operators").setup({
 		evaluate = { prefix = "g=" },
 		exchange = { prefix = "gx" },
@@ -64,24 +59,19 @@ vim.schedule(function()
 		sort = { prefix = "gs" },
 	})
 
-	-- ── Split/Join (mini.splitjoin) ──────────────────────────────────────────
-	-- Toggle function arguments and tables between single/multi-line
+	-- ── Split/Join ──────────────────────────────────────────────────────────
 	require("mini.splitjoin").setup({ mappings = { toggle = "gS" } })
 
-	-- ── Trailing Whitespace (mini.trailspace) ────────────────────────────────
-	-- Highlight trailing whitespace (trim called in autocommands.lua)
+	-- ── Trailing Whitespace ─────────────────────────────────────────────────
 	require("mini.trailspace").setup()
 
-	-- ── Cursor Word (mini.cursorword) ────────────────────────────────────────
-	-- Highlight word under cursor
+	-- ── Cursor Word ─────────────────────────────────────────────────────────
 	require("mini.cursorword").setup()
 
-	-- ── Comments (mini.comment) ──────────────────────────────────────────────
-	-- Toggle comments with gcc and gc motions
+	-- ── Comments ────────────────────────────────────────────────────────────
 	require("mini.comment").setup()
 
-	-- ── Buffer Remove (mini.bufremove) ───────────────────────────────────────
-	-- Delete buffers without breaking window layout
+	-- ── Buffer Remove ───────────────────────────────────────────────────────
 	local bufremove = require("mini.bufremove")
 	bufremove.setup()
 	vim.keymap.set("n", "<leader>bd", function()
@@ -91,15 +81,13 @@ vim.schedule(function()
 		bufremove.delete(0, true)
 	end, { desc = "Force-delete buffer" })
 
-	-- ── Jump2D (mini.jump2d) ─────────────────────────────────────────────────
-	-- Two-character screen hopping with <leader><leader>
+	-- ── Jump2D ──────────────────────────────────────────────────────────────
 	require("mini.jump2d").setup({
 		mappings = { start_jumping = "<leader><leader>" },
 		view = { dim = true, n_steps_ahead = 2 },
 	})
 
-	-- ── Diff (mini.diff) ─────────────────────────────────────────────────────
-	-- Local diff algorithm with sign column indicators
+	-- ── Diff ────────────────────────────────────────────────────────────────
 	require("mini.diff").setup({
 		view = {
 			style = "sign",
@@ -107,16 +95,7 @@ vim.schedule(function()
 		},
 	})
 
-	-- ── Extra (mini.extra) ───────────────────────────────────────────────────
-	-- Treesitter helpers for mini.ai and mini.clue
-	require("mini.extra").setup()
-
-	-- ── Starter (mini.starter) ───────────────────────────────────────────────
-	-- Dashboard (disabled auto-open, use manually if needed)
-	require("mini.starter").setup({ autoopen = false })
-
-	-- ── Icons (mini.icons) ───────────────────────────────────────────────────
-	-- Filetype and git icons with glyph style
+	-- ── Icons ───────────────────────────────────────────────────────────────
 	require("mini.icons").setup({
 		style = "glyph",
 		use_file_extension = function(ext, _)
@@ -124,8 +103,7 @@ vim.schedule(function()
 		end,
 	})
 
-	-- ── Clue (mini.clue) ─────────────────────────────────────────────────────
-	-- Keybinding hints for leader sequences and built-in commands
+	-- ── Clue (keybinding hints) ─────────────────────────────────────────────
 	local clue = require("mini.clue")
 	clue.setup({
 		clues = {
@@ -147,20 +125,6 @@ vim.schedule(function()
 			{ mode = "n", keys = "<Leader>t", desc = "+toggle" },
 			{ mode = "n", keys = "<Leader>w", desc = "+window" },
 			{ mode = "n", keys = "s", desc = "+surround" },
-			{ mode = "n", keys = "sa", desc = "Surround add" },
-			{ mode = "n", keys = "sd", desc = "Surround delete" },
-			{ mode = "n", keys = "sr", desc = "Surround replace" },
-			{ mode = "n", keys = "sf", desc = "Surround find →" },
-			{ mode = "n", keys = "sF", desc = "Surround find ←" },
-			{ mode = "n", keys = "sh", desc = "Surround highlight" },
-			{ mode = "n", keys = "ga", desc = "Align" },
-			{ mode = "n", keys = "gA", desc = "Align (preview)" },
-			{ mode = "n", keys = "g=", desc = "Evaluate" },
-			{ mode = "n", keys = "gx", desc = "Exchange" },
-			{ mode = "n", keys = "gm", desc = "Multiply" },
-			{ mode = "n", keys = "gR", desc = "Replace w/ reg" },
-			{ mode = "n", keys = "gs", desc = "Sort" },
-			{ mode = "n", keys = "gS", desc = "Split/join toggle" },
 			{ mode = "n", keys = "]", desc = "+next" },
 			{ mode = "n", keys = "[", desc = "+prev" },
 		},
@@ -173,9 +137,6 @@ vim.schedule(function()
 			{ mode = "n", keys = "]" },
 			{ mode = "n", keys = "[" },
 			{ mode = "n", keys = "s" },
-			{ mode = "n", keys = "'" },
-			{ mode = "n", keys = "`" },
-			{ mode = "n", keys = '"' },
 		},
 		window = {
 			delay = 250,
@@ -183,8 +144,7 @@ vim.schedule(function()
 		},
 	})
 
-	-- ── Hipatterns (mini.hipatterns) ─────────────────────────────────────────
-	-- Highlight TODO, FIXME, BUG, and hex color patterns in comments
+	-- ── Hipatterns (highlight TODO, FIXME, etc.) ────────────────────────────
 	local hip = require("mini.hipatterns")
 	hip.setup({
 		highlighters = {

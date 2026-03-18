@@ -2,12 +2,9 @@
 -- Statusline and UI Chrome Configuration
 -- =============================================================================
 -- lualine (statusline), ibl (indent guides), neoscroll (smooth scrolling),
--- statuscol (fold/sign/line column). All visual chrome in one place.
--- =============================================================================
+-- statuscol (fold/sign/line column).
 
-local loader = require("lib.loader")
-
--- ── lualine Theme ─────────────────────────────────────────────────────────
+-- ── lualine Theme ──────────────────────────────────────────────────────────
 local theme = {
 	normal = {
 		a = { fg = "#6e94b2", bg = "#141415", gui = "bold" },
@@ -41,7 +38,7 @@ local theme = {
 	},
 }
 
--- ── mini.diff Status ──────────────────────────────────────────────────────
+-- ── mini.diff Status ───────────────────────────────────────────────────────
 local function mini_diff_status()
 	local ok, data = pcall(require("mini.diff").get_buf_data)
 	if not ok or not data or not data.summary then
@@ -61,9 +58,10 @@ local function mini_diff_status()
 	return #parts > 0 and table.concat(parts, " ") or ""
 end
 
--- ── lualine Setup ─────────────────────────────────────────────────────────
-loader.setup("lualine", function(lualine)
-	lualine.setup({
+-- ── lualine Setup ──────────────────────────────────────────────────────────
+local lualine_ok = pcall(require, "lualine")
+if lualine_ok then
+	require("lualine").setup({
 		options = {
 			theme = theme,
 			component_separators = { left = "", right = "" },
@@ -115,11 +113,12 @@ loader.setup("lualine", function(lualine)
 			lualine_x = { { "location", color = { fg = "#252530" } } },
 		},
 	})
-end)
+end
 
--- ── indent-blankline ──────────────────────────────────────────────────────
-loader.setup("ibl", function(ibl)
-	ibl.setup({
+-- ── indent-blankline Configuration ─────────────────────────────────────────
+local ibl_ok = pcall(require, "ibl")
+if ibl_ok then
+	require("ibl").setup({
 		enabled = true,
 		indent = {
 			char = "│",
@@ -137,22 +136,24 @@ loader.setup("ibl", function(ibl)
 			filetypes = { "help", "dashboard", "oil", "neo-tree" },
 		},
 	})
-end)
+end
 
--- ── neoscroll ─────────────────────────────────────────────────────────────
-loader.setup("neoscroll", function(neoscroll)
-	neoscroll.setup({
+-- ── neoscroll Configuration ────────────────────────────────────────────────
+local neoscroll_ok = pcall(require, "neoscroll")
+if neoscroll_ok then
+	require("neoscroll").setup({
 		mappings = { "<C-u>", "<C-d>", "<C-b>", "<C-f>", "zt", "zz", "zb" },
 		easing = "quadratic",
 		hide_cursor = true,
 		respect_scrolloff = true,
 	})
-end)
+end
 
--- ── statuscol ─────────────────────────────────────────────────────────────
-loader.setup("statuscol", function(statuscol)
+-- ── statuscol Configuration ────────────────────────────────────────────────
+local statuscol_ok = pcall(require, "statuscol")
+if statuscol_ok then
 	local builtin = require("statuscol.builtin")
-	statuscol.setup({
+	require("statuscol").setup({
 		relculright = true,
 		segments = {
 			{ text = { builtin.foldfunc }, click = "v:lua.ScFa" },
@@ -161,4 +162,4 @@ loader.setup("statuscol", function(statuscol)
 		},
 		ft_ignore = { "neo-tree", "oil" },
 	})
-end)
+end

@@ -1,13 +1,9 @@
 -- =============================================================================
--- LSP Configuration
+-- LSP Configuration (Neovim 0.11+ APIs)
 -- =============================================================================
--- Language Server Protocol setup using Neovim's native LSP client.
--- Configured for nixd, lua_ls, kotlin_language_server, and jdtls.
--- =============================================================================
-
 local lsp = vim.lsp
 
--- ── Capabilities (with blink.cmp integration) ─────────────────────────────
+-- Capabilities with blink.cmp
 local capabilities = (function()
 	local ok, blink = pcall(require, "blink.cmp")
 	if ok then
@@ -21,7 +17,7 @@ capabilities.textDocument.foldingRange = {
 	lineFoldingOnly = true,
 }
 
--- ── Global LSP Config ─────────────────────────────────────────────────────
+-- Global LSP config
 lsp.config("*", {
 	on_attach = function(client, bufnr)
 		-- nvim-navic for breadcrumbs
@@ -57,11 +53,11 @@ lsp.config("*", {
 	capabilities = capabilities,
 })
 
--- ── Float Styling ─────────────────────────────────────────────────────────
+-- Float styling
 lsp.handlers["textDocument/hover"] = lsp.with(lsp.handlers.hover, { border = "rounded" })
 lsp.handlers["textDocument/signatureHelp"] = lsp.with(lsp.handlers.signature_help, { border = "rounded" })
 
--- ── Server Configs ────────────────────────────────────────────────────────
+-- Server configs
 lsp.config("nixd", {
 	cmd = { "nixd" },
 	settings = {
@@ -89,7 +85,7 @@ lsp.config("lua_ls", {
 lsp.config("kotlin_language_server", { cmd = { "kotlin-language-server" } })
 lsp.config("jdtls", { cmd = { "jdtls" } })
 
--- ── Auto-start by Filetype ────────────────────────────────────────────────
+-- Auto-start by filetype
 local ft_servers = {
 	nix = "nixd",
 	lua = "lua_ls",
