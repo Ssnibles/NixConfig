@@ -1,8 +1,12 @@
 -- =============================================================================
 -- LSP Configuration
 -- =============================================================================
--- Language Server Protocol setup using Neovim's native LSP client.
+-- Language Server Protocol setup using Neovim's native LSP client (0.11+).
 -- Configured for nixd, lua_ls, kotlin_language_server, and jdtls.
+--
+-- Keymap note: rename moved from <leader>r to <leader>lR.
+-- <leader>r was ambiguous as a global binding — <leader>l* groups all LSP
+-- actions consistently and shows up correctly in mini.clue hints.
 -- =============================================================================
 
 local lsp = vim.lsp
@@ -16,15 +20,16 @@ local capabilities = (function()
 	return lsp.protocol.make_client_capabilities()
 end)()
 
+-- Advertise folding range support so servers can send fold info
 capabilities.textDocument.foldingRange = {
 	dynamicRegistration = false,
 	lineFoldingOnly = true,
 }
 
--- ── Global LSP Config ─────────────────────────────────────────────────────
+-- ── Global LSP Config ──────────────────────────────────────────────────────
 lsp.config("*", {
 	on_attach = function(client, bufnr)
-		-- nvim-navic for breadcrumbs
+		-- nvim-navic: attach if server supports document symbols
 		local navic_ok, navic = pcall(require, "nvim-navic")
 		if navic_ok and client.server_capabilities.documentSymbolProvider then
 			navic.attach(client, bufnr)
@@ -34,40 +39,44 @@ lsp.config("*", {
 			return { buffer = bufnr, silent = true, desc = desc }
 		end
 
-		-- Navigation
+		-- ── Navigation ───────────────────────────────────────────────────
 		vim.keymap.set("n", "gd", lsp.buf.definition, opts("Go to definition"))
 		vim.keymap.set("n", "gD", lsp.buf.declaration, opts("Go to declaration"))
 		vim.keymap.set("n", "gi", lsp.buf.implementation, opts("Go to implementation"))
 		vim.keymap.set("n", "gy", lsp.buf.type_definition, opts("Go to type definition"))
 		vim.keymap.set("n", "gr", lsp.buf.references, opts("References"))
 
-		-- Docs
+		-- ── Docs ─────────────────────────────────────────────────────────
 		vim.keymap.set("n", "K", lsp.buf.hover, opts("Hover docs"))
 		vim.keymap.set("i", "<C-k>", lsp.buf.signature_help, opts("Signature help"))
 
-		-- Actions
+		-- ── Actions ──────────────────────────────────────────────────────
 		vim.keymap.set("n", "<leader>a", lsp.buf.code_action, opts("Code action"))
-		vim.keymap.set("v", "<leader>a", lsp.buf.code_action, opts("Code action"))
-		vim.keymap.set("n", "<leader>r", lsp.buf.rename, opts("Rename"))
+		vim.keymap.set("v", "<leader>a", lsp.buf.code_action, opts("Code action (range)"))
+		-- Rename moved to <leader>lR: keeps all LSP actions under <leader>l*
+		-- and avoids shadowing any future global <leader>r binding
+		vim.keymap.set("n", "<leader>lR", lsp.buf.rename, opts("Rename symbol"))
 
-		-- Symbols
+		-- ── Symbols ──────────────────────────────────────────────────────
 		vim.keymap.set("n", "<leader>ls", lsp.buf.document_symbol, opts("Document symbols"))
 		vim.keymap.set("n", "<leader>lS", lsp.buf.workspace_symbol, opts("Workspace symbols"))
 	end,
 	capabilities = capabilities,
 })
 
--- ── Float Styling ─────────────────────────────────────────────────────────
+-- ── Float Styling ──────────────────────────────────────────────────────────
 lsp.handlers["textDocument/hover"] = lsp.with(lsp.handlers.hover, { border = "rounded" })
 lsp.handlers["textDocument/signatureHelp"] = lsp.with(lsp.handlers.signature_help, { border = "rounded" })
 
--- ── Server Configs ────────────────────────────────────────────────────────
+-- ── Server Configs ─────────────────────────────────────────────────────────
 lsp.config("nixd", {
 	cmd = { "nixd" },
 	settings = {
 		nixd = {
 			nixpkgs = { expr = "import <nixpkgs> {}" },
 			flake = {
+				-- Prefer the env var so the path works across both machines;
+				-- fall back to the conventional NixConfig location
 				flakePath = vim.env.NIX_CONFIG_FLAKE or vim.env.HOME .. "/NixConfig/flake.nix",
 			},
 		},

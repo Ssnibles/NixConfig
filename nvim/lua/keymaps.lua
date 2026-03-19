@@ -3,6 +3,13 @@
 -- =============================================================================
 -- Centralized key bindings for navigation, editing, and plugin integration.
 -- Uses leader key (space) for most commands to avoid conflicts.
+--
+-- Note: git hunk keymaps (]g, [g, <leader>g*) are set inside gitsigns
+-- on_attach in plugins/ui.lua so they are buffer-local and only active in
+-- git-tracked files.
+--
+-- Note: LSP keymaps (gd, K, <leader>a, etc.) are set inside lsp.lua's
+-- on_attach for the same reason.
 -- =============================================================================
 
 local map = function(mode, lhs, rhs, desc)
@@ -37,17 +44,11 @@ map("n", "<leader>wx", "<C-w>c", "Close window")
 map("n", "<leader>we", "<C-w>=", "Equalise splits")
 map("n", "<leader>wm", "<C-w>_<C-w>|", "Maximise window")
 
--- Window navigation with smart-splits fallback
-for key, dir in pairs({ h = "left", j = "down", k = "up", l = "right" }) do
-	map("n", "<C-" .. key .. ">", function()
-		local ok, ss = pcall(require, "smart-splits")
-		if ok then
-			ss["move_cursor_" .. dir]()
-		else
-			vim.cmd("wincmd " .. key)
-		end
-	end, "Move to " .. dir .. " window")
-end
+-- Window navigation — plain wincmd (smart-splits removed: not in Nix packages)
+map("n", "<C-h>", "<C-w>h", "Move to left window")
+map("n", "<C-j>", "<C-w>j", "Move to bottom window")
+map("n", "<C-k>", "<C-w>k", "Move to top window")
+map("n", "<C-l>", "<C-w>l", "Move to right window")
 
 -- ── Buffers ────────────────────────────────────────────────────────────────
 map("n", "<Tab>", "<cmd>bnext<CR>", "Next buffer")
@@ -81,35 +82,9 @@ end, "Prev error")
 map("n", "-", "<cmd>Oil<CR>", "Open Oil")
 map("n", "<leader>o", "<cmd>Oil<CR>", "Open Oil")
 
--- ── LSP ────────────────────────────────────────────────────────────────────
+-- ── LSP (non-buffer-local helpers) ────────────────────────────────────────
 map("n", "<leader>li", "<cmd>LspInfo<CR>", "LSP info")
 map("n", "<leader>lr", "<cmd>LspRestart<CR>", "LSP restart")
-
--- ── Git (gitsigns) ─────────────────────────────────────────────────────────
-map("n", "<leader>gg", function()
-	require("gitsigns").preview_hunk()
-end, "Preview hunk")
-map("n", "<leader>gs", function()
-	require("gitsigns").stage_hunk()
-end, "Stage hunk")
-map("n", "<leader>gu", function()
-	require("gitsigns").undo_stage_hunk()
-end, "Undo stage hunk")
-map("n", "<leader>gR", function()
-	require("gitsigns").reset_hunk()
-end, "Reset hunk")
-map("n", "<leader>gb", function()
-	require("gitsigns").blame_line()
-end, "Blame line")
-map("n", "<leader>gd", function()
-	require("gitsigns").diffthis()
-end, "Diff this")
-map("n", "]g", function()
-	require("gitsigns").nav_hunk("next")
-end, "Next hunk")
-map("n", "[g", function()
-	require("gitsigns").nav_hunk("prev")
-end, "Prev hunk")
 
 -- ── Toggles ────────────────────────────────────────────────────────────────
 map("n", "<leader>tw", "<cmd>set wrap!<CR>", "Toggle wrap")
@@ -119,3 +94,4 @@ map("n", "<leader>tn", "<cmd>set relativenumber!<CR>", "Toggle relative numbers"
 map("n", "<leader>tc", function()
 	require("mini.cursorword").toggle()
 end, "Toggle cursorword")
+-- <leader>tb (toggle line blame) is set per-buffer inside gitsigns on_attach

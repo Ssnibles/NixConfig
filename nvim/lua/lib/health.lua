@@ -13,7 +13,13 @@ function M.check()
 	local info = {}
 
 	-- ── Check Critical Plugins ─────────────────────────────────────────────
-	local critical = { "blink.cmp", "which-key", "gitsigns", "oil" }
+	-- These failing will cause visible breakage (no silent degradation)
+	local critical = {
+		"blink.cmp", -- completion
+		"gitsigns", -- git signs, hunks, blame
+		"oil", -- file navigation
+		"noice", -- cmdline / notifications
+	}
 	for _, plugin in ipairs(critical) do
 		if not pcall(require, plugin) then
 			table.insert(issues, "❌ Missing: " .. plugin)
@@ -22,9 +28,28 @@ function M.check()
 		end
 	end
 
+	-- ── Check Non-critical Plugins ────────────────────────────────────────
+	-- Missing these degrades the experience but nothing breaks outright
+	local optional = {
+		"fzf-lua",
+		"lualine",
+		"ibl",
+		"conform",
+		"nvim-treesitter",
+		"copilot",
+		"mini.ai",
+	}
+	for _, plugin in ipairs(optional) do
+		if not pcall(require, plugin) then
+			table.insert(warnings, "⚠️ Optional plugin unavailable: " .. plugin)
+		end
+	end
+
 	-- ── Check Colorscheme ──────────────────────────────────────────────────
 	if vim.g.colors_name ~= "vague" then
 		table.insert(warnings, "⚠️ Colorscheme '" .. (vim.g.colors_name or "none") .. "' active (expected 'vague')")
+	else
+		table.insert(info, "✓ Colorscheme: vague")
 	end
 
 	-- ── Check LSP Clients ──────────────────────────────────────────────────
@@ -62,15 +87,22 @@ function M.check()
 	end
 
 	-- ── Report Results ─────────────────────────────────────────────────────
-	if #issues > 0 then
-		vim.notify("ISSUES:\n" .. table.concat(issues, "\n"), vim.log.levels.ERROR)
-	end
-	if #warnings > 0 then
-		vim.notify("WARNINGS:\n" .. table.concat(warnings, "\n"), vim.log.levels.WARN)
-	end
-	if #info > 0 then
-		vim.notify("INFO:\n" .. table.concat(info, "\n"), vim.log.levels.INFO)
-	end
+	-- Use vim.schedule so the notify calls fire after any in-flight LSP
+	-- startup messages and show up cleanly in noice
+	vim.schedule(function()
+		if #issues > 0 then
+			vim.notify("ISSUES:\n" .. table.concat(issues, "\n"), vim.log.levels.ERROR)
+		end
+		if #warnings > 0 then
+			vim.notify("WARNINGS:\n" .. table.concat(warnings, "\n"), vim.log.levels.WARN)
+		end
+		if #info > 0 then
+			vim.notify("INFO:\n" .. table.concat(info, "\n"), vim.log.levels.INFO)
+		end
+		if #issues == 0 and #warnings == 0 then
+			vim.notify("✓ Configuration healthy", vim.log.levels.INFO)
+		end
+	end)
 
 	return #issues == 0, issues, warnings, info
 end

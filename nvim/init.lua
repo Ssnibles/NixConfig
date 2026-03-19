@@ -2,17 +2,18 @@
 -- Neovim Entry Point
 -- =============================================================================
 -- This is the main initialization file. Load order matters:
--- 1. Options (basic vim settings)
--- 2. Keymaps (before plugins so they can override)
+-- 1. Options  (basic vim settings, must come first)
+-- 2. Keymaps  (before plugins so plugins can override if they need to)
 -- 3. Autocommands (event handlers)
--- 4. Colorscheme (before plugins for highlight inheritance)
--- 5. Plugins (in dependency order)
+-- 4. Colorscheme (before plugins for correct highlight inheritance)
+-- 5. Plugins  (in dependency order)
 -- =============================================================================
+
 -- ── Version Check ──────────────────────────────────────────────────────────
--- Requires Neovim 0.10+ for stable LSP and treesitter APIs
+-- Requires Neovim 0.11+ — vim.lsp.config() and lsp.enable() are 0.11 APIs
 local version = vim.version()
-if version.major < 0 or (version.major == 0 and version.minor < 10) then
-	vim.notify("Neovim 0.10+ required. Found: " .. version.major .. "." .. version.minor, vim.log.levels.ERROR)
+if version.major < 0 or (version.major == 0 and version.minor < 11) then
+	vim.notify("Neovim 0.11+ required. Found: " .. version.major .. "." .. version.minor, vim.log.levels.ERROR)
 	return
 end
 
@@ -23,6 +24,7 @@ require("autocommands")
 
 -- ── Phase 2: Colorscheme & Highlights ─────────────────────────────────────
 local function load_colorscheme()
+	-- Try preferred schemes in order; fall back to built-in default
 	local schemes = { "vague", "tokyonight", "gruvbox", "default" }
 	for _, scheme in ipairs(schemes) do
 		local ok = pcall(vim.cmd.colorscheme, scheme)
@@ -37,7 +39,8 @@ load_colorscheme()
 require("lib.highlights").apply()
 
 -- ── Phase 3: Plugins (load in dependency order) ───────────────────────────
--- UI first (noice affects cmdline before statusline renders)
+-- UI first: noice replaces the cmdline before statusline renders, and
+-- gitsigns needs to attach before treesitter walks buffers
 require("plugins.ui")
 require("plugins.mini")
 require("plugins.treesitter")
@@ -48,10 +51,10 @@ require("plugins.fzf")
 require("plugins.conform")
 
 -- ── Phase 4: Final Configuration ──────────────────────────────────────────
--- Enable noice cmdline replacement
+-- cmdheight 0 defers to noice for all command-line output
 vim.opt.cmdheight = 0
 
--- Configure diagnostics with consistent styling
+-- Configure diagnostics with consistent styling across all LSP clients
 vim.diagnostic.config({
 	virtual_text = { prefix = "●", spacing = 4 },
 	signs = {
@@ -65,10 +68,11 @@ vim.diagnostic.config({
 	underline = true,
 	severity_sort = true,
 	float = { border = "rounded", source = true },
+	-- Don't update diagnostics while typing — reduces noise in insert mode
 	update_in_insert = false,
 })
 
--- Add health check keymap
+-- Health check accessible from anywhere
 vim.keymap.set("n", "<leader>ch", function()
 	require("lib.health").check()
 end, { desc = "Check configuration health" })

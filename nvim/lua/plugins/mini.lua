@@ -3,12 +3,15 @@
 -- =============================================================================
 -- Comprehensive text editing utilities. Loaded with vim.schedule to ensure
 -- all modules are available after Nix runtimepath population.
+-- Note: mini.diff is intentionally absent — gitsigns handles all git-hunk
+-- decoration, navigation, and staging so there is no duplication.
 -- =============================================================================
 
 vim.schedule(function()
 	-- ── Text Objects (mini.ai) ─────────────────────────────────────────────
 	require("mini.ai").setup({
 		custom_textobjects = {
+			-- `B` selects the entire buffer as a text object
 			B = function()
 				local from = { line = 1, col = 1 }
 				local to = { line = vim.fn.line("$"), col = math.max(vim.fn.getline("$"):len(), 1) }
@@ -85,14 +88,6 @@ vim.schedule(function()
 	require("mini.jump2d").setup({
 		mappings = { start_jumping = "<leader><leader>" },
 		view = { dim = true, n_steps_ahead = 2 },
-	})
-
-	-- ── Diff ────────────────────────────────────────────────────────────────
-	require("mini.diff").setup({
-		view = {
-			style = "sign",
-			signs = { add = "▎", change = "▎", delete = "" },
-		},
 	})
 
 	-- ── Icons ───────────────────────────────────────────────────────────────

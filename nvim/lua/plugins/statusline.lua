@@ -3,11 +3,16 @@
 -- =============================================================================
 -- lualine (statusline), ibl (indent guides), neoscroll (smooth scrolling),
 -- statuscol (fold/sign/line column). All visual chrome in one place.
+--
+-- Diff summary: mini_diff_status removed. The lualine "diff" component is
+-- pointed at gitsigns as its sole source — no duplication with mini.diff.
 -- =============================================================================
 
 local loader = require("lib.loader")
 
 -- ── lualine Theme ─────────────────────────────────────────────────────────
+-- All sections share the same background (#141415) so the statusline reads
+-- as a single flat bar. Only the mode indicator changes colour.
 local theme = {
 	normal = {
 		a = { fg = "#6e94b2", bg = "#141415", gui = "bold" },
@@ -41,26 +46,6 @@ local theme = {
 	},
 }
 
--- ── mini.diff Status ──────────────────────────────────────────────────────
-local function mini_diff_status()
-	local ok, data = pcall(require("mini.diff").get_buf_data)
-	if not ok or not data or not data.summary then
-		return ""
-	end
-	local s = data.summary
-	local parts = {}
-	if (s.add or 0) > 0 then
-		parts[#parts + 1] = "+" .. s.add
-	end
-	if (s.change or 0) > 0 then
-		parts[#parts + 1] = "~" .. s.change
-	end
-	if (s.delete or 0) > 0 then
-		parts[#parts + 1] = "-" .. s.delete
-	end
-	return #parts > 0 and table.concat(parts, " ") or ""
-end
-
 -- ── lualine Setup ─────────────────────────────────────────────────────────
 loader.setup("lualine", function(lualine)
 	lualine.setup({
@@ -76,7 +61,22 @@ loader.setup("lualine", function(lualine)
 			lualine_b = {
 				{ "branch", icon = "", color = { fg = "#878787" } },
 				{
+					-- Explicitly use gitsigns as the diff source so lualine
+					-- never tries to fall back to mini.diff (which is removed)
 					"diff",
+					source = function()
+						local gs = package.loaded["gitsigns"]
+						if gs then
+							local status = gs.status_dict
+							if status then
+								return {
+									added = status.added,
+									modified = status.changed,
+									removed = status.removed,
+								}
+							end
+						end
+					end,
 					symbols = { added = " ", modified = " ", removed = " " },
 					diff_color = {
 						added = { fg = "#7fa563" },
@@ -104,7 +104,6 @@ loader.setup("lualine", function(lualine)
 				},
 			},
 			lualine_x = {
-				{ mini_diff_status, color = { fg = "#606079" } },
 				{ "filetype", color = { fg = "#878787" } },
 			},
 			lualine_y = { { "progress", color = { fg = "#606079" } } },
@@ -155,6 +154,8 @@ loader.setup("statuscol", function(statuscol)
 	statuscol.setup({
 		relculright = true,
 		segments = {
+			-- Fold indicator only shown when there are actual folds to interact
+			-- with; statuscol renders it dynamically so this is fine at init
 			{ text = { builtin.foldfunc }, click = "v:lua.ScFa" },
 			{ text = { "%s" }, click = "v:lua.ScSa" },
 			{ text = { builtin.lnumfunc, " " }, click = "v:lua.ScLa" },

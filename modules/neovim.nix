@@ -54,7 +54,6 @@
       nvim-autopairs
       fidget-nvim
       gitsigns-nvim
-      which-key-nvim
       noice-nvim
       markview-nvim
       nvim-web-devicons
