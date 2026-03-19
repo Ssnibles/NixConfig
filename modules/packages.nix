@@ -40,6 +40,7 @@
       firefox
       zen-browser
       onlyoffice-desktopeditors
+      inkscape
       # PDF viewers
       sioyek
       zathura
@@ -59,6 +60,7 @@
       satty
       grim
       slurp
+      iwd
     ]
     ++ pkgs.lib.optionals hostProfile.isDesktop [
       # Gaming
@@ -73,7 +75,6 @@
       quickemu
     ]
     ++ pkgs.lib.optionals hostProfile.isLaptop [
-      iwd
       powertop
       acpi
       brightnessctl
