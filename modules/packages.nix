@@ -73,7 +73,7 @@
       quickemu
     ]
     ++ pkgs.lib.optionals hostProfile.isLaptop [
-      # Power management
+      iwd
       powertop
       acpi
       brightnessctl
