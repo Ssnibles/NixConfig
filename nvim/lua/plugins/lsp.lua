@@ -3,10 +3,6 @@
 -- =============================================================================
 -- Language Server Protocol setup using Neovim's native LSP client (0.11+).
 -- Configured for nixd, lua_ls, kotlin_language_server, and jdtls.
---
--- Keymap note: rename moved from <leader>r to <leader>lR.
--- <leader>r was ambiguous as a global binding — <leader>l* groups all LSP
--- actions consistently and shows up correctly in mini.clue hints.
 -- =============================================================================
 
 local lsp = vim.lsp

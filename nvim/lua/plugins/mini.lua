@@ -72,7 +72,7 @@ vim.schedule(function()
 	require("mini.cursorword").setup()
 
 	-- ── Comments ────────────────────────────────────────────────────────────
-	require("mini.comment").setup()
+	-- require("mini.comment").setup()
 
 	-- ── Buffer Remove ───────────────────────────────────────────────────────
 	local bufremove = require("mini.bufremove")
