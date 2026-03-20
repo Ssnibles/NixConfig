@@ -11,12 +11,6 @@ function M.apply()
 	local normal = vim.api.nvim_get_hl(0, { name = "Normal" })
 	local border_color = "#4a4a5a"
 
-	-- ── Cursor & Selection ─────────────────────────────────────────────────
-	-- hl(0, "Cursor", { bg = "#6e94b2", fg = "#141415" })
-	-- hl(0, "CursorLine", { bg = "#1a1a1c", blend = 0 })
-	-- hl(0, "CursorColumn", { bg = "#1a1a1c" })
-	-- hl(0, "Visual", { bg = "#2a2a35" })
-
 	-- ── Float Windows ──────────────────────────────────────────────────────
 	hl(0, "FloatBorder", { bg = normal.bg, fg = border_color })
 	hl(0, "NormalFloat", { bg = normal.bg, fg = normal.fg })
@@ -47,6 +41,13 @@ function M.apply()
 
 	-- ── Copilot ────────────────────────────────────────────────────────────
 	hl(0, "CopilotSuggestion", { fg = "#708090", bg = "#1a1f2e", italic = true, blend = 80 })
+
+	-- ── Neogit ─────────────────────────────────────────────────────────────
+	hl(0, "NeogitPopupBorder", { bg = normal.bg, fg = border_color })
+	hl(0, "NeogitFloatBorder", { bg = normal.bg, fg = border_color })
+	hl(0, "NeogitSectionHeader", { fg = "#6e94b2", bold = true })
+	hl(0, "NeogitUnstagedChanges", { fg = "#d8647e" })
+	hl(0, "NeogitStagedChanges", { fg = "#7fa563" })
 
 	-- ── Misc ───────────────────────────────────────────────────────────────
 	hl(0, "MiniTrailspace", { bg = "#3a1c28" })
