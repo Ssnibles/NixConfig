@@ -26,6 +26,7 @@
       grc
       android-tools
       lazygit
+      gitui
       btop
       yazi
       jq

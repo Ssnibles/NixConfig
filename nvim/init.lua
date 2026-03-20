@@ -49,6 +49,7 @@ require("plugins.completion")
 require("plugins.lsp")
 require("plugins.fzf")
 require("plugins.conform")
+require("plugins.neogit")
 
 -- ── Phase 4: Final Configuration ──────────────────────────────────────────
 -- cmdheight 0 defers to noice for all command-line output

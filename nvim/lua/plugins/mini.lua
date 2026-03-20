@@ -122,6 +122,7 @@ vim.schedule(function()
 			{ mode = "n", keys = "s", desc = "+surround" },
 			{ mode = "n", keys = "]", desc = "+next" },
 			{ mode = "n", keys = "[", desc = "+prev" },
+			{ mode = "n", "<leader>g", desc = "+git/neogit" },
 		},
 		triggers = {
 			{ mode = "n", keys = "<Leader>" },
