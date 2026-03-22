@@ -61,7 +61,7 @@ opt.foldlevelstart = 99
 
 -- ── Performance ────────────────────────────────────────────────────────────
 opt.updatetime = 200
-opt.timeoutlen = 400
+opt.timeoutlen = 500
 opt.undofile = true
 opt.swapfile = false
 opt.backup = false

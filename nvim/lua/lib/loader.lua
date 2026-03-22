@@ -44,7 +44,6 @@ end
 function M.lazy(module_name, events, setup_fn)
 	local loaded = false
 	local mod = nil
-
 	local function load()
 		if loaded then
 			return
@@ -55,18 +54,15 @@ function M.lazy(module_name, events, setup_fn)
 			pcall(setup_fn, mod)
 		end
 	end
-
 	if type(events) == "string" then
 		events = { events }
 	end
 
-	for _, event in ipairs(events) do
-		vim.api.nvim_create_autocmd(event, {
-			callback = load,
-			once = true,
-			desc = "Lazy load: " .. module_name,
-		})
-	end
+	vim.api.nvim_create_autocmd(events, {
+		callback = load,
+		once = true,
+		desc = "Lazy load: " .. module_name,
+	})
 
 	return setmetatable({}, {
 		__index = function(_, key)
@@ -77,5 +73,4 @@ function M.lazy(module_name, events, setup_fn)
 		end,
 	})
 end
-
 return M

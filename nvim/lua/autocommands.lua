@@ -72,7 +72,7 @@ vim.api.nvim_create_autocmd("VimResized", {
 	group = group,
 	desc = "Equalise splits on terminal resize",
 	callback = function()
-		vim.cmd("tabdo wincmd =")
+		vim.cmd("wincmd =")
 	end,
 })
 

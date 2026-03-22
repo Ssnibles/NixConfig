@@ -18,8 +18,6 @@ end
 
 -- ── General ────────────────────────────────────────────────────────────────
 map("n", "<Esc>", "<cmd>nohlsearch<CR>", "Clear search highlight")
-map("n", "<C-s>", "<cmd>write<CR>", "Save buffer")
-map("i", "<C-s>", "<Esc><cmd>write<CR>", "Save buffer")
 map("i", "jk", "<Esc>", "Exit insert mode")
 map("n", "U", "<C-r>", "Redo")
 map("v", "<", "<gv", "Indent left")
@@ -51,10 +49,10 @@ map({ "n", "v" }, "<leader>D", '"_d', "Delete without yanking")
 -- map("n", "<C-l>", "<C-w>l", "Move to right window")
 
 -- Keybindings for vim-tmux-navigator
-vim.keymap.set("n", "<C-h>", "<cmd>TmuxNavigateLeft<cr>", { silent = true })
-vim.keymap.set("n", "<C-j>", "<cmd>TmuxNavigateDown<cr>", { silent = true })
-vim.keymap.set("n", "<C-k>", "<cmd>TmuxNavigateUp<cr>", { silent = true })
-vim.keymap.set("n", "<C-l>", "<cmd>TmuxNavigateRight<cr>", { silent = true })
+map("n", "<C-h>", "<cmd>TmuxNavigateLeft<cr>", "Navigate Left")
+map("n", "<C-j>", "<cmd>TmuxNavigateDown<cr>", "Navigate Down")
+map("n", "<C-k>", "<cmd>TmuxNavigateUp<cr>", "Navigate Up")
+map("n", "<C-l>", "<cmd>TmuxNavigateRight<cr>", "Navigate Right")
 
 -- ── Buffers ────────────────────────────────────────────────────────────────
 map("n", "<Tab>", "<cmd>bnext<CR>", "Next buffer")

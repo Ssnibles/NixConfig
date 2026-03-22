@@ -22,6 +22,24 @@ require("options")
 require("keymaps")
 require("autocommands")
 
+-- Configure diagnostics with consistent styling across all LSP clients
+vim.diagnostic.config({
+	virtual_text = { prefix = "●", spacing = 4 },
+	signs = {
+		text = {
+			[vim.diagnostic.severity.ERROR] = "󰅚",
+			[vim.diagnostic.severity.WARN] = "󰀪",
+			[vim.diagnostic.severity.HINT] = "󰌶",
+			[vim.diagnostic.severity.INFO] = "󰋽",
+		},
+	},
+	underline = true,
+	severity_sort = true,
+	float = { border = "rounded", source = true },
+	-- Don't update diagnostics while typing — reduces noise in insert mode
+	update_in_insert = false,
+})
+
 -- ── Phase 2: Colorscheme & Highlights ─────────────────────────────────────
 local function load_colorscheme()
 	-- Try preferred schemes in order; fall back to built-in default
@@ -55,24 +73,6 @@ require("plugins.miscellaneous")
 -- ── Phase 4: Final Configuration ──────────────────────────────────────────
 -- cmdheight 0 defers to noice for all command-line output
 vim.opt.cmdheight = 0
-
--- Configure diagnostics with consistent styling across all LSP clients
-vim.diagnostic.config({
-	virtual_text = { prefix = "●", spacing = 4 },
-	signs = {
-		text = {
-			[vim.diagnostic.severity.ERROR] = "󰅚",
-			[vim.diagnostic.severity.WARN] = "󰀪",
-			[vim.diagnostic.severity.HINT] = "󰌶",
-			[vim.diagnostic.severity.INFO] = "󰋽",
-		},
-	},
-	underline = true,
-	severity_sort = true,
-	float = { border = "rounded", source = true },
-	-- Don't update diagnostics while typing — reduces noise in insert mode
-	update_in_insert = false,
-})
 
 -- Health check accessible from anywhere
 vim.keymap.set("n", "<leader>ch", function()
