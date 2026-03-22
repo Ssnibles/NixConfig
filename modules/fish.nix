@@ -9,6 +9,7 @@
     enable = true;
     shellAbbrs = {
       v = "nvim";
+      c = "clear";
       rebuild = "git -C ~/NixConfig add -u && sudo nixos-rebuild switch --flake ~/NixConfig#nixos";
       update = "cd ~/NixConfig && nix flake update && sudo nixos-rebuild switch --flake .";
       get-class = "hyprctl clients | grep -A5 'class:'";
