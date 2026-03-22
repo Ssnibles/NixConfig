@@ -130,9 +130,9 @@ loader.setup("noice", function(noice)
 	noice.setup({
 		-- Route noice notifications through the mini view so vim.notify
 		-- output (including loader errors) renders consistently
-		notify = { enabled = true, view = "mini" },
+		notify = { enabled = false, view = "mini" },
 		messages = {
-			enabled = true,
+			enabled = false,
 			view = "mini",
 		},
 		lsp = {
@@ -141,16 +141,16 @@ loader.setup("noice", function(noice)
 				["vim.lsp.util.convert_input_to_markdown_lines"] = true,
 				["vim.lsp.util.stylize_markdown"] = true,
 			},
-			hover = { enabled = true },
-			signature = { enabled = true },
+			hover = { enabled = false },
+			signature = { enabled = false },
 		},
 		cmdline = {
 			enabled = true,
 			view = "cmdline",
 			format = {
-				cmdline = { pattern = "^:", icon = "", lang = "vim" },
-				search_down = { pattern = "^/", icon = " ", lang = "regex" },
-				search_up = { pattern = "^?", icon = " ", lang = "regex" },
+				cmdline = { pattern = "^:", icon = ">", lang = "vim" },
+				search_down = { pattern = "^/", icon = "?", lang = "regex" },
+				search_up = { pattern = "^?", icon = "?", lang = "regex" },
 				filter = { pattern = "^:%s*!", icon = "", lang = "bash" },
 				lua = { pattern = "^:%s*lua%s+", icon = "", lang = "lua" },
 				help = { pattern = "^:%s*he?l?p?%s+", icon = "󰋖" },

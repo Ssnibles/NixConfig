@@ -25,12 +25,6 @@ capabilities.textDocument.foldingRange = {
 -- ── Global LSP Config ──────────────────────────────────────────────────────
 lsp.config("*", {
 	on_attach = function(client, bufnr)
-		-- nvim-navic: attach if server supports document symbols
-		local navic_ok, navic = pcall(require, "nvim-navic")
-		if navic_ok and client.server_capabilities.documentSymbolProvider then
-			navic.attach(client, bufnr)
-		end
-
 		local opts = function(desc)
 			return { buffer = bufnr, silent = true, desc = desc }
 		end
@@ -61,8 +55,10 @@ lsp.config("*", {
 })
 
 -- ── Float Styling ──────────────────────────────────────────────────────────
-lsp.handlers["textDocument/hover"] = lsp.with(lsp.handlers.hover, { border = "rounded" })
-lsp.handlers["textDocument/signatureHelp"] = lsp.with(lsp.handlers.signature_help, { border = "rounded" })
+lsp.handlers["textDocument/hover"] =
+	lsp.with(lsp.handlers.hover, { border = "rounded", max_width = 80, max_height = 20 })
+lsp.handlers["textDocument/signatureHelp"] =
+	lsp.with(lsp.handlers.signature_help, { border = "rounded", max_width = 80 })
 
 -- ── Server Configs ─────────────────────────────────────────────────────────
 lsp.config("nixd", {

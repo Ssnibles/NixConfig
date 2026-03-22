@@ -85,10 +85,10 @@ vim.schedule(function()
 	end, { desc = "Force-delete buffer" })
 
 	-- ── Jump2D ──────────────────────────────────────────────────────────────
-	require("mini.jump2d").setup({
-		mappings = { start_jumping = "<leader><leader>" },
-		view = { dim = true, n_steps_ahead = 2 },
-	})
+	-- require("mini.jump2d").setup({
+	-- 	mappings = { start_jumping = "<leader><leader>" },
+	-- 	view = { dim = true, n_steps_ahead = 2 },
+	-- })
 
 	-- ── Icons ───────────────────────────────────────────────────────────────
 	require("mini.icons").setup({

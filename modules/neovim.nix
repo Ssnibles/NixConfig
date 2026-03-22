@@ -80,6 +80,7 @@
       mini-nvim # Collection of small, modular Lua plugins
       neogit # Magit-inspired Git interface for Neovim
       vim-tmux-navigator # Seamless navigation between Vim and tmux splits
+      leap-nvim # Fast navigation by jumping to any location in the visible buffer
     ];
   };
 
