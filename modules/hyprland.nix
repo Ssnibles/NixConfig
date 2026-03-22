@@ -61,8 +61,9 @@
       bind = [
         "$mod, RETURN, exec, foot"
         "$mod, Q, killactive"
-        "$mod, E, exec, nautilus"
+        "$mod, E, exec, yazi"
         "$mod, V, exec, toggle-float"
+        "$mod, G, exec, toggle-focus-mode"
         "$mod, SPACE, exec, vicinae toggle"
         "$mod, N, exec, swaync-client -t -sw"
         "$mod, F, fullscreen"

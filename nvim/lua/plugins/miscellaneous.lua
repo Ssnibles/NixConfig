@@ -10,3 +10,10 @@ loader.setup("leap", function(leap)
 		leap.leap({ target_windows = vim.api.nvim_tabpage_list_wins(0) })
 	end, { desc = "Leap search" })
 end)
+
+loader.setup("grug-far", function(grug_far)
+	grug_far.setup({
+		-- Optional: Set the default search method (default is "rg")
+		default_method = "rg",
+	})
+end)
