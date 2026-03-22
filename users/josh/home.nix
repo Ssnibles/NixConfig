@@ -27,6 +27,7 @@
     ../../modules/swaync.nix
     ../../modules/other.nix
     ../../modules/scripts.nix
+    ../../modules/tmux.nix
   ];
   home.pointerCursor = {
     package = pkgs.bibata-cursors;

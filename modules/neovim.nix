@@ -59,7 +59,7 @@
       # Navigation and File Management
       fzf-lua # Fuzzy finding
       oil-nvim # File explorer edited like a normal buffer
-      smart-splits-nvim # Better window navigation and resizing
+      # smart-splits-nvim # Better window navigation and resizing
 
       # UI Enhancements
       statuscol-nvim # Customizable status column (folds, signs)
@@ -79,6 +79,7 @@
       conform-nvim # Formatter plugin
       mini-nvim # Collection of small, modular Lua plugins
       neogit # Magit-inspired Git interface for Neovim
+      vim-tmux-navigator # Seamless navigation between Vim and tmux splits
     ];
   };
 

@@ -38,17 +38,23 @@ map("x", "<leader>p", '"_dP', "Paste without yanking selection")
 map({ "n", "v" }, "<leader>D", '"_d', "Delete without yanking")
 
 -- ── Windows ────────────────────────────────────────────────────────────────
-map("n", "<leader>wv", "<C-w>v", "Split vertical")
-map("n", "<leader>wh", "<C-w>s", "Split horizontal")
-map("n", "<leader>wx", "<C-w>c", "Close window")
-map("n", "<leader>we", "<C-w>=", "Equalise splits")
-map("n", "<leader>wm", "<C-w>_<C-w>|", "Maximise window")
+-- map("n", "<leader>wv", "<C-w>v", "Split vertical")
+-- map("n", "<leader>wh", "<C-w>s", "Split horizontal")
+-- map("n", "<leader>wx", "<C-w>c", "Close window")
+-- map("n", "<leader>we", "<C-w>=", "Equalise splits")
+-- map("n", "<leader>wm", "<C-w>_<C-w>|", "Maximise window")
 
--- Window navigation — plain wincmd (smart-splits removed: not in Nix packages)
-map("n", "<C-h>", "<C-w>h", "Move to left window")
-map("n", "<C-j>", "<C-w>j", "Move to bottom window")
-map("n", "<C-k>", "<C-w>k", "Move to top window")
-map("n", "<C-l>", "<C-w>l", "Move to right window")
+-- Window navigation — plain wincmd
+-- map("n", "<C-h>", "<C-w>h", "Move to left window")
+-- map("n", "<C-j>", "<C-w>j", "Move to bottom window")
+-- map("n", "<C-k>", "<C-w>k", "Move to top window")
+-- map("n", "<C-l>", "<C-w>l", "Move to right window")
+
+-- Keybindings for vim-tmux-navigator
+vim.keymap.set("n", "<C-h>", "<cmd>TmuxNavigateLeft<cr>", { silent = true })
+vim.keymap.set("n", "<C-j>", "<cmd>TmuxNavigateDown<cr>", { silent = true })
+vim.keymap.set("n", "<C-k>", "<cmd>TmuxNavigateUp<cr>", { silent = true })
+vim.keymap.set("n", "<C-l>", "<cmd>TmuxNavigateRight<cr>", { silent = true })
 
 -- ── Buffers ────────────────────────────────────────────────────────────────
 map("n", "<Tab>", "<cmd>bnext<CR>", "Next buffer")
