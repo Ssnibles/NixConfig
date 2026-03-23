@@ -1,97 +1,119 @@
-# =============================================================================
-# Desktop System Configuration
-# =============================================================================
-# This file contains system-level settings specific to the desktop host.
-# It imports hardware-configuration.nix which is auto-generated.
-#
-# Note on Disko:
-#   If hostProfile.useDisko is true, the Disko module will override fileSystems
-#   and boot configurations defined in hardware-configuration.nix.
-#   If hostProfile.useDisko is false (testing), hardware-configuration.nix is used.
-# =============================================================================
 {
   config,
   pkgs,
   lib,
-  hostProfile,
-  stablePkgs,
   ...
 }:
 {
-  # ── Imports ────────────────────────────────────────────────────────────────
   imports = [
     ./hardware-configuration.nix
     ../../modules/nvidia.nix
   ];
 
-  # ── System Identity ────────────────────────────────────────────────────────
+  system.stateVersion = "24.05";
   networking.hostName = "desktop";
-  system.stateVersion = "25.05";
 
-  # ── Boot Loader ────────────────────────────────────────────────────────────
+  # ── Boot & Kernel ──────────────────────────────────────────────────────────
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
+    timeout = 3;
+    systemd-boot.configurationLimit = 10;
   };
 
-  # Default kernel (nvidia.nix may override this to stable)
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
   hardware.enableRedistributableFirmware = true;
+
+  boot.kernelParams = [ "usbcore.autosuspend=-1" ];
 
   # ── Networking ─────────────────────────────────────────────────────────────
   networking = {
     networkmanager = {
       enable = true;
       wifi.backend = "iwd";
+      wifi.powersave = false;
       dns = "systemd-resolved";
+      wifi.macAddress = "random";
     };
     firewall = {
       enable = true;
       allowedTCPPorts = [ 53317 ];
       allowedUDPPorts = [ 53317 ];
     };
+    enableIPv6 = true;
   };
 
   services.resolved = {
     enable = true;
-    settings.Resolve.FallbackDNS = [
-      "1.1.1.1"
-      "8.8.8.8"
-    ];
+    settings = {
+      Resolve = {
+        FallbackDNS = [
+          "1.1.1.1"
+          "8.8.8.8"
+        ];
+        DNSOverTLS = "yes";
+        Cache = "yes";
+      };
+    };
   };
 
-  # ── Bluetooth ──────────────────────────────────────────────────────────────
+  # ── Hardware Peripherals ───────────────────────────────────────────────────
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
+    settings.General = {
+      FastConnectable = true;
+      Experimental = true;
+    };
   };
   services.blueman.enable = true;
+
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/control}="on"
+    ACTION=="add", SUBSYSTEM=="pci", DRIVER=="nvidia", ATTR{power/control}="on"
+    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="2048"
+  '';
 
   # ── Power Management ───────────────────────────────────────────────────────
   services.power-profiles-daemon.enable = false;
   powerManagement.cpuFreqGovernor = "performance";
-  zramSwap.enable = true;
 
-  # Prevent USB HID devices from suspending
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/control}="on"
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+  };
+
+  services.journald.extraConfig = ''
+    SystemMaxUse=500M
+    MaxRetentionSec=1week
   '';
 
-  # ── Display & Desktop ──────────────────────────────────────────────────────
+  # ── Desktop & Audio ────────────────────────────────────────────────────────
   services.displayManager.ly.enable = true;
   programs.hyprland.enable = true;
   services.flatpak.enable = true;
   programs.fish.enable = true;
 
-  # ── Audio ──────────────────────────────────────────────────────────────────
   services.pipewire = {
     enable = true;
     alsa.enable = true;
     pulse.enable = true;
     wireplumber.enable = true;
+    extraConfig.pipewire."92-low-latency" = {
+      context.properties = {
+        default.clock.rate = 48000;
+        default.clock.quantum = 1024;
+      };
+    };
   };
 
-  # ── Key Remapping ──────────────────────────────────────────────────────────
+  services.printing.enable = true;
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
+
   services.keyd = {
     enable = true;
     keyboards.default = {
@@ -113,35 +135,61 @@
       "wheel"
       "video"
       "input"
-      "adbusers"
+      "plugdev"
     ];
   };
 
-  # ── System Packages ────────────────────────────────────────────────────────
+  # ── Packages ───────────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
     git
     vim
-    iw
+    htop
+    btop
+    rsync
+    nvme-cli
+    smartmontools
+    gamemode
   ];
 
   # ── Locale & Time ──────────────────────────────────────────────────────────
   time.timeZone = "Pacific/Auckland";
   i18n.defaultLocale = "en_NZ.UTF-8";
-
-  # ── Nix Configuration ──────────────────────────────────────────────────────
-  nix.settings = {
-    experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
-    auto-optimise-store = true;
+  i18n.extraLocaleSettings = {
+    LC_TIME = "en_NZ.UTF-8";
+    LC_MEASUREMENT = "en_NZ.UTF-8";
   };
 
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
-
+  # ── Nix Settings ───────────────────────────────────────────────────────────
   nixpkgs.config.allowUnfree = true;
+
+  nix = {
+    settings = {
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+      auto-optimise-store = true;
+      substituters = [
+        "https://cache.nixos.org"
+        "https://nix-community.cachix.org"
+      ];
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
+      keep-generations = 5;
+      keep-generations-root = 3;
+    };
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 7d";
+    };
+  };
+
+  system.autoUpgrade = {
+    enable = true;
+    allowReboot = false;
+    dates = "04:00";
+  };
 }

@@ -1,68 +1,78 @@
-# =============================================================================
-# Laptop System Configuration
-# =============================================================================
-# Optimized for battery life and mobility.
-# Uses TLP for power management instead of power-profiles-daemon.
-# =============================================================================
 {
   config,
   pkgs,
   lib,
-  hostProfile,
   ...
 }:
 {
-  imports = [
-    ./hardware-configuration.nix
-  ];
+  imports = [ ./hardware-configuration.nix ];
 
+  system.stateVersion = "24.05";
   networking.hostName = "laptop";
-  system.stateVersion = "25.05";
 
+  # ── Boot & Kernel ──────────────────────────────────────────────────────────
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
+    timeout = 3;
+    systemd-boot.configurationLimit = 10;
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   hardware.enableRedistributableFirmware = true;
 
-  # Prevent USB autosuspend issues
-  boot.kernelParams = [ "usbcore.autosuspend=-1" ];
-
-  # WiFi region and Bluetooth coexistence
   boot.extraModprobeConfig = ''
     options cfg80211 ieee80211_regdom=NZ
-    options iwlwifi bt_coex_active=1
+    options iwlwifi bt_coex_active=1 11n_disable=0
   '';
 
+  # ── Networking ─────────────────────────────────────────────────────────────
   networking = {
     networkmanager = {
       enable = true;
       wifi.backend = "iwd";
-      wifi.powersave = true;
+      wifi.powersave = false;
       dns = "systemd-resolved";
+      wifi.macAddress = "random";
     };
     firewall = {
       enable = true;
       allowedTCPPorts = [ 53317 ];
       allowedUDPPorts = [ 53317 ];
     };
+    enableIPv6 = true;
   };
 
   services.resolved = {
     enable = true;
-    settings.Resolve.FallbackDNS = [
-      "1.1.1.1"
-      "8.8.8.8"
-    ];
+    settings = {
+      Resolve = {
+        FallbackDNS = [
+          "1.1.1.1"
+          "8.8.8.8"
+        ];
+        DNSOverTLS = "yes";
+        Cache = "yes";
+      };
+    };
   };
 
+  # ── Hardware Peripherals ───────────────────────────────────────────────────
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
+    settings = {
+      General = {
+        FastConnectable = true;
+        Experimental = true;
+      };
+    };
   };
   services.blueman.enable = true;
+
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="1024"
+  '';
 
   # ── Power Management (TLP) ─────────────────────────────────────────────────
   services.power-profiles-daemon.enable = false;
@@ -73,26 +83,41 @@
       CPU_BOOST_ON_BAT = 0;
       CPU_SCALING_GOVERNOR_ON_AC = "performance";
       CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+      START_CHARGE_THRESH_BAT0 = 40;
       STOP_CHARGE_THRESH_BAT0 = 85;
       WIFI_PWR_ON_AC = "off";
-      WIFI_PWR_ON_BAT = "on";
-      USB_AUTOSUSPEND = 0;
+      WIFI_PWR_ON_BAT = "off";
+      USB_AUTOSUSPEND = 1;
+      AHCI_RUNTIME_PM_ON_BAT = "auto";
+      RUNTIME_PM_ON_BAT = "auto";
+      LAPTOP_MODE = 5;
     };
   };
-  powerManagement.powertop.enable = true;
-  zramSwap.enable = true;
 
-  # Lid switch handling
   services.logind.settings = {
     Login = {
       HandleLidSwitch = "suspend";
       HandleLidSwitchExternalPower = "ignore";
+      HandleLidSwitchDocked = "ignore";
+      IgnoreInhibited = "yes";
     };
   };
 
+  # ── System Services ────────────────────────────────────────────────────────
   services.displayManager.ly.enable = true;
-  programs.hyprland.enable = true;
   services.flatpak.enable = true;
+  services.journald.extraConfig = ''
+    SystemMaxUse=500M
+    MaxRetentionSec=1week
+  '';
+
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+  };
+
+  # ── Desktop & Audio ────────────────────────────────────────────────────────
+  programs.hyprland.enable = true;
   programs.fish.enable = true;
 
   services.pipewire = {
@@ -100,6 +125,12 @@
     alsa.enable = true;
     pulse.enable = true;
     wireplumber.enable = true;
+    extraConfig.pipewire."92-low-latency" = {
+      context.properties = {
+        default.clock.rate = 48000;
+        default.clock.quantum = 1024;
+      };
+    };
   };
 
   services.keyd = {
@@ -113,6 +144,7 @@
     };
   };
 
+  # ── User Configuration ─────────────────────────────────────────────────────
   users.users.josh = {
     isNormalUser = true;
     description = "Josh";
@@ -122,32 +154,59 @@
       "wheel"
       "video"
       "input"
-      "adbusers"
     ];
   };
 
+  # ── Packages ───────────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
     git
     vim
-    iw
+    htop
+    btop
+    rsync
+    nvme-cli
+    smartmontools
   ];
 
+  # ── Locale & Time ──────────────────────────────────────────────────────────
   time.timeZone = "Pacific/Auckland";
   i18n.defaultLocale = "en_NZ.UTF-8";
-
-  nix.settings = {
-    experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
-    auto-optimise-store = true;
+  i18n.extraLocaleSettings = {
+    LC_TIME = "en_NZ.UTF-8";
+    LC_MEASUREMENT = "en_NZ.UTF-8";
   };
 
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
-
+  # ── Nix Settings ───────────────────────────────────────────────────────────
   nixpkgs.config.allowUnfree = true;
+
+  nix = {
+    settings = {
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+      auto-optimise-store = true;
+      substituters = [
+        "https://cache.nixos.org"
+        "https://nix-community.cachix.org"
+      ];
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
+      # Removed: keep-generations and keep-generations-root (deprecated)
+    };
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 7d";
+    };
+  };
+
+  system.autoUpgrade = {
+    enable = true;
+    allowReboot = false;
+    dates = "04:00";
+    channel = "https://nixos.org/channels/nixos-unstable";
+  };
 }
