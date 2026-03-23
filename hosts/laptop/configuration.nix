@@ -206,12 +206,4 @@
       options = "--delete-older-than 7d";
     };
   };
-
-  # Flake-based auto-upgrade: tracks the flake, not a channel.
-  system.autoUpgrade = {
-    enable = true;
-    flake = "github:Ssnibles/NixConfig#laptop";
-    allowReboot = false;
-    dates = "04:00";
-  };
 }

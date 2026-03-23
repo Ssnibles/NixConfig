@@ -189,13 +189,4 @@
       options = "--delete-older-than 7d";
     };
   };
-
-  # Flake-based auto-upgrade: tracks the flake, not a channel.
-  # Set allowReboot = false so it never reboots unattended.
-  system.autoUpgrade = {
-    enable = true;
-    flake = "github:Ssnibles/NixConfig#desktop";
-    allowReboot = false;
-    dates = "04:00";
-  };
 }
