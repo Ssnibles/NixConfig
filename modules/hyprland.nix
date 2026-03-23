@@ -60,7 +60,7 @@
       monitor = [ ",preferred,auto,1" ];
       bind = [
         "$mod, RETURN, exec, foot"
-        "$mod, Q, killactive"
+        "$mod, X, killactive"
         "$mod, E, exec, yazi"
         "$mod, V, exec, toggle-float"
         "$mod, G, exec, toggle-focus-mode"
