@@ -126,22 +126,24 @@ local rainbow = {
 	"IblRainbow4",
 	"IblRainbow5",
 	"IblRainbow6",
+	"IblRainbow7",
 }
 
 hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
-	vim.api.nvim_set_hl(0, "IblRainbow1", { fg = "#7a8a9e" }) -- muted blue-grey
-	vim.api.nvim_set_hl(0, "IblRainbow2", { fg = "#8a9e8a" }) -- muted sage
-	vim.api.nvim_set_hl(0, "IblRainbow3", { fg = "#9e8a7a" }) -- muted terracotta
-	vim.api.nvim_set_hl(0, "IblRainbow4", { fg = "#7a8a9e" }) -- muted mauve
-	vim.api.nvim_set_hl(0, "IblRainbow5", { fg = "#9e9a7a" }) -- muted gold
-	vim.api.nvim_set_hl(0, "IblRainbow6", { fg = "#8a7a9e" }) -- muted violet
+	vim.api.nvim_set_hl(0, "IblRainbow1", { fg = "#E06C75" })
+	vim.api.nvim_set_hl(0, "IblRainbow2", { fg = "#E5C07B" })
+	vim.api.nvim_set_hl(0, "IblRainbow3", { fg = "#61AFEF" })
+	vim.api.nvim_set_hl(0, "IblRainbow4", { fg = "#D19A66" })
+	vim.api.nvim_set_hl(0, "IblRainbow5", { fg = "#98C379" })
+	vim.api.nvim_set_hl(0, "IblRainbow6", { fg = "#C678DD" })
+	vim.api.nvim_set_hl(0, "IblRainbow7", { fg = "#56B6C2" })
 end)
 
 loader.setup("ibl", function(ibl)
 	ibl.setup({
 		indent = {
 			highlight = rainbow,
-			-- char = "│",
+			char = "│",
 		},
 		scope = {
 			highlight = rainbow,
