@@ -108,6 +108,7 @@ vim.schedule(function()
 			clue.gen_clues.registers(),
 			clue.gen_clues.windows(),
 			clue.gen_clues.z(),
+			-- Leader group descriptions
 			{ mode = "n", keys = "<Leader>", desc = "+leader" },
 			{ mode = "x", keys = "<Leader>", desc = "+leader" },
 			{ mode = "n", keys = "<Leader>b", desc = "+buffer" },
@@ -122,7 +123,6 @@ vim.schedule(function()
 			{ mode = "n", keys = "s", desc = "+surround" },
 			{ mode = "n", keys = "]", desc = "+next" },
 			{ mode = "n", keys = "[", desc = "+prev" },
-			{ mode = "n", "<leader>g", desc = "+git/neogit" },
 		},
 		triggers = {
 			{ mode = "n", keys = "<Leader>" },

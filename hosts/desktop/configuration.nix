@@ -45,13 +45,18 @@
 
   services.resolved = {
     enable = true;
+    # Explicit primary DNS servers so resolved has somewhere to send queries
+    # even before DHCP hands us a server. "opportunistic" tries DoT but falls
+    # back gracefully when the upstream doesn't support it — "yes" would stall
+    # resolution entirely on routers that don't speak DoT.
+    dnssec = "allow-downgrade";
+    dnsovertls = "opportunistic";
+    domains = [ "~." ];
     settings = {
       Resolve = {
-        FallbackDNS = [
-          "1.1.1.1"
-          "8.8.8.8"
-        ];
-        DNSOverTLS = "yes";
+        # Named DoT peers so opportunistic mode can verify the connection
+        DNS = "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111";
+        FallbackDNS = "8.8.8.8#dns.google 8.8.4.4#dns.google";
         Cache = "yes";
       };
     };
@@ -177,8 +182,6 @@
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       ];
-      keep-generations = 5;
-      keep-generations-root = 3;
     };
     gc = {
       automatic = true;
@@ -187,8 +190,11 @@
     };
   };
 
+  # Flake-based auto-upgrade: tracks the flake, not a channel.
+  # Set allowReboot = false so it never reboots unattended.
   system.autoUpgrade = {
     enable = true;
+    flake = "github:Ssnibles/NixConfig#desktop";
     allowReboot = false;
     dates = "04:00";
   };

@@ -10,7 +10,9 @@
     shellAbbrs = {
       v = "nvim";
       c = "clear";
-      rebuild = "git -C ~/NixConfig add -u && sudo nixos-rebuild switch --flake ~/NixConfig#nixos";
+      # Uses the system hostname so this works correctly on both desktop and
+      # laptop without having to maintain separate abbreviations per host.
+      rebuild = "git -C ~/NixConfig add -u && sudo nixos-rebuild switch --flake ~/NixConfig#(hostname)";
       update = "cd ~/NixConfig && nix flake update && sudo nixos-rebuild switch --flake .";
       get-class = "hyprctl clients | grep -A5 'class:'";
     };

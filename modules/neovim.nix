@@ -59,7 +59,6 @@
       # Navigation and File Management
       fzf-lua # Fuzzy finding
       oil-nvim # File explorer edited like a normal buffer
-      # smart-splits-nvim # Better window navigation and resizing
 
       # UI Enhancements
       statuscol-nvim # Customizable status column (folds, signs)
@@ -81,7 +80,7 @@
       neogit # Magit-inspired Git interface for Neovim
       vim-tmux-navigator # Seamless navigation between Vim and tmux splits
       leap-nvim # Fast navigation by jumping to any location in the visible buffer
-      grug-far-nvim # Fuzzy finder for the visible buffer, similar to leap but with a different interface
+      grug-far-nvim # Interactive find-and-replace (ripgrep + sed TUI)
     ];
   };
 
