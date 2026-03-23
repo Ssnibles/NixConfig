@@ -58,8 +58,9 @@ vim.api.nvim_create_autocmd("FileType", {
 		"checkhealth",
 		"notify",
 		"oil",
-		"noice", -- noice message log popup
-		"copilot-panel", -- Copilot suggestions panel
+		"noice",
+		"copilot-panel",
+		"grug-far",
 	},
 	callback = function(ev)
 		vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = ev.buf, silent = true, desc = "Close window" })
