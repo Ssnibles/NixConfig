@@ -117,23 +117,39 @@ loader.setup("lualine", function(lualine)
 end)
 
 -- ── indent-blankline ──────────────────────────────────────────────────────
+local hooks = require("ibl.hooks")
+
+local rainbow = {
+	"IblRainbow1",
+	"IblRainbow2",
+	"IblRainbow3",
+	"IblRainbow4",
+	"IblRainbow5",
+	"IblRainbow6",
+}
+
+hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
+	vim.api.nvim_set_hl(0, "IblRainbow1", { fg = "#7a8a9e" }) -- muted blue-grey
+	vim.api.nvim_set_hl(0, "IblRainbow2", { fg = "#8a9e8a" }) -- muted sage
+	vim.api.nvim_set_hl(0, "IblRainbow3", { fg = "#9e8a7a" }) -- muted terracotta
+	vim.api.nvim_set_hl(0, "IblRainbow4", { fg = "#7a8a9e" }) -- muted mauve
+	vim.api.nvim_set_hl(0, "IblRainbow5", { fg = "#9e9a7a" }) -- muted gold
+	vim.api.nvim_set_hl(0, "IblRainbow6", { fg = "#8a7a9e" }) -- muted violet
+end)
+
 loader.setup("ibl", function(ibl)
 	ibl.setup({
-		enabled = true,
 		indent = {
-			char = "│",
-			highlight = "IblIndent",
-			smart_indent_cap = true,
+			highlight = rainbow,
+			-- char = "│",
 		},
 		scope = {
-			enabled = true,
-			highlight = "IblScope",
-			show_start = true,
-			show_end = true,
-			show_exact_scope = true,
+			highlight = rainbow,
+			show_start = false,
+			show_end = false,
 		},
 		exclude = {
-			filetypes = { "help", "dashboard", "oil", "neo-tree" },
+			filetypes = { "help", "dashboard", "oil", "neo-tree", "TelescopePrompt" },
 		},
 	})
 end)
