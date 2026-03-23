@@ -36,11 +36,11 @@ map("x", "<leader>p", '"_dP', "Paste without yanking selection")
 map({ "n", "v" }, "<leader>D", '"_d', "Delete without yanking")
 
 -- ── Windows ────────────────────────────────────────────────────────────────
--- map("n", "<leader>wv", "<C-w>v", "Split vertical")
--- map("n", "<leader>wh", "<C-w>s", "Split horizontal")
--- map("n", "<leader>wx", "<C-w>c", "Close window")
--- map("n", "<leader>we", "<C-w>=", "Equalise splits")
--- map("n", "<leader>wm", "<C-w>_<C-w>|", "Maximise window")
+map("n", "<leader>wv", "<C-w>v", "Split vertical")
+map("n", "<leader>wh", "<C-w>s", "Split horizontal")
+map("n", "<leader>wx", "<C-w>c", "Close window")
+map("n", "<leader>we", "<C-w>=", "Equalise splits")
+map("n", "<leader>wm", "<C-w>_<C-w>|", "Maximise window")
 
 -- Window navigation — plain wincmd
 -- map("n", "<C-h>", "<C-w>h", "Move to left window")
