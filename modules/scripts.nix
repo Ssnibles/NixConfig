@@ -48,40 +48,62 @@ let
   '';
   # ── AI Commit Message Generator ───────────────────────────────────────────
   aicommit = pkgs.writeShellScriptBin "aicommit" ''
-    DIFF=$(${pkgs.git}/bin/git diff --staged --no-color)
+        DIFF=$(${pkgs.git}/bin/git diff --staged --no-color)
 
-    if [ -z "$DIFF" ]; then
-      echo "No staged changes." >&2
-      exit 1
-    fi
+        if [ -z "$DIFF" ]; then
+          echo "No staged changes." >&2
+          exit 1
+        fi
 
-    DIFF=$(echo "$DIFF" | head -c 4000)
+        DIFF=$(echo "$DIFF" | head -c 4000)
 
-    ${pkgs.curl}/bin/curl -s --connect-timeout 2 http://127.0.0.1:11434 > /dev/null 2>&1 \
-      || { echo "Ollama not reachable." >&2; exit 1; }
+        ${pkgs.curl}/bin/curl -s --connect-timeout 2 http://127.0.0.1:11434 > /dev/null 2>&1 \
+          || { echo "Ollama not reachable." >&2; exit 1; }
 
-    RAW=$(
-      ${pkgs.jq}/bin/jq -n \
-        --arg model "qwen2.5-coder:1.5b" \
-        --arg prompt "Write a conventional commit message for this diff. One short summary line (max 50 chars), blank line, then bullet points only if needed. Return only the message, no markdown formatting or code fences:\n\n$DIFF" \
-        '{model: $model, prompt: $prompt, stream: false}' \
-      | ${pkgs.curl}/bin/curl -s --max-time 30 -X POST http://127.0.0.1:11434/api/generate \
-          -H "Content-Type: application/json" \
-          -d @- \
-      | ${pkgs.jq}/bin/jq -r '.response // empty'
-    )
+        RAW=$(
+          ${pkgs.jq}/bin/jq -n \
+            --arg model "qwen2.5-coder:1.5b" \
+            --arg prompt "You are a commit message generator. Output ONLY a git commit message, nothing else - no explanation, no preamble, no code fences.
 
-    # Strip markdown code fences and leading blank lines
-    MESSAGE=$(echo "$RAW" \
-      | ${pkgs.gnused}/bin/sed '/^[`]\{3\}/d' \
-      | ${pkgs.gnused}/bin/sed '/./,$!d')
+    FORMAT:
+    <type>[optional scope]: <description>
 
-    if [ -z "$MESSAGE" ] || [ "$MESSAGE" = "null" ]; then
-      echo "No response from Ollama." >&2
-      exit 1
-    fi
+    [optional body]
 
-    echo "$MESSAGE"
+    RULES:
+    - First line: type, optional scope in parens, colon, space, short description (max 50 chars)
+    - Description must use imperative mood: add not added, fix not fixed
+    - Valid types: feat, fix, refactor, chore, docs, style, perf, test, build, ci, revert
+    - Add scope when the change is isolated to one area, e.g. feat(auth): or fix(parser):
+    - Body is optional - only include if changes need explanation, as plain sentences not bullet points
+    - Breaking changes: append ! after type/scope, e.g. feat(api)!:
+
+    EXAMPLES:
+    feat(auth): add OAuth2 login support
+    fix(parser): handle empty input without crashing
+    refactor(db): extract connection logic into helper
+    chore: update dependencies
+
+    DIFF:
+    $DIFF" \
+            '{model: $model, prompt: $prompt, stream: false}' \
+          | ${pkgs.curl}/bin/curl -s --max-time 30 -X POST http://127.0.0.1:11434/api/generate \
+              -H "Content-Type: application/json" \
+              -d @- \
+          | ${pkgs.jq}/bin/jq -r '.response // empty'
+        )
+
+        # Strip markdown code fences and leading blank lines
+        MESSAGE=$(echo "$RAW" \
+          | ${pkgs.gnused}/bin/sed '/^[`]\{3\}/d' \
+          | ${pkgs.gnused}/bin/sed '/./,$!d')
+
+        if [ -z "$MESSAGE" ] || [ "$MESSAGE" = "null" ]; then
+          echo "No response from Ollama." >&2
+          exit 1
+        fi
+
+        echo "$MESSAGE"
   '';
 in
 {
