@@ -130,6 +130,10 @@
     };
   };
 
+  services.ollama = {
+    enable = true;
+  };
+
   # ── User Configuration ─────────────────────────────────────────────────────
   users.users.josh = {
     isNormalUser = true;

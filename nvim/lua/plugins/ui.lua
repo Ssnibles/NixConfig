@@ -118,10 +118,13 @@ end)
 -- ── markview (markdown preview) ───────────────────────────────────────────
 loader.setup("markview", function(markview)
 	markview.setup({
-		-- "n" and "no" only — command mode ("c") causes flicker when entering
-		-- ex-commands in markdown buffers and serves no real purpose here
 		modes = { "n", "no" },
 		hybrid_modes = { "n", "no" },
+		preview = {
+			border = "rounded",
+			icon_provider = "internal",
+			theme = "auto",
+		},
 	})
 end)
 

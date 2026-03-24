@@ -19,6 +19,7 @@
       kotlin-language-server # Kotlin
       jdt-language-server # Java
       lua-language-server # Lua
+      marksman # Markdown
 
       # Formatters & Linters
       nixfmt-rfc-style # Official Nix formatting
@@ -35,6 +36,7 @@
         p: with p; [
           lua
           markdown
+          latex
           nix
           vim
           bash

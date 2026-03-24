@@ -30,6 +30,8 @@
       btop
       yazi
       jq
+      texliveBasic
+      imagemagick
       # Fonts
       nerd-fonts.fira-code
       nerd-fonts.zed-mono
@@ -66,7 +68,6 @@
     ++ pkgs.lib.optionals hostProfile.isDesktop [
       # Gaming
       steam
-      steam-run
       heroic
       lutris
       mangohud
