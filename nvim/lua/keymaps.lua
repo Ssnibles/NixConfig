@@ -34,7 +34,6 @@ map("n", "N", "Nzzzv", "Prev match (centred)")
 -- ── Clipboard ──────────────────────────────────────────────────────────────
 map("x", "<leader>p", '"_dP', "Paste without yanking selection")
 map({ "n", "v" }, "<leader>D", '"_d', "Delete without yanking")
-
 -- ── Windows ────────────────────────────────────────────────────────────────
 map("n", "<leader>wv", "<C-w>v", "Split vertical")
 map("n", "<leader>wh", "<C-w>s", "Split horizontal")
@@ -80,9 +79,10 @@ end, "Prev error")
 map("n", "-", "<cmd>Oil<CR>", "Open Oil")
 map("n", "<leader>o", "<cmd>Oil<CR>", "Open Oil")
 
--- ── LSP (non-buffer-local helpers) ────────────────────────────────────────
+-- ── LSP  ───────────────────────────────────────────────────────────────────
 map("n", "<leader>li", "<cmd>LspInfo<CR>", "LSP info")
 map("n", "<leader>lr", "<cmd>LspRestart<CR>", "LSP restart")
+map("n", "<leader>rn", vim.lsp.buf.rename, "LSP rename")
 
 -- ── Toggles ────────────────────────────────────────────────────────────────
 map("n", "<leader>tw", "<cmd>set wrap!<CR>", "Toggle wrap")
