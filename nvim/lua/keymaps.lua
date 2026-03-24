@@ -42,12 +42,6 @@ map("n", "<leader>wx", "<C-w>c", "Close window")
 map("n", "<leader>we", "<C-w>=", "Equalise splits")
 map("n", "<leader>wm", "<C-w>_<C-w>|", "Maximise window")
 
--- Window navigation — plain wincmd
--- map("n", "<C-h>", "<C-w>h", "Move to left window")
--- map("n", "<C-j>", "<C-w>j", "Move to bottom window")
--- map("n", "<C-k>", "<C-w>k", "Move to top window")
--- map("n", "<C-l>", "<C-w>l", "Move to right window")
-
 -- Keybindings for vim-tmux-navigator
 map("n", "<C-h>", "<cmd>TmuxNavigateLeft<cr>", "Navigate Left")
 map("n", "<C-j>", "<cmd>TmuxNavigateDown<cr>", "Navigate Down")
@@ -98,4 +92,6 @@ map("n", "<leader>tn", "<cmd>set relativenumber!<CR>", "Toggle relative numbers"
 map("n", "<leader>tc", function()
 	require("mini.cursorword").toggle()
 end, "Toggle cursorword")
--- <leader>tb (toggle line blame) is set per-buffer inside gitsigns on_attach
+map("n", "<leader>th", function()
+	vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }))
+end, "Toggle inlay hints")

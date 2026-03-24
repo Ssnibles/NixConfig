@@ -29,6 +29,10 @@ lsp.config("*", {
 			return { buffer = bufnr, silent = true, desc = desc }
 		end
 
+		if client.supports_method("textDocument/inlayHint") then
+			vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+		end
+
 		-- ── Navigation ───────────────────────────────────────────────────
 		vim.keymap.set("n", "gd", lsp.buf.definition, opts("Go to definition"))
 		vim.keymap.set("n", "gD", lsp.buf.declaration, opts("Go to declaration"))
@@ -79,6 +83,7 @@ lsp.config("lua_ls", {
 	cmd = { "lua-language-server" },
 	settings = {
 		Lua = {
+			hint = { enable = true },
 			runtime = { version = "LuaJIT" },
 			workspace = { checkThirdParty = false },
 			diagnostics = { globals = { "vim" } },
@@ -88,8 +93,19 @@ lsp.config("lua_ls", {
 })
 
 lsp.config("kotlin_language_server", { cmd = { "kotlin-language-server" } })
-lsp.config("jdtls", { cmd = { "jdtls" } })
-
+lsp.config("jdtls", {
+	cmd = { "jdtls" },
+	settings = {
+		java = {
+			signatureHelp = { enabled = true },
+			inlayHints = {
+				parameterNames = {
+					enabled = "all", -- options: "none", "literals", "all"
+				},
+			},
+		},
+	},
+})
 -- ── Auto-start by Filetype ────────────────────────────────────────────────
 local ft_servers = {
 	nix = "nixd",
