@@ -49,8 +49,8 @@ map("n", "<C-k>", "<cmd>TmuxNavigateUp<cr>", "Navigate Up")
 map("n", "<C-l>", "<cmd>TmuxNavigateRight<cr>", "Navigate Right")
 
 -- ── Buffers ────────────────────────────────────────────────────────────────
-map("n", "<Tab>", "<cmd>bnext<CR>", "Next buffer")
-map("n", "<S-Tab>", "<cmd>bprevious<CR>", "Previous buffer")
+map("n", "<C-p>", "<cmd>bnext<CR>", "Next buffer")
+map("n", "<C-o>", "<cmd>bprevious<CR>", "Previous buffer")
 
 -- ── Quickfix ───────────────────────────────────────────────────────────────
 map("n", "<leader>qo", "<cmd>copen<CR>", "Open quickfix")
