@@ -11,6 +11,7 @@
     networkmanagerapplet
     playerctl
     adwaita-icon-theme
+    hyprlock
   ];
   wayland.windowManager.hyprland = {
     enable = true;

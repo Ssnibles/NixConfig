@@ -11,6 +11,8 @@ function M.apply()
 	local normal = vim.api.nvim_get_hl(0, { name = "Normal" })
 	local border_color = "#4a4a5a"
 
+	hl(0, "Cursor", { bg = "#ff0000", fg = "#000000" })
+
 	-- ── Float Windows ──────────────────────────────────────────────────────
 	hl(0, "FloatBorder", { bg = normal.bg, fg = border_color })
 	hl(0, "NormalFloat", { bg = normal.bg, fg = normal.fg })
@@ -28,10 +30,6 @@ function M.apply()
 	hl(0, "DiagnosticLineWarn", { bg = "#271f10" })
 	hl(0, "DiagnosticLineInfo", { bg = "#131c27" })
 	hl(0, "DiagnosticLineHint", { bg = "#141e1d" })
-
-	-- ── Indent Guides ──────────────────────────────────────────────────────
-	-- hl(0, "IblIndent", { fg = "#2a2a30" })
-	-- hl(0, "IblScope", { fg = "#404050" })
 
 	-- ── blink.cmp ──────────────────────────────────────────────────────────
 	hl(0, "BlinkMenuNormal", { bg = normal.bg, fg = normal.fg })
