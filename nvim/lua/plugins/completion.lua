@@ -45,7 +45,7 @@ loader.setup("blink.cmp", function(blink)
 		completion = {
 			menu = {
 				auto_show = true,
-				border = "rounded",
+				border = "none",
 				draw = {
 					components = {
 						kind_icon = {
@@ -86,7 +86,7 @@ loader.setup("blink.cmp", function(blink)
 			documentation = {
 				auto_show = true,
 				auto_show_delay_ms = 200,
-				window = { border = "rounded" },
+				window = { border = "none" },
 			},
 		},
 	})

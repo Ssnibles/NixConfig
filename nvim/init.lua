@@ -35,7 +35,7 @@ vim.diagnostic.config({
 	},
 	underline = true,
 	severity_sort = true,
-	float = { border = "rounded", source = true },
+	float = { border = "none", source = true },
 	-- Don't update diagnostics while typing — reduces noise in insert mode
 	update_in_insert = false,
 })
