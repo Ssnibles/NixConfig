@@ -27,36 +27,42 @@ function M.apply()
 	local border_color = "#4a4a5a"
 	local selection_bg = "#2a2a30"
 
-	hl(0, "Cursor", { bg = "#ff0000", fg = "#000000" })
-
 	-- ── Float Windows ──────────────────────────────────────────────────────
-	hl(0, "NormalFloat", { bg = float_bg, fg = normal.fg })
-	hl(0, "FloatBorder", { bg = float_bg, fg = border_color })
-	hl(0, "FzfLuaNormal", { bg = float_bg, fg = normal.fg })
-	hl(0, "FzfLuaBorder", { bg = float_bg, fg = border_color })
+	-- hl(0, "NormalFloat", { bg = float_bg, fg = normal.fg })
+	-- hl(0, "FloatBorder", { bg = float_bg, fg = border_color })
+	-- hl(0, "FzfLuaNormal", { bg = float_bg, fg = normal.fg })
+	-- hl(0, "FzfLuaBorder", { bg = float_bg, fg = border_color })
+	hl(0, "NormalFloat", { bg = "none" })
+	hl(0, "FloatBorder", { fg = "#7e9cd8", bg = "none" })
+
+	hl(0, "CursorLine", { bg = "#2a2a37" })
+	-- hl(0, "CursorLineNr", { fg = "#f38ba8", bold = true })
+
+	hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#e82424" })
+	hl(0, "DiagnosticUnderlineWarn", { undercurl = true, sp = "#ff9e3b" })
 
 	-- ── Completion Menu (Legacy/Standard) ──────────────────────────────────
-	hl(0, "Pmenu", { bg = float_bg, fg = normal.fg })
-	hl(0, "PmenuSel", { bg = selection_bg, fg = normal.fg })
-	hl(0, "PmenuSbar", { bg = "#1a1a1c" })
-	hl(0, "PmenuThumb", { bg = "#4a4a5a" })
+	-- hl(0, "Pmenu", { bg = float_bg, fg = normal.fg })
+	-- hl(0, "PmenuSel", { bg = selection_bg, fg = normal.fg })
+	-- hl(0, "PmenuSbar", { bg = "#1a1a1c" })
+	-- hl(0, "PmenuThumb", { bg = "#4a4a5a" })
 
 	-- ── blink.cmp ──────────────────────────────────────────────────────────
 	-- Main Menu
-	hl(0, "BlinkCmpMenu", { bg = float_bg, fg = normal.fg })
-	hl(0, "BlinkCmpMenuBorder", { bg = float_bg, fg = border_color })
-	hl(0, "BlinkCmpMenuSelection", { bg = selection_bg, fg = normal.fg, bold = true })
+	-- hl(0, "BlinkCmpMenu", { bg = float_bg, fg = normal.fg })
+	-- hl(0, "BlinkCmpMenuBorder", { bg = float_bg, fg = border_color })
+	-- hl(0, "BlinkCmpMenuSelection", { bg = selection_bg, fg = normal.fg, bold = true })
 
 	-- Documentation and Signature Help
-	hl(0, "BlinkCmpDoc", { bg = float_bg, fg = normal.fg })
-	hl(0, "BlinkCmpDocBorder", { bg = float_bg, fg = border_color })
-	hl(0, "BlinkCmpSignatureHelp", { bg = float_bg, fg = normal.fg })
-	hl(0, "BlinkCmpSignatureHelpBorder", { bg = float_bg, fg = border_color })
+	-- hl(0, "BlinkCmpDoc", { bg = float_bg, fg = normal.fg })
+	-- hl(0, "BlinkCmpDocBorder", { bg = float_bg, fg = border_color })
+	-- hl(0, "BlinkCmpSignatureHelp", { bg = float_bg, fg = normal.fg })
+	-- hl(0, "BlinkCmpSignatureHelpBorder", { bg = float_bg, fg = border_color })
 
 	-- Item details
-	hl(0, "BlinkCmpLabel", { fg = normal.fg })
-	hl(0, "BlinkCmpLabelMatch", { fg = "#89b4fa", bold = true }) -- Highlight matching characters
-	hl(0, "BlinkCmpGhostText", { fg = "#505060", italic = true })
+	-- hl(0, "BlinkCmpLabel", { fg = normal.fg })
+	-- hl(0, "BlinkCmpLabelMatch", { fg = "#89b4fa", bold = true }) -- Highlight matching characters
+	-- hl(0, "BlinkCmpGhostText", { fg = "#505060", italic = true })
 
 	-- Kind Icons (Optional: maps icons to specific colors)
 	hl(0, "BlinkCmpKindSnippet", { fg = "#f38ba8" })

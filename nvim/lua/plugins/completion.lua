@@ -20,15 +20,39 @@ end)
 -- ── blink.cmp (completion engine) ─────────────────────────────────────────
 loader.setup("blink.cmp", function(blink)
 	blink.setup({
-		keymap = { preset = "super-tab" },
+		-- Show function signatures for better context during development
+		signature = { enabled = true },
+
+		-- Navigation and acceptance keymaps restored to your previous preferences
+		keymap = {
+			preset = "none",
+			["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
+			["<C-e>"] = { "hide", "fallback" },
+
+			-- Primary acceptance key
+			["<Tab>"] = { "accept", "fallback" },
+
+			-- Standard directional navigation for completion items
+			["<Up>"] = { "select_prev", "fallback" },
+			["<Down>"] = { "select_next", "fallback" },
+			["<C-p>"] = { "select_prev", "fallback" },
+			["<C-n>"] = { "select_next", "fallback" },
+
+			-- Snippet placeholder navigation
+			["<S-Tab>"] = { "snippet_backward", "fallback" },
+
+			-- Documentation scrolling
+			["<C-b>"] = { "scroll_documentation_up", "fallback" },
+			["<C-f>"] = { "scroll_documentation_down", "fallback" },
+		},
+
 		sources = {
 			default = { "lsp", "path", "snippets", "buffer" },
 		},
 
 		cmdline = {
 			keymap = {
-				-- These only apply in the cmdline completion popup so they
-				-- don't conflict with Copilot (Copilot is insert-mode only)
+				-- Command-line specific navigation and acceptance
 				["<Tab>"] = { "accept", "fallback" },
 				["<S-Tab>"] = { "select_prev", "fallback" },
 				["<Up>"] = { "select_prev", "fallback" },
@@ -45,8 +69,9 @@ loader.setup("blink.cmp", function(blink)
 		completion = {
 			menu = {
 				auto_show = true,
-				border = "none",
+				border = "rounded",
 				draw = {
+					columns = { { "kind_icon", gap = 1 }, { "label", "label_description", gap = 1 } },
 					components = {
 						kind_icon = {
 							text = function(ctx)
@@ -79,6 +104,7 @@ loader.setup("blink.cmp", function(blink)
 								}
 								return icons[ctx.kind] or "󰌋"
 							end,
+							highlight = "Character",
 						},
 					},
 				},
@@ -86,8 +112,9 @@ loader.setup("blink.cmp", function(blink)
 			documentation = {
 				auto_show = true,
 				auto_show_delay_ms = 200,
-				window = { border = "none" },
+				window = { border = "rounded" },
 			},
+			ghost_text = { enabled = true },
 		},
 	})
 end)
