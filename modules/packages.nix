@@ -32,6 +32,7 @@
       jq
       texliveBasic
       imagemagick
+      zip
       # Fonts
       nerd-fonts.fira-code
       nerd-fonts.zed-mono
@@ -67,6 +68,7 @@
     ]
     ++ pkgs.lib.optionals hostProfile.isDesktop [
       # Gaming
+      modrinth-app-unwrapped
       steam
       heroic
       lutris
