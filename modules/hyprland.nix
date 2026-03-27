@@ -58,6 +58,9 @@
       windowrule = [
         "match:float true, border_size 2"
       ];
+      binds = {
+        allow_workspace_cycles = true;
+      };
       monitor = [ ",preferred,auto,1" ];
       bind = [
         "$mod, RETURN, exec, foot"
@@ -82,6 +85,7 @@
         "$mod, 8, workspace, 8"
         "$mod, 9, workspace, 9"
         "$mod, 0, workspace, 10"
+        "$mod, P, workspace, previous"
         "$mod SHIFT, 1, movetoworkspace, 1"
         "$mod SHIFT, 2, movetoworkspace, 2"
         "$mod SHIFT, 3, movetoworkspace, 3"
