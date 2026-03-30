@@ -1,11 +1,12 @@
 # =============================================================================
-# Package Configuration
+# Home Manager Package Configuration
 # =============================================================================
-# Defines the set of packages installed for the user.
-# Uses hostProfile to differentiate between desktop and laptop needs.
+# User packages installed via Home Manager.
+# This is a Home Manager module - only import in home.nix, NOT in NixOS configs.
 # =============================================================================
 {
   pkgs,
+  lib,
   hostProfile,
   ...
 }:
@@ -18,7 +19,7 @@
       jdk21
       code2prompt
       nodejs
-      # CLI utilities
+      # CLI
       wl-clipboard
       fzf
       fd
@@ -37,7 +38,7 @@
       nerd-fonts.fira-code
       nerd-fonts.zed-mono
       nerd-fonts.jetbrains-mono
-      # GUI applications
+      # GUI
       ghostty
       foot
       mission-center
@@ -45,7 +46,7 @@
       zen-browser
       onlyoffice-desktopeditors
       inkscape
-      # PDF viewers
+      # PDF
       sioyek
       zathura
       # Notes
@@ -56,7 +57,7 @@
       picard
       easytag
       pavucontrol
-      # System / networking
+      # System
       localsend
       impala
       bluetui
@@ -64,10 +65,9 @@
       satty
       grim
       slurp
-      iwd
+      # iwd removed - now in environment.systemPackages
     ]
-    ++ pkgs.lib.optionals hostProfile.isDesktop [
-      # Gaming
+    ++ lib.optionals hostProfile.isDesktop [
       modrinth-app-unwrapped
       steam
       heroic
@@ -75,10 +75,9 @@
       mangohud
       gamemode
       protonup-qt
-      # Virtualization
       quickemu
     ]
-    ++ pkgs.lib.optionals hostProfile.isLaptop [
+    ++ lib.optionals hostProfile.isLaptop [
       powertop
       acpi
       brightnessctl

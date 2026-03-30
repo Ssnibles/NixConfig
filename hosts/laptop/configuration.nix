@@ -1,32 +1,52 @@
+# =============================================================================
+# Laptop Host Configuration
+# =============================================================================
+# Production laptop with TLP power management.
+# When useDisko = true: Disko handles partitioning (hardware-configuration.nix skipped)
+# When useDisko = false: hardware-configuration.nix provides filesystem definitions
+# =============================================================================
 {
   config,
   pkgs,
   lib,
+  hostProfile,
   ...
 }:
 {
-  imports = [ ./hardware-configuration.nix ];
+  # Only import hardware-configuration.nix for test hosts (useDisko = false)
+  imports = lib.optionals (!hostProfile.useDisko) [
+    ./hardware-configuration.nix
+  ];
+
+  # Kernel modules from hardware-configuration.nix (safe with Disko)
+  boot.initrd.availableKernelModules = [
+    "nvme"
+    "xhci_pci"
+    "ahci"
+    "sdhci_pci"
+  ];
+  boot.initrd.kernelModules = [ ];
+  boot.kernelModules = [ "kvm-amd" ];
+  boot.extraModulePackages = [ ];
 
   system.stateVersion = "24.05";
   networking.hostName = "laptop";
 
-  # ── Boot & Kernel ──────────────────────────────────────────────────────────
+  # Boot loader
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
     timeout = 3;
     systemd-boot.configurationLimit = 10;
   };
-
   boot.kernelPackages = pkgs.linuxPackages_latest;
   hardware.enableRedistributableFirmware = true;
-
   boot.extraModprobeConfig = ''
     options cfg80211 ieee80211_regdom=NZ
     options iwlwifi bt_coex_active=1 11n_disable=0
   '';
 
-  # ── Networking ─────────────────────────────────────────────────────────────
+  # Networking
   networking = {
     networkmanager = {
       enable = true;
@@ -42,19 +62,13 @@
     };
     enableIPv6 = true;
   };
-
   services.resolved = {
     enable = true;
-    # Explicit primary DNS servers so resolved has somewhere to send queries
-    # even before DHCP hands us a server. "opportunistic" tries DoT but falls
-    # back gracefully when the upstream doesn't support it — "yes" would stall
-    # resolution entirely on routers that don't speak DoT.
     dnssec = "allow-downgrade";
     dnsovertls = "opportunistic";
     domains = [ "~." ];
     settings = {
       Resolve = {
-        # Named DoT peers so opportunistic mode can verify the connection
         DNS = "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111";
         FallbackDNS = "8.8.8.8#dns.google 8.8.4.4#dns.google";
         Cache = "yes";
@@ -62,24 +76,21 @@
     };
   };
 
-  # ── Hardware Peripherals ───────────────────────────────────────────────────
+  # Hardware
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
-    settings = {
-      General = {
-        FastConnectable = true;
-        Experimental = true;
-      };
+    settings.General = {
+      FastConnectable = true;
+      Experimental = true;
     };
   };
   services.blueman.enable = true;
-
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="1024"
   '';
 
-  # ── Power Management (TLP) ─────────────────────────────────────────────────
+  # Power management (TLP)
   services.power-profiles-daemon.enable = false;
   services.tlp = {
     enable = true;
@@ -98,7 +109,6 @@
       LAPTOP_MODE = 5;
     };
   };
-
   services.logind.settings = {
     Login = {
       HandleLidSwitch = "suspend";
@@ -108,23 +118,19 @@
     };
   };
 
-  # ── System Services ────────────────────────────────────────────────────────
+  # Services
   services.displayManager.ly.enable = true;
   services.flatpak.enable = true;
   services.journald.extraConfig = ''
     SystemMaxUse=500M
     MaxRetentionSec=1week
   '';
-
   zramSwap = {
     enable = true;
     algorithm = "zstd";
   };
-
-  # ── Desktop & Audio ────────────────────────────────────────────────────────
   programs.hyprland.enable = true;
   programs.fish.enable = true;
-
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -137,7 +143,6 @@
       };
     };
   };
-
   services.keyd = {
     enable = true;
     keyboards.default = {
@@ -149,7 +154,7 @@
     };
   };
 
-  # ── User Configuration ─────────────────────────────────────────────────────
+  # User
   users.users.josh = {
     isNormalUser = true;
     description = "Josh";
@@ -162,7 +167,7 @@
     ];
   };
 
-  # ── Packages ───────────────────────────────────────────────────────────────
+  # System packages
   environment.systemPackages = with pkgs; [
     git
     vim
@@ -171,9 +176,10 @@
     rsync
     nvme-cli
     smartmontools
+    iwd
   ];
 
-  # ── Locale & Time ──────────────────────────────────────────────────────────
+  # Locale
   time.timeZone = "Pacific/Auckland";
   i18n.defaultLocale = "en_NZ.UTF-8";
   i18n.extraLocaleSettings = {
@@ -181,9 +187,8 @@
     LC_MEASUREMENT = "en_NZ.UTF-8";
   };
 
-  # ── Nix Settings ───────────────────────────────────────────────────────────
+  # Nix
   nixpkgs.config.allowUnfree = true;
-
   nix = {
     settings = {
       experimental-features = [

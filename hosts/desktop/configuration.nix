@@ -1,32 +1,54 @@
+# =============================================================================
+# Desktop Host Configuration
+# =============================================================================
+# Production desktop with NVIDIA GPU.
+# When useDisko = true: Disko handles partitioning (hardware-configuration.nix skipped)
+# When useDisko = false: hardware-configuration.nix provides filesystem definitions
+# =============================================================================
 {
   config,
   pkgs,
   lib,
+  hostProfile,
+  stablePkgs,
   ...
 }:
 {
-  imports = [
-    ./hardware-configuration.nix
-    ../../modules/nvidia.nix
+  # Only import hardware-configuration.nix for test hosts (useDisko = false)
+  imports =
+    lib.optionals (!hostProfile.useDisko) [
+      ./hardware-configuration.nix
+    ]
+    ++ [
+      ../../modules/nvidia.nix
+    ];
+
+  # Kernel modules from hardware-configuration.nix (safe with Disko)
+  boot.initrd.availableKernelModules = [
+    "nvme"
+    "xhci_pci"
+    "ahci"
+    "usbhid"
   ];
+  boot.initrd.kernelModules = [ ];
+  boot.kernelModules = [ "kvm-amd" ];
+  boot.extraModulePackages = [ ];
 
   system.stateVersion = "24.05";
   networking.hostName = "desktop";
 
-  # ── Boot & Kernel ──────────────────────────────────────────────────────────
+  # Boot loader
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
     timeout = 3;
     systemd-boot.configurationLimit = 10;
   };
-
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
   hardware.enableRedistributableFirmware = true;
-
   boot.kernelParams = [ "usbcore.autosuspend=-1" ];
 
-  # ── Networking ─────────────────────────────────────────────────────────────
+  # Networking
   networking = {
     networkmanager = {
       enable = true;
@@ -42,19 +64,13 @@
     };
     enableIPv6 = true;
   };
-
   services.resolved = {
     enable = true;
-    # Explicit primary DNS servers so resolved has somewhere to send queries
-    # even before DHCP hands us a server. "opportunistic" tries DoT but falls
-    # back gracefully when the upstream doesn't support it — "yes" would stall
-    # resolution entirely on routers that don't speak DoT.
     dnssec = "allow-downgrade";
     dnsovertls = "opportunistic";
     domains = [ "~." ];
     settings = {
       Resolve = {
-        # Named DoT peers so opportunistic mode can verify the connection
         DNS = "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111";
         FallbackDNS = "8.8.8.8#dns.google 8.8.4.4#dns.google";
         Cache = "yes";
@@ -62,7 +78,7 @@
     };
   };
 
-  # ── Hardware Peripherals ───────────────────────────────────────────────────
+  # Hardware
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
@@ -72,33 +88,29 @@
     };
   };
   services.blueman.enable = true;
-
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/control}="on"
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="nvidia", ATTR{power/control}="on"
     ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="2048"
   '';
 
-  # ── Power Management ───────────────────────────────────────────────────────
+  # Power
   services.power-profiles-daemon.enable = false;
   powerManagement.cpuFreqGovernor = "performance";
-
   zramSwap = {
     enable = true;
     algorithm = "zstd";
   };
-
   services.journald.extraConfig = ''
     SystemMaxUse=500M
     MaxRetentionSec=1week
   '';
 
-  # ── Desktop & Audio ────────────────────────────────────────────────────────
+  # Desktop services
   services.displayManager.ly.enable = true;
   programs.hyprland.enable = true;
   services.flatpak.enable = true;
   programs.fish.enable = true;
-
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -111,14 +123,12 @@
       };
     };
   };
-
   services.printing.enable = true;
   services.avahi = {
     enable = true;
     nssmdns4 = true;
     openFirewall = true;
   };
-
   services.keyd = {
     enable = true;
     keyboards.default = {
@@ -129,12 +139,9 @@
       };
     };
   };
+  services.ollama.enable = true;
 
-  services.ollama = {
-    enable = true;
-  };
-
-  # ── User Configuration ─────────────────────────────────────────────────────
+  # User
   users.users.josh = {
     isNormalUser = true;
     description = "Josh";
@@ -148,7 +155,7 @@
     ];
   };
 
-  # ── Packages ───────────────────────────────────────────────────────────────
+  # System packages
   environment.systemPackages = with pkgs; [
     git
     vim
@@ -158,9 +165,10 @@
     nvme-cli
     smartmontools
     gamemode
+    iwd
   ];
 
-  # ── Locale & Time ──────────────────────────────────────────────────────────
+  # Locale
   time.timeZone = "Pacific/Auckland";
   i18n.defaultLocale = "en_NZ.UTF-8";
   i18n.extraLocaleSettings = {
@@ -168,9 +176,8 @@
     LC_MEASUREMENT = "en_NZ.UTF-8";
   };
 
-  # ── Nix Settings ───────────────────────────────────────────────────────────
+  # Nix
   nixpkgs.config.allowUnfree = true;
-
   nix = {
     settings = {
       experimental-features = [

@@ -12,6 +12,12 @@
 #   - Booted from NixOS Minimal ISO
 #   - Internet connection established
 #   - Target disk identified
+#
+# Safety Features:
+#   - Dry-run mode to test without changes
+#   - Confirmation prompt before disk wipe
+#   - Cleanup trap on failure
+#   - Test configurations available (desktop-test, laptop-test)
 # =============================================================================
 set -euo pipefail
 REPO_URL="https://github.com/Ssnibles/NixConfig.git"
@@ -19,8 +25,16 @@ MOUNT="/mnt"
 USERNAME="josh"
 
 # ── Colours ───────────────────────────────────────────────────────────────
-RED='\033[0;31m' GREEN='\033[0;32m' YELLOW='\033[1;33m'
-BLUE='\033[0;34m' BOLD='\033[1m' DIM='\033[2m' NC='\033[0m'
+# ANSI colour codes for terminal output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
+DIM='\033[2m'
+NC='\033[0m'
+
+# Output functions for consistent formatting
 info()    { echo -e "${BLUE}  →${NC} $*"; }
 success() { echo -e "${GREEN}  ✓${NC} $*"; }
 warn()    { echo -e "${YELLOW}  !${NC} $*"; }
@@ -31,6 +45,7 @@ heading() { echo -e "\n${BOLD}━━━  $*  ━━━${NC}"; }
 DISK=""
 DRY_RUN=false
 HOST=""
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     --host)    HOST="$2";    shift 2 ;;
@@ -42,11 +57,13 @@ while [[ $# -gt 0 ]]; do
     *) warn "Unknown argument: $1"; shift ;;
   esac
 done
+
 if [[ -z "$HOST" ]]; then
   die "Host required. Use --host desktop or --host laptop"
 fi
 
 # ── Cleanup trap ──────────────────────────────────────────────────────────
+# Unmount filesystems on failure to prevent locked mounts
 cleanup() {
   local code=$?
   if [[ $code -ne 0 && "$DRY_RUN" == false ]]; then
@@ -81,7 +98,7 @@ heading "[ 2 / 6 ]  Disk"
 if [[ -z "$DISK" ]]; then
   echo "  Available block devices:"
   lsblk -d -o NAME,SIZE,MODEL --noheadings | grep -v loop \
-  | awk '{printf "    /dev/%-12s %6s  %s\n", $1, $2, $3}'
+    | awk '{printf "    /dev/%-12s %6s  %s\n", $1, $2, $3}'
   echo
   read -rp "  Enter disk (e.g. /dev/sda or /dev/nvme0n1): " DISK
 fi
@@ -114,22 +131,25 @@ fi
 # =============================================================================
 heading "[ 4 / 6 ]  Disk Partitioning (Disko)"
 if [[ "$DRY_RUN" == false ]]; then
+  # Extract disko revision from flake.lock for reproducible partitioning
   DISKO_REV=$(jq -r '.nodes.root.inputs.disko' "$TARGET/flake.lock" 2>/dev/null | \
     xargs -I{} jq -r ".nodes.\"{}\".locked.rev" "$TARGET/flake.lock" 2>/dev/null || \
     echo "latest")
   info "Using disko revision: $DISKO_REV"
   info "Target device: $DISK"
+
+  # Run disko to partition and format the disk
   nix --extra-experimental-features "nix-command flakes" run \
     "github:nix-community/disko/$DISKO_REV" -- --mode disko \
     --argstr diskDevice "$DISK" \
     "$TARGET#${HOST}"
   success "Disk partitioned and formatted"
 
-  # Update config to match hardware
+  # Update config to match actual hardware device path
   info "Updating device path in system configuration..."
   sed -i "s|device = \".*\";|device = \"$DISK\";|g" "$TARGET/disko/${HOST}.nix"
 
-  # Optional: Commit changes
+  # Optional: Commit changes to git
   git -C "$TARGET" add -u
   git -C "$TARGET" commit -m "chore: set disk device to $DISK for $HOST" || true
 fi
@@ -155,13 +175,16 @@ if [[ "$DRY_RUN" == false ]]; then
   info "Set a password for root:"
   until nixos-enter --root "$MOUNT" -- passwd root; do warn "Try again."; done
   success "Root password set"
+
   echo
   info "Set a password for ${USERNAME}:"
   until nixos-enter --root "$MOUNT" -- passwd "$USERNAME"; do warn "Try again."; done
   success "Password set for ${USERNAME}"
+
   info "Cloning config into /home/${USERNAME}/NixConfig..."
   nixos-enter --root "$MOUNT" -- \
-  su - "$USERNAME" -c "git clone $REPO_URL /home/$USERNAME/NixConfig"
+    su - "$USERNAME" -c "git clone $REPO_URL /home/$USERNAME/NixConfig"
+
   echo
   read -rp "  Import SSH keys from GitHub? Enter username (or Enter to skip): " GH_USER
   if [[ -n "$GH_USER" ]]; then

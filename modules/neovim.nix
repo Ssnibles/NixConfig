@@ -1,37 +1,33 @@
 # =============================================================================
 # Neovim Module
 # =============================================================================
-# Installs Neovim, plugins, and LSP tools.
-# Symlinks the ./nvim directory to ~/.config/nvim.
+# Installs Neovim with plugins and LSP tools.
 # =============================================================================
 { pkgs, ... }:
 {
   programs.neovim = {
     enable = true;
-    defaultEditor = true; # Sets $EDITOR to nvim
-    viAlias = true; # Alias 'vi' to nvim
-    vimAlias = true; # Alias 'vim' to nvim
+    defaultEditor = true;
+    viAlias = true;
+    vimAlias = true;
 
-    # External dependencies required by Neovim or its plugins
     extraPackages = with pkgs; [
-      # LSP servers (Language Server Protocol)
-      nixd # Nix
-      kotlin-language-server # Kotlin
-      jdt-language-server # Java
-      lua-language-server # Lua
-      marksman # Markdown
-
-      # Formatters & Linters
-      nixfmt-rfc-style # Official Nix formatting
-      stylua # Lua formatting
-      black # Python formatting
-      isort # Python import sorting
-      prettier # Web/Markdown formatting
+      # LSP servers
+      nixd
+      kotlin-language-server
+      jdt-language-server
+      lua-language-server
+      marksman
+      # Formatters
+      nixfmt-rfc-style
+      stylua
+      black
+      isort
+      prettier
     ];
 
-    # Neovim plugins managed via Nix
     plugins = with pkgs.vimPlugins; [
-      # Syntax highlighting and code parsing
+      # Treesitter with ALL language parsers you edit
       (nvim-treesitter.withPlugins (
         p: with p; [
           lua
@@ -45,49 +41,45 @@
           json
           yaml
           gitignore
+          # ADDED: Missing parsers for languages you format
+          javascript
+          typescript
+          tsx
+          python
+          html
+          css
         ]
       ))
-
-      # Core libraries and LSP integration
-      plenary-nvim # Common Lua functions used by many plugins
-      nvim-lspconfig # Quickstart configs for Nvim LSP
-      blink-cmp # Modern completion engine
-      luasnip # Snippet engine
-      friendly-snippets # Pre-configured snippet collection
-
-      # AI Assistance
-      copilot-lua # GitHub Copilot integration
-
-      # Navigation and File Management
-      fzf-lua # Fuzzy finding
-      oil-nvim # File explorer edited like a normal buffer
-
-      # UI Enhancements
-      statuscol-nvim # Customizable status column (folds, signs)
-      fidget-nvim # LSP progress notifications
-      gitsigns-nvim # Git integration in the sign column
-      noice-nvim # Overhaul for messages, cmdline, and popupmenu
-      markview-nvim # Markdown preview/styling
-      nvim-web-devicons # Icons for various plugins
-      lualine-nvim # Sleek status line
-      indent-blankline-nvim # Indentation guides
-      nvim-treesitter-context # Sticky scroll for code context
-      neoscroll-nvim # Smooth scrolling
-      vague-nvim # Colorscheme
-
-      # Utilities
-      nvim-autopairs # Automatic bracket closing
-      conform-nvim # Formatter plugin
-      mini-nvim # Collection of small, modular Lua plugins
-      neogit # Magit-inspired Git interface for Neovim
-      vim-tmux-navigator # Seamless navigation between Vim and tmux splits
-      leap-nvim # Fast navigation by jumping to any location in the visible buffer
-      grug-far-nvim # Interactive find-and-replace (ripgrep + sed TUI)
+      # Core
+      plenary-nvim
+      nvim-lspconfig
+      blink-cmp
+      luasnip
+      friendly-snippets
+      copilot-lua
+      fzf-lua
+      oil-nvim
+      statuscol-nvim
+      fidget-nvim
+      gitsigns-nvim
+      noice-nvim
+      markview-nvim
+      nvim-web-devicons
+      lualine-nvim
+      indent-blankline-nvim
+      nvim-treesitter-context
+      neoscroll-nvim
+      vague-nvim
+      nvim-autopairs
+      conform-nvim
+      mini-nvim
+      neogit
+      vim-tmux-navigator
+      leap-nvim
+      grug-far-nvim
     ];
   };
 
-  # Symlink the local configuration directory to the XDG config path
-  # This allows you to manage your init.lua and lua/ folder separately
   xdg.configFile."nvim" = {
     source = ../nvim;
     recursive = true;

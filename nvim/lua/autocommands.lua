@@ -4,11 +4,19 @@
 -- Event-driven behaviors for file operations, diagnostics, and UI enhancements.
 -- All autocommands are grouped under "UserConfig" for easy management and
 -- so :augroup UserConfig can be inspected or cleared during development.
+--
+-- Events Handled:
+--   - TextYankPost: Flash yanked region
+--   - BufReadPost: Restore cursor position, strip carriage returns
+--   - BufWritePre: Trim trailing whitespace
+--   - FileType: Close utility buffers, disable auto-comment, prose settings
+--   - VimResized: Auto-resize splits
+--   - DiagnosticChanged: Update line highlights
 -- =============================================================================
-
 local group = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 
 -- ── Yank Highlight ─────────────────────────────────────────────────────────
+-- Flash the yanked region to provide visual feedback
 vim.api.nvim_create_autocmd("TextYankPost", {
 	group = group,
 	desc = "Flash yanked region",
@@ -78,6 +86,7 @@ vim.api.nvim_create_autocmd("VimResized", {
 })
 
 -- ── Strip Carriage Returns (DOS → Unix) ────────────────────────────────────
+-- Automatically convert Windows line endings to Unix
 vim.api.nvim_create_autocmd("BufReadPost", {
 	group = group,
 	desc = "Remove \\r from DOS-format files on read",
@@ -90,6 +99,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 
 -- ── Disable Auto-comment on New Lines ──────────────────────────────────────
 -- Neovim's default formatoptions continue comment leaders on <Enter>/<o>/<O>
+-- This disables that behavior for cleaner editing
 vim.api.nvim_create_autocmd("FileType", {
 	group = group,
 	desc = "Disable automatic comment continuation",
@@ -99,6 +109,7 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- ── Prose Filetypes (spell check + wrap) ───────────────────────────────────
+-- Enable spell checking and line wrapping for writing-focused filetypes
 vim.api.nvim_create_autocmd("FileType", {
 	group = group,
 	desc = "Enable spell and wrap for prose filetypes",
