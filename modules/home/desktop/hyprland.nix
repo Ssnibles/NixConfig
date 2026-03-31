@@ -1,23 +1,26 @@
 # =============================================================================
-# Hyprland Configuration
+# Hyprland Home Manager Configuration
 # =============================================================================
-# Wayland compositor settings, keybindings, and launcher config.
+# Wayland compositor settings, keybindings, and the Vicinae app launcher.
+# System-level enablement (programs.hyprland.enable) lives in nixos/common.nix.
 # =============================================================================
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    awww
+    awww # Wallpaper daemon
     libnotify
     networkmanagerapplet
     playerctl
     adwaita-icon-theme
     hyprlock
   ];
+
   wayland.windowManager.hyprland = {
     enable = true;
     xwayland.enable = true;
     settings = {
       "$mod" = "SUPER";
+
       input = {
         kb_layout = "us";
         follow_mouse = 1;
@@ -26,6 +29,7 @@
           tap-to-click = true;
         };
       };
+
       exec-once = [
         "awww-daemon"
         "sleep 2 && awww img ~/NixConfig/wallpapers/400556mtsdl.jpg"
@@ -33,6 +37,7 @@
         "nm-applet --indicator"
         "swaync"
       ];
+
       general = {
         gaps_in = 8;
         gaps_out = 16;
@@ -40,11 +45,13 @@
         "col.inactive_border" = "rgb(120,120,120)";
         "col.active_border" = "rgb(120,120,120)";
       };
+
       decoration = {
         rounding = 16;
         blur.enabled = false;
         shadow.enabled = false;
       };
+
       animations = {
         enabled = true;
         bezier = "smooth, 0.05, 0.9, 0.1, 1.05";
@@ -54,14 +61,17 @@
           "workspaces, 1, 6, default"
         ];
       };
+
       misc.disable_hyprland_logo = true;
+
       windowrule = [
         "match:float true, border_size 2"
       ];
-      binds = {
-        allow_workspace_cycles = true;
-      };
+
+      binds.allow_workspace_cycles = true;
+
       monitor = [ ",preferred,auto,1" ];
+
       bind = [
         "$mod, RETURN, exec, foot"
         "$mod, X, killactive"
@@ -94,10 +104,12 @@
         "$mod, mouse_down, workspace, e+1"
         "$mod, mouse_up,   workspace, e-1"
       ];
+
       bindm = [
         "$mod, mouse:272, movewindow"
         "$mod, mouse:273, resizewindow"
       ];
+
       binde = [
         "$mod SHIFT, L, resizeactive,  10 0"
         "$mod SHIFT, H, resizeactive, -10 0"
@@ -106,6 +118,7 @@
         ", XF86MonBrightnessUp,   exec, brightnessctl set +5%"
         ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
       ];
+
       bindel = [
         ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
         ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
@@ -115,10 +128,13 @@
       ];
     };
   };
+
+  # ── Vicinae launcher ─────────────────────────────────────────────────────
   programs.vicinae = {
     enable = true;
     settings.theme.dark.name = "vague";
   };
+
   xdg.configFile."vicinae/themes/vague.json".text = builtins.toJSON {
     meta = {
       version = 1;
@@ -147,6 +163,8 @@
       };
     };
   };
+
+  # ── Vicinae systemd user service ─────────────────────────────────────────
   systemd.user.services.vicinae = {
     Unit = {
       Description = "Vicinae launcher daemon";

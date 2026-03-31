@@ -1,39 +1,29 @@
 # =============================================================================
 # Desktop Host Configuration
 # =============================================================================
-# Production desktop with NVIDIA GPU.
-# This file contains ONLY desktop-specific overrides.
-# All shared configuration is imported from modules/common.nix.
+# AMD CPU + NVIDIA GPU desktop.  Contains only desktop-specific overrides;
+# everything shared with the laptop lives in modules/nixos/common.nix.
 #
-# When useDisko = true: Disko handles partitioning (hardware-configuration.nix skipped)
-# When useDisko = false: hardware-configuration.nix provides filesystem definitions
+# useDisko = true  → Disko manages partitioning (hardware-configuration.nix skipped)
+# useDisko = false → hardware-configuration.nix provides filesystem definitions
 # =============================================================================
 {
-  config,
   pkgs,
   lib,
   hostProfile,
-  stablePkgs,
   ...
 }:
 {
-  # ── Module Imports ───────────────────────────────────────────────────────
-  # Only import hardware-configuration.nix for test hosts (useDisko = false).
-  # Production hosts use Disko for partitioning.
   imports =
-    lib.optionals (!hostProfile.useDisko) [
-      ./hardware-configuration.nix
-    ]
+    lib.optionals (!hostProfile.useDisko) [ ./hardware-configuration.nix ]
     ++ [
-      # Import shared configuration from common.nix
-      ../../modules/common.nix
-      # NVIDIA drivers (only for desktop)
-      ../../modules/nvidia.nix
+      ../../modules/nixos/common.nix
+      ../../modules/nixos/hardware/nvidia.nix
     ];
 
-  # ── Boot Kernel Modules ──────────────────────────────────────────────────
-  # Hardware-specific modules from generated hardware-configuration.nix.
-  # Safe to keep even when using Disko.
+  # ── Boot ─────────────────────────────────────────────────────────────────
+  # Kernel modules duplicated from hardware-configuration.nix so they are
+  # always present even when Disko is used (skipping that file).
   boot.initrd.availableKernelModules = [
     "nvme"
     "xhci_pci"
@@ -44,33 +34,31 @@
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
-  # ── Boot Kernel Parameters ───────────────────────────────────────────────
-  # Prevent USB autosuspend (fixes keyboard/mouse sleep issues)
+  # Prevent USB autosuspend – fixes keyboard / mouse wake-up issues
   boot.kernelParams = [ "usbcore.autosuspend=-1" ];
 
-  # ── Power Management ─────────────────────────────────────────────────────
-  # Override common.nix: Desktop uses performance governor (no TLP needed)
+  # ── Power management ─────────────────────────────────────────────────────
+  # Desktop stays on performance governor; no TLP needed.
   powerManagement.cpuFreqGovernor = "performance";
 
-  # ── UDEV Rules ───────────────────────────────────────────────────────────
-  # Hardware-specific power and performance rules
+  # ── UDEV rules ───────────────────────────────────────────────────────────
   services.udev.extraRules = ''
-    # Keep USB devices powered on
+    # Keep USB HID devices powered on
     ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/control}="on"
     # Keep NVIDIA GPU powered on
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="nvidia", ATTR{power/control}="on"
-    # Increase NVMe read-ahead for better performance
+    # Higher NVMe read-ahead for desktop performance
     ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="2048"
   '';
 
-  # ── Desktop-Specific Services ────────────────────────────────────────────
-  # Ollama for local AI (desktop has more RAM/VRAM)
+  # ── Desktop-specific services ─────────────────────────────────────────────
+  # Ollama local AI inference (desktop has enough RAM/VRAM)
   services.ollama.enable = true;
 
-  # ── Desktop-Specific Packages ────────────────────────────────────────────
+  # ── Desktop-specific system packages ─────────────────────────────────────
+  # gamemode daemon must be system-wide for the setuid wrapper to work;
+  # user-facing tools (steam, heroic, etc.) are in modules/home/packages.nix.
   environment.systemPackages = with pkgs; [
-    # Gaming and emulation tools (desktop only)
     gamemode
-    # Add other desktop-only packages here
   ];
 }

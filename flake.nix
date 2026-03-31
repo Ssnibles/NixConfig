@@ -1,12 +1,12 @@
 # =============================================================================
 # NixOS Flake Configuration
 # =============================================================================
-# Multi-host configuration with Disko for production and hardware-configuration.nix
-# for test hosts.
+# Multi-host configuration with Disko for production installs and
+# hardware-configuration.nix for safe test rebuilds.
 #
 # Hosts:
-#   - desktop / laptop: Production (Disko enabled, wipes disk)
-#   - desktop-test / laptop-test: Safe rebuild (Disko disabled)
+#   - desktop / laptop        : Production  (Disko enabled, wipes disk)
+#   - desktop-test / laptop-test : Safe rebuild (Disko disabled)
 # =============================================================================
 {
   description = "Josh's NixOS Flake - Multi-Host Configuration";
@@ -15,10 +15,10 @@
     # Unstable channel for all packages
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    # Stable channel for NVIDIA drivers only
+    # Stable channel – used for NVIDIA drivers only
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.05";
 
-    # Home Manager - follows root nixpkgs
+    # Home Manager follows root nixpkgs
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -30,7 +30,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Disk partitioning
+    # Declarative disk partitioning
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -42,7 +42,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Wallpaper utility - follows root nixpkgs
+    # Wallpaper utility
     awww = {
       url = "git+https://codeberg.org/LGFae/awww.git";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -63,13 +63,13 @@
     let
       system = "x86_64-linux";
 
-      # Stable packages for NVIDIA drivers
+      # Stable package set – used only for NVIDIA drivers
       stablePkgs = import nixpkgs-stable {
         inherit system;
         config.allowUnfree = true;
       };
 
-      # Overlays for external packages
+      # Inject external flake packages via overlays
       overlays = [
         (_final: _prev: {
           zen-browser = zen-browser.packages.${system}.default;
@@ -77,7 +77,9 @@
         })
       ];
 
-      # Host builder function
+      # ── Host builder ─────────────────────────────────────────────────────
+      # Builds a nixosSystem with a normalised hostProfile attrset that every
+      # module can pattern-match on instead of reading raw booleans.
       mkHost =
         {
           hostName,
@@ -101,48 +103,42 @@
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = { inherit inputs stablePkgs hostProfile; };
-          modules = [
-            # Apply overlays
-            { nixpkgs.overlays = overlays; }
-            # Secrets
-            agenix.nixosModules.default
-            # Disko module (only for production hosts)
-          ]
-          ++ nixpkgs.lib.optional useDisko disko.nixosModules.disko
-          # FIXED: No extra brackets around disko config path
-          ++ nixpkgs.lib.optional useDisko [ ./disko/${hostName}.nix ]
-          ++ [
-            # Host configuration
-            ./hosts/${hostName}/configuration.nix
-            # Home Manager
-            home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                extraSpecialArgs = { inherit inputs hostProfile; };
-                users.josh = import ./users/josh/home.nix;
-              };
-            }
-          ];
+          modules =
+            [
+              { nixpkgs.overlays = overlays; }
+              agenix.nixosModules.default
+            ]
+            ++ nixpkgs.lib.optional useDisko disko.nixosModules.disko
+            ++ nixpkgs.lib.optional useDisko [ ./disko/${hostName}.nix ]
+            ++ [
+              ./hosts/${hostName}/configuration.nix
+              home-manager.nixosModules.home-manager
+              {
+                home-manager = {
+                  useGlobalPkgs = true;
+                  useUserPackages = true;
+                  extraSpecialArgs = { inherit inputs hostProfile; };
+                  users.josh = import ./users/josh/home.nix;
+                };
+              }
+            ];
         };
     in
     {
       nixosConfigurations = {
-        # Production hosts (Disko enabled)
+        # ── Production hosts (Disko enabled) ─────────────────────────────
         desktop = mkHost {
           hostName = "desktop";
           isLaptop = false;
           hasNvidia = true;
-          useDisko = true;
         };
         laptop = mkHost {
           hostName = "laptop";
           isLaptop = true;
           hasNvidia = false;
-          useDisko = true;
         };
-        # Test hosts (Disko disabled, uses hardware-configuration.nix)
+
+        # ── Test hosts (Disko disabled, uses hardware-configuration.nix) ─
         desktop-test = mkHost {
           hostName = "desktop";
           isLaptop = false;
@@ -157,7 +153,7 @@
         };
       };
 
-      # Standalone Disko configs for install script
+      # Standalone Disko configs for the install script
       diskoConfigurations = {
         desktop = disko.lib.diskoConfig {
           inherit system;

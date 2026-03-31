@@ -1,21 +1,24 @@
 # =============================================================================
-# Fish Shell Configuration
+# Fish Shell & Terminal Emulator Configuration
 # =============================================================================
-# Includes plugins and terminal emulator configs (Ghostty/Foot).
+# Fish shell setup, plugins, and colour-matched configs for Ghostty and Foot.
+# All three share the same vague colour palette, so they live together.
 # =============================================================================
 { pkgs, ... }:
 {
   programs.fish = {
     enable = true;
+
     shellAbbrs = {
       v = "nvim";
       c = "clear";
-      # Uses the system hostname so this works correctly on both desktop and
-      # laptop without having to maintain separate abbreviations per host.
+      # Uses the system hostname so this works on both desktop and laptop
+      # without host-specific abbreviations.
       rebuild = "git -C ~/NixConfig add -u && sudo nixos-rebuild switch --flake ~/NixConfig#(hostname)";
       update = "cd ~/NixConfig && nix flake update && sudo nixos-rebuild switch --flake .";
       get-class = "hyprctl clients | grep -A5 'class:'";
     };
+
     interactiveShellInit = ''
       set -g fish_greeting ""
       set -g pure_color_primary  6e94b2
@@ -25,26 +28,16 @@
       set -g pure_color_warning  f3be7c
       set -g pure_color_success  7fa563
     '';
+
     plugins = with pkgs.fishPlugins; [
-      {
-        name = "grc";
-        src = grc.src;
-      }
-      {
-        name = "z";
-        src = z.src;
-      }
-      {
-        name = "pure";
-        src = pure.src;
-      }
-      {
-        name = "done";
-        src = done.src;
-      }
+      { name = "grc";  src = grc.src;  }
+      { name = "z";    src = z.src;    }
+      { name = "pure"; src = pure.src; }
+      { name = "done"; src = done.src; }
     ];
   };
 
+  # ── Ghostty terminal ─────────────────────────────────────────────────────
   xdg.configFile."ghostty/config".text = ''
     command           = ${pkgs.fish}/bin/fish
     font-size         = 12
@@ -54,9 +47,9 @@
     window-theme      = dark
     clipboard-read    = allow
     clipboard-write   = allow
-    background = 141415
-    foreground = cdcdcd
-    cursor-color = 6e94b2
+    background        = 141415
+    foreground        = cdcdcd
+    cursor-color      = 6e94b2
     selection-background = 333738
     selection-foreground = cdcdcd
     palette = 0=#141415
@@ -77,6 +70,7 @@
     palette = 15=#cdcdcd
   '';
 
+  # ── Foot terminal ─────────────────────────────────────────────────────────
   xdg.configFile."foot/foot.ini".text = ''
     shell=${pkgs.fish}/bin/fish
     font=JetBrainsMono Nerd Font:size=12

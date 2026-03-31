@@ -1,7 +1,8 @@
 # =============================================================================
 # Neovim Module
 # =============================================================================
-# Installs Neovim with plugins and LSP tools.
+# Installs Neovim with plugins and LSP / formatter tools.
+# Lua config is sourced from the nvim/ directory at the repo root.
 # =============================================================================
 { pkgs, ... }:
 {
@@ -27,7 +28,6 @@
     ];
 
     plugins = with pkgs.vimPlugins; [
-      # Treesitter with ALL language parsers you edit
       (nvim-treesitter.withPlugins (
         p: with p; [
           lua
@@ -41,7 +41,6 @@
           json
           yaml
           gitignore
-          # ADDED: Missing parsers for languages you format
           javascript
           typescript
           tsx
@@ -81,7 +80,7 @@
   };
 
   xdg.configFile."nvim" = {
-    source = ../nvim;
+    source = ../../nvim;
     recursive = true;
   };
 }

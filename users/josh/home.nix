@@ -1,11 +1,11 @@
 # =============================================================================
-# Home Manager Configuration
+# Home Manager Entry Point – josh
 # =============================================================================
-# User-specific settings applied to all hosts.
-# Imports modules for shell, WM, editor, etc.
+# Applies to every host. Host-specific behaviour is driven by hostProfile
+# flags (isDesktop, isLaptop, etc.) inside the individual modules.
 #
-# IMPORTANT: All modules imported here must be Home Manager modules.
-# They should use 'home.*' options, not NixOS options.
+# All imports here must be Home Manager modules (home.*, programs.*, etc.).
+# NixOS-level options belong in modules/nixos/ and hosts/*/configuration.nix.
 # =============================================================================
 {
   pkgs,
@@ -14,32 +14,36 @@
   ...
 }:
 {
-  # Home Manager user configuration
   home = {
     username = "josh";
     homeDirectory = "/home/josh";
     stateVersion = "25.05";
   };
 
-  # Import Home Manager modules
-  # These modules must use Home Manager options (home.*, programs.*, etc.)
   imports = [
     # Secrets management
     inputs.agenix.homeManagerModules.default
-    # User environment modules
-    ../../modules/fish.nix
-    ../../modules/hyprland.nix
-    ../../modules/neovim.nix
-    ../../modules/git.nix
-    ../../modules/packages.nix
-    ../../modules/waybar.nix
-    ../../modules/swaync.nix
-    ../../modules/other.nix
-    ../../modules/scripts.nix
-    ../../modules/tmux.nix
+
+    # ── Shell & terminal ──────────────────────────────────────────────────
+    ../../modules/home/shell/fish.nix
+    ../../modules/home/shell/tmux.nix
+
+    # ── Desktop environment ───────────────────────────────────────────────
+    ../../modules/home/desktop/hyprland.nix
+    ../../modules/home/desktop/waybar.nix
+    ../../modules/home/desktop/swaync.nix
+
+    # ── Editor ────────────────────────────────────────────────────────────
+    ../../modules/home/neovim.nix
+
+    # ── Applications & packages ───────────────────────────────────────────
+    ../../modules/home/git.nix
+    ../../modules/home/packages.nix
+    ../../modules/home/programs.nix
+    ../../modules/home/scripts.nix
   ];
 
-  # Pointer cursor configuration
+  # ── Cursor ───────────────────────────────────────────────────────────────
   home.pointerCursor = {
     package = pkgs.bibata-cursors;
     name = "Bibata-Modern-Classic";
@@ -48,9 +52,7 @@
     x11.enable = true;
   };
 
-  # Shell environment variable
   home.sessionVariables.SHELL = "${pkgs.fish}/bin/fish";
 
-  # Enable Home Manager itself
   programs.home-manager.enable = true;
 }

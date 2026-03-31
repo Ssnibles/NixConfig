@@ -1,7 +1,7 @@
 # =============================================================================
 # Waybar Configuration
 # =============================================================================
-# Status bar for Hyprland.
+# Top status bar for Hyprland.
 # =============================================================================
 { ... }:
 {
@@ -15,6 +15,7 @@
       margin-left = 16;
       margin-right = 16;
       spacing = 0;
+
       modules-left = [
         "hyprland/workspaces"
         "hyprland/window"
@@ -27,11 +28,13 @@
         "network"
         "battery"
       ];
+
       "hyprland/workspaces" = {
         format = "{name}";
         on-click = "activate";
         all-outputs = false;
       };
+
       "hyprland/window" = {
         format = "{initialTitle}";
         rewrite = {
@@ -44,11 +47,13 @@
         max-length = 35;
         separate-outputs = true;
       };
+
       "clock" = {
         format = "{:%H:%M}";
         format-alt = "{:%A, %d %B}";
         tooltip-format = "<tt><small>{calendar}</small></tt>";
       };
+
       "mpris" = {
         format = "{dynamic}";
         dynamic-len = 28;
@@ -69,6 +74,7 @@
         on-scroll-up = "playerctl next";
         on-scroll-down = "playerctl previous";
       };
+
       "pulseaudio" = {
         format = "{icon} {volume}%";
         format-muted = "󰖁";
@@ -84,6 +90,7 @@
         on-click = "pavucontrol";
         scroll-step = 2;
       };
+
       "bluetooth" = {
         format = "󰂯";
         format-connected = "󰂱 {device_alias}";
@@ -92,6 +99,7 @@
         on-click = "blueman-manager";
         tooltip-format = "{controller_alias} — {num_connections} connected";
       };
+
       "network" = {
         format-wifi = "󰖩 {essid}";
         format-ethernet = "󰈀";
@@ -99,6 +107,7 @@
         tooltip-format-wifi = "{signalStrength}%  ·  {ipaddr}";
         max-length = 16;
       };
+
       "battery" = {
         states = {
           warning = 30;
@@ -122,6 +131,7 @@
         tooltip-format = "{timeTo}";
       };
     };
+
     style = ''
       @define-color bg        #141415;
       @define-color bg-raised #1c1c24;
@@ -135,6 +145,7 @@
       @define-color warn      #f3be7c;
       @define-color error     #d8647e;
       @define-color plus      #7fa563;
+
       * {
         font-family: "JetBrains Mono", monospace;
         font-size:   11px;
@@ -143,60 +154,41 @@
         border: none; border-radius: 0; padding: 0; margin: 0;
         background: transparent;
       }
-      window#waybar {
-        background:    transparent;
-        color:         @fg;
-      }
+      window#waybar { background: transparent; color: @fg; }
       window#waybar > box {
-        background:    @bg;
-        border-radius: 8px;
-        border:        1px solid @border;
+        background: @bg; border-radius: 8px; border: 1px solid @border;
       }
       #workspaces, #window, #clock,
       #mpris, #pulseaudio, #bluetooth,
       #network, #battery {
-        background: transparent;
-        color:      @fg;
-        padding:    0 10px;
+        background: transparent; color: @fg; padding: 0 10px;
       }
-      #workspaces {
-        padding:      0 6px;
-        border-right: 1px solid @border;
-      }
+      #workspaces { padding: 0 6px; border-right: 1px solid @border; }
       #workspaces button {
-        font-size:      10px;
-        color:          @fg-dim;
-        padding:        0 8px;
-        background:     transparent;
-        border-bottom:  2px solid transparent;
-        min-width:      24px;
-        min-height:     0;
-        transition:     color 150ms ease, border-color 150ms ease;
+        font-size: 10px; color: @fg-dim; padding: 0 8px;
+        background: transparent; border-bottom: 2px solid transparent;
+        min-width: 24px; min-height: 0;
+        transition: color 150ms ease, border-color 150ms ease;
       }
       #workspaces button.active { color: @accent; border-bottom: 2px solid @accent; }
       #workspaces button.urgent { color: @error;  border-bottom: 2px solid @error;  }
       #workspaces button:hover  { color: @fg;     background: transparent; }
-      #window { font-style: italic; color: @fg-dim; padding: 0 8px; }
-      #clock  { font-weight: 600; letter-spacing: 1px; color: @teal; }
+      #window  { font-style: italic; color: @fg-dim; padding: 0 8px; }
+      #clock   { font-weight: 600; letter-spacing: 1px; color: @teal; }
       #mpris {
-        font-style:   italic;
-        color:        @purple;
-        padding-right: 12px;
-        border-right: 1px solid @border;
-        margin-right: 2px;
+        font-style: italic; color: @purple; padding-right: 12px;
+        border-right: 1px solid @border; margin-right: 2px;
       }
       #pulseaudio, #bluetooth, #network { color: @fg-mid; padding: 0 8px; }
       #pulseaudio.muted { opacity: 0.4; }
       #bluetooth.disabled, #bluetooth.off { opacity: 0; padding: 0; min-width: 0; }
       #network.disconnected { color: @error; }
       #battery {
-        color:        @fg-mid;
-        border-left:  1px solid @border;
-        padding-left: 12px;
-        margin-left:  2px;
+        color: @fg-mid; border-left: 1px solid @border;
+        padding-left: 12px; margin-left: 2px;
       }
       #battery.charging, #battery.plugged { color: @plus; }
-      #battery.warning  { color: @warn;  }
+      #battery.warning  { color: @warn; }
       #battery.critical { color: @error; }
     '';
   };
