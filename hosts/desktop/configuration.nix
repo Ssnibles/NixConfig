@@ -2,6 +2,9 @@
 # Desktop Host Configuration
 # =============================================================================
 # Production desktop with NVIDIA GPU.
+# This file contains ONLY desktop-specific overrides.
+# All shared configuration is imported from modules/common.nix.
+#
 # When useDisko = true: Disko handles partitioning (hardware-configuration.nix skipped)
 # When useDisko = false: hardware-configuration.nix provides filesystem definitions
 # =============================================================================
@@ -14,16 +17,23 @@
   ...
 }:
 {
-  # Only import hardware-configuration.nix for test hosts (useDisko = false)
+  # ── Module Imports ───────────────────────────────────────────────────────
+  # Only import hardware-configuration.nix for test hosts (useDisko = false).
+  # Production hosts use Disko for partitioning.
   imports =
     lib.optionals (!hostProfile.useDisko) [
       ./hardware-configuration.nix
     ]
     ++ [
+      # Import shared configuration from common.nix
+      ../../modules/common.nix
+      # NVIDIA drivers (only for desktop)
       ../../modules/nvidia.nix
     ];
 
-  # Kernel modules from hardware-configuration.nix (safe with Disko)
+  # ── Boot Kernel Modules ──────────────────────────────────────────────────
+  # Hardware-specific modules from generated hardware-configuration.nix.
+  # Safe to keep even when using Disko.
   boot.initrd.availableKernelModules = [
     "nvme"
     "xhci_pci"
@@ -34,170 +44,33 @@
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
-  system.stateVersion = "24.05";
-  networking.hostName = "desktop";
-
-  # Boot loader
-  boot.loader = {
-    systemd-boot.enable = true;
-    efi.canTouchEfiVariables = true;
-    timeout = 3;
-    systemd-boot.configurationLimit = 10;
-  };
-  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
-  hardware.enableRedistributableFirmware = true;
+  # ── Boot Kernel Parameters ───────────────────────────────────────────────
+  # Prevent USB autosuspend (fixes keyboard/mouse sleep issues)
   boot.kernelParams = [ "usbcore.autosuspend=-1" ];
 
-  # Networking
-  networking = {
-    networkmanager = {
-      enable = true;
-      wifi.backend = "iwd";
-      wifi.powersave = false;
-      dns = "systemd-resolved";
-      wifi.macAddress = "random";
-    };
-    firewall = {
-      enable = true;
-      allowedTCPPorts = [ 53317 ];
-      allowedUDPPorts = [ 53317 ];
-    };
-    enableIPv6 = true;
-  };
-  services.resolved = {
-    enable = true;
-    dnssec = "allow-downgrade";
-    dnsovertls = "opportunistic";
-    domains = [ "~." ];
-    settings = {
-      Resolve = {
-        DNS = "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111";
-        FallbackDNS = "8.8.8.8#dns.google 8.8.4.4#dns.google";
-        Cache = "yes";
-      };
-    };
-  };
+  # ── Power Management ─────────────────────────────────────────────────────
+  # Override common.nix: Desktop uses performance governor (no TLP needed)
+  powerManagement.cpuFreqGovernor = "performance";
 
-  # Hardware
-  hardware.bluetooth = {
-    enable = true;
-    powerOnBoot = true;
-    settings.General = {
-      FastConnectable = true;
-      Experimental = true;
-    };
-  };
-  services.blueman.enable = true;
+  # ── UDEV Rules ───────────────────────────────────────────────────────────
+  # Hardware-specific power and performance rules
   services.udev.extraRules = ''
+    # Keep USB devices powered on
     ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/control}="on"
+    # Keep NVIDIA GPU powered on
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="nvidia", ATTR{power/control}="on"
+    # Increase NVMe read-ahead for better performance
     ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="2048"
   '';
 
-  # Power
-  services.power-profiles-daemon.enable = false;
-  powerManagement.cpuFreqGovernor = "performance";
-  zramSwap = {
-    enable = true;
-    algorithm = "zstd";
-  };
-  services.journald.extraConfig = ''
-    SystemMaxUse=500M
-    MaxRetentionSec=1week
-  '';
-
-  # Desktop services
-  services.displayManager.ly.enable = true;
-  programs.hyprland.enable = true;
-  services.flatpak.enable = true;
-  programs.fish.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    pulse.enable = true;
-    wireplumber.enable = true;
-    extraConfig.pipewire."92-low-latency" = {
-      context.properties = {
-        default.clock.rate = 48000;
-        default.clock.quantum = 1024;
-      };
-    };
-  };
-  services.printing.enable = true;
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true;
-    openFirewall = true;
-  };
-  services.keyd = {
-    enable = true;
-    keyboards.default = {
-      ids = [ "*" ];
-      settings.main = {
-        capslock = "esc";
-        esc = "capslock";
-      };
-    };
-  };
+  # ── Desktop-Specific Services ────────────────────────────────────────────
+  # Ollama for local AI (desktop has more RAM/VRAM)
   services.ollama.enable = true;
 
-  # User
-  users.users.josh = {
-    isNormalUser = true;
-    description = "Josh";
-    shell = pkgs.fish;
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-      "video"
-      "input"
-      "plugdev"
-    ];
-  };
-
-  # System packages
+  # ── Desktop-Specific Packages ────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
-    git
-    vim
-    htop
-    btop
-    rsync
-    nvme-cli
-    smartmontools
+    # Gaming and emulation tools (desktop only)
     gamemode
-    iwd
+    # Add other desktop-only packages here
   ];
-
-  # Locale
-  time.timeZone = "Pacific/Auckland";
-  i18n.defaultLocale = "en_NZ.UTF-8";
-  i18n.extraLocaleSettings = {
-    LC_TIME = "en_NZ.UTF-8";
-    LC_MEASUREMENT = "en_NZ.UTF-8";
-  };
-
-  # Nix
-  nixpkgs.config.allowUnfree = true;
-  nix = {
-    settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      auto-optimise-store = true;
-      substituters = [
-        "https://cache.nixos.org"
-        "https://nix-community.cachix.org"
-      ];
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      ];
-    };
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 7d";
-    };
-  };
 }

@@ -2,6 +2,9 @@
 # Laptop Host Configuration
 # =============================================================================
 # Production laptop with TLP power management.
+# This file contains ONLY laptop-specific overrides.
+# All shared configuration is imported from modules/common.nix.
+#
 # When useDisko = true: Disko handles partitioning (hardware-configuration.nix skipped)
 # When useDisko = false: hardware-configuration.nix provides filesystem definitions
 # =============================================================================
@@ -13,202 +16,94 @@
   ...
 }:
 {
-  # Only import hardware-configuration.nix for test hosts (useDisko = false)
-  imports = lib.optionals (!hostProfile.useDisko) [
-    ./hardware-configuration.nix
-  ];
+  # ── Module Imports ───────────────────────────────────────────────────────
+  # Only import hardware-configuration.nix for test hosts (useDisko = false).
+  # Production hosts use Disko for partitioning.
+  imports =
+    lib.optionals (!hostProfile.useDisko) [
+      ./hardware-configuration.nix
+    ]
+    ++ [
+      # Import shared configuration from common.nix
+      ../../modules/common.nix
+      # No NVIDIA module for laptop (uses integrated graphics)
+    ];
 
-  # Kernel modules from hardware-configuration.nix (safe with Disko)
+  # ── Boot Kernel Modules ──────────────────────────────────────────────────
+  # Hardware-specific modules from generated hardware-configuration.nix.
+  # Safe to keep even when using Disko.
   boot.initrd.availableKernelModules = [
     "nvme"
     "xhci_pci"
     "ahci"
-    "sdhci_pci"
+    "sdhci_pci" # SD card reader (laptop-specific)
   ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
-  system.stateVersion = "24.05";
-  networking.hostName = "laptop";
-
-  # Boot loader
-  boot.loader = {
-    systemd-boot.enable = true;
-    efi.canTouchEfiVariables = true;
-    timeout = 3;
-    systemd-boot.configurationLimit = 10;
-  };
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-  hardware.enableRedistributableFirmware = true;
+  # ── WiFi Kernel Module Options ───────────────────────────────────────────
+  # Intel WiFi region and power settings (laptop-specific)
   boot.extraModprobeConfig = ''
+    # Set WiFi regulatory domain to New Zealand
     options cfg80211 ieee80211_regdom=NZ
+    # Enable Bluetooth coexistence and disable power saving
     options iwlwifi bt_coex_active=1 11n_disable=0
   '';
 
-  # Networking
-  networking = {
-    networkmanager = {
-      enable = true;
-      wifi.backend = "iwd";
-      wifi.powersave = false;
-      dns = "systemd-resolved";
-      wifi.macAddress = "random";
-    };
-    firewall = {
-      enable = true;
-      allowedTCPPorts = [ 53317 ];
-      allowedUDPPorts = [ 53317 ];
-    };
-    enableIPv6 = true;
-  };
-  services.resolved = {
-    enable = true;
-    dnssec = "allow-downgrade";
-    dnsovertls = "opportunistic";
-    domains = [ "~." ];
-    settings = {
-      Resolve = {
-        DNS = "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111";
-        FallbackDNS = "8.8.8.8#dns.google 8.8.4.4#dns.google";
-        Cache = "yes";
-      };
-    };
-  };
-
-  # Hardware
-  hardware.bluetooth = {
-    enable = true;
-    powerOnBoot = true;
-    settings.General = {
-      FastConnectable = true;
-      Experimental = true;
-    };
-  };
-  services.blueman.enable = true;
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="1024"
-  '';
-
-  # Power management (TLP)
+  # ── Power Management (TLP) ───────────────────────────────────────────────
+  # Override common.nix: Laptop uses TLP instead of performance governor
   services.power-profiles-daemon.enable = false;
   services.tlp = {
     enable = true;
     settings = {
+      # CPU boost only on AC power
       CPU_BOOST_ON_AC = 1;
       CPU_BOOST_ON_BAT = 0;
+      # CPU scaling governors
       CPU_SCALING_GOVERNOR_ON_AC = "performance";
       CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+      # Battery charge thresholds (extend battery lifespan)
       START_CHARGE_THRESH_BAT0 = 40;
       STOP_CHARGE_THRESH_BAT0 = 85;
+      # WiFi power saving
       WIFI_PWR_ON_AC = "off";
       WIFI_PWR_ON_BAT = "off";
+      # USB and SATA power management
       USB_AUTOSUSPEND = 1;
       AHCI_RUNTIME_PM_ON_BAT = "auto";
       RUNTIME_PM_ON_BAT = "auto";
+      # Enable laptop mode for aggressive power saving on battery
       LAPTOP_MODE = 5;
     };
   };
+
+  # ── Lid Switch Behavior ──────────────────────────────────────────────────
   services.logind.settings = {
     Login = {
+      # Suspend when lid closed on battery
       HandleLidSwitch = "suspend";
+      # Ignore lid switch when on external power
       HandleLidSwitchExternalPower = "ignore";
+      # Ignore lid switch when docked
       HandleLidSwitchDocked = "ignore";
+      # Don't block suspend if an app inhibits it
       IgnoreInhibited = "yes";
     };
   };
 
-  # Services
-  services.displayManager.ly.enable = true;
-  services.flatpak.enable = true;
-  services.journald.extraConfig = ''
-    SystemMaxUse=500M
-    MaxRetentionSec=1week
+  # ── UDEV Rules ───────────────────────────────────────────────────────────
+  # Laptop-specific NVMe power settings (lower read-ahead for battery life)
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="1024"
   '';
-  zramSwap = {
-    enable = true;
-    algorithm = "zstd";
-  };
-  programs.hyprland.enable = true;
-  programs.fish.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    pulse.enable = true;
-    wireplumber.enable = true;
-    extraConfig.pipewire."92-low-latency" = {
-      context.properties = {
-        default.clock.rate = 48000;
-        default.clock.quantum = 1024;
-      };
-    };
-  };
-  services.keyd = {
-    enable = true;
-    keyboards.default = {
-      ids = [ "*" ];
-      settings.main = {
-        capslock = "esc";
-        esc = "capslock";
-      };
-    };
-  };
 
-  # User
-  users.users.josh = {
-    isNormalUser = true;
-    description = "Josh";
-    shell = pkgs.fish;
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-      "video"
-      "input"
-    ];
-  };
-
-  # System packages
+  # ── Laptop-Specific Packages ─────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
-    git
-    vim
-    htop
-    btop
-    rsync
-    nvme-cli
-    smartmontools
-    iwd
+    # Power management and monitoring tools
+    powertop
+    acpi
+    brightnessctl
+    wlsunset # Blue light filter for nighttime
   ];
-
-  # Locale
-  time.timeZone = "Pacific/Auckland";
-  i18n.defaultLocale = "en_NZ.UTF-8";
-  i18n.extraLocaleSettings = {
-    LC_TIME = "en_NZ.UTF-8";
-    LC_MEASUREMENT = "en_NZ.UTF-8";
-  };
-
-  # Nix
-  nixpkgs.config.allowUnfree = true;
-  nix = {
-    settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      auto-optimise-store = true;
-      substituters = [
-        "https://cache.nixos.org"
-        "https://nix-community.cachix.org"
-      ];
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      ];
-    };
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 7d";
-    };
-  };
 }

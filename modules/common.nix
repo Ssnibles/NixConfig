@@ -16,14 +16,16 @@
   ...
 }:
 {
-  # System state version - tracks NixOS configuration schema
-  # Only change when running nixos-rebuild with --upgrade flag
+  # ── System State Version ─────────────────────────────────────────────────
+  # Tracks NixOS configuration schema version.
+  # Only change when running nixos-rebuild with --upgrade flag.
   system.stateVersion = "24.05";
 
-  # Hostname for network identification
+  # ── Hostname ─────────────────────────────────────────────────────────────
+  # Set from hostProfile for network identification.
   networking.hostName = hostProfile.hostName;
 
-  # ── Boot & Kernel ───────────────────────────────────────────────────────
+  # ── Boot & Kernel ────────────────────────────────────────────────────────
   boot.loader = {
     # systemd-boot is fast and simple for UEFI systems
     systemd-boot.enable = true;
@@ -34,12 +36,15 @@
     # Keep only last 10 generations to save space
     systemd-boot.configurationLimit = 10;
   };
-  # Default to latest kernel for hardware support
+
+  # Default to latest kernel for hardware support.
+  # Uses mkDefault so hosts can override (e.g., NVIDIA needs stable kernel).
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
+
   # Include proprietary firmware for WiFi, Bluetooth, etc.
   hardware.enableRedistributableFirmware = true;
 
-  # ── Networking ──────────────────────────────────────────────────────────
+  # ── Networking ───────────────────────────────────────────────────────────
   networking = {
     # NetworkManager for WiFi and connection management
     networkmanager = {
@@ -53,6 +58,7 @@
       # Randomize MAC address for privacy on new networks
       wifi.macAddress = "random";
     };
+
     # Firewall configuration
     firewall = {
       enable = true;
@@ -60,6 +66,7 @@
       allowedTCPPorts = [ 53317 ];
       allowedUDPPorts = [ 53317 ];
     };
+
     enableIPv6 = true;
   };
 
@@ -83,7 +90,7 @@
     };
   };
 
-  # ── Hardware Peripherals ────────────────────────────────────────────────
+  # ── Hardware Peripherals ─────────────────────────────────────────────────
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
@@ -92,33 +99,42 @@
       Experimental = true;
     };
   };
+
   # Bluetooth manager GUI
   services.blueman.enable = true;
 
-  # ── Power Management ────────────────────────────────────────────────────
-  # Disable power-profiles-daemon (TLP handles this on laptop)
+  # ── Power Management ─────────────────────────────────────────────────────
+  # Disable power-profiles-daemon (TLP handles this on laptop).
+  # Laptop config will override with TLP if needed.
   services.power-profiles-daemon.enable = false;
+
   # Compressed RAM swap for better performance than disk swap
   zramSwap = {
     enable = true;
     algorithm = "zstd";
   };
+
   # Limit journal size to prevent disk fill
   services.journald.extraConfig = ''
     SystemMaxUse=500M
     MaxRetentionSec=1week
   '';
 
-  # ── Desktop & Audio ─────────────────────────────────────────────────────
+  # ── Desktop & Audio ──────────────────────────────────────────────────────
   # Display manager (login screen)
   services.displayManager.ly.enable = true;
+
   # Wayland compositor
   programs.hyprland.enable = true;
+
   # Flatpak support for additional applications
   services.flatpak.enable = true;
+
   # Fish shell system-wide
   programs.fish.enable = true;
+
   # Audio server with low-latency configuration
+  # This enables microphone and screen sharing backend (PipeWire)
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -131,28 +147,30 @@
       };
     };
   };
+
   # Printing support
   services.printing.enable = true;
+
   # mDNS for network discovery
   services.avahi = {
     enable = true;
     nssmdns4 = true;
     openFirewall = true;
   };
-  # Keyboard remapping daemon
+
+  # Keyboard remapping daemon (CapsLock ↔ Escape swap)
   services.keyd = {
     enable = true;
     keyboards.default = {
       ids = [ "*" ];
       settings.main = {
-        # Swap CapsLock and Escape for ergonomic editing
         capslock = "esc";
         esc = "capslock";
       };
     };
   };
 
-  # ── User Configuration ──────────────────────────────────────────────────
+  # ── User Configuration ───────────────────────────────────────────────────
   users.users.josh = {
     isNormalUser = true;
     description = "Josh";
@@ -166,7 +184,7 @@
     ];
   };
 
-  # ── Base Packages ───────────────────────────────────────────────────────
+  # ── Base Packages ────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
     git
     vim
@@ -175,11 +193,10 @@
     rsync
     nvme-cli
     smartmontools
-    # iwd moved from home.packages (it's a system daemon)
     iwd
   ];
 
-  # ── Locale & Time ───────────────────────────────────────────────────────
+  # ── Locale & Time ────────────────────────────────────────────────────────
   time.timeZone = "Pacific/Auckland";
   i18n.defaultLocale = "en_NZ.UTF-8";
   i18n.extraLocaleSettings = {
@@ -187,7 +204,7 @@
     LC_MEASUREMENT = "en_NZ.UTF-8";
   };
 
-  # ── Nix Settings ────────────────────────────────────────────────────────
+  # ── Nix Settings ─────────────────────────────────────────────────────────
   nixpkgs.config.allowUnfree = true;
   nix = {
     settings = {
@@ -213,5 +230,16 @@
       dates = "weekly";
       options = "--delete-older-than 7d";
     };
+  };
+
+  # ── XDG Desktop Portal (Screen Sharing Support) ──────────────────────────
+  # Required for screen sharing in Firefox, Chrome, Discord, Zoom, etc.
+  # on Wayland/Hyprland.
+  xdg.portal = {
+    enable = true;
+    # Use the Hyprland-specific portal for screen sharing
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+    # Ensure hyprland is available for portal config
+    configPackages = [ pkgs.hyprland ];
   };
 }
