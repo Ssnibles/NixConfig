@@ -23,6 +23,7 @@
       nodejs
 
       # ── CLI utilities ───────────────────────────────────────────────────
+      quickemu
       wl-clipboard
       fzf
       fd
@@ -82,7 +83,6 @@
       lutris
       mangohud
       protonup-qt
-      quickemu
     ]
     # ── Laptop-only packages ──────────────────────────────────────────────
     ++ lib.optionals hostProfile.isLaptop [
