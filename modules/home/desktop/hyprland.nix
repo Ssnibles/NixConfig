@@ -32,7 +32,7 @@
 
       exec-once = [
         "awww-daemon"
-        "sleep 2 && awww img ~/NixConfig/wallpapers/400556mtsdl.jpg"
+        "sleep 2 && awww img ~/NixConfig/wallpapers/517020ldsdl.jpg"
         "waybar"
         "nm-applet --indicator"
         "swaync"
