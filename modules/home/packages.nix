@@ -18,7 +18,7 @@
     [
       # ── Development ────────────────────────────────────────────────────
       kotlin
-      jdk21
+      openjdk25
       code2prompt
       nodejs
 
@@ -51,7 +51,7 @@
       zen-browser
       onlyoffice-desktopeditors
       inkscape
-      modrinth-app-unwrapped
+      modrinth-app
 
       # ── Document viewers ────────────────────────────────────────────────
       sioyek

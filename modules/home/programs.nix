@@ -18,6 +18,4 @@
       };
     };
   };
-
-  programs.java.enable = true;
 }

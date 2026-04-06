@@ -176,6 +176,9 @@
   # ── Base System Packages ─────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
     git
+    glib
+    glib-networking
+    dconf
     vim
     htop
     btop
