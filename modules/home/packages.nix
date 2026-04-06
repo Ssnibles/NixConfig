@@ -51,6 +51,7 @@
       zen-browser
       onlyoffice-desktopeditors
       inkscape
+      modrinth-app-unwrapped
 
       # ── Document viewers ────────────────────────────────────────────────
       sioyek
@@ -77,7 +78,6 @@
     ]
     # ── Desktop-only packages ─────────────────────────────────────────────
     ++ lib.optionals hostProfile.isDesktop [
-      modrinth-app-unwrapped
       steam
       heroic
       lutris
