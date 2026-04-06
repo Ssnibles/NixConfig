@@ -14,12 +14,10 @@
   ...
 }:
 {
-  imports =
-    lib.optionals (!hostProfile.useDisko) [ ./hardware-configuration.nix ]
-    ++ [
-      ../../modules/nixos/common.nix
-      # No nvidia.nix – laptop uses integrated AMD graphics
-    ];
+  imports = lib.optionals (!hostProfile.useDisko) [ ./hardware-configuration.nix ] ++ [
+    ../../modules/nixos/common.nix
+    # No nvidia.nix – laptop uses integrated AMD graphics
+  ];
 
   # ── Boot ─────────────────────────────────────────────────────────────────
   # Kernel modules duplicated from hardware-configuration.nix so they are
@@ -37,7 +35,7 @@
   # Intel WiFi regulatory domain and Bluetooth coexistence
   boot.extraModprobeConfig = ''
     options cfg80211 ieee80211_regdom=NZ
-    options iwlwifi bt_coex_active=1 11n_disable=0
+    options iwlwifi power_save=0 bt_coex_active=0 11n_disable=8 swcrypto=1;
   '';
 
   # ── Power management – TLP ────────────────────────────────────────────────

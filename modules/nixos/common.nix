@@ -41,9 +41,9 @@
     networkmanager = {
       enable = true;
       wifi = {
-        backend = "iwd"; # Better WiFi performance than wpa_supplicant
+        backend = "iwd";
         powersave = false; # Prevents random disconnects
-        macAddress = "random"; # Privacy on new networks
+        macAddress = "stable"; # Privacy on new networks
       };
       dns = "systemd-resolved";
     };
