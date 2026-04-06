@@ -4,7 +4,6 @@
 -- Code formatting with per-filetype formatter support.
 -- Formats on save with LSP fallback if no formatter is available.
 -- =============================================================================
-
 local loader = require("lib.loader")
 
 loader.setup("conform", function(conform)
@@ -23,6 +22,7 @@ loader.setup("conform", function(conform)
 			sh = { "shfmt" },
 			kotlin = { "ktlint" },
 			java = { "google-java-format" },
+			cs = { "csharpier" },
 		},
 		format_on_save = {
 			timeout_ms = 500,

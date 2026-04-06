@@ -11,7 +11,6 @@
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
-
     extraPackages = with pkgs; [
       # LSP servers
       nixd
@@ -19,14 +18,17 @@
       jdt-language-server
       lua-language-server
       marksman
-      # Formatters
+      roslyn-ls
+
+      # Formatters & language runtimes
       nixfmt-rfc-style
       stylua
       black
       isort
       prettier
+      csharpier
+      dotnet-sdk_8
     ];
-
     plugins = with pkgs.vimPlugins; [
       (nvim-treesitter.withPlugins (
         p: with p; [
@@ -47,6 +49,7 @@
           python
           html
           css
+          c_sharp
         ]
       ))
       # Core
@@ -78,7 +81,6 @@
       grug-far-nvim
     ];
   };
-
   xdg.configFile."nvim" = {
     source = ../../nvim;
     recursive = true;
