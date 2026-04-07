@@ -45,8 +45,7 @@ lsp.config("*", {
 		vim.keymap.set("i", "<C-k>", lsp.buf.signature_help, opts("Signature help"))
 
 		-- Actions
-		vim.keymap.set("n", "<leader>a", lsp.buf.code_action, opts("Code action"))
-		vim.keymap.set("v", "<leader>a", lsp.buf.code_action, opts("Code action (range)"))
+		vim.keymap.set("n, v", "<leader>ca", lsp.buf.code_action, opts("Code action"))
 		vim.keymap.set("n", "<leader>lR", lsp.buf.rename, opts("Rename symbol"))
 
 		-- Symbols
@@ -107,29 +106,26 @@ lsp.config("marksman", {
 })
 
 -- Roslyn LSP for C#
+require("roslyn")
 lsp.config("roslyn", {
-	cmd = { "roslyn" },
-	init_options = {
-		AutomaticWorkspaceInit = true,
+	on_attach = function()
+		print("This will run when the server attaches!")
+	end,
+	settings = {
+		["csharp|inlay_hints"] = {
+			csharp_enable_inlay_hints_for_implicit_object_creation = true,
+			csharp_enable_inlay_hints_for_implicit_variable_types = true,
+		},
+		["csharp|code_lens"] = {
+			dotnet_enable_references_code_lens = true,
+		},
 	},
 })
 
--- Auto-start by filetype
-local ft_servers = {
-	nix = "nixd",
-	lua = "lua_ls",
-	kotlin = "kotlin_language_server",
-	java = "jdtls",
-	markdown = "marksman",
-	cs = "roslyn",
-}
-
-vim.api.nvim_create_autocmd("FileType", {
-	pattern = vim.tbl_keys(ft_servers),
-	callback = function(ev)
-		local server = ft_servers[ev.match]
-		if server then
-			lsp.enable(server)
-		end
-	end,
-})
+-- Enable all servers unconditionally; Neovim filters by filetypes/root_dir
+lsp.enable("nixd")
+lsp.enable("lua_ls")
+lsp.enable("kotlin_language_server")
+lsp.enable("jdtls")
+lsp.enable("marksman")
+lsp.enable("roslyn_ls")

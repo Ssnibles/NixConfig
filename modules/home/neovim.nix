@@ -5,6 +5,19 @@
 # Lua config is sourced from the nvim/ directory at the repo root.
 # =============================================================================
 { pkgs, ... }:
+let
+  tiny-code-action = pkgs.vimUtils.buildVimPlugin {
+    pname = "tiny-code-action";
+    version = "main";
+    src = pkgs.fetchFromGitHub {
+      owner = "rachartier";
+      repo = "tiny-code-action.nvim";
+      rev = "main";
+      sha256 = "sha256-oZalIk5m+XtwvPWjI+Ds/IoM4nM0w9BEoI5YYI1B/PI=";
+    };
+    doCheck = false; # Ignore tests for optional dependencies
+  };
+in
 {
   programs.neovim = {
     enable = true;
@@ -21,15 +34,16 @@
       roslyn-ls
 
       # Formatters & language runtimes
-      nixfmt-rfc-style
+      nixfmt
       stylua
       black
       isort
       prettier
       csharpier
-      dotnet-sdk_8
+      dotnet-sdk_10
     ];
     plugins = with pkgs.vimPlugins; [
+      tiny-code-action
       (nvim-treesitter.withPlugins (
         p: with p; [
           lua
@@ -52,7 +66,6 @@
           c_sharp
         ]
       ))
-      # Core
       plenary-nvim
       nvim-lspconfig
       blink-cmp
@@ -79,6 +92,8 @@
       vim-tmux-navigator
       leap-nvim
       grug-far-nvim
+      roslyn-nvim
+      tiny-inline-diagnostic-nvim
     ];
   };
   xdg.configFile."nvim" = {

@@ -21,9 +21,12 @@
       openjdk25
       code2prompt
       nodejs
+      dotnet-sdk_10
+      roslyn
 
       # ── CLI utilities ───────────────────────────────────────────────────
       quickemu
+      gemini-cli
       wl-clipboard
       fzf
       fd
