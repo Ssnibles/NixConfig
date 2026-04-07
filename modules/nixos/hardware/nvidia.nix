@@ -13,13 +13,12 @@
 {
   pkgs,
   lib,
-  stablePkgs,
   hostProfile,
   ...
 }:
 lib.mkIf hostProfile.hasNvidia {
-  # Pin kernel to stable for reliable driver compatibility
-  boot.kernelPackages = stablePkgs.linuxPackages;
+  # Base kernel/drivers from the stable system input
+  boot.kernelPackages = pkgs.linuxPackages;
 
   boot.blacklistedKernelModules = [ "nouveau" ];
 
@@ -44,7 +43,7 @@ lib.mkIf hostProfile.hasNvidia {
     powerManagement.enable = true;
     powerManagement.finegrained = false;
     nvidiaSettings = true;
-    package = stablePkgs.linuxPackages.nvidiaPackages.stable;
+    package = pkgs.linuxPackages.nvidiaPackages.stable;
   };
 
   hardware.graphics = {
@@ -60,7 +59,6 @@ lib.mkIf hostProfile.hasNvidia {
   environment.sessionVariables = {
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    WLR_NO_HARDWARE_CURSORS = "1";
     __EGL_VENDOR_LIBRARY_DIRS = "/run/opengl-driver/share/glvnd/egl_vendor.d";
   };
 }

@@ -16,15 +16,14 @@
   # ── System State Version ─────────────────────────────────────────────────
   system.stateVersion = "24.05";
 
-  # ── Hostname ─────────────────────────────────────────────────────────────
-  networking.hostName = hostProfile.hostName;
-
   # ── Boot & Kernel ────────────────────────────────────────────────────────
   boot.loader = {
     systemd-boot = {
       enable = true;
       # Retain only the last 10 generations to save EFI space
       configurationLimit = 10;
+      # Use maximum resolution for the boot menu
+      consoleMode = "max";
     };
     efi.canTouchEfiVariables = true;
     timeout = 3;
@@ -42,7 +41,7 @@
       enable = true;
       wifi = {
         backend = "iwd";
-        powersave = false; # Prevents random disconnects
+        powersave = lib.mkDefault false; # Prevents random disconnects
         macAddress = "stable"; # Privacy on new networks
       };
       dns = "systemd-resolved";
@@ -64,11 +63,12 @@
     dnssec = "allow-downgrade"; # Avoid outages if DNSSEC fails
     dnsovertls = "opportunistic"; # Encrypt where possible, fall back gracefully
     domains = [ "~." ];
-    settings.Resolve = {
-      DNS = "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111";
-      FallbackDNS = "8.8.8.8#dns.google 8.8.4.4#dns.google";
-      Cache = "yes";
-    };
+    extraConfig = ''
+      [Resolve]
+      DNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111
+      FallbackDNS=8.8.8.8#dns.google 8.8.4.4#dns.google
+      Cache=yes
+    '';
   };
 
   # ── Hardware ─────────────────────────────────────────────────────────────
@@ -86,10 +86,14 @@
   # Laptop overrides with TLP.  Disable the daemon here so neither host conflicts.
   services.power-profiles-daemon.enable = false;
 
+  # SSD maintenance
+  services.fstrim.enable = true;
+
   # Compressed RAM swap — better than hitting disk for most workloads
   zramSwap = {
     enable = true;
     algorithm = "zstd";
+    priority = 100;
   };
 
   # ── Desktop Environment ──────────────────────────────────────────────────
@@ -107,6 +111,7 @@
   };
 
   # ── Audio ────────────────────────────────────────────────────────────────
+  security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -131,6 +136,21 @@
     nssmdns4 = true;
     openFirewall = true;
   };
+
+  # Nix-helper for faster rebuilds
+  programs.nh = {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--keep-since 4d --keep 3";
+    flake = "/home/josh/NixConfig";
+  };
+
+  # Better "command not found" help
+  programs.nix-index.enable = true;
+  programs.command-not-found.enable = false;
+
+  # Support for running non-Nix binaries
+  programs.nix-ld.enable = true;
 
   # Bluetooth manager GUI
   services.blueman.enable = true;
@@ -174,7 +194,7 @@
   };
 
   # ── Base System Packages ─────────────────────────────────────────────────
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs.unstable; [
     git
     glib
     glib-networking
@@ -208,6 +228,8 @@
         "flakes"
       ];
       auto-optimise-store = true;
+      warn-dirty = false; # Silence dirty git tree warnings
+      builders-use-substitutes = true; # Allow remote builders to use binary caches
       substituters = [
         "https://cache.nixos.org"
         "https://nix-community.cachix.org"
@@ -218,9 +240,7 @@
       ];
     };
     gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 7d";
+      automatic = false; # Handled by programs.nh.clean
     };
   };
 }

@@ -8,15 +8,15 @@
   description = "Josh's NixOS Flake - Multi-Host Configuration";
 
   inputs = {
-    # Unstable channel for all packages
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # Stable channel for the overall NixOS system base (Modules, Services, Kernel, Drivers)
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
 
-    # Stable channel – used for NVIDIA drivers only
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.05";
+    # Unstable channel for the latest user-facing packages (Apps, CLI tools, UI)
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    # Home Manager follows root nixpkgs
+    # Home Manager follows the stable system input to maintain module compatibility
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

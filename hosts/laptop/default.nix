@@ -11,11 +11,23 @@
   ];
 
   # ── Boot ─────────────────────────────────────────────────────────────────
-  # Intel WiFi regulatory domain and Bluetooth coexistence
+  # WiFi regulatory domain and Realtek driver fixes
   boot.extraModprobeConfig = ''
     options cfg80211 ieee80211_regdom=NZ
-    options iwlwifi power_save=0 bt_coex_active=0 11n_disable=8 swcrypto=1;
+    options rtw89_pci disable_aspm_l1=y disable_aspm_l1ss=y
+    options rtw89_core disable_ps_mode=y
   '';
+
+  # ── Networking ───────────────────────────────────────────────────────────
+  networking.wireless.iwd.settings = {
+    General = {
+      EnableNetworkConfiguration = false;
+    };
+    DriverQuirks = {
+      # Helps with "IWD is connecting to the wrong AP" and SAE issues on some Realtek chips
+      power_save = "disable";
+    };
+  };
 
   # ── Power management – TLP ────────────────────────────────────────────────
   services.tlp = {

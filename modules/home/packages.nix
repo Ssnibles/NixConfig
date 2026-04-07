@@ -13,85 +13,93 @@
   ...
 }:
 {
-  home.packages =
-    with pkgs;
+  home.packages = [
+    pkgs.zen-browser # From flake overlay
+    pkgs.awww # From flake overlay
+  ]
+  ++ (with pkgs.unstable; [
+    # ── Development ────────────────────────────────────────────────────
+    kotlin
+    openjdk25
+    code2prompt
+    nodejs
+    dotnet-sdk_10
+    roslyn
+
+    # ── CLI utilities ───────────────────────────────────────────────────
+    quickemu
+    gemini-cli
+    github-copilot-cli
+    wl-clipboard
+    fzf
+    fd
+    ripgrep
+    grc
+    android-tools
+    lazygit
+    gitui
+    yazi
+    jq
+    texliveBasic
+    imagemagick
+    zip
+
+    # ── Fonts ───────────────────────────────────────────────────────────
+    nerd-fonts.fira-code
+    nerd-fonts.zed-mono
+    nerd-fonts.jetbrains-mono
+
+    # ── GUI applications ────────────────────────────────────────────────
+    ghostty
+    foot
+    mission-center
+    firefox
+    onlyoffice-desktopeditors
+    inkscape
+    modrinth-app
+
+    # ── Document viewers ────────────────────────────────────────────────
+    sioyek
+    zathura
+
+    # ── Notes ───────────────────────────────────────────────────────────
+    trilium-desktop
+
+    # ── Media ───────────────────────────────────────────────────────────
+    spotify
+    strawberry
+    picard
+    easytag
+    pavucontrol
+
+    # ── System / connectivity ────────────────────────────────────────────
+    localsend
+    impala
+    bluetui
+    blueman
+    satty
+    grim
+    slurp
+  ])
+  # ── Desktop-only packages ─────────────────────────────────────────────
+  ++ lib.optionals hostProfile.isDesktop (
+    with pkgs.unstable;
     [
-      # ── Development ────────────────────────────────────────────────────
-      kotlin
-      openjdk25
-      code2prompt
-      nodejs
-      dotnet-sdk_10
-      roslyn
-
-      # ── CLI utilities ───────────────────────────────────────────────────
-      quickemu
-      gemini-cli
-      wl-clipboard
-      fzf
-      fd
-      ripgrep
-      grc
-      android-tools
-      lazygit
-      gitui
-      yazi
-      jq
-      texliveBasic
-      imagemagick
-      zip
-
-      # ── Fonts ───────────────────────────────────────────────────────────
-      nerd-fonts.fira-code
-      nerd-fonts.zed-mono
-      nerd-fonts.jetbrains-mono
-
-      # ── GUI applications ────────────────────────────────────────────────
-      ghostty
-      foot
-      mission-center
-      firefox
-      zen-browser
-      onlyoffice-desktopeditors
-      inkscape
-      modrinth-app
-
-      # ── Document viewers ────────────────────────────────────────────────
-      sioyek
-      zathura
-
-      # ── Notes ───────────────────────────────────────────────────────────
-      trilium-desktop
-
-      # ── Media ───────────────────────────────────────────────────────────
-      spotify
-      strawberry
-      picard
-      easytag
-      pavucontrol
-
-      # ── System / connectivity ────────────────────────────────────────────
-      localsend
-      impala
-      bluetui
-      blueman
-      satty
-      grim
-      slurp
-    ]
-    # ── Desktop-only packages ─────────────────────────────────────────────
-    ++ lib.optionals hostProfile.isDesktop [
       steam
       heroic
       lutris
       mangohud
       protonup-qt
     ]
-    # ── Laptop-only packages ──────────────────────────────────────────────
-    ++ lib.optionals hostProfile.isLaptop [
+  )
+  # ── Laptop-only packages ──────────────────────────────────────────────
+  ++ lib.optionals hostProfile.isLaptop (
+    with pkgs.unstable;
+    [
       powertop
       acpi
       brightnessctl
       wlsunset # Blue-light filter for evenings
-    ];
+    ]
+  );
 }

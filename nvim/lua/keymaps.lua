@@ -8,6 +8,10 @@ map("n", "U", "<C-r>", "Redo")
 map("v", "<", "<gv", "Indent left")
 map("v", ">", ">gv", "Indent right")
 
+-- Move lines
+map("v", "J", ":m '>+1<CR>gv=gv", "Move line down")
+map("v", "K", ":m '<-2<CR>gv=gv", "Move line up")
+
 map("n", "j", "gj", "Down (visual line)")
 map("n", "k", "gk", "Up (visual line)")
 map("n", "<C-d>", "<C-d>zz", "Scroll down (centred)")

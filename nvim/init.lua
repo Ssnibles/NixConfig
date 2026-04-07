@@ -66,7 +66,7 @@ require("plugins.miscellaneous") -- leap, tmux-nav, grug-far
 -- ── Phase 4: Final Polishing ──────────────────────────────────────────────
 vim.opt.cmdheight = 0 -- Remove redundant visual chrome
 
--- Health and Performance check keymaps
+-- Performance and health keymaps
 vim.keymap.set("n", "<leader>ch", function()
 	require("lib.health").check()
 end, { desc = "Check configuration health" })

@@ -32,17 +32,19 @@ in
         isDesktop = !isLaptop;
       };
 
-      # Stable package set – used only for NVIDIA drivers
-      stablePkgs = import inputs.nixpkgs-stable {
+      # Unstable package set for latest features
+      unstablePkgs = import inputs.nixpkgs-unstable {
         inherit system;
         config.allowUnfree = true;
       };
 
-      # Inject external flake packages via overlays
+      # Inject external flake packages and unstable packages via overlays
       overlays = [
-        (_final: _prev: {
+        (_final: prev: {
           zen-browser = inputs.zen-browser.packages.${system}.default;
           awww = inputs.awww.packages.${system}.default;
+          # Everything else is overlaid from unstable
+          unstable = unstablePkgs;
         })
       ];
     in
@@ -51,7 +53,7 @@ in
       specialArgs = {
         inherit
           inputs
-          stablePkgs
+          unstablePkgs
           hostProfile
           user
           ;

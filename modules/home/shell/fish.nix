@@ -14,13 +14,18 @@
       c = "clear";
       # Uses the system hostname so this works on both desktop and laptop
       # without host-specific abbreviations.
-      rebuild = "git -C ~/NixConfig add -u && sudo nixos-rebuild switch --flake ~/NixConfig#(hostname)";
-      update = "cd ~/NixConfig && nix flake update && sudo nixos-rebuild switch --flake .";
+      rebuild = "nh os switch";
+      update = "nh os switch --update";
+      clean = "nh clean all";
       get-class = "hyprctl clients | grep -A5 'class:'";
     };
 
     interactiveShellInit = ''
       set -g fish_greeting ""
+      # Ensure consistent history between sessions
+      function on_exit --on-event fish_exit
+          history merge
+      end
       set -g pure_color_primary  6e94b2
       set -g pure_color_info     bb9dbd
       set -g pure_color_mute     606079

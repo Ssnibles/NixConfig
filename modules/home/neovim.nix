@@ -43,6 +43,9 @@ in
       prettier
       csharpier
       dotnet-sdk_10
+      tree-sitter
+      ripgrep
+      fd
     ];
     plugins = with pkgs.vimPlugins; [
       tiny-code-action
