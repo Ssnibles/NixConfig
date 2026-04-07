@@ -1,8 +1,7 @@
+-- =============================================================================
+-- Miscellaneous Utilities
+-- =============================================================================
 local loader = require("lib.loader")
-
-loader.setup("vim-tmux-navigator", function(tmux_nav)
-	-- No setup required, just load the plugin
-end)
 
 loader.setup("leap", function(leap)
 	leap.opts.safe_labels = {}
@@ -11,9 +10,6 @@ loader.setup("leap", function(leap)
 	end, { desc = "Leap search" })
 end)
 
-loader.setup("grug-far", function(grug_far)
-	grug_far.setup({
-		-- Optional: Set the default search method (default is "rg")
-		default_method = "rg",
-	})
-end)
+loader.setup("grug-far", { default_method = "rg" })
+
+loader.require("vim-tmux-navigator")

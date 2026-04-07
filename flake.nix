@@ -1,12 +1,8 @@
 # =============================================================================
 # NixOS Flake Configuration
 # =============================================================================
-# Multi-host configuration with Disko for production installs and
-# hardware-configuration.nix for safe test rebuilds.
-#
-# Hosts:
-#   - desktop / laptop        : Production  (Disko enabled, wipes disk)
-#   - desktop-test / laptop-test : Safe rebuild (Disko disabled)
+# Multi-host configuration with Disko and Home Manager.
+# Optimized with a modular host builder lib pattern.
 # =============================================================================
 {
   description = "Josh's NixOS Flake - Multi-Host Configuration";
@@ -51,116 +47,48 @@
 
   outputs =
     {
+      self,
       nixpkgs,
-      nixpkgs-stable,
-      home-manager,
-      agenix,
-      disko,
-      zen-browser,
-      awww,
       ...
     }@inputs:
     let
-      system = "x86_64-linux";
-
-      # Stable package set – used only for NVIDIA drivers
-      stablePkgs = import nixpkgs-stable {
-        inherit system;
-        config.allowUnfree = true;
-      };
-
-      # Inject external flake packages via overlays
-      overlays = [
-        (_final: _prev: {
-          zen-browser = zen-browser.packages.${system}.default;
-          awww = awww.packages.${system}.default;
-        })
-      ];
-
-      # ── Host builder ─────────────────────────────────────────────────────
-      # Builds a nixosSystem with a normalised hostProfile attrset that every
-      # module can pattern-match on instead of reading raw booleans.
-      mkHost =
-        {
-          hostName,
-          isLaptop,
-          hasNvidia,
-          isVM ? false,
-          useDisko ? true,
-        }:
-        let
-          hostProfile = {
-            inherit
-              hostName
-              isLaptop
-              hasNvidia
-              isVM
-              useDisko
-              ;
-            isDesktop = !isLaptop;
-          };
-        in
-        nixpkgs.lib.nixosSystem {
-          inherit system;
-          specialArgs = { inherit inputs stablePkgs hostProfile; };
-          modules =
-            [
-              { nixpkgs.overlays = overlays; }
-              agenix.nixosModules.default
-            ]
-            ++ nixpkgs.lib.optional useDisko disko.nixosModules.disko
-            ++ nixpkgs.lib.optional useDisko [ ./disko/${hostName}.nix ]
-            ++ [
-              ./hosts/${hostName}/configuration.nix
-              home-manager.nixosModules.home-manager
-              {
-                home-manager = {
-                  useGlobalPkgs = true;
-                  useUserPackages = true;
-                  extraSpecialArgs = { inherit inputs hostProfile; };
-                  users.josh = import ./users/josh/home.nix;
-                };
-              }
-            ];
-        };
+      # Use the custom host builder
+      builder = import ./lib/mkHost.nix { inherit inputs; };
+      inherit (builder) mkHost;
     in
     {
       nixosConfigurations = {
         # ── Production hosts (Disko enabled) ─────────────────────────────
         desktop = mkHost {
           hostName = "desktop";
-          isLaptop = false;
           hasNvidia = true;
         };
         laptop = mkHost {
           hostName = "laptop";
           isLaptop = true;
-          hasNvidia = false;
         };
 
-        # ── Test hosts (Disko disabled, uses hardware-configuration.nix) ─
+        # ── Test hosts (Disko disabled) ───────────────────────────────
         desktop-test = mkHost {
           hostName = "desktop";
-          isLaptop = false;
           hasNvidia = true;
           useDisko = false;
         };
         laptop-test = mkHost {
           hostName = "laptop";
           isLaptop = true;
-          hasNvidia = false;
           useDisko = false;
         };
       };
 
       # Standalone Disko configs for the install script
       diskoConfigurations = {
-        desktop = disko.lib.diskoConfig {
-          inherit system;
+        desktop = inputs.disko.lib.diskoConfig {
+          system = "x86_64-linux";
           modules = [ ./disko/desktop.nix ];
         };
-        laptop = disko.lib.diskoConfig {
-          inherit system;
+        laptop = inputs.disko.lib.diskoConfig {
+          system = "x86_64-linux";
           modules = [ ./disko/laptop.nix ];
         };
       };

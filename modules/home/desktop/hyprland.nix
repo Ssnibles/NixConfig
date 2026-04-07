@@ -6,6 +6,10 @@
 # =============================================================================
 { pkgs, ... }:
 {
+  imports = [
+    ../services/wayland.nix
+  ];
+
   home.packages = with pkgs; [
     awww # Wallpaper daemon
     libnotify
@@ -31,7 +35,8 @@
       };
 
       exec-once = [
-        "awww-daemon"
+        # services handled by systemd (see services/wayland.nix):
+        # awww-daemon, vicinae server
         "sleep 2 && awww img ~/NixConfig/wallpapers/517020ldsdl.jpg"
         "waybar"
         "nm-applet --indicator"
@@ -65,7 +70,9 @@
       misc.disable_hyprland_logo = true;
 
       windowrule = [
-        "match:float true, border_size 2"
+        # "bordersize 2, floating:1"
+        # "float, class:(org.pulseaudio.pavucontrol)"
+        # "float, class:(blueman-manager)"
       ];
 
       binds.allow_workspace_cycles = true;
@@ -162,18 +169,5 @@
         magenta = "#c48282";
       };
     };
-  };
-
-  # ── Vicinae systemd user service ─────────────────────────────────────────
-  systemd.user.services.vicinae = {
-    Unit = {
-      Description = "Vicinae launcher daemon";
-      PartOf = [ "graphical-session.target" ];
-    };
-    Service = {
-      ExecStart = "${pkgs.vicinae}/bin/vicinae server";
-      Restart = "on-failure";
-    };
-    Install.WantedBy = [ "graphical-session.target" ];
   };
 }

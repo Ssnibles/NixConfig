@@ -1,8 +1,8 @@
 # =============================================================================
-# Neovim Module
+# Neovim Module (Home Manager)
 # =============================================================================
 # Installs Neovim with plugins and LSP / formatter tools.
-# Lua config is sourced from the nvim/ directory at the repo root.
+# Optimized with minimal plugins and high-performance server tooling.
 # =============================================================================
 { pkgs, ... }:
 let
@@ -15,7 +15,7 @@ let
       rev = "main";
       sha256 = "sha256-oZalIk5m+XtwvPWjI+Ds/IoM4nM0w9BEoI5YYI1B/PI=";
     };
-    doCheck = false; # Ignore tests for optional dependencies
+    doCheck = false;
   };
 in
 {
@@ -27,9 +27,11 @@ in
     extraPackages = with pkgs; [
       # LSP servers
       nixd
+      lua-language-server
+      pyright
+      vtsls
       kotlin-language-server
       jdt-language-server
-      lua-language-server
       marksman
       roslyn-ls
 
@@ -48,7 +50,6 @@ in
         p: with p; [
           lua
           markdown
-          latex
           nix
           vim
           bash
@@ -56,7 +57,6 @@ in
           java
           json
           yaml
-          gitignore
           javascript
           typescript
           tsx
@@ -79,7 +79,6 @@ in
       gitsigns-nvim
       noice-nvim
       markview-nvim
-      nvim-web-devicons
       lualine-nvim
       indent-blankline-nvim
       nvim-treesitter-context
@@ -96,6 +95,8 @@ in
       tiny-inline-diagnostic-nvim
     ];
   };
+
+  # Source Lua configuration from the repo root
   xdg.configFile."nvim" = {
     source = ../../nvim;
     recursive = true;

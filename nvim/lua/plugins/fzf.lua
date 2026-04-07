@@ -1,10 +1,6 @@
 -- =============================================================================
 -- fzf-lua Configuration
 -- =============================================================================
--- Fuzzy finding for files, buffers, grep, symbols, and diagnostics.
--- Uses fd and ripgrep for fast, git-aware searching.
--- =============================================================================
-
 local loader = require("lib.loader")
 
 loader.setup("fzf-lua", function(fzf)
@@ -13,25 +9,14 @@ loader.setup("fzf-lua", function(fzf)
 			height = 0.92,
 			width = 0.92,
 			border = "rounded",
-			preview = {
-				layout = "vertical",
-				vertical = "right:55%",
-				scrollbar = true,
-				border = "none",
-			},
+			preview = { layout = "vertical", vertical = "right:55%", border = "none" },
 		},
-		files = {
-			cmd = "fd --type f --hidden --exclude .git --exclude node_modules",
-		},
-		grep = {
-			rg_opts = "--color=never --hidden --glob '!{.git,node_modules}' --no-heading --line-number --column --smart-case",
-		},
+		files = { cmd = "fd --type f --hidden --exclude .git" },
+		grep = { rg_opts = "--color=never --hidden --glob '!{.git}' --no-heading --line-number --column --smart-case" },
 	})
-
 	local map = function(lhs, fn, desc)
 		vim.keymap.set("n", lhs, fn, { desc = desc })
 	end
-
 	map("<leader>ff", fzf.files, "Find files")
 	map("<leader>fr", fzf.oldfiles, "Recent files")
 	map("<leader>fb", fzf.buffers, "Find buffers")
