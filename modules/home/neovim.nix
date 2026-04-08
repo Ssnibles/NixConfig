@@ -137,8 +137,9 @@ in
 
       # ── Fuzzy Finding & Navigation ───────────────────────────────────────
       fzf-lua # Fast fuzzy finder (Lua-based)
-      oil-nvim # File manager as a buffer
+      fyler-nvim # Tree file manager
       leap-nvim # Fast motion (replaces EasyMotion)
+      smart-splits-nvim # Smart split navigation and resizing
 
       # ── UI & Appearance ──────────────────────────────────────────────────
       lualine-nvim # Statusline

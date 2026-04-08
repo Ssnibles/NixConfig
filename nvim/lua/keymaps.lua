@@ -62,9 +62,6 @@ map("n", "[e", function()
 	vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })
 end, { desc = "Prev error" })
 
--- Oil file manager
-map("n", "-", "<cmd>Oil<CR>", { desc = "Open parent directory" })
-
 -- LSP (buffer-independent)
 map("n", "<leader>li", "<cmd>LspInfo<CR>", { desc = "LSP info" })
 map("n", "<leader>lr", "<cmd>LspRestart<CR>", { desc = "Restart LSP" })

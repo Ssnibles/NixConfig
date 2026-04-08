@@ -1,23 +1,45 @@
 -- Editor enhancements: file manager, git signs, formatting, pairs
 
--- Oil: file manager as buffer
-require("oil").setup({
-	columns = { "icon", "permissions", "size", "mtime" },
-	delete_to_trash = true,
-	skip_confirm_for_simple_edits = true,
-	view_options = { show_hidden = true },
-	float = { padding = 2, max_width = 90, max_height = 30, border = "rounded" },
-	keymaps = {
-		["g?"] = "actions.show_help",
-		["<CR>"] = "actions.select",
-		["<C-v>"] = { "actions.select", opts = { vertical = true } },
-		["<C-x>"] = { "actions.select", opts = { horizontal = true } },
-		["<C-p>"] = "actions.preview",
-		["<C-c>"] = "actions.close",
-		["-"] = "actions.parent",
-		["g."] = "actions.toggle_hidden",
+-- Fyler: tree file manager
+require("fyler").setup({
+	integrations = {
+		icon = "mini_icons",
+	},
+	views = {
+		finder = {
+			confirm_simple = false,
+			delete_to_trash = true,
+			default_explorer = true,
+			follow_current_file = true,
+			columns_order = { "link", "permission", "size", "git", "diagnostic" },
+			columns = {
+				permission = { enabled = true },
+				size = { enabled = true },
+				git = { enabled = true },
+				diagnostic = { enabled = true },
+				link = { enabled = true },
+			},
+			win = {
+				kind = "split_left_most",
+				border = "rounded",
+				kinds = {
+					split_left_most = {
+						width = "30%",
+						win_opts = { winfixwidth = true },
+					},
+				},
+			},
+		},
 	},
 })
+
+local fyler = require("fyler")
+vim.keymap.set("n", "-", function()
+	fyler.toggle({ kind = "split_left_most" })
+end, { desc = "Toggle Fyler" })
+vim.keymap.set("n", "<leader>ef", function()
+	fyler.open({ kind = "split_left_most" })
+end, { desc = "Open Fyler" })
 
 -- Gitsigns: git integration in gutter
 require("gitsigns").setup({

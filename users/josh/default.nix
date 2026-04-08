@@ -27,6 +27,7 @@
     # ── Shell & terminal ──────────────────────────────────────────────────
     ../../modules/home/shell/fish.nix
     ../../modules/home/shell/tmux.nix
+    ../../modules/home/shell/zellij.nix
 
     # ── Desktop environment ───────────────────────────────────────────────
     ../../modules/home/desktop/hyprland.nix
