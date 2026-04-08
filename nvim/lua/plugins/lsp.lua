@@ -35,8 +35,17 @@ end
 
 -- Fidget: LSP progress indicator
 require("fidget").setup({
-	progress = { display = { done_icon = "✓", done_ttl = 2 } },
-	notification = { window = { winblend = 0, border = "rounded" } },
+	progress = {
+		suppress_on_insert = true,
+		display = { done_icon = "✓", done_ttl = 2 },
+	},
+	notification = {
+		filter = function(_msg, _level, _opts)
+			local mode = vim.api.nvim_get_mode().mode:sub(1, 1)
+			return not vim.tbl_contains({ "i", "R", "r", "s", "S", "\19" }, mode)
+		end,
+		window = { winblend = 0, border = "none" },
+	},
 })
 
 -- Tiny code action UI
@@ -100,17 +109,22 @@ lsp.config("nixd", {
 		nixd = {
 			nixpkgs = { expr = "import <nixpkgs> {}" },
 			formatting = { command = { "nixfmt" } },
-			options = flake_root and {
-				nixos = {
-					expr = ('(builtins.getFlake "%s").nixosConfigurations.%s.options'):format(flake_root, nix_host),
-				},
-				["home-manager"] = {
-					expr = ('(builtins.getFlake "%s").nixosConfigurations.%s.options.home-manager.users.type.getSubOptions []'):format(
-						flake_root,
-						nix_host
-					),
-				},
-			} or {},
+			options = flake_root
+					and {
+						nixos = {
+							expr = ('(builtins.getFlake "%s").nixosConfigurations.%s.options'):format(
+								flake_root,
+								nix_host
+							),
+						},
+						["home-manager"] = {
+							expr = ('(builtins.getFlake "%s").nixosConfigurations.%s.options.home-manager.users.type.getSubOptions []'):format(
+								flake_root,
+								nix_host
+							),
+						},
+					}
+				or {},
 		},
 	},
 })

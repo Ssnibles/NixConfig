@@ -33,7 +33,7 @@ require("lualine").setup({
 require("ibl").setup({
 	indent = { char = "│" },
 	scope = { enabled = true, show_start = false, show_end = false },
-	exclude = { filetypes = { "help", "dashboard", "lazy", "mason", "notify", "oil" } },
+	exclude = { filetypes = { "help", "dashboard", "lazy", "mason", "notify", "fyler" } },
 })
 
 -- Statuscol: custom status column
