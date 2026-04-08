@@ -1,44 +1,77 @@
 # =============================================================================
 # NixOS Flake Configuration
 # =============================================================================
-# Multi-host configuration with Disko and Home Manager.
-# Optimized with a modular host builder lib pattern.
+# Production-grade multi-host NixOS configuration with the following features:
+#   • Dual-channel package management (stable system + unstable user packages)
+#   • Declarative disk partitioning via Disko
+#   • Secrets management via Agenix
+#   • Home Manager integration for user environments
+#   • Conditional NVIDIA support
+#   • Laptop-specific power management (TLP)
+#   • Custom host builder abstraction (lib/mkHost.nix)
+#
+# Architecture:
+#   flake.nix (inputs/outputs) → lib/mkHost.nix (host builder)
+#     → modules/nixos/* (system config) + modules/home/* (user config)
+#     → hosts/<name>/* (host-specific overrides)
 # =============================================================================
 {
-  description = "Josh's NixOS Flake - Multi-Host Configuration";
+  description = "Josh's NixOS Configuration - Multi-host flake with Hyprland, Neovim, and Home Manager";
+
+  # ── Nix Configuration ──────────────────────────────────────────────────────
+  # Binary cache settings applied to all consumers of this flake
+  nixConfig = {
+    extra-substituters = [
+      "https://cache.nixos.org"
+      "https://nix-community.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
+  };
 
   inputs = {
-    # Stable channel for the overall NixOS system base (Modules, Services, Kernel, Drivers)
+    # ── Core Channels ────────────────────────────────────────────────────────
+    # Stable channel: NixOS modules, system services, kernel, drivers
+    # Version: 25.11 provides stability for system-level components
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
 
-    # Unstable channel for the latest user-facing packages (Apps, CLI tools, UI)
+    # Unstable channel: Latest user-facing packages (apps, CLI tools, dev tools)
+    # Overlaid as "unstable" namespace to avoid conflicts with stable packages
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    # Home Manager follows the stable system input to maintain module compatibility
+    # ── User Environment ─────────────────────────────────────────────────────
+    # Home Manager: Declarative user configuration (dotfiles, packages, services)
+    # Follows stable nixpkgs to ensure module API compatibility
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Secrets management
+    # ── Infrastructure Tools ─────────────────────────────────────────────────
+    # Agenix: Age-based secrets management (encrypted with SSH/age keys)
+    # Used for: Spotify credentials, API tokens, etc.
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Declarative disk partitioning
+    # Disko: Declarative disk partitioning for automated installations
+    # Enables reproducible filesystem layouts across reinstalls
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Custom browser
+    # ── Custom Applications ──────────────────────────────────────────────────
+    # Zen Browser: Privacy-focused Firefox fork with modern UI
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Wallpaper utility
+    # Awww: Lightweight Wayland wallpaper daemon (supports animated wallpapers)
     awww = {
       url = "git+https://codeberg.org/LGFae/awww.git";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -52,28 +85,37 @@
       ...
     }@inputs:
     let
-      # Use the custom host builder
+      # ── Host Builder ─────────────────────────────────────────────────────
+      # Custom abstraction that eliminates boilerplate for each host config
+      # See lib/mkHost.nix for implementation details
       builder = import ./lib/mkHost.nix { inherit inputs; };
       inherit (builder) mkHost;
     in
     {
+      # ── NixOS System Configurations ──────────────────────────────────────
+      # Each host has both a production config (Disko enabled) and a test 
+      # config (Disko disabled) for safe rebuilds without repartitioning
       nixosConfigurations = {
-        # ── Production hosts (Disko enabled) ─────────────────────────────
+        # Production: Desktop (AMD CPU + NVIDIA GPU)
         desktop = mkHost {
           hostName = "desktop";
-          hasNvidia = true;
-        };
-        laptop = mkHost {
-          hostName = "laptop";
-          isLaptop = true;
+          hasNvidia = true; # Enables nvidia.nix module, stable kernel
         };
 
-        # ── Test hosts (Disko disabled) ───────────────────────────────
+        # Production: Laptop (AMD CPU + integrated graphics)
+        laptop = mkHost {
+          hostName = "laptop";
+          isLaptop = true; # Enables TLP, battery optimizations, lid handling
+        };
+
+        # Test: Desktop (safe rebuilds, no disk repartitioning)
         desktop-test = mkHost {
           hostName = "desktop";
           hasNvidia = true;
-          useDisko = false;
+          useDisko = false; # Skips disko module inclusion
         };
+
+        # Test: Laptop (safe rebuilds, no disk repartitioning)
         laptop-test = mkHost {
           hostName = "laptop";
           isLaptop = true;
@@ -81,7 +123,9 @@
         };
       };
 
-      # Standalone Disko configs for the install script
+      # ── Disko Configurations ─────────────────────────────────────────────
+      # Standalone disk layouts for the install.sh bootstrap script
+      # These are NOT included in test configs (useDisko = false)
       diskoConfigurations = {
         desktop = inputs.disko.lib.diskoConfig {
           system = "x86_64-linux";

@@ -1,11 +1,36 @@
 # =============================================================================
 # Neovim Module (Home Manager)
 # =============================================================================
-# Installs Neovim with plugins and LSP / formatter tools.
-# Optimized with minimal plugins and high-performance server tooling.
+# Installs Neovim with curated plugins, LSP servers, and formatters.
+# Configuration is sourced from the nvim/ directory (Lua-based).
+#
+# Architecture:
+#   • Nix: Plugin/tool installation (this file)
+#   • Lua: Runtime configuration (nvim/init.lua + nvim/lua/*)
+#   • Zero plugin manager overhead (plugins provided via runtimepath by Nix)
+#
+# Plugin Philosophy:
+#   • Minimal: Only essential plugins (no bloat)
+#   • Native-first: Prefer built-in Neovim features when possible
+#   • Performance: Lazy-loading where beneficial, async operations
+#   • Modern: Uses Neovim 0.10+ APIs (diagnostics, LSP, treesitter)
+#
+# LSP Servers Included:
+#   • Nix (nixd), Lua (lua-language-server)
+#   • Python (pyright), TypeScript/JavaScript (vtsls)
+#   • Kotlin (kotlin-language-server), Java (jdt-language-server)
+#   • C# (roslyn-ls), Markdown (marksman)
+#
+# Formatters Included:
+#   • Nix (nixfmt-rfc-style), Lua (stylua)
+#   • Python (black + isort), JavaScript/TypeScript (prettier)
+#   • C# (csharpier)
 # =============================================================================
 { pkgs, ... }:
 let
+  # ── Custom Plugin: tiny-code-action ────────────────────────────────────────
+  # Lightweight code action UI (alternative to heavier Telescope code actions)
+  # Source: https://github.com/rachartier/tiny-code-action.nvim
   tiny-code-action = pkgs.vimUtils.buildVimPlugin {
     pname = "tiny-code-action";
     version = "main";
@@ -21,85 +46,125 @@ in
 {
   programs.neovim = {
     enable = true;
-    defaultEditor = true;
-    viAlias = true;
-    vimAlias = true;
-    extraPackages = with pkgs; [
-      # LSP servers
-      nixd
-      lua-language-server
-      pyright
-      vtsls
-      kotlin-language-server
-      jdt-language-server
-      marksman
-      roslyn-ls
+    defaultEditor = true; # Set as system default editor ($EDITOR, $VISUAL)
+    viAlias = true; # Create 'vi' command alias
+    vimAlias = true; # Create 'vim' command alias
 
-      # Formatters & language runtimes
-      nixfmt
-      stylua
-      black
-      isort
-      prettier
-      csharpier
-      dotnet-sdk_10
-      tree-sitter
-      ripgrep
-      fd
+    # ═══════════════════════════════════════════════════════════════════════
+    # LSP SERVERS & FORMATTERS
+    # ═══════════════════════════════════════════════════════════════════════
+    # Tools installed system-wide, available on PATH for Neovim LSP config
+    extraPackages = with pkgs; [
+      # ── LSP Servers ──────────────────────────────────────────────────────
+      nixd # Nix language server (better than nil/rnix)
+      lua-language-server # Lua LSP (Neovim config development)
+      pyright # Python LSP (type checking, completion)
+      vtsls # TypeScript/JavaScript LSP (fast, modern)
+      kotlin-language-server # Kotlin LSP
+      jdt-language-server # Java LSP (Eclipse JDT.LS)
+      marksman # Markdown LSP (navigation, links)
+      roslyn-ls # C# LSP (Roslyn-based)
+
+      # ── Formatters & Tools ───────────────────────────────────────────────
+      nixfmt-rfc-style # Nix formatter (RFC 166 style)
+      stylua # Lua formatter (opinionated)
+      black # Python formatter (PEP 8)
+      isort # Python import sorter
+      prettier # JavaScript/TypeScript/CSS/HTML formatter
+      csharpier # C# formatter
+      dotnet-sdk_10 # .NET SDK (required for Roslyn LSP)
+
+      # ── CLI Tools (used by plugins) ──────────────────────────────────────
+      tree-sitter # Syntax parser (used by nvim-treesitter)
+      ripgrep # Fast grep (fzf-lua, telescope, live grep)
+      fd # Fast find (fzf-lua file search)
     ];
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # PLUGINS
+    # ═══════════════════════════════════════════════════════════════════════
+    # Plugins are provided on runtimepath by Nix (no plugin manager needed)
+    # Configuration lives in nvim/lua/plugins/*.lua
     plugins = with pkgs.vimPlugins; [
-      tiny-code-action
+      # ── Custom Plugins ───────────────────────────────────────────────────
+      tiny-code-action # Lightweight code action UI
+
+      # ── Syntax & Parsing ─────────────────────────────────────────────────
       (nvim-treesitter.withPlugins (
         p: with p; [
+          # Core languages
           lua
-          markdown
-          nix
           vim
+          nix
           bash
+          fish
+
+          # JVM languages
           kotlin
           java
-          json
-          yaml
+
+          # Web development
           javascript
           typescript
           tsx
-          python
           html
           css
+          json
+          yaml
+
+          # Other
+          python
+          markdown
           c_sharp
         ]
       ))
-      plenary-nvim
-      nvim-lspconfig
-      blink-cmp
-      luasnip
-      friendly-snippets
-      copilot-lua
-      fzf-lua
-      oil-nvim
-      statuscol-nvim
-      fidget-nvim
-      gitsigns-nvim
-      noice-nvim
-      markview-nvim
-      lualine-nvim
-      indent-blankline-nvim
-      nvim-treesitter-context
-      neoscroll-nvim
-      vague-nvim
-      nvim-autopairs
-      conform-nvim
-      mini-nvim
-      neogit
-      vim-tmux-navigator
-      leap-nvim
-      grug-far-nvim
-      roslyn-nvim
-      tiny-inline-diagnostic-nvim
+      nvim-treesitter-context # Show code context at top of window
+
+      # ── LSP & Completion ─────────────────────────────────────────────────
+      nvim-lspconfig # LSP client configurations
+      blink-cmp # Fast completion engine (Rust-based)
+      luasnip # Snippet engine
+      friendly-snippets # Community snippet collection
+      copilot-lua # GitHub Copilot integration
+      fidget-nvim # LSP progress notifications
+      roslyn-nvim # C# LSP integration (Roslyn-specific)
+      tiny-inline-diagnostic-nvim # Inline diagnostic messages
+
+      # ── Fuzzy Finding & Navigation ───────────────────────────────────────
+      fzf-lua # Fast fuzzy finder (Lua-based)
+      oil-nvim # File manager as a buffer
+      leap-nvim # Fast motion (replaces EasyMotion)
+
+      # ── UI & Appearance ──────────────────────────────────────────────────
+      lualine-nvim # Statusline
+      indent-blankline-nvim # Indent guides
+      statuscol-nvim # Custom status column (signs, line numbers)
+      neoscroll-nvim # Smooth scrolling
+      vague-nvim # Colorscheme (Vague theme)
+      noice-nvim # Better UI for messages, cmdline, popups
+
+      # ── Git Integration ──────────────────────────────────────────────────
+      gitsigns-nvim # Git signs in gutter (add/change/delete)
+      neogit # Magit-like Git interface
+
+      # ── Code Editing ─────────────────────────────────────────────────────
+      nvim-autopairs # Auto-close brackets, quotes
+      conform-nvim # Formatter runner (async formatting)
+      grug-far-nvim # Search and replace across project
+
+      # ── Utilities ────────────────────────────────────────────────────────
+      mini-nvim # Mini.nvim suite (various small utilities)
+      plenary-nvim # Lua utility library (dependency for many plugins)
+      vim-tmux-navigator # Seamless tmux/vim navigation
+      markview-nvim # Markdown preview in buffer
     ];
   };
 
-  # Source Lua configuration from the repo root
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LUA CONFIGURATION
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Source Lua config from nvim/ directory in the repository
+  # Structure: init.lua (entry) → lua/options.lua, lua/keymaps.lua, lua/plugins/*
   xdg.configFile."nvim" = {
     source = ../../nvim;
     recursive = true;

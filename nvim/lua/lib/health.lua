@@ -22,9 +22,9 @@ function M.check()
 	}
 	for _, plugin in ipairs(critical) do
 		if not pcall(require, plugin) then
-			table.insert(issues, "❌ Missing: " .. plugin)
+			table.insert(issues, "[X] Missing: " .. plugin)
 		else
-			table.insert(info, "✓ Loaded: " .. plugin)
+			table.insert(info, "[OK] Loaded: " .. plugin)
 		end
 	end
 
@@ -41,23 +41,23 @@ function M.check()
 	}
 	for _, plugin in ipairs(optional) do
 		if not pcall(require, plugin) then
-			table.insert(warnings, "⚠️ Optional plugin unavailable: " .. plugin)
+			table.insert(warnings, "[!] Optional plugin unavailable: " .. plugin)
 		end
 	end
 
 	-- ── Check Colorscheme ──────────────────────────────────────────────────
 	if vim.g.colors_name ~= "vague" then
-		table.insert(warnings, "⚠️ Colorscheme '" .. (vim.g.colors_name or "none") .. "' active (expected 'vague')")
+		table.insert(warnings, "[!] Colorscheme '" .. (vim.g.colors_name or "none") .. "' active (expected 'vague')")
 	else
-		table.insert(info, "✓ Colorscheme: vague")
+		table.insert(info, "[OK] Colorscheme: vague")
 	end
 
 	-- ── Check LSP Clients ──────────────────────────────────────────────────
 	local clients = vim.lsp.get_clients()
 	if #clients == 0 then
-		table.insert(warnings, "⚠️ No LSP clients connected")
+		table.insert(warnings, "[!] No LSP clients connected")
 	else
-		table.insert(info, "✓ " .. #clients .. " LSP client(s) active")
+		table.insert(info, "[OK] " .. #clients .. " LSP client(s) active")
 	end
 
 	-- ── Check Nix Flake Path ───────────────────────────────────────────────
@@ -71,19 +71,19 @@ function M.check()
 	for _, path in ipairs(flake_paths) do
 		if path and vim.fn.filereadable(path) == 1 then
 			flake_found = true
-			table.insert(info, "✓ Flake found: " .. path)
+			table.insert(info, "[OK] Flake found: " .. path)
 			break
 		end
 	end
 	if not flake_found then
-		table.insert(warnings, "⚠️ No flake.nix found (nixd may not work optimally)")
+		table.insert(warnings, "[!] No flake.nix found (nixd may not work optimally)")
 	end
 
 	-- ── Check Clipboard Provider ───────────────────────────────────────────
 	if vim.fn.has("clipboard") == 0 then
-		table.insert(warnings, "⚠️ Clipboard provider not available")
+		table.insert(warnings, "[!] Clipboard provider not available")
 	else
-		table.insert(info, "✓ Clipboard provider available")
+		table.insert(info, "[OK] Clipboard provider available")
 	end
 
 	-- ── Report Results ─────────────────────────────────────────────────────
@@ -100,7 +100,7 @@ function M.check()
 			vim.notify("INFO:\n" .. table.concat(info, "\n"), vim.log.levels.INFO)
 		end
 		if #issues == 0 and #warnings == 0 then
-			vim.notify("✓ Configuration healthy", vim.log.levels.INFO)
+			vim.notify("[OK] Configuration healthy", vim.log.levels.INFO)
 		end
 	end)
 

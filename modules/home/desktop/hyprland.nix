@@ -8,6 +8,7 @@
 {
   imports = [
     ../services/wayland.nix
+    ./hyprlock.nix
   ];
 
   home.packages = with pkgs; [

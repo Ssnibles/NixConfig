@@ -1,14 +1,21 @@
 # =============================================================================
 # NVIDIA Driver Module
 # =============================================================================
-# Configures proprietary NVIDIA drivers for hosts where hasNvidia = true.
-# Drivers are pinned to the stable channel to avoid breakage from unstable
-# kernel/driver mismatches.
+# Configures proprietary NVIDIA drivers for hosts with hasNvidia = true.
+# This module is conditionally included via lib/mkHost.nix when hasNvidia flag
+# is set for a host configuration.
 #
-# Notes:
-#   - Pins the entire kernel to stable so modules match the driver version
-#   - DRM modesetting and fbdev must both be enabled for Wayland support
-#   - nouveau is blacklisted to prevent conflicts at boot
+# Key Design Decisions:
+#   • Uses STABLE kernel/drivers to prevent module version mismatches
+#     (common.nix defaults to latest kernel, this overrides to stable)
+#   • Enables DRM modesetting + fbdev for full Wayland compositor support
+#   • Blacklists nouveau to prevent boot conflicts with proprietary driver
+#   • Configures GBM/EGL environment for NVIDIA-specific rendering pipeline
+#
+# Compatibility:
+#   • Wayland: Hyprland, Sway (requires DRM modesetting)
+#   • Gaming: Steam, Lutris, Proton (32-bit support enabled)
+#   • Video: Hardware-accelerated decode via nvidia-vaapi-driver
 # =============================================================================
 {
   pkgs,
@@ -17,11 +24,22 @@
   ...
 }:
 lib.mkIf hostProfile.hasNvidia {
-  # Base kernel/drivers from the stable system input
+  # ═══════════════════════════════════════════════════════════════════════════
+  # KERNEL CONFIGURATION
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Use stable kernel to match NVIDIA driver version
+  # Overrides common.nix default (linuxPackages_latest)
+  # Prevents "version magic mismatch" errors on unstable kernel updates
   boot.kernelPackages = pkgs.linuxPackages;
 
+  # Blacklist open-source nouveau driver (conflicts with proprietary)
+  # Applied at initrd stage to prevent loading during boot
   boot.blacklistedKernelModules = [ "nouveau" ];
 
+  # Load NVIDIA kernel modules at boot
+  # nvidia_drm: DRM (Direct Rendering Manager) for Wayland modesetting
+  # nvidia_modeset: Kernel modesetting support
+  # nvidia_uvm: Unified Virtual Memory (CUDA, compute workloads)
   boot.kernelModules = [
     "nvidia"
     "nvidia_modeset"
@@ -29,36 +47,79 @@ lib.mkIf hostProfile.hasNvidia {
     "nvidia_drm"
   ];
 
+  # Kernel parameters for NVIDIA Wayland support
   boot.kernelParams = [
-    "nvidia-drm.modeset=1" # Required for Wayland
-    "nvidia-drm.fbdev=1" # Required for framebuffer device
+    "nvidia-drm.modeset=1" # Enable DRM KMS (kernel modesetting) - REQUIRED for Wayland
+    "nvidia-drm.fbdev=1"   # Enable fbdev emulation for compatibility with older software
   ];
 
-  # X server driver (still needed for GLX/Vulkan compatibility paths)
+  # ═══════════════════════════════════════════════════════════════════════════
+  # XORG CONFIGURATION
+  # ═══════════════════════════════════════════════════════════════════════════
+  # X server driver (required even for Wayland for GLX/Vulkan compat)
+  # Enables: XWayland OpenGL, legacy X11 apps under Wayland
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  # ═══════════════════════════════════════════════════════════════════════════
+  # NVIDIA DRIVER SETTINGS
+  # ═══════════════════════════════════════════════════════════════════════════
   hardware.nvidia = {
-    open = false; # Use proprietary drivers, not nouveau
+    # Use proprietary driver (not open-source nouveau)
+    # Open-source NVIDIA kernel modules are still experimental (not ready for production)
+    open = false;
+
+    # Enable DRM kernel modesetting (required for Wayland compositors)
     modesetting.enable = true;
-    powerManagement.enable = true;
-    powerManagement.finegrained = false;
+
+    # Power management: Suspend/resume support for NVIDIA GPUs
+    # Prevents black screen on wake from sleep
+    powerManagement = {
+      enable = true;
+      # Fine-grained power management: EXPERIMENTAL, can cause instability
+      # Only enable for laptops with hybrid graphics (NVIDIA + integrated)
+      finegrained = false;
+    };
+
+    # NVIDIA X Server Settings GUI (nvidia-settings command)
+    # Useful for: overclocking, fan curves, multi-monitor setup
     nvidiaSettings = true;
+
+    # Driver package: stable branch
+    # Alternatives: beta, vulkan_beta, production (latest)
+    # Stable recommended for reliability
     package = pkgs.linuxPackages.nvidiaPackages.stable;
   };
 
+  # ═══════════════════════════════════════════════════════════════════════════
+  # GRAPHICS CONFIGURATION
+  # ═══════════════════════════════════════════════════════════════════════════
   hardware.graphics = {
     enable = true;
-    enable32Bit = true; # Steam and 32-bit games
+    # 32-bit driver support (required for Steam, Wine, older games)
+    enable32Bit = true;
+
     extraPackages = with pkgs; [
-      nvidia-vaapi-driver # Hardware video decoding
+      # Hardware-accelerated video decoding (VA-API via NVDEC)
+      # Enables GPU video decode in: Firefox, MPV, VLC
+      nvidia-vaapi-driver
+
+      # Vulkan validation layers (helpful for debugging graphics issues)
       vulkan-validation-layers
     ];
   };
 
-  # Environment variables required for NVIDIA under Wayland
+  # ═══════════════════════════════════════════════════════════════════════════
+  # WAYLAND ENVIRONMENT VARIABLES
+  # ═══════════════════════════════════════════════════════════════════════════
+  # NVIDIA-specific environment for Wayland compositors (Hyprland, Sway)
   environment.sessionVariables = {
+    # Use NVIDIA's GBM backend (required for buffer allocation)
     GBM_BACKEND = "nvidia-drm";
+
+    # Force NVIDIA as the GLX vendor (fixes OpenGL app rendering)
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+
+    # EGL vendor library directory (NVIDIA-specific EGL implementation)
     __EGL_VENDOR_LIBRARY_DIRS = "/run/opengl-driver/share/glvnd/egl_vendor.d";
   };
 }

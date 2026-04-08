@@ -27,8 +27,31 @@ loader.setup("lualine", {
 })
 
 loader.setup("ibl", {
-	indent = { char = "│" },
-	scope = { enabled = true, show_start = false, show_end = false },
+	indent = {
+		char = "│",
+		tab_char = "│",
+	},
+	scope = {
+		enabled = true,
+		show_start = false,
+		show_end = false,
+		char = "│",
+		priority = 500,
+	},
+	exclude = {
+		filetypes = {
+			"help",
+			"dashboard",
+			"neo-tree",
+			"Trouble",
+			"lazy",
+			"mason",
+			"notify",
+			"toggleterm",
+			"lazyterm",
+		},
+		buftypes = { "terminal", "nofile" },
+	},
 })
 
 loader.setup("statuscol", function(statuscol)

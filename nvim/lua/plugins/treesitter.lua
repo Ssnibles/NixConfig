@@ -43,6 +43,10 @@ end)
 -- treesitter-context (sticky headers)
 loader.setup("treesitter-context", {
 	enable = true,
-	max_lines = 3,
+	max_lines = 4,
+	min_window_height = 20,
 	mode = "cursor",
+	separator = "─", -- Subtle separator line
+	zindex = 20,
+	multiline_threshold = 1,
 })

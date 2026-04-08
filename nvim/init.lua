@@ -17,10 +17,7 @@ require("autocommands")
 
 -- Diagnostics configuration (refined for 0.11+)
 vim.diagnostic.config({
-	virtual_text = {
-		prefix = "●",
-		spacing = 4,
-	},
+	virtual_text = false,
 	signs = {
 		text = {
 			[vim.diagnostic.severity.ERROR] = "󰅚",

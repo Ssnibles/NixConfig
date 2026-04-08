@@ -125,10 +125,10 @@ vim.api.nvim_create_autocmd("FileType", {
 -- to its severity. Uses extmarks so it plays nicely with statuscol.
 local diag_ns = vim.api.nvim_create_namespace("diag_linenum_hl")
 local severity_hl = {
-	[vim.diagnostic.severity.ERROR] = { sign = "DiagnosticSignError", line = "DiagnosticLineError" },
-	[vim.diagnostic.severity.WARN] = { sign = "DiagnosticSignWarn", line = "DiagnosticLineWarn" },
-	[vim.diagnostic.severity.INFO] = { sign = "DiagnosticSignInfo", line = "DiagnosticLineInfo" },
-	[vim.diagnostic.severity.HINT] = { sign = "DiagnosticSignHint", line = "DiagnosticLineHint" },
+	[vim.diagnostic.severity.ERROR] = { sign = "DiagnosticSignError" },
+	[vim.diagnostic.severity.WARN] = { sign = "DiagnosticSignWarn" },
+	[vim.diagnostic.severity.INFO] = { sign = "DiagnosticSignInfo" },
+	[vim.diagnostic.severity.HINT] = { sign = "DiagnosticSignHint" },
 }
 
 local function update_diag_hl(bufnr)
@@ -147,7 +147,6 @@ local function update_diag_hl(bufnr)
 		local hl = severity_hl[sev]
 		vim.api.nvim_buf_set_extmark(bufnr, diag_ns, line, 0, {
 			number_hl_group = hl.sign,
-			line_hl_group = hl.line,
 		})
 	end
 end
