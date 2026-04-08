@@ -3,7 +3,6 @@ local M = {}
 
 M.colors = {
 	bg = "#141415",
-	bg_float = "#1c1c24",
 	fg = "#cdcdcd",
 	comment = "#606079",
 	gutter = "#252530",
@@ -30,28 +29,36 @@ function M.setup()
 	end
 
 	-- Floats and popups
-	hl("NormalFloat", { bg = c.bg_float })
-	hl("FloatBorder", { fg = c.border, bg = c.bg_float })
-	hl("FloatTitle", { fg = c.blue, bg = c.bg_float, bold = true })
-	hl("LspInfoBorder", { fg = c.border, bg = c.bg_float })
-	hl("LspInfoTitle", { fg = c.blue, bg = c.bg_float, bold = true })
+	hl("NormalFloat", { bg = c.bg })
+	hl("FloatBorder", { fg = c.border, bg = c.bg })
+	hl("FloatTitle", { fg = c.blue, bg = c.bg, bold = true })
+	hl("LspInfoBorder", { fg = c.border, bg = c.bg })
+	hl("LspInfoTitle", { fg = c.blue, bg = c.bg, bold = true })
 	hl("FzfLuaNormal", { bg = c.bg })
 	hl("FzfLuaBorder", { fg = c.border, bg = c.bg })
 	hl("FzfLuaPreviewNormal", { bg = c.bg })
 	hl("FzfLuaPreviewBorder", { fg = c.border, bg = c.bg })
 	hl("FzfLuaPromptNormal", { bg = c.bg })
 	hl("FzfLuaPromptBorder", { fg = c.border, bg = c.bg })
-	hl("NoiceCmdlinePopup", { bg = c.bg_float })
-	hl("NoiceCmdlinePopupBorder", { fg = c.border, bg = c.bg_float })
-	hl("NoiceCmdlinePopupTitle", { fg = c.blue, bg = c.bg_float, bold = true })
-	hl("NoiceConfirm", { bg = c.bg_float })
-	hl("NoiceConfirmBorder", { fg = c.border, bg = c.bg_float })
-	hl("NoicePopup", { bg = c.bg_float })
-	hl("NoicePopupBorder", { fg = c.border, bg = c.bg_float })
-	hl("NoicePopupmenu", { bg = c.bg_float })
-	hl("NoicePopupmenuBorder", { fg = c.border, bg = c.bg_float })
-	hl("MiniClueNormal", { bg = c.bg_float })
-	hl("MiniClueBorder", { fg = c.border, bg = c.bg_float })
+	hl("NoiceCmdlinePopup", { bg = c.bg })
+	hl("NoiceCmdlinePopupBorder", { fg = c.border, bg = c.bg })
+	hl("NoiceCmdlinePopupTitle", { fg = c.blue, bg = c.bg, bold = true })
+	hl("NoiceConfirm", { bg = c.bg })
+	hl("NoiceConfirmBorder", { fg = c.border, bg = c.bg })
+	hl("NoicePopup", { bg = c.bg })
+	hl("NoicePopupBorder", { fg = c.border, bg = c.bg })
+	hl("NoicePopupmenu", { bg = c.bg })
+	hl("NoicePopupmenuBorder", { fg = c.border, bg = c.bg })
+	hl("NoicePopupmenuSelected", { bg = c.gutter, bold = true })
+	hl("NoicePopupmenuMatch", { fg = c.blue, bold = true })
+	hl("MiniClueNormal", { bg = c.bg })
+	hl("MiniClueBorder", { fg = c.border, bg = c.bg })
+	hl("MiniClueTitle", { fg = c.blue, bg = c.bg, bold = true })
+	hl("MiniClueDescSingle", { fg = c.fg, bg = c.bg })
+	hl("MiniClueDescGroup", { fg = c.comment, bg = c.bg })
+	hl("MiniClueNextKey", { fg = c.blue, bg = c.bg, bold = true })
+	hl("MiniClueNextKeyWithPostkeys", { fg = c.blue, bg = c.bg, bold = true })
+	hl("MiniClueSeparator", { fg = c.border, bg = c.bg })
 
 	-- Window chrome
 	hl("WinSeparator", { fg = c.border })
@@ -85,8 +92,9 @@ function M.setup()
 	hl("BlinkCmpDocBorder", { fg = c.border, bg = c.bg })
 
 	-- Treesitter context
-	hl("TreesitterContext", { bg = c.gutter })
-	hl("TreesitterContextSeparator", { fg = c.comment })
+	hl("TreesitterContext", { bg = c.bg })
+	hl("TreesitterContextSeparator", { fg = c.gutter })
+	hl("TreesitterContextLineNumber", { fg = c.comment, bg = c.bg })
 
 	-- Indent guides
 	hl("IblIndent", { fg = "#1a1a1f" })

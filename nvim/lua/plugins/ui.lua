@@ -52,6 +52,22 @@ require("neoscroll").setup({ easing = "quadratic", hide_cursor = true })
 
 -- Noice: enhanced UI
 require("noice").setup({
+	cmdline = {
+		view = "cmdline",
+		format = {
+			cmdline = { icon = "", view = "cmdline" },
+			search_down = { icon = " " },
+			search_up = { icon = " " },
+			filter = { icon = "$" },
+			lua = { icon = "", view = "cmdline" },
+			help = { icon = "", view = "cmdline" },
+			input = { icon = "󰥻 " },
+		},
+	},
+	popupmenu = {
+		enabled = true,
+		backend = "nui",
+	},
 	lsp = {
 		progress = { enabled = false },
 		override = {

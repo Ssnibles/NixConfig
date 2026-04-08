@@ -26,6 +26,40 @@
       function on_exit --on-event fish_exit
           history merge
       end
+
+      # Fish syntax + completion colors aligned to the Vague palette.
+      set -g fish_color_normal cdcdcd
+      set -g fish_color_command 6e94b2
+      set -g fish_color_keyword bb9dbd
+      set -g fish_color_quote 7fa563
+      set -g fish_color_redirection b4d4cf
+      set -g fish_color_end 878787
+      set -g fish_color_error d8647e
+      set -g fish_color_param cdcdcd
+      set -g fish_color_comment 606079
+      set -g fish_color_operator b4d4cf
+      set -g fish_color_escape bb9dbd
+      set -g fish_color_autosuggestion 606079
+      set -g fish_color_option f3be7c
+      set -g fish_color_valid_path 7fa563
+      set -g fish_color_cwd 6e94b2
+      set -g fish_color_cwd_root d8647e
+      set -g fish_color_user b4d4cf
+      set -g fish_color_host bb9dbd
+      set -g fish_color_host_remote f3be7c
+      set -g fish_color_status d8647e
+      set -g fish_color_selection cdcdcd --background=252530
+      set -g fish_color_search_match 6e94b2 --background=252530
+
+      set -g fish_pager_color_completion cdcdcd
+      set -g fish_pager_color_description 878787
+      set -g fish_pager_color_prefix 6e94b2 --bold
+      set -g fish_pager_color_progress 606079
+      set -g fish_pager_color_selected_background --background=252530
+      set -g fish_pager_color_selected_completion cdcdcd
+      set -g fish_pager_color_selected_description 878787
+      set -g fish_pager_color_selected_prefix f3be7c --bold
+
       set -g pure_color_primary  6e94b2
       set -g pure_color_info     bb9dbd
       set -g pure_color_mute     606079

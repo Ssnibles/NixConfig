@@ -9,7 +9,7 @@ fzf.setup({
 		preview = { layout = "vertical", vertical = "right:55%" },
 	},
 	files = { cmd = "fd --type f --hidden --exclude .git" },
-	grep = { rg_opts = "--hidden --glob '!.git' --smart-case" },
+	grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },
 })
 
 local map = vim.keymap.set

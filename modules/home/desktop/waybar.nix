@@ -88,6 +88,8 @@
           ];
         };
         on-click = "pavucontrol";
+        on-scroll-up = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 2%+";
+        on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-";
         scroll-step = 2;
       };
 

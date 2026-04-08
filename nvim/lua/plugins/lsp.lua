@@ -13,16 +13,24 @@ end
 local function detect_flake_root()
 	local from_env = vim.env.NIX_CONFIG_FLAKE
 	if from_env and from_env ~= "" then
-		return from_env:gsub("/flake.nix$", "")
+		local root = from_env:gsub("/flake.nix$", "")
+		if vim.uv.fs_stat(root .. "/flake.nix") then
+			return root
+		end
 	end
 
-	local cwd = vim.uv.cwd()
+	local cwd = vim.uv.cwd() or vim.fn.getcwd()
 	local flake = vim.fs.find("flake.nix", { path = cwd, upward = true })[1]
 	if flake then
 		return vim.fs.dirname(flake)
 	end
 
-	return (vim.env.HOME or "~") .. "/NixConfig"
+	local fallback = (vim.env.HOME or "~") .. "/NixConfig"
+	if vim.uv.fs_stat(fallback .. "/flake.nix") then
+		return fallback
+	end
+
+	return nil
 end
 
 -- Fidget: LSP progress indicator
@@ -84,7 +92,6 @@ lsp.config("*", {
 
 -- Hover with rounded borders
 lsp.handlers["textDocument/hover"] = lsp.with(lsp.handlers.hover, { border = "rounded" })
-lsp.handlers["textDocument/signatureHelp"] = function() end -- Handled by blink.cmp
 
 -- Server configs
 lsp.config("nixd", {
@@ -93,7 +100,7 @@ lsp.config("nixd", {
 		nixd = {
 			nixpkgs = { expr = "import <nixpkgs> {}" },
 			formatting = { command = { "nixfmt" } },
-			options = {
+			options = flake_root and {
 				nixos = {
 					expr = ('(builtins.getFlake "%s").nixosConfigurations.%s.options'):format(flake_root, nix_host),
 				},
@@ -103,7 +110,7 @@ lsp.config("nixd", {
 						nix_host
 					),
 				},
-			},
+			} or {},
 		},
 	},
 })

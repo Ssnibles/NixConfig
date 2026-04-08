@@ -59,7 +59,14 @@ require("conform").setup({
 		java = { "google-java-format" },
 		cs = { "csharpier" },
 	},
-	format_on_save = { timeout_ms = 500, lsp_format = "fallback" },
+	format_on_save = function(bufnr)
+		local disabled = { c = true, cpp = true }
+		local ft = vim.bo[bufnr].filetype
+		if disabled[ft] then
+			return nil
+		end
+		return { timeout_ms = 1000, lsp_format = "fallback" }
+	end,
 })
 
 vim.keymap.set({ "n", "v" }, "<leader>cf", function()

@@ -38,7 +38,7 @@
       exec-once = [
         # services handled by systemd (see services/wayland.nix):
         # awww-daemon, vicinae server
-        "sleep 2 && awww img ~/NixConfig/wallpapers/517020ldsdl.jpg"
+        "sleep 2 && awww img ~/NixConfig/wallpapers/stephanie-moody-nA3iwVnI8Mo-unsplash.jpg"
         "waybar"
         "nm-applet --indicator"
         "swaync"
@@ -128,7 +128,7 @@
       ];
 
       bindel = [
-        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
+        ", XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+"
         ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
         ", XF86AudioMute,        exec, wpctl set-mute   @DEFAULT_AUDIO_SINK@   toggle"
         ", XF86AudioMicMute,     exec, wpctl set-mute   @DEFAULT_AUDIO_SOURCE@ toggle"

@@ -257,6 +257,7 @@ NixConfig/
 |-----|------|--------|
 | `Ctrl-d` / `Ctrl-u` | Normal | Scroll down/up (centered) |
 | `n` / `N` | Normal | Next/prev search match (centered) |
+| `Space Space` | Normal/Visual/Operator | Cross-window jump |
 | `]d` / `[d` | Normal | Next/prev diagnostic |
 | `]e` / `[e` | Normal | Next/prev error |
 
