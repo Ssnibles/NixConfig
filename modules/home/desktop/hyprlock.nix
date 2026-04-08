@@ -4,6 +4,22 @@
 # Lock screen for Hyprland with vague theme styling.
 # =============================================================================
 { pkgs, ... }:
+let
+  # Vague palette (kept in sync with waybar/swaync/tmux/fish).
+  bg = "141415";
+  bgRaised = "1c1c24";
+  border = "252530";
+  fg = "cdcdcd";
+  fgDim = "606079";
+  accent = "6e94b2";
+  purple = "bb9dbd";
+  yellow = "f3be7c";
+  red = "d8647e";
+
+  rgb = c: "rgb(${c})";
+  # Hyprlock/Hyprlang requires escaping '#' as '##' inside markup strings.
+  span = c: text: "<span foreground='##${c}'>${text}</span>";
+in
 {
   programs.hyprlock = {
     enable = true;
@@ -39,19 +55,19 @@
           dots_spacing = 0.35;
           dots_center = true;
           dots_rounding = -1;
-          outer_color = "rgb(252530)";
-          inner_color = "rgb(141415)";
-          font_color = "rgb(cdcdcd)";
+          outer_color = rgb border;
+          inner_color = rgb bg;
+          font_color = rgb fg;
           fade_on_empty = false;
           fade_timeout = 1000;
-          placeholder_text = "<span foreground='##606079'>Enter password...</span>";
+          placeholder_text = span fgDim "Enter password...";
           hide_input = false;
           rounding = 8;
-          check_color = "rgb(6e94b2)";
-          fail_color = "rgb(d8647e)";
-          fail_text = "<span foreground='##d8647e'>Authentication failed</span>";
+          check_color = rgb accent;
+          fail_color = rgb red;
+          fail_text = span red "Authentication failed";
           fail_transition = 300;
-          capslock_color = "rgb(f3be7c)";
+          capslock_color = rgb yellow;
           numlock_color = -1;
           bothlock_color = -1;
           invert_numlock = false;
@@ -65,8 +81,8 @@
       label = [
         {
           monitor = "";
-          text = "cmd[update:1000] echo \"<span foreground='##6e94b2'>$(date +'%H:%M')</span>\"";
-          color = "rgb(cdcdcd)";
+          text = "cmd[update:1000] echo \"${span accent "$(date +'%H:%M')"}\"";
+          color = rgb fg;
           font_size = 72;
           font_family = "JetBrains Mono";
           position = "0, 200";
@@ -75,8 +91,8 @@
         }
         {
           monitor = "";
-          text = "cmd[update:1000] echo \"<span foreground='##bb9dbd'>$(date +'%A, %d %B')</span>\"";
-          color = "rgb(cdcdcd)";
+          text = "cmd[update:1000] echo \"${span purple "$(date +'%A, %d %B')"}\"";
+          color = rgb fg;
           font_size = 20;
           font_family = "JetBrains Mono";
           position = "0, 120";
@@ -85,8 +101,8 @@
         }
         {
           monitor = "";
-          text = "<span foreground='##606079'>$USER</span>";
-          color = "rgb(cdcdcd)";
+          text = span fgDim "$USER";
+          color = rgb fg;
           font_size = 14;
           font_family = "JetBrains Mono";
           position = "0, -200";
