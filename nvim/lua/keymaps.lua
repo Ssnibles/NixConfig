@@ -4,6 +4,7 @@ local map = vim.keymap.set
 -- General
 map("n", "<Esc>", "<cmd>nohlsearch<CR>")
 map("i", "jk", "<Esc>")
+map("i", "<C-BS>", "<C-w>", { desc = "Delete previous word" })
 map("n", "U", "<C-r>", { desc = "Redo" })
 
 -- Better movement

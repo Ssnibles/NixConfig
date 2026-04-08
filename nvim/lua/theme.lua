@@ -28,31 +28,42 @@ function M.setup()
 		vim.api.nvim_set_hl(0, name, opts)
 	end
 
-	-- Floats and popups
-	hl("NormalFloat", { bg = c.bg })
-	hl("FloatBorder", { fg = c.border, bg = c.bg })
+	-- Define the Master Border Style
+	hl("GlobalBorder", { fg = c.border, bg = c.bg })
+
+	-- Link UI and Plugin Borders to the Master Style
+	hl("FloatBorder", { link = "GlobalBorder" })
+	hl("LspInfoBorder", { link = "GlobalBorder" })
+	hl("FzfLuaBorder", { link = "GlobalBorder" })
+	hl("FzfLuaPreviewBorder", { link = "GlobalBorder" })
+	hl("FzfLuaPromptBorder", { link = "GlobalBorder" })
+	hl("NoiceCmdlinePopupBorder", { link = "GlobalBorder" })
+	hl("NoiceConfirmBorder", { link = "GlobalBorder" })
+	hl("NoicePopupBorder", { link = "GlobalBorder" })
+	hl("NoicePopupmenuBorder", { link = "GlobalBorder" })
+	hl("MiniClueBorder", { link = "GlobalBorder" })
+	hl("BlinkCmpMenuBorder", { link = "GlobalBorder" })
+	hl("BlinkCmpDocBorder", { link = "GlobalBorder" })
+	hl("BlinkCmpSignatureHelpBorder", { link = "GlobalBorder" })
+
+	-- WinSeparator
+	hl("WinSeparator", { fg = c.border })
+
+	-- Floats and popups (Non-border highlights)
+	hl("NormalFloat", { fg = c.border, bg = c.bg })
 	hl("FloatTitle", { fg = c.blue, bg = c.bg, bold = true })
-	hl("LspInfoBorder", { fg = c.border, bg = c.bg })
 	hl("LspInfoTitle", { fg = c.blue, bg = c.bg, bold = true })
 	hl("FzfLuaNormal", { bg = c.bg })
-	hl("FzfLuaBorder", { fg = c.border, bg = c.bg })
 	hl("FzfLuaPreviewNormal", { bg = c.bg })
-	hl("FzfLuaPreviewBorder", { fg = c.border, bg = c.bg })
 	hl("FzfLuaPromptNormal", { bg = c.bg })
-	hl("FzfLuaPromptBorder", { fg = c.border, bg = c.bg })
 	hl("NoiceCmdlinePopup", { bg = c.bg })
-	hl("NoiceCmdlinePopupBorder", { fg = c.border, bg = c.bg })
 	hl("NoiceCmdlinePopupTitle", { fg = c.blue, bg = c.bg, bold = true })
 	hl("NoiceConfirm", { bg = c.bg })
-	hl("NoiceConfirmBorder", { fg = c.border, bg = c.bg })
 	hl("NoicePopup", { bg = c.bg })
-	hl("NoicePopupBorder", { fg = c.border, bg = c.bg })
 	hl("NoicePopupmenu", { bg = c.bg })
-	hl("NoicePopupmenuBorder", { fg = c.border, bg = c.bg })
 	hl("NoicePopupmenuSelected", { bg = c.gutter, bold = true })
 	hl("NoicePopupmenuMatch", { fg = c.blue, bold = true })
 	hl("MiniClueNormal", { bg = c.bg })
-	hl("MiniClueBorder", { fg = c.border, bg = c.bg })
 	hl("MiniClueTitle", { fg = c.blue, bg = c.bg, bold = true })
 	hl("MiniClueDescSingle", { fg = c.fg, bg = c.bg })
 	hl("MiniClueDescGroup", { fg = c.comment, bg = c.bg })
@@ -61,7 +72,6 @@ function M.setup()
 	hl("MiniClueSeparator", { fg = c.border, bg = c.bg })
 
 	-- Window chrome
-	hl("WinSeparator", { fg = c.border })
 	hl("StatusLine", { fg = c.fg, bg = c.bg })
 	hl("StatusLineNC", { fg = c.comment, bg = c.bg })
 
@@ -85,11 +95,9 @@ function M.setup()
 
 	-- Completion (blink.cmp)
 	hl("BlinkCmpMenu", { bg = c.bg })
-	hl("BlinkCmpMenuBorder", { fg = c.border, bg = c.bg })
 	hl("BlinkCmpMenuSelection", { bg = c.gutter, bold = true })
 	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
 	hl("BlinkCmpDoc", { bg = c.bg })
-	hl("BlinkCmpDocBorder", { fg = c.border, bg = c.bg })
 
 	-- Treesitter context
 	hl("TreesitterContext", { bg = c.bg })
