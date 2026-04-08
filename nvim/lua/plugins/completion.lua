@@ -9,7 +9,7 @@ require("luasnip.loaders.from_vscode").lazy_load()
 
 -- Blink.cmp: fast completion
 require("blink.cmp").setup({
-	signature = { enabled = true, window = { border = "rounded", show_documentation = false } },
+	signature = { enabled = true, window = { border = "rounded", show_documentation = true } },
 	keymap = {
 		preset = "none",
 		["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
