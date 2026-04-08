@@ -146,6 +146,7 @@ in
       statuscol-nvim # Custom status column (signs, line numbers)
       neoscroll-nvim # Smooth scrolling
       vague-nvim # Colorscheme (Vague theme)
+      nui-nvim # UI dependency for noice.nvim
       noice-nvim # Better UI for messages, cmdline, popups
 
       # ── Git Integration ──────────────────────────────────────────────────

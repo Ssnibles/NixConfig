@@ -200,7 +200,7 @@ NixConfig/
 │   └── lua/
 │       ├── options.lua          # Editor settings
 │       ├── keymaps.lua          # Key bindings
-│       ├── autocommands.lua     # Event-based logic
+│       ├── autocmds.lua         # Event-based logic
 │       ├── lib/                 # Helper functions (health, highlights)
 │       └── plugins/             # Plugin configurations
 │           ├── lsp.lua          # LSP client setup
@@ -291,6 +291,7 @@ NixConfig/
 | Key | Mode | Action |
 |-----|------|--------|
 | `<leader>gg` | Normal | Neogit status |
+| `<leader>gn` | Normal | Neogit |
 | `<leader>gb` | Normal | Blame line |
 | `<leader>gd` | Normal | Diff this |
 

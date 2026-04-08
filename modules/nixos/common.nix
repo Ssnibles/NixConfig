@@ -156,7 +156,7 @@
   zramSwap = {
     enable = true;
     algorithm = "zstd"; # Fast compression, good ratio
-    priority = 100;     # Prefer zram over disk swap
+    priority = 100; # Prefer zram over disk swap
   };
 
   # ═══════════════════════════════════════════════════════════════════════════
@@ -187,8 +187,8 @@
 
   services.pipewire = {
     enable = true;
-    alsa.enable = true;   # ALSA compatibility layer
-    pulse.enable = true;  # PulseAudio compatibility layer
+    alsa.enable = true; # ALSA compatibility layer
+    pulse.enable = true; # PulseAudio compatibility layer
     wireplumber.enable = true; # Session manager (replaces pipewire-media-session)
 
     # Low-latency configuration for professional audio work and gaming
@@ -196,8 +196,8 @@
     # Balance between latency and CPU usage (512 = lower latency, higher CPU)
     extraConfig.pipewire."92-low-latency" = {
       context.properties = {
-        default.clock.rate = 48000;    # CD-quality sample rate
-        default.clock.quantum = 1024;  # Buffer size (~21ms at 48kHz)
+        default.clock.rate = 48000; # CD-quality sample rate
+        default.clock.quantum = 1024; # Buffer size (~21ms at 48kHz)
       };
     };
   };
@@ -212,7 +212,7 @@
   # Enables automatic printer and network device detection
   services.avahi = {
     enable = true;
-    nssmdns4 = true;     # NSS module for .local domain resolution
+    nssmdns4 = true; # NSS module for .local domain resolution
     openFirewall = true; # Allow mDNS traffic (UDP 5353)
   };
 
@@ -300,22 +300,22 @@
     git
 
     # System libraries (required by some applications)
-    glib           # GTK+ framework core library
+    glib # GTK+ framework core library
     glib-networking # Network extensions for GLib applications
-    dconf          # GNOME configuration database (used by many apps)
+    dconf # GNOME configuration database (used by many apps)
 
     # Text editors (fallback if Neovim fails to load)
     vim
 
     # System monitoring
-    htop           # Interactive process viewer
-    btop           # Modern resource monitor with graphs
+    htop # Interactive process viewer
+    btop # Modern resource monitor with graphs
 
     # System utilities
-    rsync          # File synchronization
-    nvme-cli       # NVMe drive management and monitoring
-    smartmontools  # HDD/SSD health monitoring (SMART)
-    iwd            # WiFi daemon (NetworkManager backend)
+    rsync # File synchronization
+    nvme-cli # NVMe drive management and monitoring
+    smartmontools # HDD/SSD health monitoring (SMART)
+    iwd # WiFi daemon (NetworkManager backend)
   ];
 
   # ═══════════════════════════════════════════════════════════════════════════
@@ -326,7 +326,7 @@
   i18n = {
     defaultLocale = "en_NZ.UTF-8"; # English (New Zealand) locale
     extraLocaleSettings = {
-      LC_TIME = "en_NZ.UTF-8";        # Time/date formats (DD/MM/YYYY)
+      LC_TIME = "en_NZ.UTF-8"; # Time/date formats (DD/MM/YYYY)
       LC_MEASUREMENT = "en_NZ.UTF-8"; # Metric system
     };
   };
@@ -342,7 +342,7 @@
       # Enable modern Nix features (required for flakes)
       experimental-features = [
         "nix-command" # New CLI interface (nix build, nix run, etc.)
-        "flakes"      # Reproducible package management with lock files
+        "flakes" # Reproducible package management with lock files
       ];
 
       # Store optimization: Hard-link identical files to save disk space
@@ -358,7 +358,7 @@
 
       # Binary caches: Download pre-built packages instead of building locally
       substituters = [
-        "https://cache.nixos.org"         # Official NixOS cache
+        "https://cache.nixos.org" # Official NixOS cache
         "https://nix-community.cachix.org" # Community packages (Hyprland, etc.)
       ];
 

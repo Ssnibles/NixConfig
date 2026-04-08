@@ -1,35 +1,29 @@
--- =============================================================================
--- fzf-lua Configuration
--- =============================================================================
-local loader = require("lib.loader")
+-- fzf-lua: fuzzy finder
 
-loader.setup("fzf-lua", function(fzf)
-	fzf.setup({
-		winopts = {
-			height = 0.92,
-			width = 0.92,
-			border = "rounded",
-			preview = { layout = "vertical", vertical = "right:55%", border = "none" },
-		},
-		files = { cmd = "fd --type f --hidden --exclude .git" },
-		grep = { rg_opts = "--color=never --hidden --glob '!{.git}' --no-heading --line-number --column --smart-case" },
-	})
-	local map = function(lhs, fn, desc)
-		vim.keymap.set("n", lhs, fn, { desc = desc })
-	end
-	map("<leader>ff", fzf.files, "Find files")
-	map("<leader>fr", fzf.oldfiles, "Recent files")
-	map("<leader>fb", fzf.buffers, "Find buffers")
-	map("<leader>fg", fzf.live_grep, "Live grep")
-	map("<leader>fw", fzf.grep_cword, "Grep word")
-	map("<leader>f/", fzf.blines, "Search buffer")
-	map("<leader>fs", fzf.lsp_document_symbols, "Document symbols")
-	map("<leader>fS", fzf.lsp_workspace_symbols, "Workspace symbols")
-	map("<leader>fd", fzf.diagnostics_document, "Buffer diagnostics")
-	map("<leader>fD", fzf.diagnostics_workspace, "Workspace diagnostics")
-	map("<leader>gc", fzf.git_commits, "Git commits")
-	map("<leader>gt", fzf.git_status, "Git status")
-	map("<leader>fh", fzf.help_tags, "Help tags")
-	map("<leader>fk", fzf.keymaps, "Keymaps")
-	map("<leader>f.", fzf.resume, "Resume")
-end)
+local fzf = require("fzf-lua")
+fzf.setup({
+	winopts = {
+		height = 0.9,
+		width = 0.9,
+		border = "rounded",
+		preview = { layout = "vertical", vertical = "right:55%" },
+	},
+	files = { cmd = "fd --type f --hidden --exclude .git" },
+	grep = { rg_opts = "--hidden --glob '!.git' --smart-case" },
+})
+
+local map = vim.keymap.set
+map("n", "<leader>ff", fzf.files, { desc = "Find files" })
+map("n", "<leader>fr", fzf.oldfiles, { desc = "Recent files" })
+map("n", "<leader>fb", fzf.buffers, { desc = "Buffers" })
+map("n", "<leader>fg", fzf.live_grep, { desc = "Live grep" })
+map("n", "<leader>fw", fzf.grep_cword, { desc = "Grep word" })
+map("n", "<leader>f/", fzf.blines, { desc = "Search buffer" })
+map("n", "<leader>fs", fzf.lsp_document_symbols, { desc = "Document symbols" })
+map("n", "<leader>fS", fzf.lsp_workspace_symbols, { desc = "Workspace symbols" })
+map("n", "<leader>fd", fzf.diagnostics_document, { desc = "Diagnostics" })
+map("n", "<leader>fh", fzf.help_tags, { desc = "Help" })
+map("n", "<leader>fk", fzf.keymaps, { desc = "Keymaps" })
+map("n", "<leader>f.", fzf.resume, { desc = "Resume" })
+map("n", "<leader>gc", fzf.git_commits, { desc = "Git commits" })
+map("n", "<leader>gt", fzf.git_status, { desc = "Git status" })

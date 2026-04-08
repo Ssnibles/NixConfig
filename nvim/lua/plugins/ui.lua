@@ -1,103 +1,57 @@
--- =============================================================================
--- UI Components & Enhancements
--- =============================================================================
-local loader = require("lib.loader")
+-- UI components: statusline, indentation, scrolling, notifications
 
-loader.setup("gitsigns", {
-	signs = {
-		add = { text = "▎" },
-		change = { text = "▎" },
-		delete = { text = " " },
-		topdelete = { text = " " },
-		changedelete = { text = "▎" },
+-- Lualine: statusline
+local lualine_theme = {
+	normal = {
+		a = { fg = "#6e94b2", bg = "#141415", gui = "bold" },
+		b = { fg = "#cdcdcd", bg = "#141415" },
+		c = { fg = "#606079", bg = "#141415" },
 	},
-	preview_config = { border = "rounded" },
-	on_attach = function(bufnr)
-		local gs = package.loaded.gitsigns
-		local function map(mode, l, r, desc)
-			vim.keymap.set(mode, l, r, { buffer = bufnr, desc = desc })
-		end
-		map("n", "]g", gs.next_hunk, "Next hunk")
-		map("n", "[g", gs.prev_hunk, "Prev hunk")
-		map("n", "<leader>gg", gs.preview_hunk, "Preview hunk")
-	end,
-})
+	insert = { a = { fg = "#7fa563", bg = "#141415", gui = "bold" } },
+	visual = { a = { fg = "#bb9dbd", bg = "#141415", gui = "bold" } },
+	inactive = { a = { fg = "#252530", bg = "#141415" } },
+}
 
-loader.setup("oil", {
-	columns = {
-		"icon",
-		"permissions",
-		"size",
-		"mtime",
+require("lualine").setup({
+	options = {
+		theme = lualine_theme,
+		component_separators = "",
+		section_separators = "",
+		globalstatus = true,
 	},
-	buf_options = {
-		buflisted = false,
-		bufhidden = "hide",
-	},
-	win_options = {
-		wrap = false,
-		signcolumn = "no",
-		cursorcolumn = false,
-		foldcolumn = "0",
-		spell = false,
-		list = false,
-		conceallevel = 3,
-		concealcursor = "nvic",
-	},
-	delete_to_trash = true,
-	skip_confirm_for_simple_edits = false,
-	prompt_save_on_select_new_entry = true,
-	cleanup_delay_ms = 2000,
-	float = {
-		padding = 2,
-		max_width = 90,
-		max_height = 30,
-		border = "rounded",
-		win_options = {
-			winblend = 0,
-		},
-	},
-	preview = {
-		border = "rounded",
-	},
-	keymaps = {
-		["g?"] = "actions.show_help",
-		["<CR>"] = "actions.select",
-		["<C-v>"] = { "actions.select", opts = { vertical = true }, desc = "Open in vertical split" },
-		["<C-x>"] = { "actions.select", opts = { horizontal = true }, desc = "Open in horizontal split" },
-		["<C-t>"] = { "actions.select", opts = { tab = true }, desc = "Open in new tab" },
-		["<C-p>"] = "actions.preview",
-		["<C-c>"] = "actions.close",
-		["<C-r>"] = "actions.refresh",
-		["-"] = "actions.parent",
-		["_"] = "actions.open_cwd",
-		["`"] = "actions.cd",
-		["~"] = { "actions.cd", opts = { scope = "tab" }, desc = "CD to current dir (tab)" },
-		["gs"] = "actions.change_sort",
-		["gx"] = "actions.open_external",
-		["g."] = "actions.toggle_hidden",
-		["g\\"] = "actions.toggle_trash",
-	},
-	view_options = {
-		show_hidden = true,
-		is_hidden_file = function(name, bufnr)
-			return vim.startswith(name, ".")
-		end,
-		is_always_hidden = function(name, bufnr)
-			return false
-		end,
+	sections = {
+		lualine_a = { "mode" },
+		lualine_b = { "branch", "diff", "diagnostics" },
+		lualine_c = { { "filename", path = 1 } },
+		lualine_x = { "filetype" },
+		lualine_y = { "progress" },
+		lualine_z = { "location" },
 	},
 })
 
-loader.setup("nvim-autopairs", { check_ts = true, fast_wrap = { map = "<M-e>" } })
-
-loader.setup("markview", {
-	modes = { "n", "no" },
-	hybrid_modes = { "n", "no" },
-	preview = { border = "rounded" },
+-- Indent-blankline: indent guides
+require("ibl").setup({
+	indent = { char = "│" },
+	scope = { enabled = true, show_start = false, show_end = false },
+	exclude = { filetypes = { "help", "dashboard", "lazy", "mason", "notify", "oil" } },
 })
 
-loader.setup("noice", {
+-- Statuscol: custom status column
+local builtin = require("statuscol.builtin")
+require("statuscol").setup({
+	relculright = true,
+	segments = {
+		{ text = { builtin.foldfunc }, click = "v:lua.ScFa" },
+		{ text = { "%s" }, click = "v:lua.ScSa" },
+		{ text = { builtin.lnumfunc, " " }, click = "v:lua.ScLa" },
+	},
+})
+
+-- Neoscroll: smooth scrolling
+require("neoscroll").setup({ easing = "quadratic", hide_cursor = true })
+
+-- Noice: enhanced UI
+require("noice").setup({
 	lsp = {
 		progress = { enabled = false },
 		override = {
@@ -106,26 +60,22 @@ loader.setup("noice", {
 		},
 	},
 	presets = { bottom_search = true, inc_rename = true },
-	notify = { enabled = false, view = "mini" },
+	notify = { enabled = false },
 })
 
-loader.setup("tiny-inline-diagnostic", function(tiny)
-	tiny.setup({
-		preset = "modern",
-		options = {
-			use_icons_from_diagnostic = true,
-			show_source = { enabled = false, if_many = true },
-			show_code = false,
-			show_related = { enabled = true, max_count = 2 },
-			add_messages = {
-				messages = true,
-				display_count = false,
-				show_multiple_glyphs = true,
-			},
-			multilines = { enabled = false, always_show = false },
-			overflow = { mode = "wrap", padding = 1 },
-			throttle = 20,
-			enable_on_insert = false,
-		},
-	})
-end)
+-- Tiny inline diagnostics
+require("tiny-inline-diagnostic").setup({
+	preset = "modern",
+	options = {
+		show_source = { enabled = false, if_many = true },
+		multilines = { enabled = true, always_show = true },
+		throttle = 20,
+		enable_on_insert = false,
+	},
+})
+
+-- Markview: markdown preview
+require("markview").setup({
+	modes = { "n", "no" },
+	hybrid_modes = { "n", "no" },
+})

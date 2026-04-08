@@ -1,52 +1,34 @@
--- =============================================================================
--- Treesitter Configuration
--- =============================================================================
--- Syntax highlighting, indentation, and text objects powered by tree-sitter.
--- =============================================================================
-local loader = require("lib.loader")
+-- Treesitter: syntax highlighting and text objects
 
-loader.setup("nvim-treesitter.configs", function(ts)
-	ts.setup({
-		highlight = { enable = true },
-		indent = { enable = false },
-		textobjects = {
-			select = {
-				enable = true,
-				lookahead = true,
-				keymaps = {
-					["af"] = "@function.outer",
-					["if"] = "@function.inner",
-					["ac"] = "@class.outer",
-					["ic"] = "@class.inner",
-					["aa"] = "@parameter.outer",
-					["ia"] = "@parameter.inner",
-					["ab"] = "@block.outer",
-					["ib"] = "@block.inner",
-				},
-			},
-			move = {
-				enable = true,
-				set_jumps = true,
-				goto_next_start = {
-					["]f"] = "@function.outer",
-					["]c"] = "@class.outer",
-				},
-				goto_previous_start = {
-					["[f"] = "@function.outer",
-					["[c"] = "@class.outer",
-				},
+require("nvim-treesitter.configs").setup({
+	highlight = { enable = true },
+	indent = { enable = true },
+	textobjects = {
+		select = {
+			enable = true,
+			lookahead = true,
+			keymaps = {
+				["af"] = "@function.outer",
+				["if"] = "@function.inner",
+				["ac"] = "@class.outer",
+				["ic"] = "@class.inner",
+				["aa"] = "@parameter.outer",
+				["ia"] = "@parameter.inner",
 			},
 		},
-	})
-end)
+		move = {
+			enable = true,
+			set_jumps = true,
+			goto_next_start = { ["]f"] = "@function.outer", ["]c"] = "@class.outer" },
+			goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer" },
+		},
+	},
+})
 
--- treesitter-context (sticky headers)
-loader.setup("treesitter-context", {
+-- Treesitter context: sticky headers
+require("treesitter-context").setup({
 	enable = true,
 	max_lines = 4,
 	min_window_height = 20,
-	mode = "cursor",
-	separator = "─", -- Subtle separator line
-	zindex = 20,
-	multiline_threshold = 1,
+	separator = "─",
 })

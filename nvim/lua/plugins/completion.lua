@@ -1,24 +1,15 @@
--- =============================================================================
--- Completion & AI Intelligence
--- =============================================================================
--- Fast, modern completion with blink.cmp and GitHub Copilot integration
--- =============================================================================
-local loader = require("lib.loader")
+-- Completion: blink.cmp, copilot, snippets
 
-loader.setup("luasnip", function(luasnip)
-	luasnip.setup({
-		history = true,
-		delete_check_events = "TextChanged",
-		updateevents = "TextChanged,TextChangedI",
-	})
-	require("luasnip.loaders.from_vscode").lazy_load()
-end)
+-- Snippets
+require("luasnip").setup({
+	history = true,
+	delete_check_events = "TextChanged",
+})
+require("luasnip.loaders.from_vscode").lazy_load()
 
-loader.setup("blink.cmp", {
-	signature = {
-		enabled = true,
-		window = { border = "rounded" },
-	},
+-- Blink.cmp: fast completion
+require("blink.cmp").setup({
+	signature = { enabled = true, window = { border = "rounded" } },
 	keymap = {
 		preset = "none",
 		["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
@@ -26,41 +17,25 @@ loader.setup("blink.cmp", {
 		["<CR>"] = { "accept", "fallback" },
 		["<Tab>"] = { "snippet_forward", "accept", "select_next", "fallback" },
 		["<S-Tab>"] = { "snippet_backward", "select_prev", "fallback" },
-		["<Up>"] = { "select_prev", "fallback" },
-		["<Down>"] = { "select_next", "fallback" },
 		["<C-p>"] = { "select_prev", "fallback" },
 		["<C-n>"] = { "select_next", "fallback" },
 		["<C-b>"] = { "scroll_documentation_up", "fallback" },
 		["<C-f>"] = { "scroll_documentation_down", "fallback" },
 	},
-	sources = {
-		default = { "lsp", "path", "snippets", "buffer" },
-	},
+	sources = { default = { "lsp", "path", "snippets", "buffer" } },
 	completion = {
 		menu = {
 			auto_show = true,
 			border = "rounded",
-			winhighlight = "Normal:BlinkCmpMenu,FloatBorder:BlinkCmpMenuBorder,CursorLine:BlinkCmpMenuSelection,Search:None",
 			scrollbar = true,
 			draw = {
 				columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "kind" } },
-				components = {
-					kind_icon = {
-						text = function(ctx)
-							return ctx.kind_icon .. " "
-						end,
-						highlight = "BlinkCmpKind",
-					},
-				},
 			},
 		},
 		documentation = {
 			auto_show = true,
 			auto_show_delay_ms = 200,
-			window = {
-				border = "rounded",
-				winhighlight = "Normal:BlinkCmpDoc,FloatBorder:BlinkCmpDocBorder,CursorLine:BlinkCmpDocCursorLine,Search:None",
-			},
+			window = { border = "rounded" },
 		},
 		ghost_text = { enabled = false },
 	},
@@ -68,19 +43,15 @@ loader.setup("blink.cmp", {
 		keymap = {
 			["<Tab>"] = { "accept", "fallback" },
 			["<S-Tab>"] = { "select_prev", "fallback" },
-			["<Up>"] = { "select_prev", "fallback" },
-			["<Down>"] = { "select_next", "fallback" },
 			["<C-n>"] = { "select_next", "fallback" },
 			["<C-p>"] = { "select_prev", "fallback" },
 		},
-		completion = {
-			menu = { auto_show = true },
-			ghost_text = { enabled = false },
-		},
+		completion = { menu = { auto_show = true }, ghost_text = { enabled = false } },
 	},
 })
 
-loader.setup("copilot", {
+-- Copilot
+require("copilot").setup({
 	suggestion = {
 		enabled = true,
 		auto_trigger = true,

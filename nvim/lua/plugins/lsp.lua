@@ -1,161 +1,104 @@
--- =============================================================================
--- LSP Configuration (Neovim 0.10 & 0.11+ Support)
--- =============================================================================
--- Language Server Protocol client configuration for multiple programming languages.
--- Supports both Neovim 0.10 (legacy lspconfig) and 0.11+ (native LSP config).
---
--- Features:
---   • Auto-completion integration via blink.cmp
---   • Inlay hints (type annotations, parameter names) - enabled by default
---   • Consistent keybindings across all language servers
---   • Rounded borders for hover windows
---   • LSP progress notifications via Fidget
---   • Version-agnostic server setup (0.10 and 0.11+)
---
--- Language Servers:
---   • Nix (nixd), Lua (lua-language-server)
---   • Python (pyright), TypeScript/JavaScript (vtsls)
---   • Kotlin (kotlin-language-server), Java (jdt-language-server)
---   • C# (roslyn-ls via roslyn.nvim), Markdown (marksman)
---
--- Note: LSP servers are installed via Nix (modules/home/neovim.nix)
--- =============================================================================
-
-local loader = require("lib.loader")
+-- LSP configuration
 local lsp = vim.lsp
 
--- ── Fidget (LSP Progress Notifications) ──────────────────────────────────────
--- Shows LSP server startup and indexing progress in a non-intrusive way
-loader.setup("fidget", {
-	progress = {
-		display = {
-			done_icon = "[OK]",
-			progress_icon = { pattern = "dots", period = 1 },
-			render_limit = 5,
-			done_ttl = 2,
-		},
-	},
-	notification = {
-		window = {
-			winblend = 0,
-			border = "rounded",
-		},
-	},
+local function detect_nix_host()
+	local from_env = vim.env.NIX_CONFIG_HOST
+	if from_env and from_env ~= "" then
+		return from_env
+	end
+	local hostname = vim.loop.os_gethostname() or ""
+	return hostname ~= "" and hostname or "desktop"
+end
+
+local function detect_flake_root()
+	local from_env = vim.env.NIX_CONFIG_FLAKE
+	if from_env and from_env ~= "" then
+		return from_env:gsub("/flake.nix$", "")
+	end
+
+	local cwd = vim.uv.cwd()
+	local flake = vim.fs.find("flake.nix", { path = cwd, upward = true })[1]
+	if flake then
+		return vim.fs.dirname(flake)
+	end
+
+	return (vim.env.HOME or "~") .. "/NixConfig"
+end
+
+-- Fidget: LSP progress indicator
+require("fidget").setup({
+	progress = { display = { done_icon = "✓", done_ttl = 2 } },
+	notification = { window = { winblend = 0, border = "rounded" } },
 })
 
--- ── Tiny Code Action (Lightweight UI) ────────────────────────────────────────
-loader.setup("tiny-code-action", {
+-- Tiny code action UI
+require("tiny-code-action").setup({
 	backend = "vim",
 	picker = "fzf-lua",
-	notify = { enabled = true, on_empty = true },
 })
 
--- ── Capabilities ─────────────────────────────────────────────────────────────
--- LSP capabilities enhanced with completion support from blink.cmp
--- Falls back to default Neovim capabilities if blink.cmp is not available
+-- Capabilities (enhanced by blink.cmp)
 local capabilities = (function()
 	local ok, blink = pcall(require, "blink.cmp")
 	return ok and blink.get_lsp_capabilities() or lsp.protocol.make_client_capabilities()
 end)()
-capabilities.textDocument = capabilities.textDocument or {}
-capabilities.textDocument.foldingRange = {
-	dynamicRegistration = false,
-	lineFoldingOnly = true,
-}
+capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
 
-local function with_snippet_support(value)
-	local caps = vim.deepcopy(capabilities)
-	caps.textDocument = caps.textDocument or {}
-	caps.textDocument.completion = caps.textDocument.completion or {}
-	caps.textDocument.completion.completionItem = caps.textDocument.completion.completionItem or {}
-	caps.textDocument.completion.completionItem.snippetSupport = value
-	return caps
-end
+-- Flake configuration for nixd
+local flake_root = detect_flake_root()
+local nix_host = detect_nix_host()
 
-local function resolve_flake_root(path)
-	local fallback = vim.env.HOME .. "/NixConfig"
-	if not path or path == "" then
-		return fallback
-	end
-	if path:sub(-10) == "/flake.nix" then
-		return path:sub(1, -11)
-	end
-	return path
-end
-
-local flake_root = resolve_flake_root(vim.env.NIX_CONFIG_FLAKE)
-local flake_file = flake_root .. "/flake.nix"
-local nix_host = vim.env.NIX_CONFIG_HOST or "laptop"
-
--- ── Global LSP Configuration ─────────────────────────────────────────────────
--- Neovim 0.11+ native LSP configuration (applies to all servers)
+-- Global LSP config (applies to all servers)
 lsp.config("*", {
 	capabilities = capabilities,
 	on_attach = function(client, bufnr)
-		-- Helper to create keymap options with description
-		local opts = function(desc)
-			return { buffer = bufnr, silent = true, desc = desc }
-		end
-
-		-- Enable inlay hints if the server supports them
-		if client.supports_method("textDocument/inlayHint") then
+		if client:supports_method("textDocument/inlayHint") then
 			vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
 		end
 
-		-- Prevent duplicate keymap registration
-		if vim.b[bufnr]._lsp_keymaps_set then
+		if vim.b[bufnr]._lsp_attached then
 			return
 		end
-		vim.b[bufnr]._lsp_keymaps_set = true
+		vim.b[bufnr]._lsp_attached = true
 
-		-- Navigation keybindings
-		vim.keymap.set("n", "gd", lsp.buf.definition, opts("Go to definition"))
-		vim.keymap.set("n", "gD", lsp.buf.declaration, opts("Go to declaration"))
-		vim.keymap.set("n", "gi", lsp.buf.implementation, opts("Go to implementation"))
-		vim.keymap.set("n", "gr", lsp.buf.references, opts("Find references"))
+		local map = function(keys, fn, desc)
+			vim.keymap.set("n", keys, fn, { buffer = bufnr, desc = desc })
+		end
 
-		-- Documentation
-		vim.keymap.set("n", "K", lsp.buf.hover, opts("Hover documentation"))
-
-		-- Refactoring
-		vim.keymap.set("n", "<leader>lR", lsp.buf.rename, opts("Rename symbol"))
+		map("gd", lsp.buf.definition, "Go to definition")
+		map("gD", lsp.buf.declaration, "Go to declaration")
+		map("gi", lsp.buf.implementation, "Go to implementation")
+		map("gr", lsp.buf.references, "Find references")
+		map("K", lsp.buf.hover, "Hover documentation")
+		map("<leader>rn", lsp.buf.rename, "Rename symbol")
+		map("<leader>ca", function()
+			local ok, tiny = pcall(require, "tiny-code-action")
+			if ok then
+				tiny.code_action()
+			else
+				lsp.buf.code_action()
+			end
+		end, "Code action")
 	end,
 })
 
--- Customize hover handler with rounded borders (better aesthetics)
+-- Hover with rounded borders
 lsp.handlers["textDocument/hover"] = lsp.with(lsp.handlers.hover, { border = "rounded" })
--- Signature help UI is provided by blink.cmp to avoid duplicate popups
-lsp.handlers["textDocument/signatureHelp"] = function() end
+lsp.handlers["textDocument/signatureHelp"] = function() end -- Handled by blink.cmp
 
--- ═════════════════════════════════════════════════════════════════════════════
--- LANGUAGE SERVER DEFINITIONS
--- ═════════════════════════════════════════════════════════════════════════════
-
--- Nix development (nixd)
+-- Server configs
 lsp.config("nixd", {
 	cmd = { "nixd" },
-	capabilities = with_snippet_support(false),
 	settings = {
 		nixd = {
 			nixpkgs = { expr = "import <nixpkgs> {}" },
-			formatting = {
-				command = { "nixfmt" },
-			},
-			flake = {
-				flakePath = flake_file,
-			},
+			formatting = { command = { "nixfmt" } },
 			options = {
-				-- Adjust expressions to match your flake structure for better completion
 				nixos = {
-					expr = string.format(
-						'(builtins.getFlake "%s").nixosConfigurations.%s.options',
-						flake_root,
-						nix_host
-					),
+					expr = ('(builtins.getFlake "%s").nixosConfigurations.%s.options'):format(flake_root, nix_host),
 				},
 				["home-manager"] = {
-					expr = string.format(
-						'(builtins.getFlake "%s").nixosConfigurations.%s.options.home-manager.users.type.getSubOptions []',
+					expr = ('(builtins.getFlake "%s").nixosConfigurations.%s.options.home-manager.users.type.getSubOptions []'):format(
 						flake_root,
 						nix_host
 					),
@@ -165,31 +108,26 @@ lsp.config("nixd", {
 	},
 })
 
--- Lua (lua_ls)
 lsp.config("lua_ls", {
 	cmd = { "lua-language-server" },
 	settings = {
 		Lua = {
-			hint = {
-				enable = true,
-				arrayIndex = "Disable",
-			},
+			hint = { enable = true, arrayIndex = "Disable" },
 			runtime = { version = "LuaJIT" },
 			diagnostics = { globals = { "vim" } },
-			telemetry = { enable = false },
 			workspace = { checkThirdParty = false },
+			telemetry = { enable = false },
 		},
 	},
 })
 
--- Other basic servers
-local simple_servers = { "pyright", "vtsls", "kotlin_language_server", "jdtls", "marksman" }
-for _, server in ipairs(simple_servers) do
+-- Simple servers (use default config)
+for _, server in ipairs({ "pyright", "vtsls", "kotlin_language_server", "jdtls", "marksman" }) do
 	lsp.config(server, {})
 end
 
--- Roslyn (.NET) integration
-loader.setup("roslyn", {
+-- Roslyn (C#)
+require("roslyn").setup({
 	config = {
 		capabilities = capabilities,
 		settings = {
@@ -201,6 +139,7 @@ loader.setup("roslyn", {
 	},
 })
 
-for _, server in ipairs(vim.list_extend({ "nixd", "lua_ls" }, simple_servers)) do
+-- Enable servers
+for _, server in ipairs({ "nixd", "lua_ls", "pyright", "vtsls", "kotlin_language_server", "jdtls", "marksman" }) do
 	lsp.enable(server)
 end

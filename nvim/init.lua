@@ -1,21 +1,11 @@
--- =============================================================================
--- Neovim Entry Point
--- =============================================================================
--- Zero-overhead initialization sequence:
---   1. Options      (basic editor settings)
---   2. Keymaps      (core keybindings)
---   3. Autocommands (event-based logic)
---   4. Diagnostics  (UI/UX configuration)
---   5. Colorscheme  (vague theme first)
---   6. Plugins      (modular configuration)
--- =============================================================================
+-- Neovim configuration entry point
 
--- ── Phase 1: Core Configuration ───────────────────────────────────────────
+-- Core settings
 require("options")
 require("keymaps")
-require("autocommands")
+require("autocmds")
 
--- Diagnostics configuration (refined for 0.11+)
+-- Diagnostics
 vim.diagnostic.config({
 	virtual_text = false,
 	signs = {
@@ -32,54 +22,19 @@ vim.diagnostic.config({
 	update_in_insert = false,
 })
 
--- ── Phase 2: Theme & Highlights ───────────────────────────────────────────
--- Strictly prioritize 'vague' as the professional baseline
-local ok_vague = pcall(vim.cmd.colorscheme, "vague")
-if not ok_vague then
-	pcall(vim.cmd.colorscheme, "default")
-end
-require("lib.highlights").apply()
+-- Theme
+require("theme").setup()
 
--- ── Phase 3: Plugins (Direct Loading) ─────────────────────────────────────
--- Since plugins are managed via Nix (provided on the runtimepath), we simply
--- require their configuration modules. No heavy loader abstraction needed.
+-- Plugins (loaded via Nix runtimepath)
+require("plugins.treesitter")
+require("plugins.completion")
+require("plugins.lsp")
+require("plugins.editor")
+require("plugins.ui")
+require("plugins.mini")
+require("plugins.fzf")
+require("plugins.neogit")
+require("plugins.navigation")
 
--- UI & Core Functional
-require("plugins.ui") -- gitsigns, oil, noice, autopairs, markview
-require("plugins.statusline") -- lualine, ibl, statuscol, neoscroll
-require("plugins.mini") -- mini.nvim suite consolidation
-require("plugins.treesitter") -- syntax highlighting
-
--- Development & Intelligence
-require("plugins.completion") -- blink.cmp, copilot, luasnip
-require("plugins.lsp") -- LSP configuration (0.11+ APIs)
-require("plugins.conform") -- autoformatting
-require("plugins.fzf") -- fuzzy finding
-require("plugins.neogit") -- git interface
-
--- Miscellaneous
-require("plugins.miscellaneous") -- leap, tmux-nav, grug-far
-
--- ── Phase 4: Final Polishing ──────────────────────────────────────────────
-vim.opt.cmdheight = 0 -- Remove redundant visual chrome
-
--- Performance and health keymaps
-vim.keymap.set("n", "<leader>ch", function()
-	require("lib.health").check()
-end, { desc = "Check configuration health" })
-
-vim.keymap.set("n", "<leader>cl", function()
-	local loader = require("lib.loader")
-	local lines = { "# Plugin Load Times (ms)", "" }
-	local sorted = {}
-	for name, time in pairs(loader.stats.loaded) do
-		table.insert(sorted, { name = name, time = time })
-	end
-	table.sort(sorted, function(a, b)
-		return a.time > b.time
-	end)
-	for _, item in ipairs(sorted) do
-		table.insert(lines, string.format("- %-30s : %.2f", item.name, item.time))
-	end
-	vim.api.nvim_echo({ { table.concat(lines, "\n"), "Normal" } }, true, {})
-end, { desc = "Check plugin load times" })
+-- Final touches
+vim.opt.cmdheight = 0
