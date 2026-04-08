@@ -184,7 +184,8 @@ NixConfig/
 │       │   └── swaync.nix       # Notification daemon
 │       ├── shell/
 │       │   ├── fish.nix         # Shell config, abbrs, prompt
-│       │   └── tmux.nix         # Terminal multiplexer
+│       │   ├── tmux.nix         # Terminal multiplexer
+│       │   └── zellij.nix       # Alternative terminal multiplexer
 │       ├── git.nix              # Git identity & settings
 │       ├── neovim.nix           # Neovim plugins & LSP tools (Nix)
 │       ├── packages.nix         # User package list
@@ -208,7 +209,7 @@ NixConfig/
 │           ├── fzf.lua          # Fuzzy finder
 │           ├── conform.lua      # Autoformatting
 │           ├── treesitter.lua   # Syntax highlighting
-│           ├── ui.lua           # UI plugins (gitsigns, oil, noice)
+│           ├── ui.lua           # UI plugins (gitsigns, fyler, noice)
 │           └── ...
 │
 └── wallpapers/                  # Wallpaper assets for awww
@@ -257,7 +258,8 @@ NixConfig/
 |-----|------|--------|
 | `Ctrl-d` / `Ctrl-u` | Normal | Scroll down/up (centered) |
 | `n` / `N` | Normal | Next/prev search match (centered) |
-| `Space Space` | Normal/Visual/Operator | Cross-window jump |
+| `s` | Normal/Visual/Operator | Leap in current window |
+| `S` | Normal | Leap from other windows |
 | `]d` / `[d` | Normal | Next/prev diagnostic |
 | `]e` / `[e` | Normal | Next/prev error |
 
@@ -268,6 +270,7 @@ NixConfig/
 | `<leader>wh` | Normal | Horizontal split |
 | `<leader>wx` | Normal | Close window |
 | `Ctrl-h/j/k/l` | Normal | Navigate windows (Tmux-aware) |
+| `Ctrl-Shift-h/j/k/l` | Normal | Resize splits |
 
 #### LSP
 | Key | Mode | Action |
@@ -296,11 +299,11 @@ NixConfig/
 | `<leader>gb` | Normal | Blame line |
 | `<leader>gd` | Normal | Diff this |
 
-#### File Explorer (Oil)
+#### File Explorer (Fyler)
 | Key | Mode | Action |
 |-----|------|--------|
-| `-` | Normal | Open parent directory |
-| `<leader>o` | Normal | Open Oil |
+| `-` | Normal | Toggle Fyler (tree sidebar) |
+| `<leader>ef` | Normal | Open Fyler (tree sidebar) |
 
 #### Toggles
 | Key | Mode | Action |
