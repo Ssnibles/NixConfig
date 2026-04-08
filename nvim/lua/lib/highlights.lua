@@ -91,7 +91,7 @@ function M.apply()
 	hl(0, "BlinkCmpKindModule", { fg = colors.orange, bg = colors.bg })
 
 	-- ── GitHub Copilot ─────────────────────────────────────────────────────
-	hl(0, "CopilotSuggestion", { fg = colors.muted, italic = true })
+	hl(0, "CopilotSuggestion", { fg = colors.purple, italic = true })
 
 	-- ── Git Signs (Neogit) ─────────────────────────────────────────────────
 	hl(0, "NeogitPopupBorder", { bg = colors.bg_raised, fg = colors.subtle })
@@ -131,6 +131,8 @@ function M.apply()
 	hl(0, "OilDir", { fg = colors.blue, bold = true })
 	hl(0, "OilFile", { fg = colors.fg })
 	hl(0, "OilHidden", { fg = colors.muted })
+	while true do
+	end
 end
 
 return M

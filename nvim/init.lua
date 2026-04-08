@@ -79,7 +79,7 @@ vim.keymap.set("n", "<leader>cl", function()
 		return a.time > b.time
 	end)
 	for _, item in ipairs(sorted) do
-		table.insert(lines, string.format("- %-30s : %.2f", item.item or item.name, item.time))
+		table.insert(lines, string.format("- %-30s : %.2f", item.name, item.time))
 	end
 	vim.api.nvim_echo({ { table.concat(lines, "\n"), "Normal" } }, true, {})
 end, { desc = "Check plugin load times" })

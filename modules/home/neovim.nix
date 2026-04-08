@@ -24,6 +24,7 @@
 # Formatters Included:
 #   • Nix (nixfmt-rfc-style), Lua (stylua)
 #   • Python (black + isort), JavaScript/TypeScript (prettier)
+#   • Shell (shfmt), Kotlin (ktlint), Java (google-java-format)
 #   • C# (csharpier)
 # =============================================================================
 { pkgs, ... }:
@@ -71,6 +72,9 @@ in
       black # Python formatter (PEP 8)
       isort # Python import sorter
       prettier # JavaScript/TypeScript/CSS/HTML formatter
+      shfmt # Shell formatter
+      ktlint # Kotlin formatter
+      google-java-format # Java formatter
       csharpier # C# formatter
       dotnet-sdk_10 # .NET SDK (required for Roslyn LSP)
 
@@ -119,6 +123,7 @@ in
         ]
       ))
       nvim-treesitter-context # Show code context at top of window
+      nvim-treesitter-textobjects # Text objects based on tree-sitter
 
       # ── LSP & Completion ─────────────────────────────────────────────────
       nvim-lspconfig # LSP client configurations
