@@ -6,6 +6,7 @@ fzf.setup({
 		height = 0.9,
 		width = 0.9,
 		border = "rounded",
+		backdrop = 100,
 		preview = { layout = "vertical", vertical = "right:55%" },
 	},
 	files = { cmd = "fd --type f --hidden --exclude .git" },
