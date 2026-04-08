@@ -6,6 +6,7 @@
 # =============================================================================
 { config, ... }:
 {
+  # Spotify Player (TUI client)
   programs.spotify-player = {
     enable = true;
     settings = {
@@ -17,5 +18,11 @@
         device_type = "computer";
       };
     };
+  };
+
+  # Direnv (Nix integration for shell environments)
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
   };
 }
