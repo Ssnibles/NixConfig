@@ -105,8 +105,7 @@ function M.setup()
 	hl("TreesitterContextLineNumber", { fg = c.comment, bg = c.bg })
 
 	-- Indent guides
-	hl("IblIndent", { fg = "#1a1a1f" })
-	hl("IblScope", { fg = c.blue, nocombine = true })
+	hl("MiniIndentscopeSymbol", { fg = c.blue, nocombine = true })
 
 	-- Mini.nvim
 	hl("MiniCursorword", { bg = c.gutter })

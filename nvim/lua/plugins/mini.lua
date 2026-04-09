@@ -1,5 +1,7 @@
 -- mini.nvim suite
 
+local c = require("theme").colors
+
 -- Icons (with nvim-web-devicons compatibility)
 local icons = require("mini.icons")
 icons.setup()
@@ -67,6 +69,17 @@ hip.setup({
 
 -- Cursor word highlight
 require("mini.cursorword").setup({ delay = 200 })
+
+-- Indent scope
+require("mini.indentscope").setup({
+	symbol = "│",
+	options = { try_as_border = true },
+	draw = {
+		delay = 100,
+		animation = require("mini.indentscope").gen_animation.none(),
+	},
+})
+vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { fg = c.blue, nocombine = true })
 
 -- Additional mini modules
 require("mini.align").setup()

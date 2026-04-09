@@ -6,6 +6,9 @@
   programs.git = {
     enable = true;
     settings = {
+      core = {
+        page = "delta";
+      };
       user = {
         name = "Ssnibles";
         email = "joshua.breite@gmail.com";
