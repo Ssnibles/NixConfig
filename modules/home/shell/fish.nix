@@ -4,7 +4,11 @@
 # Fish shell setup, plugins, and colour-matched configs for Ghostty and Foot.
 # All three share the same vague colour palette, so they live together.
 # =============================================================================
-{ pkgs, ... }:
+{ pkgs, colors, ... }:
+let
+  c = colors.vague;
+  h = c.withHash;
+in
 {
   programs.fish = {
     enable = true;
@@ -43,7 +47,7 @@
 
       # Better completion UX: quicker pager response and case-insensitive matching.
       set -g fish_complete_path ""
-      set -g fish_pager_color_completion cdcdcd
+      set -g fish_pager_color_completion ${c.fg}
 
       # FZF defaults for faster fuzzy file/history navigation.
       set -gx FZF_DEFAULT_COMMAND "fd --type f --hidden --follow --exclude .git"
@@ -65,44 +69,44 @@
       end
 
       # Fish syntax + completion colors aligned to the Vague palette.
-      set -g fish_color_normal cdcdcd
-      set -g fish_color_command 6e94b2
-      set -g fish_color_keyword bb9dbd
-      set -g fish_color_quote 7fa563
-      set -g fish_color_redirection b4d4cf
-      set -g fish_color_end 878787
-      set -g fish_color_error d8647e
-      set -g fish_color_param cdcdcd
-      set -g fish_color_comment 606079
-      set -g fish_color_operator b4d4cf
-      set -g fish_color_escape bb9dbd
-      set -g fish_color_autosuggestion 606079
-      set -g fish_color_option f3be7c
-      set -g fish_color_valid_path 7fa563
-      set -g fish_color_cwd 6e94b2
-      set -g fish_color_cwd_root d8647e
-      set -g fish_color_user b4d4cf
-      set -g fish_color_host bb9dbd
-      set -g fish_color_host_remote f3be7c
-      set -g fish_color_status d8647e
-      set -g fish_color_selection cdcdcd --background=252530
-      set -g fish_color_search_match 6e94b2 --background=252530
+      set -g fish_color_normal ${c.fg}
+      set -g fish_color_command ${c.accent}
+      set -g fish_color_keyword ${c.purple}
+      set -g fish_color_quote ${c.green}
+      set -g fish_color_redirection ${c.teal}
+      set -g fish_color_end ${c.fgMid}
+      set -g fish_color_error ${c.red}
+      set -g fish_color_param ${c.fg}
+      set -g fish_color_comment ${c.fgDim}
+      set -g fish_color_operator ${c.teal}
+      set -g fish_color_escape ${c.purple}
+      set -g fish_color_autosuggestion ${c.fgDim}
+      set -g fish_color_option ${c.yellow}
+      set -g fish_color_valid_path ${c.green}
+      set -g fish_color_cwd ${c.accent}
+      set -g fish_color_cwd_root ${c.red}
+      set -g fish_color_user ${c.teal}
+      set -g fish_color_host ${c.purple}
+      set -g fish_color_host_remote ${c.yellow}
+      set -g fish_color_status ${c.red}
+      set -g fish_color_selection ${c.fg} --background=${c.bgSubtle}
+      set -g fish_color_search_match ${c.accent} --background=${c.bgSubtle}
 
-      set -g fish_pager_color_completion cdcdcd
-      set -g fish_pager_color_description 878787
-      set -g fish_pager_color_prefix 6e94b2 --bold
-      set -g fish_pager_color_progress 606079
-      set -g fish_pager_color_selected_background --background=252530
-      set -g fish_pager_color_selected_completion cdcdcd
-      set -g fish_pager_color_selected_description 878787
-      set -g fish_pager_color_selected_prefix f3be7c --bold
+      set -g fish_pager_color_completion ${c.fg}
+      set -g fish_pager_color_description ${c.fgMid}
+      set -g fish_pager_color_prefix ${c.accent} --bold
+      set -g fish_pager_color_progress ${c.fgDim}
+      set -g fish_pager_color_selected_background --background=${c.bgSubtle}
+      set -g fish_pager_color_selected_completion ${c.fg}
+      set -g fish_pager_color_selected_description ${c.fgMid}
+      set -g fish_pager_color_selected_prefix ${c.yellow} --bold
 
-      set -g pure_color_primary  6e94b2
-      set -g pure_color_info     bb9dbd
-      set -g pure_color_mute     606079
-      set -g pure_color_danger   d8647e
-      set -g pure_color_warning  f3be7c
-      set -g pure_color_success  7fa563
+      set -g pure_color_primary  ${c.accent}
+      set -g pure_color_info     ${c.purple}
+      set -g pure_color_mute     ${c.fgDim}
+      set -g pure_color_danger   ${c.red}
+      set -g pure_color_warning  ${c.yellow}
+      set -g pure_color_success  ${c.green}
     '';
 
     plugins = with pkgs.fishPlugins; [
@@ -127,27 +131,27 @@
     window-theme      = dark
     clipboard-read    = allow
     clipboard-write   = allow
-    background        = 141415
-    foreground        = cdcdcd
-    cursor-color      = 6e94b2
-    selection-background = 333738
-    selection-foreground = cdcdcd
-    palette = 0=#141415
-    palette = 1=#d8647e
-    palette = 2=#7fa563
-    palette = 3=#f3be7c
-    palette = 4=#6e94b2
-    palette = 5=#bb9dbd
-    palette = 6=#b4d4cf
-    palette = 7=#cdcdcd
-    palette = 8=#252530
-    palette = 9=#d8647e
-    palette = 10=#7fa563
-    palette = 11=#e8b589
-    palette = 12=#7e98e8
-    palette = 13=#c48282
-    palette = 14=#9bb4bc
-    palette = 15=#cdcdcd
+    background        = ${c.bg}
+    foreground        = ${c.fg}
+    cursor-color      = ${c.accent}
+    selection-background = ${c.selection}
+    selection-foreground = ${c.fg}
+    palette = 0=${h.bg}
+    palette = 1=${h.red}
+    palette = 2=${h.green}
+    palette = 3=${h.yellow}
+    palette = 4=${h.accent}
+    palette = 5=${h.purple}
+    palette = 6=${h.teal}
+    palette = 7=${h.fg}
+    palette = 8=${h.bgSubtle}
+    palette = 9=${h.red}
+    palette = 10=${h.green}
+    palette = 11=${h.orange}
+    palette = 12=${h.blueBright}
+    palette = 13=${h.magenta}
+    palette = 14=${h.tealBright}
+    palette = 15=${h.fg}
   '';
 
   # ── Foot terminal ─────────────────────────────────────────────────────────
@@ -156,25 +160,25 @@
     font=JetBrainsMono Nerd Font:size=12
     pad=20x20
     [colors-dark]
-    background=141415
-    foreground=cdcdcd
-    selection-background=333738
-    selection-foreground=cdcdcd
-    regular0=141415
-    regular1=d8647e
-    regular2=7fa563
-    regular3=f3be7c
-    regular4=6e94b2
-    regular5=bb9dbd
-    regular6=b4d4cf
-    regular7=cdcdcd
-    bright0=252530
-    bright1=d8647e
-    bright2=7fa563
-    bright3=e8b589
-    bright4=7e98e8
-    bright5=c48282
-    bright6=9bb4bc
-    bright7=cdcdcd
+    background=${c.bg}
+    foreground=${c.fg}
+    selection-background=${c.selection}
+    selection-foreground=${c.fg}
+    regular0=${c.bg}
+    regular1=${c.red}
+    regular2=${c.green}
+    regular3=${c.yellow}
+    regular4=${c.accent}
+    regular5=${c.purple}
+    regular6=${c.teal}
+    regular7=${c.fg}
+    bright0=${c.bgSubtle}
+    bright1=${c.red}
+    bright2=${c.green}
+    bright3=${c.orange}
+    bright4=${c.blueBright}
+    bright5=${c.magenta}
+    bright6=${c.tealBright}
+    bright7=${c.fg}
   '';
 }

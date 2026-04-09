@@ -253,6 +253,13 @@
     };
   };
 
+  # QMK/VIA keyboard support (browser WebHID + local tools)
+  # Adds udev rules so non-root users can access compatible keyboards.
+  hardware.keyboard.qmk = {
+    enable = true;
+    keychronSupport = true;
+  };
+
   # Flatpak: Sandboxed application distribution
   # Useful for proprietary apps not available in nixpkgs (e.g., Discord, Slack)
   services.flatpak.enable = true;

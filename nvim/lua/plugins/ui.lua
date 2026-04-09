@@ -1,15 +1,17 @@
 -- UI components: statusline, indentation, scrolling, notifications
 
+local c = require("theme").colors
+
 -- Lualine: statusline
 local lualine_theme = {
 	normal = {
-		a = { fg = "#6e94b2", bg = "#141415", gui = "bold" },
-		b = { fg = "#cdcdcd", bg = "#141415" },
-		c = { fg = "#606079", bg = "#141415" },
+		a = { fg = c.blue, bg = c.bg, gui = "bold" },
+		b = { fg = c.fg, bg = c.bg },
+		c = { fg = c.comment, bg = c.bg },
 	},
-	insert = { a = { fg = "#7fa563", bg = "#141415", gui = "bold" } },
-	visual = { a = { fg = "#bb9dbd", bg = "#141415", gui = "bold" } },
-	inactive = { a = { fg = "#252530", bg = "#141415" } },
+	insert = { a = { fg = c.green, bg = c.bg, gui = "bold" } },
+	visual = { a = { fg = c.purple, bg = c.bg, gui = "bold" } },
+	inactive = { a = { fg = c.gutter, bg = c.bg } },
 }
 
 require("lualine").setup({

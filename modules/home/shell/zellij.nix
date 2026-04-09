@@ -4,7 +4,10 @@
 # Terminal multiplexer configured to feel close to the existing tmux workflow:
 # backtick "prefix"-style controls, vi-like pane movement, and the same palette.
 # =============================================================================
-{ pkgs, ... }:
+{ pkgs, colors, ... }:
+let
+  rgb = colors.vague.rgb;
+in
 {
   home.packages = [ pkgs.unstable.zellij ];
 
@@ -25,17 +28,17 @@
 
     themes {
       vague {
-        fg 205 205 205
-        bg 20 20 21
-        red 216 100 126
-        green 127 165 99
-        yellow 243 190 124
-        blue 110 148 178
-        magenta 187 157 189
-        orange 243 190 124
-        cyan 180 212 207
-        black 37 37 48
-        white 205 205 205
+        fg ${toString (builtins.elemAt rgb.fg 0)} ${toString (builtins.elemAt rgb.fg 1)} ${toString (builtins.elemAt rgb.fg 2)}
+        bg ${toString (builtins.elemAt rgb.bg 0)} ${toString (builtins.elemAt rgb.bg 1)} ${toString (builtins.elemAt rgb.bg 2)}
+        red ${toString (builtins.elemAt rgb.red 0)} ${toString (builtins.elemAt rgb.red 1)} ${toString (builtins.elemAt rgb.red 2)}
+        green ${toString (builtins.elemAt rgb.green 0)} ${toString (builtins.elemAt rgb.green 1)} ${toString (builtins.elemAt rgb.green 2)}
+        yellow ${toString (builtins.elemAt rgb.yellow 0)} ${toString (builtins.elemAt rgb.yellow 1)} ${toString (builtins.elemAt rgb.yellow 2)}
+        blue ${toString (builtins.elemAt rgb.blue 0)} ${toString (builtins.elemAt rgb.blue 1)} ${toString (builtins.elemAt rgb.blue 2)}
+        magenta ${toString (builtins.elemAt rgb.magenta 0)} ${toString (builtins.elemAt rgb.magenta 1)} ${toString (builtins.elemAt rgb.magenta 2)}
+        orange ${toString (builtins.elemAt rgb.orange 0)} ${toString (builtins.elemAt rgb.orange 1)} ${toString (builtins.elemAt rgb.orange 2)}
+        cyan ${toString (builtins.elemAt rgb.cyan 0)} ${toString (builtins.elemAt rgb.cyan 1)} ${toString (builtins.elemAt rgb.cyan 2)}
+        black ${toString (builtins.elemAt rgb.black 0)} ${toString (builtins.elemAt rgb.black 1)} ${toString (builtins.elemAt rgb.black 2)}
+        white ${toString (builtins.elemAt rgb.white 0)} ${toString (builtins.elemAt rgb.white 1)} ${toString (builtins.elemAt rgb.white 2)}
       }
     }
     theme "vague"

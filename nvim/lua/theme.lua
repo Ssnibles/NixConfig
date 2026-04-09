@@ -1,19 +1,27 @@
 -- Theme configuration: vague colorscheme + custom highlight overrides
 local M = {}
 
+local ok, generated = pcall(require, "generated.colors")
+if not ok then
+	generated = {}
+end
+
 M.colors = {
-	bg = "#141415",
-	fg = "#cdcdcd",
-	comment = "#606079",
-	gutter = "#252530",
-	border = "#252530",
-	blue = "#6e94b2",
-	purple = "#bb9dbd",
-	green = "#7fa563",
-	red = "#d8647e",
-	yellow = "#f3be7c",
-	cyan = "#b4d4cf",
-	orange = "#e8b589",
+	bg = generated.bg or "#141415",
+	fg = generated.fg or "#cdcdcd",
+	comment = generated.fg_dim or "#606079",
+	gutter = generated.bg_subtle or "#252530",
+	border = generated.border or "#252530",
+	blue = generated.accent or "#6e94b2",
+	purple = generated.purple or "#bb9dbd",
+	green = generated.green or "#7fa563",
+	red = generated.red or "#d8647e",
+	yellow = generated.yellow or "#f3be7c",
+	cyan = generated.teal or "#b4d4cf",
+	orange = generated.orange or "#e8b589",
+	selection = generated.selection or "#333738",
+	search = generated.search or "#2a3a4a",
+	trailspace = generated.trailspace or "#3a1c28",
 }
 
 function M.setup()
@@ -78,11 +86,11 @@ function M.setup()
 	-- Cursor and selection
 	hl("CursorLine", { bg = c.gutter })
 	hl("CursorLineNr", { fg = c.blue, bold = true })
-	hl("Visual", { bg = "#333738" })
+	hl("Visual", { bg = c.selection })
 	hl("LineNr", { fg = c.comment })
 
 	-- Search
-	hl("Search", { bg = "#2a3a4a", fg = c.blue })
+	hl("Search", { bg = c.search, fg = c.blue })
 	hl("IncSearch", { bg = c.blue, fg = c.bg, bold = true })
 	hl("CurSearch", { bg = c.blue, fg = c.bg, bold = true })
 
@@ -110,7 +118,7 @@ function M.setup()
 	-- Mini.nvim
 	hl("MiniCursorword", { bg = c.gutter })
 	hl("MiniCursorwordCurrent", { bg = c.gutter })
-	hl("MiniTrailspace", { bg = "#3a1c28" })
+	hl("MiniTrailspace", { bg = c.trailspace })
 
 	-- Folds
 	hl("Folded", { fg = c.comment, bg = c.gutter })

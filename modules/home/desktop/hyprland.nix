@@ -4,7 +4,11 @@
 # Wayland compositor settings, keybindings, and the Vicinae app launcher.
 # System-level enablement (programs.hyprland.enable) lives in nixos/common.nix.
 # =============================================================================
-{ pkgs, ... }:
+{ pkgs, colors, ... }:
+let
+  raw = colors.vague;
+  c = colors.vague.withHash;
+in
 {
   imports = [
     ../services/wayland.nix
@@ -48,8 +52,8 @@
         gaps_in = 8;
         gaps_out = 16;
         border_size = 0;
-        "col.inactive_border" = "rgb(120,120,120)";
-        "col.active_border" = "rgb(120,120,120)";
+        "col.inactive_border" = "rgb(${raw.border})";
+        "col.active_border" = "rgb(${raw.border})";
       };
 
       decoration = {
@@ -153,21 +157,21 @@
     };
     colors = {
       core = {
-        background = "#141415";
-        foreground = "#cdcdcd";
-        secondary_background = "#1c1c24";
-        border = "#252530";
-        accent = "#6e94b2";
+        background = c.bg;
+        foreground = c.fg;
+        secondary_background = c.raisedBackground;
+        border = c.border;
+        accent = c.accent;
       };
       accents = {
-        blue = "#6e94b2";
-        cyan = "#b4d4cf";
-        purple = "#bb9dbd";
-        green = "#7fa563";
-        yellow = "#f3be7c";
-        red = "#d8647e";
-        orange = "#e8b589";
-        magenta = "#c48282";
+        blue = c.accent;
+        cyan = c.teal;
+        purple = c.purple;
+        green = c.green;
+        yellow = c.yellow;
+        red = c.red;
+        orange = c.orange;
+        magenta = c.magenta;
       };
     };
   };

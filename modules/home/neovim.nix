@@ -27,8 +27,9 @@
 #   • Shell (shfmt), Kotlin (ktlint), Java (google-java-format)
 #   • C# (csharpier)
 # =============================================================================
-{ pkgs, ... }:
+{ pkgs, colors, ... }:
 let
+  c = colors.vague.withHash;
   # ── Custom Plugin: tiny-code-action ────────────────────────────────────────
   # Lightweight code action UI (alternative to heavier Telescope code actions)
   # Source: https://github.com/rachartier/tiny-code-action.nvim
@@ -164,6 +165,7 @@ in
       vim-tmux-navigator # Seamless tmux/vim navigation
       markview-nvim # Markdown preview in buffer
     ];
+
   };
 
   # ═══════════════════════════════════════════════════════════════════════════
@@ -171,6 +173,31 @@ in
   # ═══════════════════════════════════════════════════════════════════════════
   # Source Lua config from nvim/ directory in the repository
   # Structure: init.lua (entry) → lua/options.lua, lua/keymaps.lua, lua/plugins/*
+  xdg.configFile."nvim/lua/generated/colors.lua".text = ''
+    local M = {
+      bg = "${c.bg}",
+      raised_background = "${c.raisedBackground}",
+      bg_subtle = "${c.bgSubtle}",
+      border = "${c.border}",
+      fg = "${c.fg}",
+      fg_mid = "${c.fgMid}",
+      fg_dim = "${c.fgDim}",
+      accent = "${c.accent}",
+      teal = "${c.teal}",
+      purple = "${c.purple}",
+      green = "${c.green}",
+      yellow = "${c.yellow}",
+      red = "${c.red}",
+      orange = "${c.orange}",
+      magenta = "${c.magenta}",
+      selection = "${c.selection}",
+      search = "${c.search}",
+      trailspace = "${c.trailspace}",
+    }
+
+    return M
+  '';
+
   xdg.configFile."nvim" = {
     source = ../../nvim;
     recursive = true;

@@ -4,19 +4,9 @@
 # Terminal multiplexer with vi-mode, TPM plugins, and vague colour theme.
 # NOTE: TPM itself is bootstrapped outside Nix – see README.md.
 # =============================================================================
-{ pkgs, ... }:
+{ pkgs, colors, ... }:
 let
-  # ── Vague colour palette ─────────────────────────────────────────────────
-  bg = "#141415";
-  bg-raised = "#1c1c24";
-  border = "#252530";
-  fg = "#cdcdcd";
-  fg-dim = "#606079";
-  fg-mid = "#878787";
-  accent = "#6e94b2";
-  teal = "#b4d4cf";
-  warn = "#f3be7c";
-  error = "#d8647e";
+  c = colors.vague.withHash;
 in
 {
   programs.tmux = {
@@ -107,30 +97,30 @@ in
 
       # ── Status bar ──────────────────────────────────────────────────────
       set -g status-position top
-      set -g status-style    "fg=${fg},bg=${bg}"
+      set -g status-style    "fg=${c.fg},bg=${c.bg}"
       set -g status-justify  left
       set -g status-interval 1
 
       set -g status-left-length 80
-      set -g status-left "#[fg=${fg},bg=${bg},bold] #S #[default] #{prefix_highlight} "
+      set -g status-left "#[fg=${c.fg},bg=${c.bg},bold] #S #[default] #{prefix_highlight} "
 
-      setw -g window-status-format         "#[fg=${fg-mid},bg=${bg}] #I:#W "
-      setw -g window-status-current-format "#[fg=${fg},bold,bg=${bg-raised}] #I:#W #[default]"
+      setw -g window-status-format         "#[fg=${c.fgMid},bg=${c.bg}] #I:#W "
+      setw -g window-status-current-format "#[fg=${c.fg},bold,bg=${c.bgRaised}] #I:#W #[default]"
       setw -g window-status-separator      ""
-      setw -g window-status-activity-style "fg=${warn},bg=${bg}"
-      setw -g window-status-bell-style     "fg=${error},bg=${bg}"
+      setw -g window-status-activity-style "fg=${c.yellow},bg=${c.bg}"
+      setw -g window-status-bell-style     "fg=${c.red},bg=${c.bg}"
 
       set -g status-right-length 150
-      set -g status-right "#[fg=${fg},bg=${bg}] #{continuum_status} #[fg=${fg-mid},bg=${bg}]%H:%M #[fg=${fg},bg=${bg}] #H "
+      set -g status-right "#[fg=${c.fg},bg=${c.bg}] #{continuum_status} #[fg=${c.fgMid},bg=${c.bg}]%H:%M #[fg=${c.fg},bg=${c.bg}] #H "
 
       # ── Pane borders ────────────────────────────────────────────────────
       set -g pane-border-lines        simple
-      set -g pane-border-style        "fg=${fg-mid}"
-      set -g pane-active-border-style "fg=${accent}"
+      set -g pane-border-style        "fg=${c.fgMid}"
+      set -g pane-active-border-style "fg=${c.accent}"
 
       # ── Message bar ─────────────────────────────────────────────────────
-      set -g message-style         "fg=${fg},bg=${bg-raised},bold"
-      set -g message-command-style "fg=${fg},bg=${bg-raised},bold"
+      set -g message-style         "fg=${c.fg},bg=${c.bgRaised},bold"
+      set -g message-command-style "fg=${c.fg},bg=${c.bgRaised},bold"
 
       # ── Bell & activity ─────────────────────────────────────────────────
       set  -g visual-activity  off
@@ -157,12 +147,12 @@ in
       set -g @continuum-restore 'on'
       set -g @continuum-save-interval '1'
 
-      set -g @prefix_highlight_fg              "${bg}"
-      set -g @prefix_highlight_bg              "${warn}"
+      set -g @prefix_highlight_fg              "${c.bg}"
+      set -g @prefix_highlight_bg              "${c.yellow}"
       set -g @prefix_highlight_show_copy_mode  'on'
-      set -g @prefix_highlight_copy_mode_attr  "fg=${bg},bg=${teal}"
+      set -g @prefix_highlight_copy_mode_attr  "fg=${c.bg},bg=${c.teal}"
       set -g @prefix_highlight_show_sync_mode  'on'
-      set -g @prefix_highlight_sync_mode_attr  "fg=${bg},bg=${error}"
+      set -g @prefix_highlight_sync_mode_attr  "fg=${c.bg},bg=${c.red}"
 
       # Initialise TPM (must be last)
       run '~/.tmux/plugins/tpm/tpm'

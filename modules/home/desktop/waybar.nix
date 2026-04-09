@@ -3,7 +3,10 @@
 # =============================================================================
 # Top status bar for Hyprland.
 # =============================================================================
-{ ... }:
+{ colors, ... }:
+let
+  c = colors.vague.withHash;
+in
 {
   programs.waybar = {
     enable = true;
@@ -140,20 +143,20 @@
       /* Consistent color palette matching neovim, swaync, and hyprland     */
       /* =================================================================== */
 
-      @define-color bg          #141415;
-      @define-color bg-raised   #1c1c24;
-      @define-color bg-subtle   #252530;
-      @define-color border      #252530;
-      @define-color fg          #cdcdcd;
-      @define-color fg-dim      #606079;
-      @define-color fg-mid      #878787;
-      @define-color accent      #6e94b2;
-      @define-color teal        #b4d4cf;
-      @define-color purple      #bb9dbd;
-      @define-color green       #7fa563;
-      @define-color yellow      #f3be7c;
-      @define-color red         #d8647e;
-      @define-color orange      #e8b589;
+      @define-color bg          ${c.bg};
+      @define-color bg-raised   ${c.bgRaised};
+      @define-color bg-subtle   ${c.bgSubtle};
+      @define-color border      ${c.border};
+      @define-color fg          ${c.fg};
+      @define-color fg-dim      ${c.fgDim};
+      @define-color fg-mid      ${c.fgMid};
+      @define-color accent      ${c.accent};
+      @define-color teal        ${c.teal};
+      @define-color purple      ${c.purple};
+      @define-color green       ${c.green};
+      @define-color yellow      ${c.yellow};
+      @define-color red         ${c.red};
+      @define-color orange      ${c.orange};
 
       /* ── Base ──────────────────────────────────────────────────────── */
       * {
