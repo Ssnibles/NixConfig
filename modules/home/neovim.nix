@@ -40,7 +40,7 @@ let
       owner = "rachartier";
       repo = "tiny-code-action.nvim";
       rev = "main";
-      sha256 = "sha256-oZalIk5m+XtwvPWjI+Ds/IoM4nM0w9BEoI5YYI1B/PI=";
+      sha256 = "sha256-4tjWSSBpIH6D1nQeJRv2rKCWraaRU1IG6TQmJilmYjw=";
     };
     doCheck = false;
   };
