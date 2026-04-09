@@ -271,9 +271,9 @@
   # ═══════════════════════════════════════════════════════════════════════════
   # USERS
   # ═══════════════════════════════════════════════════════════════════════════
-  users.users.josh = {
+  users.users.${hostProfile.user} = {
     isNormalUser = true;
-    description = "Josh";
+    description = hostProfile.user;
     shell = pkgs.fish; # User shell (Fish configuration in Home Manager)
     # Group memberships for system access:
     # • networkmanager: WiFi/network control without sudo

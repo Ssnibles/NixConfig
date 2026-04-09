@@ -34,12 +34,31 @@
     fzf
     fd
     ripgrep
+    ripgrep-all
     grc
+    bat
+    eza
+    dust
+    duf
+    procs
+    zoxide
+    tlrc
+    delta
+    hyperfine
+    sd
+    choose
+    just
+    watchexec
+    xh
     android-tools
     lazygit
     gitui
     yazi
     jq
+    nix-tree
+    nix-output-monitor
+    deadnix
+    statix
     texliveBasic
     imagemagick
     zip

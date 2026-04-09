@@ -106,7 +106,7 @@ function M.setup()
 
 	-- Indent guides
 	hl("IblIndent", { fg = "#1a1a1f" })
-	hl("IblScope", { fg = c.comment })
+	hl("IblScope", { fg = c.blue, nocombine = true })
 
 	-- Mini.nvim
 	hl("MiniCursorword", { bg = c.gutter })

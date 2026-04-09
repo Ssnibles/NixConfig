@@ -43,16 +43,17 @@ in
       # ── Host Profile ─────────────────────────────────────────────────────
       # Flags accessible via `hostProfile.*` in all NixOS and Home Manager modules
       # Used for conditional logic (e.g., `lib.optionals hostProfile.isLaptop [ ... ]`)
-      hostProfile = {
-        inherit
-          hostName
-          isLaptop
-          hasNvidia
-          isVM
-          useDisko
-          ;
-        isDesktop = !isLaptop; # Convenience flag for desktop-specific config
-      };
+          hostProfile = {
+            inherit
+              hostName
+              isLaptop
+              hasNvidia
+              isVM
+              useDisko
+              user
+              ;
+            isDesktop = !isLaptop; # Convenience flag for desktop-specific config
+          };
 
       # ── Unstable Package Set ─────────────────────────────────────────────
       # Separate evaluation of nixpkgs-unstable for latest user-facing packages

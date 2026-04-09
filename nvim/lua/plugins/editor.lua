@@ -34,12 +34,9 @@ require("fyler").setup({
 })
 
 local fyler = require("fyler")
-vim.keymap.set("n", "-", function()
+vim.keymap.set("n", "<leader>e", function()
 	fyler.toggle({ kind = "split_left_most" })
 end, { desc = "Toggle Fyler" })
-vim.keymap.set("n", "<leader>ef", function()
-	fyler.open({ kind = "split_left_most" })
-end, { desc = "Open Fyler" })
 
 -- Gitsigns: git integration in gutter
 require("gitsigns").setup({

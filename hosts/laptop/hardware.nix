@@ -1,7 +1,7 @@
 # =============================================================================
 # Laptop Hardware Configuration
 # =============================================================================
-{ config, lib, modulesPath, ... }:
+{ config, lib, modulesPath, hostProfile, ... }:
 
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
@@ -12,18 +12,18 @@
 
   # ── Filesystems (Legacy/Test) ───────────────────────────────────────────
   # Only used when Disko is disabled (e.g., laptop-test host)
-  fileSystems."/" = lib.mkIf (!config.disko.enable or false) {
+  fileSystems."/" = lib.mkIf (!hostProfile.useDisko) {
     device = "/dev/disk/by-uuid/55b99976-5f02-482d-bb45-6f6315f9fe3d";
     fsType = "ext4";
   };
 
-  fileSystems."/boot" = lib.mkIf (!config.disko.enable or false) {
+  fileSystems."/boot" = lib.mkIf (!hostProfile.useDisko) {
     device = "/dev/disk/by-uuid/1CC7-06FE";
     fsType = "vfat";
     options = [ "fmask=0077" "dmask=0077" ];
   };
 
-  swapDevices = lib.mkIf (!config.disko.enable or false) [
+  swapDevices = lib.mkIf (!hostProfile.useDisko) [
     { device = "/dev/disk/by-uuid/a4812ab3-cb18-47a9-935d-209cce46492a"; }
   ];
 

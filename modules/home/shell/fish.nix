@@ -18,10 +18,47 @@
       update = "nh os switch --update";
       clean = "nh clean all";
       get-class = "hyprctl clients | grep -A5 'class:'";
+      cat = "bat --paging=never --style=plain";
+      ls = "eza --group-directories-first --icons=auto";
+      ll = "eza -lah --group-directories-first --icons=auto --git";
+      lt = "eza --tree --level=2 --icons=auto";
+      du = "dust";
+      df = "duf";
+      ps = "procs";
+      find = "fd";
+      grep = "rg";
+      rga = "ripgrep-all";
+      sed = "sd";
+      tldr = "tlrc";
+      td = "tlrc";
+      http = "xh";
+      watch = "watchexec";
+      gdiff = "git diff";
+      j = "just";
     };
 
     interactiveShellInit = ''
       set -g fish_greeting ""
+      set -g fish_autosuggestion_enabled 1
+
+      # Better completion UX: quicker pager response and case-insensitive matching.
+      set -g fish_complete_path ""
+      set -g fish_pager_color_completion cdcdcd
+
+      # FZF defaults for faster fuzzy file/history navigation.
+      set -gx FZF_DEFAULT_COMMAND "fd --type f --hidden --follow --exclude .git"
+      set -gx FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
+      set -gx FZF_DEFAULT_OPTS "--height=45% --layout=reverse --border --info=inline"
+      set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
+
+      if type -q zoxide
+          zoxide init fish | source
+      end
+
+      if functions -q fzf_configure_bindings
+          fzf_configure_bindings --directory=\cf --git_status=\cg --history=\cr --processes=\cp --variables=\cv
+      end
+
       # Ensure consistent history between sessions
       function on_exit --on-event fish_exit
           history merge
@@ -73,6 +110,10 @@
       { name = "z";    src = z.src;    }
       { name = "pure"; src = pure.src; }
       { name = "done"; src = done.src; }
+      { name = "fzf"; src = fzf.src; }
+      { name = "pisces"; src = pisces.src; }
+      { name = "sponge"; src = sponge.src; }
+      { name = "forgit"; src = forgit.src; }
     ];
   };
 

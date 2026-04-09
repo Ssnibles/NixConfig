@@ -53,7 +53,7 @@ check_nix_syntax() {
     while IFS= read -r -d '' file; do
         if ! nix-instantiate --parse "$file" &>/dev/null; then
             log_error "Syntax error in: $file"
-            ((errors++))
+            ((errors+=1))
         fi
     done < <(find . -name "*.nix" -type f -print0)
     
@@ -68,10 +68,9 @@ check_nix_syntax() {
 
 check_flake_evaluation() {
     log_info "Evaluating flake outputs..."
-    
-    if nix flake check --all-systems --no-build 2>&1 | grep -q "error:"; then
+
+    if ! nix flake check --all-systems --no-build; then
         log_error "Flake evaluation failed"
-        nix flake check --all-systems --no-build
         return 1
     else
         log_success "Flake evaluation successful"
@@ -86,11 +85,11 @@ check_host_configs() {
     for host in desktop laptop; do
         if [[ ! -f "hosts/$host/default.nix" ]]; then
             log_error "Missing host config: hosts/$host/default.nix"
-            ((missing++))
+            ((missing+=1))
         fi
-        
-        if [[ ! -f "hosts/$host/hardware-configuration.nix" ]]; then
-            log_warning "Missing hardware config: hosts/$host/hardware-configuration.nix"
+
+        if [[ ! -f "hosts/$host/hardware.nix" && ! -f "hosts/$host/hardware-configuration.nix" ]]; then
+            log_warning "Missing hardware config: hosts/$host/hardware.nix (or hardware-configuration.nix)"
         fi
         
         if [[ ! -f "disko/$host.nix" ]]; then
@@ -110,18 +109,31 @@ check_host_configs() {
 check_secrets() {
     log_info "Checking for uncommitted secrets..."
     local found=0
-    
-    # Check for common secret patterns in tracked files
-    if git ls-files | xargs grep -l "password\|secret\|token" 2>/dev/null | grep -v "check.sh" | grep -v ".age$"; then
-        log_warning "Potential secrets found in tracked files (review manually)"
-        ((found++))
+
+    # High-signal secret patterns (avoid noisy keyword-only matches)
+    local matches
+    matches="$(
+        git grep -nEI \
+            '(ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|xox[baprs]-[A-Za-z0-9-]{10,}|-----BEGIN (RSA|OPENSSH|EC|PGP) PRIVATE KEY-----)' \
+            -- \
+            . \
+            ":(exclude)**/*.age" \
+            ":(exclude)**/*.md" \
+            ":(exclude)check.sh" \
+            || true
+    )"
+
+    if [[ -n "$matches" ]]; then
+        echo "$matches"
+        log_warning "Potential plaintext secrets found in tracked files (review manually)"
+        ((found+=1))
     fi
-    
+
     # Check for .age files that should be encrypted
     while IFS= read -r -d '' file; do
         if [[ ! "$file" =~ \.age$ ]]; then
             log_warning "Plaintext secret file detected: $file"
-            ((found++))
+            ((found+=1))
         fi
     done < <(find secrets -type f -print0 2>/dev/null || true)
     

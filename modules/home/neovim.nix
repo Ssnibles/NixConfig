@@ -143,7 +143,7 @@ in
 
       # ── UI & Appearance ──────────────────────────────────────────────────
       lualine-nvim # Statusline
-      indent-blankline-nvim # Indent guides
+      indent-blankline-nvim # Indent guides + scope line
       statuscol-nvim # Custom status column (signs, line numbers)
       neoscroll-nvim # Smooth scrolling
       vague-nvim # Colorscheme (Vague theme)

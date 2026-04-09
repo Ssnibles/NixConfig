@@ -40,10 +40,7 @@ require("fidget").setup({
 		display = { done_icon = "✓", done_ttl = 2 },
 	},
 	notification = {
-		filter = function(_msg, _level, _opts)
-			local mode = vim.api.nvim_get_mode().mode:sub(1, 1)
-			return not vim.tbl_contains({ "i", "R", "r", "s", "S", "\19" }, mode)
-		end,
+		filter = vim.log.levels.INFO,
 		window = { winblend = 0, border = "none" },
 	},
 })
@@ -149,13 +146,40 @@ end
 
 -- Roslyn (C#)
 require("roslyn").setup({
-	config = {
-		capabilities = capabilities,
-		settings = {
-			["csharp|inlay_hints"] = {
-				csharp_enable_inlay_hints_for_implicit_object_creation = true,
-				csharp_enable_inlay_hints_for_implicit_variable_types = true,
-			},
+	filewatching = "roslyn",
+})
+
+lsp.config("roslyn", {
+	settings = {
+		["csharp|background_analysis"] = {
+			dotnet_analyzer_diagnostics_scope = "openFiles",
+			dotnet_compiler_diagnostics_scope = "openFiles",
+		},
+		["csharp|completion"] = {
+			dotnet_show_name_completion_suggestions = true,
+			dotnet_show_completion_items_from_unimported_namespaces = true,
+			dotnet_provide_regex_completions = false,
+		},
+		["csharp|inlay_hints"] = {
+			csharp_enable_inlay_hints_for_implicit_object_creation = true,
+			csharp_enable_inlay_hints_for_implicit_variable_types = true,
+			csharp_enable_inlay_hints_for_lambda_parameter_types = true,
+			csharp_enable_inlay_hints_for_types = true,
+			dotnet_enable_inlay_hints_for_parameters = true,
+			dotnet_enable_inlay_hints_for_object_creation_parameters = true,
+			dotnet_enable_inlay_hints_for_other_parameters = true,
+			dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = true,
+			dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = true,
+		},
+		["csharp|code_lens"] = {
+			dotnet_enable_references_code_lens = false,
+			dotnet_enable_tests_code_lens = false,
+		},
+		["csharp|symbol_search"] = {
+			dotnet_search_reference_assemblies = false,
+		},
+		["csharp|formatting"] = {
+			dotnet_organize_imports_on_format = true,
 		},
 	},
 })

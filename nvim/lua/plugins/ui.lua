@@ -1,5 +1,7 @@
 -- UI components: statusline, indentation, scrolling, notifications
 
+local c = require("theme").colors
+
 -- Lualine: statusline
 local lualine_theme = {
 	normal = {
@@ -29,11 +31,37 @@ require("lualine").setup({
 	},
 })
 
--- Indent-blankline: indent guides
+-- Indent-blankline: indent guides + scope line
+local hooks = require("ibl.hooks")
+hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
+	vim.api.nvim_set_hl(0, "IblIndent", { fg = "#1a1a1f" })
+	vim.api.nvim_set_hl(0, "IblScope", { fg = c.blue, nocombine = true })
+end)
+
 require("ibl").setup({
-	indent = { char = "│" },
-	scope = { enabled = true, show_start = false, show_end = false },
-	exclude = { filetypes = { "help", "dashboard", "lazy", "mason", "notify", "fyler" } },
+	debounce = 100,
+	indent = {
+		char = "│",
+		highlight = "IblIndent",
+	},
+	scope = {
+		enabled = true,
+		char = "│",
+		highlight = "IblScope",
+		show_start = false,
+		show_end = false,
+		show_exact_scope = true,
+		injected_languages = true,
+		include = {
+			node_type = { ["*"] = { "*" } },
+		},
+		exclude = {
+			node_type = {},
+		},
+	},
+	exclude = {
+		filetypes = { "help", "dashboard", "lazy", "mason", "notify", "fyler" },
+	},
 })
 
 -- Statuscol: custom status column
