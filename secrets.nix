@@ -5,31 +5,30 @@
 #
 # SETUP INSTRUCTIONS:
 #   1. Generate key: age-keygen -o ~/.config/agenix/key.txt
-#   2. Copy the public key printed to stdout (starts with "age1...")
-#   3. Replace the placeholder below with your actual key
-#   4. Encrypt secrets: age -r <public-key> -o secrets/<n>.age secrets/<n>.txt
-#
-# WARNING: The placeholder key below must be replaced before agenix can
-# encrypt or decrypt any secrets.
+#   2. Export your public key for the current shell:
+#        export AGENIX_USER_KEY="age1..."
+#   3. Encrypt secrets:
+#        agenix -e secrets/spotify-id.age
+#        agenix -e secrets/spotify-secret.age
 #
 # Secret files:
 #   - spotify-id.age     : Spotify API client ID
 #   - spotify-secret.age : Spotify API client secret
 # =============================================================================
 let
-  users = [
-    # REPLACE THIS with your actual age public key, e.g.:
-    # "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"
-    "age1REPLACE_WITH_YOUR_AGE_PUBLIC_KEY"
-  ];
+  userKey = builtins.getEnv "AGENIX_USER_KEY";
+  users = if userKey != "" then [ userKey ] else [ ];
 
-  desktopSecrets = {
-    "spotify-id.age".publicKeys = users;
-    "spotify-secret.age".publicKeys = users;
-  };
+  maybeSpotifyId =
+    if users != [ ] && builtins.pathExists ./secrets/spotify-id.age then
+      { "spotify-id.age".publicKeys = users; }
+    else
+      { };
+  maybeSpotifySecret =
+    if users != [ ] && builtins.pathExists ./secrets/spotify-secret.age then
+      { "spotify-secret.age".publicKeys = users; }
+    else
+      { };
 
-  laptopSecrets = {
-    # Add laptop-specific secrets here
-  };
 in
-desktopSecrets // laptopSecrets
+maybeSpotifyId // maybeSpotifySecret

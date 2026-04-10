@@ -3,7 +3,11 @@
 # =============================================================================
 # AMD CPU + NVIDIA GPU desktop.
 # =============================================================================
-{ pkgs, ... }:
+{
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   imports = [
@@ -17,6 +21,16 @@
   # ── Power management ─────────────────────────────────────────────────────
   # Desktop stays on performance governor; no TLP needed.
   powerManagement.cpuFreqGovernor = "performance";
+
+  # ── WiFi stability ────────────────────────────────────────────────────────
+  # Keep iwd backend (user preference), but relax DNS strictness to reduce
+  # perceived WiFi flakiness on networks with weak DNSSEC/DoT support.
+  networking.networkmanager.wifi.powersave = false;
+
+  services.resolved = {
+    dnssec = lib.mkForce "allow-downgrade";
+    dnsovertls = lib.mkForce "opportunistic";
+  };
 
   # ── UDEV rules ───────────────────────────────────────────────────────────
   services.udev.extraRules = ''

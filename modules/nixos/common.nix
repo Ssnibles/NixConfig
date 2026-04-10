@@ -32,6 +32,10 @@
   hostProfile,
   ...
 }:
+let
+  spotifyIdAge = ../../secrets/spotify-id.age;
+  spotifySecretAge = ../../secrets/spotify-secret.age;
+in
 {
   # ═══════════════════════════════════════════════════════════════════════════
   # SYSTEM STATE VERSION
@@ -92,10 +96,9 @@
 
     firewall = {
       enable = true;
-      # LocalSend: cross-platform file transfer app (LAN discovery)
-      # Port 53317 for both TCP (transfers) and UDP (discovery)
-      allowedTCPPorts = [ 53317 ];
-      allowedUDPPorts = [ 53317 ];
+      # Default-deny inbound policy. Open extra ports per-host when needed.
+      allowedTCPPorts = [ ];
+      allowedUDPPorts = [ ];
     };
 
     # IPv6 enabled by default (most ISPs and LANs support it now)
@@ -106,11 +109,9 @@
   # Encrypts DNS queries to prevent eavesdropping and manipulation
   services.resolved = {
     enable = true;
-    # Allow downgrade if DNSSEC validation fails (prevents outages)
-    dnssec = "allow-downgrade";
-    # Opportunistic TLS: encrypt when supported, fall back if not
-    # More reliable than "true" (strict) for diverse network environments
-    dnsovertls = "opportunistic";
+    # Strict DNSSEC and encrypted DNS by default.
+    dnssec = "true";
+    dnsovertls = "true";
     # Route all DNS queries through systemd-resolved
     domains = [ "~." ];
     extraConfig = ''
@@ -213,7 +214,7 @@
   services.avahi = {
     enable = true;
     nssmdns4 = true; # NSS module for .local domain resolution
-    openFirewall = true; # Allow mDNS traffic (UDP 5353)
+    openFirewall = false; # Keep firewall closed by default; open per-host if required
   };
 
   # Nix Helper (nh): Enhanced nixos-rebuild with better UX
@@ -232,8 +233,7 @@
   programs.nix-index.enable = true;
   programs.command-not-found.enable = false; # Replaced by nix-index
 
-  # Nix-ld: Run unpatched binaries (e.g., downloaded precompiled apps)
-  # Provides FHS-compatible loader for non-Nix binaries
+  # Nix-LD: LD_PRELOAD wrapper for running non-Nix apps with Nix libraries
   programs.nix-ld.enable = true;
 
   # Blueman: Graphical Bluetooth manager
@@ -296,6 +296,23 @@
       "plugdev"
     ];
   };
+
+  age.secrets = lib.mkMerge [
+    (lib.mkIf (builtins.pathExists spotifyIdAge) {
+      spotify-id = {
+        file = spotifyIdAge;
+        owner = hostProfile.user;
+        mode = "0400";
+      };
+    })
+    (lib.mkIf (builtins.pathExists spotifySecretAge) {
+      spotify-secret = {
+        file = spotifySecretAge;
+        owner = hostProfile.user;
+        mode = "0400";
+      };
+    })
+  ];
 
   # ═══════════════════════════════════════════════════════════════════════════
   # BASE SYSTEM PACKAGES

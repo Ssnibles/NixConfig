@@ -374,18 +374,24 @@ check_secrets() {
         log_warning "Potential plaintext secrets found (review manually)"
     fi
 
-    if [[ -f "secrets.nix" ]] && grep -q 'REPLACE_WITH_YOUR_AGE_PUBLIC_KEY' secrets.nix; then
-        log_warning "secrets.nix still contains placeholder age public key"
-    fi
-
     if [[ -f "secrets.nix" ]]; then
+        local declared output
+        output="$(
+            nix eval --impure --raw --expr '
+              let
+                secrets = import ./secrets.nix;
+              in
+              builtins.concatStringsSep "\n" (builtins.attrNames secrets)
+            ' 2>/dev/null || true
+        )"
+
         while IFS= read -r file; do
             [[ -n "$file" ]] || continue
             if [[ -f "$file" || -f "secrets/$file" ]]; then
                 continue
             fi
             log_warning "Secret declared in secrets.nix not found on disk: $file"
-        done < <(grep -oE '"[^"]+\.age"' secrets.nix | tr -d '"' | sort -u)
+        done <<< "$output"
     fi
 
     if [[ -d "secrets" ]]; then

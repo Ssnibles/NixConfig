@@ -13,7 +13,7 @@
 }:
 let
   # Override via CLI: --argstr diskDevice /dev/nvme0n1
-  device = args.diskDevice or "/dev/nvme1n1";
+  device = args.diskDevice or "/dev/INVALID_SET_--argstr_diskDevice";
 in
 {
   disko.devices.disk.main = {

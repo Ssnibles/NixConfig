@@ -144,14 +144,6 @@ if [[ "$DRY_RUN" == false ]]; then
     --argstr diskDevice "$DISK" \
     "$TARGET#${HOST}"
   success "Disk partitioned and formatted"
-
-  # Update config to match actual hardware device path
-  info "Updating device path in system configuration..."
-  sed -i "s|device = \".*\";|device = \"$DISK\";|g" "$TARGET/disko/${HOST}.nix"
-
-  # Optional: Commit changes to git
-  git -C "$TARGET" add -u
-  git -C "$TARGET" commit -m "chore: set disk device to $DISK for $HOST" || true
 fi
 
 # =============================================================================
