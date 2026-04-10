@@ -32,6 +32,7 @@ o.fillchars = { fold = " ", foldopen = "▾", foldclose = "▸", diff = "╱", e
 -- Search
 o.ignorecase = true
 o.smartcase = true
+o.incsearch = true
 o.inccommand = "split"
 
 -- Splits
@@ -46,9 +47,11 @@ o.foldlevelstart = 99
 
 -- Performance
 o.updatetime = 200
-o.timeoutlen = 400
+o.timeoutlen = 300
+o.ttimeoutlen = 10
 o.undofile = true
 o.swapfile = false
+o.autoread = true
 
 -- Clipboard and input
 o.clipboard = "unnamedplus"
@@ -56,9 +59,19 @@ o.mouse = "a"
 o.confirm = true
 o.virtualedit = "block"
 
+-- Completion and commandline UI
+o.completeopt = { "menuone", "noselect", "popup" }
+o.pumheight = 12
+o.wildmode = "longest:full,full"
+o.wildoptions = "pum,fuzzy"
+o.wildignorecase = true
+o.laststatus = 3
+o.cmdheight = 0
+o.showcmdloc = "statusline"
+
 -- Grep with ripgrep
 o.grepprg = "rg --vimgrep --smart-case"
 o.grepformat = "%f:%l:%c:%m"
 
 -- Reduce noise
-o.shortmess:append("sIc")
+o.shortmess:append("sIcW")

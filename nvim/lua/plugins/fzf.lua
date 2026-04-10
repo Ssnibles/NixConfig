@@ -10,15 +10,23 @@ fzf.setup({
 		preview = { layout = "vertical", vertical = "right:55%" },
 	},
 	files = { cmd = "fd --type f --hidden --exclude .git" },
+	oldfiles = { include_current_session = true, cwd_only = true },
 	grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },
+	keymap = {
+		fzf = {
+			["ctrl-q"] = "select-all+accept",
+		},
+	},
 })
 
 local map = vim.keymap.set
 map("n", "<leader>ff", fzf.files, { desc = "Find files" })
 map("n", "<leader>fr", fzf.oldfiles, { desc = "Recent files" })
 map("n", "<leader>fb", fzf.buffers, { desc = "Buffers" })
+map("n", "<leader>,", fzf.buffers, { desc = "Buffers" })
 map("n", "<leader>fg", fzf.live_grep, { desc = "Live grep" })
 map("n", "<leader>fw", fzf.grep_cword, { desc = "Grep word" })
+map("n", "<leader>fW", fzf.grep_cWORD, { desc = "Grep WORD" })
 map("n", "<leader>f/", fzf.blines, { desc = "Search buffer" })
 map("n", "<leader>fs", fzf.lsp_document_symbols, { desc = "Document symbols" })
 map("n", "<leader>fS", fzf.lsp_workspace_symbols, { desc = "Workspace symbols" })

@@ -63,6 +63,28 @@ in
           fzf_configure_bindings --directory=\cf --git_status=\cg --history=\cr --processes=\cp --variables=\cv
       end
 
+      function cdf --description "cd into a directory selected with fzf"
+          set -l search_root "."
+          if test (count $argv) -gt 0
+              set search_root "$argv[1]"
+          end
+
+          if not test -d "$search_root"
+              echo "cdf: not a directory: $search_root" >&2
+              return 1
+          end
+
+          set -l target (
+              printf '%s\n' "." \
+              (fd --type d --hidden --follow --exclude .git . "$search_root" 2>/dev/null) \
+              | fzf --height=45% --layout=reverse --border --prompt="cd > "
+          )
+
+          if test -n "$target"
+              cd "$target"
+          end
+      end
+
       # Ensure consistent history between sessions
       function on_exit --on-event fish_exit
           history merge

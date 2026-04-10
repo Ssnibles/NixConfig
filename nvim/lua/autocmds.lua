@@ -10,6 +10,12 @@ autocmd("TextYankPost", {
 	end,
 })
 
+-- Check if files changed outside Neovim and keep them in sync
+autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
+	group = augroup,
+	command = "checktime",
+})
+
 -- Restore cursor position
 autocmd("BufReadPost", {
 	group = augroup,
@@ -25,6 +31,13 @@ autocmd("BufReadPost", {
 autocmd("BufWritePre", {
 	group = augroup,
 	callback = function()
+		if vim.bo.buftype ~= "" then
+			return
+		end
+		local skip = { markdown = true, text = true, gitcommit = true, diff = true }
+		if skip[vim.bo.filetype] then
+			return
+		end
 		local ok, ts = pcall(require, "mini.trailspace")
 		if ok then
 			ts.trim()
@@ -64,4 +77,21 @@ autocmd("FileType", {
 		vim.opt_local.spell = true
 		vim.opt_local.wrap = true
 	end,
+})
+
+-- Keep terminal buffers ergonomically isolated
+autocmd("TermOpen", {
+	group = augroup,
+	callback = function()
+		vim.opt_local.number = false
+		vim.opt_local.relativenumber = false
+		vim.opt_local.signcolumn = "no"
+	end,
+})
+
+-- Start terminals in insert mode for immediate shell interaction
+autocmd("BufEnter", {
+	group = augroup,
+	pattern = "term://*",
+	command = "startinsert",
 })

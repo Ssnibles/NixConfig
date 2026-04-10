@@ -1,15 +1,6 @@
 -- LSP configuration
 local lsp = vim.lsp
 
-local function detect_nix_host()
-	local from_env = vim.env.NIX_CONFIG_HOST
-	if from_env and from_env ~= "" then
-		return from_env
-	end
-	local hostname = vim.loop.os_gethostname() or ""
-	return hostname ~= "" and hostname or "desktop"
-end
-
 local function detect_flake_root()
 	local from_env = vim.env.NIX_CONFIG_FLAKE
 	if from_env and from_env ~= "" then
@@ -31,6 +22,48 @@ local function detect_flake_root()
 	end
 
 	return nil
+end
+
+local function host_exists(flake_root, host)
+	if not flake_root or host == "" then
+		return false
+	end
+	return vim.uv.fs_stat(("%s/hosts/%s"):format(flake_root, host)) ~= nil
+end
+
+local function detect_nix_host(flake_root)
+	local from_env = vim.env.NIX_CONFIG_HOST
+	if from_env and from_env ~= "" then
+		if not flake_root or host_exists(flake_root, from_env) then
+			return from_env
+		end
+		vim.schedule(function()
+			vim.notify(
+				("NIX_CONFIG_HOST=%s does not match flake hosts; falling back to auto-detection"):format(from_env),
+				vim.log.levels.WARN
+			)
+		end)
+	end
+
+	local hostname = vim.loop.os_gethostname() or ""
+	local short_hostname = hostname:match("^[^.]+") or hostname
+	if short_hostname ~= "" and host_exists(flake_root, short_hostname) then
+		return short_hostname
+	end
+
+	if host_exists(flake_root, "desktop") then
+		return "desktop"
+	end
+	if host_exists(flake_root, "laptop") then
+		return "laptop"
+	end
+
+	return hostname ~= "" and hostname or "desktop"
+end
+
+local function nix_string(value)
+	local escaped = value:gsub("\\", "\\\\"):gsub('"', '\\"'):gsub("%${", "\\${")
+	return ('"%s"'):format(escaped)
 end
 
 -- Fidget: LSP progress indicator
@@ -60,94 +93,176 @@ capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFold
 
 -- Flake configuration for nixd
 local flake_root = detect_flake_root()
-local nix_host = detect_nix_host()
+local nix_host = detect_nix_host(flake_root)
+local flake_ref = flake_root and nix_string(flake_root) or nil
+local host_attr = nix_string(nix_host)
+
+local nixpkgs_expr = "import <nixpkgs> {}"
+local nixd_options = {}
+if flake_ref then
+	nixpkgs_expr = ([[
+let
+  flake = builtins.getFlake %s;
+  system = builtins.currentSystem;
+  pkgs = import flake.inputs.nixpkgs { inherit system; };
+  unstable = import flake.inputs."nixpkgs-unstable" { inherit system; };
+in
+  pkgs // { unstable = unstable; }
+]]):format(flake_ref)
+
+	nixd_options = {
+		nixos = {
+			expr = ("(builtins.getFlake %s).nixosConfigurations.%s.options"):format(flake_ref, host_attr),
+		},
+		["home-manager"] = {
+			expr = ("(builtins.getFlake %s).nixosConfigurations.%s.options.\"home-manager\".users.type.getSubOptions []"):format(
+				flake_ref,
+				host_attr
+			),
+		},
+	}
+end
 
 -- Global LSP config (applies to all servers)
 lsp.config("*", {
 	capabilities = capabilities,
+	flags = { debounce_text_changes = 150 },
 	on_attach = function(client, bufnr)
 		if client:supports_method("textDocument/inlayHint") then
 			vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
 		end
 
-		if vim.b[bufnr]._lsp_attached then
-			return
-		end
-		vim.b[bufnr]._lsp_attached = true
+		if not vim.b[bufnr]._lsp_keymaps_attached then
+			vim.b[bufnr]._lsp_keymaps_attached = true
 
-		local map = function(keys, fn, desc)
-			vim.keymap.set("n", keys, fn, { buffer = bufnr, desc = desc })
-		end
-
-		map("gd", lsp.buf.definition, "Go to definition")
-		map("gD", lsp.buf.declaration, "Go to declaration")
-		map("gi", lsp.buf.implementation, "Go to implementation")
-		map("gr", lsp.buf.references, "Find references")
-		map("K", lsp.buf.hover, "Hover documentation")
-		map("<leader>rn", lsp.buf.rename, "Rename symbol")
-		map("<leader>ca", function()
-			local ok, tiny = pcall(require, "tiny-code-action")
-			if ok then
-				tiny.code_action()
-			else
-				lsp.buf.code_action()
+			local map = function(keys, fn, desc)
+				vim.keymap.set("n", keys, fn, { buffer = bufnr, desc = desc })
 			end
-		end, "Code action")
+
+			map("gd", lsp.buf.definition, "Go to definition")
+			map("gD", lsp.buf.declaration, "Go to declaration")
+			map("gi", lsp.buf.implementation, "Go to implementation")
+			map("gr", lsp.buf.references, "Find references")
+			map("K", lsp.buf.hover, "Hover documentation")
+			map("<leader>rn", lsp.buf.rename, "Rename symbol")
+			map("<leader>ca", function()
+				local ok, tiny = pcall(require, "tiny-code-action")
+				if ok then
+					tiny.code_action()
+				else
+					lsp.buf.code_action()
+				end
+			end, "Code action")
+		end
 	end,
 })
 
 -- Hover with rounded borders
 lsp.handlers["textDocument/hover"] = lsp.with(lsp.handlers.hover, { border = "rounded" })
+lsp.handlers["textDocument/signatureHelp"] = lsp.with(lsp.handlers.signature_help, { border = "rounded" })
 
 -- Server configs
 lsp.config("nixd", {
 	cmd = { "nixd" },
+	root_markers = { "flake.nix", ".git" },
 	settings = {
 		nixd = {
-			nixpkgs = { expr = "import <nixpkgs> {}" },
+			nixpkgs = { expr = nixpkgs_expr },
 			formatting = { command = { "nixfmt" } },
-			options = flake_root
-					and {
-						nixos = {
-							expr = ('(builtins.getFlake "%s").nixosConfigurations.%s.options'):format(
-								flake_root,
-								nix_host
-							),
-						},
-						["home-manager"] = {
-							expr = ('(builtins.getFlake "%s").nixosConfigurations.%s.options.home-manager.users.type.getSubOptions []'):format(
-								flake_root,
-								nix_host
-							),
-						},
-					}
-				or {},
+			options = nixd_options,
 		},
 	},
 })
 
 lsp.config("lua_ls", {
 	cmd = { "lua-language-server" },
+	root_markers = { ".luarc.json", ".stylua.toml", "flake.nix", ".git" },
 	settings = {
 		Lua = {
 			hint = { enable = true, arrayIndex = "Disable" },
 			runtime = { version = "LuaJIT" },
 			diagnostics = { globals = { "vim" } },
-			workspace = { checkThirdParty = false },
+			completion = { callSnippet = "Replace" },
+			workspace = {
+				checkThirdParty = false,
+				library = {
+					[vim.env.VIMRUNTIME] = true,
+					[vim.fn.stdpath("config")] = true,
+				},
+			},
 			telemetry = { enable = false },
 		},
 	},
 })
 
--- Simple servers (use default config)
-for _, server in ipairs({ "pyright", "vtsls", "kotlin_language_server", "jdtls", "marksman" }) do
-	lsp.config(server, {})
-end
+lsp.config("pyright", {
+	root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" },
+	settings = {
+		python = {
+			analysis = {
+				autoImportCompletions = true,
+				autoSearchPaths = true,
+				diagnosticMode = "openFilesOnly",
+				typeCheckingMode = "basic",
+				useLibraryCodeForTypes = true,
+			},
+		},
+	},
+})
+
+lsp.config("vtsls", {
+	root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+	settings = {
+		vtsls = {
+			autoUseWorkspaceTsdk = true,
+			enableMoveToFileCodeAction = true,
+		},
+		typescript = {
+			suggest = { completeFunctionCalls = true },
+			updateImportsOnFileMove = { enabled = "always" },
+			inlayHints = {
+				parameterNames = { enabled = "literals" },
+				parameterTypes = { enabled = true },
+				variableTypes = { enabled = true },
+				propertyDeclarationTypes = { enabled = true },
+				functionLikeReturnTypes = { enabled = true },
+				enumMemberValues = { enabled = true },
+			},
+		},
+		javascript = {
+			suggest = { completeFunctionCalls = true },
+			updateImportsOnFileMove = { enabled = "always" },
+			inlayHints = {
+				parameterNames = { enabled = "literals" },
+				parameterTypes = { enabled = true },
+				variableTypes = { enabled = true },
+				propertyDeclarationTypes = { enabled = true },
+				functionLikeReturnTypes = { enabled = true },
+				enumMemberValues = { enabled = true },
+			},
+		},
+	},
+})
+
+lsp.config("kotlin_language_server", {
+	root_markers = { "settings.gradle.kts", "settings.gradle", "build.gradle.kts", "build.gradle", ".git" },
+})
+
+lsp.config("jdtls", {
+	root_markers = { "pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", ".git" },
+})
+
+lsp.config("marksman", {
+	root_markers = { "marksman.toml", ".git" },
+})
 
 -- Roslyn (C#)
-require("roslyn").setup({
-	filewatching = "roslyn",
-})
+local ok_roslyn, roslyn = pcall(require, "roslyn")
+if ok_roslyn then
+	roslyn.setup({
+		filewatching = "roslyn",
+	})
+end
 
 lsp.config("roslyn", {
 	settings = {
@@ -185,6 +300,52 @@ lsp.config("roslyn", {
 })
 
 -- Enable servers
-for _, server in ipairs({ "nixd", "lua_ls", "pyright", "vtsls", "kotlin_language_server", "jdtls", "marksman" }) do
-	lsp.enable(server)
+local server_cmd = {
+	nixd = "nixd",
+	lua_ls = "lua-language-server",
+	pyright = "pyright-langserver",
+	vtsls = "vtsls",
+	kotlin_language_server = "kotlin-language-server",
+	jdtls = "jdtls",
+	marksman = "marksman",
+}
+
+local configured_servers = { "nixd", "lua_ls", "pyright", "vtsls", "kotlin_language_server", "jdtls", "marksman" }
+for _, server in ipairs(configured_servers) do
+	local cmd = server_cmd[server]
+	if not cmd or vim.fn.executable(cmd) == 1 then
+		lsp.enable(server)
+	else
+		vim.notify(("Skipped %s LSP: `%s` not found on PATH"):format(server, cmd), vim.log.levels.WARN)
+	end
 end
+
+vim.api.nvim_create_user_command("LspHealth", function()
+	local lines = { "LSP Health" }
+	for _, server in ipairs(configured_servers) do
+		local cmd = server_cmd[server]
+		if not cmd then
+			lines[#lines + 1] = ("- %s: command unknown"):format(server)
+		else
+			local exe = vim.fn.exepath(cmd)
+			if exe ~= "" then
+				lines[#lines + 1] = ("- %s: OK (%s)"):format(server, exe)
+			else
+				lines[#lines + 1] = ("- %s: missing `%s`"):format(server, cmd)
+			end
+		end
+	end
+
+	local active = vim.lsp.get_clients({ bufnr = 0 })
+	if #active > 0 then
+		local names = {}
+		for _, client in ipairs(active) do
+			names[#names + 1] = client.name
+		end
+		lines[#lines + 1] = ("Active in current buffer: %s"):format(table.concat(names, ", "))
+	else
+		lines[#lines + 1] = "Active in current buffer: none"
+	end
+
+	vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "LSP Health" })
+end, { desc = "Show LSP health details" })

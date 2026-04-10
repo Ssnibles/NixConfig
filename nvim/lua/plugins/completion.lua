@@ -64,7 +64,7 @@ require("copilot").setup({
 	suggestion = {
 		enabled = true,
 		auto_trigger = true,
-		debounce = 3000,
+		debounce = 150,
 		hide_during_completion = true,
 		keymap = {
 			accept = "<M-y>",

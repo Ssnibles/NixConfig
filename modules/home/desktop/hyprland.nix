@@ -86,7 +86,7 @@ in
 
       bind = [
         "$mod, RETURN, exec, foot"
-        "$mod, X, killactive"
+        "$mod, Q, killactive"
         "$mod, E, exec, yazi"
         "$mod, V, exec, toggle-float"
         "$mod, G, exec, toggle-focus-mode"

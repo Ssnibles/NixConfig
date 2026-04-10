@@ -250,25 +250,33 @@ NixConfig/
 | Key | Mode | Action |
 |-----|------|--------|
 | `jk` | Insert | Exit insert mode |
+| `Ctrl-s` | Insert/Normal/Visual | Save buffer |
 | `U` | Normal | Redo |
 | `Esc` | Normal | Clear search highlight |
+| `<leader>q` | Normal | Quit window |
+| `<leader>qw` | Normal | Save and quit |
+| `<leader>qq` | Normal | Quit all |
 
 #### Navigation
 | Key | Mode | Action |
 |-----|------|--------|
 | `Ctrl-d` / `Ctrl-u` | Normal | Scroll down/up (centered) |
 | `n` / `N` | Normal | Next/prev search match (centered) |
-| `s` | Normal/Visual/Operator | Leap in current window |
-| `S` | Normal | Leap from other windows |
+| `s` | Normal/Visual/Operator | Flash jump |
+| `S` | Normal/Visual/Operator | Flash treesitter jump |
 | `]d` / `[d` | Normal | Next/prev diagnostic |
 | `]e` / `[e` | Normal | Next/prev error |
+| `]q` / `[q` | Normal | Next/prev quickfix item |
+| `]l` / `[l` | Normal | Next/prev location item |
 
 #### Window Management
 | Key | Mode | Action |
 |-----|------|--------|
 | `<leader>wv` | Normal | Vertical split |
-| `<leader>wh` | Normal | Horizontal split |
-| `<leader>wx` | Normal | Close window |
+| `<leader>ws` | Normal | Horizontal split |
+| `<leader>wq` | Normal | Close window |
+| `<leader>wo` | Normal | Keep only current window |
+| `<leader>w=` | Normal | Equalize windows |
 | `Ctrl-h/j/k/l` | Normal | Navigate windows (Tmux-aware) |
 | `Ctrl-Shift-h/j/k/l` | Normal | Resize splits |
 
@@ -279,15 +287,18 @@ NixConfig/
 | `gr` | Normal | References |
 | `K` | Normal | Hover documentation |
 | `<leader>ca` | Normal/Visual | Code action |
-| `<leader>cr` | Normal | Rename symbol |
+| `<leader>rn` | Normal | Rename symbol |
 | `<leader>cf` | Normal/Visual | Format |
+| `<leader>lf` | Normal | LSP finder |
 
 #### Fuzzy Finding (fzf-lua)
 | Key | Mode | Action |
 |-----|------|--------|
 | `<leader>ff` | Normal | Find files |
 | `<leader>fg` | Normal | Live grep |
+| `<leader>fR` | Normal | Find and replace (project-wide) |
 | `<leader>fb` | Normal | Buffers |
+| `<leader>,` | Normal | Buffers (quick picker) |
 | `<leader>fh` | Normal | Help tags |
 | `<leader>fr` | Normal | Recent files |
 
@@ -303,15 +314,19 @@ NixConfig/
 | Key | Mode | Action |
 |-----|------|--------|
 | `-` | Normal | Toggle Fyler (tree sidebar) |
-| `<leader>ef` | Normal | Open Fyler (tree sidebar) |
+| `<leader>fe` | Normal | Explorer (Fyler sidebar) |
 
 #### Toggles
 | Key | Mode | Action |
 |-----|------|--------|
 | `<leader>tw` | Normal | Toggle line wrap |
 | `<leader>ts` | Normal | Toggle spell check |
-| `<leader>th` | Normal | Toggle LSP inlay hints |
+| `<leader>td` | Normal | Toggle diagnostics |
+| `<leader>ti` | Normal | Toggle LSP inlay hints |
 | `<leader>tc` | Normal | Toggle cursor word highlight |
+| `<leader>tt` | Normal | Toggle terminal (default) |
+| `<leader>tb` | Normal | Toggle terminal (bottom) |
+| `<leader>tr` | Normal | Toggle terminal (right) |
 
 ### Hyprland (Leader: `Super/Win`)
 

@@ -73,10 +73,10 @@ in
         bind "K" { Resize "Increase Up"; }
         bind "L" { Resize "Increase Right"; }
 
-        bind "x" { CloseFocus; SwitchToMode "Normal"; }
-        bind "X" { CloseTab; SwitchToMode "Normal"; }
+        bind "q" { CloseFocus; SwitchToMode "Normal"; }
+        bind "Q" { CloseTab; SwitchToMode "Normal"; }
         bind "f" { ToggleFocusFullscreen; SwitchToMode "Normal"; }
-        bind "q" { Detach; SwitchToMode "Normal"; }
+        bind "x" { Detach; SwitchToMode "Normal"; }
         bind "e" {
           LaunchOrFocusPlugin "session-manager" {
             floating true

@@ -58,7 +58,7 @@ function M.setup()
 	hl("WinSeparator", { fg = c.border })
 
 	-- Floats and popups (Non-border highlights)
-	hl("NormalFloat", { fg = c.border, bg = c.bg })
+	hl("NormalFloat", { fg = c.fg, bg = c.bg })
 	hl("FloatTitle", { fg = c.blue, bg = c.bg, bold = true })
 	hl("LspInfoTitle", { fg = c.blue, bg = c.bg, bold = true })
 	hl("FzfLuaNormal", { bg = c.bg })

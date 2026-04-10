@@ -78,6 +78,12 @@ in
       google-java-format # Java formatter
       csharpier # C# formatter
       dotnet-sdk_10 # .NET SDK (required for Roslyn LSP)
+      statix # Nix linter (style + best practices)
+      deadnix # Nix dead code detector
+      python3Packages.debugpy # Python debug adapter
+      netcoredbg # C#/.NET debug adapter
+      delve # Go debug adapter
+      vscode-js-debug # JS/TS debug adapter
 
       # ── CLI Tools (used by plugins) ──────────────────────────────────────
       tree-sitter # Syntax parser (used by nvim-treesitter)
@@ -135,11 +141,19 @@ in
       fidget-nvim # LSP progress notifications
       roslyn-nvim # C# LSP integration (Roslyn-specific)
       tiny-inline-diagnostic-nvim # Inline diagnostic messages
+      nvim-lint # Asynchronous linting framework
+      nvim-dap # Debug Adapter Protocol client
+      nvim-dap-ui # DAP UI panels
+      nvim-dap-virtual-text # Inline DAP variable values
+      nvim-dap-python # Python DAP helper
+      nvim-nio # Dependency for nvim-dap-ui
+      trouble-nvim # Diagnostics + quickfix UI
 
       # ── Fuzzy Finding & Navigation ───────────────────────────────────────
       fzf-lua # Fast fuzzy finder (Lua-based)
       fyler-nvim # Tree file manager
-      leap-nvim # Fast motion (replaces EasyMotion)
+      leap-nvim # Fast motion plugin (kept installed for easy A/B testing)
+      flash-nvim # Motion/navigation alternative to leap.nvim
       smart-splits-nvim # Smart split navigation and resizing
 
       # ── UI & Appearance ──────────────────────────────────────────────────
@@ -149,6 +163,9 @@ in
       vague-nvim # Colorscheme (Vague theme)
       nui-nvim # UI dependency for noice.nvim
       noice-nvim # Better UI for messages, cmdline, popups
+      no-neck-pain-nvim # Centered editing with side buffers
+      snacks-nvim # Maintained utility suite (terminal integration)
+      twilight-nvim # Dim inactive code context (focus mode)
 
       # ── Git Integration ──────────────────────────────────────────────────
       gitsigns-nvim # Git signs in gutter (add/change/delete)

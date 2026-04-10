@@ -1,5 +1,6 @@
 -- Navigation: motion, search/replace, tmux integration
 
+--[[
 -- Leap: fast motion
 require("leap")
 vim.keymap.set({ "n", "x", "o" }, "s", "<Plug>(leap)", { desc = "Leap" })
@@ -7,10 +8,21 @@ vim.keymap.set("n", "S", "<Plug>(leap-from-window)", { desc = "Leap from window"
 vim.keymap.set({ "x", "o" }, "x", "<Plug>(leap-forward-till)", { desc = "Leap forward till" })
 vim.keymap.set({ "x", "o" }, "X", "<Plug>(leap-backward-till)", { desc = "Leap backward till" })
 require("leap.user").set_repeat_keys("<enter>", "<backspace>", { relative_directions = true })
+]]
+
+-- Flash: motion/navigation alternative to leap
+local flash = require("flash")
+flash.setup({})
+vim.keymap.set({ "n", "x", "o" }, "s", function()
+	flash.jump()
+end, { desc = "Flash jump" })
+vim.keymap.set({ "n", "x", "o" }, "S", function()
+	flash.treesitter()
+end, { desc = "Flash treesitter" })
 
 -- Grug-far: project-wide search/replace
 require("grug-far").setup()
-vim.keymap.set("n", "<leader>sr", "<cmd>GrugFar<CR>", { desc = "Search and replace" })
+vim.keymap.set("n", "<leader>fR", "<cmd>GrugFar<CR>", { desc = "Find and replace" })
 
 -- Smart-splits: resize and move splits intuitively
 local smart_splits = require("smart-splits")

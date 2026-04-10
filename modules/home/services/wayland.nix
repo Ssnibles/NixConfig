@@ -26,13 +26,15 @@
   systemd.user.services.vicinae = {
     Unit = {
       Description = "Vicinae launcher daemon";
-      PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" ];
+      PartOf = [ "hyprland-session.target" ];
+      After = [ "hyprland-session.target" ];
     };
     Service = {
-      ExecStart = "${pkgs.vicinae}/bin/vicinae server";
+      Environment = [ "QT_QPA_PLATFORM=wayland;xcb" ];
+      ExecStart = "${pkgs.bash}/bin/bash -lc 'for i in {1..50}; do for socket in \"$XDG_RUNTIME_DIR\"/wayland-*; do if [ -S \"$socket\" ]; then export WAYLAND_DISPLAY=\"$(basename \"$socket\")\"; exec ${pkgs.vicinae}/bin/vicinae server; fi; done; sleep 0.2; done; echo \"Vicinae: Wayland socket not ready\" >&2; exit 1'";
       Restart = "on-failure";
+      RestartSec = 1;
     };
-    Install.WantedBy = [ "graphical-session.target" ];
+    Install.WantedBy = [ "hyprland-session.target" ];
   };
 }

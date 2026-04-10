@@ -63,10 +63,10 @@ in
       bind h split-window -h -c "#{pane_current_path}"
 
       # ── Window management ───────────────────────────────────────────────
-      bind x   kill-pane
-      bind X   kill-window
+      bind q   kill-pane
+      bind Q   kill-window
       bind f   resize-pane -Z
-      bind q   detach-client
+      bind x   detach-client
       bind -n C-w choose-window -Z
       bind e   choose-window
       bind y   setw synchronize-panes \; display-message "Pane synchronization: #{?pane_synchronized,ON,OFF}"
