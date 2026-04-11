@@ -453,35 +453,33 @@ This configuration uses **Agenix** for encrypted secrets (SSH keys, API tokens, 
 
 ### Initial Setup
 
-1. **Generate age key**:
+1. **Install tooling (already included in this config)**:
+   - `age` and `agenix` are installed via `modules/home/packages.nix`.
+   - Apply package changes with `home-manager switch` or a full system rebuild.
+
+2. **Generate age key**:
    ```bash
    mkdir -p ~/.config/agenix
    age-keygen -o ~/.config/agenix/key.txt
-   # Note the public key (age1...)
+   # Print public key (age1...)
+   age-keygen -y ~/.config/agenix/key.txt
    ```
 
-2. **Add public key to `secrets.nix`**:
-   ```nix
-   let
-     josh-desktop = "age1...";
-   in {
-     "secrets/spotify-id.age".publicKeys = [ josh-desktop ];
-   }
-   ```
-
-3. **Encrypt a secret**:
+3. **Export your public key for this shell**:
    ```bash
-   # Create plaintext file
-   echo "my-secret-value" > /tmp/my-secret.txt
-   
-   # Encrypt with age
-   age -r <public-key> -o secrets/my-secret.age /tmp/my-secret.txt
-   
-   # Securely delete plaintext
-   shred -u /tmp/my-secret.txt
+   export AGENIX_USER_KEY="$(age-keygen -y ~/.config/agenix/key.txt)"
    ```
 
-4. **Use in configuration**:
+4. **Encrypt secrets with agenix**:
+   ```bash
+   mkdir -p secrets
+   agenix -e secrets/spotify-id.age
+   agenix -e secrets/spotify-secret.age
+   ```
+
+5. **Persist `AGENIX_USER_KEY` in your shell config** so future edits work without re-exporting.
+
+6. **Use in configuration**:
    ```nix
    age.secrets.spotify-id = {
      file = ../secrets/spotify-id.age;

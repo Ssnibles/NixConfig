@@ -64,6 +64,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # nix-minecraft: Minecraft packaging helpers (modpacks, servers, tooling)
+    nix-minecraft = {
+      url = "github:Infinidoge/nix-minecraft";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # ── Custom Applications ──────────────────────────────────────────────────
     # Zen Browser: Privacy-focused Firefox fork with modern UI
     zen-browser = {

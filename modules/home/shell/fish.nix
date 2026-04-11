@@ -39,6 +39,7 @@ in
       watch = "watchexec";
       gdiff = "git diff";
       j = "just";
+      pp = "petpick";
     };
 
     interactiveShellInit = ''
@@ -62,6 +63,20 @@ in
       if functions -q fzf_configure_bindings
           fzf_configure_bindings --directory=\cf --git_status=\cg --history=\cr --processes=\cp --variables=\cv
       end
+
+      function petpick --description "Insert a pet snippet selected with fzf"
+          if not type -q pet
+              echo "petpick: pet is not installed" >&2
+              return 1
+          end
+
+          set -l selected (pet search --query (commandline))
+          if test -n "$selected"
+              commandline -r -- "$selected"
+              commandline -f repaint
+          end
+      end
+      bind \ep petpick
 
       function cdf --description "cd into a directory selected with fzf"
           set -l search_root "."

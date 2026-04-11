@@ -121,5 +121,6 @@ lib.mkIf hostProfile.hasNvidia {
 
     # EGL vendor library directory (NVIDIA-specific EGL implementation)
     __EGL_VENDOR_LIBRARY_DIRS = "/run/opengl-driver/share/glvnd/egl_vendor.d";
+
   };
 }

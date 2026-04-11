@@ -10,6 +10,7 @@
   pkgs,
   lib,
   hostProfile,
+  inputs,
   ...
 }:
 {
@@ -31,6 +32,8 @@
     gemini-cli
     github-copilot-cli
     wl-clipboard
+    pkgs.age
+    inputs.agenix.packages.${pkgs.system}.default
     fzf
     fd
     ripgrep
@@ -53,6 +56,7 @@
     android-tools
     lazygit
     gitui
+    pet
     yazi
     jq
     nix-tree
@@ -78,7 +82,7 @@
     vial
     onlyoffice-desktopeditors
     inkscape
-    modrinth-app
+    prismlauncher
 
     # ── Document viewers ────────────────────────────────────────────────
     sioyek

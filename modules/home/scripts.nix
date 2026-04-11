@@ -6,6 +6,14 @@
 # =============================================================================
 { pkgs, ... }:
 let
+  fabulouslyOptimizedPack = pkgs.nix-minecraft.fetchModrinthModpack {
+    pname = "fabulously-optimized";
+    version = "12.0.8-mc1.21.11";
+    url = "https://cdn.modrinth.com/data/1KVo5zza/versions/lwASzTsb/Fabulously.Optimized-v12.0.8.mrpack";
+    side = "client";
+    packHash = "sha256-iBkTKENX1TriQWHXdns3rvS/XD/gz1q6cxMT/IMyclQ=";
+  };
+
   # ── Toggle floating window ─────────────────────────────────────────────
   # Floats the active window and centres it at 60 % of screen size.
   toggle-float = pkgs.writeShellScriptBin "toggle-float" ''
@@ -120,6 +128,98 @@ let
 
         echo "$MESSAGE"
   '';
+
+  # ── Install/update Fabulously Optimized in Prism Launcher ─────────────
+  setup-fo-prism = pkgs.writeShellScriptBin "setup-fo-prism" ''
+    set -euo pipefail
+
+    prism_root="''${XDG_DATA_HOME:-$HOME/.local/share}/PrismLauncher"
+    instance_id="fabulously-optimized-1.21.11"
+    instance_dir="$prism_root/instances/$instance_id"
+    source_pack="${fabulouslyOptimizedPack}"
+    deps_json="$instance_dir/.minecraft/config/fabric_loader_dependencies.json"
+
+    mkdir -p "$instance_dir/.minecraft"
+    cp -rT "$source_pack" "$instance_dir/.minecraft"
+    chmod -R u+rwX "$instance_dir/.minecraft"
+
+    game_version="1.21.11"
+    loader_version="0.18.5"
+    lwjgl_version="3.3.3"
+    if [ -f "$deps_json" ]; then
+      game_version="$(${pkgs.jq}/bin/jq -r '.minecraft // "1.21.11"' "$deps_json")"
+      loader_version="$(${pkgs.jq}/bin/jq -r '.fabric_loader // "0.18.5"' "$deps_json")"
+    fi
+
+    minecraft_meta="$prism_root/meta/net.minecraft/$game_version.json"
+    if [ -f "$minecraft_meta" ]; then
+      inferred_lwjgl="$(${pkgs.jq}/bin/jq -r '
+        .requires[]? |
+        if type == "string" then
+          select(startswith("org.lwjgl3:")) | split(":")[1]
+        elif type == "object" and .uid == "org.lwjgl3" then
+          (.equals // .suggests // .version // empty)
+        else
+          empty
+        end
+      ' "$minecraft_meta" | head -n 1)"
+      if [ -n "$inferred_lwjgl" ] && [ "$inferred_lwjgl" != "null" ]; then
+        lwjgl_version="$inferred_lwjgl"
+      fi
+    fi
+
+    cat > "$instance_dir/instance.cfg" <<EOF
+    InstanceType=OneSix
+    iconKey=default
+    name=Fabulously Optimized 1.21.11
+    OverrideCommands=false
+    OverrideConsole=false
+    OverrideEnv=false
+    OverrideGameTime=false
+    OverrideJavaArgs=false
+    OverrideJavaLocation=false
+    OverrideLegacySettings=false
+    OverrideMemory=false
+    OverrideMiscellaneous=false
+    OverrideNativeWorkarounds=false
+    OverridePerformance=false
+    OverrideWindow=false
+    notes=
+    lastLaunchTime=0
+    totalTimePlayed=0
+    EOF
+
+    cat > "$instance_dir/mmc-pack.json" <<EOF
+    {
+      "components": [
+        {
+          "cachedName": "LWJGL 3",
+          "cachedVersion": "$lwjgl_version",
+          "uid": "org.lwjgl3",
+          "version": "$lwjgl_version"
+        },
+        {
+          "cachedName": "Minecraft",
+          "cachedVersion": "$game_version",
+          "important": true,
+          "uid": "net.minecraft",
+          "version": "$game_version"
+        },
+        {
+          "cachedName": "Fabric Loader",
+          "cachedVersion": "$loader_version",
+          "uid": "net.fabricmc.fabric-loader",
+          "version": "$loader_version"
+        }
+      ],
+      "formatVersion": 1
+    }
+    EOF
+
+    echo "Installed Prism instance: $instance_id"
+    echo "Path: $instance_dir"
+    echo "Launch with: prismlauncher -l $instance_id"
+  '';
 in
 {
   home.packages = [
@@ -127,5 +227,6 @@ in
     reload-waybar
     toggle-focus-mode
     aicommit
+    setup-fo-prism
   ];
 }

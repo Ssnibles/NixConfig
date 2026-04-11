@@ -66,16 +66,18 @@ in
 
       # ── Overlays ─────────────────────────────────────────────────────────
       # Inject external flake packages and unstable namespace into stable pkgs
-      overlays = [
-        (_final: prev: {
-          # Custom packages from flake inputs
-          zen-browser = inputs.zen-browser.packages.${system}.default;
-          awww = inputs.awww.packages.${system}.default;
-          
-          # Unstable namespace for latest packages
-          # Usage in modules: `pkgs.unstable.neovim-unwrapped`
-          unstable = unstablePkgs;
-        })
+       overlays = [
+         (_final: prev: {
+           # Custom packages from flake inputs
+           zen-browser = inputs.zen-browser.packages.${system}.default;
+           awww = inputs.awww.packages.${system}.default;
+           # nix-minecraft overlay (provides fetchModrinthModpack and related tooling)
+           nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
+           
+           # Unstable namespace for latest packages
+           # Usage in modules: `pkgs.unstable.neovim-unwrapped`
+           unstable = unstablePkgs;
+         })
       ];
     in
     lib.nixosSystem {
