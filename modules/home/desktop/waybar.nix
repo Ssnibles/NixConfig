@@ -44,6 +44,7 @@ in
           "(.*) — Mozilla Firefox" = "Firefox";
           "(.*) — Zen Browser" = "Zen";
           "(.*) - Ghostty" = "Terminal";
+          "(.*) - foot" = "Terminal";
           "(.*) - Neovim" = "Neovim";
           "(.*) - Nautilus" = "Files";
         };
@@ -52,27 +53,42 @@ in
       };
 
       "clock" = {
+        interval = 1;
         format = "{:%H:%M}";
-        format-alt = "{:%A, %d %B}";
+        format-alt = "{:%a, %d %b  %H:%M}";
         tooltip-format = "<tt><small>{calendar}</small></tt>";
+        calendar = {
+          mode = "month";
+          mode-mon-col = 3;
+          weeks-pos = "right";
+          on-scroll = 1;
+          format = {
+            months = "<span color='${c.accent}'><b>{}</b></span>";
+            weekdays = "<span color='${c.teal}'><b>{}</b></span>";
+            weeks = "<span color='${c.fgDim}'><b>W{}</b></span>";
+            today = "<span color='${c.yellow}'><b>{}</b></span>";
+          };
+        };
       };
 
       "mpris" = {
-        format = "{dynamic}";
+        format = "{player_icon} {dynamic}";
+        format-paused = "{status_icon} {dynamic}";
         dynamic-len = 28;
         dynamic-order = [
           "title"
           "artist"
         ];
         player-icons = {
-          default = "";
-          spotify = "";
-          "spotify-player" = "";
+          default = "󰎆";
+          spotify = "";
+          "spotify-player" = "";
         };
         status-icons = {
-          paused = "";
-          playing = "";
+          paused = "󰏤";
+          playing = "󰐊";
         };
+        tooltip-format = "{player} — {title} · {artist}";
         on-click = "playerctl play-pause";
         on-scroll-up = "playerctl next";
         on-scroll-down = "playerctl previous";
@@ -80,7 +96,9 @@ in
 
       "pulseaudio" = {
         format = "{icon} {volume}%";
+        format-bluetooth = "󰂯 {icon} {volume}%";
         format-muted = "󰖁";
+        tooltip-format = "{desc} — {volume}%";
         format-icons = {
           headphone = "󰋋";
           headset = "󰋎";
@@ -91,6 +109,7 @@ in
           ];
         };
         on-click = "pavucontrol";
+        on-click-right = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
         on-scroll-up = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 2%+";
         on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-";
         scroll-step = 2;
@@ -106,19 +125,26 @@ in
       };
 
       "network" = {
-        format-wifi = "󰖩 {essid}";
-        format-ethernet = "󰈀";
-        format-disconnected = "󰖪";
-        tooltip-format-wifi = "{signalStrength}%  ·  {ipaddr}";
-        max-length = 16;
+        interval = 1;
+        format-wifi = "󰖩 {essid} {bandwidthDownBytes}⇣ {bandwidthUpBytes}⇡";
+        format-ethernet = "󰈀 {ifname} {bandwidthDownBytes}⇣ {bandwidthUpBytes}⇡";
+        format-linked = "󰈀 {ifname} (no IP)";
+        format-disconnected = "󰖪 Offline";
+        format-alt = "{ifname}: {ipaddr}/{cidr}";
+        tooltip-format-wifi = "{essid} ({signalStrength}%)\nIP: {ipaddr}  GW: {gwaddr}\n↓ {bandwidthDownBytes}  ↑ {bandwidthUpBytes}";
+        tooltip-format-ethernet = "{ifname}\nIP: {ipaddr}  GW: {gwaddr}\n↓ {bandwidthDownBytes}  ↑ {bandwidthUpBytes}";
+        tooltip-format-disconnected = "Network disconnected";
+        max-length = 38;
       };
 
       "battery" = {
+        interval = 10;
         states = {
           warning = 30;
           critical = 15;
         };
         format = "{icon} {capacity}%";
+        format-alt = "{capacity}% · {timeTo}";
         format-icons = [
           "󰁺"
           "󰁻"
@@ -133,8 +159,9 @@ in
         ];
         format-charging = "󰂄 {capacity}%";
         format-plugged = "󰚥 {capacity}%";
-        tooltip-format = "{timeTo}";
+        tooltip-format = "{capacity}% · {timeTo}";
       };
+
     };
 
     style = ''
@@ -293,6 +320,7 @@ in
         color: @fg-mid;
         padding: 0 10px;
         transition: color 200ms ease;
+        font-feature-settings: "tnum";
       }
 
       #network:hover {
