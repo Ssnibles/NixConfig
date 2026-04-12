@@ -131,9 +131,15 @@ After making changes to your configuration:
 # Quick rebuild (recommended)
 rebuild
 
-# Manual (equivalent to above fish abbreviation)
+# Manual system rebuild (equivalent to above fish abbreviation)
 git -C ~/NixConfig add -u
-sudo nixos-rebuild switch --flake ~/NixConfig#desktop
+nh os switch
+
+# Fast user-level apply (Home Manager only)
+# Great for Hyprland, SwayNC, Waybar, Neovim, shell, etc.
+nh home switch
+# or explicit target
+nh home switch -c josh@desktop
 ```
 
 ### Testing Changes
@@ -338,8 +344,12 @@ NixConfig/
 | `Super + Space` | Vicinae launcher |
 | `Super + H/J/K/L` | Focus window (vim keys) |
 | `Super + Shift + H/J/K/L` | Move window |
+| `Super + Ctrl + H/J/K/L` | Resize window |
 | `Super + 1-9` | Switch workspace |
-| `Super + Shift + 1-9` | Move to workspace |
+| `Super + Shift + 1-0` | Move to workspace (follow) |
+| `Super + Ctrl + Shift + 1-0` | Move to workspace (silent) |
+| `Super + S` | Screenshot full screen (save + clipboard) |
+| `Super + Shift + S` | Screenshot selection with overlay (save + clipboard) |
 | `Super + F` | Toggle fullscreen |
 | `Super + V` | Toggle floating |
 
@@ -455,7 +465,7 @@ This configuration uses **Agenix** for encrypted secrets (SSH keys, API tokens, 
 
 1. **Install tooling (already included in this config)**:
    - `age` and `agenix` are installed via `modules/home/packages.nix`.
-   - Apply package changes with `home-manager switch` or a full system rebuild.
+   - Apply package changes with `nh home switch` or a full system rebuild.
 
 2. **Generate age key**:
    ```bash
@@ -541,9 +551,10 @@ This configuration uses **Agenix** for encrypted secrets (SSH keys, API tokens, 
 
 **Solution**:
 1. Use `nh` instead: `nh os switch`
-2. Enable binary cache (already configured)
-3. Check cache hits: `nix store ping --store https://cache.nixos.org`
-4. Clear old generations: `nh clean all`
+2. For user-level module changes only, use `nh home switch` (faster than full system switch)
+3. Enable binary cache (already configured)
+4. Check cache hits: `nix store ping --store https://cache.nixos.org`
+5. Clear old generations: `nh clean all`
 
 ---
 
@@ -560,13 +571,22 @@ nvim ~/NixConfig/nvim/lua/options.lua
 # Reload with :luafile %
 ```
 
+**Quick iteration on Home Manager modules**:
+```bash
+# Preview user-level changes (no activation)
+nh home build
+
+# Apply user-level changes
+nh home switch
+```
+
 **Testing Nix changes without rebuild**:
 ```bash
 # Evaluate configuration (syntax check)
 nix eval .#nixosConfigurations.desktop.config.system.build.toplevel
 
 # Build without switching
-nixos-rebuild build --flake .#desktop
+nh os build
 ```
 
 ### Performance Optimization
@@ -591,7 +611,7 @@ systemd-analyze blame  # Per-service breakdown
 sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
 
 # Roll back to previous generation
-sudo nixos-rebuild switch --rollback
+nh os rollback
 
 # Update flake inputs
 nix flake update
