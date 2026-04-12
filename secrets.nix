@@ -19,16 +19,9 @@ let
   userKey = builtins.getEnv "AGENIX_USER_KEY";
   users = if userKey != "" then [ userKey ] else [ ];
 
-  maybeSpotifyId =
-    if users != [ ] && builtins.pathExists ./secrets/spotify-id.age then
-      { "spotify-id.age".publicKeys = users; }
-    else
-      { };
+  maybeSpotifyId = if users != [ ] then { "secrets/spotify-id.age".publicKeys = users; } else { };
   maybeSpotifySecret =
-    if users != [ ] && builtins.pathExists ./secrets/spotify-secret.age then
-      { "spotify-secret.age".publicKeys = users; }
-    else
-      { };
+    if users != [ ] then { "secrets/spotify-secret.age".publicKeys = users; } else { };
 
 in
 maybeSpotifyId // maybeSpotifySecret
