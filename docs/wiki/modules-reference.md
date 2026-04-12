@@ -22,6 +22,7 @@
 | `modules/home/scripts.nix` | custom scripts (`toggle-float`, `toggle-focus-mode`, `aicommit`, `setup-fo-prism`, etc.) |
 | `modules/home/git.nix` | Git identity + delta config |
 | `modules/home/neovim.nix` | Neovim plugins, LSP tools, formatters, runtime config source |
+| `modules/home/qutebrowser.nix` | Declarative qutebrowser settings, keybinds, search engines, and theme |
 | `modules/home/shell/fish.nix` | Fish config, abbreviations, plugins, Ghostty/Foot config |
 | `modules/home/shell/tmux.nix` | tmux behavior/theme/plugins |
 | `modules/home/shell/zellij.nix` | zellij config and keybinds |
