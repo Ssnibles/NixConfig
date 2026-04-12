@@ -48,6 +48,19 @@
     };
   };
 
+  # Keyd: Keyboard remapping daemon (system-level, works in all environments)
+  # Swaps CapsLock ↔ Escape (Vim-friendly, available even in TTY)
+  services.keyd = {
+    enable = true;
+    keyboards.default = {
+      ids = [ "*" ]; # Apply to all keyboards
+      settings.main = {
+        capslock = "esc";
+        esc = "capslock";
+      };
+    };
+  };
+
   # ── Lid switch behaviour ─────────────────────────────────────────────────
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
