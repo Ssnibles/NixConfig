@@ -36,6 +36,7 @@
 
     # ── Editor ────────────────────────────────────────────────────────────
     ../../modules/home/neovim.nix
+    ../../modules/home/qutebrowser.nix
 
     # ── Applications & packages ───────────────────────────────────────────
     ../../modules/home/git.nix
