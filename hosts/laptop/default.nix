@@ -22,10 +22,13 @@
   networking.wireless.iwd.settings = {
     General = {
       EnableNetworkConfiguration = false;
+      # Keep iwd and cfg80211 aligned on regulatory rules so 5GHz channels
+      # permitted in the local domain are available for scan/connect.
+      Country = "NZ";
     };
     DriverQuirks = {
-      # Helps with "IWD is connecting to the wrong AP" and SAE issues on some Realtek chips
-      power_save = "disable";
+      # Disable power save for rtw89 variants (value is a driver glob list).
+      PowerSaveDisable = "rtw89*";
     };
   };
 
