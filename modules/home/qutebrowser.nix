@@ -39,6 +39,7 @@ in
       hm = "https://home-manager-options.extranix.com";
       nixpkgs = "https://search.nixos.org/packages";
       wiki = "https://wiki.nixos.org";
+      uni = "https://elearn.waikato.ac.nz";
     };
 
     settings = {
