@@ -16,12 +16,10 @@ in
   ];
 
   home.packages = with pkgs; [
-    awww # Wallpaper daemon
     libnotify
     networkmanagerapplet
     playerctl
     adwaita-icon-theme
-    hyprlock
   ];
 
   wayland.windowManager.hyprland = {
@@ -40,8 +38,7 @@ in
       };
 
       exec-once = [
-        # services handled by systemd (see services/wayland.nix):
-        # awww-daemon, vicinae server
+        # Some services are handled by systemd (see services/wayland.nix)
         "sleep 2 && awww img ~/NixConfig/wallpapers/stephanie-moody-nA3iwVnI8Mo-unsplash.jpg"
         "waybar"
         "nm-applet --indicator"
@@ -121,7 +118,7 @@ in
         "$mod, 8, workspace, 8"
         "$mod, 9, workspace, 9"
         "$mod, 0, workspace, 10"
-        "$mod, ~, workspace, previous"
+        "$mod, `, workspace, previous"
 
         # Move window to workspace (follow)
         "$mod SHIFT, 1, movetoworkspace, 1"
@@ -211,12 +208,14 @@ in
       accents = {
         blue = c.accent;
         cyan = c.teal;
-        purple = c.purple;
-        green = c.green;
-        yellow = c.yellow;
-        red = c.red;
-        orange = c.orange;
-        magenta = c.magenta;
+        inherit (c)
+          purple
+          green
+          yellow
+          red
+          orange
+          magenta
+          ;
       };
     };
   };
