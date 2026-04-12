@@ -162,6 +162,11 @@ in
   # Ly: Lightweight TUI display manager (no dependencies on heavy DEs)
   # Fast boot, minimal resource usage, clean aesthetic
   services.displayManager.ly.enable = true;
+  # Required so NetworkManager can read user Wi-Fi secrets from keyring
+  # and autoconnect reliably after login in non-GNOME sessions.
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services.ly.enableGnomeKeyring = true;
+  security.pam.services.login.enableGnomeKeyring = true;
 
   # Hyprland: Modern Wayland compositor (system-level enablement)
   # User-specific configuration lives in modules/home/desktop/hyprland.nix
