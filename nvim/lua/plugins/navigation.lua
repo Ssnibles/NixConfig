@@ -1,24 +1,28 @@
 -- Navigation: motion, search/replace, tmux integration
 
---[[
--- Leap: fast motion
-require("leap")
-vim.keymap.set({ "n", "x", "o" }, "s", "<Plug>(leap)", { desc = "Leap" })
-vim.keymap.set("n", "S", "<Plug>(leap-from-window)", { desc = "Leap from window" })
-vim.keymap.set({ "x", "o" }, "x", "<Plug>(leap-forward-till)", { desc = "Leap forward till" })
-vim.keymap.set({ "x", "o" }, "X", "<Plug>(leap-backward-till)", { desc = "Leap backward till" })
-require("leap.user").set_repeat_keys("<enter>", "<backspace>", { relative_directions = true })
-]]
-
--- Flash: motion/navigation alternative to leap
-local flash = require("flash")
-flash.setup({})
-vim.keymap.set({ "n", "x", "o" }, "s", function()
-	flash.jump()
-end, { desc = "Flash jump" })
-vim.keymap.set({ "n", "x", "o" }, "S", function()
-	flash.treesitter()
-end, { desc = "Flash treesitter" })
+-- Flash: preferred motion plugin, with leap fallback if flash is unavailable.
+local ok_flash, flash = pcall(require, "flash")
+if ok_flash then
+	flash.setup({})
+	vim.keymap.set({ "n", "x", "o" }, "s", function()
+		flash.jump()
+	end, { desc = "Flash jump" })
+	vim.keymap.set({ "n", "x", "o" }, "S", function()
+		flash.treesitter()
+	end, { desc = "Flash treesitter" })
+else
+	local ok_leap = pcall(require, "leap")
+	if ok_leap then
+		vim.keymap.set({ "n", "x", "o" }, "s", "<Plug>(leap)", { desc = "Leap" })
+		vim.keymap.set("n", "S", "<Plug>(leap-from-window)", { desc = "Leap from window" })
+		vim.keymap.set({ "x", "o" }, "x", "<Plug>(leap-forward-till)", { desc = "Leap forward till" })
+		vim.keymap.set({ "x", "o" }, "X", "<Plug>(leap-backward-till)", { desc = "Leap backward till" })
+		local ok_leap_user, leap_user = pcall(require, "leap.user")
+		if ok_leap_user then
+			leap_user.set_repeat_keys("<enter>", "<backspace>", { relative_directions = true })
+		end
+	end
+end
 
 -- Grug-far: project-wide search/replace
 require("grug-far").setup()
