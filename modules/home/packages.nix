@@ -77,9 +77,7 @@
     foot
     mission-center
     firefox
-    google-chrome
     via
-    vial
     onlyoffice-desktopeditors
     inkscape
     prismlauncher
