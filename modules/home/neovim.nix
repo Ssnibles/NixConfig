@@ -188,6 +188,7 @@ in
       # ── Code Editing ─────────────────────────────────────────────────────
       nvim-autopairs # Auto-close brackets, quotes
       conform-nvim # Formatter runner (async formatting)
+      dial-nvim # Enhanced increment/decrement for numbers, dates, constants
       grug-far-nvim # Search and replace across project
 
       # ── Utilities ────────────────────────────────────────────────────────
