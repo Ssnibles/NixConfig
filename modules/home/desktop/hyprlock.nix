@@ -26,14 +26,7 @@ in
       background = [
         {
           monitor = "";
-          path = "~/NixConfig/wallpapers/517020ldsdl.jpg";
-          blur_passes = 3;
-          blur_size = 7;
-          noise = 0.0117;
-          contrast = 0.8916;
-          brightness = 0.8172;
-          vibrancy = 0.1696;
-          vibrancy_darkness = 0.0;
+          color = "rgba(00000055)";
         }
       ];
 
@@ -41,9 +34,9 @@ in
         {
           monitor = "";
           size = "300, 50";
-          outline_thickness = 2;
-          dots_size = 0.2;
-          dots_spacing = 0.35;
+          outline_thickness = 1;
+          dots_size = 0.1;
+          dots_spacing = 0.3;
           dots_center = true;
           dots_rounding = -1;
           outer_color = rgb c.border;
@@ -72,7 +65,7 @@ in
       label = [
         {
           monitor = "";
-          text = "cmd[update:1000] echo \"${span c.accent "$(date +'%H:%M')"}\"";
+          text = "cmd[update:1000] echo \"${span c.fg "$(date +'%H:%M')"}\"";
           color = rgb c.fg;
           font_size = 72;
           font_family = "JetBrains Mono";
@@ -82,7 +75,7 @@ in
         }
         {
           monitor = "";
-          text = "cmd[update:1000] echo \"${span c.purple "$(date +'%A, %d %B')"}\"";
+          text = "cmd[update:1000] echo \"${span c.fg "$(date +'%A, %d %B')"}\"";
           color = rgb c.fg;
           font_size = 20;
           font_family = "JetBrains Mono";
