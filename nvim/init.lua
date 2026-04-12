@@ -47,6 +47,7 @@ for _, module in ipairs({
 	"plugins.mini",
 	"plugins.fzf",
 	"plugins.navigation",
+	"plugins.dev",
 }) do
 	safe_require(module)
 end

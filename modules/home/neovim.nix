@@ -27,7 +27,12 @@
 #   • Shell (shfmt), Kotlin (ktlint), Java (google-java-format)
 #   • C# (csharpier)
 # =============================================================================
-{ pkgs, colors, ... }:
+{
+  pkgs,
+  colors,
+  inputs,
+  ...
+}:
 let
   c = colors.vague.withHash;
   # ── Custom Plugin: tiny-code-action ────────────────────────────────────────
@@ -42,6 +47,14 @@ let
       rev = "main";
       sha256 = "sha256-4tjWSSBpIH6D1nQeJRv2rKCWraaRU1IG6TQmJilmYjw=";
     };
+    doCheck = false;
+  };
+
+  # ── Custom Plugin: switcheroo (local path) ─────────────────────────────────
+  switcheroo = pkgs.vimUtils.buildVimPlugin {
+    pname = "switcheroo";
+    version = "dev";
+    src = inputs.switcheroo-src.outPath;
     doCheck = false;
   };
 in
@@ -99,6 +112,7 @@ in
     plugins = with pkgs.vimPlugins; [
       # ── Custom Plugins ───────────────────────────────────────────────────
       tiny-code-action # Lightweight code action UI
+      switcheroo # Local plugin from ../projects/switcheroo
 
       # ── Syntax & Parsing ─────────────────────────────────────────────────
       (nvim-treesitter.withPlugins (

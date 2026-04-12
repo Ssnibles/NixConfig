@@ -82,6 +82,12 @@
       url = "git+https://codeberg.org/LGFae/awww.git";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Local Neovim plugin source (non-flake)
+    switcheroo-src = {
+      url = "path:/home/josh/projects/switcheroo";
+      flake = false;
+    };
   };
 
   outputs =
@@ -96,10 +102,68 @@
       # See lib/mkHost.nix for implementation details
       builder = import ./lib/mkHost.nix { inherit inputs; };
       inherit (builder) mkHost;
-    in
-    {
+      system = "x86_64-linux";
+      colors = import ./lib/colors.nix;
+
+      # ── Shared package set for standalone Home Manager configs ────────────
+      # Mirrors mkHost overlay behavior so `nh home switch` uses the same
+      # package universe as the integrated NixOS + Home Manager setup.
+      unstablePkgs = import inputs.nixpkgs-unstable {
+        inherit system;
+        config.allowUnfree = true;
+      };
+
+      overlays = [
+        (_final: _prev: {
+          zen-browser = inputs.zen-browser.packages.${system}.default;
+          awww = inputs.awww.packages.${system}.default;
+          nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
+          unstable = unstablePkgs;
+        })
+      ];
+
+      pkgs = import nixpkgs {
+        inherit system overlays;
+        config.allowUnfree = true;
+      };
+
+      mkHome =
+        {
+          hostName,
+          isLaptop ? false,
+          hasNvidia ? false,
+          isVM ? false,
+          useDisko ? true,
+          user ? "josh",
+        }:
+        let
+          hostProfile = {
+            inherit
+              hostName
+              isLaptop
+              hasNvidia
+              isVM
+              useDisko
+              user
+              ;
+            isDesktop = !isLaptop;
+          };
+        in
+        inputs.home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [ ./users/${user} ];
+          extraSpecialArgs = {
+            inherit
+              inputs
+              hostProfile
+              user
+              colors
+              ;
+          };
+        };
+
       # ── NixOS System Configurations ──────────────────────────────────────
-      # Each host has both a production config (Disko enabled) and a test 
+      # Each host has both a production config (Disko enabled) and a test
       # config (Disko disabled) for safe rebuilds without repartitioning
       nixosConfigurations = {
         # Production: Desktop (AMD CPU + NVIDIA GPU)
@@ -128,6 +192,26 @@
           useDisko = false;
         };
       };
+
+      # ── Home Manager Configurations ──────────────────────────────────────
+      # Expose HM configs directly so `nh home switch` works without a full
+      # system rebuild for user-level modules (Hyprland, SwayNC, Neovim, etc.).
+      homeConfigurations = {
+        "josh@desktop" = mkHome {
+          hostName = "desktop";
+          hasNvidia = true;
+        };
+        "josh@laptop" = mkHome {
+          hostName = "laptop";
+          isLaptop = true;
+        };
+      };
+    in
+    {
+      inherit
+        nixosConfigurations
+        homeConfigurations
+        ;
 
       # ── Disko Configurations ─────────────────────────────────────────────
       # Standalone disk layouts for the install.sh bootstrap script
