@@ -5,8 +5,9 @@
 #
 # SETUP INSTRUCTIONS:
 #   1. Generate key: age-keygen -o ~/.config/agenix/key.txt
-#   2. Export your public key for the current shell:
-#        export AGENIX_USER_KEY="age1..."
+#   2. Export your public key:
+#        Bash/Zsh: export AGENIX_USER_KEY="age1..."
+#        Fish:     set -Ux AGENIX_USER_KEY (age-keygen -y ~/.config/agenix/key.txt)
 #   3. Encrypt secrets:
 #        agenix -e secrets/spotify-id.age
 #        agenix -e secrets/spotify-secret.age
