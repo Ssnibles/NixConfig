@@ -114,5 +114,29 @@ vim.keymap.set("n", "<leader>tF", function()
 	vim.notify(("Autoformat for %s %s"):format(ft, msg), vim.log.levels.INFO)
 end, { desc = "Toggle autoformat for filetype" })
 
+-- Dial: enhanced increment/decrement
+local augend = require("dial.augend")
+require("dial.config").augends:register_group({
+	default = {
+		augend.integer.alias.decimal,
+		augend.integer.alias.hex,
+		augend.date.alias["%Y/%m/%d"],
+		augend.date.alias["%Y-%m-%d"],
+		augend.constant.alias.bool,
+		augend.constant.alias.alpha,
+		augend.constant.alias.Alpha,
+	},
+})
+
+local dial_map = require("dial.map")
+vim.keymap.set("n", "<C-a>", dial_map.inc_normal(), { desc = "Increment" })
+vim.keymap.set("n", "<C-x>", dial_map.dec_normal(), { desc = "Decrement" })
+vim.keymap.set("v", "<C-a>", dial_map.inc_visual(), { desc = "Increment selection" })
+vim.keymap.set("v", "<C-x>", dial_map.dec_visual(), { desc = "Decrement selection" })
+vim.keymap.set("n", "g<C-a>", dial_map.inc_gnormal(), { desc = "Increment (g)" })
+vim.keymap.set("n", "g<C-x>", dial_map.dec_gnormal(), { desc = "Decrement (g)" })
+vim.keymap.set("v", "g<C-a>", dial_map.inc_gvisual(), { desc = "Increment selection (g)" })
+vim.keymap.set("v", "g<C-x>", dial_map.dec_gvisual(), { desc = "Decrement selection (g)" })
+
 -- Autopairs
 require("nvim-autopairs").setup({ check_ts = true, fast_wrap = { map = "<M-e>" } })
