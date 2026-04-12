@@ -19,6 +19,7 @@ in
       # Uses the system hostname so this works on both desktop and laptop
       # without host-specific abbreviations.
       rebuild = "nh os switch";
+      hm = "nh home switch";
       update = "nh os switch --update";
       clean = "nh clean all";
       get-class = "hyprctl clients | grep -A5 'class:'";
