@@ -26,7 +26,6 @@
 #  12. Nix Settings (Flakes, Binary Cache, GC)
 # =============================================================================
 {
-  config,
   pkgs,
   lib,
   hostProfile,
@@ -70,9 +69,6 @@ in
   # Required for most modern laptops and wireless hardware
   hardware.enableRedistributableFirmware = true;
 
-  # ═══════════════════════════════════════════════════════════════════════════
-  # NETWORKING
-  # ═══════════════════════════════════════════════════════════════════════════
   # ═══════════════════════════════════════════════════════════════════════════
   # NETWORKING
   # ═══════════════════════════════════════════════════════════════════════════
@@ -239,19 +235,6 @@ in
   # Blueman: Graphical Bluetooth manager
   # Provides system tray icon and GUI for pairing devices
   services.blueman.enable = true;
-
-  # Keyd: Keyboard remapping daemon (system-level, works in all environments)
-  # Swaps CapsLock ↔ Escape (Vim-friendly, available even in TTY)
-  services.keyd = {
-    enable = true;
-    keyboards.default = {
-      ids = [ "*" ]; # Apply to all keyboards
-      settings.main = {
-        capslock = "esc";
-        esc = "capslock";
-      };
-    };
-  };
 
   # QMK/VIA keyboard support (browser WebHID + local tools)
   # Adds udev rules so non-root users can access compatible keyboards.
