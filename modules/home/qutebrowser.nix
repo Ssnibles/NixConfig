@@ -7,6 +7,7 @@
 {
   pkgs,
   colors,
+  config,
   ...
 }:
 let
@@ -15,7 +16,7 @@ in
 {
   programs.qutebrowser = {
     enable = true;
-    package = pkgs.unstable.qutebrowser-qt5;
+    package = pkgs.unstable.qutebrowser;
     loadAutoconfig = false;
 
     aliases = {
@@ -46,6 +47,8 @@ in
         autoplay = false;
         blocking.method = "both";
         cookies.accept = "no-3rdparty";
+        # Must be absolute; qutebrowser opens stylesheet paths directly.
+        user_stylesheets = [ "${config.xdg.configHome}/qutebrowser/user.css" ];
       };
       downloads = {
         position = "bottom";
@@ -219,6 +222,10 @@ in
       "<Ctrl-l>" = "forward";
       ",r" = "config-source";
     };
+    keyBindings.command = {
+      "<Ctrl-j>" = "completion-item-focus --history next";
+      "<Ctrl-k>" = "completion-item-focus --history prev";
+    };
 
     extraConfig = ''
       config.set("content.javascript.enabled", True, "file://*")
@@ -230,4 +237,25 @@ in
   # Take ownership of existing user-managed files during first migration.
   xdg.configFile."qutebrowser/config.py".force = true;
   xdg.configFile."qutebrowser/quickmarks".force = true;
+  xdg.configFile."qutebrowser/user.css".force = true;
+  xdg.configFile."qutebrowser/user.css".text = ''
+    /* Keep unthemed page content readable on the fallback dark webpage background. */
+    :root {
+      color-scheme: dark !important;
+    }
+    html, body {
+      color: ${c.fg} !important;
+      background-color: ${c.bg} !important;
+    }
+    /* Some pages hardcode black text on transparent backgrounds. */
+    body :is(
+      p, span, div, li, dt, dd, td, th, label, small, strong, em, b, i,
+      h1, h2, h3, h4, h5, h6, pre, code, blockquote
+    ) {
+      color: ${c.fg} !important;
+    }
+    a, a * {
+      color: ${c.accent} !important;
+    }
+  '';
 }
