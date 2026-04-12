@@ -45,7 +45,7 @@ local function detect_nix_host(flake_root)
 		end)
 	end
 
-	local hostname = vim.loop.os_gethostname() or ""
+	local hostname = vim.uv.os_gethostname() or ""
 	local short_hostname = hostname:match("^[^.]+") or hostname
 	if short_hostname ~= "" and host_exists(flake_root, short_hostname) then
 		return short_hostname
