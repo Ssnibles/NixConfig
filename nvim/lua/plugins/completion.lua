@@ -7,6 +7,15 @@ require("luasnip").setup({
 })
 require("luasnip.loaders.from_vscode").lazy_load()
 
+local function accept_copilot_if_visible()
+	local ok, suggestion = pcall(require, "copilot.suggestion")
+	if ok and suggestion.is_visible() then
+		suggestion.accept()
+		return true
+	end
+	return false
+end
+
 -- Blink.cmp: fast completion
 require("blink.cmp").setup({
 	signature = { enabled = true, window = { border = "rounded", show_documentation = true } },
@@ -16,10 +25,8 @@ require("blink.cmp").setup({
 		["<C-e>"] = { "cancel", "fallback" },
 		["<Esc>"] = { "cancel", "fallback" },
 		["<CR>"] = { "accept", "fallback" },
-		["<Tab>"] = { "accept", "snippet_forward", "select_next", "fallback" },
-		["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
-		["<C-p>"] = { "select_prev", "fallback" },
-		["<C-n>"] = { "select_next", "fallback" },
+		["<Tab>"] = { accept_copilot_if_visible, "accept", "snippet_forward", "fallback" },
+		["<S-Tab>"] = { "snippet_backward", "fallback" },
 		["<Up>"] = { "select_prev", "fallback" },
 		["<Down>"] = { "select_next", "fallback" },
 		["<C-k>"] = { "select_prev", "fallback" },
@@ -29,6 +36,12 @@ require("blink.cmp").setup({
 	},
 	sources = { default = { "lsp", "path", "snippets", "buffer" } },
 	completion = {
+		list = {
+			selection = {
+				preselect = false,
+				auto_insert = false,
+			},
+		},
 		menu = {
 			auto_show = true,
 			border = "rounded",
@@ -47,9 +60,7 @@ require("blink.cmp").setup({
 	cmdline = {
 		keymap = {
 			["<Tab>"] = { "accept", "fallback" },
-			["<S-Tab>"] = { "select_prev", "fallback" },
-			["<C-n>"] = { "select_next", "fallback" },
-			["<C-p>"] = { "select_prev", "fallback" },
+			["<S-Tab>"] = { "fallback" },
 			["<Up>"] = { "select_prev", "fallback" },
 			["<Down>"] = { "select_next", "fallback" },
 			["<C-k>"] = { "select_prev", "fallback" },
@@ -67,11 +78,26 @@ require("copilot").setup({
 		debounce = 150,
 		hide_during_completion = true,
 		keymap = {
-			accept = "<M-y>",
+			accept = false,
 			next = "<M-]>",
 			prev = "<M-[>",
-			dismiss = "<C-]>",
+			dismiss = "<Esc>",
 		},
 	},
 	panel = { enabled = false },
+})
+
+-- Hide Copilot inline suggestions while blink.cmp menu is visible
+vim.api.nvim_create_autocmd("User", {
+	pattern = "BlinkCmpMenuOpen",
+	callback = function()
+		vim.b.copilot_suggestion_hidden = true
+	end,
+})
+
+vim.api.nvim_create_autocmd("User", {
+	pattern = "BlinkCmpMenuClose",
+	callback = function()
+		vim.b.copilot_suggestion_hidden = false
+	end,
 })

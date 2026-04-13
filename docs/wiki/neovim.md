@@ -22,9 +22,10 @@ The module includes:
 - treesitter + context/textobjects
 - LSP/completion (`nvim-lspconfig`, `blink-cmp`, snippets, Copilot)
 - diagnostics/debug UX (`trouble`, DAP UI stack, fidget, tiny diagnostics)
-- fuzzy/navigation (`fzf-lua`, fyler, flash/leap, smart-splits)
+- fuzzy/navigation (`fzf-lua`, oil.nvim, flash, smart-splits)
 - UI (`lualine`, `noice`, `statuscol`, `twilight`, `snacks`, etc.)
 - git (`gitsigns`, `neogit`)
+- editing (`conform`, `autopairs`, `dial`, `multicursors`)
 - custom plugins:
   - `tiny-code-action.nvim`
   - local `switcheroo` from flake input `switcheroo-src`

@@ -46,12 +46,13 @@ autocmd("BufWritePre", {
 	end,
 })
 
--- Close utility buffers with q
+-- Close utility buffers with q or Esc
 autocmd("FileType", {
 	group = augroup,
-	pattern = { "help", "man", "qf", "lspinfo", "checkhealth", "notify", "fyler", "noice", "grug-far" },
+	pattern = { "help", "man", "qf", "lspinfo", "checkhealth", "notify", "oil", "noice", "grug-far" },
 	callback = function(ev)
 		vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = ev.buf, silent = true })
+		vim.keymap.set("n", "<Esc>", "<cmd>close<CR>", { buffer = ev.buf, silent = true })
 	end,
 })
 
