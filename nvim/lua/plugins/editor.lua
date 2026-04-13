@@ -1,42 +1,29 @@
 -- Editor enhancements: file manager, git signs, formatting, pairs
 
--- Fyler: tree file manager
-require("fyler").setup({
-	integrations = {
-		icon = "mini_icons",
+-- Oil: file manager
+require("oil").setup({
+	default_file_explorer = true,
+	delete_to_trash = true,
+	columns = {
+		"icon",
+		"permissions",
+		"size",
 	},
-	views = {
-		finder = {
-			confirm_simple = false,
-			delete_to_trash = true,
-			default_explorer = true,
-			follow_current_file = true,
-			columns_order = { "link", "permission", "size", "git", "diagnostic" },
-			columns = {
-				permission = { enabled = true },
-				size = { enabled = true },
-				git = { enabled = true },
-				diagnostic = { enabled = true },
-				link = { enabled = true },
-			},
-			win = {
-				kind = "split_left_most",
-				border = "rounded",
-				kinds = {
-					split_left_most = {
-						width = "30%",
-						win_opts = { winfixwidth = true },
-					},
-				},
-			},
-		},
+	view_options = {
+		is_hidden_file = function(name, _)
+			return name ~= ".." and name:match("^%.") ~= nil
+		end,
+	},
+	float = {
+		border = "rounded",
+		max_width = 0.8,
+		max_height = 0.8,
 	},
 })
 
-local fyler = require("fyler")
 vim.keymap.set("n", "<leader>fe", function()
-	fyler.toggle({ kind = "float" })
-end, { desc = "Explorer (Fyler)" })
+	require("oil").open_float()
+end, { desc = "Explorer (Oil)" })
 
 -- Gitsigns: git integration in gutter
 require("gitsigns").setup({
@@ -137,6 +124,38 @@ vim.keymap.set("n", "g<C-a>", dial_map.inc_gnormal(), { desc = "Increment (g)" }
 vim.keymap.set("n", "g<C-x>", dial_map.dec_gnormal(), { desc = "Decrement (g)" })
 vim.keymap.set("v", "g<C-a>", dial_map.inc_gvisual(), { desc = "Increment selection (g)" })
 vim.keymap.set("v", "g<C-x>", dial_map.dec_gvisual(), { desc = "Decrement selection (g)" })
+
+-- Multicursor (default-style mappings)
+local mc = require("multicursor-nvim")
+mc.setup()
+
+vim.keymap.set({ "n", "x" }, "<Up>", function() mc.lineAddCursor(-1) end, { desc = "Multicursor add above" })
+vim.keymap.set({ "n", "x" }, "<Down>", function() mc.lineAddCursor(1) end, { desc = "Multicursor add below" })
+vim.keymap.set({ "n", "x" }, "<leader><Up>", function() mc.lineSkipCursor(-1) end, { desc = "Multicursor skip above" })
+vim.keymap.set({ "n", "x" }, "<leader><Down>", function() mc.lineSkipCursor(1) end, { desc = "Multicursor skip below" })
+
+vim.keymap.set({ "n", "x" }, "<leader>n", function() mc.matchAddCursor(1) end, { desc = "Multicursor add next match" })
+vim.keymap.set({ "n", "x" }, "<leader>s", function() mc.matchSkipCursor(1) end, { desc = "Multicursor skip next match" })
+vim.keymap.set({ "n", "x" }, "<leader>N", function() mc.matchAddCursor(-1) end, { desc = "Multicursor add prev match" })
+vim.keymap.set({ "n", "x" }, "<leader>S", function() mc.matchSkipCursor(-1) end, { desc = "Multicursor skip prev match" })
+
+vim.keymap.set({ "n", "x" }, "<C-q>", mc.toggleCursor, { desc = "Multicursor toggle at cursor" })
+vim.keymap.set("n", "<C-LeftMouse>", mc.handleMouse, { desc = "Multicursor mouse toggle" })
+vim.keymap.set("n", "<C-LeftDrag>", mc.handleMouseDrag)
+vim.keymap.set("n", "<C-LeftRelease>", mc.handleMouseRelease)
+
+mc.addKeymapLayer(function(layerSet)
+	layerSet({ "n", "x" }, "<Left>", mc.prevCursor)
+	layerSet({ "n", "x" }, "<Right>", mc.nextCursor)
+	layerSet({ "n", "x" }, "<leader>x", mc.deleteCursor)
+	layerSet("n", "<Esc>", function()
+		if not mc.cursorsEnabled() then
+			mc.enableCursors()
+		else
+			mc.clearCursors()
+		end
+	end)
+end)
 
 -- Autopairs
 require("nvim-autopairs").setup({ check_ts = true, fast_wrap = { map = "<M-e>" } })

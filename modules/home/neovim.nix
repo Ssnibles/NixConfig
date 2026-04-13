@@ -165,9 +165,8 @@ in
 
       # ── Fuzzy Finding & Navigation ───────────────────────────────────────
       fzf-lua # Fast fuzzy finder (Lua-based)
-      fyler-nvim # Tree file manager
-      leap-nvim # Fast motion plugin (kept installed for easy A/B testing)
-      flash-nvim # Motion/navigation alternative to leap.nvim
+      oil-nvim # File manager
+      flash-nvim # Fast motion plugin
       smart-splits-nvim # Smart split navigation and resizing
 
       # ── UI & Appearance ──────────────────────────────────────────────────
@@ -189,6 +188,7 @@ in
       nvim-autopairs # Auto-close brackets, quotes
       conform-nvim # Formatter runner (async formatting)
       dial-nvim # Enhanced increment/decrement for numbers, dates, constants
+      multicursor-nvim # Multiple cursors with explicit/manual cursor control
       grug-far-nvim # Search and replace across project
 
       # ── Utilities ────────────────────────────────────────────────────────

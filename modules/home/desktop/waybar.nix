@@ -72,7 +72,7 @@ in
       };
 
       "mpris" = {
-        format = "{player_icon} {dynamic}";
+        format = "{status_icon} {dynamic}";
         format-paused = "{status_icon} {dynamic}";
         dynamic-len = 28;
         dynamic-order = [
@@ -126,7 +126,8 @@ in
 
       "network" = {
         interval = 1;
-        format-wifi = "󰖩 {essid} {bandwidthDownBytes}⇣ {bandwidthUpBytes}⇡";
+        # format-wifi = "󰖩 {essid} {bandwidthDownBytes}⇣ {bandwidthUpBytes}⇡";
+        format-wifi = "󰖩 {essid}";
         format-ethernet = "󰈀 {ifname} {bandwidthDownBytes}⇣ {bandwidthUpBytes}⇡";
         format-linked = "󰈀 {ifname} (no IP)";
         format-disconnected = "󰖪 Offline";

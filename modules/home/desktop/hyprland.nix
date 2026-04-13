@@ -55,7 +55,7 @@ in
 
       decoration = {
         rounding = 16;
-        blur.enabled = true;
+        blur.enabled = false;
         blur.size = 10;
         blur.passes = 3;
         blur.noise = 0.0;
@@ -145,14 +145,14 @@ in
         "$mod CTRL SHIFT, 0, movetoworkspacesilent, 10"
 
         # Move active window (vim directions)
-        "$mod SHIFT, H, movewindow, l"
-        "$mod SHIFT, L, movewindow, r"
-        "$mod SHIFT, K, movewindow, u"
-        "$mod SHIFT, J, movewindow, d"
+        "$mod CTRL, H, movewindow, l"
+        "$mod CTRL, L, movewindow, r"
+        "$mod CTRL, K, movewindow, u"
+        "$mod CTRL, J, movewindow, d"
 
         # Screenshots (S)
-        "$mod, S, exec, mkdir -p ~/Pictures/Screenshots && file=~/Pictures/Screenshots/$(date +'%Y-%m-%d_%H-%M-%S').png && grim - | tee \"$file\" | wl-copy --type image/png"
-        "$mod SHIFT, S, exec, mkdir -p ~/Pictures/Screenshots && file=~/Pictures/Screenshots/$(date +'%Y-%m-%d_%H-%M-%S').png && grim -g \"$(slurp -b 1e1e2ecc -c 89b4faff -s 00000000 -w 2)\" - | tee \"$file\" | wl-copy --type image/png"
+        "$mod, S, exec, grim -o \"$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')\" - | satty --floating-hack --filename - | wl-copy --type image/png"
+        "$mod SHIFT, S, exec, grim -g \"$(hyprctl -j clients | jq -r --argjson ws $(hyprctl -j activeworkspace | jq -r '.id') '.[] | select(.mapped and .workspace.id == $ws) | (.at[0]|tostring) + \",\" + (.at[1]|tostring) + \" \" + (.size[0]|tostring) + \"x\" + (.size[1]|tostring)' | slurp)\" - | satty --floating-hack --filename - | wl-copy --type image/png"
 
         # Workspace cycling
         "$mod, mouse_down, workspace, e+1"
@@ -165,10 +165,10 @@ in
       ];
 
       binde = [
-        "$mod CTRL, L, resizeactive,  10 0"
-        "$mod CTRL, H, resizeactive, -10 0"
-        "$mod CTRL, K, resizeactive,  0 -10"
-        "$mod CTRL, J, resizeactive,  0  10"
+        "$mod SHIFT, L, resizeactive,  10 0"
+        "$mod SHIFT, H, resizeactive, -10 0"
+        "$mod SHIFT, K, resizeactive,  0 -10"
+        "$mod SHIFT, J, resizeactive,  0  10"
         ", XF86MonBrightnessUp,   exec, brightnessctl set +5%"
         ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
       ];

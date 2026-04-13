@@ -76,6 +76,7 @@
     ghostty
     foot
     mission-center
+    kdePackages.dolphin
     firefox
     via
     onlyoffice-desktopeditors

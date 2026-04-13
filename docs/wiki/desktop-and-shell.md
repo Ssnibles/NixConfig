@@ -22,8 +22,8 @@ Core keybinds:
 | `Super + Delete` | Lock screen (`hyprlock`) |
 | `Super + V` | Toggle floating via helper script |
 | `Super + G` | Toggle focus mode |
-| `Super + S` | Full screenshot to file + clipboard |
-| `Super + Shift + S` | Region screenshot to file + clipboard |
+| `Super + S` | Focused monitor screenshot in Satty, then copy to clipboard |
+| `Super + Shift + S` | Hover-select window or drag region in Satty, then copy to clipboard |
 
 Workspace binds are set for `1..10`, plus move/follow and move/silent variants.
 

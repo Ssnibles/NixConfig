@@ -7,7 +7,6 @@
 {
   pkgs,
   colors,
-  config,
   ...
 }:
 let
@@ -46,10 +45,11 @@ in
       auto_save.session = true;
       content = {
         autoplay = false;
-        blocking.method = "both";
+        # Use one blocker backend for lower per-request overhead.
+        blocking.method = "adblock";
         cookies.accept = "no-3rdparty";
-        # Must be absolute; qutebrowser opens stylesheet paths directly.
-        user_stylesheets = [ "${config.xdg.configHome}/qutebrowser/user.css" ];
+        # Ask sites to reduce animations/transitions.
+        prefers_reduced_motion = true;
       };
       downloads = {
         position = "bottom";
@@ -61,7 +61,10 @@ in
         "-c"
         "normal {line}G{column0}l"
       ];
-      scrolling.smooth = true;
+      # Smoother visuals cost extra CPU; disable for responsiveness/battery.
+      scrolling.smooth = false;
+      # Restore tabs lazily to lower startup memory and CPU spikes.
+      session.lazy_restore = true;
       statusbar.show = "in-mode";
       tabs = {
         favicons.show = "always";
@@ -78,38 +81,36 @@ in
 
       colors = {
         webpage = {
-          bg = c.bg;
-          preferred_color_scheme = "dark";
           darkmode = {
-            # Chromium's force-dark pipeline ignores `colors.webpage.bg` for most pages.
-            # Keep this off so `colors.webpage.bg` remains the effective fallback.
-            enabled = false;
-            policy.images = "smart";
+            # Force a consistent dark rendering to avoid site-by-site theme flips.
+            enabled = true;
+            policy.page = "always";
+            policy.images = "never";
           };
         };
 
         completion = {
           category = {
-            bg = c.bg;
-            fg = c.purple;
+            bg = c.bgRaised;
+            fg = c.accent;
           };
-          even.bg = c.bgRaised;
+          even.bg = c.bg;
           fg = c.fg;
           item.selected = {
-            bg = c.selection;
+            bg = c.search;
             fg = c.fg;
             match.fg = c.teal;
           };
           match.fg = c.accent;
-          odd.bg = c.bg;
+          odd.bg = c.bgRaised;
           scrollbar = {
-            bg = c.bg;
+            bg = c.bgRaised;
             fg = c.fgDim;
           };
         };
 
         downloads = {
-          bar.bg = c.bg;
+          bar.bg = c.bgRaised;
           error = {
             bg = c.red;
             fg = c.bg;
@@ -125,40 +126,40 @@ in
         };
 
         hints = {
-          bg = c.bgSubtle;
-          fg = c.fg;
-          match.fg = c.accent;
+          bg = c.yellow;
+          fg = c.bg;
+          match.fg = c.red;
         };
 
         statusbar = {
           caret = {
-            bg = c.bgSubtle;
+            bg = c.bgRaised;
             fg = c.orange;
           };
           command = {
-            bg = c.bgSubtle;
+            bg = c.bgRaised;
             fg = c.fg;
           };
           insert = {
-            bg = c.bgSubtle;
+            bg = c.bgRaised;
             fg = c.teal;
           };
           normal = {
-            bg = c.bg;
+            bg = c.bgRaised;
             fg = c.fg;
           };
           passthrough = {
-            bg = c.bgSubtle;
+            bg = c.bgRaised;
             fg = c.yellow;
           };
           private = {
-            bg = c.bgSubtle;
+            bg = c.bgRaised;
             fg = c.purple;
           };
           progress.bg = c.accent;
           url = {
             error.fg = c.red;
-            fg = c.fgMid;
+            fg = c.fg;
             hover.fg = c.accent;
             success.http.fg = c.teal;
             success.https.fg = c.green;
@@ -167,7 +168,7 @@ in
         };
 
         tabs = {
-          bar.bg = c.bg;
+          bar.bg = c.bgRaised;
           even = {
             bg = c.bg;
             fg = c.fgMid;
@@ -193,22 +194,22 @@ in
             };
             selected = {
               even = {
-                bg = c.bgSubtle;
+                bg = c.search;
                 fg = c.purple;
               };
               odd = {
-                bg = c.bgSubtle;
+                bg = c.search;
                 fg = c.purple;
               };
             };
           };
           selected = {
             even = {
-              bg = c.bgSubtle;
+              bg = c.search;
               fg = c.fg;
             };
             odd = {
-              bg = c.bgSubtle;
+              bg = c.search;
               fg = c.fg;
             };
           };
@@ -219,6 +220,15 @@ in
     keyBindings.normal = {
       "J" = "tab-prev";
       "K" = "tab-next";
+      "1" = "tab-focus 1";
+      "2" = "tab-focus 2";
+      "3" = "tab-focus 3";
+      "4" = "tab-focus 4";
+      "5" = "tab-focus 5";
+      "6" = "tab-focus 6";
+      "7" = "tab-focus 7";
+      "8" = "tab-focus 8";
+      "9" = "tab-focus 9";
       "<Ctrl-h>" = "back";
       "<Ctrl-l>" = "forward";
       ",r" = "config-source";
@@ -238,25 +248,4 @@ in
   # Take ownership of existing user-managed files during first migration.
   xdg.configFile."qutebrowser/config.py".force = true;
   xdg.configFile."qutebrowser/quickmarks".force = true;
-  xdg.configFile."qutebrowser/user.css".force = true;
-  xdg.configFile."qutebrowser/user.css".text = ''
-    /* Keep unthemed page content readable on the fallback dark webpage background. */
-    :root {
-      color-scheme: dark !important;
-    }
-    html, body {
-      color: ${c.fg} !important;
-      background-color: ${c.bg} !important;
-    }
-    /* Some pages hardcode black text on transparent backgrounds. */
-    body :is(
-      p, span, div, li, dt, dd, td, th, label, small, strong, em, b, i,
-      h1, h2, h3, h4, h5, h6, pre, code, blockquote
-    ) {
-      color: ${c.fg} !important;
-    }
-    a, a * {
-      color: ${c.accent} !important;
-    }
-  '';
 }
