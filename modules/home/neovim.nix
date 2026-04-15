@@ -217,6 +217,7 @@ in
       selection = "${c.selection}",
       search = "${c.search}",
       trailspace = "${c.trailspace}",
+      variant = "${config.lib.stylix.colors.variant}",
       base00 = "${s.base00}",
       base01 = "${s.base01}",
       base02 = "${s.base02}",

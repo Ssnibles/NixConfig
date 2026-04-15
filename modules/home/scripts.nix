@@ -261,7 +261,7 @@ let
     available_themes=(${stylixThemeNamesShell})
 
     usage() {
-      echo "Usage: stylix-switch <theme-name|--list|--current>" >&2
+      echo "Usage: stylix-switch <theme-name|--list|--current|--apply>" >&2
     }
 
     if [ ! -f "$theme_file" ]; then
@@ -287,6 +287,12 @@ let
         echo "$current_theme"
         exit 0
         ;;
+      --apply)
+        cd "$repo_root"
+        nh home switch
+        echo "Reapplied Stylix theme: $current_theme"
+        exit 0
+        ;;
       ""|-h|--help)
         usage
         echo "Available themes: ${stylixThemeNamesCsv}" >&2
@@ -310,7 +316,9 @@ let
     fi
 
     if [ "$selected" = "$current_theme" ]; then
-      echo "Theme already active: $selected"
+      cd "$repo_root"
+      nh home switch
+      echo "Theme already active; reapplied: $selected"
       exit 0
     fi
 

@@ -11,7 +11,7 @@ sudo bash <(curl -L https://raw.githubusercontent.com/Ssnibles/NixConfig/main/in
   --host desktop --disk /dev/nvme0n1
 ```
 
-Use `--host laptop` for laptop installs.  
+Use `--host laptop` for laptop installs.
 `install.sh` will wipe the selected disk.
 
 ### Daily workflow
@@ -23,20 +23,20 @@ bash ./check.sh
 
 Then apply changes with one of:
 
-| Scope | Command |
-|---|---|
-| Full system (kernel, drivers, services, boot, etc.) | `nh os switch` |
-| Home Manager only (Hyprland, Waybar, shell, Neovim, etc.) | `nh home switch` |
-| Home Manager with explicit target | `nh home switch -c josh@desktop` |
+| Scope                                                     | Command                          |
+| --------------------------------------------------------- | -------------------------------- |
+| Full system (kernel, drivers, services, boot, etc.)       | `nh os switch`                   |
+| Home Manager only (Hyprland, Waybar, shell, Neovim, etc.) | `nh home switch`                 |
+| Home Manager with explicit target                         | `nh home switch -c josh@desktop` |
 
 Fish abbreviations in this repo:
 
-| Abbr | Expands to |
-|---|---|
-| `rebuild` | `nh os switch` |
-| `hm` | `nh home switch` |
-| `update` | `nh os switch --update` |
-| `clean` | `nh clean all` |
+| Abbr      | Expands to              |
+| --------- | ----------------------- |
+| `rebuild` | `nh os switch`          |
+| `hm`      | `nh home switch`        |
+| `update`  | `nh os switch --update` |
+| `clean`   | `nh clean all`          |
 
 ### Stylix theme switcher
 
@@ -45,6 +45,7 @@ This repo now includes a declarative Stylix switcher for supported programs.
 ```bash
 stylix-switch --list
 stylix-switch catppuccin-mocha
+stylix-switch --apply
 ```
 
 Themes are defined in `lib/stylix/themes.nix`, and the active theme key lives in `lib/stylix/current-theme.nix`.

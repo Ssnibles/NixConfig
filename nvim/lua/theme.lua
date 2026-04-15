@@ -19,6 +19,7 @@ M.colors = {
 	yellow = generated.yellow or "#f3be7c",
 	cyan = generated.teal or "#b4d4cf",
 	orange = generated.orange or "#e8b589",
+	magenta = generated.magenta or "#c48282",
 	selection = generated.selection or "#333738",
 	search = generated.search or "#2a3a4a",
 	trailspace = generated.trailspace or "#3a1c28",
@@ -26,13 +27,18 @@ M.colors = {
 
 function M.setup()
 	local c = M.colors
+	if generated.variant == "light" then
+		vim.o.background = "light"
+	elseif generated.variant == "dark" then
+		vim.o.background = "dark"
+	end
 	local ok_base16, mini_base16 = pcall(require, "mini.base16")
 	if ok_base16 then
 		mini_base16.setup({
 			palette = {
 				base00 = generated.base00 or c.bg,
-				base01 = generated.base01 or c.search,
-				base02 = generated.base02 or c.selection,
+				base01 = generated.base00 or c.bg,
+				base02 = generated.base00 or c.bg,
 				base03 = generated.base03 or c.comment,
 				base04 = generated.base04 or c.comment,
 				base05 = generated.base05 or c.fg,
@@ -54,10 +60,41 @@ function M.setup()
 		vim.api.nvim_set_hl(0, name, opts)
 	end
 
-	-- Define the Master Border Style
-	hl("GlobalBorder", { fg = c.border, bg = c.bg })
+	-- Force a flat UI background: all UI/popup surfaces match editor background.
+	hl("Normal", { fg = c.fg, bg = c.bg })
+	for _, group in ipairs({
+		"NormalNC",
+		"NormalFloat",
+		"SignColumn",
+		"FoldColumn",
+		"StatusLine",
+		"StatusLineNC",
+		"WinBar",
+		"WinBarNC",
+		"Pmenu",
+		"PmenuSbar",
+		"PmenuThumb",
+		"BlinkCmpMenu",
+		"BlinkCmpDoc",
+		"BlinkCmpSignatureHelp",
+		"NoiceCmdlinePopup",
+		"NoiceConfirm",
+		"NoicePopup",
+		"NoicePopupmenu",
+		"FzfLuaNormal",
+		"FzfLuaPreviewNormal",
+		"FzfLuaPromptNormal",
+		"MiniClueNormal",
+		"TreesitterContext",
+	}) do
+		hl(group, { link = "Normal" })
+	end
+	hl("CursorLine", { bg = c.bg })
+	hl("PmenuSel", { fg = c.blue, bg = c.bg, bold = true })
+	hl("BlinkCmpMenuSelection", { fg = c.blue, bg = c.bg, bold = true })
 
-	-- Link UI and Plugin Borders to the Master Style
+	-- Keep overrides minimal so mini.base16/Stylix drives most colors.
+	hl("GlobalBorder", { fg = c.border })
 	hl("FloatBorder", { link = "GlobalBorder" })
 	hl("LspInfoBorder", { link = "GlobalBorder" })
 	hl("FzfLuaBorder", { link = "GlobalBorder" })
@@ -71,78 +108,28 @@ function M.setup()
 	hl("BlinkCmpMenuBorder", { link = "GlobalBorder" })
 	hl("BlinkCmpDocBorder", { link = "GlobalBorder" })
 	hl("BlinkCmpSignatureHelpBorder", { link = "GlobalBorder" })
-
-	-- WinSeparator
 	hl("WinSeparator", { fg = c.border })
 
-	-- Floats and popups (Non-border highlights)
-	hl("NormalFloat", { fg = c.fg, bg = c.bg })
-	hl("FloatTitle", { fg = c.blue, bg = c.bg, bold = true })
-	hl("LspInfoTitle", { fg = c.blue, bg = c.bg, bold = true })
-	hl("FzfLuaNormal", { bg = c.bg })
-	hl("FzfLuaPreviewNormal", { bg = c.bg })
-	hl("FzfLuaPromptNormal", { bg = c.bg })
-	hl("NoiceCmdlinePopup", { bg = c.bg })
-	hl("NoiceCmdlinePopupTitle", { fg = c.blue, bg = c.bg, bold = true })
-	hl("NoiceConfirm", { bg = c.bg })
-	hl("NoicePopup", { bg = c.bg })
-	hl("NoicePopupmenu", { bg = c.bg })
-	hl("NoicePopupmenuSelected", { bg = c.gutter, bold = true })
+	-- Accent-only tweaks (avoid background overrides).
+	hl("FloatTitle", { fg = c.blue, bold = true })
+	hl("LspInfoTitle", { fg = c.blue, bold = true })
+	hl("NoiceCmdlinePopupTitle", { fg = c.blue, bold = true })
 	hl("NoicePopupmenuMatch", { fg = c.blue, bold = true })
-	hl("MiniClueNormal", { bg = c.bg })
-	hl("MiniClueTitle", { fg = c.blue, bg = c.bg, bold = true })
-	hl("MiniClueDescSingle", { fg = c.fg, bg = c.bg })
-	hl("MiniClueDescGroup", { fg = c.comment, bg = c.bg })
-	hl("MiniClueNextKey", { fg = c.blue, bg = c.bg, bold = true })
-	hl("MiniClueNextKeyWithPostkeys", { fg = c.blue, bg = c.bg, bold = true })
-	hl("MiniClueSeparator", { fg = c.border, bg = c.bg })
+	hl("MiniClueTitle", { fg = c.blue, bold = true })
+	hl("MiniClueDescGroup", { fg = c.comment })
+	hl("MiniClueNextKey", { fg = c.blue, bold = true })
+	hl("MiniClueNextKeyWithPostkeys", { fg = c.blue, bold = true })
+	hl("MiniClueSeparator", { fg = c.border })
+	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
 
-	-- Window chrome
-	hl("StatusLine", { fg = c.fg, bg = c.bg })
-	hl("StatusLineNC", { fg = c.comment, bg = c.bg })
-
-	-- Cursor and selection
-	hl("CursorLine", { bg = c.gutter })
-	hl("CursorLineNr", { fg = c.blue, bold = true })
-	hl("Visual", { bg = c.selection })
-	hl("LineNr", { fg = c.comment })
-
-	-- Search
-	hl("Search", { bg = c.search, fg = c.blue })
-	hl("IncSearch", { bg = c.blue, fg = c.bg, bold = true })
-	hl("CurSearch", { bg = c.blue, fg = c.bg, bold = true })
-
-	-- Diagnostics
+	-- Diagnostics and subtle utility highlights.
 	hl("DiagnosticUnderlineError", { undercurl = true, sp = c.red })
 	hl("DiagnosticUnderlineWarn", { undercurl = true, sp = c.yellow })
 	hl("DiagnosticUnderlineHint", { undercurl = true, sp = c.cyan })
 	hl("DiagnosticUnderlineInfo", { undercurl = true, sp = c.blue })
 	hl("LspInlayHint", { fg = c.comment, italic = true })
-
-	-- Completion (blink.cmp)
-	hl("BlinkCmpMenu", { bg = c.bg })
-	hl("BlinkCmpMenuSelection", { bg = c.gutter, bold = true })
-	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
-	hl("BlinkCmpDoc", { bg = c.bg })
-
-	-- Treesitter context
-	hl("TreesitterContext", { bg = c.bg })
-	hl("TreesitterContextSeparator", { fg = c.gutter })
-	hl("TreesitterContextLineNumber", { fg = c.comment, bg = c.bg })
-
-	-- Indent guides
-	hl("MiniIndentscopeSymbol", { fg = c.blue, nocombine = true })
-
-	-- Mini.nvim
-	hl("MiniCursorword", { bg = c.gutter })
-	hl("MiniCursorwordCurrent", { bg = c.gutter })
+	hl("MiniIndentscopeSymbol", { fg = c.comment, nocombine = true })
 	hl("MiniTrailspace", { bg = c.trailspace })
-
-	-- Folds
-	hl("Folded", { fg = c.comment, bg = c.gutter })
-	hl("FoldColumn", { fg = c.comment })
-
-	-- Copilot
 	hl("CopilotSuggestion", { fg = c.purple, italic = true })
 end
 
