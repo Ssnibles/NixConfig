@@ -14,7 +14,7 @@
       After = [ "graphical-session.target" ];
     };
     Service = {
-      ExecStart = "${pkgs.awww}/bin/awww-daemon";
+      ExecStart = "${pkgs.unstable.awww}/bin/awww-daemon";
       Restart = "on-failure";
       # Wait a bit for the compositor to be ready
       ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";

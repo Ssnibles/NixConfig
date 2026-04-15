@@ -4,7 +4,12 @@
 # Hyprland helper scripts and the AI commit-message generator.
 # All scripts are built with writeShellScriptBin so they end up on $PATH.
 # =============================================================================
-{ pkgs, ... }:
+{
+  pkgs,
+  lib,
+  hostProfile,
+  ...
+}:
 let
   fabulouslyOptimizedPack = pkgs.nix-minecraft.fetchModrinthModpack {
     pname = "fabulously-optimized";
@@ -61,6 +66,27 @@ let
       echo "focus" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled - Distractions removed"
     fi
+  '';
+
+  # ── Desktop monitor brightness (DDC/CI) ───────────────────────────────────
+  # Uses faster ddcutil settings and prevents key-repeat command pileups.
+  ddc-brightness = pkgs.writeShellScriptBin "ddc-brightness" ''
+    set -euo pipefail
+
+    case "''${1:-}" in
+      up) direction="+" ;;
+      down) direction="-" ;;
+      *)
+        echo "Usage: ddc-brightness <up|down>" >&2
+        exit 2
+        ;;
+    esac
+
+    lock_file="''${XDG_RUNTIME_DIR:-/tmp}/ddc-brightness.lock"
+    exec 9>"$lock_file"
+    ${pkgs.util-linux}/bin/flock -n 9 || exit 0
+
+    exec ${pkgs.ddcutil}/bin/ddcutil --sleep-multiplier 0.1 setvcp --noverify 10 "$direction" 5
   '';
 
   # ── AI commit message generator ────────────────────────────────────────
@@ -228,5 +254,5 @@ in
     toggle-focus-mode
     aicommit
     setup-fo-prism
-  ];
+  ] ++ lib.optionals hostProfile.isDesktop [ ddc-brightness ];
 }

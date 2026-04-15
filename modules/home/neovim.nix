@@ -96,6 +96,7 @@ in
       python3Packages.debugpy # Python debug adapter
       netcoredbg # C#/.NET debug adapter
       delve # Go debug adapter
+      lldb # Rust/C/C++ debug adapter (lldb-dap)
       vscode-js-debug # JS/TS debug adapter
 
       # ── CLI Tools (used by plugins) ──────────────────────────────────────

@@ -4,10 +4,26 @@
 # Wayland compositor settings, keybindings, and the Vicinae app launcher.
 # System-level enablement (programs.hyprland.enable) lives in nixos/common.nix.
 # =============================================================================
-{ pkgs, colors, ... }:
+{
+  pkgs,
+  colors,
+  hostProfile,
+  ...
+}:
 let
   raw = colors.vague;
   c = colors.vague.withHash;
+  brightnessBinds =
+    if hostProfile.isDesktop then
+      [
+        ", XF86MonBrightnessUp,   exec, ddc-brightness up"
+        ", XF86MonBrightnessDown, exec, ddc-brightness down"
+      ]
+    else
+      [
+        ", XF86MonBrightnessUp,   exec, brightnessctl set +5%"
+        ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
+      ];
 in
 {
   imports = [
@@ -169,9 +185,7 @@ in
         "$mod SHIFT, H, resizeactive, -10 0"
         "$mod SHIFT, K, resizeactive,  0 -10"
         "$mod SHIFT, J, resizeactive,  0  10"
-        ", XF86MonBrightnessUp,   exec, brightnessctl set +5%"
-        ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
-      ];
+      ] ++ brightnessBinds;
 
       bindel = [
         ", XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+"

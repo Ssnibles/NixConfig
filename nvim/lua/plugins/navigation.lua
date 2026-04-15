@@ -3,7 +3,7 @@
 -- Flash: motion plugin
 local flash = require("flash")
 flash.setup({})
-vim.keymap.set({ "n", "x", "o" }, "s", flash.jump, { desc = "Flash jump" })
+vim.keymap.set({ "n", "x", "o" }, "<leader><leader>", flash.jump, { desc = "Flash jump" })
 vim.keymap.set({ "n", "x", "o" }, "S", flash.treesitter, { desc = "Flash treesitter" })
 
 -- Grug-far: project-wide search/replace

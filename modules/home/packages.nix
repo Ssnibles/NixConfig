@@ -16,7 +16,7 @@
 {
   home.packages = [
     pkgs.zen-browser # From flake overlay
-    pkgs.awww # From flake overlay
+    pkgs.unstable.awww # From nixpkgs-unstable
   ]
   ++ (with pkgs.unstable; [
     # ── Development ────────────────────────────────────────────────────
@@ -110,6 +110,7 @@
   ++ lib.optionals hostProfile.isDesktop (
     with pkgs.unstable;
     [
+      pkgs.ddcutil
       steam
       heroic
       lutris

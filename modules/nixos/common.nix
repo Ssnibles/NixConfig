@@ -135,6 +135,10 @@ in
     };
   };
 
+  # Desktop monitors controlled over DDC/CI require I2C access.
+  hardware.i2c.enable = lib.mkDefault hostProfile.isDesktop;
+  services.udev.packages = lib.optionals hostProfile.isDesktop [ pkgs.ddcutil ];
+
   # ═══════════════════════════════════════════════════════════════════════════
   # POWER MANAGEMENT
   # ═══════════════════════════════════════════════════════════════════════════
@@ -274,6 +278,7 @@ in
     # • networkmanager: WiFi/network control without sudo
     # • wheel: sudo privileges
     # • video: GPU access, screen brightness control
+    # • i2c: DDC/CI monitor control (desktop host only)
     # • input: Wayland input device access
     # • plugdev: USB device access
     extraGroups = [
@@ -282,7 +287,7 @@ in
       "video"
       "input"
       "plugdev"
-    ];
+    ] ++ lib.optionals hostProfile.isDesktop [ "i2c" ];
   };
 
   age.secrets = lib.mkMerge [
