@@ -4,9 +4,9 @@
 # Notification daemon and control centre for Hyprland.
 # Reworked to match Vicinae's raised-surface aesthetic and cleaner spacing.
 # =============================================================================
-{ colors, ... }:
+{ config, ... }:
 let
-  c = colors.vague.withHash;
+  c = (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
   panelWidth = 392;
   panelHeight = 640;
   panelMargin = 24;
@@ -72,7 +72,7 @@ in
 
     style = ''
       /* =================================================================== */
-      /* SwayNC Vague Theme                                                  */
+      /* SwayNC Stylix Theme                                                 */
       /* Synced with Vicinae: raised surfaces and balanced spacing           */
       /* =================================================================== */
 

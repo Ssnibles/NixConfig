@@ -28,13 +28,14 @@
 #   • C# (csharpier)
 # =============================================================================
 {
+  config,
   pkgs,
-  colors,
   inputs,
   ...
 }:
 let
-  c = colors.vague.withHash;
+  c = (import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
+  s = config.lib.stylix.colors.withHashtag;
   # ── Custom Plugin: tiny-code-action ────────────────────────────────────────
   # Lightweight code action UI (alternative to heavier Telescope code actions)
   # Source: https://github.com/rachartier/tiny-code-action.nvim
@@ -165,7 +166,6 @@ in
       lualine-nvim # Statusline
       statuscol-nvim # Custom status column (signs, line numbers)
       neoscroll-nvim # Smooth scrolling
-      vague-nvim # Colorscheme (Vague theme)
       nui-nvim # UI dependency for noice.nvim
       noice-nvim # Better UI for messages, cmdline, popups
       no-neck-pain-nvim # Centered editing with side buffers
@@ -217,6 +217,22 @@ in
       selection = "${c.selection}",
       search = "${c.search}",
       trailspace = "${c.trailspace}",
+      base00 = "${s.base00}",
+      base01 = "${s.base01}",
+      base02 = "${s.base02}",
+      base03 = "${s.base03}",
+      base04 = "${s.base04}",
+      base05 = "${s.base05}",
+      base06 = "${s.base06}",
+      base07 = "${s.base07}",
+      base08 = "${s.base08}",
+      base09 = "${s.base09}",
+      base0A = "${s.base0A}",
+      base0B = "${s.base0B}",
+      base0C = "${s.base0C}",
+      base0D = "${s.base0D}",
+      base0E = "${s.base0E}",
+      base0F = "${s.base0F}",
     }
 
     return M

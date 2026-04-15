@@ -40,7 +40,6 @@ in
       user ? "josh",
     }:
     let
-      colors = import ./colors.nix;
       # ── Host Profile ─────────────────────────────────────────────────────
       # Flags accessible via `hostProfile.*` in all NixOS and Home Manager modules
       # Used for conditional logic (e.g., `lib.optionals hostProfile.isLaptop [ ... ]`)
@@ -90,7 +89,6 @@ in
           unstablePkgs   # Direct unstable package set (alternative to overlay)
           hostProfile    # Host flags (hasNvidia, isLaptop, etc.)
           user           # Primary user name for user creation
-          colors         # Shared color palette
           ;
       };
 
@@ -119,7 +117,6 @@ in
                   inputs
                   hostProfile
                   user
-                  colors
                   ;
               };
               users.${user} = import ../users/${user}; # User config entry point

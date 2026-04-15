@@ -23,6 +23,7 @@
   imports = [
     # Secrets management
     inputs.agenix.homeManagerModules.default
+    inputs.stylix.homeModules.stylix
 
     # ── Shell & terminal ──────────────────────────────────────────────────
     ../../modules/home/shell/fish.nix
@@ -42,6 +43,7 @@
     ../../modules/home/git.nix
     ../../modules/home/packages.nix
     ../../modules/home/programs.nix
+    ../../modules/home/stylix.nix
     ../../modules/home/scripts.nix
   ];
 

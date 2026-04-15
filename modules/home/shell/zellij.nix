@@ -4,9 +4,9 @@
 # Terminal multiplexer configured to feel close to the existing tmux workflow:
 # backtick "prefix"-style controls, vi-like pane movement, and the same palette.
 # =============================================================================
-{ pkgs, colors, ... }:
+{ pkgs, config, ... }:
 let
-  rgb = colors.vague.rgb;
+  rgb = (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).rgb;
 in
 {
   home.packages = [ pkgs.unstable.zellij ];
@@ -27,7 +27,7 @@ in
     show_release_notes false
 
     themes {
-      vague {
+      stylix {
         fg ${toString (builtins.elemAt rgb.fg 0)} ${toString (builtins.elemAt rgb.fg 1)} ${toString (builtins.elemAt rgb.fg 2)}
         bg ${toString (builtins.elemAt rgb.bg 0)} ${toString (builtins.elemAt rgb.bg 1)} ${toString (builtins.elemAt rgb.bg 2)}
         red ${toString (builtins.elemAt rgb.red 0)} ${toString (builtins.elemAt rgb.red 1)} ${toString (builtins.elemAt rgb.red 2)}
@@ -41,7 +41,7 @@ in
         white ${toString (builtins.elemAt rgb.white 0)} ${toString (builtins.elemAt rgb.white 1)} ${toString (builtins.elemAt rgb.white 2)}
       }
     }
-    theme "vague"
+    theme "stylix"
 
     keybinds {
       unbind "Ctrl b"

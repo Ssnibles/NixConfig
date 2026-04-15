@@ -38,6 +38,17 @@ Fish abbreviations in this repo:
 | `update` | `nh os switch --update` |
 | `clean` | `nh clean all` |
 
+### Stylix theme switcher
+
+This repo now includes a declarative Stylix switcher for supported programs.
+
+```bash
+stylix-switch --list
+stylix-switch catppuccin-mocha
+```
+
+Themes are defined in `lib/stylix/themes.nix`, and the active theme key lives in `lib/stylix/current-theme.nix`.
+
 ## Spotify + Agenix setup (what goes in each `.age` file)
 
 This config expects:

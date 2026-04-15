@@ -49,6 +49,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Stylix: Shared theming framework for Home Manager / NixOS targets
+    stylix = {
+      url = "github:nix-community/stylix/release-25.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # ── Infrastructure Tools ─────────────────────────────────────────────────
     # Agenix: Age-based secrets management (encrypted with SSH/age keys)
     # Used for: Spotify credentials, API tokens, etc.
@@ -91,7 +97,6 @@
       builder = import ./lib/mkHost.nix { inherit inputs; };
       inherit (builder) mkHost;
       system = "x86_64-linux";
-      colors = import ./lib/colors.nix;
 
       # ── Shared package set for standalone Home Manager configs ────────────
       # Mirrors mkHost overlay behavior so `nh home switch` uses the same
@@ -144,7 +149,6 @@
               inputs
               hostProfile
               user
-              colors
               ;
           };
         };

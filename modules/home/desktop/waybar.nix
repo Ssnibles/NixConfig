@@ -3,9 +3,9 @@
 # =============================================================================
 # Top status bar for Hyprland.
 # =============================================================================
-{ colors, ... }:
+{ config, ... }:
 let
-  c = colors.vague.withHash;
+  c = (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
 in
 {
   programs.waybar = {
@@ -167,8 +167,8 @@ in
 
     style = ''
       /* =================================================================== */
-      /* Waybar Vague Theme                                                  */
-      /* Consistent color palette matching neovim, swaync, and hyprland     */
+      /* Waybar Stylix Theme                                                 */
+      /* Consistent active palette matching neovim, swaync, and hyprland     */
       /* =================================================================== */
 
       @define-color bg          ${c.bg};

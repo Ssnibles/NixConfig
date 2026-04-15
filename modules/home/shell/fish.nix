@@ -2,12 +2,13 @@
 # Fish Shell & Terminal Emulator Configuration
 # =============================================================================
 # Fish shell setup, plugins, and colour-matched configs for Ghostty and Foot.
-# All three share the same vague colour palette, so they live together.
+# All three consume the active Stylix palette.
 # =============================================================================
-{ pkgs, colors, ... }:
+{ pkgs, config, ... }:
 let
-  c = colors.vague;
+  c = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
   h = c.withHash;
+  ghosttyWindowTheme = if config.lib.stylix.colors.variant == "light" then "light" else "dark";
 in
 {
   programs.fish = {
@@ -106,7 +107,7 @@ in
           history merge
       end
 
-      # Fish syntax + completion colors aligned to the Vague palette.
+      # Fish syntax + completion colors aligned to the active Stylix palette.
       set -g fish_color_normal ${c.fg}
       set -g fish_color_command ${c.accent}
       set -g fish_color_keyword ${c.purple}
@@ -166,7 +167,7 @@ in
     cursor-style      = bar
     window-decoration = false
     window-save-state = default
-    window-theme      = dark
+    window-theme      = ${ghosttyWindowTheme}
     clipboard-read    = allow
     clipboard-write   = allow
     background        = ${c.bg}
@@ -197,7 +198,7 @@ in
     shell=${pkgs.fish}/bin/fish
     font=JetBrainsMono Nerd Font:size=12
     pad=20x20
-    [colors-dark]
+    [colors]
     background=${c.bg}
     foreground=${c.fg}
     selection-background=${c.selection}
