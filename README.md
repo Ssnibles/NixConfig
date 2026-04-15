@@ -50,6 +50,11 @@ stylix-switch --apply
 
 Themes are defined in `lib/stylix/themes.nix`, and the active theme key lives in `lib/stylix/current-theme.nix`.
 
+Two in-repo examples are included:
+
+- `lib/stylix/themes.nix` contains `example-custom-ocean` (inline custom Base16 theme example).
+- `modules/home/stylix.nix` contains a disabled `example-app` block showing how to theme unsupported apps from `config.lib.stylix.colors` (`enableUnsupportedProgramExample = true`).
+
 ## Spotify + Agenix setup (what goes in each `.age` file)
 
 This config expects:

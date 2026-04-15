@@ -19,7 +19,7 @@
 |---|---|
 | `modules/home/packages.nix` | User package set (including host-conditional desktop/laptop packages) |
 | `modules/home/programs.nix` | spotify-player, direnv, pet snippets/config |
-| `modules/home/stylix.nix` | Stylix theme base + target selection for supported applications |
+| `modules/home/stylix.nix` | Stylix theme base + target selection for supported applications, plus disabled example for unsupported app theming |
 | `modules/home/scripts.nix` | custom scripts (`toggle-float`, `toggle-focus-mode`, `stylix-switch`, `aicommit`, `setup-fo-prism`, etc.) |
 | `modules/home/git.nix` | Git identity + delta config |
 | `modules/home/neovim.nix` | Neovim plugins, LSP tools, formatters, runtime config source |

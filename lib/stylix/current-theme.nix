@@ -1,1 +1,1 @@
-"gruvbox-light-hard"
+"everforest-light"
