@@ -91,7 +91,7 @@ require("mini.indentscope").setup({
 		animation = require("mini.indentscope").gen_animation.none(),
 	},
 })
-vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { fg = c.blue, nocombine = true })
+vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { fg = c.comment, nocombine = true })
 
 -- Additional mini modules
 require("mini.align").setup()
