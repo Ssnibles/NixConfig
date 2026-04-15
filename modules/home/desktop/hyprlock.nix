@@ -1,11 +1,11 @@
 # =============================================================================
 # Hyprlock Configuration
 # =============================================================================
-# Lock screen for Hyprland with vague theme styling.
+# Lock screen for Hyprland with active Stylix theme styling.
 # =============================================================================
-{ pkgs, colors, ... }:
+{ config, ... }:
 let
-  c = colors.vague;
+  c = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
 
   rgb = hex: "rgb(${hex})";
   # Hyprlock/Hyprlang requires escaping '#' as '##' inside markup strings.

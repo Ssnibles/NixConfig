@@ -1,12 +1,12 @@
 # =============================================================================
 # Tmux Configuration
 # =============================================================================
-# Terminal multiplexer with vi-mode, TPM plugins, and vague colour theme.
+# Terminal multiplexer with vi-mode, TPM plugins, and active Stylix theme.
 # NOTE: TPM itself is bootstrapped outside Nix – see README.md.
 # =============================================================================
-{ pkgs, colors, ... }:
+{ pkgs, config, ... }:
 let
-  c = colors.vague.withHash;
+  c = (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
 in
 {
   programs.tmux = {

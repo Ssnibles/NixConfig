@@ -1,4 +1,4 @@
--- Theme configuration: vague colorscheme + custom highlight overrides
+-- Theme configuration from Stylix-generated palette + custom highlight overrides
 local M = {}
 
 local ok, generated = pcall(require, "generated.colors")
@@ -25,13 +25,31 @@ M.colors = {
 }
 
 function M.setup()
-	local ok = pcall(vim.cmd.colorscheme, "vague")
-	if not ok then
-		vim.cmd.colorscheme("default")
-		return
+	local c = M.colors
+	local ok_base16, mini_base16 = pcall(require, "mini.base16")
+	if ok_base16 then
+		mini_base16.setup({
+			palette = {
+				base00 = generated.base00 or c.bg,
+				base01 = generated.base01 or c.search,
+				base02 = generated.base02 or c.selection,
+				base03 = generated.base03 or c.comment,
+				base04 = generated.base04 or c.comment,
+				base05 = generated.base05 or c.fg,
+				base06 = generated.base06 or c.fg,
+				base07 = generated.base07 or c.fg,
+				base08 = generated.base08 or c.red,
+				base09 = generated.base09 or c.orange,
+				base0A = generated.base0A or c.yellow,
+				base0B = generated.base0B or c.green,
+				base0C = generated.base0C or c.cyan,
+				base0D = generated.base0D or c.blue,
+				base0E = generated.base0E or c.purple,
+				base0F = generated.base0F or c.magenta,
+			},
+		})
 	end
 
-	local c = M.colors
 	local hl = function(name, opts)
 		vim.api.nvim_set_hl(0, name, opts)
 	end

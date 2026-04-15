@@ -1,16 +1,16 @@
 # =============================================================================
 # Qutebrowser Module (Home Manager)
 # =============================================================================
-# Declarative qutebrowser setup aligned with the same Vague palette used across
-# the rest of the desktop stack.
+# Declarative qutebrowser setup aligned with the active Stylix palette.
 # =============================================================================
 {
+  config,
   pkgs,
-  colors,
   ...
 }:
 let
-  c = colors.vague.withHash;
+  c = (import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
+  isDark = config.lib.stylix.colors.variant != "light";
 in
 {
   programs.qutebrowser = {
@@ -82,10 +82,9 @@ in
       colors = {
         webpage = {
           darkmode = {
-            # Force a consistent dark rendering to avoid site-by-site theme flips.
-            enabled = true;
-            policy.page = "always";
-            policy.images = "never";
+            enabled = isDark;
+            policy.page = if isDark then "always" else "smart";
+            policy.images = if isDark then "never" else "smart";
           };
         };
 

@@ -18,6 +18,10 @@ let
     side = "client";
     packHash = "sha256-iBkTKENX1TriQWHXdns3rvS/XD/gz1q6cxMT/IMyclQ=";
   };
+  stylixThemes = import ../../lib/stylix/themes.nix;
+  stylixThemeNames = builtins.attrNames stylixThemes;
+  stylixThemeNamesShell = builtins.concatStringsSep " " (map lib.escapeShellArg stylixThemeNames);
+  stylixThemeNamesCsv = builtins.concatStringsSep ", " stylixThemeNames;
 
   # ── Toggle floating window ─────────────────────────────────────────────
   # Floats the active window and centres it at 60 % of screen size.
@@ -246,6 +250,76 @@ let
     echo "Path: $instance_dir"
     echo "Launch with: prismlauncher -l $instance_id"
   '';
+
+  # ── Stylix theme switcher ───────────────────────────────────────────────
+  # Switches lib/stylix/current-theme.nix and applies Home Manager.
+  stylix-switch = pkgs.writeShellScriptBin "stylix-switch" ''
+    set -euo pipefail
+
+    repo_root="/home/${hostProfile.user}/NixConfig"
+    theme_file="$repo_root/lib/stylix/current-theme.nix"
+    available_themes=(${stylixThemeNamesShell})
+
+    usage() {
+      echo "Usage: stylix-switch <theme-name|--list|--current>" >&2
+    }
+
+    if [ ! -f "$theme_file" ]; then
+      echo "Theme file not found: $theme_file" >&2
+      exit 1
+    fi
+
+    current_theme="$(tr -d '"[:space:]' < "$theme_file")"
+
+    case "''${1:-}" in
+      --list)
+        echo "Available themes:"
+        for theme in "''${available_themes[@]}"; do
+          if [ "$theme" = "$current_theme" ]; then
+            printf "  %s (current)\n" "$theme"
+          else
+            printf "  %s\n" "$theme"
+          fi
+        done
+        exit 0
+        ;;
+      --current)
+        echo "$current_theme"
+        exit 0
+        ;;
+      ""|-h|--help)
+        usage
+        echo "Available themes: ${stylixThemeNamesCsv}" >&2
+        exit 2
+        ;;
+    esac
+
+    selected="$1"
+    found=0
+    for theme in "''${available_themes[@]}"; do
+      if [ "$theme" = "$selected" ]; then
+        found=1
+        break
+      fi
+    done
+
+    if [ "$found" -ne 1 ]; then
+      echo "Unknown theme: $selected" >&2
+      echo "Available themes: ${stylixThemeNamesCsv}" >&2
+      exit 2
+    fi
+
+    if [ "$selected" = "$current_theme" ]; then
+      echo "Theme already active: $selected"
+      exit 0
+    fi
+
+    printf '"%s"\n' "$selected" > "$theme_file"
+
+    cd "$repo_root"
+    nh home switch
+    echo "Switched Stylix theme to: $selected"
+  '';
 in
 {
   home.packages = [
@@ -254,5 +328,6 @@ in
     toggle-focus-mode
     aicommit
     setup-fo-prism
+    stylix-switch
   ] ++ lib.optionals hostProfile.isDesktop [ ddc-brightness ];
 }

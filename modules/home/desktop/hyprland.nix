@@ -6,13 +6,12 @@
 # =============================================================================
 {
   pkgs,
-  colors,
+  config,
   hostProfile,
   ...
 }:
 let
-  raw = colors.vague;
-  c = colors.vague.withHash;
+  raw = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
   brightnessBinds =
     if hostProfile.isDesktop then
       [
@@ -200,37 +199,8 @@ in
   # ── Vicinae launcher ─────────────────────────────────────────────────────
   programs.vicinae = {
     enable = true;
-    settings.theme.dark.name = "vague";
   };
-
-  xdg.configFile."vicinae/themes/vague.json".text = builtins.toJSON {
-    meta = {
-      version = 1;
-      name = "Vague";
-      description = "A cool, dark, low-contrast theme.";
-      variant = "dark";
-      inherits = "vicinae-dark";
-    };
-    colors = {
-      core = {
-        background = c.bg;
-        foreground = c.fg;
-        secondary_background = c.raisedBackground;
-        border = c.border;
-        accent = c.accent;
-      };
-      accents = {
-        blue = c.accent;
-        cyan = c.teal;
-        inherit (c)
-          purple
-          green
-          yellow
-          red
-          orange
-          magenta
-          ;
-      };
-    };
-  };
+  # Vicinae may create this settings file itself; force lets Home Manager
+  # take ownership on rebuild instead of failing with a clobber error.
+  xdg.configFile."vicinae/vicinae.json".force = true;
 }
