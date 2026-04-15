@@ -76,12 +76,6 @@
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # Local Neovim plugin source (non-flake)
-    switcheroo-src = {
-      url = "path:/home/josh/projects/switcheroo";
-      flake = false;
-    };
   };
 
   outputs =

@@ -35,7 +35,6 @@ The module includes:
 - editing (`conform`, `autopairs`, `dial`, `multicursors`)
 - custom plugins:
   - `tiny-code-action.nvim`
-  - local `switcheroo` from flake input `switcheroo-src`
 
 ## Keymaps
 
