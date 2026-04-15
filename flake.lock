@@ -185,21 +185,7 @@
         "nix-minecraft": "nix-minecraft",
         "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable",
-        "switcheroo-src": "switcheroo-src",
         "zen-browser": "zen-browser"
-      }
-    },
-    "switcheroo-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1775971708,
-        "narHash": "sha256-8uR/9BhKCxmW16xk+2N1meSWyY95O6WdCxx/wBXwkus=",
-        "path": "/home/josh/projects/switcheroo",
-        "type": "path"
-      },
-      "original": {
-        "path": "/home/josh/projects/switcheroo",
-        "type": "path"
       }
     },
     "systems": {

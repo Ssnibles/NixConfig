@@ -9,7 +9,7 @@
 - Home Manager (`release-25.11`)
 - Agenix (secrets)
 - Disko (partitioning)
-- Extra inputs (`zen-browser`, `nix-minecraft`, local `switcheroo-src`)
+- Extra inputs (`zen-browser`, `nix-minecraft`)
 
 ## Outputs
 

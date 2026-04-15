@@ -49,14 +49,6 @@ let
     };
     doCheck = false;
   };
-
-  # ── Custom Plugin: switcheroo (local path) ─────────────────────────────────
-  switcheroo = pkgs.vimUtils.buildVimPlugin {
-    pname = "switcheroo";
-    version = "dev";
-    src = inputs.switcheroo-src.outPath;
-    doCheck = false;
-  };
 in
 {
   programs.neovim = {
@@ -113,7 +105,6 @@ in
     plugins = with pkgs.vimPlugins; [
       # ── Custom Plugins ───────────────────────────────────────────────────
       tiny-code-action # Lightweight code action UI
-      switcheroo # Local plugin from ../projects/switcheroo
 
       # ── Syntax & Parsing ─────────────────────────────────────────────────
       (nvim-treesitter.withPlugins (
