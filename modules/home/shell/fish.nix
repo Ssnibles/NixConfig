@@ -149,14 +149,38 @@ in
     '';
 
     plugins = with pkgs.fishPlugins; [
-      { name = "grc";  src = grc.src;  }
-      { name = "z";    src = z.src;    }
-      { name = "pure"; src = pure.src; }
-      { name = "done"; src = done.src; }
-      { name = "fzf"; src = fzf.src; }
-      { name = "pisces"; src = pisces.src; }
-      { name = "sponge"; src = sponge.src; }
-      { name = "forgit"; src = forgit.src; }
+      {
+        name = "grc";
+        src = grc.src;
+      }
+      {
+        name = "z";
+        src = z.src;
+      }
+      {
+        name = "pure";
+        src = pure.src;
+      }
+      {
+        name = "done";
+        src = done.src;
+      }
+      {
+        name = "fzf";
+        src = fzf.src;
+      }
+      {
+        name = "pisces";
+        src = pisces.src;
+      }
+      {
+        name = "sponge";
+        src = sponge.src;
+      }
+      {
+        name = "forgit";
+        src = forgit.src;
+      }
     ];
   };
 
@@ -198,7 +222,7 @@ in
     shell=${pkgs.fish}/bin/fish
     font=JetBrainsMono Nerd Font:size=12
     pad=20x20
-    [colors]
+    [colors-dark]
     background=${c.bg}
     foreground=${c.fg}
     selection-background=${c.selection}
