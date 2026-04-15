@@ -13,7 +13,14 @@ Installed via `programs.neovim.extraPackages`:
 
 - LSPs: `nixd`, `lua-language-server`, `pyright`, `vtsls`, `kotlin-language-server`, `jdt-language-server`, `marksman`, `roslyn-ls`
 - Formatters/tools: `nixfmt-rfc-style`, `stylua`, `black`, `isort`, `prettier`, `shfmt`, `ktlint`, `google-java-format`, `csharpier`
-- Debug adapters/tools: `debugpy`, `netcoredbg`, `delve`, `vscode-js-debug`
+- Debug adapters/tools: `debugpy`, `netcoredbg`, `delve`, `lldb` (`lldb-dap`), `vscode-js-debug`
+
+Default DAP configs are provided for:
+
+- Python, C#, Go
+- JavaScript/TypeScript (+ React variants)
+- Java/Kotlin (JDWP attach)
+- Rust/C/C++ (LLDB)
 
 ## Plugin set
 

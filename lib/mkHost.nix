@@ -6,7 +6,7 @@
 # need to repeat module imports and overlay setup for each host.
 #
 # Features:
-#   • Automatic overlay injection (zen-browser, awww, unstable namespace)
+#   • Automatic overlay injection (zen-browser, unstable namespace)
 #   • Host profile flags (hasNvidia, isLaptop, etc.) available in all modules
 #   • Conditional module inclusion (Disko, NVIDIA driver)
 #   • Home Manager integration with shared special args
@@ -69,10 +69,9 @@ in
        overlays = [
          (_final: prev: {
            # Custom packages from flake inputs
-           zen-browser = inputs.zen-browser.packages.${system}.default;
-           awww = inputs.awww.packages.${system}.default;
-           # nix-minecraft overlay (provides fetchModrinthModpack and related tooling)
-           nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
+            zen-browser = inputs.zen-browser.packages.${system}.default;
+            # nix-minecraft overlay (provides fetchModrinthModpack and related tooling)
+            nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
            
            # Unstable namespace for latest packages
            # Usage in modules: `pkgs.unstable.neovim-unwrapped`

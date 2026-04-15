@@ -38,9 +38,59 @@ local function executable(cmd)
 	return vim.fn.executable(cmd) == 1 and vim.fn.exepath(cmd) or nil
 end
 
+local function first_executable(commands)
+	for _, cmd in ipairs(commands) do
+		local path = executable(cmd)
+		if path then
+			return path
+		end
+	end
+	return nil
+end
+
+local function prompt_args(prompt)
+	local line = vim.trim(vim.fn.input(prompt))
+	if line == "" then
+		return {}
+	end
+	return vim.split(line, "%s+")
+end
+
+local dap_utils = require("dap.utils")
+
 local debugpy = executable("debugpy-adapter")
 if debugpy then
 	require("dap-python").setup(debugpy)
+	dap.configurations.python = {
+		{
+			type = "python",
+			request = "launch",
+			name = "Launch current file",
+			program = "${file}",
+			cwd = "${workspaceFolder}",
+		},
+		{
+			type = "python",
+			request = "launch",
+			name = "Launch module",
+			module = function()
+				return vim.fn.input("Module: ")
+			end,
+			cwd = "${workspaceFolder}",
+			args = function()
+				return prompt_args("Args: ")
+			end,
+		},
+		{
+			type = "python",
+			request = "launch",
+			name = "Pytest current file",
+			module = "pytest",
+			args = { "${file}" },
+			cwd = "${workspaceFolder}",
+			justMyCode = false,
+		},
+	}
 end
 
 local netcoredbg = executable("netcoredbg")
@@ -53,13 +103,19 @@ if netcoredbg then
 	dap.configurations.cs = {
 		{
 			type = "coreclr",
-			name = "Launch .NET",
+			name = "Launch .NET DLL",
 			request = "launch",
 			program = function()
-				return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/", "file")
+				return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file")
 			end,
 			cwd = "${workspaceFolder}",
 			stopAtEntry = false,
+		},
+		{
+			type = "coreclr",
+			name = "Attach to process",
+			request = "attach",
+			processId = dap_utils.pick_process,
 		},
 	}
 end
@@ -91,6 +147,88 @@ if delve then
 	}
 end
 
+dap.adapters.java = function(callback, config)
+	callback({
+		type = "server",
+		host = config.hostName or "127.0.0.1",
+		port = config.port or 5005,
+	})
+end
+
+dap.configurations.java = {
+	{
+		type = "java",
+		request = "attach",
+		name = "Attach to localhost:5005",
+		hostName = "127.0.0.1",
+		port = 5005,
+	},
+	{
+		type = "java",
+		request = "attach",
+		name = "Attach to custom host/port",
+		hostName = function()
+			local host = vim.fn.input("Host: ", "127.0.0.1")
+			return host ~= "" and host or "127.0.0.1"
+		end,
+		port = function()
+			local port = tonumber(vim.fn.input("Port: ", "5005"))
+			return port or 5005
+		end,
+	},
+}
+
+dap.configurations.kotlin = vim.deepcopy(dap.configurations.java)
+
+local lldb = first_executable({ "codelldb", "lldb-dap", "lldb-vscode" })
+if lldb then
+	if lldb:match("codelldb$") then
+		dap.adapters.lldb = {
+			type = "server",
+			port = "${port}",
+			executable = {
+				command = lldb,
+				args = { "--port", "${port}" },
+			},
+		}
+	else
+		dap.adapters.lldb = {
+			type = "executable",
+			command = lldb,
+			name = "lldb",
+		}
+	end
+
+	local lldb_configs = {
+		{
+			type = "lldb",
+			request = "launch",
+			name = "Launch executable",
+			program = function()
+				local cwd = vim.fn.getcwd()
+				local default = cwd .. "/target/debug/" .. vim.fn.fnamemodify(cwd, ":t")
+				return vim.fn.input("Path to executable: ", default, "file")
+			end,
+			cwd = "${workspaceFolder}",
+			stopOnEntry = false,
+			args = function()
+				return prompt_args("Args: ")
+			end,
+		},
+		{
+			type = "lldb",
+			request = "attach",
+			name = "Attach to process",
+			pid = dap_utils.pick_process,
+			cwd = "${workspaceFolder}",
+		},
+	}
+
+	dap.configurations.rust = vim.deepcopy(lldb_configs)
+	dap.configurations.c = vim.deepcopy(lldb_configs)
+	dap.configurations.cpp = vim.deepcopy(lldb_configs)
+end
+
 local js_debug = executable("js-debug-adapter")
 if js_debug then
 	dap.adapters["pwa-node"] = {
@@ -103,7 +241,7 @@ if js_debug then
 		},
 	}
 
-	for _, lang in ipairs({ "javascript", "typescript" }) do
+	for _, lang in ipairs({ "javascript", "typescript", "javascriptreact", "typescriptreact" }) do
 		dap.configurations[lang] = {
 			{
 				type = "pwa-node",
@@ -118,7 +256,7 @@ if js_debug then
 				type = "pwa-node",
 				request = "attach",
 				name = "Attach to process",
-				processId = require("dap.utils").pick_process,
+				processId = dap_utils.pick_process,
 				cwd = "${workspaceFolder}",
 			},
 		}

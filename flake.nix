@@ -77,12 +77,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Awww: Lightweight Wayland wallpaper daemon (supports animated wallpapers)
-    awww = {
-      url = "git+https://codeberg.org/LGFae/awww.git";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Local Neovim plugin source (non-flake)
     switcheroo-src = {
       url = "path:/home/josh/projects/switcheroo";
@@ -116,7 +110,6 @@
       overlays = [
         (_final: _prev: {
           zen-browser = inputs.zen-browser.packages.${system}.default;
-          awww = inputs.awww.packages.${system}.default;
           nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
           unstable = unstablePkgs;
         })
