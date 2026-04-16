@@ -1,14 +1,12 @@
 # =============================================================================
 # Fish Shell & Terminal Emulator Configuration
 # =============================================================================
-# Fish shell setup, plugins, and colour-matched configs for Ghostty and Foot.
-# All three consume the active Stylix palette.
+# Fish shell setup, plugins, and a colour-matched Foot config.
+# Both consume the active Stylix palette.
 # =============================================================================
 { pkgs, config, ... }:
 let
   c = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
-  h = c.withHash;
-  ghosttyWindowTheme = if config.lib.stylix.colors.variant == "light" then "light" else "dark";
 in
 {
   programs.fish = {
@@ -183,39 +181,6 @@ in
       }
     ];
   };
-
-  # ── Ghostty terminal ─────────────────────────────────────────────────────
-  xdg.configFile."ghostty/config".text = ''
-    command           = ${pkgs.fish}/bin/fish
-    font-size         = 12
-    cursor-style      = bar
-    window-decoration = false
-    window-save-state = default
-    window-theme      = ${ghosttyWindowTheme}
-    clipboard-read    = allow
-    clipboard-write   = allow
-    background        = ${c.bg}
-    foreground        = ${c.fg}
-    cursor-color      = ${c.accent}
-    selection-background = ${c.selection}
-    selection-foreground = ${c.fg}
-    palette = 0=${h.bg}
-    palette = 1=${h.red}
-    palette = 2=${h.green}
-    palette = 3=${h.yellow}
-    palette = 4=${h.accent}
-    palette = 5=${h.purple}
-    palette = 6=${h.teal}
-    palette = 7=${h.fg}
-    palette = 8=${h.bgSubtle}
-    palette = 9=${h.red}
-    palette = 10=${h.green}
-    palette = 11=${h.orange}
-    palette = 12=${h.blueBright}
-    palette = 13=${h.magenta}
-    palette = 14=${h.tealBright}
-    palette = 15=${h.fg}
-  '';
 
   # ── Foot terminal ─────────────────────────────────────────────────────────
   xdg.configFile."foot/foot.ini".text = ''

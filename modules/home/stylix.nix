@@ -24,17 +24,9 @@ in
       enable = true;
       package = pkgs.unstable.bat;
     };
-    btop = {
-      enable = true;
-      package = pkgs.unstable.btop;
-    };
     fzf = {
       enable = true;
       package = pkgs.unstable.fzf;
-    };
-    gitui = {
-      enable = true;
-      package = pkgs.unstable.gitui;
     };
     lazygit = {
       enable = true;
@@ -53,7 +45,6 @@ in
   xdg.configFile = lib.mkMerge [
     # Take ownership of pre-existing configs on first Stylix migration.
     {
-      "btop/btop.conf".force = true;
       "lazygit/config.yml".force = true;
     }
 
@@ -94,9 +85,7 @@ in
     # theme automatically.
     targets = {
       bat.enable = true;
-      btop.enable = true;
       fzf.enable = true;
-      gitui.enable = true;
       gtk.enable = true;
       lazygit.enable = true;
       qt.enable = true;

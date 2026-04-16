@@ -24,6 +24,7 @@
     # Secrets management
     inputs.agenix.homeManagerModules.default
     inputs.stylix.homeModules.stylix
+    inputs.nvf.homeManagerModules.default
 
     # ── Shell & terminal ──────────────────────────────────────────────────
     ../../modules/home/shell/fish.nix

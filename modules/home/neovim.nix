@@ -1,44 +1,19 @@
 # =============================================================================
-# Neovim Module (Home Manager)
+# Neovim Module (Home Manager + nvf)
 # =============================================================================
-# Installs Neovim with curated plugins, LSP servers, and formatters.
-# Configuration is sourced from the nvim/ directory (Lua-based).
-#
 # Architecture:
-#   • Nix: Plugin/tool installation (this file)
-#   • Lua: Runtime configuration (nvim/init.lua + nvim/lua/*)
-#   • Zero plugin manager overhead (plugins provided via runtimepath by Nix)
-#
-# Plugin Philosophy:
-#   • Minimal: Only essential plugins (no bloat)
-#   • Native-first: Prefer built-in Neovim features when possible
-#   • Performance: Lazy-loading where beneficial, async operations
-#   • Modern: Uses Neovim 0.10+ APIs (diagnostics, LSP, treesitter)
-#
-# LSP Servers Included:
-#   • Nix (nixd), Lua (lua-language-server)
-#   • Python (pyright), TypeScript/JavaScript (vtsls)
-#   • Kotlin (kotlin-language-server), Java (jdt-language-server)
-#   • C# (roslyn-ls), Markdown (marksman)
-#
-# Formatters Included:
-#   • Nix (nixfmt-rfc-style), Lua (stylua)
-#   • Python (black + isort), JavaScript/TypeScript (prettier)
-#   • Shell (shfmt), Kotlin (ktlint), Java (google-java-format)
-#   • C# (csharpier)
+#   • nvf (Nix): Wrapper, simple editor defaults, plugin/runtime provisioning
+#   • Lua: Advanced custom behavior (autocmds, plugin-specific logic, DAP, etc.)
 # =============================================================================
 {
   config,
   pkgs,
-  inputs,
   ...
 }:
 let
   c = (import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
   s = config.lib.stylix.colors.withHashtag;
-  # ── Custom Plugin: tiny-code-action ────────────────────────────────────────
-  # Lightweight code action UI (alternative to heavier Telescope code actions)
-  # Source: https://github.com/rachartier/tiny-code-action.nvim
+
   tiny-code-action = pkgs.vimUtils.buildVimPlugin {
     pname = "tiny-code-action";
     version = "main";
@@ -52,152 +27,186 @@ let
   };
 in
 {
-  programs.neovim = {
+  programs.nvf = {
     enable = true;
-    defaultEditor = true; # Set as system default editor ($EDITOR, $VISUAL)
-    viAlias = true; # Create 'vi' command alias
-    vimAlias = true; # Create 'vim' command alias
+    defaultEditor = true;
 
-    # ═══════════════════════════════════════════════════════════════════════
-    # LSP SERVERS & FORMATTERS
-    # ═══════════════════════════════════════════════════════════════════════
-    # Tools installed system-wide, available on PATH for Neovim LSP config
-    extraPackages = with pkgs; [
-      # ── LSP Servers ──────────────────────────────────────────────────────
-      nixd # Nix language server (better than nil/rnix)
-      lua-language-server # Lua LSP (Neovim config development)
-      pyright # Python LSP (type checking, completion)
-      vtsls # TypeScript/JavaScript LSP (fast, modern)
-      kotlin-language-server # Kotlin LSP
-      jdt-language-server # Java LSP (Eclipse JDT.LS)
-      marksman # Markdown LSP (navigation, links)
-      roslyn-ls # C# LSP (Roslyn-based)
+    settings.vim = {
+      # Simple baseline behavior managed declaratively via nvf.
+      viAlias = true;
+      vimAlias = true;
+      lineNumberMode = "relNumber";
+      searchCase = "smart";
+      undoFile.enable = true;
+      clipboard = {
+        enable = true;
+        registers = "unnamedplus";
+      };
+      globals = {
+        mapleader = " ";
+        maplocalleader = "\\";
+      };
+      options = {
+        signcolumn = "yes";
+        shiftwidth = 2;
+        tabstop = 2;
+        expandtab = true;
+        smartindent = true;
+        shiftround = true;
+        termguicolors = true;
+        cursorline = true;
+        scrolloff = 8;
+        sidescrolloff = 8;
+        showmode = false;
+        wrap = false;
+        linebreak = true;
+        breakindent = true;
+        conceallevel = 2;
+        fillchars = "fold: ,foldopen:▾,foldclose:▸,diff:╱,eob: ";
+        incsearch = true;
+        inccommand = "split";
+        splitright = true;
+        splitbelow = true;
+        splitkeep = "screen";
+        foldmethod = "expr";
+        foldexpr = "v:lua.vim.treesitter.foldexpr()";
+        foldlevelstart = 99;
+        updatetime = 200;
+        timeoutlen = 300;
+        ttimeoutlen = 10;
+        swapfile = false;
+        autoread = true;
+        mouse = "a";
+        confirm = true;
+        virtualedit = "block";
+        completeopt = "menuone,noselect,popup";
+        pumheight = 12;
+        wildmode = "longest:full,full";
+        wildoptions = "pum,fuzzy";
+        wildignorecase = true;
+        laststatus = 3;
+        cmdheight = 0;
+        showcmdloc = "statusline";
+        grepprg = "rg --vimgrep --smart-case";
+        grepformat = "%f:%l:%c:%m";
+        shortmess = "sIcW";
+      };
 
-      # ── Formatters & Tools ───────────────────────────────────────────────
-      nixfmt-rfc-style # Nix formatter (RFC 166 style)
-      stylua # Lua formatter (opinionated)
-      black # Python formatter (PEP 8)
-      isort # Python import sorter
-      prettier # JavaScript/TypeScript/CSS/HTML formatter
-      shfmt # Shell formatter
-      ktlint # Kotlin formatter
-      google-java-format # Java formatter
-      csharpier # C# formatter
-      dotnet-sdk_10 # .NET SDK (required for Roslyn LSP)
-      statix # Nix linter (style + best practices)
-      deadnix # Nix dead code detector
-      python3Packages.debugpy # Python debug adapter
-      netcoredbg # C#/.NET debug adapter
-      delve # Go debug adapter
-      lldb # Rust/C/C++ debug adapter (lldb-dap)
-      vscode-js-debug # JS/TS debug adapter
+      # Tools available on PATH inside the nvf Neovim wrapper.
+      extraPackages = with pkgs; [
+        nixd
+        lua-language-server
+        pyright
+        vtsls
+        kotlin-language-server
+        jdt-language-server
+        marksman
+        roslyn-ls
 
-      # ── CLI Tools (used by plugins) ──────────────────────────────────────
-      tree-sitter # Syntax parser (used by nvim-treesitter)
-      ripgrep # Fast grep (fzf-lua, telescope, live grep)
-      fd # Fast find (fzf-lua file search)
-    ];
+        nixfmt-rfc-style
+        stylua
+        black
+        isort
+        prettier
+        shfmt
+        ktlint
+        google-java-format
+        csharpier
+        dotnet-sdk_10
+        statix
+        deadnix
+        python3Packages.debugpy
+        netcoredbg
+        delve
+        lldb
+        vscode-js-debug
 
-    # ═══════════════════════════════════════════════════════════════════════
-    # PLUGINS
-    # ═══════════════════════════════════════════════════════════════════════
-    # Plugins are provided on runtimepath by Nix (no plugin manager needed)
-    # Configuration lives in nvim/lua/plugins/*.lua
-    plugins = with pkgs.vimPlugins; [
-      # ── Custom Plugins ───────────────────────────────────────────────────
-      tiny-code-action # Lightweight code action UI
+        tree-sitter
+        ripgrep
+        fd
+      ];
 
-      # ── Syntax & Parsing ─────────────────────────────────────────────────
-      (nvim-treesitter.withPlugins (
-        p: with p; [
-          # Core languages
-          lua
-          vim
-          nix
-          bash
-          fish
+      # Keep full plugin list declarative in Nix, with Lua setup logic in nvim/lua/plugins/*.
+      startPlugins = with pkgs.vimPlugins; [
+        tiny-code-action
 
-          # JVM languages
-          kotlin
-          java
+        (nvim-treesitter.withPlugins (
+          p: with p; [
+            lua
+            vim
+            nix
+            bash
+            fish
+            kotlin
+            java
+            javascript
+            typescript
+            tsx
+            html
+            css
+            json
+            yaml
+            python
+            markdown
+            c_sharp
+          ]
+        ))
+        nvim-treesitter-context
+        nvim-treesitter-textobjects
 
-          # Web development
-          javascript
-          typescript
-          tsx
-          html
-          css
-          json
-          yaml
+        nvim-lspconfig
+        blink-cmp
+        luasnip
+        friendly-snippets
+        copilot-lua
+        fidget-nvim
+        roslyn-nvim
+        tiny-inline-diagnostic-nvim
+        nvim-lint
+        nvim-dap
+        nvim-dap-ui
+        nvim-dap-virtual-text
+        nvim-dap-python
+        nvim-nio
+        trouble-nvim
 
-          # Other
-          python
-          markdown
-          c_sharp
-        ]
-      ))
-      nvim-treesitter-context # Show code context at top of window
-      nvim-treesitter-textobjects # Text objects based on tree-sitter
+        fzf-lua
+        oil-nvim
+        flash-nvim
+        smart-splits-nvim
 
-      # ── LSP & Completion ─────────────────────────────────────────────────
-      nvim-lspconfig # LSP client configurations
-      blink-cmp # Fast completion engine (Rust-based)
-      luasnip # Snippet engine
-      friendly-snippets # Community snippet collection
-      copilot-lua # GitHub Copilot integration
-      fidget-nvim # LSP progress notifications
-      roslyn-nvim # C# LSP integration (Roslyn-specific)
-      tiny-inline-diagnostic-nvim # Inline diagnostic messages
-      nvim-lint # Asynchronous linting framework
-      nvim-dap # Debug Adapter Protocol client
-      nvim-dap-ui # DAP UI panels
-      nvim-dap-virtual-text # Inline DAP variable values
-      nvim-dap-python # Python DAP helper
-      nvim-nio # Dependency for nvim-dap-ui
-      trouble-nvim # Diagnostics + quickfix UI
+        lualine-nvim
+        statuscol-nvim
+        neoscroll-nvim
+        nui-nvim
+        noice-nvim
+        no-neck-pain-nvim
+        snacks-nvim
+        twilight-nvim
 
-      # ── Fuzzy Finding & Navigation ───────────────────────────────────────
-      fzf-lua # Fast fuzzy finder (Lua-based)
-      oil-nvim # File manager
-      flash-nvim # Fast motion plugin
-      smart-splits-nvim # Smart split navigation and resizing
+        gitsigns-nvim
+        neogit
 
-      # ── UI & Appearance ──────────────────────────────────────────────────
-      lualine-nvim # Statusline
-      statuscol-nvim # Custom status column (signs, line numbers)
-      neoscroll-nvim # Smooth scrolling
-      nui-nvim # UI dependency for noice.nvim
-      noice-nvim # Better UI for messages, cmdline, popups
-      no-neck-pain-nvim # Centered editing with side buffers
-      snacks-nvim # Maintained utility suite (terminal integration)
-      twilight-nvim # Dim inactive code context (focus mode)
+        nvim-autopairs
+        conform-nvim
+        dial-nvim
+        multicursor-nvim
+        grug-far-nvim
 
-      # ── Git Integration ──────────────────────────────────────────────────
-      gitsigns-nvim # Git signs in gutter (add/change/delete)
-      neogit # Magit-like Git interface
+        mini-nvim
+        plenary-nvim
+        vim-tmux-navigator
+        markview-nvim
+      ];
 
-      # ── Code Editing ─────────────────────────────────────────────────────
-      nvim-autopairs # Auto-close brackets, quotes
-      conform-nvim # Formatter runner (async formatting)
-      dial-nvim # Enhanced increment/decrement for numbers, dates, constants
-      multicursor-nvim # Multiple cursors with explicit/manual cursor control
-      grug-far-nvim # Search and replace across project
-
-      # ── Utilities ────────────────────────────────────────────────────────
-      mini-nvim # Mini.nvim suite (various small utilities)
-      plenary-nvim # Lua utility library (dependency for many plugins)
-      vim-tmux-navigator # Seamless tmux/vim navigation
-      markview-nvim # Markdown preview in buffer
-    ];
-
+      # Load the existing Lua entrypoint after nvf initializes.
+      luaConfigRC.user-config = ''
+        dofile(vim.fn.stdpath("config") .. "/init.lua")
+      '';
+    };
   };
 
-  # ═══════════════════════════════════════════════════════════════════════════
-  # LUA CONFIGURATION
-  # ═══════════════════════════════════════════════════════════════════════════
-  # Source Lua config from nvim/ directory in the repository
-  # Structure: init.lua (entry) → lua/options.lua, lua/keymaps.lua, lua/plugins/*
-  xdg.configFile."nvim/lua/generated/colors.lua".text = ''
+  xdg.configFile."nvf/lua/generated/colors.lua".text = ''
     local M = {
       bg = "${c.bg}",
       raised_background = "${c.raisedBackground}",
@@ -239,7 +248,7 @@ in
     return M
   '';
 
-  xdg.configFile."nvim" = {
+  xdg.configFile."nvf" = {
     source = ../../nvim;
     recursive = true;
   };
