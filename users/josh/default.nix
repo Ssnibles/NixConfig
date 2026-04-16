@@ -25,6 +25,7 @@
     inputs.agenix.homeManagerModules.default
     inputs.stylix.homeModules.stylix
     inputs.nvf.homeManagerModules.default
+    inputs.spicetify-nix.homeManagerModules.spicetify
 
     # ── Shell & terminal ──────────────────────────────────────────────────
     ../../modules/home/shell/fish.nix

@@ -87,7 +87,6 @@
     trilium-desktop
 
     # ── Media ───────────────────────────────────────────────────────────
-    spotify
     picard
     easytag
     pavucontrol

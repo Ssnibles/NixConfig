@@ -2,12 +2,13 @@
 # Miscellaneous Program Configuration
 # =============================================================================
 # Configured Home Manager programs that don't warrant their own file.
-# Currently: spotify-player (TUI client) and Java runtime.
+# Currently: spicetify, spotify-player (TUI client), and misc programs.
 # =============================================================================
 {
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -15,8 +16,68 @@ let
   spotifySecretFile = ../../secrets/spotify-secret.age;
   spotifySecretsAvailable =
     builtins.pathExists spotifyIdFile && builtins.pathExists spotifySecretFile;
+  spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.system};
+  c = import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
+  spicetifyStylixScheme = {
+    # Spicetify base keys
+    text = c.fg;
+    subtext = c.fgMid;
+    main = c.bg;
+    "main-elevated" = c.bgRaised;
+    highlight = c.bgSubtle;
+    "highlight-elevated" = config.lib.stylix.colors.base03;
+    sidebar = c.bgRaised;
+    player = c.bg;
+    card = c.bgRaised;
+    shadow = c.bg;
+    "selected-row" = c.fgDim;
+    button = c.accent;
+    "button-active" = c.accent;
+    "button-disabled" = c.fgDim;
+    "tab-active" = c.bgSubtle;
+    notification = c.bgRaised;
+    "notification-error" = c.red;
+    equalizer = c.accent;
+    misc = c.bgSubtle;
+
+    # Catppuccin variables used by the catppuccin Spicetify theme
+    crust = config.lib.stylix.colors.base00;
+    mantle = config.lib.stylix.colors.base01;
+    base = c.bg;
+    surface0 = c.bgRaised;
+    surface1 = c.bgSubtle;
+    surface2 = config.lib.stylix.colors.base03;
+    overlay0 = config.lib.stylix.colors.base03;
+    overlay1 = config.lib.stylix.colors.base04;
+    overlay2 = config.lib.stylix.colors.base05;
+    rosewater = config.lib.stylix.colors.base07;
+    flamingo = c.magenta;
+    pink = c.purple;
+    maroon = c.red;
+    red = c.red;
+    peach = c.orange;
+    yellow = c.yellow;
+    green = c.green;
+    teal = c.teal;
+    sapphire = c.tealBright;
+    blue = c.accent;
+    sky = c.teal;
+    mauve = c.purple;
+    lavender = config.lib.stylix.colors.base06;
+  };
 in
 {
+  programs.spicetify = {
+    enable = true;
+    enabledExtensions = with spicePkgs.extensions; [
+      adblockify
+      hidePodcasts
+    ];
+    theme = spicePkgs.themes.catppuccin;
+    colorScheme = "custom";
+    customColorScheme = spicetifyStylixScheme;
+  };
+
   # Spotify Player (TUI client)
   programs.spotify-player = {
     enable = spotifySecretsAvailable;
