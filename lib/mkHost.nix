@@ -69,6 +69,7 @@ in
          (_final: prev: {
            # Custom packages from flake inputs
             zen-browser = inputs.zen-browser.packages.${system}.default;
+            helium = inputs.helium.packages.${system}.default;
             # nix-minecraft overlay (provides fetchModrinthModpack and related tooling)
             nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
            

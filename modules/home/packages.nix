@@ -16,6 +16,7 @@
 {
   home.packages = [
     pkgs.zen-browser # From flake overlay
+    pkgs.helium # From flake overlay
     pkgs.unstable.awww # From nixpkgs-unstable
   ]
   ++ (with pkgs.unstable; [

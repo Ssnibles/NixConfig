@@ -82,10 +82,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # ── Custom Applications ──────────────────────────────────────────────────
     # Zen Browser: Privacy-focused browser with modern UI
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    helium = {
+      url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -115,6 +119,7 @@
       overlays = [
         (_final: _prev: {
           zen-browser = inputs.zen-browser.packages.${system}.default;
+          helium = inputs.helium.packages.${system}.default;
           nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
           unstable = unstablePkgs;
         })
