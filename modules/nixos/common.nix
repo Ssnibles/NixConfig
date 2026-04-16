@@ -326,7 +326,6 @@ in
 
     # System monitoring
     htop # Interactive process viewer
-    btop # Modern resource monitor with graphs
 
     # System utilities
     rsync # File synchronization

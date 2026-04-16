@@ -49,6 +49,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # nvf: Neovim configuration framework (Home Manager module)
+    nvf = {
+      url = "github:NotAShelf/nvf";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Stylix: Shared theming framework for Home Manager / NixOS targets
     stylix = {
       url = "github:nix-community/stylix/release-25.11";
@@ -77,7 +83,7 @@
     };
 
     # ── Custom Applications ──────────────────────────────────────────────────
-    # Zen Browser: Privacy-focused Firefox fork with modern UI
+    # Zen Browser: Privacy-focused browser with modern UI
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -1,7 +1,6 @@
 -- Neovim configuration entry point
 
--- Core settings
-require("options")
+-- Core Lua config
 require("keymaps")
 require("autocmds")
 

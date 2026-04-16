@@ -4,7 +4,7 @@
 # Packages installed at the user level via Home Manager.
 # Host-conditional sets use hostProfile flags set in flake.nix.
 #
-# Note: system-level tools (git, vim, btop, etc.) live in nixos/common.nix.
+# Note: system-level tools (git, vim, etc.) live in nixos/common.nix.
 # =============================================================================
 {
   pkgs,
@@ -29,7 +29,6 @@
 
     # ── CLI utilities ───────────────────────────────────────────────────
     quickemu
-    gemini-cli
     github-copilot-cli
     wl-clipboard
     pkgs.age
@@ -46,7 +45,6 @@
     procs
     zoxide
     tlrc
-    delta
     hyperfine
     sd
     choose
@@ -55,7 +53,6 @@
     xh
     android-tools
     lazygit
-    gitui
     pet
     yazi
     jq
@@ -73,14 +70,12 @@
     nerd-fonts.jetbrains-mono
 
     # ── GUI applications ────────────────────────────────────────────────
-    ghostty
     foot
     mission-center
     kdePackages.dolphin
-    firefox
+    gnome-pomodoro
     via
     onlyoffice-desktopeditors
-    inkscape
     prismlauncher
 
     # ── Document viewers ────────────────────────────────────────────────
@@ -92,7 +87,6 @@
 
     # ── Media ───────────────────────────────────────────────────────────
     spotify
-    strawberry
     picard
     easytag
     pavucontrol
@@ -112,10 +106,6 @@
     [
       pkgs.ddcutil
       steam
-      heroic
-      lutris
-      mangohud
-      protonup-qt
     ]
   )
   # ── Laptop-only packages ──────────────────────────────────────────────
@@ -125,7 +115,6 @@
       powertop
       acpi
       brightnessctl
-      wlsunset # Blue-light filter for evenings
     ]
   );
 }

@@ -5,11 +5,13 @@
 - Nix module: `modules/home/neovim.nix`
 - Runtime config: `nvim/init.lua`, `nvim/lua/*`
 
-Nix installs plugins/tools directly, so no plugin manager bootstrap is required.
+The stack uses `programs.nvf` as the Neovim configuration framework.
+Simple editor defaults and plugin/runtime wiring are declarative in Nix, while
+advanced behavior (autocmds, plugin-specific setup, DAP, etc.) stays in Lua.
 
 ## LSP/formatter toolchain
 
-Installed via `programs.neovim.extraPackages`:
+Installed via `programs.nvf.settings.vim.extraPackages`:
 
 - LSPs: `nixd`, `lua-language-server`, `pyright`, `vtsls`, `kotlin-language-server`, `jdt-language-server`, `marksman`, `roslyn-ls`
 - Formatters/tools: `nixfmt-rfc-style`, `stylua`, `black`, `isort`, `prettier`, `shfmt`, `ktlint`, `google-java-format`, `csharpier`
