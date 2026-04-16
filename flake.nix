@@ -88,6 +88,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Spicetify module + package set for Spotify theming/customization
+    spicetify-nix = {
+      url = "github:Gerg-L/spicetify-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     helium = {
       url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
