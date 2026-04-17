@@ -15,7 +15,7 @@
   - performance governor
   - resolved DNSSEC/DoT relaxed for reliability
   - desktop udev tuning
-  - `services.ollama.enable = true`
+  - reduced background services (no Ollama autostart, printing discovery off, Bluetooth on-demand)
 - `hosts/laptop/default.nix`
   - Realtek/iwd Wi-Fi quirks
   - TLP profile (AC/BAT behavior, charge thresholds)

@@ -93,6 +93,11 @@ in
         # "bordersize 2, floating:1"
         # "float, class:(org.pulseaudio.pavucontrol)"
         # "float, class:(blueman-manager)"
+        "float, title:^(Picture-in-Picture)$"
+        "pin, title:^(Picture-in-Picture)$"
+        "keepaspectratio, title:^(Picture-in-Picture)$"
+        "move 72% 72%, title:^(Picture-in-Picture)$"
+        "size 25% 25%, title:^(Picture-in-Picture)$"
       ];
 
       layerrule = [
@@ -184,7 +189,8 @@ in
         "$mod SHIFT, H, resizeactive, -10 0"
         "$mod SHIFT, K, resizeactive,  0 -10"
         "$mod SHIFT, J, resizeactive,  0  10"
-      ] ++ brightnessBinds;
+      ]
+      ++ brightnessBinds;
 
       bindel = [
         ", XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+"

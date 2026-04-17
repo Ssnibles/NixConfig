@@ -13,10 +13,28 @@
   inputs,
   ...
 }:
+let
+  heliumPackage =
+    if hostProfile.hasNvidia then
+      pkgs.symlinkJoin {
+        name = "helium-stable";
+        paths = [ pkgs.helium ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          rm -f "$out/bin/helium"
+          # Chromium/Wayland + NVIDIA can become severely janky over time.
+          # Launch Helium through XWayland on NVIDIA hosts for stable input/rendering.
+          makeWrapper ${pkgs.helium}/bin/helium "$out/bin/helium" \
+            --add-flags "--ozone-platform=x11"
+        '';
+      }
+    else
+      pkgs.helium;
+in
 {
   home.packages = [
     pkgs.zen-browser # From flake overlay
-    pkgs.helium # From flake overlay
+    heliumPackage # From flake overlay (NVIDIA hosts use an XWayland wrapper)
     pkgs.unstable.awww # From nixpkgs-unstable
   ]
   ++ (with pkgs.unstable; [
