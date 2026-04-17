@@ -90,6 +90,8 @@ function M.setup()
 		hl(group, { link = "Normal" })
 	end
 	hl("CursorLine", { bg = c.bg })
+	hl("Visual", { bg = c.selection })
+	hl("VisualNOS", { link = "Visual" })
 	hl("PmenuSel", { fg = c.blue, bg = c.bg, bold = true })
 	hl("BlinkCmpMenuSelection", { fg = c.blue, bg = c.bg, bold = true })
 

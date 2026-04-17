@@ -37,6 +37,14 @@
     dnsovertls = lib.mkForce "opportunistic";
   };
 
+  # ── Lower always-on background services ────────────────────────────────────
+  # Bluetooth remains available via D-Bus activation when Blueman is opened.
+  hardware.bluetooth.powerOnBoot = lib.mkForce false;
+  systemd.services.bluetooth.wantedBy = lib.mkForce [ ];
+  services.printing.enable = lib.mkForce false;
+  services.avahi.enable = lib.mkForce false;
+  services.avahi.nssmdns4 = lib.mkForce false;
+
   # ── UDEV rules ───────────────────────────────────────────────────────────
   services.udev.extraRules = ''
     # Keep USB HID devices powered on
@@ -46,9 +54,6 @@
     # Higher NVMe read-ahead for desktop performance
     ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="2048"
   '';
-
-  # ── Services ──────────────────────────────────────────────────────────────
-  services.ollama.enable = true;
 
   # ── Packages ──────────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
