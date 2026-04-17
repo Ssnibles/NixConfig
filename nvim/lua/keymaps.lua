@@ -66,8 +66,12 @@ map("n", "<leader>qL", "<cmd>lclose<CR>", { desc = "Close location list" })
 
 -- Diagnostics
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
-map("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, { desc = "Next diagnostic" })
-map("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, { desc = "Prev diagnostic" })
+map("n", "]d", function()
+	vim.diagnostic.jump({ count = 1, float = true })
+end, { desc = "Next diagnostic" })
+map("n", "[d", function()
+	vim.diagnostic.jump({ count = -1, float = true })
+end, { desc = "Prev diagnostic" })
 map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
 map("n", "]e", function()
 	vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = true })
@@ -103,3 +107,6 @@ map("n", "<leader>tc", function()
 		vim.b[buf].minicursorword_disable = not vim.g.user_cursorword_enabled
 	end
 end, { desc = "Toggle cursor word" })
+
+-- Unbind
+map("n", "<C-Z>", "<Nop>")
