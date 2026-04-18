@@ -77,8 +77,8 @@ in
         gaps_in = 8;
         gaps_out = 16;
         border_size = 0;
-        # Needed for windowrulev2 immediate (lower-latency game input).
-        allow_tearing = hostProfile.isDesktop;
+        # Keep compositor vsync active to avoid visible tearing during fast motion.
+        allow_tearing = false;
         "col.inactive_border" = "rgb(${raw.border})";
         "col.active_border" = "rgb(${raw.border})";
       };
@@ -117,11 +117,7 @@ in
         "size 25% 25%, title:^(Picture-in-Picture)$"
       ];
 
-      windowrulev2 = lib.optionals hostProfile.isDesktop [
-        # Reduce compositor-induced input lag for Steam games / Gamescope.
-        "immediate, class:^(steam_app_.*)$"
-        "immediate, class:^(gamescope)$"
-      ];
+      windowrulev2 = [];
 
       layerrule = [
         "blur,hyprlock"
