@@ -99,6 +99,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    qml-language-server = {
+      url = "github:cushycush/qml-language-server";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     helium = {
       url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";

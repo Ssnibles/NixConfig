@@ -6,8 +6,10 @@
 # =============================================================================
 { config, ... }:
 let
-  c = (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
-  panelWidth = 392;
+  c =
+    (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; })
+    .withHash;
+  panelWidth = 520;
   panelHeight = 640;
   panelMargin = 24;
 in
@@ -47,6 +49,8 @@ in
         "dnd"
         "mpris"
         "notifications"
+        "backlight"
+        "buttons-grid"
       ];
 
       widget-config = {
@@ -59,13 +63,62 @@ in
         dnd.text = "Do Not Disturb";
 
         mpris = {
-          image-size = 56;
-          image-radius = 8;
+          image-size = 80;
+          show-album-art = "always";
+          autohide = false;
         };
 
         notifications = {
           vexpand = true;
           max-notifications = 0;
+        };
+
+        backlight = {
+          label = "󰃞";
+        };
+
+        buttons-grid = {
+          buttons-per-row = 3;
+          actions = [
+            {
+              label = "";
+              command = "nm-connection-editor";
+            }
+            {
+              label = "";
+              command = "blueman-manager";
+            }
+            {
+              label = "󰂛";
+              command = "swaync-client -d";
+              type = "toggle";
+              update-command = "swaync-client -D";
+            }
+            {
+              label = "󰈹";
+              command = "dolphin";
+            }
+            {
+              label = "";
+              command = "foot";
+            }
+            {
+              label = "";
+              command = "hyprlock";
+            }
+            {
+              label = "󰤄";
+              command = "systemctl suspend";
+            }
+            {
+              label = "󰜉";
+              command = "systemctl reboot";
+            }
+            {
+              label = "⏻";
+              command = "systemctl poweroff";
+            }
+          ];
         };
       };
     };
@@ -125,7 +178,7 @@ in
         border: 1px solid @border;
         border-radius: 8px;
         padding: 12px;
-        margin: 0;
+        margin: 26px 26px;
         transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
       }
 
@@ -145,10 +198,6 @@ in
 
       .notification.critical progressbar progress {
         background: @red;
-      }
-
-      .notification.low {
-        opacity: 0.78;
       }
 
       .notification-content {
@@ -335,11 +384,87 @@ in
         margin: 2px;
       }
 
-      .widget-mpris {
+      .widget-backlight,
+      .widget-volume {
         background: @bg-raised;
         border: 1px solid @border;
         border-radius: 8px;
-        padding: 12px;
+        padding: 10px 12px;
+        margin: 0 0 12px 0;
+      }
+
+      .widget-backlight > box > label,
+      .widget-volume > box > label {
+        color: @fg-mid;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .widget-backlight scale trough,
+      .widget-volume scale trough {
+        background: @bg-subtle;
+        border-radius: 999px;
+        min-height: 6px;
+      }
+
+      .widget-backlight scale highlight,
+      .widget-volume scale highlight {
+        background: @accent;
+        border-radius: 999px;
+      }
+
+      .widget-backlight scale slider,
+      .widget-volume scale slider {
+        background: @fg;
+        border-radius: 999px;
+        min-width: 12px;
+        min-height: 12px;
+      }
+
+      .widget-buttons-grid,
+      .widget-buttons {
+        margin: 0 0 12px 0;
+      }
+
+      .widget-buttons-grid flowboxchild,
+      .widget-buttons flowboxchild {
+        padding: 2px;
+      }
+
+      .widget-buttons-grid flowboxchild > button,
+      .widget-buttons flowboxchild > button {
+        background: @bg-subtle;
+        color: @fg;
+        border: 1px solid @border;
+        border-radius: 8px;
+        min-width: 48px;
+        min-height: 40px;
+        padding: 10px 0;
+        font-size: 16px;
+        transition: all 200ms ease;
+      }
+
+      .widget-buttons-grid flowboxchild > button:hover,
+      .widget-buttons flowboxchild > button:hover {
+        background: @bg-raised;
+        color: @accent;
+        border-color: @accent;
+      }
+
+      .widget-buttons-grid flowboxchild > button.active,
+      .widget-buttons flowboxchild > button.active,
+      .widget-buttons-grid flowboxchild > button.toggle:checked,
+      .widget-buttons flowboxchild > button.toggle:checked {
+        background: @accent;
+        color: @bg;
+        border-color: @accent;
+      }
+
+      .widget-mpris {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
         margin: 0 0 12px 0;
       }
 
@@ -347,38 +472,59 @@ in
         margin-bottom: 0;
       }
 
-      .widget-mpris:hover {
-        background: @bg-subtle;
+      .widget-mpris .widget-mpris-player {
+        margin: 0 0 12px 0;
+        border: 1px solid @border;
+        border-radius: 8px;
+        overflow: hidden;
       }
 
-      .widget-mpris-title {
+      .widget-mpris .widget-mpris-player:last-child {
+        margin-bottom: 0;
+      }
+
+      .widget-mpris .widget-mpris-player .mpris-background {
+        filter: blur(14px) brightness(0.75);
+      }
+
+      .widget-mpris .widget-mpris-player .mpris-overlay {
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.45);
+      }
+
+      .widget-mpris .widget-mpris-player .widget-mpris-album-art {
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        -gtk-icon-size: 80px;
+      }
+
+      .widget-mpris .widget-mpris-player .widget-mpris-title {
         color: @fg;
         font-size: 13px;
         font-weight: 600;
       }
 
-      .widget-mpris-subtitle {
-        color: @purple;
+      .widget-mpris .widget-mpris-player .widget-mpris-subtitle {
+        color: @fg-mid;
         font-size: 11px;
         margin-top: 2px;
       }
 
-      .widget-mpris-player > box > button {
-        background: transparent;
-        color: @fg-dim;
+      .widget-mpris .widget-mpris-player .mpris-overlay button {
+        color: @fg;
         border: none;
         border-radius: 4px;
         padding: 6px 8px;
       }
 
-      .widget-mpris-player > box > button:hover {
-        background: @bg-subtle;
-        color: @fg;
+      .widget-mpris .widget-mpris-player .mpris-overlay button:hover {
+        background: rgba(0, 0, 0, 0.35);
+        color: @accent;
       }
 
       scrollbar {
         background: transparent;
-        width: 8px;
+        min-width: 8px;
       }
 
       scrollbar slider {

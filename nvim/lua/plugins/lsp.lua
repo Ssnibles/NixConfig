@@ -256,6 +256,12 @@ lsp.config("marksman", {
 	root_markers = { "marksman.toml", ".git" },
 })
 
+lsp.config("qml_language_server", {
+	cmd = { "qml-language-server" },
+	root_markers = { "qmldir", "shell.qml", ".git" },
+	filetypes = { "qml", "qmljs" },
+})
+
 -- Roslyn (C#)
 local ok_roslyn, roslyn = pcall(require, "roslyn")
 if ok_roslyn then
@@ -308,9 +314,19 @@ local server_cmd = {
 	kotlin_language_server = "kotlin-language-server",
 	jdtls = "jdtls",
 	marksman = "marksman",
+	qml_language_server = "qml-language-server",
 }
 
-local configured_servers = { "nixd", "lua_ls", "pyright", "vtsls", "kotlin_language_server", "jdtls", "marksman" }
+local configured_servers = {
+	"nixd",
+	"lua_ls",
+	"pyright",
+	"vtsls",
+	"kotlin_language_server",
+	"jdtls",
+	"marksman",
+	"qml_language_server",
+}
 for _, server in ipairs(configured_servers) do
 	local cmd = server_cmd[server]
 	if not cmd or vim.fn.executable(cmd) == 1 then

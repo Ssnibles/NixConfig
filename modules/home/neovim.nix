@@ -8,10 +8,12 @@
 {
   config,
   pkgs,
+  inputs,
   ...
 }:
 let
-  c = (import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
+  c =
+    (import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
   s = config.lib.stylix.colors.withHashtag;
 
   tiny-code-action = pkgs.vimUtils.buildVimPlugin {
@@ -101,6 +103,7 @@ in
         kotlin-language-server
         jdt-language-server
         marksman
+        inputs.qml-language-server.packages.${pkgs.system}.default
         roslyn-ls
 
         nixfmt-rfc-style
