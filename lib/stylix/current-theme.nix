@@ -1,1 +1,1 @@
-"everforest-light"
+"rose-pine-dawn"

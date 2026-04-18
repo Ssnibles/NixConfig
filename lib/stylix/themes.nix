@@ -25,6 +25,21 @@
     polarity = "light";
   };
 
+  "rose-pine" = {
+    scheme = "rose-pine.yaml";
+    polarity = "dark";
+  };
+
+  "rose-pine-moon" = {
+    scheme = "rose-pine-moon.yaml";
+    polarity = "dark";
+  };
+
+  "rose-pine-dawn" = {
+    scheme = "rose-pine-dawn.yaml";
+    polarity = "light";
+  };
+
   "everforest-light" = {
     polarity = "light";
     scheme = {
