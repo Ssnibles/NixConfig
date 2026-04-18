@@ -57,7 +57,10 @@
     x11.enable = true;
   };
 
-  home.sessionVariables.SHELL = "${pkgs.fish}/bin/fish";
+  home.sessionVariables = {
+    SHELL = "${pkgs.fish}/bin/fish";
+    QML2_IMPORT_PATH = "${pkgs.unstable.quickshell}/lib/qt-6/qml";
+  };
 
   programs.home-manager.enable = true;
 }

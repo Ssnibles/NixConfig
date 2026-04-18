@@ -129,6 +129,10 @@ in
     };
   };
 
+  programs.quickshell = {
+    enable = true;
+  };
+
   xdg.configFile."pet/snippet.toml".text = ''
     [[snippets]]
       description = "NixOS rebuild current host"
