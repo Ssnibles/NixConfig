@@ -6,6 +6,7 @@
 # =============================================================================
 {
   pkgs,
+  lib,
   config,
   hostProfile,
   ...
@@ -23,6 +24,11 @@ let
         ", XF86MonBrightnessUp,   exec, brightnessctl set +5%"
         ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
       ];
+  screenshotDir = "~/Pictures/Screenshots";
+  sattyFocusCommand =
+    "(sleep 0.15 && (hyprctl dispatch focuswindow 'class:^(satty)$' || hyprctl dispatch focuswindow 'class:^(com\\.gabm\\.satty)$'))";
+  sattyCaptureCommand =
+    "satty --fullscreen current-screen --floating-hack --filename - --output-filename \"${screenshotDir}/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
 in
 {
   imports = [
@@ -46,6 +52,13 @@ in
       input = {
         kb_layout = "us";
         follow_mouse = 1;
+      }
+      // (lib.optionalAttrs hostProfile.isDesktop {
+        # Keep mouse movement 1:1 on desktop/gaming rigs.
+        accel_profile = "flat";
+        sensitivity = 0;
+      })
+      // {
         touchpad = {
           natural_scroll = true;
           tap-to-click = true;
@@ -64,6 +77,8 @@ in
         gaps_in = 8;
         gaps_out = 16;
         border_size = 0;
+        # Needed for windowrulev2 immediate (lower-latency game input).
+        allow_tearing = hostProfile.isDesktop;
         "col.inactive_border" = "rgb(${raw.border})";
         "col.active_border" = "rgb(${raw.border})";
       };
@@ -100,6 +115,12 @@ in
         "keepaspectratio, title:^(Picture-in-Picture)$"
         "move 72% 72%, title:^(Picture-in-Picture)$"
         "size 25% 25%, title:^(Picture-in-Picture)$"
+      ];
+
+      windowrulev2 = lib.optionals hostProfile.isDesktop [
+        # Reduce compositor-induced input lag for Steam games / Gamescope.
+        "immediate, class:^(steam_app_.*)$"
+        "immediate, class:^(gamescope)$"
       ];
 
       layerrule = [
@@ -173,8 +194,8 @@ in
         "$mod CTRL, J, movewindow, d"
 
         # Screenshots (S)
-        "$mod, S, exec, grim -o \"$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')\" - | satty --floating-hack --filename - | wl-copy --type image/png"
-        "$mod SHIFT, S, exec, grim -g \"$(hyprctl -j clients | jq -r --argjson ws $(hyprctl -j activeworkspace | jq -r '.id') '.[] | select(.mapped and .workspace.id == $ws) | (.at[0]|tostring) + \",\" + (.at[1]|tostring) + \" \" + (.size[0]|tostring) + \"x\" + (.size[1]|tostring)' | slurp)\" - | satty --floating-hack --filename - | wl-copy --type image/png"
+        "$mod, S, exec, mkdir -p ${screenshotDir}; ${sattyFocusCommand} & grim -o \"$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')\" - | ${sattyCaptureCommand}"
+        "$mod SHIFT, S, exec, mkdir -p ${screenshotDir}; ${sattyFocusCommand} & grim -g \"$(hyprctl -j clients | jq -r --argjson ws $(hyprctl -j activeworkspace | jq -r '.id') '.[] | select(.mapped and .workspace.id == $ws) | (.at[0]|tostring) + \",\" + (.at[1]|tostring) + \" \" + (.size[0]|tostring) + \"x\" + (.size[1]|tostring)' | slurp)\" - | ${sattyCaptureCommand}"
 
         # Workspace cycling
         "$mod, mouse_down, workspace, e+1"
