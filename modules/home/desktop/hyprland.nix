@@ -54,7 +54,7 @@ in
 
       exec-once = [
         # Some services are handled by systemd (see services/wayland.nix)
-        "sleep 2 && awww img ~/NixConfig/wallpapers/stephanie-moody-nA3iwVnI8Mo-unsplash.jpg"
+        "sleep 2 && awww img ~/NixConfig/wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg"
         "waybar"
         "nm-applet --indicator"
         "swaync"
@@ -70,10 +70,12 @@ in
 
       decoration = {
         rounding = 16;
-        blur.enabled = false;
-        blur.size = 10;
-        blur.passes = 3;
-        blur.noise = 0.0;
+        blur = {
+          enabled = false;
+          size = 10;
+          passes = 3;
+          noise = 0.0;
+        };
         shadow.enabled = false;
       };
 

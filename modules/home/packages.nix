@@ -33,7 +33,6 @@ let
 in
 {
   home.packages = [
-    pkgs.zen-browser # From flake overlay
     heliumPackage # From flake overlay (NVIDIA hosts use an XWayland wrapper)
     pkgs.unstable.awww # From nixpkgs-unstable
   ]
@@ -52,12 +51,10 @@ in
     wl-clipboard
     pkgs.age
     inputs.agenix.packages.${pkgs.system}.default
-    fzf
     fd
     ripgrep
     ripgrep-all
     grc
-    bat
     eza
     dust
     duf
@@ -71,9 +68,7 @@ in
     watchexec
     xh
     android-tools
-    lazygit
     pet
-    yazi
     jq
     nix-tree
     nix-output-monitor
@@ -99,7 +94,6 @@ in
 
     # ── Document viewers ────────────────────────────────────────────────
     sioyek
-    zathura
 
     # ── Notes ───────────────────────────────────────────────────────────
     trilium-desktop
