@@ -93,7 +93,7 @@ function M.setup()
 	hl("Visual", { bg = c.selection })
 	hl("VisualNOS", { link = "Visual" })
 	hl("PmenuSel", { fg = c.blue, bg = c.bg, bold = true })
-	hl("BlinkCmpMenuSelection", { fg = c.blue, bg = c.bg, bold = true })
+	hl("BlinkCmpMenuSelection", { fg = c.blue, bg = c.selection, bold = true })
 
 	-- Keep overrides minimal so mini.base16/Stylix drives most colors.
 	hl("GlobalBorder", { fg = c.border })
