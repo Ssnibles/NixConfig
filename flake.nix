@@ -88,6 +88,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    betterfox = {
+      url = "github:yokoffing/Betterfox";
+      flake = false;
+    };
+
     # Spicetify module + package set for Spotify theming/customization
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
@@ -102,7 +107,6 @@
 
   outputs =
     {
-      self,
       nixpkgs,
       ...
     }@inputs:

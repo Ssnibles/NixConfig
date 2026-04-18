@@ -103,6 +103,32 @@ in
     nix-direnv.enable = true;
   };
 
+  # Zen Browser is packaged from an external flake; configure it via the
+  # Home Manager Firefox module by swapping the package.
+  programs.firefox = {
+    enable = true;
+    package = pkgs.zen-browser;
+    # Home Manager's Firefox module defaults to ~/.mozilla/firefox.
+    # Zen Browser expects profiles under ~/.zen.
+    configPath = ".zen";
+    profiles.josh = {
+      isDefault = true;
+      preConfig = builtins.readFile "${inputs.betterfox}/user.js";
+      settings = {
+        "browser.startup.homepage" = "https://startpage.com";
+        "browser.tabs.unloadOnLowMemory" = true;
+        "zen.view.compact.show-sidebar-and-toolbar-on-hover" = true;
+        "browser.sessionstore.interval" = 600000;
+      };
+      # These need to come after Betterfox so they always win.
+      extraConfig = ''
+        user_pref("zen.theme.content-element-separation", 0);
+        user_pref("zen.theme.border-radius", 0);
+        user_pref("widget.gtk.rounded-bottom-corners.enabled", false);
+      '';
+    };
+  };
+
   xdg.configFile."pet/snippet.toml".text = ''
     [[snippets]]
       description = "NixOS rebuild current host"
