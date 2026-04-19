@@ -82,6 +82,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # NUR: Community package/overlay collection
+    nur = {
+      url = "github:nix-community/NUR";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # nix-minecraft: Minecraft packaging helpers (modpacks, servers, tooling)
     nix-minecraft = {
       url = "github:Infinidoge/nix-minecraft";
@@ -144,6 +150,7 @@
       nightlyNeovim = inputs.neovim-nightly-overlay.packages.${system}.default;
 
       overlays = [
+        inputs.nur.overlays.default
         (_final: _prev: {
           # Keep nightly Neovim, but avoid replacing vimPlugins with the nightly
           # overlay plugin set (that can force local plugin builds/checks).

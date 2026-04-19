@@ -67,6 +67,7 @@ in
       # ── Overlays ─────────────────────────────────────────────────────────
       # Inject Neovim nightly and external flake packages into stable pkgs
       overlays = [
+        inputs.nur.overlays.default
         (_final: _prev: {
           # Keep nightly Neovim, but avoid replacing vimPlugins with the nightly
           # overlay plugin set (that can force local plugin builds/checks).
