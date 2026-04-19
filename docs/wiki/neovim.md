@@ -9,6 +9,11 @@ The stack uses `programs.nvf` as the Neovim configuration framework.
 Simple editor defaults and plugin/runtime wiring are declarative in Nix, while
 advanced behavior (autocmds, plugin-specific setup, DAP, etc.) stays in Lua.
 
+Neovim is pinned to nightly via the `neovim-nightly-overlay` input, but the
+config only overrides `pkgs.neovim` / `pkgs.neovim-unwrapped` instead of using
+the overlay's full plugin set. This keeps plugin derivations on the normal
+nixpkgs path (better cache hit rate and fewer local plugin builds/tests).
+
 ## LSP/formatter toolchain
 
 Installed via `programs.nvf.settings.vim.extraPackages`:
@@ -37,6 +42,9 @@ The module includes:
 - editing (`conform`, `autopairs`, `dial`, `multicursors`)
 - custom plugins:
   - `tiny-code-action.nvim`
+
+`grug-far.nvim` is kept with `doCheck = false` here to avoid flaky upstream
+plugin tests during nightly Neovim rebuilds.
 
 ## Keymaps
 

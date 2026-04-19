@@ -9,7 +9,7 @@
 - Home Manager (`release-25.11`)
 - Agenix (secrets)
 - Disko (partitioning)
-- Extra inputs (`zen-browser`, `nix-minecraft`)
+- Extra inputs (`neovim-nightly-overlay`, `zen-browser`, `nix-minecraft`)
 
 ## Outputs
 
@@ -27,7 +27,7 @@
 
 `lib/mkHost.nix` centralizes host wiring:
 
-- Applies overlays (`zen-browser`, `nix-minecraft`, `unstable`)
+- Applies overlays (nightly `neovim` override, `zen-browser`, `nix-minecraft`, `unstable`)
 - Injects `hostProfile` flags into both NixOS and Home Manager modules
 - Conditionally includes:
   - Disko modules when `useDisko = true`
