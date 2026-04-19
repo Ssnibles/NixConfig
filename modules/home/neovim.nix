@@ -214,7 +214,8 @@ in
         conform-nvim
         dial-nvim
         multicursor-nvim
-        grug-far-nvim
+        # grug-far's upstream test suite is flaky against nightly Neovim.
+        (grug-far-nvim.overrideAttrs (_: { doCheck = false; }))
 
         mini-nvim
         plenary-nvim

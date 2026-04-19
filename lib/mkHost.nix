@@ -6,7 +6,7 @@
 # need to repeat module imports and overlay setup for each host.
 #
 # Features:
-#   • Automatic overlay injection (zen-browser, unstable namespace)
+#   • Automatic overlay injection (Neovim nightly, zen-browser, unstable namespace)
 #   • Host profile flags (hasNvidia, isLaptop, etc.) available in all modules
 #   • Conditional module inclusion (Disko, NVIDIA driver)
 #   • Home Manager integration with shared special args
@@ -62,21 +62,27 @@ in
         inherit system;
         config.allowUnfree = true;
       };
+      nightlyNeovim = inputs.neovim-nightly-overlay.packages.${system}.default;
 
       # ── Overlays ─────────────────────────────────────────────────────────
-      # Inject external flake packages and unstable namespace into stable pkgs
-       overlays = [
-         (_final: prev: {
-           # Custom packages from flake inputs
-            zen-browser = inputs.zen-browser.packages.${system}.default;
-            helium = inputs.helium.packages.${system}.default;
-            # nix-minecraft overlay (provides fetchModrinthModpack and related tooling)
-            nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
-           
-           # Unstable namespace for latest packages
-           # Usage in modules: `pkgs.unstable.neovim-unwrapped`
-           unstable = unstablePkgs;
-         })
+      # Inject Neovim nightly and external flake packages into stable pkgs
+      overlays = [
+        (_final: _prev: {
+          # Keep nightly Neovim, but avoid replacing vimPlugins with the nightly
+          # overlay plugin set (that can force local plugin builds/checks).
+          neovim = nightlyNeovim;
+          neovim-unwrapped = nightlyNeovim;
+
+          # Custom packages from flake inputs
+          zen-browser = inputs.zen-browser.packages.${system}.default;
+          helium = inputs.helium.packages.${system}.default;
+          # nix-minecraft overlay (provides fetchModrinthModpack and related tooling)
+          nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
+
+          # Unstable namespace for latest packages
+          # Usage in modules: `pkgs.unstable.neovim-unwrapped`
+          unstable = unstablePkgs;
+        })
       ];
     in
     lib.nixosSystem {
