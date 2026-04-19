@@ -147,6 +147,12 @@ in
     profiles.josh = {
       isDefault = true;
       preConfig = builtins.readFile "${inputs.betterfox}/user.js";
+      extensions = {
+        packages = with pkgs.nur.repos.rycee.firefox-addons; [
+          ublock-origin
+          bitwarden
+        ];
+      };
       settings = {
         "browser.startup.homepage" = "https://startpage.com";
         "browser.tabs.unloadOnLowMemory" = true;
