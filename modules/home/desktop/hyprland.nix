@@ -13,6 +13,7 @@
 }:
 let
   raw = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
+  wallpaper = ../../../wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg;
   brightnessBinds =
     if hostProfile.isDesktop then
       [
@@ -67,7 +68,7 @@ in
 
       exec-once = [
         # Some services are handled by systemd (see services/wayland.nix)
-        "sleep 2 && awww img ~/NixConfig/wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg"
+        "sleep 2 && awww img ${toString wallpaper}"
         "waybar"
         "nm-applet --indicator"
         "swaync"

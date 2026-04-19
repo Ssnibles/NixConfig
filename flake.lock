@@ -355,6 +355,22 @@
         "type": "github"
       }
     },
+    "matugen-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1758683291,
+        "narHash": "sha256-FJCpz+rLnMPG750XuDicMTUFayzbFSHPUDOK/qSz+tQ=",
+        "owner": "ssnibles",
+        "repo": "matugen.nvim",
+        "rev": "6cc055f0745e605dde5509a370b62746cebe3a67",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ssnibles",
+        "repo": "matugen.nvim",
+        "type": "github"
+      }
+    },
     "mnw": {
       "locked": {
         "lastModified": 1770419553,
@@ -524,6 +540,7 @@
         "disko": "disko",
         "helium": "helium",
         "home-manager": "home-manager_2",
+        "matugen-nvim": "matugen-nvim",
         "nix-minecraft": "nix-minecraft",
         "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable",

@@ -45,10 +45,13 @@ This repo now includes a declarative Stylix switcher for supported programs.
 ```bash
 stylix-switch --list
 stylix-switch catppuccin-mocha
+stylix-switch matugen-dark
+stylix-switch matugen-light
 stylix-switch --apply
 ```
 
 Themes are defined in `lib/stylix/themes.nix`, and the active theme key lives in `lib/stylix/current-theme.nix`.
+`matugen-dark` and `matugen-light` generate Base16 schemes from `wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg` and feed them into Stylix.
 
 Two in-repo examples are included:
 

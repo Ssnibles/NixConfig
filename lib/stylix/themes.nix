@@ -1,3 +1,6 @@
+let
+  wallpaper = ../../wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg;
+in
 {
   # Theme key => base16 scheme metadata used by modules/home/stylix.nix
   "catppuccin-mocha" = {
@@ -112,6 +115,24 @@
       base0D = "6e94b2";
       base0E = "bb9dbd";
       base0F = "c48282";
+    };
+  };
+
+  "matugen-dark" = {
+    polarity = "dark";
+    matugen = {
+      inherit wallpaper;
+      sourceColorIndex = 0;
+      type = "scheme-tonal-spot";
+    };
+  };
+
+  "matugen-light" = {
+    polarity = "light";
+    matugen = {
+      inherit wallpaper;
+      sourceColorIndex = 0;
+      type = "scheme-tonal-spot";
     };
   };
 }

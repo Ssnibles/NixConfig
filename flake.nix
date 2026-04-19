@@ -108,6 +108,11 @@
       url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    matugen-nvim = {
+      url = "github:ssnibles/matugen.nvim";
+      flake = false;
+    };
   };
 
   outputs =

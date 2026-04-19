@@ -22,7 +22,33 @@ vim.diagnostic.config({
 })
 
 -- Theme
-require("theme").setup()
+local ok_theme_meta, theme_meta = pcall(require, "generated.theme_meta")
+if not ok_theme_meta or type(theme_meta) ~= "table" then
+	theme_meta = { is_matugen = false }
+end
+
+if theme_meta.is_matugen then
+	local ok_matugen, matugen = pcall(require, "matugen_colorscheme")
+	local matugen_file = vim.fn.expand("~/.cache/matugen/colors.jsonc")
+	if ok_matugen and vim.fn.filereadable(matugen_file) == 1 then
+		matugen.setup({
+			file = matugen_file,
+			auto_apply = true,
+			watch = false,
+			plugins = {
+				base = true,
+				treesitter = true,
+				cmp = true,
+				gitsigns = true,
+				miscellaneous = true,
+			},
+		})
+	else
+		require("theme").setup()
+	end
+else
+	require("theme").setup()
+end
 
 local function safe_require(module)
 	local ok, err = pcall(require, module)
