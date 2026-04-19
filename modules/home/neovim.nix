@@ -36,7 +36,7 @@ let
       owner = "rachartier";
       repo = "tiny-code-action.nvim";
       rev = "main";
-      sha256 = "sha256-4tjWSSBpIH6D1nQeJRv2rKCWraaRU1IG6TQmJilmYjw=";
+      sha256 = "sha256-DdITbY62jlEhd12TxocJYe/9vZAn7ziEzOMGTp4hb38=";
     };
     doCheck = false;
   };
@@ -150,78 +150,83 @@ in
       ];
 
       # Keep full plugin list declarative in Nix, with Lua setup logic in nvim/lua/plugins/*.
-      startPlugins = with pkgs.vimPlugins; [
-        tiny-code-action
+      startPlugins =
+        with pkgs.vimPlugins;
+        [
+          tiny-code-action
 
-        (nvim-treesitter.withPlugins (
-          p: with p; [
-            lua
-            vim
-            nix
-            bash
-            fish
-            kotlin
-            java
-            javascript
-            typescript
-            tsx
-            html
-            css
-            json
-            yaml
-            python
-            markdown
-            c_sharp
-          ]
-        ))
-        nvim-treesitter-context
-        nvim-treesitter-textobjects
+          (nvim-treesitter.withPlugins (
+            p: with p; [
+              lua
+              vim
+              nix
+              bash
+              fish
+              kotlin
+              java
+              javascript
+              typescript
+              tsx
+              html
+              css
+              json
+              yaml
+              python
+              markdown
+              c_sharp
+            ]
+          ))
+          nvim-treesitter-context
+          nvim-treesitter-textobjects
 
-        nvim-lspconfig
-        blink-cmp
-        luasnip
-        friendly-snippets
-        copilot-lua
-        fidget-nvim
-        roslyn-nvim
-        tiny-inline-diagnostic-nvim
-        nvim-lint
-        nvim-dap
-        nvim-dap-ui
-        nvim-dap-virtual-text
-        nvim-dap-python
-        nvim-nio
-        trouble-nvim
+          nvim-lspconfig
+          blink-cmp
+          luasnip
+          friendly-snippets
+          copilot-lua
+          fidget-nvim
+          roslyn-nvim
+          tiny-inline-diagnostic-nvim
+          nvim-lint
+          nvim-dap
+          nvim-dap-ui
+          nvim-dap-virtual-text
+          nvim-dap-python
+          nvim-nio
+          trouble-nvim
 
-        fzf-lua
-        oil-nvim
-        flash-nvim
-        smart-splits-nvim
+          fzf-lua
+          oil-nvim
+          flash-nvim
+          smart-splits-nvim
 
-        lualine-nvim
-        statuscol-nvim
-        neoscroll-nvim
-        nui-nvim
-        noice-nvim
-        no-neck-pain-nvim
-        snacks-nvim
-        twilight-nvim
+          lualine-nvim
+          statuscol-nvim
+          neoscroll-nvim
+          nui-nvim
+          noice-nvim
+          no-neck-pain-nvim
+          snacks-nvim
+          twilight-nvim
 
-        gitsigns-nvim
-        neogit
+          gitsigns-nvim
+          neogit
 
-        nvim-autopairs
-        conform-nvim
-        dial-nvim
-        multicursor-nvim
-        # grug-far's upstream test suite is flaky against nightly Neovim.
-        (grug-far-nvim.overrideAttrs (_: { doCheck = false; }))
+          nvim-autopairs
+          conform-nvim
+          dial-nvim
+          multicursor-nvim
+          # grug-far's upstream test suite is flaky against nightly Neovim.
+          (grug-far-nvim.overrideAttrs (_: {
+            doCheck = false;
+          }))
 
-        mini-nvim
-        plenary-nvim
-        vim-tmux-navigator
-        markview-nvim
-      ] ++ lib.optionals hasMatugenTheme [ matugen-nvim ];
+          mini-nvim
+          plenary-nvim
+          vim-tmux-navigator
+          markview-nvim
+        ]
+        ++ lib.optionals hasMatugenTheme [ matugen-nvim ];
 
       # Load the existing Lua entrypoint after nvf initializes.
       luaConfigRC.user-config = ''
