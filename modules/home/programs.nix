@@ -30,7 +30,7 @@ let
     player = c.bg;
     card = c.bgRaised;
     shadow = c.bg;
-    "selected-row" = c.fgDim;
+    "selected-row" = c.bgSubtle;
     button = c.accent;
     "button-active" = c.accent;
     "button-disabled" = c.fgDim;
@@ -72,6 +72,39 @@ in
     enabledExtensions = with spicePkgs.extensions; [
       adblockify
       hidePodcasts
+    ];
+    enabledSnippets = [
+      ''
+        /* Flatten now-playing side panel overlays for consistent colors. */
+        .main-nowPlayingView-contextItemInfo::before,
+        .main-nowPlayingView-coverArtContainer::before,
+        .main-nowPlayingView-coverArtContainer::after {
+          background: none !important;
+          background-image: none !important;
+        }
+
+        .main-nowPlayingView-contextItemInfo {
+          background: var(--spice-main) !important;
+        }
+
+        /* Remove dynamic playlist/album header gradients that clash with text. */
+        .main-entityHeader-backgroundColor,
+        .main-actionBarBackground-background {
+          background: var(--spice-main) !important;
+        }
+
+        .main-entityHeader-background.main-entityHeader-gradient,
+        .main-entityHeader-background.main-entityHeader-overlay {
+          opacity: 0 !important;
+        }
+
+        .main-entityHeader-title,
+        .main-entityHeader-titleButton,
+        .main-entityHeader-subtitle,
+        .main-entityHeader-metaData {
+          color: var(--spice-text) !important;
+        }
+      ''
     ];
     theme = spicePkgs.themes.catppuccin;
     colorScheme = "custom";

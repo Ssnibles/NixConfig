@@ -76,6 +76,7 @@ in
     statix
     texliveBasic
     imagemagick
+    matugen
     zip
 
     # ── Fonts ───────────────────────────────────────────────────────────

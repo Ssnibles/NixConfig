@@ -7,11 +7,24 @@
 # =============================================================================
 {
   config,
+  lib,
   pkgs,
   inputs,
   ...
 }:
 let
+  themeName = import ../../lib/stylix/current-theme.nix;
+  themes = import ../../lib/stylix/themes.nix;
+  selectedTheme =
+    if builtins.hasAttr themeName themes then
+      themes.${themeName}
+    else
+      {
+        scheme = "catppuccin-mocha.yaml";
+        polarity = "dark";
+      };
+  hasMatugenTheme = builtins.hasAttr "matugen" selectedTheme;
+
   c =
     (import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
   s = config.lib.stylix.colors.withHashtag;
@@ -25,6 +38,13 @@ let
       rev = "main";
       sha256 = "sha256-4tjWSSBpIH6D1nQeJRv2rKCWraaRU1IG6TQmJilmYjw=";
     };
+    doCheck = false;
+  };
+
+  matugen-nvim = pkgs.vimUtils.buildVimPlugin {
+    pname = "matugen.nvim";
+    version = "main";
+    src = inputs.matugen-nvim;
     doCheck = false;
   };
 in
@@ -200,7 +220,7 @@ in
         plenary-nvim
         vim-tmux-navigator
         markview-nvim
-      ];
+      ] ++ lib.optionals hasMatugenTheme [ matugen-nvim ];
 
       # Load the existing Lua entrypoint after nvf initializes.
       luaConfigRC.user-config = ''
@@ -249,6 +269,12 @@ in
     }
 
     return M
+  '';
+
+  xdg.configFile."nvf/lua/generated/theme_meta.lua".text = ''
+    return {
+      is_matugen = ${if hasMatugenTheme then "true" else "false"},
+    }
   '';
 
   xdg.configFile."nvf" = {
