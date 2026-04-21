@@ -73,11 +73,6 @@
       url = "github:cushycush/qml-language-server";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    helium = {
-      url = "github:schembriaiden/helium-browser-nix-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
@@ -98,7 +93,6 @@
 
           # Inject inputs into the main package set
           zen-browser = inputs.zen-browser.packages.${system}.default;
-          helium = inputs.helium.packages.${system}.default;
           nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
 
           # Use unstable for Neovim (fresh but pre-built)

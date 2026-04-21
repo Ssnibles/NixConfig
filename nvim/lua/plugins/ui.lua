@@ -60,7 +60,7 @@ require("noice").setup({
 		},
 	},
 	popupmenu = {
-		enabled = true,
+		enabled = false,
 		backend = "nui",
 	},
 	lsp = {
