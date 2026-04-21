@@ -117,22 +117,4 @@ in
       base0F = "c48282";
     };
   };
-
-  "matugen-dark" = {
-    polarity = "dark";
-    matugen = {
-      inherit wallpaper;
-      sourceColorIndex = 0;
-      type = "scheme-tonal-spot";
-    };
-  };
-
-  "matugen-light" = {
-    polarity = "light";
-    matugen = {
-      inherit wallpaper;
-      sourceColorIndex = 0;
-      type = "scheme-tonal-spot";
-    };
-  };
 }

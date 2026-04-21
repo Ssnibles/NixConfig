@@ -55,12 +55,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Neovim Nightly overlay (replaces pkgs.neovim with nightly builds)
-    neovim-nightly-overlay = {
-      url = "github:nix-community/neovim-nightly-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Stylix: Shared theming framework for Home Manager / NixOS targets
     stylix = {
       url = "github:nix-community/stylix/release-25.11";
@@ -120,11 +114,6 @@
       url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    matugen-nvim = {
-      url = "github:ssnibles/matugen.nvim";
-      flake = false;
-    };
   };
 
   outputs =
@@ -147,15 +136,12 @@
         inherit system;
         config.allowUnfree = true;
       };
-      nightlyNeovim = inputs.neovim-nightly-overlay.packages.${system}.default;
 
       overlays = [
         inputs.nur.overlays.default
         (_final: _prev: {
-          # Keep nightly Neovim, but avoid replacing vimPlugins with the nightly
-          # overlay plugin set (that can force local plugin builds/checks).
-          neovim = nightlyNeovim;
-          neovim-unwrapped = nightlyNeovim;
+          neovim = unstablePkgs.neovim;
+          neovim-unwrapped = unstablePkgs.neovim-unwrapped;
           zen-browser = inputs.zen-browser.packages.${system}.default;
           helium = inputs.helium.packages.${system}.default;
           nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};

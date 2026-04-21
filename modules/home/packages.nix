@@ -42,12 +42,13 @@ in
     openjdk25
     code2prompt
     nodejs
-    dotnet-sdk_10
+    dotnet-sdk_9
     roslyn
 
     # ── CLI utilities ───────────────────────────────────────────────────
     quickemu
     github-copilot-cli
+    gemini-cli
     wl-clipboard
     pkgs.age
     inputs.agenix.packages.${pkgs.system}.default
@@ -76,7 +77,6 @@ in
     statix
     texliveBasic
     imagemagick
-    matugen
     zip
 
     # ── Fonts ───────────────────────────────────────────────────────────

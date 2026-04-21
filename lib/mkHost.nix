@@ -62,17 +62,16 @@ in
         inherit system;
         config.allowUnfree = true;
       };
-      nightlyNeovim = inputs.neovim-nightly-overlay.packages.${system}.default;
 
       # ── Overlays ─────────────────────────────────────────────────────────
-      # Inject Neovim nightly and external flake packages into stable pkgs
+      # Inject external flake packages into stable pkgs
       overlays = [
         inputs.nur.overlays.default
         (_final: _prev: {
-          # Keep nightly Neovim, but avoid replacing vimPlugins with the nightly
-          # overlay plugin set (that can force local plugin builds/checks).
-          neovim = nightlyNeovim;
-          neovim-unwrapped = nightlyNeovim;
+          # Use unstable neovim and neovim-unwrapped for a fresh version
+          # without the risks of nightly builds from source.
+          neovim = unstablePkgs.neovim;
+          neovim-unwrapped = unstablePkgs.neovim-unwrapped;
 
           # Custom packages from flake inputs
           zen-browser = inputs.zen-browser.packages.${system}.default;
