@@ -73,6 +73,27 @@ require("noice").setup({
 	},
 	presets = { bottom_search = true, inc_rename = true },
 	notify = { enabled = false },
+	routes = {
+		{
+			filter = {
+				event = "msg_show",
+				any = {
+					{ find = "%d+L, %d+B" },
+					{ find = "; after #%d+" },
+					{ find = "; before #%d+" },
+					{ find = "Written" },
+				},
+			},
+			view = "mini",
+		},
+		{
+			filter = {
+				event = "msg_show",
+				kind = "search_count",
+			},
+			opts = { skip = true },
+		},
+	},
 })
 
 -- Tiny inline diagnostics

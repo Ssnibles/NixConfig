@@ -1,4 +1,5 @@
 -- Neovim configuration entry point
+vim.opt.cmdheight = 0
 
 -- Core Lua config
 require("keymaps")
@@ -67,4 +68,3 @@ vim.api.nvim_create_autocmd("VimEnter", {
 })
 
 -- Final touches
-vim.opt.cmdheight = 0
