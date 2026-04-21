@@ -100,11 +100,6 @@ in
           end
       end
 
-      # Ensure consistent history between sessions
-      function on_exit --on-event fish_exit
-          history merge
-      end
-
       # Fish syntax + completion colors aligned to the active Stylix palette.
       set -g fish_color_normal ${c.fg}
       set -g fish_color_command ${c.accent}
