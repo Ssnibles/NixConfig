@@ -26,10 +26,8 @@ let
         ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
       ];
   screenshotDir = "~/Pictures/Screenshots";
-  sattyFocusCommand =
-    "(sleep 0.15 && (hyprctl dispatch focuswindow 'class:^(satty)$' || hyprctl dispatch focuswindow 'class:^(com\\.gabm\\.satty)$'))";
-  sattyCaptureCommand =
-    "satty --fullscreen current-screen --floating-hack --filename - --output-filename \"${screenshotDir}/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
+  sattyFocusCommand = "(sleep 0.15 && (hyprctl dispatch focuswindow 'class:^(satty)$' || hyprctl dispatch focuswindow 'class:^(com\\.gabm\\.satty)$'))";
+  sattyCaptureCommand = "satty --fullscreen current-screen --floating-hack --filename - --output-filename \"${screenshotDir}/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
 in
 {
   imports = [
@@ -57,6 +55,7 @@ in
       // (lib.optionalAttrs hostProfile.isDesktop {
         # Keep mouse movement 1:1 on desktop/gaming rigs.
         accel_profile = "flat";
+        force_no_accel = true;
         sensitivity = 0;
       })
       // {
@@ -79,7 +78,7 @@ in
         gaps_out = 16;
         border_size = 0;
         # Keep compositor vsync active to avoid visible tearing during fast motion.
-        allow_tearing = false;
+        allow_tearing = true;
         "col.inactive_border" = "rgb(${raw.border})";
         "col.active_border" = "rgb(${raw.border})";
       };
@@ -106,19 +105,23 @@ in
       };
 
       misc.disable_hyprland_logo = true;
+      misc.vrr = 1;
 
       windowrule = [
-        # "bordersize 2, floating:1"
-        # "float, class:(org.pulseaudio.pavucontrol)"
-        # "float, class:(blueman-manager)"
+        "bordersize 2, floating:1"
+        "float, class:(org.pulseaudio.pavucontrol)"
+        "float, class:(blueman-manager)"
         "float, title:^(Picture-in-Picture)$"
         "pin, title:^(Picture-in-Picture)$"
         "keepaspectratio, title:^(Picture-in-Picture)$"
         "move 72% 72%, title:^(Picture-in-Picture)$"
         "size 25% 25%, title:^(Picture-in-Picture)$"
+        "immediate, class:^(steam_app_.*)$" # Applies to all Steam games
+        "immediate, class:^(warframe.exe)$"
+        "immediate, class:^(minecraft)$"
       ];
 
-      windowrulev2 = [];
+      windowrulev2 = [ ];
 
       layerrule = [
         "blur,hyprlock"

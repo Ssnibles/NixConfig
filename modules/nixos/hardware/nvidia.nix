@@ -50,7 +50,7 @@ lib.mkIf hostProfile.hasNvidia {
   # Kernel parameters for NVIDIA Wayland support
   boot.kernelParams = [
     "nvidia-drm.modeset=1" # Enable DRM KMS (kernel modesetting) - REQUIRED for Wayland
-    "nvidia-drm.fbdev=1"   # Enable fbdev emulation for compatibility with older software
+    "nvidia-drm.fbdev=1" # Enable fbdev emulation for compatibility with older software
   ];
 
   # ═══════════════════════════════════════════════════════════════════════════
@@ -122,5 +122,8 @@ lib.mkIf hostProfile.hasNvidia {
     # EGL vendor library directory (NVIDIA-specific EGL implementation)
     __EGL_VENDOR_LIBRARY_DIRS = "/run/opengl-driver/share/glvnd/egl_vendor.d";
 
+    WLR_NO_HARDWARE_CURSORS = "1"; # Disable hardware cursors (fixes cursor issues in Wayland)
+
+    LIBVA_DRIVER_NAME = "nvidia"; # Use NVIDIA VA-API driver for video acceleration
   };
 }
