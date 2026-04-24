@@ -38,7 +38,7 @@ require("blink.cmp").setup({
 	completion = {
 		list = {
 			selection = {
-				preselect = false,
+				preselect = true,
 				auto_insert = false,
 			},
 		},
@@ -55,7 +55,7 @@ require("blink.cmp").setup({
 			auto_show_delay_ms = 200,
 			window = { border = "rounded" },
 		},
-		ghost_text = { enabled = false },
+		ghost_text = { enabled = true },
 	},
 	cmdline = {
 		keymap = {
@@ -66,7 +66,7 @@ require("blink.cmp").setup({
 			["<C-k>"] = { "select_prev", "fallback" },
 			["<C-j>"] = { "select_next", "fallback" },
 		},
-		completion = { menu = { auto_show = true }, ghost_text = { enabled = false } },
+		completion = { menu = { auto_show = true }, ghost_text = { enabled = true } },
 	},
 })
 
