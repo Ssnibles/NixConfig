@@ -13,17 +13,6 @@
   ...
 }:
 let
-  themeName = import ../../lib/stylix/current-theme.nix;
-  themes = import ../../lib/stylix/themes.nix;
-  selectedTheme =
-    if builtins.hasAttr themeName themes then
-      themes.${themeName}
-    else
-      {
-        scheme = "catppuccin-mocha.yaml";
-        polarity = "dark";
-      };
-
   c =
     (import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
   s = config.lib.stylix.colors.withHashtag;

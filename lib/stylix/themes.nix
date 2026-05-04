@@ -75,6 +75,7 @@ in
     scheme = {
       scheme = "Example Custom Ocean";
       author = "You";
+      variant = "dark";
       base00 = "0b0f14";
       base01 = "111822";
       base02 = "1a2431";
@@ -99,6 +100,7 @@ in
     scheme = {
       scheme = "Vague";
       author = "Josh";
+      variant = "dark";
       base00 = "141415";
       base01 = "1c1c24";
       base02 = "252530";

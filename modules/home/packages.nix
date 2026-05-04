@@ -100,6 +100,7 @@
     [
       pkgs.ddcutil
       steam
+      blender
     ]
   )
   # ── Laptop-only packages ──────────────────────────────────────────────

@@ -1,68 +1,12 @@
 -- Neovim configuration entry point
-vim.opt.cmdheight = 0
-
--- Core Lua config
 require("keymaps")
 require("autocmds")
+require("diagnostics")
 
--- Diagnostics
-vim.diagnostic.config({
-	virtual_text = false,
-	signs = {
-		text = {
-			[vim.diagnostic.severity.ERROR] = "󰅚",
-			[vim.diagnostic.severity.WARN] = "󰀪",
-			[vim.diagnostic.severity.HINT] = "󰌶",
-			[vim.diagnostic.severity.INFO] = "󰋽",
-		},
-	},
-	underline = true,
-	severity_sort = true,
-	float = { border = "rounded", source = true },
-	update_in_insert = false,
-})
-
--- Theme
 require("theme").setup()
 
-local function safe_require(module)
-	local ok, err = pcall(require, module)
-	if not ok then
-		vim.schedule(function()
-			vim.notify(("Failed loading %s: %s"):format(module, err), vim.log.levels.ERROR)
-		end)
-	end
-	return ok
-end
+local bootstrap = require("bootstrap")
+local plugins = require("plugins.registry")
 
--- Core plugins (load immediately)
-for _, module in ipairs({
-	"plugins.treesitter",
-	"plugins.completion",
-	"plugins.lsp",
-	"plugins.editor",
-	"plugins.lint",
-	"plugins.ui",
-	"plugins.trouble",
-	"plugins.mini",
-	"plugins.fzf",
-	"plugins.navigation",
-	"plugins.terminal",
-}) do
-	safe_require(module)
-end
-
--- Optional plugins (defer until UI is ready)
-vim.api.nvim_create_autocmd("VimEnter", {
-	once = true,
-	callback = function()
-		if vim.v.exiting ~= 0 then
-			return
-		end
-		vim.schedule(function()
-			for _, module in ipairs({ "plugins.focus", "plugins.neogit", "plugins.terminal", "plugins.dap" }) do
-				safe_require(module)
-			end
-		end)
-	end,
-})
+bootstrap.load_modules(plugins.core)
+bootstrap.defer_modules(plugins.deferred, "VimEnter")
