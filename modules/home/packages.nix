@@ -29,7 +29,6 @@
     # ── CLI utilities ───────────────────────────────────────────────────
     quickemu
     github-copilot-cli
-    gemini-cli
     wl-clipboard
     pkgs.age
     inputs.agenix.packages.${pkgs.system}.default
@@ -59,6 +58,7 @@
     texliveBasic
     imagemagick
     zip
+    btop
 
     # ── Fonts ───────────────────────────────────────────────────────────
     nerd-fonts.fira-code
@@ -67,18 +67,13 @@
 
     # ── GUI applications ────────────────────────────────────────────────
     foot
-    mission-center
     kdePackages.dolphin
-    gnome-pomodoro
     via
     onlyoffice-desktopeditors
     prismlauncher
 
     # ── Document viewers ────────────────────────────────────────────────
     sioyek
-
-    # ── Notes ───────────────────────────────────────────────────────────
-    trilium-desktop
 
     # ── Media ───────────────────────────────────────────────────────────
     picard
