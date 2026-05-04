@@ -34,6 +34,12 @@
 let
   spotifyIdAge = ../../secrets/spotify-id.age;
   spotifySecretAge = ../../secrets/spotify-secret.age;
+  lyPalette = {
+    bg = "0x00141415";
+    fg = "0x00CDCDCD";
+    accent = "0x006E94B2";
+    error = "0x01D8647E";
+  };
 in
 {
   # ═══════════════════════════════════════════════════════════════════════════
@@ -168,7 +174,25 @@ in
   # ═══════════════════════════════════════════════════════════════════════════
   # Ly: Lightweight TUI display manager (no dependencies on heavy DEs)
   # Fast boot, minimal resource usage, clean aesthetic
-  services.displayManager.ly.enable = true;
+  services.displayManager.ly = {
+    enable = true;
+    settings = {
+      # Cleaner, more readable layout than Ly defaults.
+      box_title = "Welcome";
+      clock = "%a %d %b  %H:%M";
+      text_in_center = true;
+      box_position_v = 0.50;
+      input_len = 38;
+      default_input = "login";
+      hide_key_hints = true;
+      hide_keyboard_locks = true;
+      hide_version_string = true;
+
+      # Keep it calm and static instead of distracting boot-time animations.
+      animation = "none";
+      blank_box = true;
+    };
+  };
   # Required so NetworkManager can read user Wi-Fi secrets from keyring
   # and autoconnect reliably after login in non-GNOME sessions.
   services.gnome.gnome-keyring.enable = true;
@@ -293,7 +317,8 @@ in
       "video"
       "input"
       "plugdev"
-    ] ++ lib.optionals hostProfile.isDesktop [ "i2c" ];
+    ]
+    ++ lib.optionals hostProfile.isDesktop [ "i2c" ];
   };
 
   age.secrets = lib.mkMerge [
