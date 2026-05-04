@@ -17,40 +17,41 @@ let
   spotifySecretsAvailable =
     builtins.pathExists spotifyIdFile && builtins.pathExists spotifySecretFile;
   spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.system};
-  c = import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
+  s = config.lib.stylix.colors;
+  c = import ../../lib/stylix/semantic-colors.nix { stylixColors = s; };
   spicetifyStylixScheme = {
-    # Spicetify base keys
+    # Spicetify keys, mapped by their intended UI role.
     text = c.fg;
     subtext = c.fgMid;
     main = c.bg;
     "main-elevated" = c.bgRaised;
     highlight = c.bgSubtle;
-    "highlight-elevated" = config.lib.stylix.colors.base03;
+    "highlight-elevated" = s.base03;
     sidebar = c.bgRaised;
-    player = c.bg;
-    card = c.bgRaised;
+    player = c.bgRaised;
+    card = c.bgSubtle;
     shadow = c.bg;
-    "selected-row" = c.bgSubtle;
+    "selected-row" = c.fgMid;
     button = c.accent;
-    "button-active" = c.accent;
+    "button-active" = c.teal;
     "button-disabled" = c.fgDim;
     "tab-active" = c.bgSubtle;
     notification = c.bgRaised;
     "notification-error" = c.red;
-    equalizer = c.accent;
-    misc = c.bgSubtle;
+    equalizer = c.green;
+    misc = s.base03;
 
     # Catppuccin variables used by the catppuccin Spicetify theme
-    crust = config.lib.stylix.colors.base00;
-    mantle = config.lib.stylix.colors.base01;
+    crust = s.base00;
+    mantle = s.base01;
     base = c.bg;
     surface0 = c.bgRaised;
     surface1 = c.bgSubtle;
-    surface2 = config.lib.stylix.colors.base03;
-    overlay0 = config.lib.stylix.colors.base03;
-    overlay1 = config.lib.stylix.colors.base04;
-    overlay2 = config.lib.stylix.colors.base05;
-    rosewater = config.lib.stylix.colors.base07;
+    surface2 = s.base03;
+    overlay0 = s.base03;
+    overlay1 = s.base04;
+    overlay2 = s.base04;
+    rosewater = s.base07;
     flamingo = c.magenta;
     pink = c.purple;
     maroon = c.red;
@@ -63,7 +64,7 @@ let
     blue = c.accent;
     sky = c.teal;
     mauve = c.purple;
-    lavender = config.lib.stylix.colors.base06;
+    lavender = s.base06;
   };
 in
 {
