@@ -253,6 +253,7 @@ let
 
   # ── Stylix theme switcher ───────────────────────────────────────────────
   # Switches lib/stylix/current-theme.nix and applies Home Manager.
+  # Use --persist only when you explicitly want to run a full system rebuild.
   stylix-switch = pkgs.writeShellScriptBin "stylix-switch" ''
     set -euo pipefail
 
@@ -261,7 +262,11 @@ let
     available_themes=(${stylixThemeNamesShell})
 
     usage() {
-      echo "Usage: stylix-switch <theme-name|--list|--current|--apply>" >&2
+      echo "Usage: stylix-switch <theme-name|--list|--current|--apply|--persist>" >&2
+    }
+
+    apply_theme() {
+      nh home switch
     }
 
     if [ ! -f "$theme_file" ]; then
@@ -289,8 +294,14 @@ let
         ;;
       --apply)
         cd "$repo_root"
-        nh home switch
+        apply_theme
         echo "Reapplied Stylix theme: $current_theme"
+        exit 0
+        ;;
+      --persist)
+        cd "$repo_root"
+        nh os switch
+        echo "Persisted current Stylix theme via system rebuild: $current_theme"
         exit 0
         ;;
       ""|-h|--help)
@@ -317,16 +328,18 @@ let
 
     if [ "$selected" = "$current_theme" ]; then
       cd "$repo_root"
-      nh home switch
+      apply_theme
       echo "Theme already active; reapplied: $selected"
+      echo "Run 'stylix-switch --persist' to persist via system rebuild."
       exit 0
     fi
 
     printf '"%s"\n' "$selected" > "$theme_file"
 
     cd "$repo_root"
-    nh home switch
+    apply_theme
     echo "Switched Stylix theme to: $selected"
+    echo "Run 'stylix-switch --persist' to persist via system rebuild."
   '';
 in
 {

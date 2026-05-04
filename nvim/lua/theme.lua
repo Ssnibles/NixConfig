@@ -89,7 +89,8 @@ function M.setup()
 	}) do
 		hl(group, { link = "Normal" })
 	end
-	hl("CursorLine", { bg = c.bg })
+	hl("CursorLine", { bg = c.bgSubtle })
+	hl("CursorLineNr", { fg = c.blue, bg = c.bgSubtle, bold = true })
 	hl("Visual", { bg = c.selection })
 	hl("VisualNOS", { link = "Visual" })
 	hl("PmenuSel", { fg = c.blue, bg = c.bg, bold = true })

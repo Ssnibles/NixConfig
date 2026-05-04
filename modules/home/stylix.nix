@@ -7,7 +7,7 @@
 let
   themeName = import ../../lib/stylix/current-theme.nix;
   themes = import ../../lib/stylix/themes.nix;
-  wallpaper = ../../../wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg;
+  wallpaper = ../../wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg;
   enableUnsupportedProgramExample = false;
   selectedTheme =
     if builtins.hasAttr themeName themes then

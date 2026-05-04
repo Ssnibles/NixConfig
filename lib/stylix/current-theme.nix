@@ -1,1 +1,1 @@
-"rose-pine-dawn"
+"rose-pine"

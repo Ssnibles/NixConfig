@@ -119,6 +119,7 @@ in
         "immediate, class:^(steam_app_.*)$" # Applies to all Steam games
         "immediate, class:^(warframe.exe)$"
         "immediate, class:^(minecraft)$"
+        "immediate, class:^(qemu)$"
       ];
 
       windowrulev2 = [ ];

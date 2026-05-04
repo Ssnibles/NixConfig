@@ -123,6 +123,33 @@ in
 	}
 end
 
+local function attach_lsp_keymaps(bufnr)
+	if vim.b[bufnr]._lsp_keymaps_attached then
+		return
+	end
+
+	vim.b[bufnr]._lsp_keymaps_attached = true
+
+	local map = function(keys, fn, desc)
+		vim.keymap.set("n", keys, fn, { buffer = bufnr, desc = desc })
+	end
+
+	map("gd", lsp.buf.definition, "Go to definition")
+	map("gD", lsp.buf.declaration, "Go to declaration")
+	map("gi", lsp.buf.implementation, "Go to implementation")
+	map("gr", lsp.buf.references, "Find references")
+	map("K", lsp.buf.hover, "Hover documentation")
+	map("<leader>rn", lsp.buf.rename, "Rename symbol")
+	map("<leader>ca", function()
+		local ok, tiny = pcall(require, "tiny-code-action")
+		if ok then
+			tiny.code_action()
+		else
+			lsp.buf.code_action()
+		end
+	end, "Code action")
+end
+
 -- Global LSP config (applies to all servers)
 lsp.config("*", {
 	capabilities = capabilities,
@@ -131,35 +158,21 @@ lsp.config("*", {
 		if client:supports_method("textDocument/inlayHint") then
 			vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
 		end
-
-		if not vim.b[bufnr]._lsp_keymaps_attached then
-			vim.b[bufnr]._lsp_keymaps_attached = true
-
-			local map = function(keys, fn, desc)
-				vim.keymap.set("n", keys, fn, { buffer = bufnr, desc = desc })
-			end
-
-			map("gd", lsp.buf.definition, "Go to definition")
-			map("gD", lsp.buf.declaration, "Go to declaration")
-			map("gi", lsp.buf.implementation, "Go to implementation")
-			map("gr", lsp.buf.references, "Find references")
-			map("K", lsp.buf.hover, "Hover documentation")
-			map("<leader>rn", lsp.buf.rename, "Rename symbol")
-			map("<leader>ca", function()
-				local ok, tiny = pcall(require, "tiny-code-action")
-				if ok then
-					tiny.code_action()
-				else
-					lsp.buf.code_action()
-				end
-			end, "Code action")
-		end
+		attach_lsp_keymaps(bufnr)
 	end,
 })
 
--- Hover with rounded borders
-lsp.handlers["textDocument/hover"] = lsp.with(lsp.handlers.hover, { border = "rounded" })
-lsp.handlers["textDocument/signatureHelp"] = lsp.with(lsp.handlers.signature_help, { border = "rounded" })
+-- Hover/signature handlers with rounded borders (without deprecated vim.lsp.with)
+local function with_rounded_border(handler)
+	return function(err, result, ctx, config)
+		config = config or {}
+		config.border = config.border or "rounded"
+		return handler(err, result, ctx, config)
+	end
+end
+
+lsp.handlers["textDocument/hover"] = with_rounded_border(lsp.handlers.hover)
+lsp.handlers["textDocument/signatureHelp"] = with_rounded_border(lsp.handlers.signature_help)
 
 -- Server configs
 lsp.config("nixd", {
@@ -210,6 +223,21 @@ lsp.config("pyright", {
 	},
 })
 
+local ts_js_inlay_hints = {
+	parameterNames = { enabled = "literals" },
+	parameterTypes = { enabled = true },
+	variableTypes = { enabled = true },
+	propertyDeclarationTypes = { enabled = true },
+	functionLikeReturnTypes = { enabled = true },
+	enumMemberValues = { enabled = true },
+}
+
+local ts_js_settings = {
+	suggest = { completeFunctionCalls = true },
+	updateImportsOnFileMove = { enabled = "always" },
+	inlayHints = ts_js_inlay_hints,
+}
+
 lsp.config("vtsls", {
 	root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
 	settings = {
@@ -217,30 +245,8 @@ lsp.config("vtsls", {
 			autoUseWorkspaceTsdk = true,
 			enableMoveToFileCodeAction = true,
 		},
-		typescript = {
-			suggest = { completeFunctionCalls = true },
-			updateImportsOnFileMove = { enabled = "always" },
-			inlayHints = {
-				parameterNames = { enabled = "literals" },
-				parameterTypes = { enabled = true },
-				variableTypes = { enabled = true },
-				propertyDeclarationTypes = { enabled = true },
-				functionLikeReturnTypes = { enabled = true },
-				enumMemberValues = { enabled = true },
-			},
-		},
-		javascript = {
-			suggest = { completeFunctionCalls = true },
-			updateImportsOnFileMove = { enabled = "always" },
-			inlayHints = {
-				parameterNames = { enabled = "literals" },
-				parameterTypes = { enabled = true },
-				variableTypes = { enabled = true },
-				propertyDeclarationTypes = { enabled = true },
-				functionLikeReturnTypes = { enabled = true },
-				enumMemberValues = { enabled = true },
-			},
-		},
+		typescript = vim.deepcopy(ts_js_settings),
+		javascript = vim.deepcopy(ts_js_settings),
 	},
 })
 
@@ -305,50 +311,33 @@ lsp.config("roslyn", {
 	},
 })
 
--- Enable servers
-local server_cmd = {
-	nixd = "nixd",
-	lua_ls = "lua-language-server",
-	pyright = "pyright-langserver",
-	vtsls = "vtsls",
-	kotlin_language_server = "kotlin-language-server",
-	jdtls = "jdtls",
-	marksman = "marksman",
-	qml_language_server = "qml-language-server",
+local managed_servers = {
+	{ name = "nixd", cmd = "nixd" },
+	{ name = "lua_ls", cmd = "lua-language-server" },
+	{ name = "pyright", cmd = "pyright-langserver" },
+	{ name = "vtsls", cmd = "vtsls" },
+	{ name = "kotlin_language_server", cmd = "kotlin-language-server" },
+	{ name = "jdtls", cmd = "jdtls" },
+	{ name = "marksman", cmd = "marksman" },
+	{ name = "qml_language_server", cmd = "qml-language-server" },
 }
 
-local configured_servers = {
-	"nixd",
-	"lua_ls",
-	"pyright",
-	"vtsls",
-	"kotlin_language_server",
-	"jdtls",
-	"marksman",
-	"qml_language_server",
-}
-for _, server in ipairs(configured_servers) do
-	local cmd = server_cmd[server]
-	if not cmd or vim.fn.executable(cmd) == 1 then
-		lsp.enable(server)
+for _, server in ipairs(managed_servers) do
+	if vim.fn.executable(server.cmd) == 1 then
+		lsp.enable(server.name)
 	else
-		vim.notify(("Skipped %s LSP: `%s` not found on PATH"):format(server, cmd), vim.log.levels.WARN)
+		vim.notify(("Skipped %s LSP: `%s` not found on PATH"):format(server.name, server.cmd), vim.log.levels.WARN)
 	end
 end
 
 vim.api.nvim_create_user_command("LspHealth", function()
 	local lines = { "LSP Health" }
-	for _, server in ipairs(configured_servers) do
-		local cmd = server_cmd[server]
-		if not cmd then
-			lines[#lines + 1] = ("- %s: command unknown"):format(server)
+	for _, server in ipairs(managed_servers) do
+		local exe = vim.fn.exepath(server.cmd)
+		if exe ~= "" then
+			lines[#lines + 1] = ("- %s: OK (%s)"):format(server.name, exe)
 		else
-			local exe = vim.fn.exepath(cmd)
-			if exe ~= "" then
-				lines[#lines + 1] = ("- %s: OK (%s)"):format(server, exe)
-			else
-				lines[#lines + 1] = ("- %s: missing `%s`"):format(server, cmd)
-			end
+			lines[#lines + 1] = ("- %s: missing `%s`"):format(server.name, server.cmd)
 		end
 	end
 
