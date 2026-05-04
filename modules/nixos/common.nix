@@ -57,8 +57,8 @@ in
       consoleMode = "max";
     };
     efi.canTouchEfiVariables = true;
-    # Fast boot: 3-second timeout allows manual intervention if needed
-    timeout = 3;
+    # Faster boot while keeping a short window for manual entry selection.
+    timeout = 1;
   };
 
   # Latest kernel for modern hardware support and performance improvements
@@ -100,6 +100,9 @@ in
     # IPv6 enabled by default (most ISPs and LANs support it now)
     enableIPv6 = true;
   };
+
+  # Do not block boot on full network-online; keeps startup snappy on Wi-Fi.
+  systemd.services.NetworkManager-wait-online.enable = lib.mkDefault false;
 
   # DNS-over-TLS configuration via systemd-resolved
   # Encrypts DNS queries to prevent eavesdropping and manipulation
@@ -211,8 +214,11 @@ in
   # ═══════════════════════════════════════════════════════════════════════════
   # SYSTEM SERVICES
   # ═══════════════════════════════════════════════════════════════════════════
-  # CUPS: Network printer support
-  services.printing.enable = true;
+  # CUPS: Network printer support (lazy-start daemon when actually needed)
+  services.printing = {
+    enable = true;
+    startWhenNeeded = true;
+  };
 
   # Avahi: mDNS/DNS-SD for local network service discovery
   # Enables automatic printer and network device detection

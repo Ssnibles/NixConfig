@@ -14,10 +14,9 @@
       After = [ "graphical-session.target" ];
     };
     Service = {
-      ExecStart = "${pkgs.unstable.awww}/bin/awww-daemon";
+      ExecStart = "${pkgs.bash}/bin/bash -lc 'for i in {1..50}; do for socket in \"$XDG_RUNTIME_DIR\"/wayland-*; do if [ -S \"$socket\" ]; then export WAYLAND_DISPLAY=\"$(basename \"$socket\")\"; exec ${pkgs.unstable.awww}/bin/awww-daemon; fi; done; sleep 0.1; done; echo \"Awww: Wayland socket not ready\" >&2; exit 1'";
       Restart = "on-failure";
-      # Wait a bit for the compositor to be ready
-      ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
+      RestartSec = 1;
     };
     Install.WantedBy = [ "graphical-session.target" ];
   };
