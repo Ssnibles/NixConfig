@@ -10,6 +10,7 @@ M.colors = {
 	bg = generated.bg or "#141415",
 	fg = generated.fg or "#cdcdcd",
 	comment = generated.fg_dim or "#606079",
+	bgSubtle = generated.bg_subtle or "#252530",
 	gutter = generated.bg_subtle or "#252530",
 	border = generated.border or "#252530",
 	blue = generated.accent or "#6e94b2",
