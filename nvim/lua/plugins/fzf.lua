@@ -9,6 +9,17 @@ fzf.setup({
 		backdrop = 100,
 		preview = { layout = "vertical", vertical = "right:55%" },
 	},
+	previewers = {
+		builtin = {
+			-- Keep treesitter preview highlighting, but skip markdown where Nvim 0.12 is unstable.
+			render_markdown = false,
+			treesitter = {
+				enabled = true,
+				disabled = { "markdown", "markdown_inline" },
+				context = false,
+			},
+		},
+	},
 	files = { cmd = "fd --type f --hidden --exclude .git" },
 	oldfiles = { include_current_session = true, cwd_only = true },
 	grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },

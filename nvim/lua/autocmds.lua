@@ -73,10 +73,35 @@ autocmd("FileType", {
 -- Prose settings for text files
 autocmd("FileType", {
 	group = augroup,
-	pattern = { "markdown", "text", "gitcommit" },
-	callback = function()
+	pattern = { "markdown", "markdown.mdx", "text", "gitcommit" },
+	callback = function(ev)
 		vim.opt_local.spell = true
 		vim.opt_local.wrap = true
+		if vim.bo[ev.buf].filetype == "markdown" or vim.bo[ev.buf].filetype == "markdown.mdx" then
+			-- Avoid intermittent Neovim 0.12 treesitter node-range crashes in markdown buffers.
+			pcall(vim.treesitter.stop, ev.buf)
+		end
+	end,
+})
+
+autocmd("BufEnter", {
+	group = augroup,
+	callback = function(ev)
+		local ft = vim.bo[ev.buf].filetype
+		if ft ~= "markdown" and ft ~= "markdown.mdx" then
+			return
+		end
+		-- Some plugins start treesitter on BufEnter; stop it again after callbacks settle.
+		pcall(vim.treesitter.stop, ev.buf)
+		vim.schedule(function()
+			if not vim.api.nvim_buf_is_valid(ev.buf) then
+				return
+			end
+			local scheduled_ft = vim.bo[ev.buf].filetype
+			if scheduled_ft == "markdown" or scheduled_ft == "markdown.mdx" then
+				pcall(vim.treesitter.stop, ev.buf)
+			end
+		end)
 	end,
 })
 

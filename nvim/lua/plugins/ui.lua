@@ -109,6 +109,11 @@ require("tiny-inline-diagnostic").setup({
 
 -- Markview: markdown preview
 require("markview").setup({
+	preview = {
+		-- Neovim 0.12 + markdown treesitter can intermittently crash inside markview.
+		-- Keep markview enabled for other supported prose filetypes for now.
+		filetypes = { "quarto", "rmd", "typst" },
+	},
 	modes = { "n", "no" },
 	hybrid_modes = { "n", "no" },
 })
