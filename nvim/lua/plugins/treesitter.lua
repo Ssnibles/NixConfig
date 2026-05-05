@@ -1,7 +1,11 @@
 -- Treesitter: syntax highlighting and text objects
 
 require("nvim-treesitter.configs").setup({
-	highlight = { enable = true },
+	highlight = {
+		enable = true,
+		disable = { "markdown", "markdown_inline" },
+		additional_vim_regex_highlighting = { "markdown" },
+	},
 	indent = { enable = true },
 	textobjects = {
 		select = {
@@ -31,6 +35,10 @@ require("treesitter-context").setup({
 	max_lines = 4,
 	min_window_height = 20,
 	separator = "─",
+	on_attach = function(buf)
+		local ft = vim.bo[buf].filetype
+		return ft ~= "markdown" and ft ~= "markdown.mdx"
+	end,
 })
 
 -- Work around occasional extmark range errors from treesitter-context.
