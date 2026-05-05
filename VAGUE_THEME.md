@@ -7,7 +7,7 @@
 # Components using this palette:
 #   - Neovim (nvim/lua/lib/highlights.lua)
 #   - Waybar (modules/home/desktop/waybar.nix)
-#   - SwayNC (modules/home/desktop/swaync.nix)
+#   - Quickshell (modules/home/desktop/swaync.nix)
 #   - Hyprlock (modules/home/desktop/hyprlock.nix)
 #   - Vicinae (modules/home/desktop/hyprland.nix)
 #   - Tmux (modules/home/shell/tmux.nix)
@@ -74,7 +74,7 @@ local colors = {
 vim.api.nvim_set_hl(0, "GroupName", { fg = colors.accent, bg = colors.bg })
 ```
 
-### Waybar/SwayNC/Hyprlock (CSS)
+### Waybar/Quickshell/Hyprlock (CSS)
 ```css
 @define-color bg          #141415;
 @define-color bg-raised   #1c1c24;
@@ -136,7 +136,7 @@ All components should use smooth, consistent transitions:
 ## Border Radius
 
 Consistent rounding for visual cohesion:
-- Large containers: 8px (waybar, swaync control center, notifications)
+- Large containers: 8px (waybar, quickshell control panel, notifications)
 - Medium elements: 6px (buttons, action buttons)
 - Small elements: 4px (close buttons, small controls)
 

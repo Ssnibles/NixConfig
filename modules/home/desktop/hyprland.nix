@@ -70,7 +70,7 @@ in
         "${pkgs.bash}/bin/bash -lc 'for i in {1..30}; do awww img ${toString wallpaper} && exit 0; sleep 0.1; done; exit 1'"
         "waybar"
         "nm-applet --indicator"
-        "swaync"
+        "qs -n"
       ];
 
       general = {
@@ -141,7 +141,7 @@ in
         "$mod, V, exec, toggle-float"
         "$mod, G, exec, toggle-focus-mode"
         "$mod, SPACE, exec, vicinae toggle"
-        "$mod, N, exec, swaync-client -t -sw"
+        "$mod, N, exec, qs ipc call controlpanel toggle"
         "$mod, DELETE, exec, hyprlock"
         "$mod, F, fullscreen"
 

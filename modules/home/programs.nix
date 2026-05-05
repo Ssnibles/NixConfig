@@ -171,6 +171,7 @@ in
 
   programs.quickshell = {
     enable = true;
+    package = pkgs.unstable.quickshell;
   };
 
   xdg.configFile."pet/snippet.toml".text = ''
