@@ -168,7 +168,7 @@ in
     style = ''
       /* =================================================================== */
       /* Waybar Stylix Theme                                                 */
-      /* Consistent active palette matching neovim, swaync, and hyprland     */
+      /* Consistent active palette matching neovim, quickshell, and hyprland */
       /* =================================================================== */
 
       @define-color bg          ${c.bg};
