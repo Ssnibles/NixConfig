@@ -28,6 +28,7 @@
 
     # ── CLI utilities ───────────────────────────────────────────────────
     quickemu
+    git-lfs
     github-copilot-cli
     wl-clipboard
     pkgs.age
