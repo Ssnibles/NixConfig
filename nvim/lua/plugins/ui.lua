@@ -108,12 +108,36 @@ require("tiny-inline-diagnostic").setup({
 })
 
 -- Markview: markdown preview
+local markview_filetypes = { "markdown", "quarto", "rmd", "typst" }
+local markview_filetype_set = {}
+for _, ft in ipairs(markview_filetypes) do
+	markview_filetype_set[ft] = true
+end
+
+vim.g.__markview_startup_ready = false
 require("markview").setup({
 	preview = {
-		-- Neovim 0.12 + markdown treesitter can intermittently crash inside markview.
-		-- Keep markview enabled for other supported prose filetypes for now.
-		filetypes = { "quarto", "rmd", "typst" },
+		filetypes = markview_filetypes,
+		-- Gate auto-attach until startup settles; manual :Markview commands still work.
+		condition = function()
+			return vim.g.__markview_startup_ready == true
+		end,
 	},
 	modes = { "n", "no" },
 	hybrid_modes = { "n", "no" },
+})
+
+vim.api.nvim_create_autocmd("VimEnter", {
+	once = true,
+	callback = function()
+		vim.defer_fn(function()
+			vim.g.__markview_startup_ready = true
+			local actions = require("markview.actions")
+			for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+				if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "" and markview_filetype_set[vim.bo[buf].filetype] then
+					actions.attach(buf)
+				end
+			end
+		end, 150)
+	end,
 })
