@@ -72,6 +72,7 @@
     via
     onlyoffice-desktopeditors
     prismlauncher
+    vesktop
 
     # ── Document viewers ────────────────────────────────────────────────
     sioyek
