@@ -34,12 +34,6 @@
 let
   spotifyIdAge = ../../secrets/spotify-id.age;
   spotifySecretAge = ../../secrets/spotify-secret.age;
-  lyPalette = {
-    bg = "0x00141415";
-    fg = "0x00CDCDCD";
-    accent = "0x006E94B2";
-    error = "0x01D8647E";
-  };
 in
 {
   # ═══════════════════════════════════════════════════════════════════════════
