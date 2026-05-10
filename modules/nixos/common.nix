@@ -129,7 +129,9 @@ in
   # ═══════════════════════════════════════════════════════════════════════════
   hardware.bluetooth = {
     enable = true;
-    powerOnBoot = true; # Auto-enable Bluetooth on system start
+    # Keep Bluetooth available but avoid powering radio at every boot.
+    # Host configs can force this back on when always-on Bluetooth is desired.
+    powerOnBoot = lib.mkDefault false;
     settings.General = {
       # Faster connection establishment for Bluetooth devices
       FastConnectable = true;
@@ -137,6 +139,9 @@ in
       Experimental = true;
     };
   };
+  # Let bluetoothd be D-Bus activated by clients (e.g., blueman) instead of
+  # adding it to the normal boot target by default.
+  systemd.services.bluetooth.wantedBy = lib.mkDefault [ ];
 
   # Desktop monitors controlled over DDC/CI require I2C access.
   hardware.i2c.enable = lib.mkDefault hostProfile.isDesktop;
@@ -293,6 +298,8 @@ in
 
   virtualisation.docker = {
     enable = true;
+    # Keep the Docker socket active but start dockerd only when first used.
+    enableOnBoot = lib.mkDefault false;
   };
 
   # ═══════════════════════════════════════════════════════════════════════════
