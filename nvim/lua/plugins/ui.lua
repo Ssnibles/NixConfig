@@ -125,6 +125,16 @@ require("markview").setup({
 	},
 	modes = { "n", "no" },
 	hybrid_modes = { "n", "no" },
+	latex = {
+		enable = true,
+		inlines = { enable = true },
+		blocks = { enable = true },
+		symbols = { enable = true },
+		commands = { enable = true },
+		fonts = { enable = true },
+		subscripts = { enable = true },
+		superscripts = { enable = true },
+	},
 })
 
 vim.api.nvim_create_autocmd("VimEnter", {

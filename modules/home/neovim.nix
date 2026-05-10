@@ -152,6 +152,9 @@ in
             yaml
             python
             markdown
+            markdown_inline
+            latex
+            typst
             c_sharp
           ]
         ))
