@@ -229,6 +229,17 @@ in
   # ── Vicinae launcher ─────────────────────────────────────────────────────
   programs.vicinae = {
     enable = true;
+    settings = {
+      # Keep launcher rendering light on Hyprland; these effects can make
+      # open/search interactions feel sluggish on some GPUs.
+      search_files_in_root = false;
+      pixmap_cache_mb = 128;
+      launcher_window = {
+        opacity = 1.0;
+        blur.enabled = false;
+        dim_around = false;
+      };
+    };
   };
   # Vicinae may create this settings file itself; force lets Home Manager
   # take ownership on rebuild instead of failing with a clobber error.
