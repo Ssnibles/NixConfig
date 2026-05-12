@@ -130,6 +130,31 @@ local function attach_lsp_keymaps(bufnr)
 
 	vim.b[bufnr]._lsp_keymaps_attached = true
 
+	local function rename_symbol()
+		local current_buf = vim.api.nvim_get_current_buf()
+		local clients = vim.lsp.get_clients({
+			bufnr = current_buf,
+			method = "textDocument/rename",
+		})
+		if #clients == 0 then
+			vim.notify("No attached LSP supports rename in this buffer", vim.log.levels.WARN)
+			return
+		end
+
+		local current_name = vim.fn.expand("<cword>")
+		if current_name == "" then
+			lsp.buf.rename()
+			return
+		end
+
+		vim.ui.input({ prompt = "Rename to: ", default = current_name }, function(new_name)
+			if new_name == nil or new_name == "" or new_name == current_name then
+				return
+			end
+			lsp.buf.rename(new_name)
+		end)
+	end
+
 	local map = function(keys, fn, desc)
 		vim.keymap.set("n", keys, fn, { buffer = bufnr, desc = desc })
 	end
@@ -139,7 +164,7 @@ local function attach_lsp_keymaps(bufnr)
 	map("gi", lsp.buf.implementation, "Go to implementation")
 	map("gr", lsp.buf.references, "Find references")
 	map("K", lsp.buf.hover, "Hover documentation")
-	map("<leader>rn", lsp.buf.rename, "Rename symbol")
+	map("<leader>rn", rename_symbol, "Rename symbol")
 	map("<leader>ca", function()
 		local ok, tiny = pcall(require, "tiny-code-action")
 		if ok then
