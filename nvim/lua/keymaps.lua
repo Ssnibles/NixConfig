@@ -85,6 +85,7 @@ map("n", "<leader>li", "<cmd>LspInfo<CR>", { desc = "LSP info" })
 map("n", "<leader>lr", "<cmd>LspRestart<CR>", { desc = "Restart LSP" })
 map("n", "<leader>lf", "<cmd>FzfLua lsp_finder<CR>", { desc = "LSP finder" })
 map("n", "<leader>lh", "<cmd>LspHealth<CR>", { desc = "LSP health" })
+map("n", "<leader>cr", "<cmd>SmartRename<CR>", { desc = "Context rename/replace" })
 
 -- Toggles
 map("n", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "Toggle wrap" })
