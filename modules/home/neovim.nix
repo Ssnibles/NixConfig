@@ -104,6 +104,7 @@ in
         kotlin-language-server
         jdt-language-server
         marksman
+        ltex-ls-plus
         inputs.qml-language-server.packages.${pkgs.system}.default
         roslyn-ls
 
@@ -163,6 +164,7 @@ in
 
         nvim-lspconfig
         blink-cmp
+        blink-cmp-spell
         luasnip
         friendly-snippets
         copilot-lua

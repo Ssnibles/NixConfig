@@ -36,7 +36,21 @@ require("blink.cmp").setup({
 		["<C-b>"] = { "scroll_documentation_up", "fallback" },
 		["<C-f>"] = { "scroll_documentation_down", "fallback" },
 	},
-	sources = { default = { "lsp", "path", "snippets", "buffer" } },
+	sources = {
+		default = { "lsp", "path", "snippets", "buffer", "spell" },
+		providers = {
+			spell = {
+				name = "Spell",
+				module = "blink-cmp-spell",
+				enabled = function()
+					return vim.api.nvim_get_option_value("spell", { scope = "local" })
+				end,
+				opts = {
+					max_entries = 8,
+				},
+			},
+		},
+	},
 	completion = {
 		list = {
 			selection = {
