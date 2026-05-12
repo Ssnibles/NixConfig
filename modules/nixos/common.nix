@@ -296,6 +296,8 @@ in
     MaxRetentionSec=1week
   '';
 
+  services.gvfs.enable = true; # Required for file manager integration (e.g., Thunar)
+
   virtualisation.docker = {
     enable = true;
     # Keep the Docker socket active but start dockerd only when first used.

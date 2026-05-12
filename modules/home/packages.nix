@@ -73,6 +73,8 @@
     onlyoffice-desktopeditors
     prismlauncher
     vesktop
+    google-chrome
+    calibre
 
     # ── Document viewers ────────────────────────────────────────────────
     sioyek
