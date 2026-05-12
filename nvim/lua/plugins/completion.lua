@@ -3,7 +3,8 @@
 -- Snippets
 require("luasnip").setup({
 	history = true,
-	delete_check_events = "TextChanged",
+	region_check_events = "CursorMoved,CursorHold,InsertEnter,TextChanged,TextChangedI",
+	delete_check_events = "TextChanged,TextChangedI,InsertLeave",
 })
 require("luasnip.loaders.from_vscode").lazy_load()
 
@@ -19,6 +20,7 @@ end
 -- Blink.cmp: fast completion
 require("blink.cmp").setup({
 	signature = { enabled = true, window = { border = "rounded", show_documentation = true } },
+	snippets = { preset = "luasnip" },
 	keymap = {
 		preset = "none",
 		["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
