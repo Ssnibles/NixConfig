@@ -58,7 +58,7 @@ in
         shiftround = true;
         termguicolors = true;
         cursorline = true;
-        scrolloff = 8;
+        scrolloff = 999;
         sidescrolloff = 8;
         showmode = false;
         wrap = false;
