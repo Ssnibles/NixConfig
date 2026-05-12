@@ -3,9 +3,33 @@
 # =============================================================================
 # Top status bar for Hyprland.
 # =============================================================================
-{ config, ... }:
+{ config, pkgs, ... }:
 let
   c = (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
+  specialWorkspaceName = "work";
+  specialWorkspaceFullName = "special:${specialWorkspaceName}";
+  specialWorkspaceIndicator = pkgs.writeShellScript "waybar-special-workspace-indicator" ''
+    workspaces_json="$(${pkgs.hyprland}/bin/hyprctl -j workspaces 2>/dev/null || echo '[]')"
+    ws_json="$(printf '%s' "$workspaces_json" | ${pkgs.jq}/bin/jq --arg ws "${specialWorkspaceFullName}" 'map(select(.name == $ws)) | .[0] // {}')"
+    visible="$(printf '%s' "$ws_json" | ${pkgs.jq}/bin/jq -r '.visible // false')"
+    count="$(printf '%s' "$ws_json" | ${pkgs.jq}/bin/jq -r '.windows // 0')"
+
+    if [ "$visible" = "true" ]; then
+      class="active"
+      text="󱂬 $count"
+      tooltip="Special workspace (${specialWorkspaceName}) is visible"
+    elif [ "$count" -gt 0 ]; then
+      class="occupied"
+      text="󱂬 $count"
+      tooltip="Special workspace (${specialWorkspaceName}) has $count window(s)"
+    else
+      class="empty"
+      text="󱂬"
+      tooltip="Special workspace (${specialWorkspaceName}) is empty"
+    fi
+
+    printf '{"text":"%s","class":"%s","tooltip":"%s"}\n' "$text" "$class" "$tooltip"
+  '';
 in
 {
   programs.waybar = {
@@ -21,6 +45,7 @@ in
 
       modules-left = [
         "hyprland/workspaces"
+        "custom/special-workspace"
         "hyprland/window"
       ];
       modules-center = [ "clock" ];
@@ -36,6 +61,15 @@ in
         format = "{name}";
         on-click = "activate";
         all-outputs = false;
+      };
+
+      "custom/special-workspace" = {
+        return-type = "json";
+        exec = specialWorkspaceIndicator;
+        interval = 2;
+        format = "{}";
+        on-click = "${pkgs.hyprland}/bin/hyprctl dispatch togglespecialworkspace ${specialWorkspaceName}";
+        tooltip = true;
       };
 
       "hyprland/window" = {
@@ -211,6 +245,7 @@ in
       /* ── Common module styles ──────────────────────────────────────── */
       #workspaces,
       #window,
+      #custom-special-workspace,
       #clock,
       #mpris,
       #pulseaudio,
@@ -227,6 +262,26 @@ in
         padding: 0 4px;
         border-right: 1px solid @border;
         margin-right: 4px;
+      }
+
+      #custom-special-workspace {
+        color: @fg-dim;
+        padding: 0 10px;
+        margin-right: 4px;
+      }
+
+      #custom-special-workspace.empty {
+        opacity: 0.65;
+      }
+
+      #custom-special-workspace.occupied {
+        color: @yellow;
+        opacity: 1;
+      }
+
+      #custom-special-workspace.active {
+        color: @accent;
+        opacity: 1;
       }
 
       #workspaces button {

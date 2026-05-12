@@ -14,6 +14,7 @@
 let
   raw = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
   wallpaper = ../../../wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg;
+  specialWorkspaceName = "work";
   brightnessBinds =
     if hostProfile.isDesktop then
       [
@@ -164,6 +165,9 @@ in
         "$mod, 0, workspace, 10"
         "$mod, `, workspace, previous"
 
+        # Special workspace (scratch/work stash)
+        "$mod, W, togglespecialworkspace, ${specialWorkspaceName}"
+
         # Move window to workspace (follow)
         "$mod SHIFT, 1, movetoworkspace, 1"
         "$mod SHIFT, 2, movetoworkspace, 2"
@@ -175,6 +179,7 @@ in
         "$mod SHIFT, 8, movetoworkspace, 8"
         "$mod SHIFT, 9, movetoworkspace, 9"
         "$mod SHIFT, 0, movetoworkspace, 10"
+        "$mod SHIFT, W, movetoworkspace, special:${specialWorkspaceName}"
 
         # Move window to workspace (silent, stay on current workspace)
         "$mod CTRL SHIFT, 1, movetoworkspacesilent, 1"
@@ -187,12 +192,24 @@ in
         "$mod CTRL SHIFT, 8, movetoworkspacesilent, 8"
         "$mod CTRL SHIFT, 9, movetoworkspacesilent, 9"
         "$mod CTRL SHIFT, 0, movetoworkspacesilent, 10"
+        "$mod CTRL SHIFT, W, movetoworkspacesilent, special:${specialWorkspaceName}"
+        "$mod ALT, 1, movetoworkspacesilent, 1"
+        "$mod ALT, 2, movetoworkspacesilent, 2"
+        "$mod ALT, 3, movetoworkspacesilent, 3"
+        "$mod ALT, 4, movetoworkspacesilent, 4"
+        "$mod ALT, 5, movetoworkspacesilent, 5"
+        "$mod ALT, 6, movetoworkspacesilent, 6"
+        "$mod ALT, 7, movetoworkspacesilent, 7"
+        "$mod ALT, 8, movetoworkspacesilent, 8"
+        "$mod ALT, 9, movetoworkspacesilent, 9"
+        "$mod ALT, 0, movetoworkspacesilent, 10"
+        "$mod ALT, W, movetoworkspacesilent, special:${specialWorkspaceName}"
 
         # Move active window (vim directions)
-        "$mod CTRL, H, movewindow, l"
-        "$mod CTRL, L, movewindow, r"
-        "$mod CTRL, K, movewindow, u"
-        "$mod CTRL, J, movewindow, d"
+        "$mod SHIFT, H, movewindow, l"
+        "$mod SHIFT, L, movewindow, r"
+        "$mod SHIFT, K, movewindow, u"
+        "$mod SHIFT, J, movewindow, d"
 
         # Screenshots (S)
         "$mod, S, exec, mkdir -p ${screenshotDir}; ${sattyFocusCommand} & grim -o \"$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')\" - | ${sattyCaptureCommand}"
@@ -209,10 +226,10 @@ in
       ];
 
       binde = [
-        "$mod SHIFT, L, resizeactive,  10 0"
-        "$mod SHIFT, H, resizeactive, -10 0"
-        "$mod SHIFT, K, resizeactive,  0 -10"
-        "$mod SHIFT, J, resizeactive,  0  10"
+        "$mod CTRL SHIFT, L, resizeactive,  10 0"
+        "$mod CTRL SHIFT, H, resizeactive, -10 0"
+        "$mod CTRL SHIFT, K, resizeactive,  0 -10"
+        "$mod CTRL SHIFT, J, resizeactive,  0  10"
       ]
       ++ brightnessBinds;
 
