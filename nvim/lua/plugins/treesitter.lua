@@ -1,5 +1,24 @@
 -- Treesitter: syntax highlighting and text objects
 
+-- Work around Neovim 0.12 occasional stale-node reads during destructive edits.
+do
+	if not vim.g.__treesitter_safe_get_node_text then
+		vim.g.__treesitter_safe_get_node_text = true
+		local original_get_node_text = vim.treesitter.get_node_text
+		vim.treesitter.get_node_text = function(node, source, opts)
+			local ok, result = pcall(original_get_node_text, node, source, opts)
+			if ok then
+				return result
+			end
+			local msg = tostring(result)
+			if msg:find("Index out of bounds", 1, true) then
+				return ""
+			end
+			error(result)
+		end
+	end
+end
+
 require("nvim-treesitter.configs").setup({
 	highlight = {
 		enable = true,
