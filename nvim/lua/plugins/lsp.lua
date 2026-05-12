@@ -66,6 +66,123 @@ local function nix_string(value)
 	return ('"%s"'):format(escaped)
 end
 
+local function supports_lsp_rename(bufnr)
+	local clients = vim.lsp.get_clients({
+		bufnr = bufnr,
+		method = "textDocument/rename",
+	})
+	return #clients > 0
+end
+
+local function prompt_lsp_rename()
+	local current_name = vim.fn.expand("<cword>")
+	if current_name == "" then
+		lsp.buf.rename()
+		return
+	end
+
+	vim.ui.input({ prompt = "Rename symbol to: ", default = current_name }, function(new_name)
+		if new_name == nil or new_name == "" or new_name == current_name then
+			return
+		end
+		lsp.buf.rename(new_name)
+	end)
+end
+
+local function escape_rg_regex(text)
+	return text:gsub("([%(%)%.%+%-%*%?%[%]%^%$%{%}%|\\])", "\\%1")
+end
+
+local function open_grug_far(prefills)
+	local ok, grug = pcall(require, "grug-far")
+	if not ok then
+		vim.notify("grug-far.nvim is not available", vim.log.levels.ERROR)
+		return
+	end
+
+	local instance = grug.open({ prefills = prefills })
+	if instance and type(instance.when_ready) == "function" and type(instance.goto_input) == "function" then
+		instance:when_ready(function()
+			instance:goto_input("replacement")
+		end)
+	end
+end
+
+local function open_literal_project_replace()
+	local current_name = vim.fn.expand("<cword>")
+	if current_name == "" then
+		vim.notify("No word under cursor for literal replace", vim.log.levels.WARN)
+		return
+	end
+
+	open_grug_far({
+		search = current_name,
+		flags = "--fixed-strings --word-regexp",
+	})
+end
+
+local function open_regex_project_replace()
+	local current_name = vim.fn.expand("<cword>")
+	if current_name == "" then
+		vim.notify("No word under cursor for regex replace", vim.log.levels.WARN)
+		return
+	end
+
+	open_grug_far({
+		search = ("\\b%s\\b"):format(escape_rg_regex(current_name)),
+	})
+end
+
+local function smart_rename_replace()
+	local bufnr = vim.api.nvim_get_current_buf()
+	local has_lsp_rename = supports_lsp_rename(bufnr)
+	local current_name = vim.fn.expand("<cword>")
+	local has_word = current_name ~= ""
+
+	local choices = {}
+	if has_lsp_rename then
+		choices[#choices + 1] = {
+			label = "LSP symbol rename (context-aware, recommended)",
+			action = prompt_lsp_rename,
+		}
+	end
+	if has_word then
+		choices[#choices + 1] = {
+			label = "Project replace word (simple, literal whole-word)",
+			action = open_literal_project_replace,
+		}
+		choices[#choices + 1] = {
+			label = "Project replace regex (advanced patterns)",
+			action = open_regex_project_replace,
+		}
+	end
+
+	if #choices == 0 then
+		vim.notify("No rename target: place cursor on a word or use an LSP-enabled buffer", vim.log.levels.WARN)
+		return
+	end
+
+	if #choices == 1 then
+		choices[1].action()
+		return
+	end
+
+	vim.ui.select(choices, {
+		prompt = "Rename/replace mode:",
+		format_item = function(item)
+			return item.label
+		end,
+	}, function(choice)
+		if choice then
+			choice.action()
+		end
+	end)
+end
+
+vim.api.nvim_create_user_command("SmartRename", smart_rename_replace, {
+	desc = "Context-aware rename and project replace",
+})
+
 -- Fidget: LSP progress indicator
 require("fidget").setup({
 	progress = {
@@ -130,31 +247,6 @@ local function attach_lsp_keymaps(bufnr)
 
 	vim.b[bufnr]._lsp_keymaps_attached = true
 
-	local function rename_symbol()
-		local current_buf = vim.api.nvim_get_current_buf()
-		local clients = vim.lsp.get_clients({
-			bufnr = current_buf,
-			method = "textDocument/rename",
-		})
-		if #clients == 0 then
-			vim.notify("No attached LSP supports rename in this buffer", vim.log.levels.WARN)
-			return
-		end
-
-		local current_name = vim.fn.expand("<cword>")
-		if current_name == "" then
-			lsp.buf.rename()
-			return
-		end
-
-		vim.ui.input({ prompt = "Rename to: ", default = current_name }, function(new_name)
-			if new_name == nil or new_name == "" or new_name == current_name then
-				return
-			end
-			lsp.buf.rename(new_name)
-		end)
-	end
-
 	local map = function(keys, fn, desc)
 		vim.keymap.set("n", keys, fn, { buffer = bufnr, desc = desc })
 	end
@@ -164,7 +256,13 @@ local function attach_lsp_keymaps(bufnr)
 	map("gi", lsp.buf.implementation, "Go to implementation")
 	map("gr", lsp.buf.references, "Find references")
 	map("K", lsp.buf.hover, "Hover documentation")
-	map("<leader>rn", rename_symbol, "Rename symbol")
+	map("<leader>rn", function()
+		if not supports_lsp_rename(vim.api.nvim_get_current_buf()) then
+			vim.notify("No attached LSP supports rename in this buffer", vim.log.levels.WARN)
+			return
+		end
+		prompt_lsp_rename()
+	end, "Rename symbol")
 	map("<leader>ca", function()
 		local ok, tiny = pcall(require, "tiny-code-action")
 		if ok then
