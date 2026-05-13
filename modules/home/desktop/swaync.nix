@@ -23,9 +23,9 @@ in
 
       property bool controlPanelVisible: false
       property bool doNotDisturb: false
-      property int popupTimeoutMs: 5000
-      property int maxPopups: 4
-      property int nextPopupId: 1
+      property int popupTimeoutMs: 6000
+      property int maxPopups: 5
+      property string uiFont: "JetBrains Mono"
 
       readonly property color bg: "${c.bg}"
       readonly property color bgRaised: "${c.bgRaised}"
@@ -35,23 +35,72 @@ in
       readonly property color fgMid: "${c.fgMid}"
       readonly property color fgDim: "${c.fgDim}"
       readonly property color accent: "${c.accent}"
+      readonly property color yellow: "${c.yellow}"
+      readonly property color teal: "${c.teal}"
       readonly property color red: "${c.red}"
 
-      function removePopupById(popupId) {
-        for (let i = 0; i < popupModel.count; i++) {
-          const entry = popupModel.get(i);
-          if (entry.popupId === popupId) {
-            popupModel.remove(i, 1);
-            return;
-          }
+      function stripMarkup(text) {
+        if (!text || text.length === 0) return "";
+        return text.replace(/<[^>]*>/g, "");
+      }
+
+      function urgencyColor(notification) {
+        if (!notification) return root.accent;
+        if (notification.urgency === NotificationUrgency.Critical) return root.red;
+        if (notification.urgency === NotificationUrgency.Low) return root.fgDim;
+        if (notification.urgency === NotificationUrgency.Normal) return root.accent;
+        return root.yellow;
+      }
+
+      function appIconSource(notification) {
+        if (!notification) return "";
+        if (notification.image && notification.image.length > 0) return notification.image;
+        if (!notification.appIcon || notification.appIcon.length === 0) return "";
+        if (notification.appIcon.startsWith("/")) return "file://" + notification.appIcon;
+        return "image://icon/" + notification.appIcon;
+      }
+
+      function popupTimeoutFor(notification) {
+        if (!notification) return root.popupTimeoutMs;
+        if (notification.urgency === NotificationUrgency.Critical) return 0;
+
+        if (notification.expireTimeout > 0) {
+          const ms = Math.round(notification.expireTimeout * 1000);
+          return Math.max(2500, Math.min(15000, ms));
         }
+
+        if (notification.urgency === NotificationUrgency.Low) return 3500;
+        return root.popupTimeoutMs;
+      }
+
+      function removePopup(notification) {
+        popupModel.values = popupModel.values.filter((candidate) => candidate !== notification);
+      }
+
+      function addPopup(notification) {
+        if (!notification) return;
+
+        const deduped = popupModel.values.filter(
+          (candidate) => candidate && candidate.id !== notification.id
+        );
+
+        deduped.unshift(notification);
+        popupModel.values = deduped.slice(0, root.maxPopups);
+
+        notification.closed.connect(() => {
+          root.removePopup(notification);
+        });
       }
 
       function clearNotifications() {
-        const notifications = notificationServer.trackedNotifications.values;
-        for (let i = notifications.length - 1; i >= 0; i--) {
+        const notifications = [...notificationServer.trackedNotifications.values];
+        for (let i = 0; i < notifications.length; i++) {
           notifications[i].dismiss();
         }
+      }
+
+      onDoNotDisturbChanged: {
+        if (doNotDisturb) popupModel.values = [];
       }
 
       IpcHandler {
@@ -68,49 +117,45 @@ in
         function hide(): void {
           root.controlPanelVisible = false;
         }
+
+        function toggleDnd(): void {
+          root.doNotDisturb = !root.doNotDisturb;
+        }
       }
 
-      ListModel {
+      ScriptModel {
         id: popupModel
+        values: []
       }
 
       NotificationServer {
         id: notificationServer
+        keepOnReload: true
+
         actionsSupported: true
+        actionIconsSupported: true
         bodySupported: true
-        bodyMarkupSupported: true
-        bodyHyperlinksSupported: true
+        bodyMarkupSupported: false
+        bodyHyperlinksSupported: false
         imageSupported: true
-        bodyImagesSupported: true
+        bodyImagesSupported: false
         persistenceSupported: true
 
         onNotification: (notification) => {
           notification.tracked = true;
+          if (notification.lastGeneration) return;
 
-          if (root.doNotDisturb) return;
-
-          const summary = notification.summary && notification.summary.length > 0
-            ? notification.summary
-            : (notification.appName && notification.appName.length > 0 ? notification.appName : "Notification");
-
-          popupModel.append({
-            "popupId": root.nextPopupId++,
-            "appName": notification.appName && notification.appName.length > 0 ? notification.appName : "Notification",
-            "summary": summary,
-            "body": notification.body || "",
-            "isCritical": notification.urgency === NotificationUrgency.Critical
-          });
-
-          if (popupModel.count > root.maxPopups) {
-            popupModel.remove(0, popupModel.count - root.maxPopups);
-          }
+          if (root.doNotDisturb && notification.urgency !== NotificationUrgency.Critical) return;
+          root.addPopup(notification);
         }
       }
 
       PanelWindow {
-        visible: popupModel.count > 0
+        visible: popupModel.values.length > 0
         focusable: false
         aboveWindows: true
+        exclusionMode: ExclusionMode.Ignore
+        color: "transparent"
 
         anchors {
           top: true
@@ -138,38 +183,79 @@ in
               model: popupModel
 
               Rectangle {
-                required property int popupId
-                required property string appName
-                required property string summary
-                required property string body
-                required property bool isCritical
+                property var notification: modelData
 
                 width: popupColumn.width
-                implicitHeight: popupContent.implicitHeight + 24
+                implicitHeight: popupContent.implicitHeight + 20
                 height: implicitHeight
                 radius: 8
                 color: root.bgRaised
                 border.width: 1
-                border.color: isCritical ? root.red : root.border
+                border.color: root.border
+
+                Rectangle {
+                  anchors.left: parent.left
+                  anchors.top: parent.top
+                  anchors.bottom: parent.bottom
+                  width: 4
+                  radius: 4
+                  color: root.urgencyColor(notification)
+                }
 
                 Column {
                   id: popupContent
-                  x: 12
-                  y: 12
-                  width: parent.width - 24
+                  x: 14
+                  y: 10
+                  width: parent.width - 28
                   spacing: 6
 
                   Row {
                     width: parent.width
                     spacing: 8
 
+                    Item {
+                      width: 24
+                      height: 24
+
+                      Image {
+                        id: popupIcon
+                        anchors.fill: parent
+                        source: root.appIconSource(notification)
+                        fillMode: Image.PreserveAspectFit
+                        visible: status === Image.Ready
+                      }
+
+                      Rectangle {
+                        anchors.fill: parent
+                        radius: 4
+                        color: root.bgSubtle
+                        border.width: 1
+                        border.color: root.border
+                        visible: !popupIcon.visible
+
+                        Text {
+                          anchors.centerIn: parent
+                          text: notification && notification.appName && notification.appName.length > 0
+                            ? notification.appName[0].toUpperCase()
+                            : "N"
+                          color: root.teal
+                          font.family: root.uiFont
+                          font.pixelSize: 11
+                          font.bold: true
+                        }
+                      }
+                    }
+
                     Text {
-                      text: appName
+                      text: notification && notification.appName && notification.appName.length > 0
+                        ? notification.appName
+                        : "Notification"
                       color: root.accent
+                      font.family: root.uiFont
                       font.pixelSize: 11
                       font.bold: true
                       elide: Text.ElideRight
-                      width: Math.max(0, parent.width - closePopup.width - parent.spacing)
+                      width: Math.max(0, parent.width - closePopup.width - parent.spacing - 24)
                     }
 
                     Rectangle {
@@ -185,6 +271,7 @@ in
                         anchors.centerIn: parent
                         text: "×"
                         color: root.fgDim
+                        font.family: root.uiFont
                         font.pixelSize: 13
                         font.bold: true
                       }
@@ -194,15 +281,18 @@ in
                         hoverEnabled: true
                         onEntered: closePopup.color = root.bgSubtle
                         onExited: closePopup.color = "transparent"
-                        onClicked: root.removePopupById(popupId)
+                        onClicked: root.removePopup(notification)
                       }
                     }
                   }
 
                   Text {
-                    text: summary
+                    text: notification && notification.summary && notification.summary.length > 0
+                      ? root.stripMarkup(notification.summary)
+                      : (notification && notification.appName && notification.appName.length > 0 ? notification.appName : "Notification")
                     width: parent.width
                     color: root.fg
+                    font.family: root.uiFont
                     font.pixelSize: 13
                     font.bold: true
                     wrapMode: Text.Wrap
@@ -211,21 +301,80 @@ in
                   }
 
                   Text {
-                    text: body
+                    text: notification ? root.stripMarkup(notification.body || "") : ""
                     width: parent.width
                     color: root.fgMid
+                    font.family: root.uiFont
                     font.pixelSize: 12
                     wrapMode: Text.Wrap
                     textFormat: Text.PlainText
                     visible: text.length > 0
                   }
+
+                  Row {
+                    width: parent.width
+                    spacing: 6
+                    visible: notification && notification.actions && notification.actions.length > 0
+
+                    Repeater {
+                      model: notification && notification.actions ? notification.actions : []
+
+                      Rectangle {
+                        required property QtObject modelData
+
+                        height: 26
+                        radius: 6
+                        color: "transparent"
+                        border.width: 1
+                        border.color: root.border
+                        width: actionText.implicitWidth + 20
+
+                        Text {
+                          id: actionText
+                          anchors.centerIn: parent
+                          text: modelData.text
+                          color: root.fgMid
+                          font.family: root.uiFont
+                          font.pixelSize: 11
+                          textFormat: Text.PlainText
+                        }
+
+                        MouseArea {
+                          anchors.fill: parent
+                          hoverEnabled: true
+                          onEntered: parent.color = root.bgSubtle
+                          onExited: parent.color = "transparent"
+                          onClicked: {
+                            modelData.invoke();
+                            root.removePopup(notification);
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
 
                 Timer {
-                  interval: root.popupTimeoutMs
-                  running: true
+                  id: popupTimer
+                  interval: root.popupTimeoutFor(notification)
+                  running: interval > 0 && !popupHover.hovered
                   repeat: false
-                  onTriggered: root.removePopupById(popupId)
+                  onTriggered: {
+                    if (notification) notification.expire();
+                    root.removePopup(notification);
+                  }
+                }
+
+                HoverHandler {
+                  id: popupHover
+                }
+
+                Connections {
+                  target: notification
+
+                  function onClosed(reason) {
+                    root.removePopup(notification);
+                  }
                 }
               }
             }
@@ -268,8 +417,9 @@ in
               spacing: 8
 
               Text {
-                text: "Control Panel"
+                text: "Notifications"
                 color: root.fg
+                font.family: root.uiFont
                 font.pixelSize: 14
                 font.bold: true
                 width: parent.width - closePanel.width - parent.spacing
@@ -289,6 +439,7 @@ in
                   anchors.centerIn: parent
                   text: "×"
                   color: root.fgDim
+                  font.family: root.uiFont
                   font.pixelSize: 14
                   font.bold: true
                 }
@@ -309,7 +460,7 @@ in
 
               Rectangle {
                 id: dndToggle
-                width: 180
+                width: 210
                 height: 30
                 radius: 6
                 color: root.doNotDisturb ? root.accent : root.bgSubtle
@@ -320,6 +471,7 @@ in
                   anchors.centerIn: parent
                   text: root.doNotDisturb ? "DND: ON" : "DND: OFF"
                   color: root.doNotDisturb ? root.bg : root.fg
+                  font.family: root.uiFont
                   font.pixelSize: 11
                   font.bold: true
                 }
@@ -332,7 +484,7 @@ in
 
               Rectangle {
                 id: clearAll
-                width: 120
+                width: 138
                 height: 30
                 radius: 6
                 color: "transparent"
@@ -341,8 +493,9 @@ in
 
                 Text {
                   anchors.centerIn: parent
-                  text: "Clear All"
+                  text: "Clear All (" + notificationServer.trackedNotifications.count + ")"
                   color: root.fgMid
+                  font.family: root.uiFont
                   font.pixelSize: 11
                   font.bold: true
                 }
@@ -355,6 +508,17 @@ in
                   onClicked: root.clearNotifications()
                 }
               }
+            }
+
+            Text {
+              width: parent.width
+              text: root.doNotDisturb
+                ? "Do Not Disturb is enabled. Critical alerts still appear."
+                : "Popup timeout adapts to notification urgency and app timeout hints."
+              color: root.fgDim
+              font.family: root.uiFont
+              font.pixelSize: 11
+              wrapMode: Text.Wrap
             }
 
             Rectangle {
@@ -386,22 +550,56 @@ in
 
                 Column {
                   id: notificationContent
-                  x: 12
-                  y: 12
-                  width: parent.width - 24
+                  x: 14
+                  y: 10
+                  width: parent.width - 28
                   spacing: 6
 
                   Row {
                     width: parent.width
                     spacing: 8
 
+                    Item {
+                      width: 24
+                      height: 24
+
+                      Image {
+                        id: panelIcon
+                        anchors.fill: parent
+                        source: root.appIconSource(notification)
+                        fillMode: Image.PreserveAspectFit
+                        visible: status === Image.Ready
+                      }
+
+                      Rectangle {
+                        anchors.fill: parent
+                        radius: 4
+                        color: root.bgRaised
+                        border.width: 1
+                        border.color: root.border
+                        visible: !panelIcon.visible
+
+                        Text {
+                          anchors.centerIn: parent
+                          text: notification && notification.appName && notification.appName.length > 0
+                            ? notification.appName[0].toUpperCase()
+                            : "N"
+                          color: root.teal
+                          font.family: root.uiFont
+                          font.pixelSize: 11
+                          font.bold: true
+                        }
+                      }
+                    }
+
                     Text {
                       text: notification.appName && notification.appName.length > 0 ? notification.appName : "Notification"
                       color: root.accent
+                      font.family: root.uiFont
                       font.pixelSize: 11
                       font.bold: true
                       elide: Text.ElideRight
-                      width: Math.max(0, parent.width - dismissButton.width - parent.spacing)
+                      width: Math.max(0, parent.width - dismissButton.width - parent.spacing - 24)
                     }
 
                     Rectangle {
@@ -417,6 +615,7 @@ in
                         anchors.centerIn: parent
                         text: "×"
                         color: root.fgDim
+                        font.family: root.uiFont
                         font.pixelSize: 13
                         font.bold: true
                       }
@@ -432,9 +631,10 @@ in
                   }
 
                   Text {
-                    text: notification.summary || ""
+                    text: root.stripMarkup(notification.summary || "")
                     width: parent.width
                     color: root.fg
+                    font.family: root.uiFont
                     font.pixelSize: 13
                     font.bold: true
                     wrapMode: Text.Wrap
@@ -443,9 +643,10 @@ in
                   }
 
                   Text {
-                    text: notification.body || ""
+                    text: root.stripMarkup(notification.body || "")
                     width: parent.width
                     color: root.fgMid
+                    font.family: root.uiFont
                     font.pixelSize: 12
                     wrapMode: Text.Wrap
                     textFormat: Text.PlainText
@@ -476,6 +677,7 @@ in
                           anchors.centerIn: parent
                           text: modelData.text
                           color: root.fgMid
+                          font.family: root.uiFont
                           font.pixelSize: 11
                           textFormat: Text.PlainText
                         }
@@ -501,6 +703,7 @@ in
                 Text {
                   text: "No notifications"
                   color: root.fgDim
+                  font.family: root.uiFont
                   font.pixelSize: 12
                 }
               }
