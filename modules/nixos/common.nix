@@ -64,6 +64,11 @@ in
   # Latest kernel for modern hardware support and performance improvements
   # NVIDIA hosts override to stable kernel in nvidia.nix for driver compatibility
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
+  # Keep wireless regulatory domain consistent across all hosts so legal
+  # channel sets (including 5GHz) are available during scan/connect.
+  boot.extraModprobeConfig = ''
+    options cfg80211 ieee80211_regdom=NZ
+  '';
 
   # Enable proprietary firmware (WiFi chipsets, Bluetooth adapters, etc.)
   # Required for most modern laptops and wireless hardware
@@ -89,6 +94,7 @@ in
       # systemd-resolved provides split-DNS and DNS-over-TLS
       dns = "systemd-resolved";
     };
+    wireless.iwd.settings.General.Country = "NZ";
 
     firewall = {
       enable = true;
@@ -108,9 +114,11 @@ in
   # Encrypts DNS queries to prevent eavesdropping and manipulation
   services.resolved = {
     enable = true;
-    # Strict DNSSEC and encrypted DNS by default.
-    dnssec = "true";
-    dnsovertls = "true";
+    # Reliability-focused defaults:
+    # - allow-downgrade: use DNSSEC when available, don't fail on broken networks
+    # - opportunistic: prefer encrypted DNS but fall back when DoT is unsupported
+    dnssec = "allow-downgrade";
+    dnsovertls = "opportunistic";
     # Route all DNS queries through systemd-resolved
     domains = [ "~." ];
     extraConfig = ''

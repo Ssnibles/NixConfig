@@ -11,9 +11,8 @@
   ];
 
   # ── Boot ─────────────────────────────────────────────────────────────────
-  # WiFi regulatory domain and Realtek driver fixes
+  # Realtek driver fixes
   boot.extraModprobeConfig = ''
-    options cfg80211 ieee80211_regdom=NZ
     options rtw89_pci disable_aspm_l1=y disable_aspm_l1ss=y
     options rtw89_core disable_ps_mode=y
   '';
@@ -22,9 +21,6 @@
   networking.wireless.iwd.settings = {
     General = {
       EnableNetworkConfiguration = false;
-      # Keep iwd and cfg80211 aligned on regulatory rules so 5GHz channels
-      # permitted in the local domain are available for scan/connect.
-      Country = "NZ";
     };
     DriverQuirks = {
       # Disable power save for rtw89 variants (value is a driver glob list).
