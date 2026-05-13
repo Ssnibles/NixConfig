@@ -169,11 +169,6 @@ in
     };
   };
 
-  programs.quickshell = {
-    enable = true;
-    package = pkgs.unstable.quickshell;
-  };
-
   xdg.configFile."pet/snippet.toml".text = ''
     [[snippets]]
       description = "NixOS rebuild current host"
@@ -272,9 +267,9 @@ in
       output = ""
 
     [[snippets]]
-      description = "Restart user service and view logs"
-      command = "systemctl --user restart <service=waybar.service> && journalctl --user -u <service=waybar.service> -n <lines=100> --no-pager"
-      tag = ["systemd", "debug"]
+      description = "Reload Quickshell UI in-place"
+      command = "qs ipc call quickshell reload"
+      tag = ["quickshell", "ui", "reload"]
       output = ""
 
     [[snippets]]
