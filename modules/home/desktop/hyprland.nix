@@ -69,7 +69,6 @@ in
       exec-once = [
         # Some services are handled by systemd (see services/wayland.nix)
         "${pkgs.bash}/bin/bash -lc 'for i in {1..30}; do awww img ${toString wallpaper} && exit 0; sleep 0.1; done; exit 1'"
-        "waybar"
         "nm-applet --indicator"
         "qs -n"
       ];
