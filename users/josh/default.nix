@@ -33,8 +33,7 @@
 
     # ── Desktop environment ───────────────────────────────────────────────
     ../../modules/home/desktop/hyprland.nix
-    ../../modules/home/desktop/waybar.nix
-    ../../modules/home/desktop/swaync.nix
+    ../../modules/home/desktop/quickshell.nix
 
     # ── Editor ────────────────────────────────────────────────────────────
     ../../modules/home/neovim.nix
@@ -59,7 +58,6 @@
 
   home.sessionVariables = {
     SHELL = "${pkgs.fish}/bin/fish";
-    QML2_IMPORT_PATH = "${pkgs.unstable.quickshell}/lib/qt-6/qml";
   };
 
   programs.home-manager.enable = true;
