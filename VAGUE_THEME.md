@@ -6,8 +6,7 @@
 #
 # Components using this palette:
 #   - Neovim (nvim/lua/lib/highlights.lua)
-#   - Waybar (modules/home/desktop/waybar.nix)
-#   - Quickshell (modules/home/desktop/swaync.nix)
+#   - Quickshell top bar + notifications (modules/home/desktop/quickshell.nix)
 #   - Hyprlock (modules/home/desktop/hyprlock.nix)
 #   - Vicinae (modules/home/desktop/hyprland.nix)
 #   - Tmux (modules/home/shell/tmux.nix)
@@ -136,7 +135,7 @@ All components should use smooth, consistent transitions:
 ## Border Radius
 
 Consistent rounding for visual cohesion:
-- Large containers: 8px (waybar, quickshell control panel, notifications)
+- Large containers: 8px (quickshell top bar, control panel, notifications)
 - Medium elements: 6px (buttons, action buttons)
 - Small elements: 4px (close buttons, small controls)
 
