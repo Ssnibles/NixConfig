@@ -37,10 +37,10 @@ let
     fi
   '';
 
-  # ── Reload Waybar ──────────────────────────────────────────────────────
-  reload-waybar = pkgs.writeShellScriptBin "reload-waybar" ''
-    pkill waybar
-    waybar &
+  # ── Reload Quickshell ──────────────────────────────────────────────────
+  # Sends an in-process reload request so all QML updates apply instantly.
+  reload-shell = pkgs.writeShellScriptBin "reload-shell" ''
+    qs ipc call quickshell reload
   '';
 
   # ── Focus mode ─────────────────────────────────────────────────────────
@@ -56,8 +56,8 @@ let
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in $GAPS_IN
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out $GAPS_OUT
       ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding $ROUNDING
-      # Toggle waybar visibility (SIGUSR1 toggles)
-      pkill -SIGUSR1 waybar
+      # Hide/show the Quickshell bar via the "bar" IPC surface.
+      qs ipc call bar toggle
       echo "normal" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled - Normal mode restored"
     else
@@ -65,8 +65,8 @@ let
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in 0
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out 0
       ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding 0
-      # Toggle waybar visibility (SIGUSR1 toggles)
-      pkill -SIGUSR1 waybar
+      # Hide/show the Quickshell bar via the "bar" IPC surface.
+      qs ipc call bar toggle
       echo "focus" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled - Distractions removed"
     fi
@@ -345,7 +345,7 @@ in
 {
   home.packages = [
     toggle-float
-    reload-waybar
+    reload-shell
     toggle-focus-mode
     aicommit
     setup-fo-prism
