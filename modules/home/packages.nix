@@ -69,7 +69,6 @@
     # ── GUI applications ────────────────────────────────────────────────
     foot
     kdePackages.dolphin
-    via
     onlyoffice-desktopeditors
     prismlauncher
     vesktop
@@ -100,6 +99,7 @@
       pkgs.ddcutil
       steam
       blender
+      via
     ]
   )
   # ── Laptop-only packages ──────────────────────────────────────────────
