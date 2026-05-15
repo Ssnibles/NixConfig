@@ -121,3 +121,13 @@ autocmd("BufEnter", {
 	pattern = "term://*",
 	command = "startinsert",
 })
+
+-- Always center the cursor when navigating verically
+vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+	group = vim.api.nvim_create_augroup("ForceCenter", { clear = true }),
+	callback = function()
+		-- Setting virtualedit here ensures we can scroll past the EOF
+		vim.opt.virtualedit = "all"
+		vim.cmd("normal! zz")
+	end,
+})
