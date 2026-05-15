@@ -5,7 +5,9 @@
 # =============================================================================
 { config, pkgs, ... }:
 let
-  c = (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
+  c =
+    (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; })
+    .withHash;
   specialWorkspaceName = "work";
   specialWorkspaceFullName = "special:${specialWorkspaceName}";
   specialWorkspaceIndicator = pkgs.writeShellScript "waybar-special-workspace-indicator" ''
