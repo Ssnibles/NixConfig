@@ -225,10 +225,10 @@ in
       ];
 
       binde = [
-        "$mod CTRL SHIFT, L, resizeactive,  10 0"
-        "$mod CTRL SHIFT, H, resizeactive, -10 0"
-        "$mod CTRL SHIFT, K, resizeactive,  0 -10"
-        "$mod CTRL SHIFT, J, resizeactive,  0  10"
+        "$mod CTRL, L, resizeactive,  10 0"
+        "$mod CTRL, H, resizeactive, -10 0"
+        "$mod CTRL, K, resizeactive,  0 -10"
+        "$mod CTRL, J, resizeactive,  0  10"
       ]
       ++ brightnessBinds;
 
