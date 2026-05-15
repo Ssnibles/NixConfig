@@ -180,12 +180,12 @@ in
 
         anchors {
           top: true
-          right: true
+          left: true
         }
 
         margins {
           top: 64
-          right: 24
+          left: 24
         }
 
         width: 520
@@ -410,6 +410,7 @@ in
         visible: root.controlPanelVisible
         focusable: true
         aboveWindows: true
+        exclusionMode: exclusionMode.Ignore
         color: "transparent"
 
         anchors {
@@ -418,7 +419,7 @@ in
         }
 
         margins {
-          top: 64
+          top: 24
           right: 24
         }
 
