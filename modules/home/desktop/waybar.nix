@@ -107,24 +107,37 @@ in
         };
       };
 
+      # "mpris" = {
+      #   format = "{status_icon} {dynamic}";
+      #   format-paused = "{status_icon} {dynamic}";
+      #   dynamic-len = 28;
+      #   dynamic-order = [
+      #     "title"
+      #     "artist"
+      #   ];
+      #   player-icons = {
+      #     default = "󰎆";
+      #     spotify = "";
+      #     "spotify-player" = "";
+      #   };
+      #   status-icons = {
+      #     paused = "󰏤";
+      #     playing = "󰐊";
+      #   };
+      #   tooltip-format = "{player} — {title} · {artist}";
+      #   on-click = "playerctl play-pause";
+      #   on-scroll-up = "playerctl next";
+      #   on-scroll-down = "playerctl previous";
+      # };
+
       "mpris" = {
-        format = "{status_icon} {dynamic}";
+        format = "{status_icon} {title} · {artist}";
         format-paused = "{status_icon} {dynamic}";
-        dynamic-len = 28;
-        dynamic-order = [
-          "title"
-          "artist"
-        ];
-        player-icons = {
-          default = "󰎆";
-          spotify = "";
-          "spotify-player" = "";
-        };
         status-icons = {
           paused = "󰏤";
           playing = "󰐊";
         };
-        tooltip-format = "{player} — {title} · {artist}";
+        tooltip-format = "{player} - {title} · {artist}";
         on-click = "playerctl play-pause";
         on-scroll-up = "playerctl next";
         on-scroll-down = "playerctl previous";
