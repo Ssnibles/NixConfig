@@ -132,7 +132,7 @@ in
 
       "mpris" = {
         format = "{status_icon} {title} · {artist}";
-        format-paused = "{status_icon} {dynamic}";
+        format-paused = "{status_icon} {title} · {artist}";
         status-icons = {
           paused = "󰏤";
           playing = "󰐊";
