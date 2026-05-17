@@ -533,7 +533,7 @@ in
 
                 Text {
                   anchors.centerIn: parent
-                  text: "Clear All (" + notificationServer.trackedNotifications.count + ")"
+                  text: "Clear All (" + notificationServer.trackedNotifications.values.length + ")"
                   color: root.fgMid
                   font.family: root.uiFont
                   font.pixelSize: 11
