@@ -40,9 +40,9 @@ in
       layer = "top";
       position = "top";
       height = 32;
-      margin-top = 8;
-      margin-left = 16;
-      margin-right = 16;
+      margin-top = 0;
+      margin-left = 0;
+      margin-right = 0;
       spacing = 0;
 
       modules-left = [
@@ -252,7 +252,7 @@ in
 
       window#waybar > box {
         background: @bg;
-        border-radius: 8px;
+        border-radius: 0px;
         border: 1px solid @border;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       }
