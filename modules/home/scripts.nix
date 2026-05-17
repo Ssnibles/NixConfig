@@ -57,7 +57,7 @@ let
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out $GAPS_OUT
       ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding $ROUNDING
       # Hide/show the Quickshell bar via the "bar" IPC surface.
-      qs ipc call bar toggle
+      pkill -SIGUSR1 waybar
       echo "normal" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled - Normal mode restored"
     else
@@ -66,7 +66,7 @@ let
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out 0
       ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding 0
       # Hide/show the Quickshell bar via the "bar" IPC surface.
-      qs ipc call bar toggle
+      pkill -SIGUSR1 waybar
       echo "focus" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled - Distractions removed"
     fi
@@ -350,5 +350,6 @@ in
     aicommit
     setup-fo-prism
     stylix-switch
-  ] ++ lib.optionals hostProfile.isDesktop [ ddc-brightness ];
+  ]
+  ++ lib.optionals hostProfile.isDesktop [ ddc-brightness ];
 }
