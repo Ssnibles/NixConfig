@@ -80,6 +80,7 @@ in
         swapfile = false;
         autoread = true;
         mouse = "a";
+        mousemodel = "extend";
         confirm = true;
         virtualedit = "block";
         completeopt = "menuone,noselect,popup";
