@@ -15,6 +15,7 @@ in
     shellAbbrs = {
       v = "nvim";
       c = "clear";
+      y = "yazi";
       # Uses the system hostname so this works on both desktop and laptop
       # without host-specific abbreviations.
       rebuild = "nh os switch";
