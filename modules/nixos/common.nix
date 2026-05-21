@@ -214,9 +214,39 @@ in
   # Enables: PipeWire screen capture, file pickers, system integrations
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
-    configPackages = [ pkgs.hyprland ];
+    extraPortals = lib.mkForce [
+      pkgs.unstable.xdg-desktop-portal-hyprland
+      pkgs.unstable.xdg-desktop-portal-gtk
+    ];
   };
+
+  environment.etc."xdg/xdg-desktop-portal/portals.conf".text = ''
+    [preferred]
+    default=hyprland;gtk
+
+    [org.freedesktop.impl.portal.ScreenCast]
+    default=hyprland
+
+    [org.freedesktop.impl.portal.Screenshot]
+    default=hyprland
+
+    [org.freedesktop.impl.portal.FileChooser]
+    default=gtk
+  '';
+
+  environment.etc."xdg-desktop-portal/portals.conf".text = ''
+    [preferred]
+    default=hyprland;gtk
+
+    [org.freedesktop.impl.portal.ScreenCast]
+    default=hyprland
+
+    [org.freedesktop.impl.portal.Screenshot]
+    default=hyprland
+
+    [org.freedesktop.impl.portal.FileChooser]
+    default=gtk
+  '';
 
   # ═══════════════════════════════════════════════════════════════════════════
   # AUDIO

@@ -120,9 +120,10 @@ lib.mkIf hostProfile.hasNvidia {
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
 
     # EGL vendor library directory (NVIDIA-specific EGL implementation)
-    __EGL_VENDOR_LIBRARY_DIRS = "/run/opengl-driver/share/glvnd/egl_vendor.d";
+    # __EGL_VENDOR_LIBRARY_DIRS = "/run/opengl-driver/share/glvnd/egl_vendor.d";
 
     WLR_NO_HARDWARE_CURSORS = "1"; # Disable hardware cursors (fixes cursor issues in Wayland)
+    WLR_DRM_NO_MODIFIERS = "1"; # Avoid black frames in Wayland screencast on NVIDIA
 
     LIBVA_DRIVER_NAME = "nvidia"; # Use NVIDIA VA-API driver for video acceleration
   };

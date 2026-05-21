@@ -97,7 +97,6 @@
     with pkgs.unstable;
     [
       pkgs.ddcutil
-      steam
       blender
       via
     ]
