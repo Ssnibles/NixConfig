@@ -40,6 +40,12 @@
     ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="2048"
   '';
 
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
+  };
+
   # ── Packages ──────────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
     gamemode

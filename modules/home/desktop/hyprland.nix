@@ -29,12 +29,23 @@ let
   screenshotDir = "~/Pictures/Screenshots";
   sattyFocusCommand = "(sleep 0.15 && (hyprctl dispatch focuswindow 'class:^(satty)$' || hyprctl dispatch focuswindow 'class:^(com\\.gabm\\.satty)$'))";
   sattyCaptureCommand = "satty --fullscreen current-screen --floating-hack --filename - --output-filename \"${screenshotDir}/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
+  xdphConfig =
+    ''
+      screencopy {
+        max_fps = 60
+    ''
+    + lib.optionalString hostProfile.hasNvidia "        force_shm = true\n"
+    + ''
+      }
+    '';
 in
 {
   imports = [
     ../services/wayland.nix
     ./hyprlock.nix
   ];
+
+  xdg.configFile."hypr/xdph.conf".text = xdphConfig;
 
   home.packages = with pkgs; [
     libnotify

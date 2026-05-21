@@ -59,7 +59,23 @@
 
   home.sessionVariables = {
     SHELL = "${pkgs.fish}/bin/fish";
+    MOZ_ENABLE_WAYLAND = "1";
+    NIXOS_OZONE_WL = "1";
   };
+
+  xdg.configFile."xdg-desktop-portal/portals.conf".text = ''
+    [preferred]
+    default=hyprland;gtk
+
+    [org.freedesktop.impl.portal.ScreenCast]
+    default=hyprland
+
+    [org.freedesktop.impl.portal.Screenshot]
+    default=hyprland
+
+    [org.freedesktop.impl.portal.FileChooser]
+    default=gtk
+  '';
 
   programs.home-manager.enable = true;
 }
