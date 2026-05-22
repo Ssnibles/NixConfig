@@ -26,6 +26,21 @@
     Install.WantedBy = [ "graphical-session.target" ];
   };
 
+  # ── Solaar Logitech device manager ─────────────────────────────────────────
+  systemd.user.services.solaar = {
+    Unit = {
+      Description = "Solaar Logitech device manager";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.solaar}/bin/solaar --window=hide";
+      Restart = "on-failure";
+      RestartSec = 1;
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
   # ── Awww wallpaper daemon ────────────────────────────────────────────────
   systemd.user.services.awww = {
     Unit = {

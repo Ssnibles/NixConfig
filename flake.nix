@@ -73,6 +73,11 @@
       url = "github:cushycush/qml-language-server";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    solaar = {
+      url = "https://flakehub.com/f/Svenum/Solaar-Flake/*.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -94,6 +99,7 @@
           # Inject inputs into the main package set
           zen-browser = inputs.zen-browser.packages.${system}.default;
           nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
+          solaar = inputs.solaar.packages.${system}.default;
 
           # Use unstable for Neovim (fresh but pre-built)
           neovim = final.unstable.neovim;

@@ -16,6 +16,7 @@
 {
   home.packages = [
     pkgs.unstable.awww # From nixpkgs-unstable
+    pkgs.solaar
   ]
   ++ (with pkgs.unstable; [
     # ── Development ────────────────────────────────────────────────────
