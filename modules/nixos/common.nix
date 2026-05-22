@@ -153,7 +153,7 @@ in
 
   # Desktop monitors controlled over DDC/CI require I2C access.
   hardware.i2c.enable = lib.mkDefault hostProfile.isDesktop;
-  services.udev.packages = lib.optionals hostProfile.isDesktop [ pkgs.ddcutil ];
+  services.udev.packages = (lib.optionals hostProfile.isDesktop [ pkgs.ddcutil ]) ++ [ pkgs.solaar ];
 
   # ═══════════════════════════════════════════════════════════════════════════
   # POWER MANAGEMENT
@@ -312,6 +312,41 @@ in
   # Provides system tray icon and GUI for pairing devices
   services.blueman.enable = true;
 
+  # Logitech device management (logiops daemon + base config)
+  systemd.services.logiops = {
+    description = "LogiOps Logitech HID++ daemon";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.logiops}/bin/logid";
+      Restart = "on-failure";
+      RestartSec = 1;
+    };
+  };
+
+  environment.etc."logid.cfg".text = ''
+        devices: (
+      {
+        name: "MX Master 4";
+        buttons: (
+          {
+            cid: 0xc3;
+            action = {
+              type: "Keypress";
+              keys: [ "KEY_LEFTMETA" ];
+            };
+          },
+          {
+            cid: 0x1a0;
+            action = {
+              type: "Keypress";
+              keys: [ "KEY_LEFTMETA" ];
+            };
+          }
+        );
+      }
+    );
+  '';
+
   # QMK/VIA keyboard support (browser WebHID + local tools)
   # Adds udev rules so non-root users can access compatible keyboards.
   hardware.keyboard.qmk = {
@@ -409,6 +444,7 @@ in
     nvme-cli # NVMe drive management and monitoring
     smartmontools # HDD/SSD health monitoring (SMART)
     iwd # WiFi daemon (NetworkManager backend)
+    pkgs.logiops
   ];
 
   # ═══════════════════════════════════════════════════════════════════════════
