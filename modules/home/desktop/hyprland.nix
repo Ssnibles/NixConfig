@@ -63,6 +63,8 @@ in
       input = {
         kb_layout = "us";
         follow_mouse = 1;
+        natural_scroll = false;
+        emulate_discrete_scroll = 2;
       }
       // (lib.optionalAttrs hostProfile.isDesktop {
         # Keep mouse movement 1:1 on desktop/gaming rigs.
