@@ -14,7 +14,7 @@
 let
   raw = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
   wallpaper = ../../../wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg;
-  specialWorkspaceName = "work";
+  specialWorkspaceName = "special";
   brightnessBinds =
     if hostProfile.isDesktop then
       [
@@ -29,15 +29,14 @@ let
   screenshotDir = "~/Pictures/Screenshots";
   sattyFocusCommand = "(sleep 0.15 && (hyprctl dispatch focuswindow 'class:^(satty)$' || hyprctl dispatch focuswindow 'class:^(com\\.gabm\\.satty)$'))";
   sattyCaptureCommand = "satty --fullscreen current-screen --floating-hack --filename - --output-filename \"${screenshotDir}/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
-  xdphConfig =
-    ''
-      screencopy {
-        max_fps = 60
-    ''
-    + lib.optionalString hostProfile.hasNvidia "        force_shm = true\n"
-    + ''
-      }
-    '';
+  xdphConfig = ''
+    screencopy {
+      max_fps = 60
+  ''
+  + lib.optionalString hostProfile.hasNvidia "        force_shm = true\n"
+  + ''
+    }
+  '';
 in
 {
   imports = [
@@ -117,19 +116,30 @@ in
       animations = {
         enabled = true;
         bezier = [
-          "snappyOut, 0.15, 0.9, 0.2, 1.05"
-          "snappyIn, 0.5, 0, 0.7, 0.05"
-          "snap, 0.1, 0.9, 0.15, 1.2"
-          "snappyInOut, 0.35, 0, 0.2, 1.05"
+          # Material 3 Expressive: Extreme initial launch with a sudden, rigid snap into place
+          "m3_expressive, 0.1, 1, 0, 1"
+          # Sharp acceleration curve for rapid window exits
+          "m3_expressive_out, 0.3, 0, 0, 1"
         ];
+
         animation = [
-          "windows,           1, 3, snap"
-          "windowsOut,        1, 2, snappyIn, popin 92%"
-          "border,            1, 3, snappyOut"
-          "fade,              1, 2, snappyOut"
-          "layers,            1, 2, snappyOut"
-          "workspaces,        1, 3, snap, slide"
-          "specialWorkspace,  1, 3, snap, slide"
+          # Windows: Dramatic scale up from 40% with a hard snap finish
+          "windows,           1, 2.2, m3_expressive, popin 40%"
+          "windowsIn,         1, 2.2, m3_expressive, popin 40%"
+          "windowsOut,        1, 1.8, m3_expressive_out, popin 70%"
+
+          # Borders & Fades: Cut the duration down so they flash and lock immediately
+          "border,            1, 1.5, m3_expressive"
+          "fade,              1, 1.8, m3_expressive"
+
+          # Layers (menus, rofi, notifications): Instantaneous sliding snap
+          "layers,            1, 2, m3_expressive, slide"
+          "layersIn,          1, 2, m3_expressive, slide"
+          "layersOut,         1, 1.5, m3_expressive_out, slide"
+
+          # Workspaces: Lightning-fast translation across the viewport
+          "workspaces,        1, 2.5, m3_expressive, slide"
+          "specialWorkspace,  1, 2.5, m3_expressive, slide"
         ];
       };
 
