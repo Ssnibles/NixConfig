@@ -3,9 +3,29 @@
 # =============================================================================
 # Systemd user services for Wayland-specific utilities.
 # =============================================================================
-{ pkgs, ... }:
+{
+  pkgs,
+  lib,
+  hostProfile,
+  ...
+}:
 
 {
+  # ── Polkit authentication agent ───────────────────────────────────────────
+  systemd.user.services.polkit-gnome-authentication-agent = {
+    Unit = {
+      Description = "Polkit authentication agent";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+      Restart = "on-failure";
+      RestartSec = 1;
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
   # ── Awww wallpaper daemon ────────────────────────────────────────────────
   systemd.user.services.awww = {
     Unit = {
@@ -35,5 +55,36 @@
       RestartSec = 1;
     };
     Install.WantedBy = [ "hyprland-session.target" ];
+  };
+
+  # ── Hypridle ─────────────────────────────────────────────────────────────
+  services.hypridle = {
+    enable = true;
+    package = pkgs.unstable.hypridle;
+    settings = {
+      general = {
+        lock_cmd = "hyprlock";
+        before_sleep_cmd = "hyprlock";
+        after_sleep_cmd = "hyprctl dispatch dpms on";
+      };
+      listener =
+        [
+          {
+            timeout = 300;
+            on-timeout = "hyprlock";
+          }
+          {
+            timeout = 600;
+            on-timeout = "hyprctl dispatch dpms off";
+            on-resume = "hyprctl dispatch dpms on";
+          }
+        ]
+        ++ lib.optionals hostProfile.isLaptop [
+          {
+            timeout = 1200;
+            on-timeout = "systemctl suspend";
+          }
+        ];
+    };
   };
 }

@@ -335,6 +335,7 @@ in
   '';
 
   services.gvfs.enable = true; # Required for file manager integration (e.g., Thunar)
+  services.udisks2.enable = true; # Removable drive automount + mount helpers
 
   virtualisation.docker = {
     enable = true;
