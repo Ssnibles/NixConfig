@@ -6,7 +6,8 @@
 #
 # Components using this palette:
 #   - Neovim (nvim/lua/lib/highlights.lua)
-#   - Quickshell top bar + notifications (modules/home/desktop/bar.nix)
+#   - Waybar (modules/home/desktop/waybar.nix)
+#   - Quickshell notifications (modules/home/desktop/notifications.nix)
 #   - Hyprlock (modules/home/desktop/hyprlock.nix)
 #   - Vicinae (modules/home/desktop/hyprland.nix)
 #   - Tmux (modules/home/shell/tmux.nix)
