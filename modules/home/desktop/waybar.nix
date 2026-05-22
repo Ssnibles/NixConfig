@@ -89,7 +89,7 @@ in
       };
 
       "clock" = {
-        interval = 1;
+        interval = 30;
         format = "{:%H:%M}";
         format-alt = "{:%a, %d %b  %H:%M}";
         tooltip-format = "<tt><small>{calendar}</small></tt>";

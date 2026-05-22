@@ -125,6 +125,8 @@ in
         preserve_split = true;
       };
 
+      # Reduce idle power usage by throttling frame delivery when nothing changes.
+      misc.vfr = true;
       misc.disable_hyprland_logo = true;
       misc.vrr = 1;
 
@@ -143,7 +145,12 @@ in
         "immediate, class:^(qemu)$"
       ];
 
-      windowrulev2 = [ ];
+      windowrulev2 = [
+        # Stop apps from forcing maximize on launch.
+        "suppressevent maximize, class:.*"
+        # Avoid focus stealing while dragging some XWayland popups.
+        "nofocus, class:^$,title:^$,xwayland:1,floating:1,fullscreen:0"
+      ];
 
       layerrule = [
         "blur,hyprlock"
