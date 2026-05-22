@@ -203,7 +203,7 @@ in
         "$mod, G, exec, toggle-focus-mode"
         "$mod, SPACE, exec, vicinae toggle"
         # Kando example menu (shortcut ID in Kando's menu editor).
-        "CTRL, SPACE, global, menu.kando.Kando:example-menu"
+        "CTRL, F12, global, menu.kando.Kando:example-menu"
         "$mod, N, exec, qs ipc call controlpanel toggle"
         "$mod, DELETE, exec, hyprlock"
         "$mod SHIFT, R, exec, hyprctl reload"

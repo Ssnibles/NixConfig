@@ -332,14 +332,14 @@ in
             cid: 0xc3;
             action = {
               type: "Keypress";
-              keys: [ "KEY_LEFTMETA" ];
+              keys: [ "KEY_LEFTCTRL", "KEY_F12" ];
             };
           },
           {
             cid: 0x1a0;
             action = {
               type: "Keypress";
-              keys: [ "KEY_LEFTMETA" ];
+              keys: [ "KEY_LEFTCTRL", "KEY_F12" ];
             };
           }
         );
