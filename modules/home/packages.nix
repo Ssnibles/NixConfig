@@ -73,6 +73,7 @@
     prismlauncher
     vesktop
     google-chrome
+    kando
     calibre
 
     # ── Document viewers ────────────────────────────────────────────────
