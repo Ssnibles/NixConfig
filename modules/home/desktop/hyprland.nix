@@ -112,11 +112,20 @@ in
 
       animations = {
         enabled = true;
-        bezier = "smooth, 0.05, 0.9, 0.1, 1.05";
+        bezier = [
+          "snappyOut, 0.15, 0.9, 0.2, 1.05"
+          "snappyIn, 0.5, 0, 0.7, 0.05"
+          "snap, 0.1, 0.9, 0.15, 1.2"
+          "snappyInOut, 0.35, 0, 0.2, 1.05"
+        ];
         animation = [
-          "windows,    1, 7, smooth"
-          "windowsOut, 1, 7, default, popin 80%"
-          "workspaces, 1, 6, default"
+          "windows,           1, 3, snap"
+          "windowsOut,        1, 2, snappyIn, popin 92%"
+          "border,            1, 3, snappyOut"
+          "fade,              1, 2, snappyOut"
+          "layers,            1, 2, snappyOut"
+          "workspaces,        1, 3, snap, slide"
+          "specialWorkspace,  1, 3, snap, slide"
         ];
       };
 
