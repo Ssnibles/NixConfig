@@ -91,8 +91,10 @@ in
         gaps_in = 8;
         gaps_out = 16;
         border_size = 0;
-        # Keep compositor vsync active to avoid visible tearing during fast motion.
-        allow_tearing = true;
+        # Make borderless windows easier to resize.
+        resize_on_border = true;
+        # Prefer low-latency tearing on desktop/gaming rigs, but keep laptops tear-free.
+        allow_tearing = hostProfile.isDesktop;
         "col.inactive_border" = "rgb(${raw.border})";
         "col.active_border" = "rgb(${raw.border})";
       };
@@ -116,6 +118,11 @@ in
           "windowsOut, 1, 7, default, popin 80%"
           "workspaces, 1, 6, default"
         ];
+      };
+
+      dwindle = {
+        # Keep split directions consistent when adding/removing windows.
+        preserve_split = true;
       };
 
       misc.disable_hyprland_logo = true;
@@ -157,6 +164,7 @@ in
         "$mod, SPACE, exec, vicinae toggle"
         "$mod, N, exec, qs ipc call controlpanel toggle"
         "$mod, DELETE, exec, hyprlock"
+        "$mod SHIFT, R, exec, hyprctl reload"
         "$mod, F, fullscreen"
 
         # Window focus (vim directions)
@@ -252,6 +260,8 @@ in
         ", XF86AudioMute,        exec, wpctl set-mute   @DEFAULT_AUDIO_SINK@   toggle"
         ", XF86AudioMicMute,     exec, wpctl set-mute   @DEFAULT_AUDIO_SOURCE@ toggle"
         ", XF86AudioPlay,        exec, playerctl play-pause"
+        ", XF86AudioNext,        exec, playerctl next"
+        ", XF86AudioPrev,        exec, playerctl previous"
       ];
     };
   };
