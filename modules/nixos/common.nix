@@ -313,56 +313,6 @@ in
   # Provides system tray icon and GUI for pairing devices
   services.blueman.enable = true;
 
-  environment.etc."logid.cfg".text = ''
-    devices: (
-      {
-        name: "MX Master 4";
-        smartshift: {
-          on: true;
-          threshold: 15;
-        };
-        hiresscroll: {
-          hires: true;
-          invert: false;
-          target: false;
-        };
-        buttons: (
-          {
-            cid: 0xc3;
-            action = {
-              type: "Keypress";
-              keys: [ "KEY_LEFTCTRL", "KEY_F12" ];
-            };
-          },
-          {
-            cid: 0x1a0;
-            action = {
-              type: "Keypress";
-              keys: [ "KEY_LEFTCTRL", "KEY_F12" ];
-            };
-          }
-        );
-      }
-    );
-  '';
-
-  # Logiops systemd service
-  systemd.services.logiops = {
-    description = "Logitech Configuration Daemon";
-
-    # Start after the graphical interface is ready so it detects the mouse
-    after = [ "graphical.target" ];
-    wantedBy = [ "graphical.target" ];
-
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${pkgs.logiops}/bin/logid";
-      User = "root";
-      Restart = "on-failure";
-      RestartSec = "5s";
-    };
-  };
-
   # QMK/VIA keyboard support (browser WebHID + local tools)
   # Adds udev rules so non-root users can access compatible keyboards.
   hardware.keyboard.qmk = {
@@ -460,7 +410,6 @@ in
     nvme-cli # NVMe drive management and monitoring
     smartmontools # HDD/SSD health monitoring (SMART)
     iwd # WiFi daemon (NetworkManager backend)
-    pkgs.logiops
   ];
 
   # ═══════════════════════════════════════════════════════════════════════════

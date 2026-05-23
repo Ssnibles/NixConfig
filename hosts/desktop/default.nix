@@ -30,14 +30,19 @@
   services.avahi.enable = lib.mkForce false;
   services.avahi.nssmdns4 = lib.mkForce false;
 
+  # Enable Solaar service natively (Handles all UDEV rules and permissions automatically)
+  hardware.logitech.wireless.enable = true;
+
   # ── UDEV rules ───────────────────────────────────────────────────────────
   services.udev.extraRules = ''
     # Keep USB HID devices powered on
     ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/control}="on"
+
     # Keep NVIDIA GPU powered on
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="nvidia", ATTR{power/control}="on"
+
     # Higher NVMe read-ahead for desktop performance
-    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="2048"
+    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme[0-9]*n[0-9]*", ATTR{queue/read_ahead_kb}="2048"
   '';
 
   programs.steam = {
