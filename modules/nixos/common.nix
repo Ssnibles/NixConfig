@@ -363,6 +363,7 @@ in
       "wheel"
       "video"
       "input"
+      "uinput"
       "plugdev"
     ]
     ++ lib.optionals hostProfile.isDesktop [ "i2c" ];
