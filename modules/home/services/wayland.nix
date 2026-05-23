@@ -35,7 +35,7 @@
     };
     Service = {
       # The --battery flag restricts Solaar to monitoring mode
-      ExecStart = "${pkgs.solaar}/bin/solaar --window=hide --battery";
+      ExecStart = "${pkgs.solaar}/bin/solaar --window=hide";
       Restart = "on-failure";
       RestartSec = 1;
     };

@@ -29,6 +29,9 @@
   };
 
   # ── Power management – TLP ────────────────────────────────────────────────
+  # Disable the conflicting default desktop power profile service
+  services.power-profiles-daemon.enable = false;
+
   services.tlp = {
     enable = true;
     settings = {
@@ -61,15 +64,17 @@
   };
 
   # ── Lid switch behaviour ─────────────────────────────────────────────────
-  services.logind.settings.Login = {
-    HandleLidSwitch = "suspend";
-    HandleLidSwitchExternalPower = "ignore";
-    HandleLidSwitchDocked = "ignore";
-    IgnoreInhibited = "yes";
+  services.logind.settings = {
+    Login = {
+      HandleLidSwitch = "suspend";
+      HandleLidSwitchExternalPower = "ignore";
+      HandleLidSwitchDocked = "ignore";
+      IgnoreInhibited = "yes";
+    };
   };
 
   # ── UDEV rules ───────────────────────────────────────────────────────────
   services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme*", ATTR{queue/read_ahead_kb}="1024"
+    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme[0-9]*n[0-9]*", ATTR{queue/read_ahead_kb}="1024"
   '';
 }
