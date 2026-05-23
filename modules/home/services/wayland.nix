@@ -34,7 +34,8 @@
       After = [ "graphical-session.target" ];
     };
     Service = {
-      ExecStart = "${pkgs.solaar}/bin/solaar --window=hide";
+      # The --battery flag restricts Solaar to monitoring mode
+      ExecStart = "${pkgs.solaar}/bin/solaar --window=hide --battery";
       Restart = "on-failure";
       RestartSec = 1;
     };
@@ -101,24 +102,23 @@
         before_sleep_cmd = "hyprlock";
         after_sleep_cmd = "hyprctl dispatch dpms on";
       };
-      listener =
-        [
-          {
-            timeout = 300;
-            on-timeout = "hyprlock";
-          }
-          {
-            timeout = 600;
-            on-timeout = "hyprctl dispatch dpms off";
-            on-resume = "hyprctl dispatch dpms on";
-          }
-        ]
-        ++ lib.optionals hostProfile.isLaptop [
-          {
-            timeout = 1200;
-            on-timeout = "systemctl suspend";
-          }
-        ];
+      listener = [
+        {
+          timeout = 300;
+          on-timeout = "hyprlock";
+        }
+        {
+          timeout = 600;
+          on-timeout = "hyprctl dispatch dpms off";
+          on-resume = "hyprctl dispatch dpms on";
+        }
+      ]
+      ++ lib.optionals hostProfile.isLaptop [
+        {
+          timeout = 1200;
+          on-timeout = "systemctl suspend";
+        }
+      ];
     };
   };
 }

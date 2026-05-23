@@ -64,6 +64,7 @@ in
   # Latest kernel for modern hardware support and performance improvements
   # NVIDIA hosts override to stable kernel in nvidia.nix for driver compatibility
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
+  boot.kernelModules = [ "uinput" ];
   # Keep wireless regulatory domain consistent across all hosts so legal
   # channel sets (including 5GHz) are available during scan/connect.
   boot.extraModprobeConfig = ''
@@ -312,21 +313,19 @@ in
   # Provides system tray icon and GUI for pairing devices
   services.blueman.enable = true;
 
-  # Logitech device management (logiops daemon + base config)
-  systemd.services.logiops = {
-    description = "LogiOps Logitech HID++ daemon";
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      ExecStart = "${pkgs.logiops}/bin/logid";
-      Restart = "on-failure";
-      RestartSec = 1;
-    };
-  };
-
   environment.etc."logid.cfg".text = ''
-        devices: (
+    devices: (
       {
         name: "MX Master 4";
+        smartshift: {
+          on: true;
+          threshold: 15;
+        };
+        hiresscroll: {
+          hires: true;
+          invert: false;
+          target: false;
+        };
         buttons: (
           {
             cid: 0xc3;
@@ -346,6 +345,23 @@ in
       }
     );
   '';
+
+  # Logiops systemd service
+  systemd.services.logiops = {
+    description = "Logitech Configuration Daemon";
+
+    # Start after the graphical interface is ready so it detects the mouse
+    after = [ "graphical.target" ];
+    wantedBy = [ "graphical.target" ];
+
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.logiops}/bin/logid";
+      User = "root";
+      Restart = "on-failure";
+      RestartSec = "5s";
+    };
+  };
 
   # QMK/VIA keyboard support (browser WebHID + local tools)
   # Adds udev rules so non-root users can access compatible keyboards.

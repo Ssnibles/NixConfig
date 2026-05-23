@@ -84,6 +84,7 @@ in
         "waybar"
         "nm-applet --indicator"
         "qs -n"
+        "logid"
       ];
 
       env = [
