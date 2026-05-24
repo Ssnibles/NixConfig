@@ -47,15 +47,7 @@ map("n", "<leader>wc", "<C-w>c", { desc = "Close window" })
 map("n", "<leader>wo", "<C-w>o", { desc = "Only window" })
 map("n", "<leader>w=", "<C-w>=", { desc = "Equalize windows" })
 
--- Tmux navigation
-map("n", "<C-h>", "<cmd>TmuxNavigateLeft<cr>")
-map("n", "<C-j>", "<cmd>TmuxNavigateDown<cr>")
-map("n", "<C-k>", "<cmd>TmuxNavigateUp<cr>")
-map("n", "<C-l>", "<cmd>TmuxNavigateRight<cr>")
-
 -- Buffers
-map("n", "<C-Tab>", "<cmd>bnext<CR>")
-map("n", "<C-S-Tab>", "<cmd>bprevious<CR>")
 map("n", "<leader>bn", "<cmd>bnext<CR>", { desc = "Next buffer" })
 map("n", "<leader>bp", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 map("n", "<leader>bo", "<cmd>%bd|e#|bd#<CR>", { desc = "Close other buffers" })

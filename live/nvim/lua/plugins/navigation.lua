@@ -17,6 +17,3 @@ vim.keymap.set("n", "<C-S-h>", smart_splits.resize_left, { desc = "Resize split 
 vim.keymap.set("n", "<C-S-j>", smart_splits.resize_down, { desc = "Resize split down" })
 vim.keymap.set("n", "<C-S-k>", smart_splits.resize_up, { desc = "Resize split up" })
 vim.keymap.set("n", "<C-S-l>", smart_splits.resize_right, { desc = "Resize split right" })
-
--- Tmux navigator
-pcall(require, "vim-tmux-navigator")

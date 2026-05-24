@@ -7,5 +7,4 @@ neogit.setup({
 	graph_style = "unicode",
 })
 
-vim.keymap.set("n", "<leader>gn", neogit.open, { desc = "Neogit" })
 vim.keymap.set("n", "<leader>gg", neogit.open, { desc = "Neogit status" })
