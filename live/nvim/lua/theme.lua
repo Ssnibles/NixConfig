@@ -134,7 +134,6 @@ function M.setup()
 	hl("DiagnosticUnderlineHint", { undercurl = true, sp = c.cyan })
 	hl("DiagnosticUnderlineInfo", { undercurl = true, sp = c.blue })
 	hl("LspInlayHint", { fg = c.comment, italic = true })
-	hl("MiniIndentscopeSymbol", { fg = c.comment, nocombine = true })
 	hl("MiniTrailspace", { bg = c.trailspace })
 	hl("CopilotSuggestion", { fg = c.purple, italic = true })
 end

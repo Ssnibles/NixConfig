@@ -25,10 +25,7 @@ end
 
 vim.keymap.set("n", "<leader>tt", function()
 	toggle_terminal("bottom")
-end, { desc = "Toggle terminal (default)" })
-vim.keymap.set("n", "<leader>tb", function()
-	toggle_terminal("bottom")
-end, { desc = "Toggle terminal (bottom)" })
+end, { desc = "Toggle terminal" })
 vim.keymap.set("n", "<leader>tr", function()
 	toggle_terminal("right")
 end, { desc = "Toggle terminal (right)" })
