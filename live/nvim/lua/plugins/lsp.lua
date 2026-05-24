@@ -1,27 +1,32 @@
 -- LSP configuration
 local lsp = vim.lsp
 
+-- Neovim version helpers for gating version-specific workarounds.
+local v0_12 = vim.version().major == 0 and vim.version().minor >= 12
+
 -- Work around Neovim 0.12 inlay-hint extmarks occasionally landing past EOL.
-do
-	if not vim.g.__inlay_hint_col_clamp then
-		vim.g.__inlay_hint_col_clamp = true
-		pcall(require, "vim.lsp.inlay_hint")
-		local ns = vim.api.nvim_get_namespaces()["nvim.lsp.inlayhint"]
-		if ns then
-			local original_set_extmark = vim.api.nvim_buf_set_extmark
-			vim.api.nvim_buf_set_extmark = function(bufnr, ns_id, line, col, opts)
-				if ns_id == ns then
-					local line_text = vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1]
-					if line_text then
-						local max_col = #line_text
-						if col > max_col then
-							col = max_col
-						elseif col < 0 then
-							col = 0
+if v0_12 then
+	do
+		if not vim.g.__inlay_hint_col_clamp then
+			vim.g.__inlay_hint_col_clamp = true
+			pcall(require, "vim.lsp.inlay_hint")
+			local ns = vim.api.nvim_get_namespaces()["nvim.lsp.inlayhint"]
+			if ns then
+				local original_set_extmark = vim.api.nvim_buf_set_extmark
+				vim.api.nvim_buf_set_extmark = function(bufnr, ns_id, line, col, opts)
+					if ns_id == ns then
+						local line_text = vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1]
+						if line_text then
+							local max_col = #line_text
+							if col > max_col then
+								col = max_col
+							elseif col < 0 then
+								col = 0
+							end
 						end
 					end
+					return original_set_extmark(bufnr, ns_id, line, col, opts)
 				end
-				return original_set_extmark(bufnr, ns_id, line, col, opts)
 			end
 		end
 	end
@@ -233,6 +238,9 @@ local capabilities = (function()
 	return ok and blink.get_lsp_capabilities() or lsp.protocol.make_client_capabilities()
 end)()
 capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
+capabilities.textDocument.semanticTokens = {
+	requests = { range = vim.empty_dict(), full = { delta = true } },
+}
 
 -- Flake configuration for nixd
 local flake_root = detect_flake_root()
@@ -326,6 +334,7 @@ lsp.handlers["textDocument/signatureHelp"] = with_rounded_border(lsp.handlers.si
 -- Server configs
 lsp.config("nixd", {
 	cmd = { "nixd" },
+	filetypes = { "nix" },
 	root_markers = { "flake.nix", ".git" },
 	settings = {
 		nixd = {
@@ -338,6 +347,7 @@ lsp.config("nixd", {
 
 lsp.config("lua_ls", {
 	cmd = { "lua-language-server" },
+	filetypes = { "lua" },
 	root_markers = { ".luarc.json", ".stylua.toml", "flake.nix", ".git" },
 	settings = {
 		Lua = {
@@ -358,6 +368,7 @@ lsp.config("lua_ls", {
 })
 
 lsp.config("pyright", {
+	filetypes = { "python" },
 	root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" },
 	settings = {
 		python = {
@@ -388,6 +399,7 @@ local ts_js_settings = {
 }
 
 lsp.config("vtsls", {
+	filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
 	root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
 	settings = {
 		vtsls = {
@@ -400,20 +412,47 @@ lsp.config("vtsls", {
 })
 
 lsp.config("kotlin_language_server", {
+	filetypes = { "kotlin" },
 	root_markers = { "settings.gradle.kts", "settings.gradle", "build.gradle.kts", "build.gradle", ".git" },
 })
 
 lsp.config("jdtls", {
+	filetypes = { "java" },
 	root_markers = { "pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", ".git" },
 })
 
 lsp.config("marksman", {
+	filetypes = { "markdown", "markdown.mdx" },
 	root_markers = { "marksman.toml", ".git" },
+})
+
+lsp.config("rust_analyzer", {
+	cmd = { "rust-analyzer" },
+	filetypes = { "rust" },
+	root_markers = { "Cargo.toml", ".git" },
+	settings = {
+		["rust-analyzer"] = {
+			checkOnSave = { command = "clippy" },
+		},
+	},
 })
 
 lsp.config("ltex_plus", {
 	cmd = { "ltex-ls-plus" },
+	filetypes = { "tex", "latex", "bib", "markdown", "html", "org" },
 	root_markers = { ".git" },
+})
+
+lsp.config("tinymist", {
+	cmd = { "tinymist" },
+	filetypes = { "typst" },
+	root_markers = { ".git" },
+	settings = {
+		tinymist = {
+			exportPdf = "onType",
+			formatterMode = "typstyle",
+		},
+	},
 })
 
 lsp.config("qml_language_server", {
@@ -469,11 +508,13 @@ local managed_servers = {
 	{ name = "nixd", cmd = "nixd" },
 	{ name = "lua_ls", cmd = "lua-language-server" },
 	{ name = "pyright", cmd = "pyright-langserver" },
+	{ name = "rust_analyzer", cmd = "rust-analyzer" },
 	{ name = "vtsls", cmd = "vtsls" },
 	{ name = "kotlin_language_server", cmd = "kotlin-language-server" },
 	{ name = "jdtls", cmd = "jdtls" },
 	{ name = "marksman", cmd = "marksman" },
 	{ name = "ltex_plus", cmd = "ltex-ls-plus" },
+	{ name = "tinymist", cmd = "tinymist" },
 	{ name = "qml_language_server", cmd = "qml-language-server" },
 }
 

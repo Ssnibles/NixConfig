@@ -47,10 +47,24 @@ require("gitsigns").setup({
 	end,
 })
 
+-- Derive git sign line backgrounds from theme (works with light & dark).
+local c = require("theme").colors
+local function blend_hex(fg, bg, alpha)
+	local function parse(hex)
+		hex = hex:gsub("#", "")
+		return tonumber(hex:sub(1, 2), 16), tonumber(hex:sub(3, 4), 16), tonumber(hex:sub(5, 6), 16)
+	end
+	local r1, g1, b1 = parse(fg)
+	local r2, g2, b2 = parse(bg)
+	local r = math.floor(r1 * alpha + r2 * (1 - alpha) + 0.5)
+	local g = math.floor(g1 * alpha + g2 * (1 - alpha) + 0.5)
+	local b = math.floor(b1 * alpha + b2 * (1 - alpha) + 0.5)
+	return string.format("#%02x%02x%02x", r, g, b)
+end
 local git_bg = {
-	add = "#1a2e1a",
-	delete = "#2e1a1a",
-	change = "#2e2a1a",
+	add = blend_hex(c.green, c.bg, 0.12),
+	delete = blend_hex(c.red, c.bg, 0.12),
+	change = blend_hex(c.yellow, c.bg, 0.12),
 }
 
 for _, staged in ipairs({ "", "Staged" }) do
@@ -71,7 +85,10 @@ require("conform").setup({
 		lua = { "stylua" },
 		python = { "isort", "black" },
 		javascript = { "prettier" },
+		javascriptreact = { "prettier" },
 		typescript = { "prettier" },
+		typescriptreact = { "prettier" },
+		css = { "prettier" },
 		json = { "prettier" },
 		yaml = { "prettier" },
 		markdown = { "prettier" },
@@ -80,6 +97,7 @@ require("conform").setup({
 		kotlin = { "ktlint" },
 		java = { "google-java-format" },
 		cs = { "csharpier" },
+		typst = { "typstyle" },
 	},
 	format_on_save = function(bufnr)
 		if vim.g.disable_autoformat then
