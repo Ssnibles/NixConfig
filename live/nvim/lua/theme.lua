@@ -127,6 +127,8 @@ function M.setup()
 	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
 
 	-- Diagnostics and subtle utility highlights.
+	hl("TermBg", { bg = c.bgSubtle })
+
 	hl("DiagnosticUnderlineError", { undercurl = true, sp = c.red })
 	hl("DiagnosticUnderlineWarn", { undercurl = true, sp = c.yellow })
 	hl("DiagnosticUnderlineHint", { undercurl = true, sp = c.cyan })

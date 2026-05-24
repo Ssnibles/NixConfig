@@ -152,6 +152,8 @@ in
       misc.vfr = true;
       misc.disable_hyprland_logo = true;
       misc.vrr = 1;
+      misc.enable_swallow = true;
+      misc.swallow_regex = "^(foot|Alacritty|kitty)$";
 
       windowrule = [
         "bordersize 2, floating:1"

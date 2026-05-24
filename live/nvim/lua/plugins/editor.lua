@@ -25,15 +25,13 @@ vim.keymap.set("n", "<leader>fe", function()
 	require("oil").open_float()
 end, { desc = "Explorer (Oil)" })
 
--- Gitsigns: git integration in gutter
+-- Gitsigns: git integration with line highlights instead of gutter signs
 require("gitsigns").setup({
-	signs = {
-		add = { text = "▎" },
-		change = { text = "▎" },
-		delete = { text = " " },
-		topdelete = { text = " " },
-		changedelete = { text = "▎" },
-	},
+	signcolumn = false,
+	line_highlight = true,
+	numhl = false,
+	linehl = true,
+	word_diff = false,
 	preview_config = { border = "rounded" },
 	on_attach = function(bufnr)
 		local gs = require("gitsigns")
@@ -49,6 +47,21 @@ require("gitsigns").setup({
 		map("n", "<leader>gd", gs.diffthis, "Diff this")
 	end,
 })
+
+local git_bg = {
+	add = "#1a2e1a",
+	delete = "#2e1a1a",
+	change = "#2e2a1a",
+}
+
+for _, staged in ipairs({ "", "Staged" }) do
+	for _, kind in ipairs({ "Ln", "Cul" }) do
+		for ty, bg in pairs(git_bg) do
+			local hl = ("GitSigns%s%s%s"):format(staged, ty:gsub("^%l", string.upper), kind)
+			vim.api.nvim_set_hl(0, hl, { bg = bg })
+		end
+	end
+end
 
 -- Conform: formatting
 vim.g.disable_autoformat = vim.g.disable_autoformat or false
@@ -129,15 +142,31 @@ vim.keymap.set("v", "g<C-x>", dial_map.dec_gvisual(), { desc = "Decrement select
 local mc = require("multicursor-nvim")
 mc.setup()
 
-vim.keymap.set({ "n", "x" }, "<Up>", function() mc.lineAddCursor(-1) end, { desc = "Multicursor add above" })
-vim.keymap.set({ "n", "x" }, "<Down>", function() mc.lineAddCursor(1) end, { desc = "Multicursor add below" })
-vim.keymap.set({ "n", "x" }, "<leader><Up>", function() mc.lineSkipCursor(-1) end, { desc = "Multicursor skip above" })
-vim.keymap.set({ "n", "x" }, "<leader><Down>", function() mc.lineSkipCursor(1) end, { desc = "Multicursor skip below" })
+vim.keymap.set({ "n", "x" }, "<Up>", function()
+	mc.lineAddCursor(-1)
+end, { desc = "Multicursor add above" })
+vim.keymap.set({ "n", "x" }, "<Down>", function()
+	mc.lineAddCursor(1)
+end, { desc = "Multicursor add below" })
+vim.keymap.set({ "n", "x" }, "<leader><Up>", function()
+	mc.lineSkipCursor(-1)
+end, { desc = "Multicursor skip above" })
+vim.keymap.set({ "n", "x" }, "<leader><Down>", function()
+	mc.lineSkipCursor(1)
+end, { desc = "Multicursor skip below" })
 
-vim.keymap.set({ "n", "x" }, "<leader>n", function() mc.matchAddCursor(1) end, { desc = "Multicursor add next match" })
-vim.keymap.set({ "n", "x" }, "<leader>s", function() mc.matchSkipCursor(1) end, { desc = "Multicursor skip next match" })
-vim.keymap.set({ "n", "x" }, "<leader>N", function() mc.matchAddCursor(-1) end, { desc = "Multicursor add prev match" })
-vim.keymap.set({ "n", "x" }, "<leader>S", function() mc.matchSkipCursor(-1) end, { desc = "Multicursor skip prev match" })
+vim.keymap.set({ "n", "x" }, "<leader>n", function()
+	mc.matchAddCursor(1)
+end, { desc = "Multicursor add next match" })
+vim.keymap.set({ "n", "x" }, "<leader>s", function()
+	mc.matchSkipCursor(1)
+end, { desc = "Multicursor skip next match" })
+vim.keymap.set({ "n", "x" }, "<leader>N", function()
+	mc.matchAddCursor(-1)
+end, { desc = "Multicursor add prev match" })
+vim.keymap.set({ "n", "x" }, "<leader>S", function()
+	mc.matchSkipCursor(-1)
+end, { desc = "Multicursor skip prev match" })
 
 vim.keymap.set({ "n", "x" }, "<C-q>", mc.toggleCursor, { desc = "Multicursor toggle at cursor" })
 vim.keymap.set("n", "<C-LeftMouse>", mc.handleMouse, { desc = "Multicursor mouse toggle" })

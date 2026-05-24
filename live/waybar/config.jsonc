@@ -14,6 +14,7 @@
   ],
   "modules-center": [ "clock" ],
   "modules-right": [
+    "custom/idle-inhibitor",
     "mpris",
     "pulseaudio",
     "bluetooth",
@@ -119,6 +120,19 @@
     "tooltip-format-ethernet": "{ifname}\nIP: {ipaddr}  GW: {gwaddr}\n↓ {bandwidthDownBytes}  ↑ {bandwidthUpBytes}",
     "tooltip-format-disconnected": "Network disconnected",
     "max-length": 38
+  },
+
+  "idle-inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "󰅶",
+      "deactivated": "󰾫"
+    },
+    "return-type": "json",
+    "exec": "if systemctl --user is-active hypridle > /dev/null 2>&1; then echo '{\"text\": \"\", \"class\": \"deactivated\"}'; else echo '{\"text\": \"\", \"class\": \"activated\"}'; fi",
+    "on-click": "if systemctl --user is-active hypridle > /dev/null 2>&1; then systemctl --user stop hypridle && notify-send 'Idle' 'Inhibited'; else systemctl --user start hypridle && notify-send 'Idle' 'Re-enabled'; fi",
+    "interval": 5,
+    "tooltip": false
   },
 
   "battery": {

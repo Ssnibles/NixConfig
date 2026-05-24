@@ -53,6 +53,7 @@ clue.setup({
 		{ mode = "n", keys = "<Leader>m", desc = "+debug" },
 		{ mode = "n", keys = "<Leader>q", desc = "+quit/lists" },
 		{ mode = "n", keys = "<Leader>t", desc = "+toggles/terminal" },
+		{ mode = "n", keys = "<Leader>T", desc = "+tabs" },
 		{ mode = "n", keys = "<Leader>w", desc = "+window" },
 		{ mode = "n", keys = "<Leader>z", desc = "+zen" },
 	},

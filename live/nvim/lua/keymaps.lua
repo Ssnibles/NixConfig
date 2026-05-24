@@ -24,6 +24,14 @@ map("n", "<C-u>", "<C-u>zz")
 map("n", "n", "nzzzv")
 map("n", "N", "Nzzzv")
 
+-- Search selected text in visual mode
+map("x", "*", function()
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("y/\\V<C-r>=escape(@\", '/\\')<CR><CR>", true, false, true), "n", false)
+end, { desc = "Search visual selection forward" })
+map("x", "#", function()
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("y?\\V<C-r>=escape(@\", '?\\')<CR><CR>", true, false, true), "n", false)
+end, { desc = "Search visual selection backward" })
+
 -- Visual mode
 map("v", "<", "<gv")
 map("v", ">", ">gv")
@@ -108,6 +116,12 @@ map("n", "<leader>tc", function()
 		vim.b[buf].minicursorword_disable = not vim.g.user_cursorword_enabled
 	end
 end, { desc = "Toggle cursor word" })
+
+-- Tab navigation
+map("n", "]t", "<cmd>tabnext<CR>", { desc = "Next tab" })
+map("n", "[t", "<cmd>tabprevious<CR>", { desc = "Previous tab" })
+map("n", "<leader>Tn", "<cmd>tabnew<CR>", { desc = "New tab" })
+map("n", "<leader>Tc", "<cmd>tabclose<CR>", { desc = "Close tab" })
 
 -- Unbind
 map("n", "<C-Z>", "<Nop>")

@@ -185,6 +185,20 @@ window#waybar > box {
   transition: color 200ms ease;
 }
 
+#custom-idle-inhibitor {
+  color: @fg-mid;
+  padding: 0 10px;
+  transition: color 200ms ease;
+}
+
+#custom-idle-inhibitor:hover {
+  color: @fg;
+}
+
+#custom-idle-inhibitor.activated {
+  color: @yellow;
+}
+
 #battery.charging,
 #battery.plugged {
   color: @green;
