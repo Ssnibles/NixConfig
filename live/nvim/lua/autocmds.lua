@@ -124,35 +124,6 @@ autocmd("BufEnter", {
 	command = "startinsert",
 })
 
--- Subtle colorcolumn at 100 for code files
-autocmd("FileType", {
-	group = augroup,
-	pattern = {
-		"lua",
-		"python",
-		"javascript",
-		"typescript",
-		"javascriptreact",
-		"typescriptreact",
-		"java",
-		"kotlin",
-		"cs",
-		"go",
-		"rust",
-		"c",
-		"cpp",
-		"sh",
-		"nix",
-		"yaml",
-		"json",
-		"markdown",
-		"typst",
-	},
-	callback = function()
-		vim.wo.colorcolumn = "100"
-	end,
-})
-
 -- Show cursorline only in active window to reduce visual noise
 autocmd("WinEnter", {
 	group = augroup,
