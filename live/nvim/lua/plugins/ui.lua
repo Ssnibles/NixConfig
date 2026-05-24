@@ -26,21 +26,7 @@ require("lualine").setup({
 		lualine_b = { "branch", "diff", "diagnostics" },
 		lualine_c = {
 			{ "filename", path = 1 },
-			{
-				function()
-					local ft = vim.bo.filetype
-					if ft == "" then
-						return ""
-					end
-					local ok, icons = pcall(require, "mini.icons")
-					if not ok then
-						return ""
-					end
-					local icon, _ = icons.get("filetype", ft)
-					return icon or ""
-				end,
-				padding = { left = 1, right = 0 },
-			},
+			{ "filetype", icon_only = true, padding = { left = 1, right = 0 } },
 		},
 		lualine_x = { "filetype", "encoding", "fileformat" },
 		lualine_y = {
