@@ -1,0 +1,10 @@
+{ lib, ... }:
+
+{
+  virtualisation.docker = {
+    enable = true;
+    enableOnBoot = lib.mkDefault false;
+  };
+
+  services.flatpak.enable = true;
+}

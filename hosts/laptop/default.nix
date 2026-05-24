@@ -29,9 +29,6 @@
   };
 
   # ── Power management – TLP ────────────────────────────────────────────────
-  # Disable the conflicting default desktop power profile service
-  services.power-profiles-daemon.enable = false;
-
   services.tlp = {
     enable = true;
     settings = {

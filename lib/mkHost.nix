@@ -1,11 +1,8 @@
-# =============================================================================
-# Host Builder Function
-# =============================================================================
-# Generates a NixOS system configuration. Overlays and inputs are defined
-# in flake.nix and passed here.
-# =============================================================================
-{ inputs, overlays, ... }:
+{ inputs, overlays }:
 
+let
+  lib = inputs.nixpkgs.lib;
+in
 {
   mkHost =
     {
@@ -19,21 +16,13 @@
     }:
     let
       hostProfile = {
-        inherit
-          hostName
-          isLaptop
-          hasNvidia
-          isVM
-          useDisko
-          user
-          ;
+        inherit hostName isLaptop hasNvidia isVM useDisko user;
         isDesktop = !isLaptop;
       };
     in
-    inputs.nixpkgs.lib.nixosSystem {
+    lib.nixosSystem {
       inherit system;
 
-      # Pass core arguments to all modules
       specialArgs = { inherit inputs hostProfile user; };
 
       modules = [
@@ -42,12 +31,10 @@
           networking.hostName = hostName;
         }
 
-        # Core modules
         inputs.agenix.nixosModules.default
         ../modules/nixos/common.nix
         ../hosts/${hostName}
 
-        # Integrated Home Manager
         inputs.home-manager.nixosModules.home-manager
         {
           home-manager = {
@@ -58,9 +45,8 @@
           };
         }
       ]
-      # Conditional hardware/service modules
-      ++ inputs.nixpkgs.lib.optional useDisko inputs.disko.nixosModules.disko
-      ++ inputs.nixpkgs.lib.optional useDisko ../disko/${hostName}.nix
-      ++ inputs.nixpkgs.lib.optional hasNvidia ../modules/nixos/hardware/nvidia.nix;
+      ++ lib.optional useDisko inputs.disko.nixosModules.disko
+      ++ lib.optional useDisko ../disko/${hostName}.nix
+      ++ lib.optional hasNvidia ../modules/nixos/hardware/nvidia.nix;
     };
 }

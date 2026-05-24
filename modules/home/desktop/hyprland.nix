@@ -206,7 +206,7 @@ in
         "CTRL, F12, global, menu.kando.Kando:example-menu"
         "$mod, N, exec, qs ipc call controlpanel toggle"
         "$mod, DELETE, exec, hyprlock"
-        "$mod SHIFT, R, exec, hyprctl reload"
+        "$mod SHIFT, R, exec, reload-all"
         "$mod, F, fullscreen"
 
         # Window focus (vim directions)

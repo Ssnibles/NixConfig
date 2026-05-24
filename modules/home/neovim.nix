@@ -1,10 +1,3 @@
-# =============================================================================
-# Neovim Module (Home Manager + nvf)
-# =============================================================================
-# Architecture:
-#   • nvf (Nix): Wrapper, simple editor defaults, plugin/runtime provisioning
-#   • Lua: Advanced custom behavior (autocmds, plugin-specific logic, DAP, etc.)
-# =============================================================================
 {
   config,
   lib,
@@ -16,6 +9,7 @@ let
   c =
     (import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
   s = config.lib.stylix.colors.withHashtag;
+  liveDir = "${config.home.homeDirectory}/NixConfig/live";
 
   tiny-code-action = pkgs.vimUtils.buildVimPlugin {
     pname = "tiny-code-action";
@@ -35,7 +29,6 @@ in
     defaultEditor = true;
 
     settings.vim = {
-      # Simple baseline behavior managed declaratively via nvf.
       viAlias = true;
       vimAlias = true;
       lineNumberMode = "relNumber";
@@ -96,7 +89,6 @@ in
         shortmess = "sIcW";
       };
 
-      # Tools available on PATH inside the nvf Neovim wrapper.
       extraPackages = with pkgs; [
         nixd
         lua-language-server
@@ -132,7 +124,6 @@ in
         fd
       ];
 
-      # Keep full plugin list declarative in Nix, with Lua setup logic in nvim/lua/plugins/*.
       startPlugins = with pkgs.vimPlugins; [
         tiny-code-action
 
@@ -201,7 +192,6 @@ in
         conform-nvim
         dial-nvim
         multicursor-nvim
-        # grug-far's upstream test suite is flaky against nightly Neovim.
         (grug-far-nvim.overrideAttrs (_: {
           doCheck = false;
         }))
@@ -212,14 +202,27 @@ in
         markview-nvim
       ];
 
-      # Load the existing Lua entrypoint after nvf initializes.
       luaConfigRC.user-config = ''
         dofile(vim.fn.stdpath("config") .. "/init.lua")
       '';
     };
   };
 
-  xdg.configFile."nvf/lua/generated/colors.lua".text = ''
+  xdg.configFile."nvf" = {
+    source = config.lib.file.mkOutOfStoreSymlink "${liveDir}/nvim";
+    force = true;
+  };
+
+  home.activation.removeOldNvfDir = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
+    if [[ -d "$HOME/.config/nvf" && ! -L "$HOME/.config/nvf" ]]; then
+      rm -rf "$HOME/.config/nvf"
+    fi
+  '';
+
+  home.activation.writeNvfColors = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    colors_dir="$HOME/NixConfig/live/nvim/lua/generated"
+    mkdir -p "$colors_dir"
+    cat > "$colors_dir/colors.lua" << LUAEOF
     local M = {
       bg = "${c.bg}",
       raised_background = "${c.raisedBackground}",
@@ -259,10 +262,6 @@ in
     }
 
     return M
+    LUAEOF
   '';
-
-  xdg.configFile."nvf" = {
-    source = ../../nvim;
-    recursive = true;
-  };
 }
