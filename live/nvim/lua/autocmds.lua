@@ -105,13 +105,15 @@ autocmd("BufEnter", {
 	end,
 })
 
--- Keep terminal buffers ergonomically isolated
+-- Keep terminal buffers ergonomically isolated with distinct background
 autocmd("TermOpen", {
 	group = augroup,
 	callback = function()
 		vim.opt_local.number = false
 		vim.opt_local.relativenumber = false
 		vim.opt_local.signcolumn = "no"
+		vim.wo.cursorline = false
+		vim.wo.winhighlight = "Normal:TermBg"
 	end,
 })
 
@@ -120,4 +122,47 @@ autocmd("BufEnter", {
 	group = augroup,
 	pattern = "term://*",
 	command = "startinsert",
+})
+
+-- Subtle colorcolumn at 100 for code files
+autocmd("FileType", {
+	group = augroup,
+	pattern = {
+		"lua",
+		"python",
+		"javascript",
+		"typescript",
+		"javascriptreact",
+		"typescriptreact",
+		"java",
+		"kotlin",
+		"cs",
+		"go",
+		"rust",
+		"c",
+		"cpp",
+		"sh",
+		"nix",
+		"yaml",
+		"json",
+		"markdown",
+		"typst",
+	},
+	callback = function()
+		vim.wo.colorcolumn = "100"
+	end,
+})
+
+-- Show cursorline only in active window to reduce visual noise
+autocmd("WinEnter", {
+	group = augroup,
+	callback = function()
+		vim.wo.cursorline = true
+	end,
+})
+autocmd("WinLeave", {
+	group = augroup,
+	callback = function()
+		vim.wo.cursorline = false
+	end,
 })

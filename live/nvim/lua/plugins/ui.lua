@@ -24,9 +24,33 @@ require("lualine").setup({
 	sections = {
 		lualine_a = { "mode" },
 		lualine_b = { "branch", "diff", "diagnostics" },
-		lualine_c = { { "filename", path = 1 } },
+		lualine_c = {
+			{ "filename", path = 1 },
+			{
+				function()
+					local ft = vim.bo.filetype
+					if ft == "" then
+						return ""
+					end
+					local ok, icons = pcall(require, "mini.icons")
+					if not ok then
+						return ""
+					end
+					local icon, _ = icons.get("filetype", ft)
+					return icon or ""
+				end,
+				padding = { left = 1, right = 0 },
+			},
+		},
 		lualine_x = { "filetype", "encoding", "fileformat" },
-		lualine_y = { "progress" },
+		lualine_y = {
+			{
+				"progress",
+				fmt = function(str)
+					return str:gsub("%s*(%d+)%%?%s*/%s*(%d+)%%?", "%1/%2")
+				end,
+			},
+		},
 		lualine_z = { "location" },
 	},
 })
@@ -82,6 +106,9 @@ require("noice").setup({
 					{ find = "; after #%d+" },
 					{ find = "; before #%d+" },
 					{ find = "Written" },
+					{ find = "%d+ lines written" },
+					{ find = "%d+ files changed" },
+					{ find = "Copilot" },
 				},
 			},
 			view = "mini",

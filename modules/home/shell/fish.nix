@@ -41,6 +41,18 @@ in
       gdiff = "git diff";
       j = "just";
       pp = "petpick";
+      nf = "nix flake";
+      nfu = "nix flake update";
+      nd = "nix develop";
+      nb = "nix build";
+      ns = "nix search nixpkgs";
+      fr = "nh os switch --update";
+      fmt = "nixfmt";
+      hms = "nh home switch";
+      mng = "manage-nixos";
+      ":q" = "exit";
+      lg = "lazygit";
+      ff = "fastfetch";
     };
 
     interactiveShellInit = ''
