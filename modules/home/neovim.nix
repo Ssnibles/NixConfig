@@ -197,7 +197,6 @@ in
 
         mini-nvim
         plenary-nvim
-        vim-tmux-navigator
         markview-nvim
       ];
 

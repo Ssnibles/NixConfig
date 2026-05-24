@@ -26,10 +26,18 @@ map("n", "N", "Nzzzv")
 
 -- Search selected text in visual mode
 map("x", "*", function()
-	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("y/\\V<C-r>=escape(@\", '/\\')<CR><CR>", true, false, true), "n", false)
+	vim.api.nvim_feedkeys(
+		vim.api.nvim_replace_termcodes("y/\\V<C-r>=escape(@\", '/\\')<CR><CR>", true, false, true),
+		"n",
+		false
+	)
 end, { desc = "Search visual selection forward" })
 map("x", "#", function()
-	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("y?\\V<C-r>=escape(@\", '?\\')<CR><CR>", true, false, true), "n", false)
+	vim.api.nvim_feedkeys(
+		vim.api.nvim_replace_termcodes("y?\\V<C-r>=escape(@\", '?\\')<CR><CR>", true, false, true),
+		"n",
+		false
+	)
 end, { desc = "Search visual selection backward" })
 
 -- Visual mode

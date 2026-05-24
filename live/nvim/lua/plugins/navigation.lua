@@ -12,8 +12,18 @@ vim.keymap.set("n", "<leader>fR", "<cmd>GrugFar<CR>", { desc = "Find and replace
 
 -- Smart-splits: resize and move splits intuitively
 local smart_splits = require("smart-splits")
-smart_splits.setup({})
-vim.keymap.set("n", "<C-S-h>", smart_splits.resize_left, { desc = "Resize split left" })
-vim.keymap.set("n", "<C-S-j>", smart_splits.resize_down, { desc = "Resize split down" })
-vim.keymap.set("n", "<C-S-k>", smart_splits.resize_up, { desc = "Resize split up" })
-vim.keymap.set("n", "<C-S-l>", smart_splits.resize_right, { desc = "Resize split right" })
+local smart_config = {}
+if vim.env.TMUX and vim.env.TMUX ~= "" then
+	smart_config.multiplexer_integration = "tmux"
+end
+smart_splits.setup(smart_config)
+
+local map = vim.keymap.set
+map("n", "<C-h>", smart_splits.move_cursor_left, { desc = "Move left" })
+map("n", "<C-j>", smart_splits.move_cursor_down, { desc = "Move down" })
+map("n", "<C-k>", smart_splits.move_cursor_up, { desc = "Move up" })
+map("n", "<C-l>", smart_splits.move_cursor_right, { desc = "Move right" })
+map("n", "<C-S-h>", smart_splits.resize_left, { desc = "Resize split left" })
+map("n", "<C-S-j>", smart_splits.resize_down, { desc = "Resize split down" })
+map("n", "<C-S-k>", smart_splits.resize_up, { desc = "Resize split up" })
+map("n", "<C-S-l>", smart_splits.resize_right, { desc = "Resize split right" })
