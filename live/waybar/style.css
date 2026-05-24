@@ -89,7 +89,7 @@ window#waybar > box {
 
 #workspaces button.active,
 #workspaces button.urgent {
-  transition: color 200ms ease, background 200ms ease;
+  transition: color 200ms ease;
 }
 
 #workspaces button.active {
