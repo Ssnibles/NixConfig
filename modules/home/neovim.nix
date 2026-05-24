@@ -154,7 +154,6 @@ in
         nvim-treesitter-context
         nvim-treesitter-textobjects
 
-        nvim-lspconfig
         blink-cmp
         blink-cmp-spell
         luasnip
