@@ -28,9 +28,8 @@ end, { desc = "Explorer (Oil)" })
 -- Gitsigns: git integration with line highlights instead of gutter signs
 require("gitsigns").setup({
 	signcolumn = false,
-	line_highlight = true,
-	numhl = false,
 	linehl = true,
+	numhl = false,
 	word_diff = false,
 	preview_config = { border = "rounded" },
 	on_attach = function(bufnr)

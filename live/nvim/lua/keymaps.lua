@@ -44,7 +44,6 @@ map({ "n", "v" }, "<leader>D", '"_d', { desc = "Delete to void" })
 map("n", "<leader>wv", "<C-w>v", { desc = "Split vertical" })
 map("n", "<leader>ws", "<C-w>s", { desc = "Split horizontal" })
 map("n", "<leader>wc", "<C-w>c", { desc = "Close window" })
-map("n", "<leader>wq", "<C-w>c", { desc = "Close window" })
 map("n", "<leader>wo", "<C-w>o", { desc = "Only window" })
 map("n", "<leader>w=", "<C-w>=", { desc = "Equalize windows" })
 
