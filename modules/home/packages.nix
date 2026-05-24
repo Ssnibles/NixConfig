@@ -31,6 +31,7 @@
     quickemu
     git-lfs
     github-copilot-cli
+    opencode
     wl-clipboard
     pkgs.age
     inputs.agenix.packages.${pkgs.system}.default

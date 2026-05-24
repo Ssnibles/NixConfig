@@ -1,6 +1,3 @@
-# =============================================================================
-# NixOS Flake Configuration
-# =============================================================================
 {
   description = "NixOS Config";
 
@@ -85,54 +82,36 @@
     let
       system = "x86_64-linux";
 
-      # ── Shared Overlays ──────────────────────────────────────────────────────
-      # Single definition of overlays used by all configurations.
       overlays = [
         inputs.nur.overlays.default
         (final: prev: {
-          # Use unstable channel for specific packages
           unstable = import inputs.nixpkgs-unstable {
             inherit system;
             config.allowUnfree = true;
           };
 
-          # Inject inputs into the main package set
           zen-browser = inputs.zen-browser.packages.${system}.default;
           nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
           solaar = inputs.solaar.packages.${system}.default;
 
-          # Use unstable for Neovim (fresh but pre-built)
           neovim = final.unstable.neovim;
           neovim-unwrapped = final.unstable.neovim-unwrapped;
         })
       ];
 
-      # Standard pkgs used for standalone HM or logic
       pkgs = import nixpkgs {
-        inherit system overlays;
+        inherit system;
         config.allowUnfree = true;
+        overlays = overlays;
       };
 
-      # Pass pre-computed overlays to the builder
-      builder = import ./lib/mkHost.nix { inherit inputs overlays; };
-      inherit (builder) mkHost;
+      inherit (import ./lib/mkHost.nix { inherit inputs overlays; }) mkHost;
 
-      # ── HM Builder ───────────────────────────────────────────────────────────
       mkHome =
-        {
-          hostName,
-          isLaptop ? false,
-          hasNvidia ? false,
-          user ? "josh",
-        }:
+        { hostName, isLaptop ? false, hasNvidia ? false, user ? "josh" }:
         let
           hostProfile = {
-            inherit
-              hostName
-              isLaptop
-              hasNvidia
-              user
-              ;
+            inherit hostName isLaptop hasNvidia user;
             isDesktop = !isLaptop;
             isVM = false;
             useDisko = false;
@@ -146,35 +125,15 @@
     in
     {
       nixosConfigurations = {
-        desktop = mkHost {
-          hostName = "desktop";
-          hasNvidia = true;
-        };
-        laptop = mkHost {
-          hostName = "laptop";
-          isLaptop = true;
-        };
-        desktop-test = mkHost {
-          hostName = "desktop";
-          hasNvidia = true;
-          useDisko = false;
-        };
-        laptop-test = mkHost {
-          hostName = "laptop";
-          isLaptop = true;
-          useDisko = false;
-        };
+        desktop = mkHost { hostName = "desktop"; hasNvidia = true; };
+        laptop = mkHost { hostName = "laptop"; isLaptop = true; };
+        desktop-test = mkHost { hostName = "desktop"; hasNvidia = true; useDisko = false; };
+        laptop-test = mkHost { hostName = "laptop"; isLaptop = true; useDisko = false; };
       };
 
       homeConfigurations = {
-        "josh@desktop" = mkHome {
-          hostName = "desktop";
-          hasNvidia = true;
-        };
-        "josh@laptop" = mkHome {
-          hostName = "laptop";
-          isLaptop = true;
-        };
+        "josh@desktop" = mkHome { hostName = "desktop"; hasNvidia = true; };
+        "josh@laptop" = mkHome { hostName = "laptop"; isLaptop = true; };
       };
 
       diskoConfigurations = {
@@ -187,5 +146,7 @@
           modules = [ ./disko/laptop.nix ];
         };
       };
+
+      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-rfc-style;
     };
 }

@@ -43,6 +43,15 @@ let
     qs ipc call quickshell reload
   '';
 
+  # ── Reload everything ────────────────────────────────────────────────────
+  # Restarts Waybar, reloads Hyprland, and reloads Quickshell.
+  reload-all = pkgs.writeShellScriptBin "reload-all" ''
+    ${pkgs.hyprland}/bin/hyprctl reload
+    pkill -SIGUSR2 waybar || true
+    qs ipc call quickshell reload 2>/dev/null || true
+    ${pkgs.libnotify}/bin/notify-send "Reload" "Hyprland, Waybar, Quickshell reloaded"
+  '';
+
   # ── Focus mode ─────────────────────────────────────────────────────────
   # Toggles gaps / rounding and hides Waybar for distraction-free work.
   toggle-focus-mode = pkgs.writeShellScriptBin "toggle-focus-mode" ''
@@ -346,6 +355,7 @@ in
   home.packages = [
     toggle-float
     reload-shell
+    reload-all
     toggle-focus-mode
     aicommit
     setup-fo-prism
