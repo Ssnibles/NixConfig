@@ -14,18 +14,36 @@
   ],
   "modules-center": [ "clock" ],
   "modules-right": [
-    "custom/idle-inhibitor",
     "mpris",
+    "cpu",
+    "memory",
+    "disk",
     "pulseaudio",
     "bluetooth",
     "network",
-    "battery"
+    "battery",
+    "custom/idle-inhibitor",
+    "tray"
   ],
 
   "hyprland/workspaces": {
-    "format": "{name}",
+    "format": "{icon}",
+    "format-icons": {
+      "active": "",
+      "urgent": "■",
+      "default": "●"
+    },
     "on-click": "activate",
-    "all-outputs": false
+    "all-outputs": false,
+    "active-first": false,
+    "sort-by-number": true,
+    "persistent_workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": []
+    }
   },
 
   "custom/special-workspace": {
@@ -70,6 +88,37 @@
     }
   },
 
+  "cpu": {
+    "format": " {usage}%",
+    "interval": 5,
+    "tooltip": true,
+    "states": {
+      "warning": 70,
+      "critical": 90
+    }
+  },
+
+  "memory": {
+    "format": " {}%",
+    "interval": 5,
+    "tooltip": true,
+    "states": {
+      "warning": 80,
+      "critical": 95
+    }
+  },
+
+  "disk": {
+    "format": " {percentage_used}%",
+    "interval": 60,
+    "tooltip": true,
+    "path": "/",
+    "states": {
+      "warning": 80,
+      "critical": 95
+    }
+  },
+
   "mpris": {
     "format": "{status_icon} {title} · {artist}",
     "format-paused": "{status_icon} {title} · {artist}",
@@ -78,6 +127,7 @@
       "playing": "󰐊"
     },
     "tooltip-format": "{player} - {title} · {artist}",
+    "max-length": 30,
     "on-click": "playerctl play-pause",
     "on-scroll-up": "playerctl next",
     "on-scroll-down": "playerctl previous"
@@ -122,19 +172,6 @@
     "max-length": 38
   },
 
-  "idle-inhibitor": {
-    "format": "{icon}",
-    "format-icons": {
-      "activated": "󰅶",
-      "deactivated": "󰾫"
-    },
-    "return-type": "json",
-    "exec": "if systemctl --user is-active hypridle > /dev/null 2>&1; then echo '{\"text\": \"\", \"class\": \"deactivated\"}'; else echo '{\"text\": \"\", \"class\": \"activated\"}'; fi",
-    "on-click": "if systemctl --user is-active hypridle > /dev/null 2>&1; then systemctl --user stop hypridle && notify-send 'Idle' 'Inhibited'; else systemctl --user start hypridle && notify-send 'Idle' 'Re-enabled'; fi",
-    "interval": 5,
-    "tooltip": false
-  },
-
   "battery": {
     "interval": 10,
     "states": {
@@ -147,5 +184,23 @@
     "format-charging": "󰂄 {capacity}%",
     "format-plugged": "󰚥 {capacity}%",
     "tooltip-format": "{capacity}% · {timeTo}"
+  },
+
+  "custom/idle-inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "󰅶",
+      "deactivated": "󰾫"
+    },
+    "return-type": "json",
+    "exec": "if systemctl --user is-active hypridle > /dev/null 2>&1; then echo '{\"text\": \"\", \"class\": \"deactivated\"}'; else echo '{\"text\": \"\", \"class\": \"activated\"}'; fi",
+    "on-click": "if systemctl --user is-active hypridle > /dev/null 2>&1; then systemctl --user stop hypridle && notify-send 'Idle' 'Inhibited'; else systemctl --user start hypridle && notify-send 'Idle' 'Re-enabled'; fi",
+    "interval": 5,
+    "tooltip": false
+  },
+
+  "tray": {
+    "icon-size": 16,
+    "spacing": 8
   }
 }

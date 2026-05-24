@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Special workspace indicator for Waybar
-# Edit this file to customize the indicator appearance/behavior.
 
 workspaces_json="$(hyprctl -j workspaces 2>/dev/null || echo '[]')"
 ws_json="$(printf '%s' "$workspaces_json" | jq --arg ws "special:work" 'map(select(.name == $ws)) | .[0] // {}')"
@@ -9,16 +7,19 @@ count="$(printf '%s' "$ws_json" | jq -r '.windows // 0')"
 
 if [ "$visible" = "true" ]; then
   class="active"
-  text="󱂬 $count"
-  tooltip="Special workspace (work) is visible"
+  icon="󰱮"
 elif [ "$count" -gt 0 ]; then
   class="occupied"
-  text="󱂬 $count"
-  tooltip="Special workspace (work) has $count window(s)"
+  icon="󰱮"
 else
   class="empty"
-  text="󱂬"
-  tooltip="Special workspace (work) is empty"
+  icon="󰱭"
 fi
 
-printf '{"text":"%s","class":"%s","tooltip":"%s"}\n' "$text" "$class" "$tooltip"
+if [ "$count" -gt 0 ]; then
+  text="$icon $count"
+else
+  text="$icon"
+fi
+
+printf '{"text":"%s","class":"%s"}\n' "$text" "$class"
