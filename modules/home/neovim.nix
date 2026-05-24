@@ -119,6 +119,10 @@ in
         lldb
         vscode-js-debug
 
+        rust-analyzer
+        tinymist
+        typstyle
+
         tree-sitter
         ripgrep
         fd

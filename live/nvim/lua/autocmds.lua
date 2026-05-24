@@ -77,33 +77,37 @@ autocmd("FileType", {
 	callback = function(ev)
 		vim.opt_local.spell = true
 		vim.opt_local.wrap = true
-		if vim.bo[ev.buf].filetype == "markdown" or vim.bo[ev.buf].filetype == "markdown.mdx" then
-			-- Avoid intermittent Neovim 0.12 treesitter node-range crashes in markdown buffers.
-			pcall(vim.treesitter.stop, ev.buf)
+		if (vim.version().major == 0 and vim.version().minor >= 12) then
+			if vim.bo[ev.buf].filetype == "markdown" or vim.bo[ev.buf].filetype == "markdown.mdx" then
+				-- Avoid intermittent Neovim 0.12 treesitter node-range crashes in markdown buffers.
+				pcall(vim.treesitter.stop, ev.buf)
+			end
 		end
 	end,
 })
 
-autocmd("BufEnter", {
-	group = augroup,
-	callback = function(ev)
-		local ft = vim.bo[ev.buf].filetype
-		if ft ~= "markdown" and ft ~= "markdown.mdx" then
-			return
-		end
-		-- Some plugins start treesitter on BufEnter; stop it again after callbacks settle.
-		pcall(vim.treesitter.stop, ev.buf)
-		vim.schedule(function()
-			if not vim.api.nvim_buf_is_valid(ev.buf) then
+if vim.version().major == 0 and vim.version().minor >= 12 then
+	autocmd("BufEnter", {
+		group = augroup,
+		callback = function(ev)
+			local ft = vim.bo[ev.buf].filetype
+			if ft ~= "markdown" and ft ~= "markdown.mdx" then
 				return
 			end
-			local scheduled_ft = vim.bo[ev.buf].filetype
-			if scheduled_ft == "markdown" or scheduled_ft == "markdown.mdx" then
-				pcall(vim.treesitter.stop, ev.buf)
-			end
-		end)
-	end,
-})
+			-- Some plugins start treesitter on BufEnter; stop it again after callbacks settle.
+			pcall(vim.treesitter.stop, ev.buf)
+			vim.schedule(function()
+				if not vim.api.nvim_buf_is_valid(ev.buf) then
+					return
+				end
+				local scheduled_ft = vim.bo[ev.buf].filetype
+				if scheduled_ft == "markdown" or scheduled_ft == "markdown.mdx" then
+					pcall(vim.treesitter.stop, ev.buf)
+				end
+			end)
+		end,
+	})
+end
 
 -- Keep terminal buffers ergonomically isolated with distinct background
 autocmd("TermOpen", {
