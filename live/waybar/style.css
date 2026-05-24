@@ -84,6 +84,11 @@ window#waybar > box {
   min-width: 0;
   min-height: 0;
   border-radius: 999px;
+  transition: color 200ms ease;
+}
+
+#workspaces button.active,
+#workspaces button.urgent {
   transition: color 200ms ease, background 200ms ease;
 }
 
