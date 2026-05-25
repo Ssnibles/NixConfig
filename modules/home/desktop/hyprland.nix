@@ -195,6 +195,14 @@ in
 
       monitor = [ ",preferred,auto,1" ];
 
+      workspace = [
+        "1, persistent:true"
+        "2, persistent:true"
+        "3, persistent:true"
+        "4, persistent:true"
+        "5, persistent:true"
+      ];
+
       bind = [
         # App / session
         "$mod, RETURN, exec, foot"
