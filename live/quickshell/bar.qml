@@ -206,6 +206,7 @@ PanelWindow {
 
           property real wavePhase: 0
           property real displayProgress: 0
+          property real playTransition: 0
 
           Timer {
             interval: 30
@@ -219,10 +220,19 @@ PanelWindow {
               mediaProgressBar.displayProgress = target;
               else
               mediaProgressBar.displayProgress += diff * 0.35;
+
+              var playing = barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying;
+              var tTarget = playing ? 1 : 0;
+              var tDiff = tTarget - mediaProgressBar.playTransition;
+              if (Math.abs(tDiff) < 0.005)
+              mediaProgressBar.playTransition = tTarget;
+              else
+              mediaProgressBar.playTransition += tDiff * 0.1;
             }
           }
 
           Row {
+            anchors.verticalCenter: parent.verticalCenter
             spacing: mediaProgressBar.barSpacing
             Repeater {
               model: mediaProgressBar.barCount
@@ -233,9 +243,10 @@ PanelWindow {
                 color: (index + 1) / mediaProgressBar.barCount <= mediaProgressBar.displayProgress ? Colors.accent : Colors.bgSubtle
                 y: Math.round((parent.height - height) / 2)
                 height: {
-                  if (!barPanel.mediaPlayer || !barPanel.mediaPlayer.isPlaying) return 4
-                  var h = 4 + Math.sin(mediaProgressBar.wavePhase + index * 0.7) * 4 + 4
-                  return Math.max(4, Math.round(h))
+                  if (!barPanel.mediaPlayer) return 4
+                  var waveHeight = 4 + Math.sin(mediaProgressBar.wavePhase + index * 0.7) * 4 + 4
+                  waveHeight = Math.max(4, Math.round(waveHeight))
+                  return 4 + (waveHeight - 4) * mediaProgressBar.playTransition
                 }
                 Behavior on color {
                   ColorAnimation { duration: 200 }
