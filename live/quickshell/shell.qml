@@ -4,6 +4,7 @@ import QtQuick
 
 ShellRoot {
   id: root
+  property bool barVisible: true
 
   IpcHandler {
     target: "quickshell"
@@ -23,9 +24,15 @@ ShellRoot {
     }
   }
 
+  IpcHandler {
+    target: "bar"
+    function toggle(): void { root.barVisible = !root.barVisible; }
+  }
+
   Loader {
     id: barLoader
     source: "bar.qml"
+    active: root.barVisible
   }
 
   Loader {

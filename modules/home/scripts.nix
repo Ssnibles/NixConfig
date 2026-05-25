@@ -68,14 +68,14 @@ let
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in $GAPS_IN
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out $GAPS_OUT
       ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding $ROUNDING
-      qs ipc call bar show 2>/dev/null || true
+      qs ipc call bar toggle 2>/dev/null || true
       echo "normal" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled - Normal mode restored"
     else
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in 0
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out 0
       ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding 0
-      qs ipc call bar hide 2>/dev/null || true
+      qs ipc call bar toggle 2>/dev/null || true
       echo "focus" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled - Distractions removed"
     fi

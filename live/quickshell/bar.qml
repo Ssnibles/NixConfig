@@ -108,13 +108,6 @@ PanelWindow {
     onTriggered: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.positionChanged(); }
   }
 
-  IpcHandler {
-    target: "bar"
-    function toggle(): void { barPanel.visible = !barPanel.visible; }
-    function show(): void   { barPanel.visible = true; }
-    function hide(): void   { barPanel.visible = false; }
-  }
-
   Item {
     id: barContent
     anchors.fill: parent
