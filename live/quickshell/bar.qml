@@ -138,6 +138,13 @@ PanelWindow {
             color: modelData.focused ? Colors.accent : Colors.fgDim
             anchors.verticalCenter: parent.verticalCenter
 
+            Behavior on width {
+              NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
+            }
+            Behavior on color {
+              ColorAnimation { duration: 200; easing.type: Easing.InOutQuad }
+            }
+
             MouseArea {
               anchors.fill: parent
               onClicked: modelData.activate()
