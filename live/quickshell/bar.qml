@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.Pipewire
+import Quickshell.Services.Mpris
 import Quickshell.Networking
 import QtQuick
 import QtQuick.Layouts
@@ -79,6 +80,21 @@ PanelWindow {
     return "󰤨";
   }
 
+  // -- Media --
+  property var mediaPlayers: Mpris.players.values
+  property var mediaPlayer: {
+    var list = mediaPlayers;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].isPlaying) return list[i];
+    }
+    return null;
+  }
+  property string mediaText: mediaPlayer
+    ? (mediaPlayer.trackArtist
+      ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
+      : mediaPlayer.trackTitle)
+    : ""
+
   IpcHandler {
     target: "bar"
     function toggle(): void { barPanel.visible = !barPanel.visible; }
@@ -137,6 +153,15 @@ PanelWindow {
       font.pixelSize: 12
       elide: Text.ElideRight
       horizontalAlignment: Text.AlignLeft
+    }
+
+    Text {
+      text: barPanel.mediaText
+      color: Colors.accent
+      font.family: "JetBrains Mono"
+      font.pixelSize: 12
+      elide: Text.ElideRight
+      visible: barPanel.mediaText !== ""
     }
 
     Row {
