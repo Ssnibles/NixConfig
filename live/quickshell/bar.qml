@@ -51,6 +51,7 @@ PanelWindow {
   property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
   property real volPct: volInfo ? volInfo.volume : 0
   property bool volMuted: volInfo ? volInfo.muted : false
+  Process { id: volProc; command: ["pavucontrol"] }
 
   // -- WiFi --
   property var wifiDev: {
@@ -230,10 +231,7 @@ PanelWindow {
 
         MouseArea {
           anchors.fill: parent
-          onClicked: {
-            if (barPanel.volInfo)
-              barPanel.volInfo.muted = !barPanel.volInfo.muted;
-          }
+          onClicked: { volProc.startDetached(); }
         }
       }
 
