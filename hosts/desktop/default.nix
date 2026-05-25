@@ -23,9 +23,17 @@
   powerManagement.cpuFreqGovernor = "performance";
 
   # ── Lower always-on background services ────────────────────────────────────
-  # Bluetooth remains available via D-Bus activation when Blueman is opened.
-  hardware.bluetooth.powerOnBoot = lib.mkForce false;
-  systemd.services.bluetooth.wantedBy = lib.mkForce [ ];
+  # Start Bluetooth at boot and power on the controller.
+  hardware.bluetooth.powerOnBoot = lib.mkForce true;
+  systemd.services.bluetooth.wantedBy = lib.mkForce [ "multi-user.target" ];
+  # Unblock Bluetooth at boot – asus_wmi soft-blocks the adapter
+  systemd.services.unblock-bluetooth = {
+    description = "Unblock Bluetooth rfkill";
+    before = [ "bluetooth.service" ];
+    wantedBy = [ "bluetooth.service" ];
+    serviceConfig.Type = "oneshot";
+    script = "${pkgs.util-linux}/bin/rfkill unblock bluetooth";
+  };
   services.printing.enable = lib.mkForce false;
   services.avahi.enable = lib.mkForce false;
   services.avahi.nssmdns4 = lib.mkForce false;
