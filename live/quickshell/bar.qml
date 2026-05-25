@@ -99,6 +99,15 @@ PanelWindow {
       ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
       : mediaPlayer.trackTitle)
     : ""
+  property real mediaProgress: mediaPlayer && mediaPlayer.length > 0
+    ? mediaPlayer.position / mediaPlayer.length : 0
+
+  Timer {
+    interval: 1000
+    running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
+    repeat: true
+    onTriggered: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.positionChanged(); }
+  }
 
   IpcHandler {
     target: "bar"
@@ -160,19 +169,50 @@ PanelWindow {
       horizontalAlignment: Text.AlignLeft
     }
 
-    Text {
-      text: barPanel.mediaIcon + " " + barPanel.mediaText
-      color: Colors.fg
-      font.family: "JetBrains Mono"
-      font.pixelSize: 12
-      elide: Text.ElideRight
+    Row {
+      spacing: 4
       visible: barPanel.mediaText !== ""
 
-      MouseArea {
-        anchors.fill: parent
-        onClicked: {
-          if (barPanel.mediaPlayer)
-            barPanel.mediaPlayer.togglePlaying();
+      Item {
+        width: 60; height: 14
+        anchors.verticalCenter: parent.verticalCenter
+
+        Rectangle {
+          anchors.fill: parent
+          radius: 3
+          color: Colors.bgSubtle
+
+          Rectangle {
+            anchors.top: parent.top; anchors.left: parent.left; anchors.bottom: parent.bottom
+            width: parent.width * barPanel.mediaProgress
+            radius: 3
+            color: Colors.accent
+          }
+
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+              if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek)
+                barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
+            }
+          }
+        }
+      }
+
+      Text {
+        text: barPanel.mediaIcon + " " + barPanel.mediaText
+        color: Colors.fg
+        font.family: "JetBrains Mono"
+        font.pixelSize: 12
+        elide: Text.ElideRight
+
+        MouseArea {
+          anchors.fill: parent
+          onClicked: {
+            if (barPanel.mediaPlayer)
+              barPanel.mediaPlayer.togglePlaying();
+          }
         }
       }
     }
