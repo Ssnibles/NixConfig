@@ -123,36 +123,38 @@ PanelWindow {
     anchors.rightMargin: 10
     spacing: 6
 
-    Row {
-      Layout.alignment: Qt.AlignLeft
-      spacing: 3
-      Repeater {
-        model: Hyprland.workspaces
-        delegate: Rectangle {
-          required property var modelData
-          width: 24; height: 24
-          radius: 4
-          color: modelData.focused ? Colors.accent : Colors.bgSubtle
-          border.color: modelData.focused ? Colors.accent : Colors.border
-          border.width: 1
-          anchors.verticalCenter: parent.verticalCenter
+      Row {
+        Layout.alignment: Qt.AlignLeft
+        spacing: 3
 
-          Text {
-            anchors.centerIn: parent
-            text: modelData.id
-            color: modelData.focused ? Colors.bg : Colors.fgDim
-            font.family: "JetBrains Mono"
-            font.pixelSize: 11
-            font.bold: true
-          }
+        Repeater {
+          model: Hyprland.workspaces
+          delegate: Rectangle {
+            required property var modelData
+            visible: !String(modelData.name).startsWith("special")
+            width: 24; height: 24
+            radius: 4
+            color: modelData.focused ? Colors.accent : Colors.bgSubtle
+            border.color: modelData.focused ? Colors.accent : Colors.border
+            border.width: 1
+            anchors.verticalCenter: parent.verticalCenter
 
-          MouseArea {
-            anchors.fill: parent
-            onClicked: modelData.activate()
+            Text {
+              anchors.centerIn: parent
+              text: modelData.id
+              color: modelData.focused ? Colors.bg : Colors.fgDim
+              font.family: "JetBrains Mono"
+              font.pixelSize: 11
+              font.bold: true
+            }
+
+            MouseArea {
+              anchors.fill: parent
+              onClicked: modelData.activate()
+            }
           }
         }
       }
-    }
 
     Rectangle {
       width: 1; height: 18
