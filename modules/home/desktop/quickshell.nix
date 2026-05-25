@@ -19,8 +19,8 @@ in
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/bar.qml";
     "quickshell/notifications.qml".source =
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/notifications.qml";
-    "quickshell/colors.js".source =
-      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/colors.js";
+    "quickshell/Colors.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Colors.qml";
     "quickshell/Pill.qml".source =
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Pill.qml";
   };
@@ -28,24 +28,28 @@ in
   home.activation.writeQuickshellColors = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     colors_dir="$HOME/NixConfig/live/quickshell"
     mkdir -p "$colors_dir"
-    cat > "$colors_dir/colors.js" << JSEOF
+    cat > "$colors_dir/Colors.qml" << QMLEOF
+    import QtQml
+    import QtQuick
     // Colors generated from Stylix. Rebuild to refresh palette.
-    var bg = "${c.bg}";
-    var bgRaised = "${c.raisedBackground}";
-    var bgSubtle = "${c.bgSubtle}";
-    var border = "${c.border}";
-    var fg = "${c.fg}";
-    var fgMid = "${c.fgMid}";
-    var fgDim = "${c.fgDim}";
-    var accent = "${c.accent}";
-    var teal = "${c.teal}";
-    var purple = "${c.purple}";
-    var green = "${c.green}";
-    var yellow = "${c.yellow}";
-    var red = "${c.red}";
-    var orange = "${c.orange}";
-    var magenta = "${c.magenta}";
-    var selection = "${c.selection}";
-    JSEOF
+    QtObject {
+      readonly property color bg: "${c.bg}"
+      readonly property color bgRaised: "${c.raisedBackground}"
+      readonly property color bgSubtle: "${c.bgSubtle}"
+      readonly property color border: "${c.border}"
+      readonly property color fg: "${c.fg}"
+      readonly property color fgMid: "${c.fgMid}"
+      readonly property color fgDim: "${c.fgDim}"
+      readonly property color accent: "${c.accent}"
+      readonly property color teal: "${c.teal}"
+      readonly property color purple: "${c.purple}"
+      readonly property color green: "${c.green}"
+      readonly property color yellow: "${c.yellow}"
+      readonly property color red: "${c.red}"
+      readonly property color orange: "${c.orange}"
+      readonly property color magenta: "${c.magenta}"
+      readonly property color selection: "${c.selection}"
+    }
+    QMLEOF
   '';
 }

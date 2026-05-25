@@ -7,17 +7,17 @@ import Quickshell.Networking
 import QtQuick
 import QtQuick.Layouts
 import QtQml
-import "colors.js" as Colors
 
 PanelWindow {
   id: barPanel
+  Colors { id: colors }
   focusable: false
   aboveWindows: true
 
   anchors { top: true; left: true; right: true }
   implicitHeight: 30
   exclusionMode: ExclusionMode.Auto
-  color: Colors.bg
+  color: colors.bg
 
   property string timeStr: ""
 
@@ -139,7 +139,7 @@ PanelWindow {
             width: modelData.focused ? 28 : 12
             height: 12
             radius: height / 2
-            color: modelData.focused ? Colors.accent : Colors.fgDim
+            color: modelData.focused ? colors.accent : colors.fgDim
             anchors.verticalCenter: parent.verticalCenter
 
             Behavior on width {
@@ -162,13 +162,13 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
         height: 22
         radius: height / 2
-        color: Colors.bgRaised
+        color: colors.bgRaised
         width: Math.min(titleLabel.implicitWidth, 400) + 16
 
         Text {
           id: titleLabel
           text: barPanel.currentTitle
-          color: Colors.fgMid
+          color: colors.fgMid
           font.family: "JetBrains Mono"
           font.pixelSize: 12
           font.italic: true
@@ -184,7 +184,7 @@ PanelWindow {
       id: centerTime
       anchors.centerIn: parent
       text: barPanel.timeStr
-      color: Colors.fg
+      color: colors.fg
       font.family: "JetBrains Mono"
       font.pixelSize: 13
       font.bold: true
@@ -257,9 +257,9 @@ PanelWindow {
                     return 3 + (waveHeight - 3) * mediaWaveform.playTransition
                   }
                   color: {
-                    if (!barPanel.mediaPlayer) return Colors.bgSubtle
+                    if (!barPanel.mediaPlayer) return colors.bgSubtle
                     var frac = (index + 1) / mediaWaveform.barCount
-                    if (frac > mediaWaveform.displayProgress) return Colors.bgSubtle
+                    if (frac > mediaWaveform.displayProgress) return colors.bgSubtle
                     var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
                     return Qt.rgba(
                       0.769 - 0.157 * t,
@@ -295,7 +295,7 @@ PanelWindow {
               return Math.floor(p/60) + ":" + (p%60).toString().padStart(2,'0')
                 + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
             }
-            color: Colors.fgMid
+            color: colors.fgMid
             font.family: "JetBrains Mono"
             font.pixelSize: 9
             anchors.verticalCenter: parent.verticalCenter
@@ -305,7 +305,7 @@ PanelWindow {
           Text {
             id: mediaLabel
             text: barPanel.mediaText
-            color: Colors.fg
+            color: colors.fg
             font.family: "JetBrains Mono"
             font.pixelSize: 12
             elide: Text.ElideRight
@@ -355,7 +355,7 @@ PanelWindow {
               if (v < 0.66) return "󰖀"
               return "󰕾"
             }
-            color: barPanel.volMuted ? Colors.red : Colors.fg
+            color: barPanel.volMuted ? colors.red : colors.fg
             font.family: "JetBrains Mono"
             font.pixelSize: 12
           }
@@ -363,7 +363,7 @@ PanelWindow {
           Text {
             id: volPct
             text: Math.round(barPanel.volPct * 100) + "%"
-            color: barPanel.volMuted ? Colors.red : Colors.fg
+            color: barPanel.volMuted ? colors.red : colors.fg
             font.family: "JetBrains Mono"
             font.pixelSize: 12
             font.bold: true
@@ -378,7 +378,7 @@ PanelWindow {
               width: parent.width
               height: 8
               radius: 4
-              color: Colors.bgSubtle
+              color: colors.bgSubtle
 
               Rectangle {
                 anchors.top: parent.top
@@ -386,7 +386,7 @@ PanelWindow {
                 anchors.bottom: parent.bottom
                 width: parent.width * barPanel.volPct
                 radius: 4
-                color: barPanel.volMuted ? Colors.red : Colors.accent
+                color: barPanel.volMuted ? colors.red : colors.accent
 
                 Behavior on width {
                   NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
@@ -404,7 +404,7 @@ PanelWindow {
           hoverEnabled: true
           acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-          onEntered: volBg.color = Colors.bgRaised
+          onEntered: volBg.color = colors.bgRaised
           onExited: volBg.color = "transparent"
 
           onClicked: {
@@ -430,7 +430,7 @@ PanelWindow {
         Text {
           id: wifiLabel
           text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
-          color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
+          color: barPanel.wifiNet ? colors.accent : colors.fgDim
           font.family: "JetBrains Mono"
           font.pixelSize: 12
           anchors.verticalCenter: parent.verticalCenter

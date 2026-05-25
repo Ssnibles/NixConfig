@@ -4,16 +4,16 @@ import Quickshell.Services.Notifications
 import QtQuick
 import QtQuick.Layouts
 import QtQml
-import "colors.js" as Colors
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Notification Daemon — Quickshell QML
 // ═══════════════════════════════════════════════════════════════════════════
-// Colors loaded from colors.js (generated from Stylix). Rebuild to refresh.
+// Colors loaded from Colors.qml (generated from Stylix). Rebuild to refresh.
 // ═══════════════════════════════════════════════════════════════════════════
 
 Item {
   id: notif
+  Colors { id: colors }
 
   property bool controlPanelVisible: false
   property bool doNotDisturb: false
@@ -31,19 +31,19 @@ Item {
   readonly property int  closeBtnSize: 22
   readonly property int  actionBtnHeight: 26
 
-  readonly property color bg:       Colors.bg
-  readonly property color bgRaised: Colors.bgRaised
-  readonly property color bgSubtle: Colors.bgSubtle
-  readonly property color border:   Colors.border
-  readonly property color fg:       Colors.fg
-  readonly property color fgMid:    Colors.fgMid
-  readonly property color fgDim:    Colors.fgDim
-  readonly property color accent:   Colors.accent
-  readonly property color yellow:   Colors.yellow
-  readonly property color teal:     Colors.teal
-  readonly property color purple:   Colors.purple
-  readonly property color red:      Colors.red
-  readonly property color green:    Colors.green
+  readonly property color bg:       colors.bg
+  readonly property color bgRaised: colors.bgRaised
+  readonly property color bgSubtle: colors.bgSubtle
+  readonly property color border:   colors.border
+  readonly property color fg:       colors.fg
+  readonly property color fgMid:    colors.fgMid
+  readonly property color fgDim:    colors.fgDim
+  readonly property color accent:   colors.accent
+  readonly property color yellow:   colors.yellow
+  readonly property color teal:     colors.teal
+  readonly property color purple:   colors.purple
+  readonly property color red:      colors.red
+  readonly property color green:    colors.green
 
   function stripMarkup(text) {
     if (!text || text.length === 0) return "";
