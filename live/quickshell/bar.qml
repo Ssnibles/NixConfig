@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
@@ -15,10 +16,6 @@ PanelWindow {
   exclusionMode: ExclusionMode.Auto
   color: Colors.bg
 
-  property var wsMap: ({})
-  property var wsList: []
-  property int currentWs: 1
-  property string currentTitle: ""
   property string timeStr: ""
 
   Timer {
@@ -31,94 +28,25 @@ PanelWindow {
     }
   }
 
-  Component.onCompleted: poll()
-
-  Timer {
-    interval: 2000
-    running: true
-    repeat: true
-    onTriggered: poll()
+  function formatTitle(t) {
+    return t
+      .replace(/ — Mozilla Firefox$/, "")
+      .replace(/ — Zen Browser$/, "Zen")
+      .replace(/ - Neovim$/, "Neovim")
+      .replace(/ - foot$/, "");
   }
 
-  function poll() {
-    wsQuery.running = true;
-    wsActive.running = true;
-    winQuery.running = true;
-  }
-
-  Process {
-    id: wsQuery
-    command: ["hyprctl", "workspaces", "-j"]
-    stdout: StdioCollector {
-      id: wsQueryOut
-    }
-    onExited: (exitCode, exitStatus) => {
-      if (exitCode !== 0) return;
-      try {
-        var list = JSON.parse(wsQueryOut.text);
-        var map = {};
-        for (var i = 0; i < list.length; i++)
-          map[list[i].id] = list[i].windows;
-        barPanel.wsMap = map;
-        barPanel.wsList = Object.keys(map).map(Number).sort((a,b) => a-b);
-      } catch(e) {}
-    }
-  }
-
-  Process {
-    id: wsActive
-    command: ["hyprctl", "activeworkspace", "-j"]
-    stdout: StdioCollector {
-      id: wsActiveOut
-    }
-    onExited: (exitCode, exitStatus) => {
-      if (exitCode !== 0) return;
-      try { barPanel.currentWs = JSON.parse(wsActiveOut.text).id; } catch(e) {}
-    }
-  }
-
-  Process {
-    id: winQuery
-    command: ["hyprctl", "activewindow", "-j"]
-    stdout: StdioCollector {
-      id: winQueryOut
-    }
-    onExited: (exitCode, exitStatus) => {
-      if (exitCode !== 0) { barPanel.currentTitle = ""; return; }
-      try {
-        var w = JSON.parse(winQueryOut.text);
-        var title = (w.class || "") + (w.title && w.title !== w.class ? " — " + w.title : "");
-        title = title.replace(/ — Mozilla Firefox$/, "");
-        title = title.replace(/ — Zen Browser$/, "Zen");
-        title = title.replace(/ - Neovim$/, "Neovim");
-        title = title.replace(/ - foot$/, "");
-        barPanel.currentTitle = title;
-      } catch(e) { barPanel.currentTitle = ""; }
-    }
-  }
-
-  Process {
-    id: wsSwitch
-    command: ["hyprctl", "dispatch", "workspace", "1"]
-    running: false
-  }
+  property string currentTitle: Hyprland.activeToplevel ? formatTitle(Hyprland.activeToplevel.title) : ""
 
   function switchWs(id) {
-    wsSwitch.command = ["hyprctl", "dispatch", "workspace", String(id)];
-    wsSwitch.running = true;
+    Hyprland.dispatch("workspace " + id);
   }
 
   IpcHandler {
     target: "bar"
-    function toggle(): void {
-      barPanel.visible = !barPanel.visible;
-    }
-    function show(): void {
-      barPanel.visible = true;
-    }
-    function hide(): void {
-      barPanel.visible = false;
-    }
+    function toggle(): void { barPanel.visible = !barPanel.visible; }
+    function show(): void   { barPanel.visible = true; }
+    function hide(): void   { barPanel.visible = false; }
   }
 
   RowLayout {
@@ -131,19 +59,20 @@ PanelWindow {
       Layout.alignment: Qt.AlignLeft
       spacing: 3
       Repeater {
-        model: barPanel.wsList
-        Rectangle {
+        model: Hyprland.workspaces
+        delegate: Rectangle {
+          required property var modelData
           width: 24; height: 24
           radius: 4
-          color: modelData === barPanel.currentWs ? Colors.accent : Colors.bgSubtle
-          border.color: modelData === barPanel.currentWs ? Colors.accent : Colors.border
+          color: modelData.focused ? Colors.accent : Colors.bgSubtle
+          border.color: modelData.focused ? Colors.accent : Colors.border
           border.width: 1
           anchors.verticalCenter: parent.verticalCenter
 
           Text {
             anchors.centerIn: parent
-            text: modelData
-            color: modelData === barPanel.currentWs ? Colors.bg : Colors.fgDim
+            text: modelData.id
+            color: modelData.focused ? Colors.bg : Colors.fgDim
             font.family: "JetBrains Mono"
             font.pixelSize: 11
             font.bold: true
@@ -151,7 +80,7 @@ PanelWindow {
 
           MouseArea {
             anchors.fill: parent
-            onClicked: barPanel.switchWs(modelData)
+            onClicked: modelData.activate()
           }
         }
       }
