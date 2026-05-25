@@ -34,7 +34,7 @@
     # ── Desktop environment ───────────────────────────────────────────────
     ../../modules/home/desktop/hyprland.nix
     ../../modules/home/desktop/waybar.nix
-    ../../modules/home/desktop/notifications.nix
+    ../../modules/home/desktop/quickshell.nix
 
     # ── Editor ────────────────────────────────────────────────────────────
     ../../modules/home/neovim.nix
