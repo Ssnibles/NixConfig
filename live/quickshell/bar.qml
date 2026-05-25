@@ -203,6 +203,24 @@ PanelWindow {
           height: 16
           anchors.verticalCenter: parent.verticalCenter
 
+          property real wavePhase: 0
+          property real displayProgress: 0
+
+          Timer {
+            interval: 30
+            running: barPanel.mediaPlayer !== null
+            repeat: true
+            onTriggered: {
+              mediaProgressBar.wavePhase += 0.075;
+              var target = barPanel.mediaProgress;
+              var diff = target - mediaProgressBar.displayProgress;
+              if (Math.abs(diff) < 0.0005)
+                mediaProgressBar.displayProgress = target;
+              else
+                mediaProgressBar.displayProgress += diff * 0.35;
+            }
+          }
+
           Row {
             spacing: 2
             anchors.centerIn: parent
@@ -210,26 +228,14 @@ PanelWindow {
               model: 12
               delegate: Rectangle {
                 required property int index
-                property real t: 0
-
-                NumberAnimation on t {
-                  running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
-                  from: 0
-                  to: Math.PI * 2
-                  duration: 2500
-                  loops: Animation.Infinite
-                }
-
                 width: 3
                 radius: 1.5
                 anchors.verticalCenter: parent.verticalCenter
-                color: (index + 1) / 12 <= barPanel.mediaProgress ? Colors.accent : Colors.bgSubtle
-
+                color: (index + 1) / 12 <= mediaProgressBar.displayProgress ? Colors.accent : Colors.bgSubtle
                 height: {
                   if (!barPanel.mediaPlayer || !barPanel.mediaPlayer.isPlaying) return 4
-                  return 4 + Math.sin(t + index * 0.7) * 4 + 4
+                  return 4 + Math.sin(mediaProgressBar.wavePhase + index * 0.7) * 4 + 4
                 }
-
                 Behavior on color {
                   ColorAnimation { duration: 200 }
                 }
