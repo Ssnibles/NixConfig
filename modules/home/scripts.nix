@@ -44,38 +44,32 @@ let
   '';
 
   # ── Reload everything ────────────────────────────────────────────────────
-  # Restarts Waybar, reloads Hyprland, and reloads Quickshell.
+  # Reloads Hyprland and Quickshell (bar + notifications).
   reload-all = pkgs.writeShellScriptBin "reload-all" ''
     ${pkgs.hyprland}/bin/hyprctl reload
-    pkill -SIGUSR2 waybar || true
     qs ipc call quickshell reload 2>/dev/null || true
-    ${pkgs.libnotify}/bin/notify-send "Reload" "Hyprland, Waybar, Quickshell reloaded"
+    ${pkgs.libnotify}/bin/notify-send "Reload" "Hyprland, Quickshell reloaded"
   '';
 
   # ── Focus mode ─────────────────────────────────────────────────────────
-  # Toggles gaps / rounding and hides Waybar for distraction-free work.
+  # Toggles gaps / rounding and hides the Quickshell bar for focus mode.
   toggle-focus-mode = pkgs.writeShellScriptBin "toggle-focus-mode" ''
     STATE_FILE="/tmp/hyprland-focus-mode"
-    # Default values from your hyprland.nix
     GAPS_IN=8
     GAPS_OUT=16
     ROUNDING=16
     if [ -f "$STATE_FILE" ] && [ "$(cat $STATE_FILE)" = "focus" ]; then
-      # ── Restore Normal Mode ──────────────────────────────────────────────
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in $GAPS_IN
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out $GAPS_OUT
       ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding $ROUNDING
-      # Hide/show the Quickshell bar via the "bar" IPC surface.
-      pkill -SIGUSR1 waybar
+      qs ipc call bar show 2>/dev/null || true
       echo "normal" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled - Normal mode restored"
     else
-      # ── Enable Focus Mode ────────────────────────────────────────────────
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in 0
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out 0
       ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding 0
-      # Hide/show the Quickshell bar via the "bar" IPC surface.
-      pkill -SIGUSR1 waybar
+      qs ipc call bar hide 2>/dev/null || true
       echo "focus" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled - Distractions removed"
     fi
