@@ -125,28 +125,18 @@ PanelWindow {
 
       Row {
         Layout.alignment: Qt.AlignLeft
-        spacing: 3
+        spacing: 4
 
         Repeater {
           model: Hyprland.workspaces
           delegate: Rectangle {
             required property var modelData
             visible: !String(modelData.name).startsWith("special")
-            width: 24; height: 24
-            radius: 4
-            color: modelData.focused ? Colors.accent : Colors.bgSubtle
-            border.color: modelData.focused ? Colors.accent : Colors.border
-            border.width: 1
+            width: modelData.focused ? 28 : 12
+            height: 12
+            radius: height / 2
+            color: modelData.focused ? Colors.accent : Colors.fgDim
             anchors.verticalCenter: parent.verticalCenter
-
-            Text {
-              anchors.centerIn: parent
-              text: modelData.id
-              color: modelData.focused ? Colors.bg : Colors.fgDim
-              font.family: "JetBrains Mono"
-              font.pixelSize: 11
-              font.bold: true
-            }
 
             MouseArea {
               anchors.fill: parent
