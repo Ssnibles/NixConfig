@@ -46,7 +46,8 @@ in
       content = {
         autoplay = false;
         # Use one blocker backend for lower per-request overhead.
-        blocking.method = "adblock";
+        # Uses hosts blocking unless python-adblock is overridden into the package.
+        blocking.method = "auto";
         cookies.accept = "no-3rdparty";
         # Ask sites to reduce animations/transitions.
         prefers_reduced_motion = true;
@@ -83,7 +84,7 @@ in
         webpage = {
           darkmode = {
             enabled = isDark;
-            policy.page = if isDark then "always" else "smart";
+            policy.page = "smart";
             policy.images = if isDark then "never" else "smart";
           };
         };
@@ -96,7 +97,7 @@ in
           even.bg = c.bg;
           fg = c.fg;
           item.selected = {
-            bg = c.search;
+            bg = c.bgSubtle;
             fg = c.fg;
             match.fg = c.teal;
           };
@@ -176,7 +177,6 @@ in
             error = c.red;
             start = c.accent;
             stop = c.green;
-            system = "none";
           };
           odd = {
             bg = c.bg;
@@ -193,22 +193,22 @@ in
             };
             selected = {
               even = {
-                bg = c.search;
+                bg = c.bgSubtle;
                 fg = c.purple;
               };
               odd = {
-                bg = c.search;
+                bg = c.bgSubtle;
                 fg = c.purple;
               };
             };
           };
           selected = {
             even = {
-              bg = c.search;
+              bg = c.bgSubtle;
               fg = c.fg;
             };
             odd = {
-              bg = c.search;
+              bg = c.bgSubtle;
               fg = c.fg;
             };
           };
@@ -244,7 +244,4 @@ in
     '';
   };
 
-  # Take ownership of existing user-managed files during first migration.
-  xdg.configFile."qutebrowser/config.py".force = true;
-  xdg.configFile."qutebrowser/quickmarks".force = true;
 }
