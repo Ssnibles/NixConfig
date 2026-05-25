@@ -239,7 +239,7 @@ local capabilities = (function()
 end)()
 capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
 capabilities.textDocument.semanticTokens = {
-	requests = { range = vim.empty_dict(), full = { delta = true } },
+	requests = { range = true, full = { delta = true } },
 }
 
 -- Flake configuration for nixd
