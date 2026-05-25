@@ -22,6 +22,12 @@ let
   stylixThemeNames = builtins.attrNames stylixThemes;
   stylixThemeNamesShell = builtins.concatStringsSep " " (map lib.escapeShellArg stylixThemeNames);
   stylixThemeNamesCsv = builtins.concatStringsSep ", " stylixThemeNames;
+  qsBin = "${pkgs.unstable.quickshell}/bin/qs";
+  flakeTarget =
+    if hostProfile.useDisko then
+      hostProfile.hostName
+    else
+      "${hostProfile.hostName}-test";
 
   # ── Toggle floating window ─────────────────────────────────────────────
   # Floats the active window and centres it at 60 % of screen size.
@@ -40,14 +46,14 @@ let
   # ── Reload Quickshell ──────────────────────────────────────────────────
   # Sends an in-process reload request so all QML updates apply instantly.
   reload-shell = pkgs.writeShellScriptBin "reload-shell" ''
-    qs ipc call quickshell reload
+    ${qsBin} ipc call quickshell reload all 2>/dev/null || true
   '';
 
   # ── Reload everything ────────────────────────────────────────────────────
   # Reloads Hyprland and Quickshell (bar + notifications).
   reload-all = pkgs.writeShellScriptBin "reload-all" ''
     ${pkgs.hyprland}/bin/hyprctl reload
-    qs ipc call quickshell reload 2>/dev/null || true
+    ${qsBin} ipc call quickshell reload all 2>/dev/null || true
     ${pkgs.libnotify}/bin/notify-send "Reload" "Hyprland, Quickshell reloaded"
   '';
 
@@ -255,8 +261,9 @@ let
   '';
 
   # ── Stylix theme switcher ───────────────────────────────────────────────
-  # Switches lib/stylix/current-theme.nix and applies Home Manager.
-  # Use --persist only when you explicitly want to run a full system rebuild.
+  # Switches lib/stylix/current-theme.nix and rebuilds the system so the
+  # change is baked into a NixOS generation and survives reboots.
+  # Use --apply for a quick home-manager-only switch (ephemeral).
   stylix-switch = pkgs.writeShellScriptBin "stylix-switch" ''
     set -euo pipefail
 
@@ -265,11 +272,31 @@ let
     available_themes=(${stylixThemeNamesShell})
 
     usage() {
-      echo "Usage: stylix-switch <theme-name|--list|--current|--apply|--persist>" >&2
+      echo "Usage: stylix-switch <theme-name|--list|--current|--apply>" >&2
     }
 
-    apply_theme() {
+    reload_ui() {
+      if [ -z "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+        return 0
+      fi
+
+      ${pkgs.hyprland}/bin/hyprctl reload >/dev/null 2>&1 || true
+      if [ -x "${qsBin}" ]; then
+        if ! ${qsBin} ipc call quickshell reload all 2>/dev/null; then
+          echo "Quickshell reload failed." >&2
+        fi
+      fi
+    }
+
+    apply_persist() {
+      sudo nixos-rebuild switch --flake "$repo_root#${flakeTarget}"
       nh home switch
+      reload_ui
+    }
+
+    apply_ephemeral() {
+      nh home switch
+      reload_ui
     }
 
     if [ ! -f "$theme_file" ]; then
@@ -297,14 +324,9 @@ let
         ;;
       --apply)
         cd "$repo_root"
-        apply_theme
-        echo "Reapplied Stylix theme: $current_theme"
-        exit 0
-        ;;
-      --persist)
-        cd "$repo_root"
-        nh os switch
-        echo "Persisted current Stylix theme via system rebuild: $current_theme"
+        apply_ephemeral
+        echo "Reapplied Stylix theme via home-manager: $current_theme"
+        echo "This change is ephemeral — run 'stylix-switch' without --apply to persist."
         exit 0
         ;;
       ""|-h|--help)
@@ -331,18 +353,16 @@ let
 
     if [ "$selected" = "$current_theme" ]; then
       cd "$repo_root"
-      apply_theme
-      echo "Theme already active; reapplied: $selected"
-      echo "Run 'stylix-switch --persist' to persist via system rebuild."
+      apply_persist
+      echo "Theme already active; rebuilt system: $selected"
       exit 0
     fi
 
     printf '"%s"\n' "$selected" > "$theme_file"
 
     cd "$repo_root"
-    apply_theme
-    echo "Switched Stylix theme to: $selected"
-    echo "Run 'stylix-switch --persist' to persist via system rebuild."
+    apply_persist
+    echo "Switched Stylix theme to: $selected (persistent)"
   '';
 in
 {

@@ -145,20 +145,21 @@ in
     # Home Manager's Firefox module defaults to ~/.mozilla/firefox.
     # Zen Browser expects profiles under ~/.zen.
     configPath = ".zen";
-    profiles.josh = {
-      isDefault = true;
-      preConfig = builtins.readFile "${inputs.betterfox}/user.js";
-      extensions = {
-        packages = with pkgs.nur.repos.rycee.firefox-addons; [
-          ublock-origin
-          bitwarden
-        ];
-      };
-      settings = {
-        "browser.startup.homepage" = "https://startpage.com";
-        "browser.tabs.unloadOnLowMemory" = true;
-        "zen.view.compact.show-sidebar-and-toolbar-on-hover" = true;
-        "browser.sessionstore.interval" = 600000;
+      profiles.josh = {
+        isDefault = true;
+        preConfig = builtins.readFile "${inputs.betterfox}/user.js";
+        extensions = {
+          packages = with pkgs.nur.repos.rycee.firefox-addons; [
+            ublock-origin
+            bitwarden
+          ];
+        };
+        extensions.force = true;
+        settings = {
+          "browser.startup.homepage" = "https://startpage.com";
+          "browser.tabs.unloadOnLowMemory" = true;
+          "zen.view.compact.show-sidebar-and-toolbar-on-hover" = true;
+          "browser.sessionstore.interval" = 600000;
       };
       # These need to come after Betterfox so they always win.
       extraConfig = ''

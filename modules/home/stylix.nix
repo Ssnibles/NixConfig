@@ -2,23 +2,15 @@
   pkgs,
   lib,
   config,
+  user,
   ...
 }:
 let
-  themeName = import ../../lib/stylix/current-theme.nix;
-  themes = import ../../lib/stylix/themes.nix;
-  wallpaper = ../../wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg;
   enableUnsupportedProgramExample = false;
-  selectedTheme =
-    if builtins.hasAttr themeName themes then
-      themes.${themeName}
-    else
-      {
-        scheme = "catppuccin-mocha.yaml";
-        polarity = "dark";
-      };
 in
 {
+  imports = [ ../shared/stylix.nix ];
+
   # Enable HM program modules so Stylix targets can actually theme them.
   programs = {
     bat = {
@@ -63,39 +55,20 @@ in
     })
   ];
 
-  assertions = [
-    {
-      assertion = builtins.hasAttr themeName themes;
-      message = ''
-        Stylix theme "${themeName}" is not defined in lib/stylix/themes.nix.
-      '';
-    }
-  ];
-
-  stylix = {
-    enable = true;
-    autoEnable = false;
-    image = wallpaper;
-    base16Scheme =
-      if builtins.isAttrs selectedTheme.scheme then
-        selectedTheme.scheme
-      else
-        "${pkgs.base16-schemes}/share/themes/${selectedTheme.scheme}";
-    polarity = selectedTheme.polarity;
-
-    # Programs in this repo that should follow the currently selected Stylix
-    # theme automatically.
-    targets = {
-      bat.enable = true;
-      fzf.enable = true;
-      gtk.enable = true;
-      lazygit.enable = true;
-      qt.enable = true;
-      spotify-player.enable = true;
-      vicinae.enable = true;
-      yazi.enable = true;
-      zathura.enable = true;
-      "zen-browser".enable = true;
+  stylix.targets = {
+    bat.enable = true;
+    firefox = {
+      enable = true;
+      profileNames = [ user ];
+      colorTheme.enable = true;
     };
+    fzf.enable = true;
+    gtk.enable = true;
+    lazygit.enable = true;
+    qt.enable = true;
+    spotify-player.enable = true;
+    vicinae.enable = true;
+    yazi.enable = true;
+    zathura.enable = true;
   };
 }

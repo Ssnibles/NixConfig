@@ -32,6 +32,7 @@ in
         }
 
         inputs.agenix.nixosModules.default
+        inputs.stylix.nixosModules.stylix
         ../modules/nixos/common.nix
         ../hosts/${hostName}
 
