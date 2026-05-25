@@ -1,6 +1,8 @@
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
+import Quickshell.Services.Pipewire
+import Quickshell.Networking
 import QtQuick
 import QtQuick.Layouts
 import QtQml
@@ -41,6 +43,31 @@ PanelWindow {
   function switchWs(id) {
     Hyprland.dispatch("workspace " + id);
   }
+
+  // -- Volume --
+  property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
+  PwObjectTracker { objects: barPanel.volNodes }
+  property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
+  property real volPct: volInfo ? volInfo.volume : 0
+  property bool volMuted: volInfo ? volInfo.muted : false
+
+  // -- WiFi --
+  property var wifiDev: {
+    for (var i = 0; i < Networking.devices.count; i++) {
+      var d = Networking.devices.get(i);
+      if (d.type === DeviceType.Wifi) return d;
+    }
+    return null;
+  }
+  property var wifiNet: {
+    if (!wifiDev) return null;
+    for (var i = 0; i < wifiDev.networks.count; i++) {
+      var n = wifiDev.networks.get(i);
+      if (n.connected) return n;
+    }
+    return null;
+  }
+  property string wifiSsid: wifiNet ? wifiNet.name : ""
 
   IpcHandler {
     target: "bar"
@@ -100,6 +127,34 @@ PanelWindow {
       font.pixelSize: 12
       elide: Text.ElideRight
       horizontalAlignment: Text.AlignLeft
+    }
+
+    Row {
+      spacing: 8
+      Layout.alignment: Qt.AlignRight
+
+      Text {
+        text: barPanel.volMuted ? "MUT" : Math.round(barPanel.volPct * 100) + "%"
+        color: barPanel.volMuted ? Colors.red : Colors.fg
+        font.family: "JetBrains Mono"
+        font.pixelSize: 12
+        font.bold: true
+
+        MouseArea {
+          anchors.fill: parent
+          onClicked: {
+            if (barPanel.volInfo)
+              barPanel.volInfo.muted = !barPanel.volInfo.muted;
+          }
+        }
+      }
+
+      Text {
+        text: barPanel.wifiSsid ? barPanel.wifiSsid : ""
+        color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
+        font.family: "JetBrains Mono"
+        font.pixelSize: 12
+      }
     }
 
     Text {
