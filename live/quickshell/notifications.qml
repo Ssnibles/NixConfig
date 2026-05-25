@@ -236,12 +236,13 @@ Item {
       Repeater {
         model: popupModel
 
-        Rectangle {
-          id: popupCard
-          property var notification: modelData
+          Rectangle {
+            id: popupCard
+            property var notification: modelData
+            property var _notif: notif
 
-          width: popupColumn.width
-          implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
+            width: popupColumn.width
+            implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
           height: implicitHeight
           radius: notif.cardRadius
           color: notif.bgRaised
@@ -360,7 +361,7 @@ Item {
             repeat: false
             onTriggered: {
               if (notification) notification.expire();
-              notif.removePopup(notification);
+              _notif.removePopup(notification);
             }
           }
 
@@ -368,7 +369,7 @@ Item {
 
           Connections {
             target: notification
-            function onClosed(reason) { notif.removePopup(notification); }
+            function onClosed(reason) { _notif.removePopup(notification); }
           }
         }
       }

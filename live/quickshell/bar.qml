@@ -15,7 +15,7 @@ PanelWindow {
   aboveWindows: true
 
   anchors { top: true; left: true; right: true }
-  height: 30
+  implicitHeight: 30
   exclusionMode: ExclusionMode.Auto
   color: Colors.bg
 
