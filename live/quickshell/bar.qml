@@ -249,17 +249,106 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
       }
 
-      Text {
-        text: barPanel.volMuted ? "MUT" : Math.round(barPanel.volPct * 100) + "%"
-        color: barPanel.volMuted ? Colors.red : Colors.fg
-        font.family: "JetBrains Mono"
-        font.pixelSize: 12
-        font.bold: true
+      Item {
+        id: volWidget
+        width: volLayout.width + 8
+        height: parent.height
         anchors.verticalCenter: parent.verticalCenter
+
+        Rectangle {
+          id: volBg
+          anchors.fill: parent
+          radius: 4
+          color: "transparent"
+
+          Behavior on color {
+            ColorAnimation { duration: 100 }
+          }
+        }
+
+        Row {
+          id: volLayout
+          anchors.verticalCenter: parent.verticalCenter
+          anchors.left: parent.left
+          anchors.leftMargin: 4
+          spacing: 4
+
+          Text {
+            id: volIcon
+            text: {
+              if (barPanel.volMuted) return "󰝟"
+              var v = barPanel.volPct
+              if (v <= 0) return "󰝟"
+              if (v < 0.33) return "󰕿"
+              if (v < 0.66) return "󰖀"
+              return "󰕾"
+            }
+            color: barPanel.volMuted ? Colors.red : Colors.fg
+            font.family: "JetBrains Mono"
+            font.pixelSize: 12
+          }
+
+          Text {
+            id: volPct
+            text: Math.round(barPanel.volPct * 100) + "%"
+            color: barPanel.volMuted ? Colors.red : Colors.fg
+            font.family: "JetBrains Mono"
+            font.pixelSize: 12
+            font.bold: true
+          }
+
+          Item {
+            width: 32
+            height: parent.height
+
+            Rectangle {
+              anchors.centerIn: parent
+              width: parent.width
+              height: 8
+              radius: 4
+              color: Colors.bgSubtle
+
+              Rectangle {
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                width: parent.width * barPanel.volPct
+                radius: 4
+                color: barPanel.volMuted ? Colors.red : Colors.accent
+
+                Behavior on width {
+                  NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                }
+                Behavior on color {
+                  ColorAnimation { duration: 150 }
+                }
+              }
+            }
+          }
+        }
 
         MouseArea {
           anchors.fill: parent
-          onClicked: { volProc.startDetached(); }
+          hoverEnabled: true
+          acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+          onEntered: volBg.color = Colors.bgRaised
+          onExited: volBg.color = "transparent"
+
+          onClicked: {
+            if (mouse.button === Qt.RightButton) {
+              volProc.startDetached()
+            } else if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+              Pipewire.defaultAudioSink.audio.muted = !barPanel.volMuted
+            }
+          }
+
+          onWheel: {
+            if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return
+            var step = 0.05
+            var dir = wheel.angleDelta.y > 0 ? 1 : -1
+            Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(1, barPanel.volPct + dir * step))
+          }
         }
       }
 
