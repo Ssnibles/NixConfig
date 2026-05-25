@@ -40,6 +40,7 @@ PanelWindow {
   }
 
   property string currentTitle: Hyprland.activeToplevel ? formatTitle(Hyprland.activeToplevel.title) : ""
+  property real waveTime: 0
 
   function switchWs(id) {
     Hyprland.dispatch("workspace " + id);
@@ -108,6 +109,13 @@ PanelWindow {
     running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
     repeat: true
     onTriggered: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.positionChanged(); }
+  }
+
+  Timer {
+    interval: 50
+    running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
+    repeat: true
+    onTriggered: { barPanel.waveTime = (barPanel.waveTime + 0.12) % (Math.PI * 2) }
   }
 
   IpcHandler {
@@ -198,28 +206,43 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
 
         Item {
-          width: 60; height: 14
+          id: mediaProgressBar
+          width: 60
+          height: 16
           anchors.verticalCenter: parent.verticalCenter
 
-          Rectangle {
-            anchors.fill: parent
-            radius: 3
-            color: Colors.bgSubtle
+          Row {
+            spacing: 2
+            anchors.centerIn: parent
+            Repeater {
+              model: 12
+              delegate: Rectangle {
+                required property int index
+                width: 3
+                radius: 1.5
+                anchors.bottom: parent.bottom
+                color: (index + 1) / 12 <= barPanel.mediaProgress ? Colors.accent : Colors.bgSubtle
 
-            Rectangle {
-              anchors.top: parent.top; anchors.left: parent.left; anchors.bottom: parent.bottom
-              width: parent.width * barPanel.mediaProgress
-              radius: 3
-              color: Colors.accent
-            }
+                height: {
+                  var base = 4
+                  if (!barPanel.mediaPlayer || !barPanel.mediaPlayer.isPlaying)
+                    return base
+                  return base + Math.sin(barPanel.waveTime + index * 0.7) * 4 + 4
+                }
 
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: Qt.PointingHandCursor
-              onClicked: {
-                if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek)
-                  barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
+                Behavior on color {
+                  ColorAnimation { duration: 200 }
+                }
               }
+            }
+          }
+
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+              if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek)
+                barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
             }
           }
         }
