@@ -158,19 +158,25 @@ PanelWindow {
       }
 
       Rectangle {
-        width: 1
-        height: barContent.height
-        color: Colors.border
-      }
-
-      Text {
-        text: barPanel.currentTitle
-        color: Colors.fgMid
-        font.family: "JetBrains Mono"
-        font.pixelSize: 12
-        font.italic: true
-        elide: Text.ElideRight
+        id: titlePill
         anchors.verticalCenter: parent.verticalCenter
+        height: 22
+        radius: height / 2
+        color: Colors.bgRaised
+        width: Math.min(titleLabel.implicitWidth, 400) + 16
+
+        Text {
+          id: titleLabel
+          text: barPanel.currentTitle
+          color: Colors.fgMid
+          font.family: "JetBrains Mono"
+          font.pixelSize: 12
+          font.italic: true
+          elide: Text.ElideRight
+          x: 8
+          anchors.verticalCenter: parent.verticalCenter
+          width: parent.width - 16
+        }
       }
     }
 
@@ -190,104 +196,101 @@ PanelWindow {
       anchors.verticalCenter: parent.verticalCenter
       spacing: 6
 
-      Row {
-        spacing: 4
+      Pill {
+        id: mediaPill
         visible: barPanel.mediaText !== ""
-        anchors.verticalCenter: parent.verticalCenter
 
-        Item {
-          id: mediaProgressBar
-          property int barCount: 16
-          property int barWidth: 3
-          property int barSpacing: 2
-          width: barCount * barWidth + (barCount - 1) * barSpacing
-          height: 16
+        Row {
           anchors.verticalCenter: parent.verticalCenter
+          spacing: 6
 
-          property real wavePhase: 0
-          property real displayProgress: 0
-          property real playTransition: 0
-
-          Timer {
-            interval: 30
-            running: barPanel.mediaPlayer !== null
-            repeat: true
-            onTriggered: {
-              mediaProgressBar.wavePhase += 0.075;
-              var target = barPanel.mediaProgress;
-              var diff = target - mediaProgressBar.displayProgress;
-              if (Math.abs(diff) < 0.0005)
-              mediaProgressBar.displayProgress = target;
-              else
-              mediaProgressBar.displayProgress += diff * 0.35;
-
-              var playing = barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying;
-              var tTarget = playing ? 1 : 0;
-              var tDiff = tTarget - mediaProgressBar.playTransition;
-              if (Math.abs(tDiff) < 0.005)
-              mediaProgressBar.playTransition = tTarget;
-              else
-              mediaProgressBar.playTransition += tDiff * 0.1;
-            }
-          }
-
-          Row {
+          Item {
+            id: mediaProgressBar
+            property int barCount: 16
+            property int barWidth: 3
+            property int barSpacing: 2
+            width: barCount * barWidth + (barCount - 1) * barSpacing
+            height: 16
             anchors.verticalCenter: parent.verticalCenter
-            spacing: mediaProgressBar.barSpacing
-            Repeater {
-              model: mediaProgressBar.barCount
-              delegate: Rectangle {
-                required property int index
-                width: mediaProgressBar.barWidth
-                radius: 1.5
-                color: (index + 1) / mediaProgressBar.barCount <= mediaProgressBar.displayProgress ? Colors.accent : Colors.bgSubtle
-                y: Math.round((parent.height - height) / 2)
-                height: {
-                  if (!barPanel.mediaPlayer) return 4
-                  var waveHeight = 4 + Math.sin(mediaProgressBar.wavePhase + index * 0.7) * 4 + 4
-                  waveHeight = Math.max(4, Math.round(waveHeight))
-                  return 4 + (waveHeight - 4) * mediaProgressBar.playTransition
+
+            property real wavePhase: 0
+            property real displayProgress: 0
+            property real playTransition: 0
+
+            Timer {
+              interval: 30
+              running: barPanel.mediaPlayer !== null
+              repeat: true
+              onTriggered: {
+                mediaProgressBar.wavePhase += 0.075;
+                var target = barPanel.mediaProgress;
+                var diff = target - mediaProgressBar.displayProgress;
+                if (Math.abs(diff) < 0.0005)
+                mediaProgressBar.displayProgress = target;
+                else
+                mediaProgressBar.displayProgress += diff * 0.35;
+
+                var playing = barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying;
+                var tTarget = playing ? 1 : 0;
+                var tDiff = tTarget - mediaProgressBar.playTransition;
+                if (Math.abs(tDiff) < 0.005)
+                mediaProgressBar.playTransition = tTarget;
+                else
+                mediaProgressBar.playTransition += tDiff * 0.1;
+              }
+            }
+
+            Row {
+              anchors.verticalCenter: parent.verticalCenter
+              spacing: mediaProgressBar.barSpacing
+              Repeater {
+                model: mediaProgressBar.barCount
+                delegate: Rectangle {
+                  required property int index
+                  width: mediaProgressBar.barWidth
+                  radius: 1.5
+                  color: (index + 1) / mediaProgressBar.barCount <= mediaProgressBar.displayProgress ? Colors.accent : Colors.bgSubtle
+                  y: Math.round((parent.height - height) / 2)
+                  height: {
+                    if (!barPanel.mediaPlayer) return 4
+                    var waveHeight = 4 + Math.sin(mediaProgressBar.wavePhase + index * 0.7) * 4 + 4
+                    waveHeight = Math.max(4, Math.round(waveHeight))
+                    return 4 + (waveHeight - 4) * mediaProgressBar.playTransition
+                  }
+                  Behavior on color {
+                    ColorAnimation { duration: 200 }
+                  }
                 }
-                Behavior on color {
-                  ColorAnimation { duration: 200 }
-                }
+              }
+            }
+
+            MouseArea {
+              anchors.fill: parent
+              cursorShape: Qt.PointingHandCursor
+              onClicked: {
+                if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek)
+                barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
               }
             }
           }
 
-          MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-              if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek)
-              barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
+          Text {
+            id: mediaLabel
+            text: barPanel.mediaText
+            color: Colors.fg
+            font.family: "JetBrains Mono"
+            font.pixelSize: 12
+            elide: Text.ElideRight
+
+            MouseArea {
+              anchors.fill: parent
+              onClicked: {
+                if (barPanel.mediaPlayer)
+                barPanel.mediaPlayer.togglePlaying();
+              }
             }
           }
         }
-
-        Text {
-          text: barPanel.mediaText
-          color: Colors.fg
-          font.family: "JetBrains Mono"
-          font.pixelSize: 12
-          elide: Text.ElideRight
-
-          MouseArea {
-            anchors.fill: parent
-            onClicked: {
-              if (barPanel.mediaPlayer)
-              barPanel.mediaPlayer.togglePlaying();
-            }
-          }
-        }
-      }
-
-      Rectangle {
-        width: 1
-        height: barContent.height
-        color: Colors.border
-        visible: barPanel.mediaText !== ""
-        anchors.verticalCenter: parent.verticalCenter
       }
 
       Item {
@@ -393,19 +396,17 @@ PanelWindow {
         }
       }
 
-      Rectangle {
-        width: 1
-        height: barContent.height
-        color: Colors.border
-        anchors.verticalCenter: parent.verticalCenter
-      }
+      Pill {
+        id: wifiPill
 
-      Text {
-        text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
-        color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
-        font.family: "JetBrains Mono"
-        font.pixelSize: 12
-        anchors.verticalCenter: parent.verticalCenter
+        Text {
+          id: wifiLabel
+          text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
+          color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
+          font.family: "JetBrains Mono"
+          font.pixelSize: 12
+          anchors.verticalCenter: parent.verticalCenter
+        }
       }
     }
   }

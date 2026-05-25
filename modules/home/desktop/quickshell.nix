@@ -21,6 +21,8 @@ in
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/notifications.qml";
     "quickshell/colors.js".source =
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/colors.js";
+    "quickshell/Pill.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Pill.qml";
   };
 
   home.activation.writeQuickshellColors = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
