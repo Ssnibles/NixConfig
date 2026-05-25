@@ -117,15 +117,19 @@ PanelWindow {
     function hide(): void   { barPanel.visible = false; }
   }
 
-  RowLayout {
+  Item {
     anchors.fill: parent
     anchors.leftMargin: 8
     anchors.rightMargin: 10
-    spacing: 6
+
+    Row {
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      spacing: 6
 
       Row {
-        Layout.alignment: Qt.AlignLeft
         spacing: 4
+        anchors.verticalCenter: parent.verticalCenter
 
         Repeater {
           model: Hyprland.workspaces
@@ -153,101 +157,107 @@ PanelWindow {
         }
       }
 
-    Rectangle {
-      width: 1; height: 18
-      color: Colors.border
-      Layout.alignment: Qt.AlignLeft
-    }
-
-    Text {
-      Layout.fillWidth: true
-      text: barPanel.currentTitle
-      color: Colors.fgMid
-      font.family: "JetBrains Mono"
-      font.pixelSize: 12
-      elide: Text.ElideRight
-      horizontalAlignment: Text.AlignLeft
-    }
-
-    Row {
-      spacing: 4
-      visible: barPanel.mediaText !== ""
-
-      Item {
-        width: 60; height: 14
+      Rectangle {
+        width: 1; height: 18
+        color: Colors.border
         anchors.verticalCenter: parent.verticalCenter
-
-        Rectangle {
-          anchors.fill: parent
-          radius: 3
-          color: Colors.bgSubtle
-
-          Rectangle {
-            anchors.top: parent.top; anchors.left: parent.left; anchors.bottom: parent.bottom
-            width: parent.width * barPanel.mediaProgress
-            radius: 3
-            color: Colors.accent
-          }
-
-          MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-              if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek)
-                barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
-            }
-          }
-        }
       }
 
       Text {
-        text: barPanel.mediaIcon + " " + barPanel.mediaText
-        color: Colors.fg
+        text: barPanel.currentTitle
+        color: Colors.fgMid
         font.family: "JetBrains Mono"
         font.pixelSize: 12
         elide: Text.ElideRight
-
-        MouseArea {
-          anchors.fill: parent
-          onClicked: {
-            if (barPanel.mediaPlayer)
-              barPanel.mediaPlayer.togglePlaying();
-          }
-        }
-      }
-    }
-
-    Row {
-      spacing: 8
-      Layout.alignment: Qt.AlignRight
-
-      Text {
-        text: barPanel.volMuted ? "MUT" : Math.round(barPanel.volPct * 100) + "%"
-        color: barPanel.volMuted ? Colors.red : Colors.fg
-        font.family: "JetBrains Mono"
-        font.pixelSize: 12
-        font.bold: true
-
-        MouseArea {
-          anchors.fill: parent
-          onClicked: { volProc.startDetached(); }
-        }
-      }
-
-      Text {
-        text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
-        color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
-        font.family: "JetBrains Mono"
-        font.pixelSize: 12
+        anchors.verticalCenter: parent.verticalCenter
       }
     }
 
     Text {
+      anchors.centerIn: parent
       text: barPanel.timeStr
       color: Colors.fg
       font.family: "JetBrains Mono"
       font.pixelSize: 13
       font.bold: true
+    }
+
+    Row {
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      spacing: 6
+
+      Row {
+        spacing: 4
+        visible: barPanel.mediaText !== ""
+
+        Item {
+          width: 60; height: 14
+          anchors.verticalCenter: parent.verticalCenter
+
+          Rectangle {
+            anchors.fill: parent
+            radius: 3
+            color: Colors.bgSubtle
+
+            Rectangle {
+              anchors.top: parent.top; anchors.left: parent.left; anchors.bottom: parent.bottom
+              width: parent.width * barPanel.mediaProgress
+              radius: 3
+              color: Colors.accent
+            }
+
+            MouseArea {
+              anchors.fill: parent
+              cursorShape: Qt.PointingHandCursor
+              onClicked: {
+                if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek)
+                  barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
+              }
+            }
+          }
+        }
+
+        Text {
+          text: barPanel.mediaIcon + " " + barPanel.mediaText
+          color: Colors.fg
+          font.family: "JetBrains Mono"
+          font.pixelSize: 12
+          elide: Text.ElideRight
+
+          MouseArea {
+            anchors.fill: parent
+            onClicked: {
+              if (barPanel.mediaPlayer)
+                barPanel.mediaPlayer.togglePlaying();
+            }
+          }
+        }
+      }
+
+      Row {
+        spacing: 8
+
+        Text {
+          text: barPanel.volMuted ? "MUT" : Math.round(barPanel.volPct * 100) + "%"
+          color: barPanel.volMuted ? Colors.red : Colors.fg
+          font.family: "JetBrains Mono"
+          font.pixelSize: 12
+          font.bold: true
+
+          MouseArea {
+            anchors.fill: parent
+            onClicked: { volProc.startDetached(); }
+          }
+        }
+
+        Text {
+          text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
+          color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
+          font.family: "JetBrains Mono"
+          font.pixelSize: 12
+        }
+      }
     }
   }
 }
