@@ -17,6 +17,7 @@ let
     ./services/virtualisation.nix
 
     ./desktop/display-manager.nix
+    ./desktop/stylix.nix
     ./desktop/hyprland.nix
 
     ./users.nix
