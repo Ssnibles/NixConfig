@@ -70,6 +70,14 @@ PanelWindow {
     return null;
   }
   property string wifiSsid: wifiNet ? wifiNet.name : ""
+  property string wifiIcon: {
+    if (!wifiNet) return "󰤯";
+    var s = wifiNet.signalStrength;
+    if (s < 0.2) return "󰤟";
+    if (s < 0.4) return "󰤢";
+    if (s < 0.6) return "󰤥";
+    return "󰤨";
+  }
 
   IpcHandler {
     target: "bar"
@@ -152,7 +160,7 @@ PanelWindow {
       }
 
       Text {
-        text: barPanel.wifiSsid ? barPanel.wifiSsid : ""
+        text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
         color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
         font.family: "JetBrains Mono"
         font.pixelSize: 12
