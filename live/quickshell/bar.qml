@@ -118,11 +118,13 @@ PanelWindow {
   }
 
   Item {
+    id: barContent
     anchors.fill: parent
     anchors.leftMargin: 8
     anchors.rightMargin: 10
 
     Row {
+      id: leftRow
       anchors.left: parent.left
       anchors.verticalCenter: parent.verticalCenter
       spacing: 6
@@ -158,9 +160,9 @@ PanelWindow {
       }
 
       Rectangle {
-        width: 1; height: 18
+        width: 1
+        height: barContent.height
         color: Colors.border
-        anchors.verticalCenter: parent.verticalCenter
       }
 
       Text {
@@ -175,6 +177,7 @@ PanelWindow {
     }
 
     Text {
+      id: centerTime
       anchors.centerIn: parent
       text: barPanel.timeStr
       color: Colors.fg
@@ -184,6 +187,7 @@ PanelWindow {
     }
 
     Row {
+      id: rightRow
       anchors.right: parent.right
       anchors.verticalCenter: parent.verticalCenter
       spacing: 6
@@ -191,6 +195,7 @@ PanelWindow {
       Row {
         spacing: 4
         visible: barPanel.mediaText !== ""
+        anchors.verticalCenter: parent.verticalCenter
 
         Item {
           width: 60; height: 14
@@ -236,28 +241,41 @@ PanelWindow {
         }
       }
 
-      Row {
-        spacing: 8
+      Rectangle {
+        width: 1
+        height: barContent.height
+        color: Colors.border
+        visible: barPanel.mediaText !== ""
+        anchors.verticalCenter: parent.verticalCenter
+      }
 
-        Text {
-          text: barPanel.volMuted ? "MUT" : Math.round(barPanel.volPct * 100) + "%"
-          color: barPanel.volMuted ? Colors.red : Colors.fg
-          font.family: "JetBrains Mono"
-          font.pixelSize: 12
-          font.bold: true
+      Text {
+        text: barPanel.volMuted ? "MUT" : Math.round(barPanel.volPct * 100) + "%"
+        color: barPanel.volMuted ? Colors.red : Colors.fg
+        font.family: "JetBrains Mono"
+        font.pixelSize: 12
+        font.bold: true
+        anchors.verticalCenter: parent.verticalCenter
 
-          MouseArea {
-            anchors.fill: parent
-            onClicked: { volProc.startDetached(); }
-          }
+        MouseArea {
+          anchors.fill: parent
+          onClicked: { volProc.startDetached(); }
         }
+      }
 
-        Text {
-          text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
-          color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
-          font.family: "JetBrains Mono"
-          font.pixelSize: 12
-        }
+      Rectangle {
+        width: 1
+        height: barContent.height
+        color: Colors.border
+        anchors.verticalCenter: parent.verticalCenter
+      }
+
+      Text {
+        text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
+        color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
+        font.family: "JetBrains Mono"
+        font.pixelSize: 12
+        anchors.verticalCenter: parent.verticalCenter
       }
     }
   }
