@@ -168,6 +168,7 @@ PanelWindow {
         color: Colors.fgMid
         font.family: "JetBrains Mono"
         font.pixelSize: 12
+        font.italic: true
         elide: Text.ElideRight
         anchors.verticalCenter: parent.verticalCenter
       }
