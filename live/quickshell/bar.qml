@@ -205,9 +205,9 @@ PanelWindow {
           spacing: 6
 
           Item {
-            id: mediaProgressBar
-            property int barCount: 16
-            property int barWidth: 3
+            id: mediaWaveform
+            property int barCount: 20
+            property int barWidth: 2
             property int barSpacing: 2
             width: barCount * barWidth + (barCount - 1) * barSpacing
             height: 16
@@ -222,40 +222,51 @@ PanelWindow {
               running: barPanel.mediaPlayer !== null
               repeat: true
               onTriggered: {
-                mediaProgressBar.wavePhase += 0.075;
+                mediaWaveform.wavePhase += 0.06;
                 var target = barPanel.mediaProgress;
-                var diff = target - mediaProgressBar.displayProgress;
+                var diff = target - mediaWaveform.displayProgress;
                 if (Math.abs(diff) < 0.0005)
-                mediaProgressBar.displayProgress = target;
+                mediaWaveform.displayProgress = target;
                 else
-                mediaProgressBar.displayProgress += diff * 0.35;
+                mediaWaveform.displayProgress += diff * 0.35;
 
                 var playing = barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying;
                 var tTarget = playing ? 1 : 0;
-                var tDiff = tTarget - mediaProgressBar.playTransition;
+                var tDiff = tTarget - mediaWaveform.playTransition;
                 if (Math.abs(tDiff) < 0.005)
-                mediaProgressBar.playTransition = tTarget;
+                mediaWaveform.playTransition = tTarget;
                 else
-                mediaProgressBar.playTransition += tDiff * 0.1;
+                mediaWaveform.playTransition += tDiff * 0.1;
               }
             }
 
             Row {
               anchors.verticalCenter: parent.verticalCenter
-              spacing: mediaProgressBar.barSpacing
+              spacing: mediaWaveform.barSpacing
               Repeater {
-                model: mediaProgressBar.barCount
+                model: mediaWaveform.barCount
                 delegate: Rectangle {
                   required property int index
-                  width: mediaProgressBar.barWidth
-                  radius: 1.5
-                  color: (index + 1) / mediaProgressBar.barCount <= mediaProgressBar.displayProgress ? Colors.accent : Colors.bgSubtle
+                  width: mediaWaveform.barWidth
+                  radius: width / 2
                   y: Math.round((parent.height - height) / 2)
                   height: {
-                    if (!barPanel.mediaPlayer) return 4
-                    var waveHeight = 4 + Math.sin(mediaProgressBar.wavePhase + index * 0.7) * 4 + 4
-                    waveHeight = Math.max(4, Math.round(waveHeight))
-                    return 4 + (waveHeight - 4) * mediaProgressBar.playTransition
+                    if (!barPanel.mediaPlayer) return 3
+                    var waveHeight = 3 + Math.sin(mediaWaveform.wavePhase + index * 0.55) * 4 + 3
+                    waveHeight = Math.max(3, Math.round(waveHeight))
+                    return 3 + (waveHeight - 3) * mediaWaveform.playTransition
+                  }
+                  color: {
+                    if (!barPanel.mediaPlayer) return Colors.bgSubtle
+                    var frac = (index + 1) / mediaWaveform.barCount
+                    if (frac > mediaWaveform.displayProgress) return Colors.bgSubtle
+                    var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
+                    return Qt.rgba(
+                      0.769 - 0.157 * t,
+                      0.655 + 0.157 * t,
+                      0.906 - 0.059 * t,
+                      1
+                    )
                   }
                   Behavior on color {
                     ColorAnimation { duration: 200 }
@@ -272,6 +283,23 @@ PanelWindow {
                 barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
               }
             }
+          }
+
+          Text {
+            id: mediaTimeLabel
+            text: {
+              if (!barPanel.mediaPlayer) return ""
+              var p = Math.round(barPanel.mediaPlayer.position)
+              var l = Math.round(barPanel.mediaPlayer.length)
+              if (l <= 0) return ""
+              return Math.floor(p/60) + ":" + (p%60).toString().padStart(2,'0')
+                + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
+            }
+            color: Colors.fgMid
+            font.family: "JetBrains Mono"
+            font.pixelSize: 9
+            anchors.verticalCenter: parent.verticalCenter
+            visible: barPanel.mediaPlayer !== null
           }
 
           Text {
