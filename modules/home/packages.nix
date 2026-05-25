@@ -62,6 +62,7 @@
     imagemagick
     zip
     btop
+    microfetch
 
     # ── Fonts ───────────────────────────────────────────────────────────
     nerd-fonts.fira-code

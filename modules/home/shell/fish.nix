@@ -52,7 +52,7 @@ in
       mng = "manage-nixos";
       ":q" = "exit";
       lg = "lazygit";
-      ff = "fastfetch";
+      ff = "microfetch";
     };
 
     interactiveShellInit = ''
