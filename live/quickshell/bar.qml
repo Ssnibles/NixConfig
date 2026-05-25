@@ -16,6 +16,7 @@ PanelWindow {
   color: Colors.bg
 
   property var wsMap: ({})
+  property var wsList: []
   property int currentWs: 1
   property string currentTitle: ""
   property string timeStr: ""
@@ -59,6 +60,7 @@ PanelWindow {
         for (var i = 0; i < list.length; i++)
           map[list[i].id] = list[i].windows;
         barPanel.wsMap = map;
+        barPanel.wsList = Object.keys(map).map(Number).sort((a,b) => a-b);
       } catch(e) {}
     }
   }
@@ -129,19 +131,19 @@ PanelWindow {
       Layout.alignment: Qt.AlignLeft
       spacing: 3
       Repeater {
-        model: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        model: barPanel.wsList
         Rectangle {
           width: 24; height: 24
           radius: 4
-          color: (index + 1) === barPanel.currentWs ? Colors.accent : Colors.bgSubtle
-          border.color: (index + 1) === barPanel.currentWs ? Colors.accent : Colors.border
+          color: modelData === barPanel.currentWs ? Colors.accent : Colors.bgSubtle
+          border.color: modelData === barPanel.currentWs ? Colors.accent : Colors.border
           border.width: 1
           anchors.verticalCenter: parent.verticalCenter
 
           Text {
             anchors.centerIn: parent
-            text: index + 1
-            color: (index + 1) === barPanel.currentWs ? Colors.bg : Colors.fgDim
+            text: modelData
+            color: modelData === barPanel.currentWs ? Colors.bg : Colors.fgDim
             font.family: "JetBrains Mono"
             font.pixelSize: 11
             font.bold: true
@@ -149,7 +151,7 @@ PanelWindow {
 
           MouseArea {
             anchors.fill: parent
-            onClicked: barPanel.switchWs(index + 1)
+            onClicked: barPanel.switchWs(modelData)
           }
         }
       }
