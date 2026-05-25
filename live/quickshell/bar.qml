@@ -53,16 +53,18 @@ PanelWindow {
 
   // -- WiFi --
   property var wifiDev: {
-    for (var i = 0; i < Networking.devices.count; i++) {
-      var d = Networking.devices.get(i);
+    var list = Networking.devices.values;
+    for (var i = 0; i < list.length; i++) {
+      var d = list[i];
       if (d.type === DeviceType.Wifi) return d;
     }
     return null;
   }
   property var wifiNet: {
     if (!wifiDev) return null;
-    for (var i = 0; i < wifiDev.networks.count; i++) {
-      var n = wifiDev.networks.get(i);
+    var list = wifiDev.networks.values;
+    for (var i = 0; i < list.length; i++) {
+      var n = list[i];
       if (n.connected) return n;
     }
     return null;
