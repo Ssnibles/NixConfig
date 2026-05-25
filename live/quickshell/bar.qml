@@ -40,7 +40,6 @@ PanelWindow {
   }
 
   property string currentTitle: Hyprland.activeToplevel ? formatTitle(Hyprland.activeToplevel.title) : ""
-  property real waveTime: 0
 
   function switchWs(id) {
     Hyprland.dispatch("workspace " + id);
@@ -109,13 +108,6 @@ PanelWindow {
     running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
     repeat: true
     onTriggered: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.positionChanged(); }
-  }
-
-  Timer {
-    interval: 50
-    running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
-    repeat: true
-    onTriggered: { barPanel.waveTime = (barPanel.waveTime + 0.12) % (Math.PI * 2) }
   }
 
   IpcHandler {
@@ -218,16 +210,24 @@ PanelWindow {
               model: 12
               delegate: Rectangle {
                 required property int index
+                property real t: 0
+
+                NumberAnimation on t {
+                  running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
+                  from: 0
+                  to: Math.PI * 2
+                  duration: 2500
+                  loops: Animation.Infinite
+                }
+
                 width: 3
                 radius: 1.5
-                anchors.bottom: parent.bottom
+                anchors.verticalCenter: parent.verticalCenter
                 color: (index + 1) / 12 <= barPanel.mediaProgress ? Colors.accent : Colors.bgSubtle
 
                 height: {
-                  var base = 4
-                  if (!barPanel.mediaPlayer || !barPanel.mediaPlayer.isPlaying)
-                    return base
-                  return base + Math.sin(barPanel.waveTime + index * 0.7) * 4 + 4
+                  if (!barPanel.mediaPlayer || !barPanel.mediaPlayer.isPlaying) return 4
+                  return 4 + Math.sin(t + index * 0.7) * 4 + 4
                 }
 
                 Behavior on color {
