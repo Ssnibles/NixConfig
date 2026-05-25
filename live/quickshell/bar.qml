@@ -33,10 +33,10 @@ PanelWindow {
 
   function formatTitle(t) {
     return t
-      .replace(/ — Mozilla Firefox$/, "")
-      .replace(/ — Zen Browser$/, "Zen")
-      .replace(/ - Neovim$/, "Neovim")
-      .replace(/ - foot$/, "");
+    .replace(/ — Mozilla Firefox$/, "")
+    .replace(/ — Zen Browser$/, "Zen")
+    .replace(/ - Neovim$/, "Neovim")
+    .replace(/ - foot$/, "");
   }
 
   property string currentTitle: Hyprland.activeToplevel ? formatTitle(Hyprland.activeToplevel.title) : ""
@@ -93,15 +93,13 @@ PanelWindow {
     }
     return null;
   }
-  property string mediaIcon: mediaPlayer
-    ? (mediaPlayer.isPlaying ? "" : "") : ""
   property string mediaText: mediaPlayer
-    ? (mediaPlayer.trackArtist
-      ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
-      : mediaPlayer.trackTitle)
-    : ""
+  ? (mediaPlayer.trackArtist
+    ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
+    : mediaPlayer.trackTitle)
+  : ""
   property real mediaProgress: mediaPlayer && mediaPlayer.length > 0
-    ? mediaPlayer.position / mediaPlayer.length : 0
+  ? mediaPlayer.position / mediaPlayer.length : 0
 
   Timer {
     interval: 1000
@@ -199,7 +197,10 @@ PanelWindow {
 
         Item {
           id: mediaProgressBar
-          width: 60
+          property int barCount: 16
+          property int barWidth: 3
+          property int barSpacing: 2
+          width: barCount * barWidth + (barCount - 1) * barSpacing
           height: 16
           anchors.verticalCenter: parent.verticalCenter
 
@@ -215,26 +216,26 @@ PanelWindow {
               var target = barPanel.mediaProgress;
               var diff = target - mediaProgressBar.displayProgress;
               if (Math.abs(diff) < 0.0005)
-                mediaProgressBar.displayProgress = target;
+              mediaProgressBar.displayProgress = target;
               else
-                mediaProgressBar.displayProgress += diff * 0.35;
+              mediaProgressBar.displayProgress += diff * 0.35;
             }
           }
 
           Row {
-            spacing: 2
-            anchors.centerIn: parent
+            spacing: mediaProgressBar.barSpacing
             Repeater {
-              model: 12
+              model: mediaProgressBar.barCount
               delegate: Rectangle {
                 required property int index
-                width: 3
+                width: mediaProgressBar.barWidth
                 radius: 1.5
-                anchors.verticalCenter: parent.verticalCenter
-                color: (index + 1) / 12 <= mediaProgressBar.displayProgress ? Colors.accent : Colors.bgSubtle
+                color: (index + 1) / mediaProgressBar.barCount <= mediaProgressBar.displayProgress ? Colors.accent : Colors.bgSubtle
+                y: Math.round((parent.height - height) / 2)
                 height: {
                   if (!barPanel.mediaPlayer || !barPanel.mediaPlayer.isPlaying) return 4
-                  return 4 + Math.sin(mediaProgressBar.wavePhase + index * 0.7) * 4 + 4
+                  var h = 4 + Math.sin(mediaProgressBar.wavePhase + index * 0.7) * 4 + 4
+                  return Math.max(4, Math.round(h))
                 }
                 Behavior on color {
                   ColorAnimation { duration: 200 }
@@ -248,13 +249,13 @@ PanelWindow {
             cursorShape: Qt.PointingHandCursor
             onClicked: {
               if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek)
-                barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
+              barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
             }
           }
         }
 
         Text {
-          text: barPanel.mediaIcon + " " + barPanel.mediaText
+          text: barPanel.mediaText
           color: Colors.fg
           font.family: "JetBrains Mono"
           font.pixelSize: 12
@@ -264,7 +265,7 @@ PanelWindow {
             anchors.fill: parent
             onClicked: {
               if (barPanel.mediaPlayer)
-                barPanel.mediaPlayer.togglePlaying();
+              barPanel.mediaPlayer.togglePlaying();
             }
           }
         }
