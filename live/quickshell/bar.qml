@@ -87,8 +87,13 @@ PanelWindow {
     for (var i = 0; i < list.length; i++) {
       if (list[i].isPlaying) return list[i];
     }
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].playbackState === MprisPlaybackState.Paused) return list[i];
+    }
     return null;
   }
+  property string mediaIcon: mediaPlayer
+    ? (mediaPlayer.isPlaying ? "" : "") : ""
   property string mediaText: mediaPlayer
     ? (mediaPlayer.trackArtist
       ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
@@ -156,12 +161,20 @@ PanelWindow {
     }
 
     Text {
-      text: barPanel.mediaText
-      color: Colors.accent
+      text: barPanel.mediaIcon + " " + barPanel.mediaText
+      color: Colors.fg
       font.family: "JetBrains Mono"
       font.pixelSize: 12
       elide: Text.ElideRight
       visible: barPanel.mediaText !== ""
+
+      MouseArea {
+        anchors.fill: parent
+        onClicked: {
+          if (barPanel.mediaPlayer)
+            barPanel.mediaPlayer.togglePlaying();
+        }
+      }
     }
 
     Row {
