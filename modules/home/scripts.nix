@@ -19,9 +19,11 @@ let
     packHash = "sha256-iBkTKENX1TriQWHXdns3rvS/XD/gz1q6cxMT/IMyclQ=";
   };
   stylixThemes = import ../../lib/stylix/themes.nix;
-  stylixThemeNames = builtins.attrNames stylixThemes;
+  stylixThemeNames = builtins.attrNames stylixThemes.themes;
   stylixThemeNamesShell = builtins.concatStringsSep " " (map lib.escapeShellArg stylixThemeNames);
   stylixThemeNamesCsv = builtins.concatStringsSep ", " stylixThemeNames;
+  wallpaperPath = toString stylixThemes.wallpaper;
+  awwwBin = "${pkgs.unstable.awww}/bin/awww";
   qsBin = "${pkgs.unstable.quickshell}/bin/qs";
   flakeTarget =
     if hostProfile.useDisko then
@@ -281,6 +283,7 @@ let
       fi
 
       ${pkgs.hyprland}/bin/hyprctl reload >/dev/null 2>&1 || true
+      ${awwwBin} img ${wallpaperPath} >/dev/null 2>&1 || true
       if [ -x "${qsBin}" ]; then
         if ! ${qsBin} ipc call quickshell reload all 2>/dev/null; then
           echo "Quickshell reload failed." >&2
