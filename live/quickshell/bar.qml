@@ -236,33 +236,45 @@ PanelWindow {
             Row {
               anchors.verticalCenter: parent.verticalCenter
               spacing: mediaWaveform.barSpacing
-              Repeater {
-                model: mediaWaveform.barCount
-                delegate: Rectangle {
-                  required property int index
-                  width: mediaWaveform.barWidth
-                  radius: width / 2
-                  y: Math.round((parent.height - height) / 2)
-                  height: {
-                    if (!barPanel.mediaPlayer) return 3
-                    var waveHeight = 3 + Math.sin(mediaWaveform.wavePhase + index * 0.55) * 4 + 3
-                    waveHeight = Math.max(3, Math.round(waveHeight))
-                    return 3 + (waveHeight - 3) * mediaWaveform.playTransition
-                  }
-                  color: {
-                    if (!barPanel.mediaPlayer) return colors.bgSubtle
-                    var frac = (index + 1) / mediaWaveform.barCount
-                    if (frac > mediaWaveform.displayProgress) return colors.bgSubtle
-                    var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
-                    return Qt.rgba(
-                      0.769 - 0.157 * t,
-                      0.655 + 0.157 * t,
-                      0.906 - 0.059 * t,
-                      1
-                    )
-                  }
-                  Behavior on color {
-                    ColorAnimation { duration: 200 }
+              Item {
+                id: waveformContainer
+                width: mediaWaveform.width
+                height: mediaWaveform.height
+                anchors.verticalCenter: parent.verticalCenter
+
+                Repeater {
+                  model: mediaWaveform.barCount
+                  delegate: Rectangle {
+                    required property int index
+                    width: mediaWaveform.barWidth
+                    radius: width / 2
+
+                    // Manually calculate x position to replace the Row layout
+                    x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
+
+                    // Calculate a stable center line relative to the waveform container
+                    y: (mediaWaveform.height - height) / 2
+
+                    height: {
+                      if (!barPanel.mediaPlayer) return 3
+                      var waveHeight = 3 + Math.sin(mediaWaveform.wavePhase + index * 0.55) * 4 + 3
+                      return 3 + (waveHeight - 3) * mediaWaveform.playTransition
+                    }
+                    color: {
+                      if (!barPanel.mediaPlayer) return colors.bgSubtle
+                      var frac = (index + 1) / mediaWaveform.barCount
+                      if (frac > mediaWaveform.displayProgress) return colors.bgSubtle
+                      var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
+                      return Qt.rgba(
+                        0.769 - 0.157 * t,
+                        0.655 + 0.157 * t,
+                        0.906 - 0.059 * t,
+                        1
+                      )
+                    }
+                    Behavior on color {
+                      ColorAnimation { duration: 200 }
+                    }
                   }
                 }
               }
@@ -286,7 +298,7 @@ PanelWindow {
               var l = Math.round(barPanel.mediaPlayer.length)
               if (l <= 0) return ""
               return Math.floor(p/60) + ":" + (p%60).toString().padStart(2,'0')
-                + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
+              + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
             }
             color: colors.fgMid
             font.family: "JetBrains Mono"
