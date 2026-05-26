@@ -188,6 +188,8 @@ in
         snacks-nvim
         twilight-nvim
 
+        alpha-nvim
+
         gitsigns-nvim
         neogit
 
