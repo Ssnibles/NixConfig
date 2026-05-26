@@ -90,6 +90,10 @@ in
           fzf_configure_bindings --directory=\cf --git_status=\cg --history=\cr --processes=\cp --variables=\cv
       end
 
+      function __fish_merge_history --on-event fish_prompt
+          history merge
+      end
+
       function fish_user_key_bindings
           bind -k up history-search-backward
           bind -k down history-search-forward
