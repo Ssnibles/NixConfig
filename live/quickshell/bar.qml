@@ -98,9 +98,9 @@ PanelWindow {
   })
   property string wifiSsid: wifiNet ? wifiNet.name : ""
   property string wifiTooltip: {
-    if (!wifiNet) return "Wi-Fi disconnected\nClick to open nmtui";
+    if (!wifiNet) return "Wi-Fi disconnected\nLeft click: nmtui";
     var strength = Math.round(wifiNet.signalStrength * 100);
-    return wifiNet.name + " (" + strength + "%)\nClick to open nmtui";
+    return wifiNet.name + " (" + strength + "%)\nLeft click: nmtui";
   }
   property string wifiIcon: {
     if (!wifiNet) return "󰤯";
@@ -110,7 +110,7 @@ PanelWindow {
     if (s < 0.6) return "󰤥";
     return "󰤨";
   }
-  Process { id: wifiProc; command: ["foot", "-e", "nmtui"] }
+  Process { id: wifiProc; command: ["sh", "-lc", "foot -e nmtui"] }
 
   // -- Media --
   property var mediaPlayers: Mpris.players.values
@@ -130,7 +130,7 @@ PanelWindow {
   : ""
   property bool mediaHover: mediaPill.visible && (mediaWaveArea.containsMouse || mediaLabelArea.containsMouse)
   property bool volHover: volMouse.containsMouse
-  property bool wifiHover: wifiMouse.containsMouse
+  property bool wifiHover: wifiHoverHandler.hovered || wifiMouse.containsMouse
   property var tooltipAnchor: mediaHover ? mediaPill : (volHover ? volWidget : (wifiHover ? wifiPill : null))
   property string tooltipText: mediaHover ? barPanel.mediaTooltip : (volHover ? barPanel.volTooltip : (wifiHover ? barPanel.wifiTooltip : ""))
   property bool tooltipVisible: tooltipText !== ""
@@ -488,6 +488,8 @@ PanelWindow {
       Pill {
         id: wifiPill
 
+        HoverHandler { id: wifiHoverHandler }
+
         Text {
           id: wifiLabel
           text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
@@ -502,6 +504,7 @@ PanelWindow {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
+          acceptedButtons: Qt.LeftButton
           onClicked: wifiProc.startDetached()
         }
       }

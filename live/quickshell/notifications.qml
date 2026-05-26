@@ -124,15 +124,6 @@ Item {
     }
   }
 
-  IpcHandler {
-    target: "controlpanel"
-
-    function toggle(): void  { notif.controlPanelVisible = !notif.controlPanelVisible; }
-    function show(): void    { notif.controlPanelVisible = true; }
-    function hide(): void    { notif.controlPanelVisible = false; }
-    function toggleDnd(): void { notif.doNotDisturb = !notif.doNotDisturb; }
-  }
-
   component AppIcon: Item {
     property var notification: null
     property color fallbackBg: notif.bgSubtle
@@ -144,6 +135,8 @@ Item {
       id: iconImg
       anchors.fill: parent
       source: notif.appIconSource(notification)
+      sourceSize.width: notif.iconSize
+      sourceSize.height: notif.iconSize
       fillMode: Image.PreserveAspectFit
       visible: status === Image.Ready
     }
