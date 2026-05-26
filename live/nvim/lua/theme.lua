@@ -131,8 +131,6 @@ hl("BlinkCmpSource", { fg = c.comment })
 hl("BlinkCmpKind", { fg = c.comment })
 
 	-- Diagnostics and subtle utility highlights.
-	hl("TermBg", { bg = c.bgSubtle })
-
 	hl("DiagnosticUnderlineError", { undercurl = true, sp = c.red })
 	hl("DiagnosticUnderlineWarn", { undercurl = true, sp = c.yellow })
 	hl("DiagnosticUnderlineHint", { undercurl = true, sp = c.cyan })
