@@ -128,6 +128,27 @@ autocmd("BufEnter", {
 	command = "startinsert",
 })
 
+-- Switch to absolute line numbers in insert mode, back to relative on leave
+autocmd("InsertEnter", {
+	group = augroup,
+	callback = function()
+		local ok, _ = pcall(function()
+			return vim.wo.relativenumber
+		end)
+		if ok and vim.wo.relativenumber then
+			vim.wo.relativenumber = false
+			vim.wo.number = true
+		end
+	end,
+})
+autocmd("InsertLeave", {
+	group = augroup,
+	callback = function()
+		vim.wo.number = true
+		vim.wo.relativenumber = true
+	end,
+})
+
 -- Show cursorline only in active window to reduce visual noise
 autocmd("WinEnter", {
 	group = augroup,
