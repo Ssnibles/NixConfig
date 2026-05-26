@@ -20,16 +20,24 @@ PanelWindow {
   color: colors.bg
 
   property string timeStr: ""
+  property string uiFont: "JetBrains Mono"
+
+  function updateTime() {
+    var d = new Date();
+    barPanel.timeStr = Qt.formatTime(d, "hh:mm");
+    var ms = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds());
+    timeTimer.interval = ms;
+    timeTimer.restart();
+  }
 
   Timer {
-    interval: 1000
+    id: timeTimer
     running: true
-    repeat: true
-    onTriggered: {
-      var d = new Date();
-      barPanel.timeStr = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
-    }
+    repeat: false
+    onTriggered: barPanel.updateTime()
   }
+
+  Component.onCompleted: updateTime()
 
   function formatTitle(t) {
     return t
@@ -37,6 +45,13 @@ PanelWindow {
     .replace(/ — Zen Browser$/, "Zen")
     .replace(/ - Neovim$/, "Neovim")
     .replace(/ - foot$/, "");
+  }
+
+  function findFirst(list, predicate) {
+    for (var i = 0; i < list.length; i++) {
+      if (predicate(list[i])) return list[i];
+    }
+    return null;
   }
 
   property string currentTitle: Hyprland.activeToplevel ? formatTitle(Hyprland.activeToplevel.title) : ""
@@ -54,23 +69,12 @@ PanelWindow {
   Process { id: volProc; command: ["pavucontrol"] }
 
   // -- WiFi --
-  property var wifiDev: {
-    var list = Networking.devices.values;
-    for (var i = 0; i < list.length; i++) {
-      var d = list[i];
-      if (d.type === DeviceType.Wifi) return d;
-    }
-    return null;
-  }
-  property var wifiNet: {
-    if (!wifiDev) return null;
-    var list = wifiDev.networks.values;
-    for (var i = 0; i < list.length; i++) {
-      var n = list[i];
-      if (n.connected) return n;
-    }
-    return null;
-  }
+  property var wifiDev: findFirst(Networking.devices.values, function(d) {
+    return d.type === DeviceType.Wifi;
+  })
+  property var wifiNet: findFirst(wifiDev ? wifiDev.networks.values : [], function(n) {
+    return n.connected;
+  })
   property string wifiSsid: wifiNet ? wifiNet.name : ""
   property string wifiIcon: {
     if (!wifiNet) return "󰤯";
@@ -84,14 +88,10 @@ PanelWindow {
   // -- Media --
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: {
-    var list = mediaPlayers;
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].isPlaying) return list[i];
-    }
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].playbackState === MprisPlaybackState.Paused) return list[i];
-    }
-    return null;
+    var playing = findFirst(mediaPlayers, function(p) { return p.isPlaying; });
+    return playing ? playing : findFirst(mediaPlayers, function(p) {
+      return p.playbackState === MprisPlaybackState.Paused;
+    });
   }
   property string mediaText: mediaPlayer
   ? (mediaPlayer.trackArtist
@@ -162,7 +162,7 @@ PanelWindow {
           id: titleLabel
           text: barPanel.currentTitle
           color: colors.fgMid
-          font.family: "JetBrains Mono"
+          font.family: barPanel.uiFont
           font.pixelSize: 12
           font.italic: true
           elide: Text.ElideRight
@@ -178,7 +178,7 @@ PanelWindow {
       anchors.centerIn: parent
       text: barPanel.timeStr
       color: colors.fg
-      font.family: "JetBrains Mono"
+      font.family: barPanel.uiFont
       font.pixelSize: 13
       font.bold: true
     }
@@ -207,30 +207,22 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
 
             property real wavePhase: 0
-            property real displayProgress: 0
-            property real playTransition: 0
+            property real displayProgress: barPanel.mediaProgress
+            property real playTransition: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying ? 1 : 0
 
-            Timer {
-              interval: 30
-              running: barPanel.mediaPlayer !== null
-              repeat: true
-              onTriggered: {
-                mediaWaveform.wavePhase += 0.06;
-                var target = barPanel.mediaProgress;
-                var diff = target - mediaWaveform.displayProgress;
-                if (Math.abs(diff) < 0.0005)
-                mediaWaveform.displayProgress = target;
-                else
-                mediaWaveform.displayProgress += diff * 0.35;
+            Behavior on displayProgress {
+              NumberAnimation { duration: 250; easing.type: Easing.OutQuad }
+            }
+            Behavior on playTransition {
+              NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
+            }
 
-                var playing = barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying;
-                var tTarget = playing ? 1 : 0;
-                var tDiff = tTarget - mediaWaveform.playTransition;
-                if (Math.abs(tDiff) < 0.005)
-                mediaWaveform.playTransition = tTarget;
-                else
-                mediaWaveform.playTransition += tDiff * 0.1;
-              }
+            NumberAnimation on wavePhase {
+              from: 0
+              to: Math.PI * 2
+              duration: 1500
+              loops: Animation.Infinite
+              running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
             }
 
             Row {
@@ -301,7 +293,7 @@ PanelWindow {
               + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
             }
             color: colors.fgMid
-            font.family: "JetBrains Mono"
+            font.family: barPanel.uiFont
             font.pixelSize: 9
             anchors.verticalCenter: parent.verticalCenter
             visible: barPanel.mediaPlayer !== null
@@ -311,7 +303,7 @@ PanelWindow {
             id: mediaLabel
             text: barPanel.mediaText
             color: colors.fg
-            font.family: "JetBrains Mono"
+            font.family: barPanel.uiFont
             font.pixelSize: 12
             elide: Text.ElideRight
 
@@ -361,7 +353,7 @@ PanelWindow {
               return "󰕾"
             }
             color: barPanel.volMuted ? colors.red : colors.fg
-            font.family: "JetBrains Mono"
+            font.family: barPanel.uiFont
             font.pixelSize: 12
           }
 
@@ -369,7 +361,7 @@ PanelWindow {
             id: volPct
             text: Math.round(barPanel.volPct * 100) + "%"
             color: barPanel.volMuted ? colors.red : colors.fg
-            font.family: "JetBrains Mono"
+            font.family: barPanel.uiFont
             font.pixelSize: 12
             font.bold: true
           }
@@ -436,7 +428,7 @@ PanelWindow {
           id: wifiLabel
           text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
           color: barPanel.wifiNet ? colors.accent : colors.fgDim
-          font.family: "JetBrains Mono"
+          font.family: barPanel.uiFont
           font.pixelSize: 12
           anchors.verticalCenter: parent.verticalCenter
         }
