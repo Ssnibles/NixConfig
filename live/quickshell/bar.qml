@@ -207,12 +207,9 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
 
             property real wavePhase: 0
-            property real displayProgress: barPanel.mediaProgress
+            property real displayProgress: 0
             property real playTransition: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying ? 1 : 0
 
-            Behavior on displayProgress {
-              NumberAnimation { duration: 250; easing.type: Easing.OutQuad }
-            }
             Behavior on playTransition {
               NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
             }
@@ -223,6 +220,25 @@ PanelWindow {
               duration: 1500
               loops: Animation.Infinite
               running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
+            }
+
+            Timer {
+              interval: 40
+              running: barPanel.mediaPlayer !== null
+              repeat: true
+              onTriggered: {
+                if (!barPanel.mediaPlayer || barPanel.mediaPlayer.length <= 0) {
+                  mediaWaveform.displayProgress = 0;
+                  return;
+                }
+                var target = barPanel.mediaProgress;
+                var diff = target - mediaWaveform.displayProgress;
+                if (Math.abs(diff) < 0.0005) {
+                  mediaWaveform.displayProgress = target;
+                  return;
+                }
+                mediaWaveform.displayProgress += diff * 0.22;
+              }
             }
 
             Row {
@@ -276,8 +292,9 @@ PanelWindow {
               anchors.fill: parent
               cursorShape: Qt.PointingHandCursor
               onClicked: {
-                if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek)
-                barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
+                if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek) {
+                  barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
+                }
               }
             }
           }
@@ -404,7 +421,7 @@ PanelWindow {
           onEntered: volBg.color = colors.bgRaised
           onExited: volBg.color = "transparent"
 
-          onClicked: {
+          onClicked: function(mouse) {
             if (mouse.button === Qt.RightButton) {
               volProc.startDetached()
             } else if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
@@ -412,7 +429,7 @@ PanelWindow {
             }
           }
 
-          onWheel: {
+          onWheel: function(wheel) {
             if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return
             var step = 0.05
             var dir = wheel.angleDelta.y > 0 ? 1 : -1
