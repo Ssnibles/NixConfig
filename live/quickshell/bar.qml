@@ -15,12 +15,17 @@ PanelWindow {
   aboveWindows: true
 
   anchors { top: true; left: true; right: true }
-  implicitHeight: 30
+  implicitHeight: barHeight
   exclusionMode: ExclusionMode.Auto
   color: colors.bg
 
   property string timeStr: ""
   property string uiFont: "JetBrains Mono"
+  property int barHeight: 30
+  property int tooltipGap: 6
+  property int tooltipPadding: 6
+  property int tooltipMargin: 6
+  property int tooltipMaxWidth: 280
 
   function updateTime() {
     var d = new Date();
@@ -54,6 +59,17 @@ PanelWindow {
     return null;
   }
 
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function tooltipX(width) {
+    if (!tooltipAnchor) return 0;
+    var pos = tooltipAnchor.mapToItem(barContent, 0, 0);
+    var x = barContent.x + pos.x + (tooltipAnchor.width - width) / 2;
+    return Math.round(clamp(x, tooltipMargin, barPanel.width - width - tooltipMargin));
+  }
+
   property string currentTitle: Hyprland.activeToplevel ? formatTitle(Hyprland.activeToplevel.title) : ""
 
   function switchWs(id) {
@@ -66,6 +82,11 @@ PanelWindow {
   property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
   property real volPct: volInfo ? volInfo.volume : 0
   property bool volMuted: volInfo ? volInfo.muted : false
+  property string volTooltip: {
+    var pct = Math.round(barPanel.volPct * 100);
+    var state = barPanel.volMuted ? "Muted" : ("Volume " + pct + "%");
+    return state + "\nLeft click: mute\nRight click: pavucontrol\nScroll: adjust";
+  }
   Process { id: volProc; command: ["pavucontrol"] }
 
   // -- WiFi --
@@ -76,6 +97,11 @@ PanelWindow {
     return n.connected;
   })
   property string wifiSsid: wifiNet ? wifiNet.name : ""
+  property string wifiTooltip: {
+    if (!wifiNet) return "Wi-Fi disconnected\nClick to open nmtui";
+    var strength = Math.round(wifiNet.signalStrength * 100);
+    return wifiNet.name + " (" + strength + "%)\nClick to open nmtui";
+  }
   property string wifiIcon: {
     if (!wifiNet) return "󰤯";
     var s = wifiNet.signalStrength;
@@ -84,6 +110,7 @@ PanelWindow {
     if (s < 0.6) return "󰤥";
     return "󰤨";
   }
+  Process { id: wifiProc; command: ["foot", "-e", "nmtui"] }
 
   // -- Media --
   property var mediaPlayers: Mpris.players.values
@@ -98,6 +125,17 @@ PanelWindow {
     ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
     : mediaPlayer.trackTitle)
   : ""
+  property string mediaTooltip: mediaPlayer
+  ? (barPanel.mediaText + "\nClick title: play/pause\nClick waveform: seek")
+  : ""
+  property bool mediaHover: mediaPill.visible && (mediaWaveArea.containsMouse || mediaLabelArea.containsMouse)
+  property bool volHover: volMouse.containsMouse
+  property bool wifiHover: wifiMouse.containsMouse
+  property var tooltipAnchor: mediaHover ? mediaPill : (volHover ? volWidget : (wifiHover ? wifiPill : null))
+  property string tooltipText: mediaHover ? barPanel.mediaTooltip : (volHover ? barPanel.volTooltip : (wifiHover ? barPanel.wifiTooltip : ""))
+  property int tooltipWidth: Math.round(Math.min(barPanel.tooltipMaxWidth, barPanel.width - barPanel.tooltipMargin * 2))
+  property int tooltipLeft: tooltipAnchor ? tooltipX(tooltipWidth) : 0
+  property int tooltipTop: barPanel.barHeight + barPanel.tooltipGap
   property real mediaProgress: mediaPlayer && mediaPlayer.length > 0
   ? mediaPlayer.position / mediaPlayer.length : 0
 
@@ -110,9 +148,12 @@ PanelWindow {
 
   Item {
     id: barContent
-    anchors.fill: parent
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
     anchors.leftMargin: 8
     anchors.rightMargin: 10
+    height: barPanel.barHeight
 
     Row {
       id: leftRow
@@ -289,7 +330,9 @@ PanelWindow {
             }
 
             MouseArea {
+              id: mediaWaveArea
               anchors.fill: parent
+              hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
               onClicked: {
                 if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek) {
@@ -325,7 +368,9 @@ PanelWindow {
             elide: Text.ElideRight
 
             MouseArea {
+              id: mediaLabelArea
               anchors.fill: parent
+              hoverEnabled: true
               onClicked: {
                 if (barPanel.mediaPlayer)
                 barPanel.mediaPlayer.togglePlaying();
@@ -414,6 +459,7 @@ PanelWindow {
         }
 
         MouseArea {
+          id: volMouse
           anchors.fill: parent
           hoverEnabled: true
           acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -449,6 +495,56 @@ PanelWindow {
           font.pixelSize: 12
           anchors.verticalCenter: parent.verticalCenter
         }
+
+        MouseArea {
+          id: wifiMouse
+          anchors.fill: parent
+          hoverEnabled: true
+          cursorShape: Qt.PointingHandCursor
+          onClicked: wifiProc.startDetached()
+        }
+      }
+    }
+  }
+
+  PanelWindow {
+    id: tooltipWindow
+    visible: barPanel.tooltipText !== ""
+    focusable: false
+    aboveWindows: true
+    exclusionMode: ExclusionMode.Ignore
+    color: "transparent"
+
+    anchors { top: true; left: true }
+    margins {
+      top: barPanel.tooltipTop
+      left: barPanel.tooltipLeft
+    }
+
+    implicitWidth: barPanel.tooltipWidth
+    implicitHeight: tooltipCard.implicitHeight
+
+    Rectangle {
+      id: tooltipCard
+      width: barPanel.tooltipWidth
+      implicitHeight: tooltipTextItem.paintedHeight + barPanel.tooltipPadding * 2
+      height: implicitHeight
+      radius: 6
+      color: colors.bgRaised
+      border.width: 1
+      border.color: colors.border
+
+      Text {
+        id: tooltipTextItem
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.margins: barPanel.tooltipPadding
+        width: parent.width - barPanel.tooltipPadding * 2
+        text: barPanel.tooltipText
+        color: colors.fg
+        font.family: barPanel.uiFont
+        font.pixelSize: 11
+        wrapMode: Text.Wrap
       }
     }
   }
