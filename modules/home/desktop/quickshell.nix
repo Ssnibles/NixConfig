@@ -10,7 +10,10 @@ in
     package = pkgs.unstable.quickshell;
   };
 
-  home.sessionVariables.QML2_IMPORT_PATH = "${pkgs.unstable.quickshell}/lib/qt-6/qml";
+  home.sessionVariables = {
+    QML2_IMPORT_PATH = "${pkgs.unstable.quickshell}/lib/qt-6/qml";
+    QSG_RENDERER = "opengl";
+  };
 
   xdg.configFile = {
     "quickshell/shell.qml".source =
