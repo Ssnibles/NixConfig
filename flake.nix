@@ -1,6 +1,3 @@
-let
-  stableVersion = "25.11";
-in
 {
   description = "NixOS Config";
 
@@ -16,11 +13,11 @@ in
   };
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-${stableVersion}";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-${stableVersion}";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -30,7 +27,7 @@ in
     };
 
     stylix = {
-      url = "github:nix-community/stylix/release-${stableVersion}";
+      url = "github:nix-community/stylix/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -111,10 +108,20 @@ in
       inherit (import ./lib/mkHost.nix { inherit inputs overlays; }) mkHost;
 
       mkHome =
-        { hostName, isLaptop ? false, hasNvidia ? false, user ? "josh" }:
+        {
+          hostName,
+          isLaptop ? false,
+          hasNvidia ? false,
+          user ? "josh",
+        }:
         let
           hostProfile = {
-            inherit hostName isLaptop hasNvidia user;
+            inherit
+              hostName
+              isLaptop
+              hasNvidia
+              user
+              ;
             isDesktop = !isLaptop;
             isVM = false;
             useDisko = false;
@@ -128,15 +135,35 @@ in
     in
     {
       nixosConfigurations = {
-        desktop = mkHost { hostName = "desktop"; hasNvidia = true; };
-        laptop = mkHost { hostName = "laptop"; isLaptop = true; };
-        desktop-test = mkHost { hostName = "desktop"; hasNvidia = true; useDisko = false; };
-        laptop-test = mkHost { hostName = "laptop"; isLaptop = true; useDisko = false; };
+        desktop = mkHost {
+          hostName = "desktop";
+          hasNvidia = true;
+        };
+        laptop = mkHost {
+          hostName = "laptop";
+          isLaptop = true;
+        };
+        desktop-test = mkHost {
+          hostName = "desktop";
+          hasNvidia = true;
+          useDisko = false;
+        };
+        laptop-test = mkHost {
+          hostName = "laptop";
+          isLaptop = true;
+          useDisko = false;
+        };
       };
 
       homeConfigurations = {
-        "josh@desktop" = mkHome { hostName = "desktop"; hasNvidia = true; };
-        "josh@laptop" = mkHome { hostName = "laptop"; isLaptop = true; };
+        "josh@desktop" = mkHome {
+          hostName = "desktop";
+          hasNvidia = true;
+        };
+        "josh@laptop" = mkHome {
+          hostName = "laptop";
+          isLaptop = true;
+        };
       };
 
       diskoConfigurations = {
