@@ -29,6 +29,25 @@ ShellRoot {
     function toggle(): void { root.barVisible = !root.barVisible; }
   }
 
+  IpcHandler {
+    target: "controlpanel"
+
+    function toggle(): void  {
+      if (notificationsLoader.item) {
+        notificationsLoader.item.controlPanelVisible = !notificationsLoader.item.controlPanelVisible;
+      }
+    }
+    function show(): void    {
+      if (notificationsLoader.item) notificationsLoader.item.controlPanelVisible = true;
+    }
+    function hide(): void    {
+      if (notificationsLoader.item) notificationsLoader.item.controlPanelVisible = false;
+    }
+    function toggleDnd(): void {
+      if (notificationsLoader.item) notificationsLoader.item.doNotDisturb = !notificationsLoader.item.doNotDisturb;
+    }
+  }
+
   Loader {
     id: barLoader
     source: "bar.qml"
