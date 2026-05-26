@@ -109,7 +109,6 @@ if vim.version().major == 0 and vim.version().minor >= 12 then
 	})
 end
 
--- Keep terminal buffers ergonomically isolated with distinct background
 autocmd("TermOpen", {
 	group = augroup,
 	callback = function()
@@ -117,7 +116,6 @@ autocmd("TermOpen", {
 		vim.opt_local.relativenumber = false
 		vim.opt_local.signcolumn = "no"
 		vim.wo.cursorline = false
-		vim.wo.winhighlight = "Normal:TermBg"
 	end,
 })
 
