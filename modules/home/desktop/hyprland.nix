@@ -195,7 +195,7 @@ in
       ];
 
       layerrule = [
-        # "ignorezero,hyprlock"
+        # "immediate,quickshell-bar"
       ];
 
       binds.allow_workspace_cycles = true;
