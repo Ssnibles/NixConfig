@@ -101,8 +101,8 @@ in
         resize_on_border = true;
         # Prefer low-latency tearing on desktop/gaming rigs, but keep laptops tear-free.
         allow_tearing = hostProfile.isDesktop;
-        "col.inactive_border" = "rgb(${raw.border})";
-        "col.active_border" = "rgb(${raw.border})";
+        "col.active_border" = "rgb(${raw.accent})";
+        "col.inactive_border" = "rgb(${raw.accent})";
       };
 
       decoration = {
@@ -114,6 +114,8 @@ in
           noise = 0.0;
         };
         shadow.enabled = false;
+        dim_inactive = true;
+        dim_strength = 0.2;
       };
 
       animations = {
@@ -174,6 +176,8 @@ in
       ];
 
       windowrulev2 = [
+        # 80% opacity for windows on special workspace (scratchpad)
+        "opacity 0.8 0.8, onworkspace:name:special"
         # Stop apps from forcing maximize on launch.
         "suppressevent maximize, class:.*"
         # Avoid focus stealing while dragging some XWayland popups.
