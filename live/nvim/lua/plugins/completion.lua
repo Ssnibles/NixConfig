@@ -10,11 +10,27 @@ require("luasnip.loaders.from_vscode").lazy_load()
 
 local function accept_copilot_if_visible()
 	local ok, suggestion = pcall(require, "copilot.suggestion")
-	if ok and suggestion.is_visible() then
+	if ok and suggestion.is_visible() and not vim.b.copilot_suggestion_hidden then
 		suggestion.accept()
 		return true
 	end
 	return false
+end
+
+local function copilot_suggestion_action(action)
+	return function()
+		local ok, suggestion = pcall(require, "copilot.suggestion")
+		if not ok then
+			return
+		end
+		if action == "next" then
+			suggestion.next()
+		elseif action == "prev" then
+			suggestion.prev()
+		elseif action == "dismiss" then
+			suggestion.dismiss()
+		end
+	end
 end
 
 -- Blink.cmp: fast completion
@@ -27,17 +43,21 @@ require("blink.cmp").setup({
 		["<C-e>"] = { "cancel", "fallback" },
 		["<Esc>"] = { "cancel", "fallback" },
 		["<CR>"] = { "accept", "fallback" },
-		["<Tab>"] = { accept_copilot_if_visible, "accept", "snippet_forward", "fallback" },
+		["<Tab>"] = { accept_copilot_if_visible, "select_and_accept", "snippet_forward", "fallback" },
 		["<S-Tab>"] = { "snippet_backward", "fallback" },
 		["<Up>"] = { "select_prev", "fallback" },
 		["<Down>"] = { "select_next", "fallback" },
 		["<C-k>"] = { "select_prev", "fallback" },
 		["<C-j>"] = { "select_next", "fallback" },
+		["<C-p>"] = { "select_prev", "fallback" },
+		["<C-n>"] = { "select_next", "fallback" },
 		["<C-b>"] = { "scroll_documentation_up", "fallback" },
 		["<C-f>"] = { "scroll_documentation_down", "fallback" },
+		["<M-]>"] = { copilot_suggestion_action("next") },
+		["<M-[>"] = { copilot_suggestion_action("prev") },
 	},
 	sources = {
-		default = { "lsp", "path", "snippets", "buffer", "spell" },
+		default = { "lsp", "snippets", "buffer", "path", "spell" },
 		providers = {
 			spell = {
 				name = "Spell",
@@ -45,9 +65,7 @@ require("blink.cmp").setup({
 				enabled = function()
 					return vim.api.nvim_get_option_value("spell", { scope = "local" })
 				end,
-				opts = {
-					max_entries = 8,
-				},
+				opts = { max_entries = 8 },
 			},
 		},
 	},
@@ -55,7 +73,7 @@ require("blink.cmp").setup({
 		list = {
 			selection = {
 				preselect = true,
-				auto_insert = false,
+				auto_insert = true,
 			},
 		},
 		menu = {
@@ -81,6 +99,8 @@ require("blink.cmp").setup({
 			["<Down>"] = { "select_next", "fallback" },
 			["<C-k>"] = { "select_prev", "fallback" },
 			["<C-j>"] = { "select_next", "fallback" },
+			["<C-p>"] = { "select_prev", "fallback" },
+			["<C-n>"] = { "select_next", "fallback" },
 		},
 		completion = { menu = { auto_show = true }, ghost_text = { enabled = true } },
 	},
@@ -95,12 +115,12 @@ require("copilot").setup({
 		hide_during_completion = true,
 		keymap = {
 			accept = false,
-			next = "<M-]>",
-			prev = "<M-[>",
+			next = false,
+			prev = false,
 			dismiss = "<Esc>",
 		},
 	},
-	panel = { enabled = false },
+	panel = { enabled = true },
 })
 
 -- Hide Copilot inline suggestions while blink.cmp menu is visible
@@ -117,3 +137,25 @@ vim.api.nvim_create_autocmd("User", {
 		vim.b.copilot_suggestion_hidden = false
 	end,
 })
+
+-- Toggle copilot on/off
+vim.keymap.set("n", "<leader>ac", function()
+	local copilot = require("copilot")
+	copilot.suggestion.enabled = not copilot.suggestion.enabled
+	local status = copilot.suggestion.enabled and "enabled" or "disabled"
+	vim.notify(("Copilot %s"):format(status), vim.log.levels.INFO)
+end, { desc = "Toggle copilot" })
+
+-- Open copilot panel
+vim.keymap.set("n", "<leader>ap", function()
+	local copilot = require("copilot")
+	copilot.panel.toggle()
+end, { desc = "Toggle copilot panel" })
+
+-- Explicitly trigger copilot suggestion
+vim.keymap.set("i", "<M-\\>", function()
+	local ok, suggestion = pcall(require, "copilot.suggestion")
+	if ok then
+		suggestion.next()
+	end
+end, { desc = "Trigger copilot suggestion" })

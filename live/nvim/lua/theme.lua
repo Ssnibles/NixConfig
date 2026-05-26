@@ -125,6 +125,10 @@ function M.setup()
 	hl("MiniClueNextKeyWithPostkeys", { fg = c.blue, bold = true })
 	hl("MiniClueSeparator", { fg = c.border })
 	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
+hl("BlinkCmpLabelDetail", { fg = c.comment, italic = true })
+hl("BlinkCmpLabelDescription", { fg = c.comment })
+hl("BlinkCmpSource", { fg = c.comment })
+hl("BlinkCmpKind", { fg = c.comment })
 
 	-- Diagnostics and subtle utility highlights.
 	hl("TermBg", { bg = c.bgSubtle })
@@ -136,6 +140,8 @@ function M.setup()
 	hl("LspInlayHint", { fg = c.comment, italic = true })
 	hl("MiniTrailspace", { bg = c.trailspace })
 	hl("CopilotSuggestion", { fg = c.purple, italic = true })
+hl("CopilotPanelLabel", { fg = c.blue, bold = true })
+hl("CopilotPanelSelected", { fg = c.blue, bg = c.selection, bold = true })
 end
 
 return M
