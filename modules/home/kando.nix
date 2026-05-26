@@ -27,6 +27,7 @@ let
   configJson = builtins.toJSON {
     version = "2.1.0";
     menuTheme = "stylix";
+    ignoreWriteProtectedConfigFiles = true;
     menuThemeColors = {
       stylix = themeColors;
     };
