@@ -12,6 +12,7 @@ let
   rgb = hex: "rgb(${hex})";
   # Hyprlock/Hyprlang requires escaping '#' as '##' inside markup strings.
   span = hex: text: "<span foreground='##${hex}'>${text}</span>";
+  italicSpan = hex: text: "<span style='italic' foreground='##${hex}'>${text}</span>";
 in
 {
   programs.hyprlock = {
@@ -31,7 +32,7 @@ in
           path = wallpaper;
           blur_passes = 3;
           blur_size = 8;
-          noise = 0.0117;
+          noise = 0.086;
           contrast = 0.8916;
           brightness = 0.8172;
           vibrancy = 0.1696;
@@ -77,43 +78,23 @@ in
       label = [
         {
           monitor = "";
-          text = span c.fgDim "●  Locked  ●";
-          color = rgb c.fg;
-          font_size = 12;
-          font_family = "JetBrains Mono";
-          position = "0, 300";
-          halign = "center";
-          valign = "center";
-          shadow_passes = 1;
-          shadow_size = 2;
-          shadow_color = "rgba(00000099)";
-        }
-        {
-          monitor = "";
-          text = "cmd[update:1000] echo \"${span c.fg "$(date +'%H:%M')"}\"";
+          text = "cmd[update:1000] echo \"${italicSpan c.fg "$(date +'%H:%M')"}\"";
           color = rgb c.fg;
           font_size = 72;
           font_family = "Alice";
-          italic = true;
           position = "0, 200";
           halign = "center";
           valign = "center";
-          shadow_passes = 2;
-          shadow_size = 3;
-          shadow_color = "rgba(00000099)";
         }
         {
           monitor = "";
           text = "cmd[update:1000] echo \"${span c.fg "$(date +'%A, %d %B')"}\"";
           color = rgb c.fg;
-          font_size = 20;
+          font_size = 14;
           font_family = "JetBrains Mono";
           position = "0, 120";
           halign = "center";
           valign = "center";
-          shadow_passes = 2;
-          shadow_size = 3;
-          shadow_color = "rgba(00000099)";
         }
         {
           monitor = "";
@@ -124,9 +105,6 @@ in
           position = "0, -200";
           halign = "center";
           valign = "center";
-          shadow_passes = 1;
-          shadow_size = 2;
-          shadow_color = "rgba(00000099)";
         }
       ];
     };
