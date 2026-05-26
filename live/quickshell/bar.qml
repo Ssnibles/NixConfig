@@ -573,25 +573,27 @@ PanelWindow {
     margins { top: barPanel.tooltipTop; left: 0 }
 
     implicitWidth: barPanel.width
-    implicitHeight: barPanel.tooltipVisible ? tooltipCard.implicitHeight + 3 : 1
+    implicitHeight: tooltipCard.implicitHeight + 3
 
     Rectangle {
       id: tooltipShadow
-      visible: barPanel.tooltipVisible
       x: barPanel.tooltipLeft
       width: barPanel.tooltipWidth
       implicitHeight: tooltipTextItem.paintedHeight + barPanel.tooltipPadding * 2
       height: implicitHeight
       radius: 10
       color: Qt.rgba(0, 0, 0, 0.25)
-      opacity: 0.7
+      opacity: barPanel.tooltipVisible ? 0.7 : 0
       y: 3
       antialiasing: true
+
+      Behavior on opacity {
+        NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
+      }
     }
 
     Rectangle {
       id: tooltipCard
-      visible: barPanel.tooltipVisible
       x: barPanel.tooltipLeft
       width: barPanel.tooltipWidth
       implicitHeight: tooltipTextItem.paintedHeight + barPanel.tooltipPadding * 2
@@ -601,6 +603,11 @@ PanelWindow {
       antialiasing: true
       border.width: 1
       border.color: colors.border
+      opacity: barPanel.tooltipVisible ? 1 : 0
+
+      Behavior on opacity {
+        NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
+      }
 
       Text {
         id: tooltipTextItem
