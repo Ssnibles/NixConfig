@@ -70,6 +70,45 @@ PanelWindow {
     return Math.round(clamp(x, tooltipMargin, barPanel.width - width - tooltipMargin));
   }
 
+  function escapeRegex(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function focusMediaPlayer() {
+    if (!barPanel.mediaPlayer) return;
+
+    var entry = barPanel.mediaPlayer.desktopEntry || barPanel.mediaPlayer.name || "";
+    if (entry) {
+      var lowerEntry = entry.toLowerCase();
+      var toplevels = Hyprland.toplevels.values;
+      for (var i = 0; i < toplevels.length; i++) {
+        var tl = toplevels[i];
+        if (tl.lastIpcObject && tl.lastIpcObject.class) {
+          if (tl.lastIpcObject.class.toLowerCase() === lowerEntry) {
+            Hyprland.dispatch("focuswindow address:0x" + tl.address);
+            return;
+          }
+        }
+      }
+      Hyprland.dispatch("focuswindow class:(?i)^" + escapeRegex(entry) + "$");
+      return;
+    }
+
+    var identity = barPanel.mediaPlayer.identity || "";
+    if (identity) {
+      var toplevels = Hyprland.toplevels.values;
+      for (var i = 0; i < toplevels.length; i++) {
+        var tl = toplevels[i];
+        if (tl.title && tl.title.indexOf(identity) !== -1) {
+          Hyprland.dispatch("focuswindow address:0x" + tl.address);
+          return;
+        }
+      }
+      var pattern = escapeRegex(identity).replace(/\s+/g, "\\s+");
+      Hyprland.dispatch("focuswindow title:(?i)" + pattern);
+    }
+  }
+
   property string currentTitle: Hyprland.activeToplevel ? formatTitle(Hyprland.activeToplevel.title) : ""
 
   function switchWs(id) {
@@ -98,9 +137,9 @@ PanelWindow {
   })
   property string wifiSsid: wifiNet ? wifiNet.name : ""
   property string wifiTooltip: {
-    if (!wifiNet) return "Wi-Fi disconnected\nLeft click: nmtui";
+    if (!wifiNet) return "Wi-Fi disconnected\nRight click: nmtui";
     var strength = Math.round(wifiNet.signalStrength * 100);
-    return wifiNet.name + " (" + strength + "%)\nLeft click: nmtui";
+    return wifiNet.name + " (" + strength + "%)\nRight click: nmtui";
   }
   property string wifiIcon: {
     if (!wifiNet) return "󰤯";
@@ -126,7 +165,7 @@ PanelWindow {
     : mediaPlayer.trackTitle)
   : ""
   property string mediaTooltip: mediaPlayer
-  ? (barPanel.mediaText + "\nClick title: play/pause\nClick waveform: seek")
+  ? (barPanel.mediaText + "\nLeft click title: play/pause\nLeft click waveform: seek\nRight click: focus app")
   : ""
   property bool mediaHover: mediaPill.visible && (mediaWaveArea.containsMouse || mediaLabelArea.containsMouse)
   property bool volHover: volMouse.containsMouse
@@ -335,7 +374,12 @@ PanelWindow {
               anchors.fill: parent
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
-              onClicked: {
+              acceptedButtons: Qt.LeftButton | Qt.RightButton
+              onClicked: function(mouse) {
+                if (mouse.button === Qt.RightButton) {
+                  barPanel.focusMediaPlayer();
+                  return;
+                }
                 if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek) {
                   barPanel.mediaPlayer.position = mouseX / width * barPanel.mediaPlayer.length;
                 }
@@ -372,9 +416,15 @@ PanelWindow {
               id: mediaLabelArea
               anchors.fill: parent
               hoverEnabled: true
-              onClicked: {
-                if (barPanel.mediaPlayer)
-                barPanel.mediaPlayer.togglePlaying();
+              acceptedButtons: Qt.LeftButton | Qt.RightButton
+              onClicked: function(mouse) {
+                if (mouse.button === Qt.RightButton) {
+                  barPanel.focusMediaPlayer();
+                  return;
+                }
+                if (barPanel.mediaPlayer) {
+                  barPanel.mediaPlayer.togglePlaying();
+                }
               }
             }
           }
@@ -504,7 +554,7 @@ PanelWindow {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
-          acceptedButtons: Qt.LeftButton
+          acceptedButtons: Qt.RightButton
           onClicked: wifiProc.startDetached()
         }
       }
