@@ -177,7 +177,7 @@ in
 
       windowrulev2 = [
         # 80% opacity for windows on special workspace (scratchpad)
-        "opacity 0.8 0.8, onworkspace:name:special"
+        "opacity 0.8 0.8, onworkspace:name:special:special"
         # Stop apps from forcing maximize on launch.
         "suppressevent maximize, class:.*"
         # Avoid focus stealing while dragging some XWayland popups.
