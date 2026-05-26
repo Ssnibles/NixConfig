@@ -59,15 +59,28 @@ in
       set -g fish_greeting ""
       set -g fish_autosuggestion_enabled 1
 
-      # Better completion UX: quicker pager response and case-insensitive matching.
+      # Cursor shape hints for mode/insert state.
+      set -g fish_cursor_default block
+      set -g fish_cursor_insert line
+      set -g fish_cursor_replace_one underscore
+      set -g fish_cursor_visual block
+
+      if type -q microfetch
+          microfetch
+      end
+
+      # Better completion UX: quicker pager response and simplified completion paths.
       set -g fish_complete_path ""
-      set -g fish_pager_color_completion ${c.fg}
 
       # FZF defaults for faster fuzzy file/history navigation.
-      set -gx FZF_DEFAULT_COMMAND "fd --type f --hidden --follow --exclude .git"
-      set -gx FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
+      if type -q fd
+          set -gx FZF_DEFAULT_COMMAND "fd --type f --hidden --follow --exclude .git"
+          set -gx FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
+      end
       set -gx FZF_DEFAULT_OPTS "--height=45% --layout=reverse --border --info=inline"
-      set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
+      if type -q bat
+          set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
+      end
 
       if type -q zoxide
           zoxide init fish | source
@@ -75,6 +88,11 @@ in
 
       if functions -q fzf_configure_bindings
           fzf_configure_bindings --directory=\cf --git_status=\cg --history=\cr --processes=\cp --variables=\cv
+      end
+
+      function fish_user_key_bindings
+          bind -k up history-search-backward
+          bind -k down history-search-forward
       end
 
       function petpick --description "Insert a pet snippet selected with fzf"
@@ -91,7 +109,37 @@ in
       end
       bind \ep petpick
 
+      function mkcd --description "Create a directory and enter it"
+          if test (count $argv) -eq 0
+              echo "mkcd: missing directory name" >&2
+              return 1
+          end
+
+          mkdir -p -- "$argv[1]" || return
+          cd "$argv[1]"
+      end
+
+      function cdr --description "cd to the git repository root"
+          set -l root (git rev-parse --show-toplevel 2>/dev/null)
+          if test -n "$root"
+              cd "$root"
+              return 0
+          end
+
+          echo "cdr: not inside a git repository" >&2
+          return 1
+      end
+
       function cdf --description "cd into a directory selected with fzf"
+          if not type -q fd
+              echo "cdf: fd is not installed" >&2
+              return 1
+          end
+          if not type -q fzf
+              echo "cdf: fzf is not installed" >&2
+              return 1
+          end
+
           set -l search_root "."
           if test (count $argv) -gt 0
               set search_root "$argv[1]"
@@ -102,10 +150,15 @@ in
               return 1
           end
 
+          set -l preview_cmd "ls -la {}"
+          if type -q eza
+              set preview_cmd "eza --icons=auto --group-directories-first --git --color=always {}"
+          end
+
           set -l target (
               printf '%s\n' "." \
               (fd --type d --hidden --follow --exclude .git . "$search_root" 2>/dev/null) \
-              | fzf --height=45% --layout=reverse --border --prompt="cd > "
+              | fzf --height=45% --layout=reverse --border --prompt="cd > " --preview="$preview_cmd" --preview-window=right,60%,border-left
           )
 
           if test -n "$target"
@@ -158,10 +211,6 @@ in
       {
         name = "grc";
         src = grc.src;
-      }
-      {
-        name = "z";
-        src = z.src;
       }
       {
         name = "pure";
