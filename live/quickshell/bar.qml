@@ -22,10 +22,10 @@ PanelWindow {
   property string timeStr: ""
   property string uiFont: "JetBrains Mono"
   property int barHeight: 30
-  property int tooltipGap: 6
-  property int tooltipPadding: 6
+  property int tooltipGap: 10
+  property int tooltipPadding: 10
   property int tooltipMargin: 6
-  property int tooltipMaxWidth: 280
+  property int tooltipMaxWidth: 320
 
   function updateTime() {
     var d = new Date();
@@ -133,9 +133,10 @@ PanelWindow {
   property bool wifiHover: wifiMouse.containsMouse
   property var tooltipAnchor: mediaHover ? mediaPill : (volHover ? volWidget : (wifiHover ? wifiPill : null))
   property string tooltipText: mediaHover ? barPanel.mediaTooltip : (volHover ? barPanel.volTooltip : (wifiHover ? barPanel.wifiTooltip : ""))
+  property bool tooltipVisible: tooltipText !== ""
   property int tooltipWidth: Math.round(Math.min(barPanel.tooltipMaxWidth, barPanel.width - barPanel.tooltipMargin * 2))
   property int tooltipLeft: tooltipAnchor ? tooltipX(tooltipWidth) : 0
-  property int tooltipTop: barPanel.barHeight + barPanel.tooltipGap
+  property int tooltipTop: Math.round(barPanel.barHeight + barPanel.tooltipGap)
   property real mediaProgress: mediaPlayer && mediaPlayer.length > 0
   ? mediaPlayer.position / mediaPlayer.length : 0
 
@@ -509,28 +510,42 @@ PanelWindow {
 
   PanelWindow {
     id: tooltipWindow
-    visible: barPanel.tooltipText !== ""
+    visible: true
     focusable: false
     aboveWindows: true
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
 
     anchors { top: true; left: true }
-    margins {
-      top: barPanel.tooltipTop
-      left: barPanel.tooltipLeft
-    }
+    margins { top: barPanel.tooltipTop; left: 0 }
 
-    implicitWidth: barPanel.tooltipWidth
-    implicitHeight: tooltipCard.implicitHeight
+    implicitWidth: barPanel.width
+    implicitHeight: barPanel.tooltipVisible ? tooltipCard.implicitHeight + 3 : 1
 
     Rectangle {
-      id: tooltipCard
+      id: tooltipShadow
+      visible: barPanel.tooltipVisible
+      x: barPanel.tooltipLeft
       width: barPanel.tooltipWidth
       implicitHeight: tooltipTextItem.paintedHeight + barPanel.tooltipPadding * 2
       height: implicitHeight
-      radius: 6
+      radius: 10
+      color: Qt.rgba(0, 0, 0, 0.25)
+      opacity: 0.7
+      y: 3
+      antialiasing: true
+    }
+
+    Rectangle {
+      id: tooltipCard
+      visible: barPanel.tooltipVisible
+      x: barPanel.tooltipLeft
+      width: barPanel.tooltipWidth
+      implicitHeight: tooltipTextItem.paintedHeight + barPanel.tooltipPadding * 2
+      height: implicitHeight
+      radius: 10
       color: colors.bgRaised
+      antialiasing: true
       border.width: 1
       border.color: colors.border
 
@@ -543,7 +558,9 @@ PanelWindow {
         text: barPanel.tooltipText
         color: colors.fg
         font.family: barPanel.uiFont
-        font.pixelSize: 11
+        font.pixelSize: 13
+        lineHeightMode: Text.ProportionalHeight
+        lineHeight: 1.2
         wrapMode: Text.Wrap
       }
     }

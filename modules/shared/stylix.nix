@@ -4,8 +4,9 @@
 }:
 let
   themeName = import ../../lib/stylix/current-theme.nix;
-  themes = import ../../lib/stylix/themes.nix;
-  wallpaper = ../../wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg;
+  themesFile = import ../../lib/stylix/themes.nix;
+  wallpaper = themesFile.wallpaper;
+  themes = themesFile.themes;
   selectedTheme =
     if builtins.hasAttr themeName themes then
       themes.${themeName}

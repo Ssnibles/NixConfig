@@ -13,7 +13,7 @@
 }:
 let
   raw = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
-  wallpaper = ../../../wallpapers/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg;
+  wallpaper = (import ../../../lib/stylix/themes.nix).wallpaper;
   specialWorkspaceName = "special";
   brightnessBinds =
     if hostProfile.isDesktop then
@@ -195,8 +195,7 @@ in
       ];
 
       layerrule = [
-        "blur,hyprlock"
-        "ignorezero,hyprlock"
+        # "ignorezero,hyprlock"
       ];
 
       binds.allow_workspace_cycles = true;

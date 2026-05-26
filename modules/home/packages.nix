@@ -68,6 +68,7 @@
     nerd-fonts.fira-code
     nerd-fonts.zed-mono
     nerd-fonts.jetbrains-mono
+    alice
 
     # ── GUI applications ────────────────────────────────────────────────
     foot
