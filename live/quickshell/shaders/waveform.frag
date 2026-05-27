@@ -19,26 +19,25 @@ layout(std140, binding = 0) uniform buf {
 };
 
 void main() {
-    float totalWidth = barCount * barWidth + (barCount - 1.0) * barSpacing;
     float barSpan = barWidth + barSpacing;
+    float totalWidth = barCount * barWidth + (barCount - 1.0) * barSpacing;
+    float halfHeight = heightPx * 0.5;
+
     float x = qt_TexCoord0.x * totalWidth;
     float index = floor(x / barSpan);
+
     if (index < 0.0 || index >= barCount) {
         fragColor = vec4(0.0);
         return;
     }
 
     float xIn = x - index * barSpan;
-    float edgeX = fwidth(xIn);
-    float inBar = 1.0 - smoothstep(barWidth, barWidth + edgeX, xIn);
+    float inBar = 1.0 - smoothstep(barWidth, barWidth + 1.0, xIn);
 
     float waveHeight = 6.0 + sin(phase + index * 0.55) * 4.0;
     float barHeight = mix(3.0, waveHeight, play);
-    float center = heightPx * 0.5;
-    float y = qt_TexCoord0.y * heightPx;
-    float dy = abs(y - center);
-    float edgeY = fwidth(dy);
-    float inY = 1.0 - smoothstep(barHeight * 0.5, barHeight * 0.5 + edgeY, dy);
+    float dy = abs(qt_TexCoord0.y * heightPx - halfHeight);
+    float inY = 1.0 - smoothstep(barHeight * 0.5, barHeight * 0.5 + 1.0, dy);
 
     float frac = (index + 1.0) / barCount;
     vec4 color = bgColor;
@@ -47,6 +46,5 @@ void main() {
         color = mix(colorStart, colorEnd, t);
     }
 
-    float mask = inBar * inY;
-    fragColor = color * mask * qt_Opacity;
+    fragColor = color * inBar * inY * qt_Opacity;
 }

@@ -181,7 +181,7 @@ PanelWindow {
 
   Timer {
     interval: 1000
-    running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
+    running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying && mediaPill.visible
     repeat: true
     onTriggered: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.positionChanged(); }
   }
@@ -321,45 +321,48 @@ PanelWindow {
               property color bgColor: colors.bgSubtle
             }
 
-            Item {
-              id: waveformFallback
-              visible: !waveformShader.visible
-              width: mediaWaveform.width
-              height: mediaWaveform.height
-              anchors.verticalCenter: parent.verticalCenter
+            Loader {
+                id: waveformFallback
+                active: !waveformShader.visible
+                width: mediaWaveform.width
+                height: mediaWaveform.height
+                anchors.verticalCenter: parent.verticalCenter
 
-              Repeater {
-                model: mediaWaveform.barCount
-                delegate: Rectangle {
-                  required property int index
-                  width: mediaWaveform.barWidth
-                  radius: width / 2
+                sourceComponent: Component {
+                    Item {
+                        width: mediaWaveform.width
+                        height: mediaWaveform.height
 
-                  // Manually calculate x position to replace the Row layout
-                  x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
+                        Repeater {
+                            model: mediaWaveform.barCount
+                            delegate: Rectangle {
+                                required property int index
+                                width: mediaWaveform.barWidth
+                                radius: width / 2
+                                x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
+                                y: (mediaWaveform.height - height) / 2
 
-                  // Calculate a stable center line relative to the waveform container
-                  y: (mediaWaveform.height - height) / 2
-
-                  height: {
-                    if (!barPanel.mediaPlayer) return 3
-                    var waveHeight = 3 + Math.sin(mediaWaveform.wavePhase + index * 0.55) * 4 + 3
-                    return 3 + (waveHeight - 3) * mediaWaveform.playTransition
-                  }
-                  color: {
-                    if (!barPanel.mediaPlayer) return colors.bgSubtle
-                    var frac = (index + 1) / mediaWaveform.barCount
-                    if (frac > mediaWaveform.displayProgress) return colors.bgSubtle
-                    var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
-                    return Qt.rgba(
-                      0.769 - 0.157 * t,
-                      0.655 + 0.157 * t,
-                      0.906 - 0.059 * t,
-                      1
-                    )
-                  }
+                                height: {
+                                    if (!barPanel.mediaPlayer) return 3
+                                    var waveHeight = 3 + Math.sin(mediaWaveform.wavePhase + index * 0.55) * 4 + 3
+                                    return 3 + (waveHeight - 3) * mediaWaveform.playTransition
+                                }
+                                color: {
+                                    if (!barPanel.mediaPlayer) return colors.bgSubtle
+                                    var frac = (index + 1) / mediaWaveform.barCount
+                                    if (frac > mediaWaveform.displayProgress) return colors.bgSubtle
+                                    var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
+                                    return Qt.rgba(
+                                        0.769 - 0.157 * t,
+                                        0.655 + 0.157 * t,
+                                        0.906 - 0.059 * t,
+                                        1
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
-              }
             }
 
             MouseArea {
@@ -554,9 +557,9 @@ PanelWindow {
     }
   }
 
-  PanelWindow {
-    id: tooltipWindow
-    visible: true
+    PanelWindow {
+        id: tooltipWindow
+        visible: barPanel.tooltipVisible
     focusable: false
     aboveWindows: true
     exclusionMode: ExclusionMode.Ignore
