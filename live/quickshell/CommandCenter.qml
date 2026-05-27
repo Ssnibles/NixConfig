@@ -154,10 +154,10 @@ PanelWindow {
   exclusionMode: ExclusionMode.Ignore
   color: "transparent"
 
-  anchors { top: true; right: true }
-  margins { top: root ? root.topMargin : 54; right: root ? root.sideMargin : 24 }
+  anchors { top: true; bottom: true; right: true }
+  margins { top: root ? root.topMargin : 54; bottom: root ? root.topMargin : 54; right: root ? root.sideMargin : 24 }
 
-  implicitWidth: root ? root.panelWidth : 520
+  implicitWidth: 620
   implicitHeight: 700
 
   function findFirst(list, predicate) {
@@ -430,8 +430,9 @@ PanelWindow {
         height: 36
         visible: Pipewire.ready && Pipewire.defaultAudioSource !== null
 
-        Row {
+        RowLayout {
           anchors.verticalCenter: parent.verticalCenter
+          width: parent.width
           spacing: 10
 
           Rectangle {
@@ -471,15 +472,14 @@ PanelWindow {
             font.family: root ? root.uiFont : "monospace"
             font.pixelSize: 11
             verticalAlignment: Text.AlignVCenter
-            height: 36
-            width: 52
+            Layout.preferredWidth: implicitWidth
+            Layout.minimumWidth: implicitWidth
           }
 
           // Toggle switch
           Item {
-            width: parent.parent.width - micIconBtn.width - 52 - 30
+            Layout.fillWidth: true
             height: 36
-            anchors.verticalCenter: parent.verticalCenter
 
             Rectangle {
               id: micTrack
@@ -498,7 +498,7 @@ PanelWindow {
 
               Rectangle {
                 id: micThumb
-                x: controlPanel.micMuted ? 3 : micTrack.width - height + 3
+                x: controlPanel.micMuted ? 3 : micTrack.width - width - 3
                 y: 3
                 width: micTrack.height - 6
                 height: micTrack.height - 6
@@ -517,7 +517,7 @@ PanelWindow {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onEntered: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.35) : Qt.rgba(0.498, 0.647, 0.388, 0.35)
+                onEntered: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.35) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
                 onExited: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.25) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
                 onClicked: {
                   if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
@@ -530,7 +530,7 @@ PanelWindow {
             Text {
               anchors.verticalCenter: parent.verticalCenter
               anchors.left: micTrack.right
-              anchors.leftMargin: 10
+              anchors.leftMargin: 16
               text: controlPanel.micMuted ? "Muted" : "Live"
               color: controlPanel.micMuted ? (root ? root.red : "#d8647e") : (root ? root.green : "#7fa563")
               font.family: root ? root.uiFont : "monospace"
@@ -1020,7 +1020,7 @@ PanelWindow {
 
             Rectangle {
               id: dndThumb
-              x: (root && root.doNotDisturb) ? dndTrack.width - height + 3 : 3
+              x: (root && root.doNotDisturb) ? dndTrack.width - width - 3 : 3
               y: 3
               width: dndTrack.height - 6
               height: dndTrack.height - 6
