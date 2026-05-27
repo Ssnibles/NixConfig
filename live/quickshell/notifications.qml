@@ -15,9 +15,9 @@ Item {
   id: notif
   Colors { id: colors }
 
-  property bool controlPanelVisible: false
   property bool doNotDisturb: false
   property bool barVisible: true
+  property alias notificationServer: notificationServer
   property int  popupTimeoutMs: 6000
   property int  maxPopups: 5
   property string uiFont: "JetBrains Mono"

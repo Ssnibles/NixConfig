@@ -220,7 +220,7 @@ in
         "$mod, SPACE, exec, vicinae toggle"
         # Kando example menu (shortcut ID in Kando's menu editor).
         "CTRL, F12, global, menu.kando.Kando:example-menu"
-        "$mod, N, exec, qs ipc call controlpanel toggle"
+        "$mod, P, exec, qs ipc call controlpanel toggle"
         "$mod, DELETE, exec, hyprlock"
         "$mod SHIFT, R, exec, reload-all"
         "$mod, F, fullscreen"

@@ -10,7 +10,7 @@ PanelWindow {
 
   property QtObject root: null
 
-  visible: root ? root.controlPanelVisible : false
+  visible: false
   focusable: true
   aboveWindows: true
   exclusionMode: ExclusionMode.Ignore
@@ -154,7 +154,7 @@ PanelWindow {
             hoverEnabled: true
             onEntered: closePanel.color = root ? root.bgSubtle : "#333333"
             onExited:  closePanel.color = "transparent"
-            onClicked: { if (root) root.controlPanelVisible = false; }
+            onClicked: controlPanel.visible = false
           }
         }
       }

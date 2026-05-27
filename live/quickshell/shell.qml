@@ -14,12 +14,17 @@ ShellRoot {
         barLoader.source = "bar.qml"
         notificationsLoader.source = ""
         notificationsLoader.source = "notifications.qml"
+        commandCenterLoader.source = ""
+        commandCenterLoader.source = "CommandCenter.qml"
       } else if (component === "bar") {
         barLoader.source = ""
         barLoader.source = "bar.qml"
       } else if (component === "notifications") {
         notificationsLoader.source = ""
         notificationsLoader.source = "notifications.qml"
+      } else if (component === "commandcenter") {
+        commandCenterLoader.source = ""
+        commandCenterLoader.source = "CommandCenter.qml"
       }
     }
   }
@@ -33,15 +38,15 @@ ShellRoot {
     target: "controlpanel"
 
     function toggle(): void  {
-      if (notificationsLoader.item) {
-        notificationsLoader.item.controlPanelVisible = !notificationsLoader.item.controlPanelVisible;
+      if (commandCenterLoader.item) {
+        commandCenterLoader.item.visible = !commandCenterLoader.item.visible;
       }
     }
     function show(): void    {
-      if (notificationsLoader.item) notificationsLoader.item.controlPanelVisible = true;
+      if (commandCenterLoader.item) commandCenterLoader.item.visible = true;
     }
     function hide(): void    {
-      if (notificationsLoader.item) notificationsLoader.item.controlPanelVisible = false;
+      if (commandCenterLoader.item) commandCenterLoader.item.visible = false;
     }
     function toggleDnd(): void {
       if (notificationsLoader.item) notificationsLoader.item.doNotDisturb = !notificationsLoader.item.doNotDisturb;
@@ -58,7 +63,20 @@ ShellRoot {
     id: notificationsLoader
     source: "notifications.qml"
     onItemChanged: {
-      if (item) item.barVisible = Qt.binding(function() { return root.barVisible; });
+      if (item) {
+        item.barVisible = Qt.binding(function() { return root.barVisible; });
+        if (commandCenterLoader.item) commandCenterLoader.item.root = item;
+      }
+    }
+  }
+
+  Loader {
+    id: commandCenterLoader
+    source: "CommandCenter.qml"
+    onItemChanged: {
+      if (item && notificationsLoader.item) {
+        item.root = notificationsLoader.item;
+      }
     }
   }
 }
