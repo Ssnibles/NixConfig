@@ -98,7 +98,7 @@ in
         gaps_out = 16;
         border_size = 0;
         # Make borderless windows easier to resize.
-        resize_on_border = true;
+        resize_on_border = false;
         # Prefer low-latency tearing on desktop/gaming rigs, but keep laptops tear-free.
         allow_tearing = hostProfile.isDesktop;
         "col.active_border" = "rgb(${raw.accent})";
