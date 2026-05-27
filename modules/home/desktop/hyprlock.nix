@@ -82,6 +82,7 @@ in
           color = rgb c.fg;
           font_size = 72;
           font_family = "Alice";
+          text_align = "center";
           position = "0, 200";
           halign = "center";
           valign = "center";
