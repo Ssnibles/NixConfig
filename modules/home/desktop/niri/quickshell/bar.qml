@@ -14,7 +14,7 @@ PanelWindow {
   aboveWindows: true
 
   anchors { left: true; top: true; bottom: true }
-  implicitWidth: 48
+  implicitWidth: 52
   exclusionMode: ExclusionMode.Auto
   color: colors.bg
 
@@ -30,8 +30,10 @@ PanelWindow {
   }
 
   // ════════════════════════════════════════════════════════════════
-  // Niri workspaces
+  // Niri event stream — event-driven IPC (no polling)
   // ════════════════════════════════════════════════════════════════
+  property string activeWindowTitle: ""
+
   ListModel {
     id: wsModel
   }
@@ -93,6 +95,18 @@ PanelWindow {
               workspaceRefresh.running = false;
               workspaceRefresh.running = true;
             }
+
+            if (event.WindowTitleChanged !== undefined) {
+              var titleEvent = event.WindowTitleChanged;
+              if (titleEvent.title) {
+                barPanel.activeWindowTitle = titleEvent.title;
+              }
+            }
+
+            if (event.WindowsChanged !== undefined) {
+              windowTitleRefresh.running = false;
+              windowTitleRefresh.running = true;
+            }
           } catch(e) {}
         }
       }
@@ -120,6 +134,7 @@ PanelWindow {
     repeat: false
     onTriggered: {
       wsInitQuery.running = true;
+      windowTitleQuery.running = true;
     }
   }
 
@@ -137,6 +152,19 @@ PanelWindow {
       if (Array.isArray(wsData)) {
         wsData.sort(function(a, b) { return a.idx - b.idx; });
         syncWorkspaces(wsData);
+      }
+    } catch(e) {}
+  }
+
+  function loadActiveTitle(replyText) {
+    try {
+      var parsed = JSON.parse(replyText.trim());
+      var windows = Array.isArray(parsed) ? parsed : (parsed.Ok || []);
+      for (var i = 0; i < windows.length; i++) {
+        if (windows[i].is_focused && windows[i].title) {
+          barPanel.activeWindowTitle = windows[i].title;
+          return;
+        }
       }
     } catch(e) {}
   }
@@ -160,8 +188,149 @@ PanelWindow {
   }
 
   Process {
+    id: windowTitleQuery
+    running: false
+    command: ["niri", "msg", "--json", "windows"]
+    stdout: StdioCollector {
+      onDataChanged: { loadActiveTitle(this.text); }
+    }
+  }
+
+  Process {
+    id: windowTitleRefresh
+    running: false
+    command: ["niri", "msg", "--json", "windows"]
+    stdout: StdioCollector {
+      onDataChanged: { loadActiveTitle(this.text); }
+    }
+  }
+
+  Process {
     id: wsActionProc
     running: false
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  // Hardware monitoring — lightweight /proc reads
+  // ════════════════════════════════════════════════════════════════
+  property real cpuPercent: 0
+  property real memPercent: 0
+  property string netDownStr: "0"
+  property string netUpStr: "0"
+
+  Process {
+    id: hwMonitor
+    command: ["bash", "-c", "cat /proc/stat /proc/meminfo /proc/net/dev"]
+    running: false
+
+    stdout: StdioCollector {
+      onDataChanged: {
+        parseHwData(this.text);
+      }
+    }
+  }
+
+  property string prevCpuLine: ""
+  property var prevNetBytes: ({})
+
+  function parseHwData(text) {
+    var lines = text.split("\n");
+
+    for (var i = 0; i < lines.length; i++) {
+      if (lines[i].indexOf("cpu ") === 0) {
+        var parts = lines[i].split(/\s+/);
+        var user = parseInt(parts[1]);
+        var nice = parseInt(parts[2]);
+        var system = parseInt(parts[3]);
+        var idle = parseInt(parts[4]);
+        var iowait = parseInt(parts[5]) || 0;
+        var irq = parseInt(parts[6]) || 0;
+        var softirq = parseInt(parts[7]) || 0;
+        var steal = parseInt(parts[8]) || 0;
+
+        var total = user + nice + system + idle + iowait + irq + softirq + steal;
+        var busy = total - idle - iowait;
+
+        if (barPanel.prevCpuLine !== "") {
+          var prevParts = barPanel.prevCpuLine.split(/\s+/);
+          var prevUser = parseInt(prevParts[1]);
+          var prevNice = parseInt(prevParts[2]);
+          var prevSystem = parseInt(prevParts[3]);
+          var prevIdle = parseInt(prevParts[4]);
+          var prevIowait = parseInt(prevParts[5]) || 0;
+          var prevIrq = parseInt(prevParts[6]) || 0;
+          var prevSoftirq = parseInt(prevParts[7]) || 0;
+          var prevSteal = parseInt(prevParts[8]) || 0;
+
+          var prevTotal = prevUser + prevNice + prevSystem + prevIdle + prevIowait + prevIrq + prevSoftirq + prevSteal;
+          var prevBusy = prevTotal - prevIdle - prevIowait;
+
+          var dTotal = total - prevTotal;
+          var dBusy = busy - prevBusy;
+          if (dTotal > 0) {
+            barPanel.cpuPercent = Math.round((dBusy / dTotal) * 100);
+          }
+        }
+        barPanel.prevCpuLine = lines[i];
+      }
+
+      if (lines[i].indexOf("MemTotal:") === 0) {
+        var memTotal = parseInt(lines[i].split(/\s+/)[1]);
+        for (var j = i + 1; j < lines.length && j < i + 5; j++) {
+          if (lines[j].indexOf("MemAvailable:") === 0) {
+            var memAvail = parseInt(lines[j].split(/\s+/)[1]);
+            if (memTotal > 0) {
+              barPanel.memPercent = Math.round(((memTotal - memAvail) / memTotal) * 100);
+            }
+            break;
+          }
+        }
+      }
+
+      if (lines[i].indexOf(":") > 0 && lines[i].indexOf("eth") >= 0 || lines[i].indexOf("wlan") >= 0 || lines[i].indexOf("enp") >= 0 || lines[i].indexOf("wlp") >= 0) {
+        var iface = lines[i].split(":")[0].trim();
+        var stats = lines[i].split(":")[1].trim().split(/\s+/);
+        var rxBytes = parseInt(stats[0]);
+        var txBytes = parseInt(stats[8]);
+
+        if (barPanel.prevNetBytes[iface]) {
+          var prev = barPanel.prevNetBytes[iface];
+          var drx = rxBytes - prev.rx;
+          var dtx = txBytes - prev.tx;
+          var elapsed = 5;
+          barPanel.netDownStr = formatBytes(Math.max(0, drx / elapsed));
+          barPanel.netUpStr = formatBytes(Math.max(0, dtx / elapsed));
+        }
+        var newNet = {};
+        newNet[iface] = {rx: rxBytes, tx: txBytes};
+        for (var k in barPanel.prevNetBytes) {
+          if (k !== iface) newNet[k] = barPanel.prevNetBytes[k];
+        }
+        barPanel.prevNetBytes = newNet;
+      }
+    }
+  }
+
+  function formatBytes(bytesPerSec) {
+    if (bytesPerSec < 1024) return Math.round(bytesPerSec) + "B";
+    if (bytesPerSec < 1048576) return Math.round(bytesPerSec / 1024) + "K";
+    return (bytesPerSec / 1048576).toFixed(1) + "M";
+  }
+
+  Timer {
+    id: hwTimer
+    interval: 5000
+    running: true
+    repeat: true
+    onTriggered: {
+      hwMonitor.running = false;
+      hwMonitor.running = true;
+    }
+  }
+
+  Component.onCompleted: {
+    updateTime();
+    hwMonitor.running = true;
   }
 
   // ════════════════════════════════════════════════════════════════
@@ -195,13 +364,13 @@ PanelWindow {
   property string netIconStr: {
     if (wifiNet) {
       var s = wifiNet.signalStrength;
-      if (s < 0.2) return "󰤟";
-      if (s < 0.4) return "󰤢";
-      if (s < 0.6) return "󰤥";
-      return "󰤨";
+      if (s < 0.2) return "\u{F091F}";
+      if (s < 0.4) return "\u{F0922}";
+      if (s < 0.6) return "\u{F0925}";
+      return "\u{F0928}";
     }
-    if (ethDev && ethDev.state === DeviceState.Activated) return "󰈀";
-    return "󰤯";
+    if (ethDev && ethDev.state === DeviceState.Activated) return "\u{F0200}";
+    return "\u{F092F}";
   }
 
   // ════════════════════════════════════════════════════════════════
@@ -214,12 +383,12 @@ PanelWindow {
   property bool volMuted: volInfo ? volInfo.muted : false
 
   property string volIconStr: {
-    if (barPanel.volMuted) return "󰝟";
+    if (barPanel.volMuted) return "\u{F075F}";
     var v = barPanel.volPct;
-    if (v <= 0) return "󰝟";
-    if (v < 0.33) return "󰕿";
-    if (v < 0.66) return "󰖀";
-    return "󰕾";
+    if (v <= 0) return "\u{F075F}";
+    if (v < 0.33) return "\u{F057F}";
+    if (v < 0.66) return "\u{F0580}";
+    return "\u{F057E}";
   }
 
   // ════════════════════════════════════════════════════════════════
@@ -234,30 +403,29 @@ PanelWindow {
   }
   property string mediaText: mediaPlayer
   ? (mediaPlayer.trackArtist
-    ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
+    ? mediaPlayer.trackTitle + " \u2014 " + mediaPlayer.trackArtist
     : mediaPlayer.trackTitle)
   : ""
 
   // ════════════════════════════════════════════════════════════════
   // Layout
   // ════════════════════════════════════════════════════════════════
-  Component.onCompleted: updateTime()
 
   // ── Media indicator (sideways, top) ──
   Text {
     id: mediaLabel
-    x: 14
+    x: 16
     y: 10
     text: barPanel.mediaText
     color: colors.fg
     font.family: barPanel.uiFont
-    font.pixelSize: 11
+    font.pixelSize: 10
     font.bold: true
     rotation: -90
     transformOrigin: Item.TopLeft
     elide: Text.ElideRight
     visible: barPanel.mediaText !== ""
-    width: barPanel.height - 50
+    width: barPanel.height - 200
     height: 20
     maximumLineCount: 1
     horizontalAlignment: Text.AlignLeft
@@ -304,6 +472,86 @@ PanelWindow {
     }
   }
 
+  // ── Hardware monitors ──
+  Column {
+    id: hwColumn
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.bottom: clockColumn.top
+    anchors.bottomMargin: 12
+    spacing: 8
+
+    // CPU
+    Column {
+      anchors.horizontalCenter: parent.horizontalCenter
+      spacing: 1
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: "\u{F04BB}"
+        color: barPanel.cpuPercent > 80 ? colors.red : (barPanel.cpuPercent > 50 ? colors.yellow : colors.fgDim)
+        font.family: barPanel.uiFont
+        font.pixelSize: 13
+      }
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: barPanel.cpuPercent + "%"
+        color: barPanel.cpuPercent > 80 ? colors.red : colors.fgDim
+        font.family: barPanel.uiFont
+        font.pixelSize: 8
+        font.bold: true
+      }
+    }
+
+    // Memory
+    Column {
+      anchors.horizontalCenter: parent.horizontalCenter
+      spacing: 1
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: "\u{F035B}"
+        color: barPanel.memPercent > 85 ? colors.red : (barPanel.memPercent > 60 ? colors.yellow : colors.fgDim)
+        font.family: barPanel.uiFont
+        font.pixelSize: 13
+      }
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: barPanel.memPercent + "%"
+        color: barPanel.memPercent > 85 ? colors.red : colors.fgDim
+        font.family: barPanel.uiFont
+        font.pixelSize: 8
+        font.bold: true
+      }
+    }
+
+    // Network
+    Column {
+      anchors.horizontalCenter: parent.horizontalCenter
+      spacing: 1
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: "\u{F035D}"
+        color: colors.fgDim
+        font.family: barPanel.uiFont
+        font.pixelSize: 11
+      }
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: barPanel.netDownStr
+        color: colors.green
+        font.family: barPanel.uiFont
+        font.pixelSize: 7
+        font.bold: true
+      }
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: barPanel.netUpStr
+        color: colors.purple
+        font.family: barPanel.uiFont
+        font.pixelSize: 7
+        font.bold: true
+      }
+    }
+  }
+
   // ── Clock ──
   Column {
     id: clockColumn
@@ -336,7 +584,7 @@ PanelWindow {
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: volWidget.top
     anchors.bottomMargin: 8
-    width: 40
+    width: 44
     height: 32
 
     Rectangle {
@@ -375,7 +623,7 @@ PanelWindow {
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: parent.bottom
     anchors.bottomMargin: 12
-    width: 40
+    width: 44
     height: 48
 
     Rectangle {

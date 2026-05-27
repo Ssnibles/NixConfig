@@ -6,7 +6,6 @@
 // Input
 // ══════════════════════════════════════════════════════════════════════════════
 input {
-    focus-follows-mouse
     warp-mouse-to-focus
 
     keyboard {
@@ -45,30 +44,30 @@ hotkey-overlay {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Animations
+// Animations — spring-physics tuned for fluid, responsive feel
 // ══════════════════════════════════════════════════════════════════════════════
 animations {
     workspace-switch {
-        spring damping-ratio=0.72 stiffness=1200 epsilon=0.0001
+        spring damping-ratio=0.68 stiffness=1400 epsilon=0.00005
     }
     window-open {
-        spring damping-ratio=0.68 stiffness=750 epsilon=0.0001
+        spring damping-ratio=0.62 stiffness=680 epsilon=0.0001
     }
     window-close {
-        duration-ms 100
+        duration-ms 120
         curve "ease-out-quad"
     }
     horizontal-view-movement {
-        spring damping-ratio=0.72 stiffness=1200 epsilon=0.0001
+        spring damping-ratio=0.70 stiffness=1400 epsilon=0.00005
     }
     window-movement {
-        spring damping-ratio=0.78 stiffness=900 epsilon=0.0001
+        spring damping-ratio=0.75 stiffness=950 epsilon=0.00008
     }
     window-resize {
-        spring damping-ratio=0.82 stiffness=1000 epsilon=0.0001
+        spring damping-ratio=0.80 stiffness=1100 epsilon=0.0001
     }
     config-notification-open-close {
-        spring damping-ratio=0.8 stiffness=800 epsilon=0.0001
+        spring damping-ratio=0.78 stiffness=850 epsilon=0.0001
     }
 }
 
@@ -95,14 +94,15 @@ environment {
 // Layout
 // ══════════════════════════════════════════════════════════════════════════════
 layout {
-    gaps 8
+    always-center-single-column true
+    gaps 10
     struts {
         left 8
         right 8
         top 8
         bottom 8
     }
-    center-focused-column "always"
+    center-focused-column "on-overflow"
 
     focus-ring {
         width 2
@@ -125,10 +125,17 @@ layout {
 prefer-no-csd
 
 // ══════════════════════════════════════════════════════════════════════════════
+// Workspaces
+// ══════════════════════════════════════════════════════════════════════════════
+
+// workspace "Browser"
+// workspace "Code"
+// workspace "Chat"
+
+// ══════════════════════════════════════════════════════════════════════════════
 // Window Rules
 // ══════════════════════════════════════════════════════════════════════════════
 
-// Dim inactive windows
 window-rule {
     match is-active=false
     opacity 0.85
@@ -139,7 +146,12 @@ window-rule {
   clip-to-geometry true
 }
 
-// File dialogs — float, constrain size
+window-rule {
+  match title="^Zen"
+  open-maximized true
+}
+
+// ── File dialogs — float, constrain size ──────────────────────────────────
 window-rule {
     match title=r#"^(Save As|Upload File|Open File|Choose).*$"#
     open-floating true
@@ -147,13 +159,13 @@ window-rule {
     default-window-height { proportion 0.6; }
 }
 
-// Utility windows — float
+// ── Utility windows — float ──────────────────────────────────────────────
 window-rule {
     match app-id=r#"^(org\.pulseaudio\.pavucontrol|blueman-manager|nm-connection-editor|gnome-disks)$"#
     open-floating true
 }
 
-// Calculator — float, small
+// ── Calculator — float, small ────────────────────────────────────────────
 window-rule {
     match app-id=r#"^(org\.gnome\.Calculator|qalculate-gtk)$"#
     open-floating true
@@ -161,19 +173,19 @@ window-rule {
     default-window-height { proportion 0.4; }
 }
 
-// Media players — float
+// ── Media players — float ────────────────────────────────────────────────
 window-rule {
     match app-id=r#"^(com\.github\.rafostar\.Clapper|mpv|vlc)$"#
     open-floating true
 }
 
-// Games — always fullscreen
+// ── Games — always fullscreen ────────────────────────────────────────────
 window-rule {
     match app-id=r#"^(gamescope|steam_app_\d+)$"#
     open-fullscreen true
 }
 
-// Picture-in-Picture — float, small
+// ── Picture-in-Picture — float, small, pinned ────────────────────────────
 window-rule {
     match title="^Picture-in-Picture$"
     open-floating true
@@ -182,49 +194,21 @@ window-rule {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Workspaces
-// ══════════════════════════════════════════════════════════════════════════════
-workspace "scratch" {
-    open-on-output "focused"
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
 // Key Binds
 // ══════════════════════════════════════════════════════════════════════════════
 binds {
-    // ── Terminal ────────────────────────────────────────────────────────
     Mod+Return repeat=false { spawn "foot"; }
-
-    // ── Launcher ────────────────────────────────────────────────────────
     Mod+Space repeat=false { spawn-sh "vicinae toggle"; }
-
-    // ── Overview ────────────────────────────────────────────────────────
     Mod+O repeat=false { toggle-overview; }
-
-    // ── File Manager ────────────────────────────────────────────────────
     Mod+E repeat=false { spawn "foot" "yazi"; }
-
-    // ── Close Window ────────────────────────────────────────────────────
     Mod+Q { close-window; }
-
-    // ── Floating Toggle ─────────────────────────────────────────────────
     Mod+V repeat=false { toggle-window-floating; }
-
-    // ── Fullscreen / Maximize ───────────────────────────────────────────
     Mod+F repeat=false { fullscreen-window; }
     Mod+M repeat=false { maximize-column; }
-
-    // ── Focus Mode ──────────────────────────────────────────────────────
-    Mod+G repeat=false { spawn-sh "toggle-focus-mode"; }
-
-    // ── Control Panel ───────────────────────────────────────────────────
+    Mod+G repeat=false { spawn-sh "toggle-focus-mode-niri"; }
     Mod+P repeat=false { spawn-sh "qs ipc call controlpanel toggle"; }
-
-    // ── Lock Screen ─────────────────────────────────────────────────────
     Mod+Delete allow-when-locked=true { spawn "swaylock" "-f"; }
-
-    // ── Reload Config ───────────────────────────────────────────────────
-    Mod+Shift+R repeat=false { spawn-sh "reload-all"; }
+    Mod+Shift+R repeat=false { spawn-sh "reload-all-niri"; }
 
     // ── Focus Movement ──────────────────────────────────────────────────
     Mod+H { focus-column-left; }
@@ -277,10 +261,6 @@ binds {
 
     Mod+Grave { focus-workspace-previous; }
     Mod+Tab   { focus-workspace-previous; }
-
-    // Scratch workspace
-    Mod+W { focus-workspace "scratch"; }
-    Mod+Shift+W repeat=false { move-column-to-workspace "scratch"; }
 
     // ── Move Column to Workspace ────────────────────────────────────────
     Mod+Shift+1 { move-column-to-workspace 1; }

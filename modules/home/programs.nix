@@ -70,6 +70,7 @@ in
 {
   programs.spicetify = {
     enable = true;
+    wayland = true;
     enabledExtensions = with spicePkgs.extensions; [
       adblockify
       hidePodcasts
@@ -171,7 +172,7 @@ in
   };
 
   xdg.configFile."pet/snippet.toml".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/NixConfig/live/pet/snippet.toml";
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/NixConfig/modules/home/apps/pet/snippet.toml";
   xdg.configFile."pet/config.toml".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/NixConfig/live/pet/config.toml";
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/NixConfig/modules/home/apps/pet/config.toml";
 }

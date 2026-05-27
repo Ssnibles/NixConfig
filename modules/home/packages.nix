@@ -74,6 +74,7 @@
     foot
     onlyoffice-desktopeditors
     vesktop
+    qownnotes
 
     # ── Document viewers ────────────────────────────────────────────────
     sioyek

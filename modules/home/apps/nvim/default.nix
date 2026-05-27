@@ -7,9 +7,11 @@
 }:
 let
   c =
-    (import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
+    (import ../../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; })
+    .withHash;
   s = config.lib.stylix.colors.withHashtag;
-  liveDir = "${config.home.homeDirectory}/NixConfig/live";
+  repoRoot = "${config.home.homeDirectory}/NixConfig";
+  nvimSrcDir = "${repoRoot}/modules/home/apps/nvim/nvim-src";
 
   tiny-code-action = pkgs.vimUtils.buildVimPlugin {
     pname = "tiny-code-action";
@@ -213,7 +215,7 @@ in
   };
 
   xdg.configFile."nvf" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${liveDir}/nvim";
+    source = config.lib.file.mkOutOfStoreSymlink "${nvimSrcDir}";
     force = true;
   };
 
@@ -224,7 +226,7 @@ in
   '';
 
   home.activation.writeNvfColors = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    colors_dir="$HOME/NixConfig/live/nvim/lua/generated"
+    colors_dir="${nvimSrcDir}/lua/generated"
     mkdir -p "$colors_dir"
     cat > "$colors_dir/colors.lua" << LUAEOF
     local M = {
