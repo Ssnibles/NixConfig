@@ -32,7 +32,28 @@ PanelWindow {
   // ════════════════════════════════════════════════════════════════
   // Niri workspaces
   // ════════════════════════════════════════════════════════════════
-  property var workspaces: []
+  ListModel {
+    id: wsModel
+  }
+
+  function syncWorkspaces(wsArray) {
+    var rebuild = wsModel.count !== wsArray.length;
+    if (!rebuild) {
+      for (var i = 0; i < wsArray.length; i++) {
+        if (wsModel.get(i).idx !== wsArray[i].idx) { rebuild = true; break; }
+      }
+    }
+    if (rebuild) {
+      wsModel.clear();
+      for (var i = 0; i < wsArray.length; i++) {
+        wsModel.append({"idx": wsArray[i].idx, "is_focused": wsArray[i].is_focused});
+      }
+    } else {
+      for (var i = 0; i < wsModel.count; i++) {
+        wsModel.setProperty(i, "is_focused", wsArray[i].is_focused);
+      }
+    }
+  }
 
   Process {
     id: niriMonitor
@@ -64,7 +85,7 @@ PanelWindow {
               var ws = event.WorkspacesChanged.workspaces;
               if (Array.isArray(ws)) {
                 ws.sort(function(a, b) { return a.idx - b.idx; });
-                barPanel.workspaces = ws;
+                syncWorkspaces(ws);
               }
             }
 
@@ -115,7 +136,7 @@ PanelWindow {
       }
       if (Array.isArray(wsData)) {
         wsData.sort(function(a, b) { return a.idx - b.idx; });
-        barPanel.workspaces = wsData;
+        syncWorkspaces(wsData);
       }
     } catch(e) {}
   }
@@ -208,14 +229,14 @@ PanelWindow {
   property var mediaPlayer: {
     var playing = findFirst(mediaPlayers, function(p) { return p.isPlaying; });
     return playing ? playing : findFirst(mediaPlayers, function(p) {
-      return p.playbackState === MprisPlaybackState.Paused;
+        return p.playbackState === MprisPlaybackState.Paused;
     });
   }
   property string mediaText: mediaPlayer
-    ? (mediaPlayer.trackArtist
-      ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
-      : mediaPlayer.trackTitle)
-    : ""
+  ? (mediaPlayer.trackArtist
+    ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
+    : mediaPlayer.trackTitle)
+  : ""
 
   // ════════════════════════════════════════════════════════════════
   // Layout
@@ -252,7 +273,7 @@ PanelWindow {
     spacing: 5
 
     Repeater {
-      model: barPanel.workspaces
+      model: wsModel
       delegate: Rectangle {
         required property var modelData
         property bool isFocused: modelData.is_focused
@@ -265,7 +286,9 @@ PanelWindow {
         opacity: isFocused ? 1.0 : 0.45
         anchors.horizontalCenter: parent.horizontalCenter
 
-        Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
+        Behavior on height {
+          SpringAnimation { spring: 5.0; damping: 0.3; epsilon: 0.3; mass: 0.5 }
+        }
         Behavior on color  { ColorAnimation { duration: 200 } }
         Behavior on opacity { NumberAnimation { duration: 200 } }
 
