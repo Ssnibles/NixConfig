@@ -46,7 +46,6 @@
     ../../modules/home/packages.nix
     ../../modules/home/programs.nix
     ../../modules/home/stylix.nix
-    ../../modules/home/kando.nix
     ../../modules/home/scripts.nix
   ];
 

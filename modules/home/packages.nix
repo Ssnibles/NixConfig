@@ -101,7 +101,6 @@
       via
       prismlauncher
       google-chrome
-      kando
       calibre
     ]
   )

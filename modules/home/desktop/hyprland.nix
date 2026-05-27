@@ -176,22 +176,17 @@ in
       ];
 
       windowrulev2 = [
+        # Float, resize, and center file dialogues in single rules
+        "float, size 60% 60%, move 20% 20%, title:^(Save As.*)$"
+        "float, size 60% 60%, move 20% 20%, title:^(Upload File.*)$"
+
         # 80% opacity for windows on special workspace (scratchpad)
         "opacity 0.8 0.8, onworkspace:name:special:special"
         # Stop apps from forcing maximize on launch.
         "suppressevent maximize, class:.*"
         # Avoid focus stealing while dragging some XWayland popups.
         "nofocus, class:^$,title:^$,xwayland:1,floating:1,fullscreen:0"
-        # Kando pie menu overlay.
-        "float, class:^(menu\\.kando\\.Kando)$, title:^(Kando Menu)$"
-        "pin, class:^(menu\\.kando\\.Kando)$, title:^(Kando Menu)$"
-        "size 100% 100%, class:^(menu\\.kando\\.Kando)$, title:^(Kando Menu)$"
-        "move 0 0, class:^(menu\\.kando\\.Kando)$, title:^(Kando Menu)$"
-        "noanim, class:^(menu\\.kando\\.Kando)$, title:^(Kando Menu)$"
-        "noblur, class:^(menu\\.kando\\.Kando)$, title:^(Kando Menu)$"
-        "opaque, class:^(menu\\.kando\\.Kando)$, title:^(Kando Menu)$"
-        "rounding 0, class:^(menu\\.kando\\.Kando)$, title:^(Kando Menu)$"
-        "bordersize 0, class:^(menu\\.kando\\.Kando)$, title:^(Kando Menu)$"
+
       ];
 
       layerrule = [
@@ -218,8 +213,6 @@ in
         "$mod, V, exec, toggle-float"
         "$mod, G, exec, toggle-focus-mode"
         "$mod, SPACE, exec, vicinae toggle"
-        # Kando example menu (shortcut ID in Kando's menu editor).
-        "CTRL, F12, global, menu.kando.Kando:example-menu"
         "$mod, P, exec, qs ipc call controlpanel toggle"
         "$mod, DELETE, exec, hyprlock"
         "$mod SHIFT, R, exec, reload-all"

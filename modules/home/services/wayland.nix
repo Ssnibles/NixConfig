@@ -73,24 +73,6 @@
     Install.WantedBy = [ "hyprland-session.target" ];
   };
 
-  # ── Kando pie menu ───────────────────────────────────────────────────────
-  systemd.user.services.kando = {
-    Unit = {
-      Description = "Kando pie menu";
-      PartOf = [ "hyprland-session.target" ];
-      After = [ "hyprland-session.target" ];
-    };
-    Service = {
-      Environment = [
-        "ELECTRON_OZONE_PLATFORM_HINT=auto"
-        "NIXOS_OZONE_WL=1"
-      ];
-      ExecStart = "${pkgs.unstable.kando}/bin/kando";
-      Restart = "on-failure";
-      RestartSec = 1;
-    };
-    Install.WantedBy = [ "hyprland-session.target" ];
-  };
 
   # ── Hypridle ─────────────────────────────────────────────────────────────
   services.hypridle = {
