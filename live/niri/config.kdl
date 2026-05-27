@@ -176,23 +176,6 @@ window-rule {
     default-window-height { proportion 0.25; }
 }
 
-// Browser — workspace 2
-window-rule {
-    match app-id=r#"^(firefox|zen|org\.mozilla\.firefox|zen-alpha)$"#
-    open-on-workspace "2"
-}
-
-// Communication — workspace 5
-window-rule {
-    match app-id=r#"^(discord|vesktop|webcord|org\.telegram\.desktop|teams-for-linux)$"#
-    open-on-workspace "5"
-}
-
-// Music — workspace 6
-window-rule {
-    match app-id=r#"^(Spotify|spotify)$"#
-    open-on-workspace "6"
-}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // Workspaces
