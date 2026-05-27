@@ -15,40 +15,25 @@ PanelWindow {
   aboveWindows: true
 
   anchors { left: true; top: true; bottom: true }
-  implicitWidth: barWidth
+  implicitWidth: 52
   exclusionMode: ExclusionMode.Auto
   color: colors.bg
 
+  property string uiFont: "JetBrains Mono"
+  property int barPad: 8
+  property int capsuleSpacing: 6
+
+  // ════════════════════════════════════════════════════════════
+  // Time
+  // ════════════════════════════════════════════════════════════
   property string hourStr: ""
   property string minuteStr: ""
-  property string uiFont: "JetBrains Mono"
-  property int barWidth: 52
-  property int tooltipGap: 6
-  property int tooltipPadding: 10
-  property int tooltipMargin: 6
-  property int tooltipMaxWidth: 280
-
-  property var workspaces: []
-  property string activeWindowTitle: ""
-  property string activeWindowAppId: ""
-
-  property int cpuPct: 0
-  property int memPct: 0
-  property string netDown: ""
-  property string netUp: ""
-
-  property int prevCpuTotal: 0
-  property int prevCpuIdle: 0
-  property int prevNetRx: 0
-  property int prevNetTx: 0
-  property int prevNetTime: 0
 
   function updateTime() {
     var d = new Date();
     barPanel.hourStr = Qt.formatTime(d, "hh");
     barPanel.minuteStr = Qt.formatTime(d, "mm");
-    var ms = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds());
-    timeTimer.interval = ms;
+    timeTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds());
     timeTimer.restart();
   }
 
@@ -58,6 +43,13 @@ PanelWindow {
     repeat: false
     onTriggered: barPanel.updateTime()
   }
+
+  // ════════════════════════════════════════════════════════════
+  // Niri state
+  // ════════════════════════════════════════════════════════════
+  property var workspaces: []
+  property string activeWindowTitle: ""
+  property string activeWindowAppId: ""
 
   Component.onCompleted: {
     updateTime();
@@ -100,7 +92,6 @@ PanelWindow {
 
     stdout: StdioCollector {
       property int lastPos: 0
-
       onDataChanged: {
         var newText = this.text.substring(lastPos);
         lastPos = this.text.length;
@@ -116,9 +107,7 @@ PanelWindow {
       }
     }
 
-    onExited: {
-      restartTimer.start();
-    }
+    onExited: restartTimer.start()
   }
 
   Timer {
@@ -166,9 +155,7 @@ PanelWindow {
         barPanel.activeWindowAppId = "";
       }
     } else if (event.WindowClosed !== undefined) {
-      if (barPanel.activeWindowTitle !== "") {
-        winRefreshQuery.exec();
-      }
+      if (barPanel.activeWindowTitle !== "") winRefreshQuery.exec();
     }
   }
 
@@ -184,13 +171,8 @@ PanelWindow {
             for (var i = 0; i < data.length; i++) {
               if (data[i].is_focused) { focused = data[i]; break; }
             }
-            if (focused) {
-              barPanel.activeWindowTitle = focused.title || "";
-              barPanel.activeWindowAppId = focused.app_id || "";
-            } else {
-              barPanel.activeWindowTitle = "";
-              barPanel.activeWindowAppId = "";
-            }
+            barPanel.activeWindowTitle = focused ? (focused.title || "") : "";
+            barPanel.activeWindowAppId = focused ? (focused.app_id || "") : "";
           }
         } catch(e) {
           barPanel.activeWindowTitle = "";
@@ -200,7 +182,19 @@ PanelWindow {
     }
   }
 
-  // ── Hardware monitoring ──
+  // ════════════════════════════════════════════════════════════
+  // Hardware monitoring
+  // ════════════════════════════════════════════════════════════
+  property int cpuPct: 0
+  property int memPct: 0
+  property string netDown: ""
+  property string netUp: ""
+  property int prevCpuTotal: 0
+  property int prevCpuIdle: 0
+  property int prevNetRx: 0
+  property int prevNetTx: 0
+  property int prevNetTime: 0
+
   Timer {
     id: hwTimer
     interval: 3000
@@ -235,9 +229,7 @@ PanelWindow {
     if (barPanel.prevCpuTotal > 0) {
       var dTotal = total - barPanel.prevCpuTotal;
       var dIdle = idle - barPanel.prevCpuIdle;
-      if (dTotal > 0) {
-        barPanel.cpuPct = Math.round((1 - dIdle / dTotal) * 100);
-      }
+      if (dTotal > 0) barPanel.cpuPct = Math.round((1 - dIdle / dTotal) * 100);
     }
     barPanel.prevCpuTotal = total;
     barPanel.prevCpuIdle = idle;
@@ -253,9 +245,7 @@ PanelWindow {
         if (m[1] === "MemAvailable") available = parseInt(m[2]);
       }
     }
-    if (total > 0) {
-      barPanel.memPct = Math.round((1 - available / total) * 100);
-    }
+    if (total > 0) barPanel.memPct = Math.round((1 - available / total) * 100);
   }
 
   function parseNet(text) {
@@ -288,23 +278,10 @@ PanelWindow {
     return (bytesPerSec / 1048576).toFixed(1) + "M";
   }
 
-  // ── Helpers ──
-  function findFirst(list, predicate) {
-    for (var i = 0; i < list.length; i++) {
-      if (predicate(list[i])) return list[i];
-    }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function findFirst(list, pred) {
+    for (var i = 0; i < list.length; i++) if (pred(list[i])) return list[i];
     return null;
-  }
-
-  function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
-  }
-
-  function tooltipY(height) {
-    if (!tooltipAnchor) return 0;
-    var pos = tooltipAnchor.mapToItem(barContent, 0, 0);
-    var y = barContent.y + pos.y + (tooltipAnchor.height - height) / 2;
-    return Math.round(clamp(y, tooltipMargin, barPanel.height - height - tooltipMargin));
   }
 
   function formatWindowTitle(t) {
@@ -316,32 +293,20 @@ PanelWindow {
       .replace(/ - foot$/, "");
   }
 
-  // ── Volume ──
+  // ════════════════════════════════════════════════════════════
+  // Volume
+  // ════════════════════════════════════════════════════════════
   property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
   PwObjectTracker { objects: barPanel.volNodes }
   property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
   property real volPct: volInfo ? volInfo.volume : 0
   property bool volMuted: volInfo ? volInfo.muted : false
-  property string volTooltip: {
-    var pct = Math.round(barPanel.volPct * 100);
-    var state = barPanel.volMuted ? "Muted" : ("Volume " + pct + "%");
-    return state + "\nLeft click: mute\nRight click: pavucontrol\nScroll: adjust";
-  }
-  Process { id: volProc; command: ["pavucontrol"] }
 
-  // ── WiFi ──
-  property var wifiDev: findFirst(Networking.devices.values, function(d) {
-      return d.type === DeviceType.Wifi;
-  })
-  property var wifiNet: findFirst(wifiDev ? wifiDev.networks.values : [], function(n) {
-      return n.connected;
-  })
-  property string wifiSsid: wifiNet ? wifiNet.name : ""
-  property string wifiTooltip: {
-    if (!wifiNet) return "Wi-Fi disconnected\nRight click: nmtui";
-    var strength = Math.round(wifiNet.signalStrength * 100);
-    return wifiNet.name + " (" + strength + "%)\nRight click: nmtui";
-  }
+  // ════════════════════════════════════════════════════════════
+  // WiFi
+  // ════════════════════════════════════════════════════════════
+  property var wifiDev: findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi; })
+  property var wifiNet: findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected; })
   property string wifiIconStr: {
     if (!wifiNet) return "󰤯";
     var s = wifiNet.signalStrength;
@@ -352,7 +317,9 @@ PanelWindow {
   }
   Process { id: wifiProc; command: ["sh", "-lc", "foot -e nmtui"] }
 
-  // ── Battery ──
+  // ════════════════════════════════════════════════════════════
+  // Battery
+  // ════════════════════════════════════════════════════════════
   function batDevice() {
     var count = UPower.devices.count;
     for (var i = 0; i < count; i++) {
@@ -361,25 +328,10 @@ PanelWindow {
     }
     return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null;
   }
-
-  readonly property bool batPresent: {
-    var count = UPower.devices.count;
-    if (count > 0) return true;
-    return UPower.displayDevice && UPower.displayDevice.ready;
-  }
-  readonly property int batPct: {
-    var d = batDevice();
-    return d ? Math.round(d.percentage * 100) : 0;
-  }
-  readonly property bool batCharging: {
-    var d = batDevice();
-    return d && d.state === UPowerDeviceState.Charging;
-  }
-  readonly property bool batPlugged: {
-    var d = batDevice();
-    return d && d.state === UPowerDeviceState.FullyCharged;
-  }
-  readonly property int batState: batDevice() ? batDevice().state : UPowerDeviceState.Unknown
+  readonly property bool batPresent: UPower.devices.count > 0 || (UPower.displayDevice && UPower.displayDevice.ready)
+  readonly property int batPct: { var d = batDevice(); return d ? Math.round(d.percentage * 100) : 0; }
+  readonly property bool batCharging: { var d = batDevice(); return d && d.state === UPowerDeviceState.Charging; }
+  readonly property bool batPlugged: { var d = batDevice(); return d && d.state === UPowerDeviceState.FullyCharged; }
   property string batIconStr: {
     if (!batPresent) return "";
     if (batCharging) return "󰂄";
@@ -396,19 +348,6 @@ PanelWindow {
     if (p <= 90) return "󰂂";
     return "󰁹";
   }
-  property string batTooltip: {
-    if (!batPresent) return "";
-    var pct = Math.round(batPct);
-    var states = {
-      [UPowerDeviceState.Charging]: "Charging",
-      [UPowerDeviceState.FullyCharged]: "Plugged in",
-      [UPowerDeviceState.PendingCharge]: "Pending charge",
-      [UPowerDeviceState.PendingDischarge]: "Pending discharge",
-      [UPowerDeviceState.Empty]: "Empty",
-    };
-    var state = states[batState] || "Discharging";
-    return pct + "% · " + state;
-  }
   property color batColor: {
     if (!batPresent) return colors.fg;
     if (batCharging || batPlugged) return colors.green;
@@ -417,46 +356,30 @@ PanelWindow {
     return colors.fg;
   }
 
-  property string hwTooltip: "CPU: " + barPanel.cpuPct + "%\nRAM: " + barPanel.memPct + "%\nNet: " + barPanel.netDown + "↓ " + barPanel.netUp + "↑"
-
-  // ── Media ──
+  // ════════════════════════════════════════════════════════════
+  // Media
+  // ════════════════════════════════════════════════════════════
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: {
     var playing = findFirst(mediaPlayers, function(p) { return p.isPlaying; });
-    return playing ? playing : findFirst(mediaPlayers, function(p) {
-        return p.playbackState === MprisPlaybackState.Paused;
-    });
+    return playing ? playing : findFirst(mediaPlayers, function(p) { return p.playbackState === MprisPlaybackState.Paused; });
   }
-  property string mediaText: mediaPlayer
-  ? (mediaPlayer.trackArtist
-    ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
-    : mediaPlayer.trackTitle)
-  : ""
-  property string mediaTooltip: mediaPlayer
-  ? (barPanel.mediaText + "\nPrev / Play / Next\nScroll: volume")
-  : ""
-  property real mediaProgress: mediaPlayer && mediaPlayer.length > 0
-  ? mediaPlayer.position / mediaPlayer.length : 0
+  property string mediaTrack: mediaPlayer ? (mediaPlayer.trackTitle || "") : ""
+  property string mediaArtist: mediaPlayer ? (mediaPlayer.trackArtist || "") : ""
+  property bool mediaPlaying: mediaPlayer ? mediaPlayer.isPlaying : false
+  property real mediaProgress: mediaPlayer && mediaPlayer.length > 0 ? mediaPlayer.position / mediaPlayer.length : 0
+  property bool mediaVisible: mediaTrack !== ""
 
   Timer {
     interval: 1000
-    running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
+    running: barPanel.mediaPlayer && barPanel.mediaPlaying
     repeat: true
     onTriggered: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.positionChanged(); }
   }
 
-  // ── Tooltip state ──
-  property bool mediaHover: mediaSection.visible && mediaSectionHover.containsMouse
-  property bool volHover: volMouse.containsMouse
-  property bool wifiHover: wifiHoverHandler.hovered || wifiMouse.containsMouse
-  property bool batHover: batPresent && batHoverHandler.hovered
-  property bool hwHover: hwWidget.visible && hwHoverHandler.hovered
-  property var tooltipAnchor: mediaHover ? mediaSection : (volHover ? volWidget : (wifiHover ? wifiPill : (batHover ? batteryPill : (hwHover ? hwWidget : null))))
-  property string tooltipText: mediaHover ? barPanel.mediaTooltip : (volHover ? barPanel.volTooltip : (wifiHover ? barPanel.wifiTooltip : (batHover ? barPanel.batTooltip : (hwHover ? barPanel.hwTooltip : ""))))
-  property bool tooltipVisible: tooltipText !== ""
-  property int tooltipTop: tooltipAnchor ? tooltipY(100) : 0
-  property int tooltipLeft: Math.round(barPanel.barWidth + barPanel.tooltipGap)
-
+  // ════════════════════════════════════════════════════════════
+  // Content
+  // ════════════════════════════════════════════════════════════
   Item {
     id: barContent
     anchors.fill: parent
@@ -465,52 +388,80 @@ PanelWindow {
       id: mainColumn
       anchors.horizontalCenter: parent.horizontalCenter
       anchors.top: parent.top
-      anchors.topMargin: 12
-      spacing: 6
+      anchors.topMargin: barPanel.barPad
+      anchors.bottom: parent.bottom
+      anchors.bottomMargin: barPanel.barPad
+      spacing: barPanel.capsuleSpacing
 
-      // ── Workspace indicators ──
-      Column {
+      // ── Top spacer ──
+      Item { width: 1; height: 2 }
+
+      // ── Workspace capsule ──
+      Rectangle {
+        id: wsCapsule
         anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 4
+        width: 38
+        height: wsColumn.implicitHeight + 10
+        radius: 10
+        color: colors.bgRaised
+        border.width: 1
+        border.color: Qt.alpha(colors.border, 0.3)
+        opacity: barPanel.workspaces.length > 0 ? 1 : 0
 
-        Repeater {
-          model: barPanel.workspaces
-          delegate: Rectangle {
-            required property var modelData
-            property bool isFocused: modelData.is_focused
-            width: isFocused ? 14 : 8
-            height: isFocused ? 14 : 8
-            radius: height / 2
-            color: isFocused ? colors.accent : colors.fgDim
-            opacity: isFocused ? 1.0 : 0.5
-            anchors.horizontalCenter: parent.horizontalCenter
+        Behavior on opacity { NumberAnimation { duration: 200 } }
 
-            Behavior on width {
-              NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
-            }
-            Behavior on height {
-              NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
-            }
-            Behavior on color {
-              ColorAnimation { duration: 200 }
-            }
-            Behavior on opacity {
-              NumberAnimation { duration: 200 }
+        Column {
+          id: wsColumn
+          anchors.centerIn: parent
+          spacing: 4
+
+          Repeater {
+            model: barPanel.workspaces
+            delegate: Rectangle {
+              required property var modelData
+              property bool isFocused: modelData.is_focused
+              property int wsIdx: modelData.idx
+
+              width: isFocused ? 28 : 18
+              height: isFocused ? 12 : 10
+              radius: height / 2
+              color: isFocused ? colors.accent : colors.fgDim
+              opacity: isFocused ? 1.0 : 0.45
+              anchors.horizontalCenter: parent.horizontalCenter
+
+              Behavior on width  { NumberAnimation { duration: 220; easing.type: Easing.OutBack } }
+              Behavior on height { NumberAnimation { duration: 220; easing.type: Easing.OutBack } }
+              Behavior on color  { ColorAnimation { duration: 220 } }
+              Behavior on opacity { NumberAnimation { duration: 220 } }
+
+              MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: wsActionProc.switchTo(wsIdx)
+              }
             }
           }
         }
       }
 
-      // ── Active window title ──
-      Item {
-        width: barPanel.barWidth - 8
-        height: 28
-        visible: barPanel.activeWindowTitle !== ""
+      // ── Active window pill ──
+      Rectangle {
+        id: winCapsule
         anchors.horizontalCenter: parent.horizontalCenter
+        width: 38
+        height: barPanel.activeWindowTitle !== "" ? 36 : 0
+        radius: 10
+        color: colors.bgRaised
+        border.width: 1
+        border.color: Qt.alpha(colors.border, 0.3)
+        clip: true
+        visible: barPanel.activeWindowTitle !== ""
+
+        Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
         Text {
           anchors.centerIn: parent
-          width: parent.width
+          width: parent.width - 8
           text: barPanel.formatWindowTitle(barPanel.activeWindowTitle)
           color: colors.fgMid
           font.family: barPanel.uiFont
@@ -518,93 +469,133 @@ PanelWindow {
           font.italic: true
           elide: Text.ElideRight
           horizontalAlignment: Text.AlignHCenter
-          wrapMode: Text.NoWrap
-          maximumLineCount: 1
+          maximumLineCount: 2
+          wrapMode: Text.WordWrap
+          lineHeight: 0.9
         }
       }
 
+      // ── Center spacer ──
+      Item { width: 1; height: 6 }
+
+      // ── Clock capsule ──
       Rectangle {
+        id: clockCapsule
         anchors.horizontalCenter: parent.horizontalCenter
-        width: 20
-        height: 1
-        color: colors.border
-        radius: 1
+        width: 42
+        height: clockColumn.implicitHeight + 12
+        radius: 12
+        color: colors.bgRaised
+        border.width: 1
+        border.color: Qt.alpha(colors.border, 0.3)
+
+        Column {
+          id: clockColumn
+          anchors.centerIn: parent
+          spacing: -2
+
+          Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: barPanel.hourStr
+            color: colors.fg
+            font.family: barPanel.uiFont
+            font.pixelSize: 20
+            font.bold: true
+          }
+          Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: barPanel.minuteStr
+            color: colors.accent
+            font.family: barPanel.uiFont
+            font.pixelSize: 13
+          }
+        }
       }
 
-      // ── Media controls ──
-      Column {
-        id: mediaSection
+      // ── Center spacer ──
+      Item { width: 1; height: 6 }
+
+      // ── Media capsule ──
+      Rectangle {
+        id: mediaCapsule
         anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 4
-        visible: barPanel.mediaText !== ""
+        width: 38
+        height: mediaVisible ? mediaColumn.implicitHeight + 10 : 0
+        radius: 10
+        color: colors.bgRaised
+        border.width: 1
+        border.color: Qt.alpha(colors.border, 0.3)
+        clip: true
+        visible: mediaVisible
 
-        Text {
-          anchors.horizontalCenter: parent.horizontalCenter
-          width: barPanel.barWidth - 12
-          text: barPanel.mediaPlayer ? (barPanel.mediaPlayer.trackTitle || "") : ""
-          color: colors.fg
-          font.family: barPanel.uiFont
-          font.pixelSize: 9
-          font.bold: true
-          elide: Text.ElideRight
-          horizontalAlignment: Text.AlignHCenter
-          wrapMode: Text.NoWrap
-        }
+        Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
-        Text {
-          anchors.horizontalCenter: parent.horizontalCenter
-          width: barPanel.barWidth - 12
-          text: barPanel.mediaPlayer ? (barPanel.mediaPlayer.trackArtist || "") : ""
-          color: colors.fgDim
-          font.family: barPanel.uiFont
-          font.pixelSize: 8
-          elide: Text.ElideRight
-          horizontalAlignment: Text.AlignHCenter
-          wrapMode: Text.NoWrap
-        }
+        Column {
+          id: mediaColumn
+          anchors.centerIn: parent
+          spacing: 3
 
-        Row {
-          anchors.horizontalCenter: parent.horizontalCenter
-          spacing: 2
-
+          // Art / icon
           Rectangle {
-            width: 16
-            height: 16
-            radius: 4
-            color: prevHover.containsMouse ? colors.bgSubtle : "transparent"
-
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 22; height: 22
+            radius: 6
+            color: colors.accent
             Text {
               anchors.centerIn: parent
-              text: ""
-              color: colors.fg
+              text: "󰝚"
+              color: colors.bg
               font.family: barPanel.uiFont
-              font.pixelSize: 10
-            }
-
-            HoverHandler { id: prevHover }
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: Qt.PointingHandCursor
-              onClicked: {
-                if (barPanel.mediaPlayer) barPanel.mediaPlayer.previous();
-              }
+              font.pixelSize: 12
             }
           }
 
+          Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.parent.width - 6
+            text: barPanel.mediaTrack
+            color: colors.fg
+            font.family: barPanel.uiFont
+            font.pixelSize: 8
+            font.bold: true
+            elide: Text.ElideRight
+            horizontalAlignment: Text.AlignHCenter
+            maximumLineCount: 1
+          }
+
+          Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.parent.width - 6
+            text: barPanel.mediaArtist
+            color: colors.fgDim
+            font.family: barPanel.uiFont
+            font.pixelSize: 7
+            elide: Text.ElideRight
+            horizontalAlignment: Text.AlignHCenter
+            maximumLineCount: 1
+            visible: text !== ""
+          }
+
+          // Play/Pause button
           Rectangle {
-            width: 20
-            height: 20
-            radius: 10
-            color: colors.accent
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 24; height: 24
+            radius: 12
+            color: mediaBtnHover.containsMouse ? Qt.alpha(colors.accent, 0.3) : "transparent"
+            scale: mediaBtnHover.containsMouse ? 0.92 : 1
+
+            Behavior on color { ColorAnimation { duration: 120 } }
+            Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutBack } }
 
             Text {
               anchors.centerIn: parent
-              text: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying ? "" : ""
-              color: colors.bg
+              text: barPanel.mediaPlaying ? "󰏦" : "󰐊"
+              color: colors.fg
               font.family: barPanel.uiFont
-              font.pixelSize: 10
+              font.pixelSize: 14
             }
 
+            HoverHandler { id: mediaBtnHover }
             MouseArea {
               anchors.fill: parent
               cursorShape: Qt.PointingHandCursor
@@ -614,121 +605,57 @@ PanelWindow {
             }
           }
 
-          Rectangle {
-            width: 16
-            height: 16
-            radius: 4
-            color: nextHover.containsMouse ? colors.bgSubtle : "transparent"
+          // Progress bar
+          Item {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 28; height: 3
 
-            Text {
-              anchors.centerIn: parent
-              text: ""
-              color: colors.fg
-              font.family: barPanel.uiFont
-              font.pixelSize: 10
+            Rectangle {
+              anchors.fill: parent
+              radius: 2
+              color: colors.bgSubtle
+            }
+            Rectangle {
+              width: parent.width * barPanel.mediaProgress
+              height: parent.height
+              radius: 2
+              color: colors.accent
+              Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.Linear } }
             }
 
-            HoverHandler { id: nextHover }
             MouseArea {
               anchors.fill: parent
               cursorShape: Qt.PointingHandCursor
-              onClicked: {
-                if (barPanel.mediaPlayer) barPanel.mediaPlayer.next();
+              onClicked: function(mouse) {
+                if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek)
+                  barPanel.mediaPlayer.position = mouse.x / width * barPanel.mediaPlayer.length;
               }
             }
           }
-        }
-
-        Item {
-          anchors.horizontalCenter: parent.horizontalCenter
-          width: 36
-          height: 4
-
-          Rectangle {
-            anchors.fill: parent
-            radius: 2
-            color: colors.bgSubtle
-
-            Rectangle {
-              anchors.left: parent.left
-              anchors.top: parent.top
-              anchors.bottom: parent.bottom
-              width: parent.width * barPanel.mediaProgress
-              radius: 2
-              color: colors.accent
-
-              Behavior on width {
-                NumberAnimation { duration: 300; easing.type: Easing.Linear }
-              }
-            }
-          }
-
-          MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: function(mouse) {
-              if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek) {
-                barPanel.mediaPlayer.position = mouse.x / width * barPanel.mediaPlayer.length;
-              }
-            }
-          }
-        }
-
-        MouseArea {
-          id: mediaSectionHover
-          anchors.fill: parent
-          hoverEnabled: true
-          acceptedButtons: Qt.NoButton
         }
       }
 
-      // ── Clock ──
-      Column {
-        anchors.horizontalCenter: parent.horizontalCenter
-        spacing: -2
-
-        Text {
-          anchors.horizontalCenter: parent.horizontalCenter
-          text: barPanel.hourStr
-          color: colors.fg
-          font.family: barPanel.uiFont
-          font.pixelSize: 20
-          font.bold: true
-        }
-
-        Text {
-          anchors.horizontalCenter: parent.horizontalCenter
-          text: barPanel.minuteStr
-          color: colors.fgMid
-          font.family: barPanel.uiFont
-          font.pixelSize: 14
-        }
-      }
-
+      // ── Volume capsule ──
       Rectangle {
+        id: volCapsule
         anchors.horizontalCenter: parent.horizontalCenter
-        width: 20
-        height: 1
-        color: colors.border
-        radius: 1
-      }
-
-      // ── Volume ──
-      Item {
-        id: volWidget
-        width: parent.width
-        implicitHeight: volLayout.implicitHeight
+        width: 38
+        height: volColumn.implicitHeight + 10
+        radius: 10
+        color: colors.bgRaised
+        border.width: 1
+        border.color: Qt.alpha(colors.border, 0.3)
 
         Column {
-          id: volLayout
-          anchors.horizontalCenter: parent.horizontalCenter
-          spacing: 2
+          id: volColumn
+          anchors.centerIn: parent
+          spacing: 3
 
           Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: {
               if (barPanel.volMuted) return "󰝟"
-              var v = barPanel.volPct
+              var v = barPanel.volPct;
               if (v <= 0) return "󰝟"
               if (v < 0.33) return "󰕿"
               if (v < 0.66) return "󰖀"
@@ -739,15 +666,14 @@ PanelWindow {
             font.pixelSize: 14
           }
 
+          // Vertical slider
           Item {
             anchors.horizontalCenter: parent.horizontalCenter
-            width: 6
-            height: 48
+            width: 6; height: 44
 
             Rectangle {
               anchors.horizontalCenter: parent.horizontalCenter
-              width: parent.width
-              height: parent.height
+              width: parent.width; height: parent.height
               radius: 3
               color: colors.bgSubtle
 
@@ -759,11 +685,24 @@ PanelWindow {
                 radius: 3
                 color: barPanel.volMuted ? colors.red : colors.accent
 
-                Behavior on height {
-                  NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
-                }
-                Behavior on color {
-                  ColorAnimation { duration: 150 }
+                Behavior on height { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                Behavior on color  { ColorAnimation { duration: 120 } }
+              }
+            }
+
+            MouseArea {
+              anchors.fill: parent
+              cursorShape: Qt.PointingHandCursor
+              onClicked: function(mouse) {
+                var frac = 1 - mouse.y / height;
+                if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio)
+                  Pipewire.defaultAudioSink.audio.volume = clamp(frac, 0, 1);
+              }
+              onWheel: function(wheel) {
+                if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+                  var step = 0.05;
+                  var dir = wheel.angleDelta.y > 0 ? 1 : -1;
+                  Pipewire.defaultAudioSink.audio.volume = clamp(barPanel.volPct + dir * step, 0, 1);
                 }
               }
             }
@@ -771,272 +710,172 @@ PanelWindow {
 
           Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Math.round(barPanel.volPct * 100) + "%"
-            color: barPanel.volMuted ? colors.red : colors.fg
+            text: barPanel.volMuted ? "--%" : Math.round(barPanel.volPct * 100) + "%"
+            color: barPanel.volMuted ? colors.red : colors.fgDim
             font.family: barPanel.uiFont
             font.pixelSize: 9
             font.bold: true
           }
         }
-
-        MouseArea {
-          id: volMouse
-          anchors.fill: parent
-          hoverEnabled: true
-          acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-          onClicked: function(mouse) {
-            if (mouse.button === Qt.RightButton) {
-              volProc.startDetached()
-            } else if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-              Pipewire.defaultAudioSink.audio.muted = !barPanel.volMuted
-            }
-          }
-
-          onWheel: function(wheel) {
-            if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return
-            var step = 0.05
-            var dir = wheel.angleDelta.y > 0 ? 1 : -1
-            Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(1, barPanel.volPct + dir * step))
-          }
-        }
       }
 
-      // ── Hardware monitors ──
-      Column {
-        id: hwWidget
+      // ── System capsule ──
+      Rectangle {
+        id: sysCapsule
         anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 3
-        visible: true
-
-        HoverHandler { id: hwHoverHandler }
+        width: 38
+        height: sysColumn.implicitHeight + 10
+        radius: 10
+        color: colors.bgRaised
+        border.width: 1
+        border.color: Qt.alpha(colors.border, 0.3)
 
         Column {
-          anchors.horizontalCenter: parent.horizontalCenter
-          spacing: 1
+          id: sysColumn
+          anchors.centerIn: parent
+          spacing: 3
 
+          // WiFi
           Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: ""
-            color: colors.fgDim
+            text: barPanel.wifiIconStr
+            color: barPanel.wifiNet ? colors.accent : colors.fgDim
             font.family: barPanel.uiFont
-            font.pixelSize: 9
-          }
+            font.pixelSize: 14
+            visible: barPanel.wifiIconStr !== ""
 
-          Item {
-            width: 30
-            height: 3
-
-            Rectangle {
-              width: parent.width
-              height: parent.height
-              radius: 2
-              color: colors.bgSubtle
-
-              Rectangle {
-                width: parent.width * (barPanel.cpuPct / 100)
-                height: parent.height
-                radius: 2
-                color: barPanel.cpuPct > 80 ? colors.red : (barPanel.cpuPct > 50 ? colors.yellow : colors.teal)
-
-                Behavior on width {
-                  NumberAnimation { duration: 300; easing.type: Easing.Linear }
-                }
-                Behavior on color {
-                  ColorAnimation { duration: 300 }
-                }
+            MouseArea {
+              anchors.fill: parent
+              cursorShape: Qt.PointingHandCursor
+              acceptedButtons: Qt.RightButton
+              onClicked: {
+                wifiProc.running = true;
               }
             }
           }
 
+          // Battery
           Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: barPanel.cpuPct + "%"
-            color: barPanel.cpuPct > 80 ? colors.red : colors.fgDim
+            text: barPanel.batIconStr
+            color: barPanel.batColor
             font.family: barPanel.uiFont
-            font.pixelSize: 8
+            font.pixelSize: 14
+            visible: barPanel.batIconStr !== ""
           }
-        }
 
-        Column {
-          anchors.horizontalCenter: parent.horizontalCenter
-          spacing: 1
-
-          Text {
+          // Separator
+          Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: ""
-            color: colors.fgDim
-            font.family: barPanel.uiFont
-            font.pixelSize: 9
+            width: 18; height: 1
+            radius: 1
+            color: Qt.alpha(colors.border, 0.3)
           }
 
-          Item {
-            width: 30
-            height: 3
+          // CPU bar
+          Column {
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 2
 
-            Rectangle {
-              width: parent.width
-              height: parent.height
-              radius: 2
-              color: colors.bgSubtle
+            Item {
+              anchors.horizontalCenter: parent.horizontalCenter
+              width: 28; height: 3
 
               Rectangle {
-                width: parent.width * (barPanel.memPct / 100)
-                height: parent.height
+                anchors.fill: parent
                 radius: 2
-                color: barPanel.memPct > 85 ? colors.red : (barPanel.memPct > 60 ? colors.yellow : colors.purple)
+                color: colors.bgSubtle
 
-                Behavior on width {
-                  NumberAnimation { duration: 300; easing.type: Easing.Linear }
-                }
-                Behavior on color {
-                  ColorAnimation { duration: 300 }
+                Rectangle {
+                  width: parent.width * (barPanel.cpuPct / 100)
+                  height: parent.height
+                  radius: 2
+                  color: barPanel.cpuPct > 80 ? colors.red : (barPanel.cpuPct > 50 ? colors.yellow : colors.teal)
+                  Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.Linear } }
+                  Behavior on color { ColorAnimation { duration: 300 } }
                 }
               }
             }
+
+            Text {
+              anchors.horizontalCenter: parent.horizontalCenter
+              text: "CPU " + barPanel.cpuPct + "%"
+              color: barPanel.cpuPct > 80 ? colors.red : colors.fgDim
+              font.family: barPanel.uiFont
+              font.pixelSize: 7
+            }
           }
 
-          Text {
+          // RAM bar
+          Column {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: barPanel.memPct + "%"
-            color: barPanel.memPct > 85 ? colors.red : colors.fgDim
-            font.family: barPanel.uiFont
-            font.pixelSize: 8
+            spacing: 2
+
+            Item {
+              anchors.horizontalCenter: parent.horizontalCenter
+              width: 28; height: 3
+
+              Rectangle {
+                anchors.fill: parent
+                radius: 2
+                color: colors.bgSubtle
+
+                Rectangle {
+                  width: parent.width * (barPanel.memPct / 100)
+                  height: parent.height
+                  radius: 2
+                  color: barPanel.memPct > 85 ? colors.red : (barPanel.memPct > 60 ? colors.yellow : colors.purple)
+                  Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.Linear } }
+                  Behavior on color { ColorAnimation { duration: 300 } }
+                }
+              }
+            }
+
+            Text {
+              anchors.horizontalCenter: parent.horizontalCenter
+              text: "RAM " + barPanel.memPct + "%"
+              color: barPanel.memPct > 85 ? colors.red : colors.fgDim
+              font.family: barPanel.uiFont
+              font.pixelSize: 7
+            }
           }
-        }
 
-        Row {
-          anchors.horizontalCenter: parent.horizontalCenter
-          spacing: 2
+          // Network speeds
+          Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 4
 
-          Text {
-            text: "↓" + barPanel.netDown
-            color: colors.teal
-            font.family: barPanel.uiFont
-            font.pixelSize: 7
-          }
-
-          Text {
-            text: "↑" + barPanel.netUp
-            color: colors.orange
-            font.family: barPanel.uiFont
-            font.pixelSize: 7
+            Text {
+              text: "↓" + barPanel.netDown
+              color: colors.teal
+              font.family: barPanel.uiFont
+              font.pixelSize: 7
+            }
+            Text {
+              text: "↑" + barPanel.netUp
+              color: colors.orange
+              font.family: barPanel.uiFont
+              font.pixelSize: 7
+            }
           }
         }
       }
 
-      // ── WiFi ──
-      Pill {
-        id: wifiPill
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        HoverHandler { id: wifiHoverHandler }
-
-        Text {
-          anchors.left: parent.left
-          anchors.leftMargin: padding
-          anchors.verticalCenter: parent.verticalCenter
-          text: barPanel.wifiIconStr
-          color: barPanel.wifiNet ? colors.accent : colors.fgDim
-          font.family: barPanel.uiFont
-          font.pixelSize: 14
-        }
-
-        MouseArea {
-          id: wifiMouse
-          anchors.fill: parent
-          hoverEnabled: true
-          cursorShape: Qt.PointingHandCursor
-          acceptedButtons: Qt.RightButton
-          onClicked: wifiProc.startDetached()
-        }
-      }
-
-      // ── Battery ──
-      Pill {
-        id: batteryPill
-        anchors.horizontalCenter: parent.horizontalCenter
-        visible: barPanel.batPresent
-
-        HoverHandler { id: batHoverHandler }
-
-        Text {
-          anchors.left: parent.left
-          anchors.leftMargin: padding
-          anchors.verticalCenter: parent.verticalCenter
-          text: barPanel.batIconStr
-          color: barPanel.batColor
-          font.family: barPanel.uiFont
-          font.pixelSize: 14
-        }
-      }
-
-      Item { width: parent.width; height: 1 }
+      // ── Bottom spacer ──
+      Item { width: 1; height: 2 }
     }
   }
 
-  // ── Tooltip ──
-  PanelWindow {
-    id: tooltipWindow
-    visible: barPanel.tooltipVisible
-    focusable: false
-    aboveWindows: true
-    exclusionMode: ExclusionMode.Ignore
-    color: "transparent"
+  Process {
+    id: wsActionProc
+    command: ["sh", "-c", "true"]
+    property int targetWs: 0
 
-    anchors { top: true; left: true }
-    margins { top: barPanel.tooltipTop; left: barPanel.tooltipLeft }
-
-    implicitWidth: tooltipCard.implicitWidth + 6
-    implicitHeight: tooltipCard.implicitHeight + 3
-
-    Rectangle {
-      id: tooltipShadow
-      width: tooltipCard.implicitWidth
-      implicitHeight: tooltipTextItem.paintedHeight + barPanel.tooltipPadding * 2
-      height: implicitHeight
-      radius: 10
-      color: Qt.rgba(0, 0, 0, 0.25)
-      opacity: barPanel.tooltipVisible ? 0.7 : 0
-      x: 3
-      y: 3
-      antialiasing: true
-
-      Behavior on opacity {
-        NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
-      }
-    }
-
-    Rectangle {
-      id: tooltipCard
-      width: Math.min(barPanel.tooltipMaxWidth, tooltipTextItem.implicitWidth + barPanel.tooltipPadding * 2)
-      implicitHeight: tooltipTextItem.paintedHeight + barPanel.tooltipPadding * 2
-      height: implicitHeight
-      radius: 10
-      color: colors.bgRaised
-      antialiasing: true
-      border.width: 1
-      border.color: colors.border
-      opacity: barPanel.tooltipVisible ? 1 : 0
-
-      Behavior on opacity {
-        NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
-      }
-
-      Text {
-        id: tooltipTextItem
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.margins: barPanel.tooltipPadding
-        width: parent.width - barPanel.tooltipPadding * 2
-        text: barPanel.tooltipText
-        color: colors.fg
-        font.family: barPanel.uiFont
-        font.pixelSize: 13
-        lineHeightMode: Text.ProportionalHeight
-        lineHeight: 1.2
-        wrapMode: Text.Wrap
-      }
+    function switchTo(ws) {
+      targetWs = ws;
+      command = ["niri", "msg", "action", "focus-workspace", "" + ws];
+      running = false;
+      running = true;
     }
   }
 }
