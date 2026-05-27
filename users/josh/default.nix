@@ -34,6 +34,7 @@
 
     # ── Desktop environment ───────────────────────────────────────────────
     ../../modules/home/desktop/niri.nix
+    ../../modules/home/desktop/hyprland.nix
     ../../modules/home/desktop/waybar.nix
     ../../modules/home/desktop/quickshell.nix
 
@@ -62,20 +63,6 @@
     MOZ_ENABLE_WAYLAND = "1";
     NIXOS_OZONE_WL = "1";
   };
-
-  xdg.configFile."xdg-desktop-portal/portals.conf".text = ''
-    [preferred]
-    default=niri;gtk
-
-    [org.freedesktop.impl.portal.ScreenCast]
-    default=niri
-
-    [org.freedesktop.impl.portal.Screenshot]
-    default=niri
-
-    [org.freedesktop.impl.portal.FileChooser]
-    default=gtk
-  '';
 
   programs.home-manager.enable = true;
 }

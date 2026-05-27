@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   services.displayManager.ly = {
@@ -16,6 +16,11 @@
       animation = "none";
       blank_box = true;
     };
+  };
+
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
 
   services.gnome.gnome-keyring.enable = true;

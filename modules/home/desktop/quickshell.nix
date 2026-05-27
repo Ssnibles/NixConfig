@@ -11,6 +11,7 @@ let
     cp ${../../../live/quickshell/shaders/waveform.frag} $out/waveform.frag
     qsb --qt6 $out/waveform.frag -o $out/waveform.frag.qsb
   '';
+
 in
 {
   programs.quickshell = {
@@ -25,12 +26,11 @@ in
   };
 
   xdg.configFile = {
-    "quickshell/shell.qml".source =
-      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/shell.qml";
-    "quickshell/bar.qml".source =
-      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/bar.qml";
+    # ── Shared components (root level) ──────────────────────────────────
     "quickshell/notifications.qml".source =
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/notifications.qml";
+    "quickshell/CommandCenter.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/CommandCenter.qml";
     "quickshell/Colors.qml".source =
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Colors.qml";
     "quickshell/Pill.qml".source =
@@ -41,12 +41,35 @@ in
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/ActionRow.qml";
     "quickshell/SliderControl.qml".source =
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/SliderControl.qml";
-    "quickshell/CommandCenter.qml".source =
-      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/CommandCenter.qml";
+
+    # ── Shaders ─────────────────────────────────────────────────────────
     "quickshell/shaders/waveform.frag.qsb".source =
       "${compiledShaders}/waveform.frag.qsb";
     "quickshell/shaders/waveform.frag".source =
       "${compiledShaders}/waveform.frag";
+
+    # ── Niri subdirectory ───────────────────────────────────────────────
+    "quickshell/niri/shell.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/niri/quickshell/shell.qml";
+    "quickshell/niri/bar.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/niri/quickshell/bar.qml";
+
+    # ── Hyprland subdirectory ───────────────────────────────────────────
+    "quickshell/hyprland/shell.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/hyprland/quickshell/shell.qml";
+    "quickshell/hyprland/bar.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/hyprland/quickshell/bar.qml";
+
+    # Quickshell's QML engine doesn't support `import "../"` so shared
+    # types must be resolved via same-directory resolution instead.
+    "quickshell/niri/Colors.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Colors.qml";
+    "quickshell/niri/Pill.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Pill.qml";
+    "quickshell/hyprland/Colors.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Colors.qml";
+    "quickshell/hyprland/Pill.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Pill.qml";
   };
 
   home.activation.writeQuickshellColors = lib.hm.dag.entryAfter [ "linkGeneration" ] ''

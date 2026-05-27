@@ -1,12 +1,11 @@
 # =============================================================================
 # Wayland User Services
 # =============================================================================
-# Systemd user services for Wayland-specific utilities.
+# Systemd user services shared across all Wayland compositors.
+# Compositor-specific services (swayidle, hypridle) live in their own modules.
 # =============================================================================
 {
   pkgs,
-  lib,
-  hostProfile,
   ...
 }:
 
@@ -34,7 +33,6 @@
       After = [ "graphical-session.target" ];
     };
     Service = {
-      # The --battery flag restricts Solaar to monitoring mode
       ExecStart = "${pkgs.solaar}/bin/solaar --window=hide";
       Restart = "on-failure";
       RestartSec = 1;
@@ -90,42 +88,5 @@
       RestartSec = 1;
     };
     Install.WantedBy = [ "graphical-session.target" ];
-  };
-
-  # ── Swayidle ─────────────────────────────────────────────────────────────
-  services.swayidle = {
-    enable = true;
-    package = pkgs.swayidle;
-    events = [
-      {
-        event = "before-sleep";
-        command = "${pkgs.unstable.swaylock}/bin/swaylock -f";
-      }
-      {
-        event = "after-resume";
-        command = "${pkgs.niri}/bin/niri msg action wake-monitors";
-      }
-      {
-        event = "lock";
-        command = "${pkgs.unstable.swaylock}/bin/swaylock -f";
-      }
-    ];
-    timeouts = [
-      {
-        timeout = 300;
-        command = "${pkgs.unstable.swaylock}/bin/swaylock -f";
-      }
-      {
-        timeout = 600;
-        command = "${pkgs.niri}/bin/niri msg action power-off-monitors";
-        resumeCommand = "${pkgs.niri}/bin/niri msg action wake-monitors";
-      }
-    ]
-    ++ lib.optionals hostProfile.isLaptop [
-      {
-        timeout = 1200;
-        command = "${pkgs.systemd}/bin/systemctl suspend";
-      }
-    ];
   };
 }
