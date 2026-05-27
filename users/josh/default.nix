@@ -30,6 +30,7 @@
     ../../modules/home/shell/fish.nix
     ../../modules/home/shell/tmux.nix
     ../../modules/home/shell/zellij.nix
+    ../../modules/home/shell/zsh.nix
 
     # ── Desktop environment ───────────────────────────────────────────────
     ../../modules/home/desktop/hyprland.nix
@@ -59,7 +60,6 @@
   };
 
   home.sessionVariables = {
-    SHELL = "${pkgs.fish}/bin/fish";
     MOZ_ENABLE_WAYLAND = "1";
     NIXOS_OZONE_WL = "1";
   };
