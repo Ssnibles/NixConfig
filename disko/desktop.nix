@@ -12,7 +12,6 @@
   ...
 }:
 let
-  # Override via CLI: --argstr diskDevice /dev/nvme0n1
   device = args.diskDevice or "/dev/INVALID_SET_--argstr_diskDevice";
 in
 {
@@ -32,7 +31,10 @@ in
             type = "filesystem";
             format = "vfat";
             mountpoint = "/boot";
-            mountOptions = [ "fmask=0077" "dmask=0077" ];
+            mountOptions = [
+              "fmask=0077"
+              "dmask=0077"
+            ];
           };
         };
         root = {
@@ -44,7 +46,14 @@ in
             type = "filesystem";
             format = "ext4";
             mountpoint = "/";
-            extraArgs = [ "-L" "nixos-root" ];
+            mountOptions = [
+              "noatime"
+              "commit=60"
+            ];
+            extraArgs = [
+              "-L"
+              "nixos-root"
+            ];
           };
         };
       };

@@ -1,44 +1,102 @@
+// vim: ft=kdl
+// Niri compositor configuration
+// Live-reloads on save. Validate with: niri validate
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Input
+// ══════════════════════════════════════════════════════════════════════════════
 input {
+    focus-follows-mouse
+    warp-mouse-to-focus
+
     keyboard {
         xkb {
             layout "us"
+            options "caps:escape"
         }
+        repeat-rate 35
+        repeat-delay 250
     }
+
     touchpad {
         natural-scroll
         tap
+        tap-button-map "left-right-middle"
+        accel-speed 0.3
     }
+
     mouse {
     accel-profile "flat"
 }
 
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// Cursor
+// ══════════════════════════════════════════════════════════════════════════════
 cursor {
     hide-when-typing
 }
 
-// Smooth animations for polished feel (like Hyprland)
-animations {
-    workspace-switch { spring damping-ratio=0.8 stiffness=800 epsilon=0.0001; }
-    window-open { duration-ms 150; curve "ease-out-expo"; }
-    window-close { duration-ms 150; curve "ease-out-quad"; }
-    horizontal-view-movement { spring damping-ratio=0.8 stiffness=800 epsilon=0.0001; }
-    window-movement { spring damping-ratio=0.8 stiffness=800 epsilon=0.0001; }
-    window-resize { spring damping-ratio=0.8 stiffness=800 epsilon=0.0001; }
+// ══════════════════════════════════════════════════════════════════════════════
+// Hotkey overlay
+// ══════════════════════════════════════════════════════════════════════════════
+hotkey-overlay {
+    skip-at-startup
 }
 
-spawn-at-startup "/nix/store/lfbzxs5wyqd2122mpbj5azkxhxspw9cd-bash-interactive-5.3p3/bin/bash" "-lc" "for i in {1..30}; do awww img /nix/store/h90lvvrdhlg9b6pv99r9c4ivxm27cc8j-source/wallpapers/400556mtsdl.jpg && exit 0; sleep 0.1; done; exit 1"
-spawn-at-startup "qs" "-n"
+// ══════════════════════════════════════════════════════════════════════════════
+// Animations
+// ══════════════════════════════════════════════════════════════════════════════
+animations {
+    workspace-switch {
+        spring damping-ratio=0.72 stiffness=1200 epsilon=0.0001
+    }
+    window-open {
+        spring damping-ratio=0.68 stiffness=750 epsilon=0.0001
+    }
+    window-close {
+        duration-ms 100
+        curve "ease-out-quad"
+    }
+    horizontal-view-movement {
+        spring damping-ratio=0.72 stiffness=1200 epsilon=0.0001
+    }
+    window-movement {
+        spring damping-ratio=0.78 stiffness=900 epsilon=0.0001
+    }
+    window-resize {
+        spring damping-ratio=0.82 stiffness=1000 epsilon=0.0001
+    }
+    config-notification-open-close {
+        spring damping-ratio=0.8 stiffness=800 epsilon=0.0001
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Autostart
+// ══════════════════════════════════════════════════════════════════════════════
+spawn-at-startup "qs" "-n" "-c" "niri"
 spawn-at-startup "nm-applet" "--indicator"
 
+spawn-sh-at-startup "for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30; do awww img /nix/store/2bfi6d6a0ky48n710647nmdaw3as365m-source/wallpapers/400556mtsdl.jpg && exit 0; sleep 0.1; done; exit 1"
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Environment
+// ══════════════════════════════════════════════════════════════════════════════
 environment {
     ELECTRON_OZONE_PLATFORM_HINT "auto"
+    QT_QPA_PLATFORM "wayland;xcb"
+    SDL_VIDEODRIVER "wayland"
+    MOZ_ENABLE_WAYLAND "1"
+    NIXOS_OZONE_WL "1"
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// Layout
+// ══════════════════════════════════════════════════════════════════════════════
 layout {
     gaps 8
-    // Outer gaps via struts (like Hyprland's gaps_out > gaps_in)
     struts {
         left 8
         right 8
@@ -46,29 +104,71 @@ layout {
         bottom 8
     }
     center-focused-column "always"
+    focus-ring {
+        width 2
+        active-color "#6e94b2"
+        inactive-color "#252530"
+        active-gradient from="#6e94b2" to="#b4d4cf"
+    }
+    border {
+        width 1
+        active-color "#6e94b233"
+        inactive-color "#25253066"
+    }
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
 }
 
-// Dim inactive windows (Hyprland's dim_inactive equivalent)
+prefer-no-csd
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Window Rules
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Dim inactive windows
 window-rule {
     match is-active=false
     opacity 0.85
 }
 
-// Consolidated floating dialogs
+// File dialogs — float, constrain size
 window-rule {
-    match title=r#"^(Save As|Upload File).*$"#
+    match title=r#"^(Save As|Upload File|Open File|Choose).*$"#
     open-floating true
     default-column-width { proportion 0.6; }
     default-window-height { proportion 0.6; }
 }
 
-// Floating utility windows
+// Utility windows — float
 window-rule {
-    match app-id=r#"^(org\.pulseaudio\.pavucontrol|blueman-manager)$"#
+    match app-id=r#"^(org\.pulseaudio\.pavucontrol|blueman-manager|nm-connection-editor|gnome-disks)$"#
     open-floating true
 }
 
-// Picture-in-Picture
+// Calculator — float, small
+window-rule {
+    match app-id=r#"^(org\.gnome\.Calculator|qalculate-gtk)$"#
+    open-floating true
+    default-column-width { proportion 0.3; }
+    default-window-height { proportion 0.4; }
+}
+
+// Media players — float
+window-rule {
+    match app-id=r#"^(com\.github\.rafostar\.Clapper|mpv|vlc)$"#
+    open-floating true
+}
+
+// Games — always fullscreen
+window-rule {
+    match app-id=r#"^(gamescope|steam_app_\d+)$"#
+    open-fullscreen true
+}
+
+// Picture-in-Picture — float, small
 window-rule {
     match title="^Picture-in-Picture$"
     open-floating true
@@ -76,41 +176,95 @@ window-rule {
     default-window-height { proportion 0.25; }
 }
 
-// Special scratchpad workspace (like Hyprland's togglespecialworkspace)
+// Browser — workspace 2
+window-rule {
+    match app-id=r#"^(firefox|zen|org\.mozilla\.firefox|zen-alpha)$"#
+    open-on-workspace "2"
+}
+
+// Communication — workspace 5
+window-rule {
+    match app-id=r#"^(discord|vesktop|webcord|org\.telegram\.desktop|teams-for-linux)$"#
+    open-on-workspace "5"
+}
+
+// Music — workspace 6
+window-rule {
+    match app-id=r#"^(Spotify|spotify)$"#
+    open-on-workspace "6"
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Workspaces
+// ══════════════════════════════════════════════════════════════════════════════
 workspace "scratch" {
     open-on-output "focused"
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// Key Binds
+// ══════════════════════════════════════════════════════════════════════════════
+
 binds {
-    // ---- Apps & Session ----
-    Mod+Return { spawn "foot"; }
+    // ── Terminal ────────────────────────────────────────────────────────
+    Mod+Return repeat=false { spawn "foot"; }
+
+    // ── Launcher ────────────────────────────────────────────────────────
+    Mod+Space repeat=false { spawn-sh "vicinae toggle"; }
+
+    // ── File Manager ────────────────────────────────────────────────────
+    Mod+E repeat=false { spawn "foot" "yazi"; }
+
+    // ── Close Window ────────────────────────────────────────────────────
     Mod+Q { close-window; }
-    Mod+E { spawn "yazi"; }
-    Mod+V { toggle-window-floating; }
-    Mod+G { spawn-sh "toggle-focus-mode"; }
-    Mod+Space { spawn-sh "vicinae toggle"; }
-    Mod+P { spawn-sh "qs ipc call controlpanel toggle"; }
-    Mod+Delete { spawn "swaylock"; }
-    Mod+Shift+R { spawn-sh "reload-all"; }
-    Mod+F { fullscreen-window; }
 
-    // ---- Screenshots ----
-    Mod+S { spawn-sh "mkdir -p $HOME/Pictures/Screenshots; grim -o \"$(niri msg focused-monitor | head -1)\" - | satty --fullscreen current-screen --floating-hack --filename - --output-filename \"$HOME/Pictures/Screenshots/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit"; }
-    Mod+Shift+S { spawn-sh "mkdir -p $HOME/Pictures/Screenshots; grim -g \"$(slurp)\" - | satty --fullscreen current-screen --floating-hack --filename - --output-filename \"$HOME/Pictures/Screenshots/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit"; }
+    // ── Floating Toggle ─────────────────────────────────────────────────
+    Mod+V repeat=false { toggle-window-floating; }
 
-    // ---- Focus Movement ----
+    // ── Fullscreen ──────────────────────────────────────────────────────
+    Mod+F repeat=false { fullscreen-window; }
+
+    // ── Focus Mode ──────────────────────────────────────────────────────
+    Mod+G repeat=false { spawn-sh "toggle-focus-mode"; }
+
+    // ── Control Panel ───────────────────────────────────────────────────
+    Mod+P repeat=false { spawn-sh "qs ipc call controlpanel toggle"; }
+
+    // ── Lock Screen ─────────────────────────────────────────────────────
+    Mod+Delete allow-when-locked=true { spawn "swaylock" "-f"; }
+
+    // ── Reload Config ───────────────────────────────────────────────────
+    Mod+Shift+R repeat=false { spawn-sh "reload-all"; }
+
+    // ── Quit niri ───────────────────────────────────────────────────────
+    Mod+Shift+E { quit; }
+
+    // ── Focus Movement ──────────────────────────────────────────────────
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }
     Mod+K { focus-window-up; }
     Mod+J { focus-window-down; }
 
-    // ---- Window/Column Movement ----
+    Mod+Left  { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+Up    { focus-window-up; }
+    Mod+Down  { focus-window-down; }
+
+    // ── Window / Column Movement ────────────────────────────────────────
     Mod+Shift+H { move-column-left; }
     Mod+Shift+L { move-column-right; }
     Mod+Shift+K { move-window-up; }
     Mod+Shift+J { move-window-down; }
 
-    // ---- Workspaces ----
+    Mod+Shift+Left  { move-column-left; }
+    Mod+Shift+Right { move-column-right; }
+    Mod+Shift+Up    { move-window-up; }
+    Mod+Shift+Down  { move-window-down; }
+
+    // ── Column Width Presets ────────────────────────────────────────────
+    Mod+R { switch-preset-column-width; }
+
+    // ── Workspaces ──────────────────────────────────────────────────────
     Mod+1 { focus-workspace 1; }
     Mod+2 { focus-workspace 2; }
     Mod+3 { focus-workspace 3; }
@@ -121,13 +275,15 @@ binds {
     Mod+8 { focus-workspace 8; }
     Mod+9 { focus-workspace 9; }
     Mod+0 { focus-workspace 10; }
+
     Mod+Grave { focus-workspace-previous; }
-    Mod+Tab { focus-workspace-previous; }
+    Mod+Tab   { focus-workspace-previous; }
 
-    // Special scratchpad workspace (like Hyprland's Mod+W)
+    // Scratch workspace (like Hyprland special workspace)
     Mod+W { focus-workspace "scratch"; }
+    Mod+Shift+W repeat=false { move-column-to-workspace "scratch"; }
 
-    // ---- Move Column to Workspace ----
+    // ── Move Column to Workspace ────────────────────────────────────────
     Mod+Shift+1 { move-column-to-workspace 1; }
     Mod+Shift+2 { move-column-to-workspace 2; }
     Mod+Shift+3 { move-column-to-workspace 3; }
@@ -138,35 +294,44 @@ binds {
     Mod+Shift+8 { move-column-to-workspace 8; }
     Mod+Shift+9 { move-column-to-workspace 9; }
     Mod+Shift+0 { move-column-to-workspace 10; }
-    Mod+Shift+W { move-column-to-workspace "scratch"; }
 
-    // Move column to adjacent workspace
     Mod+Ctrl+Shift+Page_Down { move-column-to-workspace-down; }
-    Mod+Ctrl+Shift+Page_Up { move-column-to-workspace-up; }
+    Mod+Ctrl+Shift+Page_Up   { move-column-to-workspace-up; }
 
-    // ---- Resize ----
+    // ── Resize ──────────────────────────────────────────────────────────
     Mod+Ctrl+L { set-column-width "+10"; }
     Mod+Ctrl+H { set-column-width "-10"; }
     Mod+Ctrl+K { set-window-height "+10"; }
     Mod+Ctrl+J { set-window-height "-10"; }
 
-    // ---- Misc ----
-    Ctrl+F12 { spawn "kando"; }
+    // ── Screenshots ─────────────────────────────────────────────────────
+    Mod+S repeat=false {
+        spawn-sh "mkdir -p $HOME/Pictures/Screenshots; grim -o \"$(niri msg focused-monitor | head -1)\" - | satty --fullscreen current-screen --floating-hack --filename - --output-filename \"$HOME/Pictures/Screenshots/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
+    }
 
-    // Scroll through workspaces with mouse wheel
-    Mod+WheelScrollDown { focus-workspace-down; }
-    Mod+WheelScrollUp { focus-workspace-up; }
+    Mod+Shift+S repeat=false {
+        spawn-sh "mkdir -p $HOME/Pictures/Screenshots; grim -g \"$(slurp)\" - | satty --fullscreen current-screen --floating-hack --filename - --output-filename \"$HOME/Pictures/Screenshots/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
+    }
 
-    XF86MonBrightnessUp { spawn-sh "ddc-brightness up"; }
-XF86MonBrightnessDown { spawn-sh "ddc-brightness down"; }
+    // ── Scroll Workspaces ───────────────────────────────────────────────
+    Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp   cooldown-ms=150 { focus-workspace-up; }
+
+    XF86MonBrightnessUp   allow-when-locked=true { spawn-sh "ddc-brightness up"; }
+XF86MonBrightnessDown allow-when-locked=true { spawn-sh "ddc-brightness down"; }
 
 
-    // ---- Media Keys ----
-    XF86AudioRaiseVolume { spawn-sh "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+"; }
-    XF86AudioLowerVolume { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"; }
-    XF86AudioMute { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
-    XF86AudioMicMute { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
-    XF86AudioPlay { spawn-sh "playerctl play-pause"; }
-    XF86AudioNext { spawn-sh "playerctl next"; }
-    XF86AudioPrev { spawn-sh "playerctl previous"; }
+    // ── Media Keys ──────────────────────────────────────────────────────
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"; }
+    XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+    XF86AudioPlay        allow-when-locked=true { spawn-sh "playerctl play-pause"; }
+    XF86AudioNext        allow-when-locked=true { spawn-sh "playerctl next"; }
+    XF86AudioPrev        allow-when-locked=true { spawn-sh "playerctl previous"; }
+    XF86AudioStop        allow-when-locked=true { spawn-sh "playerctl stop"; }
+
+    // ── Kando Pie Menu ──────────────────────────────────────────────────
+    Ctrl+F12 repeat=false { spawn "kando"; }
 }
+
