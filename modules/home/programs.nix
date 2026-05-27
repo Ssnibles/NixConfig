@@ -16,7 +16,7 @@ let
   spotifySecretFile = ../../secrets/spotify-secret.age;
   spotifySecretsAvailable =
     builtins.pathExists spotifyIdFile && builtins.pathExists spotifySecretFile;
-  spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.system};
+  spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.hostPlatform.system};
   s = config.lib.stylix.colors;
   c = import ../../lib/stylix/semantic-colors.nix { stylixColors = s; };
   spicetifyStylixScheme = {
