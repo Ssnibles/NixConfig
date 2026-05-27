@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
+import Quickshell.Services.Pipewire
 import QtQuick
 import QtQuick.Layouts
 import QtQml
@@ -9,6 +10,13 @@ PanelWindow {
   id: controlPanel
 
   property QtObject root: null
+
+  // -- Volume control --
+  property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
+  PwObjectTracker { objects: controlPanel.volNodes }
+  property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
+  property real volPct: volInfo ? volInfo.volume : 0
+  property bool volMuted: volInfo ? volInfo.muted : false
 
   visible: false
   focusable: true
@@ -157,6 +165,146 @@ PanelWindow {
             onClicked: controlPanel.visible = false
           }
         }
+      }
+
+      Rectangle {
+        width: parent.width
+        height: 1
+        color: root ? root.border : "#555555"
+      }
+
+      Text {
+        text: "System"
+        color: root ? root.fg : "#ffffff"
+        font.family: root ? root.uiFont : "monospace"
+        font.pixelSize: 12
+        font.bold: true
+      }
+
+      Item {
+        width: parent.width
+        height: 36
+
+        Row {
+          anchors.verticalCenter: parent.verticalCenter
+          spacing: 10
+
+          Rectangle {
+            id: volIconBtn
+            width: 36
+            height: 36
+            radius: 6
+            color: controlPanel.volMuted ? (root ? root.red : "#ef4444") : (root ? root.bgSubtle : "#2a2a3e")
+            border.width: 1
+            border.color: controlPanel.volMuted ? (root ? root.red : "#ef4444") : (root ? root.border : "#555555")
+
+            Text {
+              anchors.centerIn: parent
+              text: {
+                if (controlPanel.volMuted) return "󰝟"
+                var v = controlPanel.volPct
+                if (v <= 0) return "󰝟"
+                if (v < 0.33) return "󰕿"
+                if (v < 0.66) return "󰖀"
+                return "󰕾"
+              }
+              color: controlPanel.volMuted ? (root ? root.bg : "#141415") : (root ? root.fg : "#ffffff")
+              font.family: root ? root.uiFont : "monospace"
+              font.pixelSize: 16
+            }
+
+            MouseArea {
+              anchors.fill: parent
+              onClicked: {
+                if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+                  Pipewire.defaultAudioSink.audio.muted = !controlPanel.volMuted
+                }
+              }
+            }
+          }
+
+          Item {
+            width: parent.parent.width - volIconBtn.width - volLabel.width - 20
+            height: 36
+            anchors.verticalCenter: parent.verticalCenter
+
+            Rectangle {
+              anchors.verticalCenter: parent.verticalCenter
+              width: parent.width
+              height: 8
+              radius: 4
+              color: root ? root.bgSubtle : "#2a2a3e"
+
+              Rectangle {
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                width: parent.width * controlPanel.volPct
+                radius: 4
+                color: controlPanel.volMuted ? (root ? root.red : "#ef4444") : (root ? root.accent : "#7c3aed")
+
+                Behavior on width {
+                  NumberAnimation { duration: 100; easing.type: Easing.InOutQuad }
+                }
+                Behavior on color {
+                  ColorAnimation { duration: 100 }
+                }
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                property bool dragging: false
+
+                onPressed: function(mouse) {
+                  dragging = true
+                  if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+                    var pct = Math.max(0, Math.min(1, mouse.x / width))
+                    Pipewire.defaultAudioSink.audio.volume = pct
+                  }
+                }
+
+                onReleased: dragging = false
+                onExited: dragging = false
+                onPositionChanged: function(mouse) {
+                  if (dragging && Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+                    var pct = Math.max(0, Math.min(1, mouse.x / width))
+                    Pipewire.defaultAudioSink.audio.volume = pct
+                  }
+                }
+              }
+            }
+          }
+
+          Text {
+            id: volLabel
+            text: Math.round(controlPanel.volPct * 100) + "%"
+            color: controlPanel.volMuted ? (root ? root.red : "#ef4444") : (root ? root.fg : "#ffffff")
+            font.family: root ? root.uiFont : "monospace"
+            font.pixelSize: 12
+            font.bold: true
+            verticalAlignment: Text.AlignVCenter
+            height: 36
+          }
+        }
+      }
+
+      Text {
+        width: parent.width
+        text: controlPanel.volPct <= 0
+          ? "Volume is at zero"
+          : "Click or drag to adjust volume"
+        color: root ? root.fgDim : "#777777"
+        font.family: root ? root.uiFont : "monospace"
+        font.pixelSize: 11
+        wrapMode: Text.Wrap
+      }
+
+      Rectangle {
+        width: parent.width
+        height: 1
+        color: root ? root.border : "#555555"
       }
 
       Row {
