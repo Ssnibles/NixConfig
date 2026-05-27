@@ -57,5 +57,8 @@ ShellRoot {
   Loader {
     id: notificationsLoader
     source: "notifications.qml"
+    onItemChanged: {
+      if (item) item.barVisible = Qt.binding(function() { return root.barVisible; });
+    }
   }
 }
