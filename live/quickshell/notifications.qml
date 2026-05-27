@@ -125,88 +125,6 @@ Item {
     }
   }
 
-  component AppIcon: Item {
-    property var notification: null
-    property color fallbackBg: notif.bgSubtle
-
-    width: notif.iconSize
-    height: notif.iconSize
-
-    Image {
-      id: iconImg
-      anchors.fill: parent
-      source: notif.appIconSource(notification)
-      sourceSize.width: notif.iconSize
-      sourceSize.height: notif.iconSize
-      fillMode: Image.PreserveAspectFit
-      visible: status === Image.Ready
-    }
-
-    Rectangle {
-      anchors.fill: parent
-      radius: 4
-      color: fallbackBg
-      border.width: 1
-      border.color: notif.border
-      visible: !iconImg.visible
-
-      Text {
-        anchors.centerIn: parent
-        text: (notification && notification.appName && notification.appName.length > 0)
-          ? notification.appName[0].toUpperCase()
-          : "N"
-        color: notif.teal
-        font.family: notif.uiFont
-        font.pixelSize: 11
-        font.bold: true
-      }
-    }
-  }
-
-  component ActionRow: Row {
-    property var actions: []
-    signal actionInvoked()
-
-    spacing: notif.cardSpacing
-    visible: actions && actions.length > 0
-
-    Repeater {
-      model: actions
-
-      Rectangle {
-        required property QtObject modelData
-
-        height: notif.actionBtnHeight
-        radius: 6
-        color: "transparent"
-        border.width: 1
-        border.color: notif.border
-        width: btnLabel.implicitWidth + 20
-
-        Text {
-          id: btnLabel
-          anchors.centerIn: parent
-          text: modelData.text
-          color: notif.fgMid
-          font.family: notif.uiFont
-          font.pixelSize: 11
-          textFormat: Text.PlainText
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          hoverEnabled: true
-          onEntered: parent.color = notif.bgSubtle
-          onExited:  parent.color = "transparent"
-          onClicked: {
-            modelData.invoke();
-            actionInvoked();
-          }
-        }
-      }
-    }
-  }
-
   // ── Notification popups ──────────────────────────────────────────────────
   PanelWindow {
     id: popupWindow
@@ -369,12 +287,4 @@ Item {
     }
   }
 
-  // ── Control panel ────────────────────────────────────────────────────────
-  Loader {
-    id: controlPanelLoader
-    source: "CommandCenter.qml"
-    onItemChanged: {
-      if (item) item.root = notif;
-    }
-  }
 }

@@ -35,6 +35,12 @@ in
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Colors.qml";
     "quickshell/Pill.qml".source =
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Pill.qml";
+    "quickshell/AppIcon.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/AppIcon.qml";
+    "quickshell/ActionRow.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/ActionRow.qml";
+    "quickshell/SliderControl.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/SliderControl.qml";
     "quickshell/CommandCenter.qml".source =
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/CommandCenter.qml";
     "quickshell/shaders/waveform.frag.qsb".source =

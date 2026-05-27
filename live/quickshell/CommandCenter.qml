@@ -10,7 +10,20 @@ import QtQml
 PanelWindow {
   id: controlPanel
 
+  Colors { id: colors }
+
   property QtObject root: null
+
+  property color _fg: root ? root.fg : colors.fg
+  property color _fgMid: root ? root.fgMid : colors.fgMid
+  property color _fgDim: root ? root.fgDim : colors.fgDim
+  property color _bgSubtle: root ? root.bgSubtle : colors.bgSubtle
+  property color _border: root ? root.border : colors.border
+  property color _accent: root ? root.accent : colors.accent
+  property color _red: root ? root.red : colors.red
+  property color _green: root ? root.green : colors.green
+  property color _yellow: root ? root.yellow : colors.yellow
+  property string _uiFont: root ? root.uiFont : "JetBrains Mono"
 
   // -- Volume control --
   property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
@@ -31,6 +44,7 @@ PanelWindow {
   property real brightnessPct: 0.8
   property bool brightnessAvailable: true
   property bool brightnessDiscovered: false
+
   onVisibleChanged: {
     if (visible) {
       fadeInAnim.start();
@@ -167,17 +181,21 @@ PanelWindow {
     return null;
   }
 
-  // -- Gradient helpers --
-  readonly property color gradientStart: root ? root.accent : "#6e94b2"
-  readonly property color gradientEnd: root ? root.purple : "#bb9dbd"
+  readonly property color gradientStart: root ? root.accent : colors.accent
+  readonly property color gradientEnd: root ? root.purple : colors.purple
+
+  readonly property int _cardRadius: root ? root.cardRadius : 8
+  readonly property int _cardPadding: root ? root.cardPadding : 14
+  readonly property int _cardSpacing: root ? root.cardSpacing : 6
+  readonly property int _iconSize: root ? root.iconSize : 24
 
   // ── Base card with glassmorphism ──
   Rectangle {
     anchors.fill: parent
-    radius: root ? root.cardRadius : 8
-    color: root ? root.bgRaised : "#1c1c24"
+    radius: controlPanel._cardRadius
+    color: root ? root.bgRaised : colors.bgRaised
     border.width: 1
-    border.color: root ? root.border : "#252530"
+    border.color: controlPanel._border
     opacity: controlPanel.panelOpacity
     transform: Translate { y: controlPanel.panelSlide }
 
@@ -199,78 +217,78 @@ PanelWindow {
     Column {
       id: topSection
       anchors { top: parent.top; left: parent.left; right: parent.right }
-      anchors.topMargin: controlPanel.cardPadding + 6
-      anchors.leftMargin: controlPanel.cardPadding
-      anchors.rightMargin: controlPanel.cardPadding
+      anchors.topMargin: controlPanel._cardPadding + 6
+      anchors.leftMargin: controlPanel._cardPadding
+      anchors.rightMargin: controlPanel._cardPadding
       spacing: 12
 
       // ── Header ──
-      Row {
+      RowLayout {
         width: parent.width
         spacing: 8
 
         Text {
           text: "Command Center"
-          color: root ? root.fg : "#cdcdcd"
-          font.family: root ? root.uiFont : "monospace"
+          color: controlPanel._fg
+          font.family: controlPanel._uiFont
           font.pixelSize: 15
           font.bold: true
           verticalAlignment: Text.AlignVCenter
-          height: 26
-          width: parent.width - closePanel.width - parent.spacing
+          Layout.fillWidth: true
+          Layout.preferredHeight: 26
         }
 
-          Rectangle {
-            id: closePanel
-            width: 26
-            height: 26
-            radius: 6
-            color: "transparent"
-            border.width: 1
-            border.color: root ? root.border : "#252530"
+        Rectangle {
+          id: closePanel
+          Layout.preferredWidth: 26
+          Layout.preferredHeight: 26
+          radius: 6
+          color: "transparent"
+          border.width: 1
+          border.color: controlPanel._border
 
-            Behavior on scale {
-              NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
-            }
-
-            Text {
-              anchors.centerIn: parent
-              text: "\u00d7"
-              color: root ? root.fgDim : "#606079"
-              font.family: root ? root.uiFont : "monospace"
-              font.pixelSize: 14
-              font.bold: true
-            }
-
-            MouseArea {
-              id: closeArea
-              anchors.fill: parent
-              hoverEnabled: true
-              onEntered: {
-                closePanel.color = root ? root.bgSubtle : "#252530";
-                closePanel.scale = 0.9;
-              }
-              onExited: {
-                closePanel.color = "transparent";
-                closePanel.scale = 1;
-              }
-              onClicked: controlPanel.visible = false
-            }
+          Behavior on scale {
+            NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
           }
+
+          Text {
+            anchors.centerIn: parent
+            text: "\u00d7"
+            color: controlPanel._fgDim
+            font.family: controlPanel._uiFont
+            font.pixelSize: 14
+            font.bold: true
+          }
+
+          MouseArea {
+            id: closeArea
+            anchors.fill: parent
+            hoverEnabled: true
+            onEntered: {
+              closePanel.color = controlPanel._bgSubtle;
+              closePanel.scale = 0.9;
+            }
+            onExited: {
+              closePanel.color = "transparent";
+              closePanel.scale = 1;
+            }
+            onClicked: controlPanel.visible = false
+          }
+        }
       }
 
       Rectangle {
         width: parent.width
         height: 1
-        color: root ? root.border : "#252530"
+        color: controlPanel._border
         opacity: 0.6
       }
 
       // ── System section ──
       Text {
         text: "System"
-        color: root ? root.fg : "#cdcdcd"
-        font.family: root ? root.uiFont : "monospace"
+        color: controlPanel._fg
+        font.family: controlPanel._uiFont
         font.pixelSize: 11
         font.bold: true
         opacity: 0.7
@@ -278,186 +296,171 @@ PanelWindow {
       }
 
       // Volume
-      Item {
+      RowLayout {
         width: parent.width
         height: 36
+        spacing: 10
 
-        Row {
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: 10
-
-          Rectangle {
-            id: volIconBtn
-            width: 36
-            height: 36
-            radius: 8
-            color: controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : (root ? Qt.rgba(0.149, 0.149, 0.18, 0.6) : "#262626")
-            border.width: 1
-            border.color: controlPanel.volMuted ? (root ? root.red : "#d8647e") : (root ? root.border : "#252530")
-
-            Text {
-              anchors.centerIn: parent
-              text: {
-                if (controlPanel.volMuted) return "󰝟"
-                var v = controlPanel.volPct
-                if (v <= 0) return "󰝟"
-                if (v < 0.33) return "󰕿"
-                if (v < 0.66) return "󰖀"
-                return "󰕾"
-              }
-              color: controlPanel.volMuted ? (root ? root.red : "#d8647e") : (root ? root.fg : "#cdcdcd")
-              font.family: root ? root.uiFont : "monospace"
-              font.pixelSize: 14
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onEntered: volIconBtn.color = controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : (root ? Qt.rgba(0.251, 0.251, 0.314, 0.8) : "#3a3a3a")
-              onExited: volIconBtn.color = controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : (root ? Qt.rgba(0.149, 0.149, 0.18, 0.6) : "#262626")
-              onClicked: {
-                if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-                  Pipewire.defaultAudioSink.audio.muted = !controlPanel.volMuted
-                }
-              }
-            }
-          }
+        Rectangle {
+          id: volIconBtn
+          Layout.preferredWidth: 36
+          Layout.preferredHeight: 36
+          radius: 8
+          color: controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.149, 0.149, 0.18, 0.6)
+          border.width: 1
+          border.color: controlPanel.volMuted ? controlPanel._red : controlPanel._border
 
           Text {
-            text: "Volume"
-            color: root ? root.fgMid : "#878787"
-            font.family: root ? root.uiFont : "monospace"
-            font.pixelSize: 11
-            verticalAlignment: Text.AlignVCenter
-            height: 36
-            width: 52
+            anchors.centerIn: parent
+            text: {
+              if (controlPanel.volMuted) return "\uF09F"
+              var v = controlPanel.volPct
+              if (v <= 0) return "\uF09F"
+              if (v < 0.33) return "\uF15F"
+              if (v < 0.66) return "\uF160"
+              return "\uF16E"
+            }
+            color: controlPanel.volMuted ? controlPanel._red : controlPanel._fg
+            font.family: controlPanel._uiFont
+            font.pixelSize: 14
           }
 
-          // Slider
-          Item {
-            width: parent.parent.width - volIconBtn.width - 52 - volLabel.width - 30
-            height: 36
-            anchors.verticalCenter: parent.verticalCenter
-
-            Rectangle {
-              anchors.verticalCenter: parent.verticalCenter
-              width: parent.width
-              height: 20
-              radius: 10
-              color: root ? Qt.rgba(0.145, 0.145, 0.18, 0.7) : "#252525"
-
-              Rectangle {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.bottom: parent.bottom
-                width: parent.width * controlPanel.volPct
-                radius: 10
-                color: controlPanel.volMuted ? (root ? root.red : "#d8647e") : (root ? root.accent : "#6e94b2")
-
-                Behavior on width {
-                  NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
-                }
-                Behavior on color {
-                  ColorAnimation { duration: 150 }
-                }
-              }
-
-              // Slider thumb
-              Rectangle {
-                id: volThumb
-                x: parent.width * controlPanel.volPct - width / 2
-                y: (parent.height - height) / 2
-                width: volMouse.containsMouse || volMouse.dragging ? 22 : 0
-                height: volMouse.containsMouse || volMouse.dragging ? 22 : 0
-                radius: 11
-                color: controlPanel.volMuted ? (root ? root.red : "#d8647e") : (root ? root.accent : "#6e94b2")
-                opacity: volMouse.containsMouse || volMouse.dragging ? 1 : 0
-                border.width: 2
-                border.color: root ? root.bg : "#141415"
-
-                Behavior on width {
-                  NumberAnimation { duration: 100; easing.type: Easing.OutQuad }
-                }
-                Behavior on height {
-                  NumberAnimation { duration: 100; easing.type: Easing.OutQuad }
-                }
-                Behavior on opacity {
-                  NumberAnimation { duration: 100; easing.type: Easing.OutQuad }
-                }
-              }
-
-              MouseArea {
-                id: volMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                property bool dragging: false
-
-                onPressed: function(mouse) {
-                  dragging = true
-                  if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-                    Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(1, mouse.x / width))
-                  }
-                }
-                onReleased: dragging = false
-                onExited: { if (!dragging) dragging = false }
-                onPositionChanged: function(mouse) {
-                  if (dragging && Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-                    Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(1, mouse.x / width))
-                  }
-                }
+          MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onEntered: volIconBtn.color = controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : Qt.rgba(0.251, 0.251, 0.314, 0.8)
+            onExited: volIconBtn.color = controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.149, 0.149, 0.18, 0.6)
+            onClicked: {
+              if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+                Pipewire.defaultAudioSink.audio.muted = !controlPanel.volMuted
               }
             }
           }
+        }
 
-          Text {
-            id: volLabel
-            text: Math.round(controlPanel.volPct * 100) + "%"
-            color: controlPanel.volMuted ? (root ? root.red : "#d8647e") : (root ? root.fg : "#cdcdcd")
-            font.family: root ? root.uiFont : "monospace"
-            font.pixelSize: 11
-            font.bold: true
-            verticalAlignment: Text.AlignVCenter
-            height: 36
+        Text {
+          text: "Volume"
+          color: controlPanel._fgMid
+          font.family: controlPanel._uiFont
+          font.pixelSize: 11
+          verticalAlignment: Text.AlignVCenter
+          Layout.preferredWidth: implicitWidth
+        }
+
+        SliderControl {
+          Layout.fillWidth: true
+          Layout.alignment: Qt.AlignVCenter
+          value: controlPanel.volPct
+          fillColor: controlPanel.volMuted ? controlPanel._red : controlPanel._accent
+          onMoved: function(v) {
+            if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+              Pipewire.defaultAudioSink.audio.volume = v
+            }
           }
+        }
+
+        Text {
+          id: volLabel
+          text: Math.round(controlPanel.volPct * 100) + "%"
+          color: controlPanel.volMuted ? controlPanel._red : controlPanel._fg
+          font.family: controlPanel._uiFont
+          font.pixelSize: 11
+          font.bold: true
+          verticalAlignment: Text.AlignVCenter
+          Layout.preferredWidth: implicitWidth
         }
       }
 
       // Microphone
-      Item {
+      RowLayout {
         width: parent.width
         height: 36
+        spacing: 10
         visible: Pipewire.ready && Pipewire.defaultAudioSource !== null
 
-        RowLayout {
-          anchors.verticalCenter: parent.verticalCenter
-          width: parent.width
-          spacing: 10
+        Rectangle {
+          id: micIconBtn
+          Layout.preferredWidth: 36
+          Layout.preferredHeight: 36
+          radius: 8
+          color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.498, 0.647, 0.388, 0.15)
+          border.width: 1
+          border.color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
+
+          Text {
+            anchors.centerIn: parent
+            text: controlPanel.micMuted ? "\uF32D" : "\uF32C"
+            color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
+            font.family: controlPanel._uiFont
+            font.pixelSize: 14
+          }
+
+          MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onEntered: micIconBtn.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.35) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
+            onExited: micIconBtn.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.498, 0.647, 0.388, 0.15)
+            onClicked: {
+              if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
+                Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
+              }
+            }
+          }
+        }
+
+        Text {
+          text: "Microphone"
+          color: controlPanel._fgMid
+          font.family: controlPanel._uiFont
+          font.pixelSize: 11
+          verticalAlignment: Text.AlignVCenter
+          Layout.preferredWidth: implicitWidth
+        }
+
+        Item {
+          Layout.fillWidth: true
+          height: 36
 
           Rectangle {
-            id: micIconBtn
-            width: 36
-            height: 36
-            radius: 8
-            color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.498, 0.647, 0.388, 0.15)
+            id: micTrack
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            width: 44
+            height: 24
+            radius: 12
+            color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.25) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
             border.width: 1
-            border.color: controlPanel.micMuted ? (root ? root.red : "#d8647e") : (root ? root.green : "#7fa563")
+            border.color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
 
-            Text {
-              anchors.centerIn: parent
-              text: controlPanel.micMuted ? "󰍭" : "󰍬"
-              color: controlPanel.micMuted ? (root ? root.red : "#d8647e") : (root ? root.green : "#7fa563")
-              font.family: root ? root.uiFont : "monospace"
-              font.pixelSize: 14
+            Behavior on color {
+              ColorAnimation { duration: 150 }
+            }
+
+            Rectangle {
+              id: micThumb
+              x: controlPanel.micMuted ? 3 : micTrack.width - width - 3
+              y: 3
+              width: micTrack.height - 6
+              height: micTrack.height - 6
+              radius: width / 2
+              color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
+
+              Behavior on x {
+                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+              }
+              Behavior on color {
+                ColorAnimation { duration: 150 }
+              }
             }
 
             MouseArea {
               anchors.fill: parent
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
-              onEntered: micIconBtn.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.35) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
-              onExited: micIconBtn.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.498, 0.647, 0.388, 0.15)
+              onEntered: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.35) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
+              onExited: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.25) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
               onClicked: {
                 if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
                   Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
@@ -467,215 +470,90 @@ PanelWindow {
           }
 
           Text {
-            text: "Microphone"
-            color: root ? root.fgMid : "#878787"
-            font.family: root ? root.uiFont : "monospace"
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: micTrack.right
+            anchors.leftMargin: 16
+            text: controlPanel.micMuted ? "Muted" : "Live"
+            color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
+            font.family: controlPanel._uiFont
             font.pixelSize: 11
-            verticalAlignment: Text.AlignVCenter
-            Layout.preferredWidth: implicitWidth
-            Layout.minimumWidth: implicitWidth
-          }
+            font.bold: true
 
-          // Toggle switch
-          Item {
-            Layout.fillWidth: true
-            height: 36
-
-            Rectangle {
-              id: micTrack
-              anchors.verticalCenter: parent.verticalCenter
-              anchors.left: parent.left
-              width: 44
-              height: 24
-              radius: 12
-              color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.25) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
-              border.width: 1
-              border.color: controlPanel.micMuted ? (root ? root.red : "#d8647e") : (root ? root.green : "#7fa563")
-
-              Behavior on color {
-                ColorAnimation { duration: 150 }
-              }
-
-              Rectangle {
-                id: micThumb
-                x: controlPanel.micMuted ? 3 : micTrack.width - width - 3
-                y: 3
-                width: micTrack.height - 6
-                height: micTrack.height - 6
-                radius: width / 2
-                color: controlPanel.micMuted ? (root ? root.red : "#d8647e") : (root ? root.green : "#7fa563")
-
-                Behavior on x {
-                  NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
-                }
-                Behavior on color {
-                  ColorAnimation { duration: 150 }
-                }
-              }
-
-              MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onEntered: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.35) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
-                onExited: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.25) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
-                onClicked: {
-                  if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
-                    Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
-                  }
-                }
-              }
-            }
-
-            Text {
-              anchors.verticalCenter: parent.verticalCenter
-              anchors.left: micTrack.right
-              anchors.leftMargin: 16
-              text: controlPanel.micMuted ? "Muted" : "Live"
-              color: controlPanel.micMuted ? (root ? root.red : "#d8647e") : (root ? root.green : "#7fa563")
-              font.family: root ? root.uiFont : "monospace"
-              font.pixelSize: 11
-              font.bold: true
-
-              Behavior on color {
-                ColorAnimation { duration: 150 }
-              }
+            Behavior on color {
+              ColorAnimation { duration: 150 }
             }
           }
         }
       }
 
       // Brightness
-      Item {
+      RowLayout {
         width: parent.width
         height: 36
+        spacing: 10
         visible: controlPanel.brightnessAvailable
 
-        Row {
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: 10
-
-          Rectangle {
-            id: brtIconBtn
-            width: 36
-            height: 36
-            radius: 8
-            color: Qt.rgba(0.953, 0.745, 0.486, 0.12)
-            border.width: 1
-            border.color: root ? Qt.rgba(0.953, 0.745, 0.486, 0.3) : "#5a5a3e"
-
-            Text {
-              anchors.centerIn: parent
-              text: "󰃠"
-              color: root ? root.yellow : "#f3be7c"
-              font.family: root ? root.uiFont : "monospace"
-              font.pixelSize: 14
-            }
-          }
+        Rectangle {
+          id: brtIconBtn
+          Layout.preferredWidth: 36
+          Layout.preferredHeight: 36
+          radius: 8
+          color: Qt.rgba(0.953, 0.745, 0.486, 0.12)
+          border.width: 1
+          border.color: Qt.rgba(0.953, 0.745, 0.486, 0.3)
 
           Text {
-            text: "Brightness"
-            color: root ? root.fgMid : "#878787"
-            font.family: root ? root.uiFont : "monospace"
-            font.pixelSize: 11
-            verticalAlignment: Text.AlignVCenter
-            height: 36
-            width: 52
+            anchors.centerIn: parent
+            text: "\uF0C3"
+            color: controlPanel._yellow
+            font.family: controlPanel._uiFont
+            font.pixelSize: 14
           }
+        }
 
-          Item {
-            width: parent.parent.width - brtIconBtn.width - 52 - brtLabel.width - 30
-            height: 36
-            anchors.verticalCenter: parent.verticalCenter
+        Text {
+          text: "Brightness"
+          color: controlPanel._fgMid
+          font.family: controlPanel._uiFont
+          font.pixelSize: 11
+          verticalAlignment: Text.AlignVCenter
+          Layout.preferredWidth: implicitWidth
+        }
 
-            Rectangle {
-              anchors.verticalCenter: parent.verticalCenter
-              width: parent.width
-              height: 20
-              radius: 10
-              color: root ? Qt.rgba(0.145, 0.145, 0.18, 0.7) : "#252525"
-
-              Rectangle {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.bottom: parent.bottom
-                width: parent.width * controlPanel.brightnessPct
-                radius: 10
-                color: root ? root.yellow : "#f3be7c"
-
-                Behavior on width {
-                  NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
-                }
-              }
-
-              Rectangle {
-                id: brtThumb
-                x: parent.width * controlPanel.brightnessPct - width / 2
-                y: (parent.height - height) / 2
-                width: brtMouse.containsMouse || brtMouse.dragging ? 22 : 0
-                height: brtMouse.containsMouse || brtMouse.dragging ? 22 : 0
-                radius: 11
-                color: root ? root.yellow : "#f3be7c"
-                opacity: brtMouse.containsMouse || brtMouse.dragging ? 1 : 0
-                border.width: 2
-                border.color: root ? root.bg : "#141415"
-
-                Behavior on width {
-                  NumberAnimation { duration: 100; easing.type: Easing.OutQuad }
-                }
-                Behavior on height {
-                  NumberAnimation { duration: 100; easing.type: Easing.OutQuad }
-                }
-                Behavior on opacity {
-                  NumberAnimation { duration: 100; easing.type: Easing.OutQuad }
-                }
-              }
-
-              MouseArea {
-                id: brtMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                property bool dragging: false
-
-                onPressed: function(mouse) {
-                  dragging = true
-                  controlPanel.setBrightness(mouse.x / width)
-                }
-                onReleased: dragging = false
-                onExited: { if (!dragging) dragging = false }
-                onPositionChanged: function(mouse) {
-                  if (dragging) controlPanel.setBrightness(mouse.x / width)
-                }
-              }
-            }
+        SliderControl {
+          Layout.fillWidth: true
+          Layout.alignment: Qt.AlignVCenter
+          value: controlPanel.brightnessPct
+          fillColor: controlPanel._yellow
+          onMoved: function(v) {
+            controlPanel.setBrightness(v)
           }
+        }
 
-          Text {
-            id: brtLabel
-            text: Math.round(controlPanel.brightnessPct * 100) + "%"
-            color: root ? root.fg : "#cdcdcd"
-            font.family: root ? root.uiFont : "monospace"
-            font.pixelSize: 11
-            font.bold: true
-            verticalAlignment: Text.AlignVCenter
-            height: 36
-          }
+        Text {
+          id: brtLabel
+          text: Math.round(controlPanel.brightnessPct * 100) + "%"
+          color: controlPanel._fg
+          font.family: controlPanel._uiFont
+          font.pixelSize: 11
+          font.bold: true
+          verticalAlignment: Text.AlignVCenter
+          Layout.preferredWidth: implicitWidth
         }
       }
 
       Rectangle {
         width: parent.width
         height: 1
-        color: root ? root.border : "#252530"
+        color: controlPanel._border
         opacity: 0.6
       }
 
       // ── Media section ──
       Text {
         text: "Media"
-        color: root ? root.fg : "#cdcdcd"
-        font.family: root ? root.uiFont : "monospace"
+        color: controlPanel._fg
+        font.family: controlPanel._uiFont
         font.pixelSize: 11
         font.bold: true
         opacity: 0.7
@@ -692,18 +570,18 @@ PanelWindow {
           spacing: 8
           visible: mediaPlayer !== null
 
-          Row {
+          RowLayout {
             width: parent.width
             spacing: 8
 
             Rectangle {
               id: prevBtn
-              width: 34
-              height: 34
+              Layout.preferredWidth: 34
+              Layout.preferredHeight: 34
               radius: 8
-              color: root ? Qt.rgba(0.149, 0.149, 0.18, 0.6) : "#262626"
+              color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
               border.width: 1
-              border.color: root ? root.border : "#252530"
+              border.color: controlPanel._border
 
               Behavior on scale {
                 NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
@@ -712,8 +590,8 @@ PanelWindow {
               Text {
                 anchors.centerIn: parent
                 text: "\u23ee"
-                color: root ? root.fg : "#cdcdcd"
-                font.family: root ? root.uiFont : "monospace"
+                color: controlPanel._fg
+                font.family: controlPanel._uiFont
                 font.pixelSize: 14
               }
 
@@ -721,11 +599,11 @@ PanelWindow {
                 anchors.fill: parent
                 hoverEnabled: true
                 onEntered: {
-                  prevBtn.color = root ? root.bgSubtle : "#3a3a3a";
+                  prevBtn.color = controlPanel._bgSubtle;
                   prevBtn.scale = 0.92;
                 }
                 onExited: {
-                  prevBtn.color = root ? Qt.rgba(0.149, 0.149, 0.18, 0.6) : "#262626";
+                  prevBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6);
                   prevBtn.scale = 1;
                 }
                 onClicked: {
@@ -736,12 +614,12 @@ PanelWindow {
 
             Rectangle {
               id: playBtn
-              width: 34
-              height: 34
+              Layout.preferredWidth: 34
+              Layout.preferredHeight: 34
               radius: 8
-              color: root ? root.accent : "#6e94b2"
+              color: controlPanel._accent
               border.width: 1
-              border.color: root ? root.accent : "#6e94b2"
+              border.color: controlPanel._accent
 
               Behavior on scale {
                 NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
@@ -750,8 +628,8 @@ PanelWindow {
               Text {
                 anchors.centerIn: parent
                 text: controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying ? "\u23f8" : "\u25b6"
-                color: root ? root.bg : "#141415"
-                font.family: root ? root.uiFont : "monospace"
+                color: root ? root.bg : colors.bg
+                font.family: controlPanel._uiFont
                 font.pixelSize: 14
               }
 
@@ -768,12 +646,12 @@ PanelWindow {
 
             Rectangle {
               id: nextBtn
-              width: 34
-              height: 34
+              Layout.preferredWidth: 34
+              Layout.preferredHeight: 34
               radius: 8
-              color: root ? Qt.rgba(0.149, 0.149, 0.18, 0.6) : "#262626"
+              color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
               border.width: 1
-              border.color: root ? root.border : "#252530"
+              border.color: controlPanel._border
 
               Behavior on scale {
                 NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
@@ -782,8 +660,8 @@ PanelWindow {
               Text {
                 anchors.centerIn: parent
                 text: "\u23ed"
-                color: root ? root.fg : "#cdcdcd"
-                font.family: root ? root.uiFont : "monospace"
+                color: controlPanel._fg
+                font.family: controlPanel._uiFont
                 font.pixelSize: 14
               }
 
@@ -791,11 +669,11 @@ PanelWindow {
                 anchors.fill: parent
                 hoverEnabled: true
                 onEntered: {
-                  nextBtn.color = root ? root.bgSubtle : "#3a3a3a";
+                  nextBtn.color = controlPanel._bgSubtle;
                   nextBtn.scale = 0.92;
                 }
                 onExited: {
-                  nextBtn.color = root ? Qt.rgba(0.149, 0.149, 0.18, 0.6) : "#262626";
+                  nextBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6);
                   nextBtn.scale = 1;
                 }
                 onClicked: {
@@ -805,14 +683,14 @@ PanelWindow {
             }
 
             Column {
-              anchors.verticalCenter: parent.verticalCenter
-              width: parent.width - prevBtn.width - playBtn.width - nextBtn.width - 24
+              Layout.fillWidth: true
+              Layout.alignment: Qt.AlignVCenter
 
               Text {
                 width: parent.width
                 text: controlPanel.mediaText
-                color: root ? root.fg : "#cdcdcd"
-                font.family: root ? root.uiFont : "monospace"
+                color: controlPanel._fg
+                font.family: controlPanel._uiFont
                 font.pixelSize: 12
                 font.bold: true
                 elide: Text.ElideRight
@@ -823,8 +701,8 @@ PanelWindow {
                 text: controlPanel.mediaPlayer
                   ? controlPanel.mediaPlayer.name || ""
                   : ""
-                color: root ? root.fgDim : "#606079"
-                font.family: root ? root.uiFont : "monospace"
+                color: controlPanel._fgDim
+                font.family: controlPanel._uiFont
                 font.pixelSize: 10
                 elide: Text.ElideRight
                 visible: text.length > 0
@@ -843,7 +721,7 @@ PanelWindow {
               width: parent.width
               height: 4
               radius: 2
-              color: root ? Qt.rgba(0.145, 0.145, 0.18, 0.7) : "#252525"
+              color: Qt.rgba(0.145, 0.145, 0.18, 0.7)
 
               Rectangle {
                 anchors.top: parent.top
@@ -853,7 +731,7 @@ PanelWindow {
                   ? Math.min(1, Math.max(0, controlPanel.mediaPlayer.position / controlPanel.mediaPlayer.length))
                   : 0)
                 radius: 2
-                color: root ? root.accent : "#6e94b2"
+                color: controlPanel._accent
 
                 Behavior on width {
                   NumberAnimation { duration: 300; easing.type: Easing.Linear }
@@ -877,8 +755,8 @@ PanelWindow {
         Text {
           anchors.verticalCenter: parent.verticalCenter
           text: "No media playing"
-          color: root ? root.fgDim : "#606079"
-          font.family: root ? root.uiFont : "monospace"
+          color: controlPanel._fgDim
+          font.family: controlPanel._uiFont
           font.pixelSize: 11
           visible: mediaPlayer === null
         }
@@ -887,15 +765,15 @@ PanelWindow {
       Rectangle {
         width: parent.width
         height: 1
-        color: root ? root.border : "#252530"
+        color: controlPanel._border
         opacity: 0.6
       }
 
       // ── Quick actions ──
       Text {
         text: "Quick Actions"
-        color: root ? root.fg : "#cdcdcd"
-        font.family: root ? root.uiFont : "monospace"
+        color: controlPanel._fg
+        font.family: controlPanel._uiFont
         font.pixelSize: 11
         font.bold: true
         opacity: 0.7
@@ -908,11 +786,11 @@ PanelWindow {
 
         Repeater {
           model: [
-            { icon: "󰌾", label: "Lock", proc: lockProc },
-            { icon: "󰍃", label: "Logout", proc: logoutProc },
-            { icon: "󰤄", label: "Sleep", proc: sleepProc },
-            { icon: "󰜉", label: "Reboot", proc: rebootProc },
-            { icon: "󰐥", label: "Power Off", proc: poweroffProc },
+            { icon: "\uF0BE", label: "Lock", proc: lockProc },
+            { icon: "\uF0C3", label: "Logout", proc: logoutProc },
+            { icon: "\uF0E4", label: "Sleep", proc: sleepProc },
+            { icon: "\uF0D9", label: "Reboot", proc: rebootProc },
+            { icon: "\uF0E5", label: "Power Off", proc: poweroffProc },
           ]
 
           delegate: Rectangle {
@@ -921,9 +799,9 @@ PanelWindow {
             width: (parent.width - parent.spacing * 4) / 5
             height: 46
             radius: 8
-            color: root ? Qt.rgba(0.149, 0.149, 0.18, 0.6) : "#262626"
+            color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
             border.width: 1
-            border.color: root ? root.border : "#252530"
+            border.color: controlPanel._border
 
             Behavior on color {
               ColorAnimation { duration: 100 }
@@ -940,16 +818,16 @@ PanelWindow {
               Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: modelData.icon
-                color: root ? root.fg : "#cdcdcd"
-                font.family: root ? root.uiFont : "monospace"
+                color: controlPanel._fg
+                font.family: controlPanel._uiFont
                 font.pixelSize: 16
               }
 
               Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: modelData.label
-                color: root ? root.fgDim : "#606079"
-                font.family: root ? root.uiFont : "monospace"
+                color: controlPanel._fgDim
+                font.family: controlPanel._uiFont
                 font.pixelSize: 9
                 visible: ma.containsMouse
               }
@@ -962,11 +840,11 @@ PanelWindow {
               cursorShape: Qt.PointingHandCursor
 
               onEntered: {
-                parent.color = root ? root.bgSubtle : "#3a3a3a";
+                parent.color = controlPanel._bgSubtle;
                 parent.scale = 0.95;
               }
               onExited: {
-                parent.color = root ? Qt.rgba(0.149, 0.149, 0.18, 0.6) : "#262626";
+                parent.color = Qt.rgba(0.149, 0.149, 0.18, 0.6);
                 parent.scale = 1;
               }
               onPressed: parent.scale = 0.9
@@ -980,15 +858,15 @@ PanelWindow {
       Rectangle {
         width: parent.width
         height: 1
-        color: root ? root.border : "#252530"
+        color: controlPanel._border
         opacity: 0.6
       }
 
       // ── Notifications controls ──
       Text {
         text: "Notifications"
-        color: root ? root.fg : "#cdcdcd"
-        font.family: root ? root.uiFont : "monospace"
+        color: controlPanel._fg
+        font.family: controlPanel._uiFont
         font.pixelSize: 11
         font.bold: true
         opacity: 0.7
@@ -1012,7 +890,7 @@ PanelWindow {
             radius: 12
             color: (root && root.doNotDisturb) ? Qt.rgba(0.431, 0.580, 0.698, 0.25) : Qt.rgba(0.145, 0.145, 0.18, 0.7)
             border.width: 1
-            border.color: (root && root.doNotDisturb) ? (root ? root.accent : "#6e94b2") : (root ? root.border : "#252530")
+            border.color: (root && root.doNotDisturb) ? controlPanel._accent : controlPanel._border
 
             Behavior on color {
               ColorAnimation { duration: 150 }
@@ -1025,7 +903,7 @@ PanelWindow {
               width: dndTrack.height - 6
               height: dndTrack.height - 6
               radius: width / 2
-              color: (root && root.doNotDisturb) ? (root ? root.accent : "#6e94b2") : (root ? root.fgDim : "#606079")
+              color: (root && root.doNotDisturb) ? controlPanel._accent : controlPanel._fgDim
 
               Behavior on x {
                 NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
@@ -1045,8 +923,8 @@ PanelWindow {
             anchors.left: dndTrack.right
             anchors.leftMargin: 10
             text: (root && root.doNotDisturb) ? "Do Not Disturb" : "Allow Notifications"
-            color: (root && root.doNotDisturb) ? (root ? root.accent : "#6e94b2") : (root ? root.fgMid : "#878787")
-            font.family: root ? root.uiFont : "monospace"
+            color: (root && root.doNotDisturb) ? controlPanel._accent : controlPanel._fgMid
+            font.family: controlPanel._uiFont
             font.pixelSize: 11
             font.bold: true
             elide: Text.ElideRight
@@ -1066,15 +944,15 @@ PanelWindow {
           radius: 8
           color: "transparent"
           border.width: 1
-          border.color: root ? root.border : "#252530"
+          border.color: controlPanel._border
 
           Text {
             anchors.centerIn: parent
             text: root
               ? "Clear All (" + root.notificationServer.trackedNotifications.values.length + ")"
               : "Clear All (0)"
-            color: root ? root.fgMid : "#878787"
-            font.family: root ? root.uiFont : "monospace"
+            color: controlPanel._fgMid
+            font.family: controlPanel._uiFont
             font.pixelSize: 11
             font.bold: true
           }
@@ -1084,12 +962,12 @@ PanelWindow {
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             onEntered: {
-              clearAll.color = root ? Qt.rgba(0.847, 0.392, 0.494, 0.15) : "#3a2020";
-              clearAll.border.color = root ? root.red : "#d8647e";
+              clearAll.color = Qt.rgba(0.847, 0.392, 0.494, 0.15);
+              clearAll.border.color = controlPanel._red;
             }
             onExited: {
               clearAll.color = "transparent";
-              clearAll.border.color = root ? root.border : "#252530";
+              clearAll.border.color = controlPanel._border;
             }
             onClicked: { if (root) root.clearNotifications(); }
           }
@@ -1101,8 +979,8 @@ PanelWindow {
         text: (root && root.doNotDisturb)
           ? "Do Not Disturb is enabled. Critical alerts still appear."
           : "Popup timeout adapts to notification urgency and app hints."
-        color: root ? root.fgDim : "#606079"
-        font.family: root ? root.uiFont : "monospace"
+        color: controlPanel._fgDim
+        font.family: controlPanel._uiFont
         font.pixelSize: 10
         wrapMode: Text.Wrap
         opacity: 0.7
@@ -1111,7 +989,7 @@ PanelWindow {
       Rectangle {
         width: parent.width
         height: 1
-        color: root ? root.border : "#252530"
+        color: controlPanel._border
         opacity: 0.6
       }
     }
@@ -1124,9 +1002,9 @@ PanelWindow {
         left: parent.left
         right: parent.right
         bottom: parent.bottom
-        leftMargin: controlPanel.cardPadding
-        rightMargin: controlPanel.cardPadding
-        bottomMargin: controlPanel.cardPadding
+        leftMargin: controlPanel._cardPadding
+        rightMargin: controlPanel._cardPadding
+        bottomMargin: controlPanel._cardPadding
         topMargin: 8
       }
       spacing: 8
@@ -1138,14 +1016,14 @@ PanelWindow {
         property QtObject notification: modelData
 
         width: notificationList.width
-        implicitHeight: panelCardContent.implicitHeight + (root ? root.cardPadding : 14) * 2
+        implicitHeight: panelCardContent.implicitHeight + controlPanel._cardPadding * 2
         height: implicitHeight
-        radius: root ? root.cardRadius : 8
-        color: root ? Qt.rgba(0.145, 0.145, 0.18, 0.6) : "#262626"
+        radius: controlPanel._cardRadius
+        color: Qt.rgba(0.145, 0.145, 0.18, 0.6)
         border.width: 1
         border.color: notification && notification.urgency === NotificationUrgency.Critical
-          ? (root ? root.red : "#d8647e")
-          : (root ? root.border : "#252530")
+          ? controlPanel._red
+          : controlPanel._border
 
         opacity: 0
         Behavior on opacity {
@@ -1159,38 +1037,41 @@ PanelWindow {
           width: 3
           radius: 2
           color: notification && notification.urgency === NotificationUrgency.Critical
-            ? (root ? root.red : "#d8647e")
+            ? controlPanel._red
             : (notification && notification.urgency === NotificationUrgency.Low
-              ? (root ? root.fgDim : "#606079")
-              : (root ? root.accent : "#6e94b2"))
+              ? controlPanel._fgDim
+              : controlPanel._accent)
           visible: notification !== null
         }
 
         Column {
           id: panelCardContent
-          x: root ? root.cardPadding + 6 : 20
-          y: root ? root.cardPadding : 14
-          width: parent.width - x - (root ? root.cardPadding : 14)
+          x: controlPanel._cardPadding + 6
+          y: controlPanel._cardPadding
+          width: parent.width - x - controlPanel._cardPadding
           spacing: root ? root.cardSpacing : 6
 
           Row {
             width: parent.width
             spacing: 8
 
-            AppIcon { notification: modelData; fallbackBg: root ? root.bgRaised : "#1c1c24" }
+            AppIcon {
+              notification: modelData
+              fallbackBg: root ? root.bgRaised : colors.bgRaised
+            }
 
             Text {
               text: (notification && notification.appName && notification.appName.length > 0)
                 ? notification.appName
                 : "Notification"
-              color: root ? root.accent : "#6e94b2"
-              font.family: root ? root.uiFont : "monospace"
+              color: controlPanel._accent
+              font.family: controlPanel._uiFont
               font.pixelSize: 11
               font.bold: true
               elide: Text.ElideRight
               verticalAlignment: Text.AlignVCenter
-              height: root ? root.iconSize : 24
-              width: Math.max(0, parent.width - dismissBtn.width - parent.spacing - (root ? root.iconSize : 24) - parent.spacing)
+              height: controlPanel._iconSize
+              width: Math.max(0, parent.width - dismissBtn.width - parent.spacing - controlPanel._iconSize - parent.spacing)
             }
 
             Rectangle {
@@ -1200,13 +1081,13 @@ PanelWindow {
               radius: 5
               color: "transparent"
               border.width: 1
-              border.color: root ? root.border : "#252530"
+              border.color: controlPanel._border
 
               Text {
                 anchors.centerIn: parent
                 text: "\u00d7"
-                color: root ? root.fgDim : "#606079"
-                font.family: root ? root.uiFont : "monospace"
+                color: controlPanel._fgDim
+                font.family: controlPanel._uiFont
                 font.pixelSize: 13
                 font.bold: true
               }
@@ -1215,12 +1096,12 @@ PanelWindow {
                 anchors.fill: parent
                 hoverEnabled: true
                 onEntered: {
-                  dismissBtn.color = root ? Qt.rgba(0.847, 0.392, 0.494, 0.15) : "#3a2020";
-                  dismissBtn.border.color = root ? root.red : "#d8647e";
+                  dismissBtn.color = Qt.rgba(0.847, 0.392, 0.494, 0.15);
+                  dismissBtn.border.color = controlPanel._red;
                 }
                 onExited: {
                   dismissBtn.color = "transparent";
-                  dismissBtn.border.color = root ? root.border : "#252530";
+                  dismissBtn.border.color = controlPanel._border;
                 }
                 onClicked: notification.dismiss()
               }
@@ -1230,8 +1111,8 @@ PanelWindow {
           Text {
             text: notification ? (root ? root.stripMarkup(notification.summary || "") : notification.summary || "") : ""
             width: parent.width
-            color: root ? root.fg : "#cdcdcd"
-            font.family: root ? root.uiFont : "monospace"
+            color: controlPanel._fg
+            font.family: controlPanel._uiFont
             font.pixelSize: 13
             font.bold: true
             wrapMode: Text.Wrap
@@ -1242,8 +1123,8 @@ PanelWindow {
           Text {
             text: notification ? (root ? root.stripMarkup(notification.body || "") : notification.body || "") : ""
             width: parent.width
-            color: root ? root.fgMid : "#878787"
-            font.family: root ? root.uiFont : "monospace"
+            color: controlPanel._fgMid
+            font.family: controlPanel._uiFont
             font.pixelSize: 12
             wrapMode: Text.Wrap
             textFormat: Text.PlainText
@@ -1268,9 +1149,9 @@ PanelWindow {
 
           Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "󰂚"
-            color: root ? root.fgDim : "#606079"
-            font.family: root ? root.uiFont : "monospace"
+            text: "\uF09A"
+            color: controlPanel._fgDim
+            font.family: controlPanel._uiFont
             font.pixelSize: 24
             opacity: 0.5
           }
@@ -1278,108 +1159,10 @@ PanelWindow {
           Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: "No notifications"
-            color: root ? root.fgDim : "#606079"
-            font.family: root ? root.uiFont : "monospace"
+            color: controlPanel._fgDim
+            font.family: controlPanel._uiFont
             font.pixelSize: 12
             opacity: 0.7
-          }
-        }
-      }
-    }
-  }
-
-  property int cardPadding: root ? root.cardPadding : 14
-
-  // ── Shared components ──
-  component AppIcon: Item {
-    property var notification: null
-    property color fallbackBg: root ? root.bgSubtle : "#252530"
-
-    width: root ? root.iconSize : 24
-    height: root ? root.iconSize : 24
-
-    Image {
-      id: iconImg
-      anchors.fill: parent
-      source: root ? root.appIconSource(notification) : ""
-      sourceSize.width: root ? root.iconSize : 24
-      sourceSize.height: root ? root.iconSize : 24
-      fillMode: Image.PreserveAspectFit
-      visible: status === Image.Ready
-    }
-
-    Rectangle {
-      anchors.fill: parent
-      radius: 5
-      color: fallbackBg
-      border.width: 1
-      border.color: root ? root.border : "#252530"
-      visible: !iconImg.visible
-
-      Text {
-        anchors.centerIn: parent
-        text: (notification && notification.appName && notification.appName.length > 0)
-          ? notification.appName[0].toUpperCase()
-          : "N"
-        color: root ? root.teal : "#b4d4cf"
-        font.family: root ? root.uiFont : "monospace"
-        font.pixelSize: 11
-        font.bold: true
-      }
-    }
-  }
-
-  component ActionRow: Row {
-    property var actions: []
-    signal actionInvoked()
-
-    spacing: root ? root.cardSpacing : 6
-    visible: actions && actions.length > 0
-
-    Repeater {
-      model: actions
-
-      Rectangle {
-        required property QtObject modelData
-
-        height: root ? root.actionBtnHeight : 26
-        radius: 6
-        color: "transparent"
-        border.width: 1
-        border.color: root ? root.border : "#252530"
-        width: btnLabel.implicitWidth + 20
-
-        Behavior on scale {
-          NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
-        }
-
-        Text {
-          id: btnLabel
-          anchors.centerIn: parent
-          text: modelData.text
-          color: root ? root.fgMid : "#878787"
-          font.family: root ? root.uiFont : "monospace"
-          font.pixelSize: 11
-          textFormat: Text.PlainText
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          hoverEnabled: true
-          cursorShape: Qt.PointingHandCursor
-          onEntered: {
-            parent.color = root ? root.bgSubtle : "#252530";
-            parent.scale = 0.96;
-          }
-          onExited: {
-            parent.color = "transparent";
-            parent.scale = 1;
-          }
-          onPressed: parent.scale = 0.93
-          onReleased: parent.scale = 0.96
-          onClicked: {
-            modelData.invoke();
-            actionInvoked();
           }
         }
       }
