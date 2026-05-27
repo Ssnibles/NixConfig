@@ -245,7 +245,7 @@ in
 
   # ── Foot terminal ─────────────────────────────────────────────────────────
   xdg.configFile."foot/foot.ini".text = ''
-    shell=${pkgs.fish}/bin/fish
+    shell=${pkgs.zsh}/bin/zsh
     font=JetBrainsMono Nerd Font:size=12
     pad=20x20
     [colors-dark]

@@ -18,7 +18,7 @@ in
     keyMode = "vi";
     mouse = true;
     prefix = "`";
-    shell = "${pkgs.fish}/bin/fish";
+    shell = "${pkgs.zsh}/bin/zsh";
     terminal = "tmux-256color";
 
     plugins = with pkgs.tmuxPlugins; [
