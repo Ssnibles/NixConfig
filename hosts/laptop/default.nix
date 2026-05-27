@@ -3,7 +3,7 @@
 # =============================================================================
 # AMD CPU laptop with integrated graphics.
 # =============================================================================
-{ ... }:
+{ pkgs, ... }:
 
 {
   imports = [
@@ -18,9 +18,27 @@
   '';
 
   # ── Networking ───────────────────────────────────────────────────────────
+  networking.networkmanager = {
+    wifi = {
+      scanRandMacAddress = false;        # Avoid scan-triggered disconnects
+      powersave = false;                 # Force nm-level power save off
+    };
+    dispatcherScripts = [{
+      source = pkgs.writeShellScript "wifi-powersave-off" ''
+        # Disable nl80211/mac80211 power saving on wifi interface up.
+        # This is the kernel-level power save, separate from the driver PS mode.
+        if [ "$2" = "up" ]; then
+          ${pkgs.iw}/bin/iw dev "$1" set power_save off
+        fi
+      '';
+      type = "basic";
+    }];
+  };
+
   networking.wireless.iwd.settings = {
     General = {
       EnableNetworkConfiguration = false;
+      DisableANQP = true;                # Realtek rtw89 FW stumbles on ANQP queries
     };
     DriverQuirks = {
       # Disable power save for rtw89 variants (value is a driver glob list).

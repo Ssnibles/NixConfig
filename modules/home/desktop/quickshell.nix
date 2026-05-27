@@ -3,6 +3,14 @@
 let
   c = (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
   liveDir = "${config.home.homeDirectory}/NixConfig/live";
+
+  compiledShaders = pkgs.runCommand "quickshell-shaders" {
+    nativeBuildInputs = [ pkgs.qt6.qtshadertools ];
+  } ''
+    mkdir -p $out
+    cp ${../../../live/quickshell/shaders/waveform.frag} $out/waveform.frag
+    qsb --qt6 $out/waveform.frag -o $out/waveform.frag.qsb
+  '';
 in
 {
   programs.quickshell = {
@@ -26,6 +34,10 @@ in
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Colors.qml";
     "quickshell/Pill.qml".source =
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Pill.qml";
+    "quickshell/shaders/waveform.frag.qsb".source =
+      "${compiledShaders}/waveform.frag.qsb";
+    "quickshell/shaders/waveform.frag".source =
+      "${compiledShaders}/waveform.frag";
   };
 
   home.activation.writeQuickshellColors = lib.hm.dag.entryAfter [ "linkGeneration" ] ''

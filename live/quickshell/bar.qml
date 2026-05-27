@@ -130,10 +130,10 @@ PanelWindow {
 
   // -- WiFi --
   property var wifiDev: findFirst(Networking.devices.values, function(d) {
-    return d.type === DeviceType.Wifi;
+      return d.type === DeviceType.Wifi;
   })
   property var wifiNet: findFirst(wifiDev ? wifiDev.networks.values : [], function(n) {
-    return n.connected;
+      return n.connected;
   })
   property string wifiSsid: wifiNet ? wifiNet.name : ""
   property string wifiTooltip: {
@@ -156,7 +156,7 @@ PanelWindow {
   property var mediaPlayer: {
     var playing = findFirst(mediaPlayers, function(p) { return p.isPlaying; });
     return playing ? playing : findFirst(mediaPlayers, function(p) {
-      return p.playbackState === MprisPlaybackState.Paused;
+        return p.playbackState === MprisPlaybackState.Paused;
     });
   }
   property string mediaText: mediaPlayer
@@ -288,82 +288,75 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
 
             property real wavePhase: 0
-            property real displayProgress: 0
+            property real displayProgress: barPanel.mediaProgress
             property real playTransition: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying ? 1 : 0
+            property bool useGpuWaveform: true
 
             Behavior on playTransition {
               NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
             }
 
-            NumberAnimation on wavePhase {
-              from: 0
-              to: Math.PI * 2
-              duration: 1500
-              loops: Animation.Infinite
-              running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying
-            }
-
             Timer {
-              interval: 40
-              running: barPanel.mediaPlayer !== null
+              interval: 150
+              running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying && mediaPill.visible
               repeat: true
-              onTriggered: {
-                if (!barPanel.mediaPlayer || barPanel.mediaPlayer.length <= 0) {
-                  mediaWaveform.displayProgress = 0;
-                  return;
-                }
-                var target = barPanel.mediaProgress;
-                var diff = target - mediaWaveform.displayProgress;
-                if (Math.abs(diff) < 0.0005) {
-                  mediaWaveform.displayProgress = target;
-                  return;
-                }
-                mediaWaveform.displayProgress += diff * 0.22;
-              }
+              onTriggered: mediaWaveform.wavePhase = (mediaWaveform.wavePhase + 0.628) % (Math.PI * 2)
             }
 
-            Row {
+            ShaderEffect {
+              id: waveformShader
+              anchors.fill: parent
+              visible: mediaWaveform.useGpuWaveform && status === ShaderEffect.Ready
+              fragmentShader: "./shaders/waveform.frag.qsb"
+
+              property real barCount: mediaWaveform.barCount
+              property real barWidth: mediaWaveform.barWidth
+              property real barSpacing: mediaWaveform.barSpacing
+              property real heightPx: mediaWaveform.height
+              property real phase: mediaWaveform.wavePhase
+              property real play: mediaWaveform.playTransition
+              property real progress: mediaWaveform.displayProgress
+              property color colorStart: Qt.rgba(0.769, 0.655, 0.906, 1)
+              property color colorEnd: Qt.rgba(0.612, 0.812, 0.847, 1)
+              property color bgColor: colors.bgSubtle
+            }
+
+            Item {
+              id: waveformFallback
+              visible: !waveformShader.visible
+              width: mediaWaveform.width
+              height: mediaWaveform.height
               anchors.verticalCenter: parent.verticalCenter
-              spacing: mediaWaveform.barSpacing
-              Item {
-                id: waveformContainer
-                width: mediaWaveform.width
-                height: mediaWaveform.height
-                anchors.verticalCenter: parent.verticalCenter
 
-                Repeater {
-                  model: mediaWaveform.barCount
-                  delegate: Rectangle {
-                    required property int index
-                    width: mediaWaveform.barWidth
-                    radius: width / 2
+              Repeater {
+                model: mediaWaveform.barCount
+                delegate: Rectangle {
+                  required property int index
+                  width: mediaWaveform.barWidth
+                  radius: width / 2
 
-                    // Manually calculate x position to replace the Row layout
-                    x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
+                  // Manually calculate x position to replace the Row layout
+                  x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
 
-                    // Calculate a stable center line relative to the waveform container
-                    y: (mediaWaveform.height - height) / 2
+                  // Calculate a stable center line relative to the waveform container
+                  y: (mediaWaveform.height - height) / 2
 
-                    height: {
-                      if (!barPanel.mediaPlayer) return 3
-                      var waveHeight = 3 + Math.sin(mediaWaveform.wavePhase + index * 0.55) * 4 + 3
-                      return 3 + (waveHeight - 3) * mediaWaveform.playTransition
-                    }
-                    color: {
-                      if (!barPanel.mediaPlayer) return colors.bgSubtle
-                      var frac = (index + 1) / mediaWaveform.barCount
-                      if (frac > mediaWaveform.displayProgress) return colors.bgSubtle
-                      var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
-                      return Qt.rgba(
-                        0.769 - 0.157 * t,
-                        0.655 + 0.157 * t,
-                        0.906 - 0.059 * t,
-                        1
-                      )
-                    }
-                    Behavior on color {
-                      ColorAnimation { duration: 200 }
-                    }
+                  height: {
+                    if (!barPanel.mediaPlayer) return 3
+                    var waveHeight = 3 + Math.sin(mediaWaveform.wavePhase + index * 0.55) * 4 + 3
+                    return 3 + (waveHeight - 3) * mediaWaveform.playTransition
+                  }
+                  color: {
+                    if (!barPanel.mediaPlayer) return colors.bgSubtle
+                    var frac = (index + 1) / mediaWaveform.barCount
+                    if (frac > mediaWaveform.displayProgress) return colors.bgSubtle
+                    var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
+                    return Qt.rgba(
+                      0.769 - 0.157 * t,
+                      0.655 + 0.157 * t,
+                      0.906 - 0.059 * t,
+                      1
+                    )
                   }
                 }
               }
