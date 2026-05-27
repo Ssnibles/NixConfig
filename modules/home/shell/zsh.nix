@@ -4,7 +4,7 @@
 # Zsh setup ported from the existing fish config: aliases, functions, plugins,
 # prompt, and Stylix-coloured syntax highlighting.
 # =============================================================================
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 let
   c = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
 in
@@ -18,7 +18,7 @@ in
     autosuggestion = {
       enable = true;
       highlight = "fg=${c.withHash.fgDim}";
-      strategy = [ "history" "completion" ];
+      strategy = [ "match_prev_cmd" "history" "completion" ];
     };
 
     syntaxHighlighting = {
@@ -135,8 +135,9 @@ in
       }
     ];
 
-    # ── Init (early) ───────────────────────────────────────────────────────
-    initExtraFirst = ''
+    # ── Init ────────────────────────────────────────────────────────────────
+    initContent = ''
+      # ── Init (early) ───────────────────────────────────────
       setopt AUTO_CD
       setopt COMPLETE_IN_WORD
       setopt CORRECT_ALL
@@ -144,10 +145,8 @@ in
       setopt INTERACTIVE_COMMENTS
       setopt NO_BEEP
       setopt PUSHD_IGNORE_DUPS
-    '';
 
-    # ── Init (sourced at the end of .zshrc) ────────────────────────────────
-    initExtra = ''
+      # ── Init (sourced at the end of .zshrc) ────────────────
       # ── Cursor shapes (line in insert, block in normal) ──
       function _zsh_set_cursor() {
         case $1 in
@@ -166,6 +165,10 @@ in
       zle -N zle-line-init
       zle -N zle-keymap-select
       _zsh_set_cursor line
+
+      # ── Autosuggestion tweaks ──
+      ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=120
+      ZSH_AUTOSUGGEST_HISTORY_IGNORE="(l[ls]|c[lear]|microfetch|exi[t]|cd\.\.)"
 
       # ── Microfetch on startup ──
       if (( $+commands[microfetch] )); then
