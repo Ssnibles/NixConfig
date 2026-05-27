@@ -21,6 +21,7 @@ in
   home.sessionVariables = {
     QML2_IMPORT_PATH = "${pkgs.unstable.quickshell}/lib/qt-6/qml";
     QSG_RENDERER = "opengl";
+    QML_XHR_ALLOW_FILE_READ = "1";
   };
 
   xdg.configFile = {
