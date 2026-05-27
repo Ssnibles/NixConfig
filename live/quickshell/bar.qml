@@ -4,6 +4,8 @@ import Quickshell.Io
 import Quickshell.Services.Pipewire
 import Quickshell.Services.Mpris
 import Quickshell.Networking
+import Quickshell.Services.UPower
+
 import QtQuick
 import QtQuick.Layouts
 import QtQml
@@ -42,7 +44,9 @@ PanelWindow {
     onTriggered: barPanel.updateTime()
   }
 
-  Component.onCompleted: updateTime()
+  Component.onCompleted: {
+    updateTime();
+  }
 
   function formatTitle(t) {
     return t
@@ -151,6 +155,71 @@ PanelWindow {
   }
   Process { id: wifiProc; command: ["sh", "-lc", "foot -e nmtui"] }
 
+  // -- Battery (UPower) --
+  function batDevice() {
+    var count = UPower.devices.count;
+    for (var i = 0; i < count; i++) {
+      var d = UPower.devices.get(i);
+      if (d.isLaptopBattery && d.ready) return d;
+    }
+    return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null;
+  }
+
+  readonly property bool batPresent: {
+    var count = UPower.devices.count;
+    if (count > 0) return true;
+    return UPower.displayDevice && UPower.displayDevice.ready;
+  }
+  readonly property int batPct: {
+    var d = batDevice();
+    return d ? Math.round(d.percentage * 100) : 0;
+  }
+  readonly property bool batCharging: {
+    var d = batDevice();
+    return d && d.state === UPowerDeviceState.Charging;
+  }
+  readonly property bool batPlugged: {
+    var d = batDevice();
+    return d && d.state === UPowerDeviceState.FullyCharged;
+  }
+  readonly property int batState: batDevice() ? batDevice().state : UPowerDeviceState.Unknown
+  property string batIcon: {
+    if (!batPresent) return "";
+    if (batCharging) return "󰂄";
+    if (batPlugged) return "󰚥";
+    var p = batPct;
+    if (p <= 10) return "󰁺";
+    if (p <= 20) return "󰁻";
+    if (p <= 30) return "󰁼";
+    if (p <= 40) return "󰁽";
+    if (p <= 50) return "󰁾";
+    if (p <= 60) return "󰁿";
+    if (p <= 70) return "󰂀";
+    if (p <= 80) return "󰁂";
+    if (p <= 90) return "󰂂";
+    return "󰁹";
+  }
+  property string batTooltip: {
+    if (!batPresent) return "";
+    var pct = Math.round(batPct);
+    var states = {
+      [UPowerDeviceState.Charging]: "Charging",
+      [UPowerDeviceState.FullyCharged]: "Plugged in",
+      [UPowerDeviceState.PendingCharge]: "Pending charge",
+      [UPowerDeviceState.PendingDischarge]: "Pending discharge",
+      [UPowerDeviceState.Empty]: "Empty",
+    };
+    var state = states[batState] || "Discharging";
+    return pct + "% · " + state;
+  }
+  property color batColor: {
+    if (!batPresent) return colors.fg;
+    if (batCharging || batPlugged) return colors.green;
+    if (batPct <= 15) return colors.red;
+    if (batPct <= 30) return colors.yellow;
+    return colors.fg;
+  }
+
   // -- Media --
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: {
@@ -170,8 +239,9 @@ PanelWindow {
   property bool mediaHover: mediaPill.visible && (mediaWaveArea.containsMouse || mediaLabelArea.containsMouse)
   property bool volHover: volMouse.containsMouse
   property bool wifiHover: wifiHoverHandler.hovered || wifiMouse.containsMouse
-  property var tooltipAnchor: mediaHover ? mediaPill : (volHover ? volWidget : (wifiHover ? wifiPill : null))
-  property string tooltipText: mediaHover ? barPanel.mediaTooltip : (volHover ? barPanel.volTooltip : (wifiHover ? barPanel.wifiTooltip : ""))
+  property bool batHover: batPresent && batHoverHandler.hovered
+  property var tooltipAnchor: mediaHover ? mediaPill : (volHover ? volWidget : (wifiHover ? wifiPill : (batHover ? batteryPill : null)))
+  property string tooltipText: mediaHover ? barPanel.mediaTooltip : (volHover ? barPanel.volTooltip : (wifiHover ? barPanel.wifiTooltip : (batHover ? barPanel.batTooltip : "")))
   property bool tooltipVisible: tooltipText !== ""
   property int tooltipWidth: Math.round(Math.min(barPanel.tooltipMaxWidth, barPanel.width - barPanel.tooltipMargin * 2))
   property int tooltipLeft: tooltipAnchor ? tooltipX(tooltipWidth) : 0
@@ -297,10 +367,10 @@ PanelWindow {
             }
 
             Timer {
-              interval: 150
+              interval: 300
               running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying && mediaPill.visible
               repeat: true
-              onTriggered: mediaWaveform.wavePhase = (mediaWaveform.wavePhase + 0.628) % (Math.PI * 2)
+              onTriggered: mediaWaveform.wavePhase = (mediaWaveform.wavePhase + 1.256) % (Math.PI * 2)
             }
 
             ShaderEffect {
@@ -552,6 +622,21 @@ PanelWindow {
           cursorShape: Qt.PointingHandCursor
           acceptedButtons: Qt.RightButton
           onClicked: wifiProc.startDetached()
+        }
+      }
+
+      Pill {
+        id: batteryPill
+        visible: barPanel.batPresent
+
+        HoverHandler { id: batHoverHandler }
+
+        Text {
+          text: barPanel.batIcon + " " + Math.round(barPanel.batPct) + "%"
+          color: barPanel.batColor
+          font.family: barPanel.uiFont
+          font.pixelSize: 12
+          anchors.verticalCenter: parent.verticalCenter
         }
       }
     }
