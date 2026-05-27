@@ -6,7 +6,9 @@
   ...
 }:
 let
-  liveDir = "${config.home.homeDirectory}/NixConfig/live";
+  repoRoot = "${config.home.homeDirectory}/NixConfig";
+  niriDir = "${repoRoot}/modules/home/desktop/niri";
+  qsDir = "${repoRoot}/modules/home/desktop/quickshell";
 
   lockCmd = "${pkgs.unstable.swaylock}/bin/swaylock -f";
   niriWake = "${pkgs.niri}/bin/niri msg action wake-monitors";
@@ -14,8 +16,8 @@ let
 in
 {
   imports = [
-    ../services/wayland.nix
-    ./swaylock.nix
+    ../../services/wayland.nix
+    ../swaylock.nix
   ];
 
   home.packages = with pkgs; [
@@ -71,9 +73,18 @@ in
   };
 
   xdg.configFile."niri/config.kdl" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${liveDir}/niri/config.kdl";
+    source = config.lib.file.mkOutOfStoreSymlink "${niriDir}/config.kdl";
     force = true;
   };
+
+  xdg.configFile."quickshell/niri/shell.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${niriDir}/quickshell/shell.qml";
+  xdg.configFile."quickshell/niri/bar.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${niriDir}/quickshell/bar.qml";
+  xdg.configFile."quickshell/niri/Colors.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/Colors.qml";
+  xdg.configFile."quickshell/niri/Pill.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/Pill.qml";
 
   programs.vicinae = {
     enable = true;

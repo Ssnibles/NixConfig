@@ -1,10 +1,3 @@
-# =============================================================================
-# Hyprland Home Manager Configuration
-# =============================================================================
-# Wayland compositor settings with Stylix-driven theming, advanced window
-# rules, and keybindings that mirror the Niri muscle memory layout.
-# System-level enablement (programs.hyprland.enable) lives in nixos/desktop/.
-# =============================================================================
 {
   pkgs,
   lib,
@@ -13,8 +6,13 @@
   ...
 }:
 let
-  raw = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
-  wallpaper = (import ../../../lib/stylix/themes.nix).wallpaper;
+  raw = import ../../../../lib/stylix/semantic-colors.nix {
+    stylixColors = config.lib.stylix.colors;
+  };
+  wallpaper = (import ../../../../lib/stylix/themes.nix).wallpaper;
+  repoRoot = "${config.home.homeDirectory}/NixConfig";
+  hyprDir = "${repoRoot}/modules/home/desktop/hyprland";
+  qsDir = "${repoRoot}/modules/home/desktop/quickshell";
   specialWorkspaceName = "special";
   brightnessBinds =
     if hostProfile.isDesktop then
@@ -41,8 +39,8 @@ let
 in
 {
   imports = [
-    ../services/wayland.nix
-    ./hyprlock.nix
+    ../../services/wayland.nix
+    ../hyprlock.nix
   ];
 
   xdg.configFile."hypr/xdph.conf".text = xdphConfig;
@@ -54,7 +52,6 @@ in
     adwaita-icon-theme
   ];
 
-  # ── Hypridle: session-specific idle management ──────────────────────────────
   xdg.configFile."hypr/hypridle.conf".text = ''
     general {
         lock_cmd = pidof hyprlock || hyprlock
@@ -93,6 +90,20 @@ in
     };
     Install.WantedBy = [ "hyprland-session.target" ];
   };
+
+  xdg.configFile."waybar/config".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/waybar/config.jsonc";
+  xdg.configFile."waybar/style.css".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/waybar/style.css";
+
+  xdg.configFile."quickshell/hyprland/shell.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/quickshell/shell.qml";
+  xdg.configFile."quickshell/hyprland/bar.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/quickshell/bar.qml";
+  xdg.configFile."quickshell/hyprland/Colors.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/Colors.qml";
+  xdg.configFile."quickshell/hyprland/Pill.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/Pill.qml";
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -136,7 +147,7 @@ in
         gaps_in = 8;
         gaps_out = 16;
         border_size = 2;
-        resize_on_border = true;
+        resize_on_border = false;
         allow_tearing = hostProfile.isDesktop;
         "col.active_border" = "rgb(${raw.accent})";
         "col.inactive_border" = "rgb(${raw.border})";
@@ -145,7 +156,7 @@ in
       decoration = {
         rounding = 16;
         blur = {
-          enabled = true;
+          enabled = false;
           xray = true;
           special = false;
           passes = 2;
@@ -156,7 +167,7 @@ in
           popups = true;
         };
         shadow = {
-          enabled = true;
+          enabled = false;
           range = 12;
           render_power = 3;
           color = "rgba(00000055)";
@@ -221,15 +232,13 @@ in
 
         "workspace 2, class:^(firefox|zen|org\\.mozilla\\.firefox)$"
         "workspace 5, class:^(discord|vesktop|webcord)$"
-        "workspace 6, class:^(Spotify|spotify)$"
+        "workspace , class:^(Spotify|spotify)$"
 
         "noblur, class:^(firefox)$, title:^(Picture-in-Picture)$"
         "noblur, class:^(org\\.pulseaudio\\.pavucontrol)$"
-        "opacity 0.95 0.95, class:^(foot|Alacritty|kitty)$"
       ];
 
       layerrule = [
-        "blur,quickshell-bar"
         "ignorezero,quickshell-bar"
       ];
 
@@ -243,23 +252,18 @@ in
         "3, persistent:true"
         "4, persistent:true"
         "5, persistent:true"
-        "6, persistent:true"
-        "7, persistent:true"
-        "8, persistent:true"
-        "9, persistent:true"
-        "10, persistent:true"
       ];
 
       bind = [
         "$mod, RETURN, exec, foot"
         "$mod, Q, killactive"
         "$mod, E, exec, yazi"
-        "$mod, V, exec, toggle-float"
-        "$mod, G, exec, toggle-focus-mode"
+        "$mod, V, exec, toggle-float-hyprland"
+        "$mod, G, exec, toggle-focus-mode-hyprland"
         "$mod, SPACE, exec, vicinae toggle"
         "$mod, P, exec, qs ipc call controlpanel toggle"
         "$mod, DELETE, exec, hyprlock"
-        "$mod SHIFT, R, exec, reload-all"
+        "$mod SHIFT, R, exec, reload-all-hyprland"
         "$mod, F, fullscreen"
 
         "$mod, H, movefocus, l"

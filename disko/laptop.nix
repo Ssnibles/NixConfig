@@ -53,7 +53,10 @@ in
             type = "filesystem";
             format = "ext4";
             mountpoint = "/";
-            mountOptions = [ "noatime" ];
+            mountOptions = [
+              "noatime"
+              "commit=60"
+            ];
           };
         };
       };
