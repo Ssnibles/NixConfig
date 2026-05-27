@@ -10,7 +10,6 @@ M.core = {
 	"plugins.trouble",
 	"plugins.mini",
 	"plugins.fzf",
-	"plugins.alpha",
 	"plugins.navigation",
 	"plugins.terminal",
 	"plugins.focus",
