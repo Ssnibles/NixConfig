@@ -18,7 +18,7 @@ let
 
     ./desktop/display-manager.nix
     ./desktop/stylix.nix
-    ./desktop/hyprland.nix
+    ./desktop/niri.nix
 
     ./users.nix
     ./packages.nix

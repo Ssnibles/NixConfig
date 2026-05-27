@@ -1,7 +1,7 @@
 # =============================================================================
 # Custom Shell Scripts
 # =============================================================================
-# Hyprland helper scripts and the AI commit-message generator.
+# Wayland helper scripts and the AI commit-message generator.
 # All scripts are built with writeShellScriptBin so they end up on $PATH.
 # =============================================================================
 {
@@ -32,17 +32,9 @@ let
       "${hostProfile.hostName}-test";
 
   # ── Toggle floating window ─────────────────────────────────────────────
-  # Floats the active window and centres it at 60 % of screen size.
+  # Toggles the active window between floating and tiling.
   toggle-float = pkgs.writeShellScriptBin "toggle-float" ''
-    IS_FLOATING=$(${pkgs.hyprland}/bin/hyprctl activewindow -j \
-      | ${pkgs.jq}/bin/jq -r '.floating')
-
-    ${pkgs.hyprland}/bin/hyprctl dispatch togglefloating
-
-    if [ "$IS_FLOATING" != "true" ]; then
-      ${pkgs.hyprland}/bin/hyprctl dispatch resizeactive exact 60% 60%
-      ${pkgs.hyprland}/bin/hyprctl dispatch centerwindow
-    fi
+    ${pkgs.niri}/bin/niri msg action toggle-window-floating
   '';
 
   # ── Reload Quickshell ──────────────────────────────────────────────────
@@ -52,34 +44,27 @@ let
   '';
 
   # ── Reload everything ────────────────────────────────────────────────────
-  # Reloads Hyprland and Quickshell (bar + notifications).
+  # Reloads niri config and Quickshell (bar + notifications).
   reload-all = pkgs.writeShellScriptBin "reload-all" ''
-    ${pkgs.hyprland}/bin/hyprctl reload
+    ${pkgs.niri}/bin/niri msg config
     ${qsBin} ipc call quickshell reload all 2>/dev/null || true
-    ${pkgs.libnotify}/bin/notify-send "Reload" "Hyprland, Quickshell reloaded"
+    ${pkgs.libnotify}/bin/notify-send "Reload" "Niri, Quickshell reloaded"
   '';
 
   # ── Focus mode ─────────────────────────────────────────────────────────
-  # Toggles gaps / rounding and hides the Quickshell bar for focus mode.
+  # Toggles fullscreen on the focused column for distraction-free work.
   toggle-focus-mode = pkgs.writeShellScriptBin "toggle-focus-mode" ''
-    STATE_FILE="/tmp/hyprland-focus-mode"
-    GAPS_IN=8
-    GAPS_OUT=16
-    ROUNDING=16
+    STATE_FILE="/tmp/niri-focus-mode"
     if [ -f "$STATE_FILE" ] && [ "$(cat $STATE_FILE)" = "focus" ]; then
-      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in $GAPS_IN
-      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out $GAPS_OUT
-      ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding $ROUNDING
+      ${pkgs.niri}/bin/niri msg action fullscreen-window
       qs ipc call bar toggle 2>/dev/null || true
       echo "normal" > "$STATE_FILE"
-      ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled - Normal mode restored"
+      ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled"
     else
-      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in 0
-      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out 0
-      ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding 0
+      ${pkgs.niri}/bin/niri msg action fullscreen-window
       qs ipc call bar toggle 2>/dev/null || true
       echo "focus" > "$STATE_FILE"
-      ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled - Distractions removed"
+      ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled"
     fi
   '';
 
@@ -278,11 +263,11 @@ let
     }
 
     reload_ui() {
-      if [ -z "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+      if ! ${pkgs.niri}/bin/niri msg focused-monitor >/dev/null 2>&1; then
         return 0
       fi
 
-      ${pkgs.hyprland}/bin/hyprctl reload >/dev/null 2>&1 || true
+      ${pkgs.niri}/bin/niri msg config >/dev/null 2>&1 || true
       ${awwwBin} img ${wallpaperPath} >/dev/null 2>&1 || true
       if [ -x "${qsBin}" ]; then
         if ! ${qsBin} ipc call quickshell reload all 2>/dev/null; then

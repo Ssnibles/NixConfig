@@ -33,7 +33,7 @@
     ../../modules/home/shell/zsh.nix
 
     # ── Desktop environment ───────────────────────────────────────────────
-    ../../modules/home/desktop/hyprland.nix
+    ../../modules/home/desktop/niri.nix
     ../../modules/home/desktop/waybar.nix
     ../../modules/home/desktop/quickshell.nix
 
@@ -65,13 +65,13 @@
 
   xdg.configFile."xdg-desktop-portal/portals.conf".text = ''
     [preferred]
-    default=hyprland;gtk
+    default=niri;gtk
 
     [org.freedesktop.impl.portal.ScreenCast]
-    default=hyprland
+    default=niri
 
     [org.freedesktop.impl.portal.Screenshot]
-    default=hyprland
+    default=niri
 
     [org.freedesktop.impl.portal.FileChooser]
     default=gtk

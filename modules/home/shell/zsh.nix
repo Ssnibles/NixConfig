@@ -110,7 +110,7 @@ in
       ":q"    = "exit";
       lg      = "lazygit";
       ff      = "microfetch";
-      get-class = "hyprctl clients | grep -A5 'class:'";
+      get-class = "niri msg windows";
     };
 
     # ── Completion tweaks ──────────────────────────────────────────────────
@@ -288,8 +288,5 @@ in
     done
   ];
 
-  # ── Set zsh as the default shell ───────────────────────────────────────────
-  home.sessionVariables = {
-    SHELL = "${pkgs.zsh}/bin/zsh";
-  };
+
 }
