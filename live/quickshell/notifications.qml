@@ -233,7 +233,6 @@ Item {
           Rectangle {
             id: popupCard
             property var notification: modelData
-            property var _notif: notif
 
             width: popupColumn.width
             implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
@@ -355,7 +354,7 @@ Item {
             repeat: false
             onTriggered: {
               if (notification) notification.expire();
-              _notif.removePopup(notification);
+              notif.removePopup(notification);
             }
           }
 
@@ -363,7 +362,7 @@ Item {
 
           Connections {
             target: notification
-            function onClosed(reason) { _notif.removePopup(notification); }
+            function onClosed(reason) { notif.removePopup(notification); }
           }
         }
       }
@@ -531,7 +530,7 @@ Item {
             radius: notif.cardRadius
             color: notif.bgSubtle
             border.width: 1
-            border.color: notification.urgency === NotificationUrgency.Critical
+            border.color: notification && notification.urgency === NotificationUrgency.Critical
               ? notif.red
               : notif.border
 
@@ -549,7 +548,7 @@ Item {
                 AppIcon { notification: modelData; fallbackBg: notif.bgRaised }
 
                 Text {
-                  text: (notification.appName && notification.appName.length > 0)
+                  text: (notification && notification.appName && notification.appName.length > 0)
                     ? notification.appName
                     : "Notification"
                   color: notif.accent
@@ -591,7 +590,7 @@ Item {
               }
 
               Text {
-                text: notif.stripMarkup(notification.summary || "")
+                text: notification ? notif.stripMarkup(notification.summary || "") : ""
                 width: parent.width
                 color: notif.fg
                 font.family: notif.uiFont
@@ -603,7 +602,7 @@ Item {
               }
 
               Text {
-                text: notif.stripMarkup(notification.body || "")
+                text: notification ? notif.stripMarkup(notification.body || "") : ""
                 width: parent.width
                 color: notif.fgMid
                 font.family: notif.uiFont
@@ -615,7 +614,7 @@ Item {
 
               ActionRow {
                 width: parent.width
-                actions: notification.actions ? notification.actions : []
+                actions: notification && notification.actions ? notification.actions : []
               }
             }
           }
