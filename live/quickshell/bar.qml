@@ -367,7 +367,7 @@ PanelWindow {
             }
 
             Timer {
-              interval: 300
+              interval: 200
               running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying && mediaPill.visible
               repeat: true
               onTriggered: mediaWaveform.wavePhase = (mediaWaveform.wavePhase + 1.256) % (Math.PI * 2)
@@ -392,47 +392,47 @@ PanelWindow {
             }
 
             Loader {
-                id: waveformFallback
-                active: !waveformShader.visible
-                width: mediaWaveform.width
-                height: mediaWaveform.height
-                anchors.verticalCenter: parent.verticalCenter
+              id: waveformFallback
+              active: !waveformShader.visible
+              width: mediaWaveform.width
+              height: mediaWaveform.height
+              anchors.verticalCenter: parent.verticalCenter
 
-                sourceComponent: Component {
-                    Item {
-                        width: mediaWaveform.width
-                        height: mediaWaveform.height
+              sourceComponent: Component {
+                Item {
+                  width: mediaWaveform.width
+                  height: mediaWaveform.height
 
-                        Repeater {
-                            model: mediaWaveform.barCount
-                            delegate: Rectangle {
-                                required property int index
-                                width: mediaWaveform.barWidth
-                                radius: width / 2
-                                x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
-                                y: (mediaWaveform.height - height) / 2
+                  Repeater {
+                    model: mediaWaveform.barCount
+                    delegate: Rectangle {
+                      required property int index
+                      width: mediaWaveform.barWidth
+                      radius: width / 2
+                      x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
+                      y: (mediaWaveform.height - height) / 2
 
-                                height: {
-                                    if (!barPanel.mediaPlayer) return 3
-                                    var waveHeight = 3 + Math.sin(mediaWaveform.wavePhase + index * 0.55) * 4 + 3
-                                    return 3 + (waveHeight - 3) * mediaWaveform.playTransition
-                                }
-                                color: {
-                                    if (!barPanel.mediaPlayer) return colors.bgSubtle
-                                    var frac = (index + 1) / mediaWaveform.barCount
-                                    if (frac > mediaWaveform.displayProgress) return colors.bgSubtle
-                                    var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
-                                    return Qt.rgba(
-                                        0.769 - 0.157 * t,
-                                        0.655 + 0.157 * t,
-                                        0.906 - 0.059 * t,
-                                        1
-                                    )
-                                }
-                            }
-                        }
+                      height: {
+                        if (!barPanel.mediaPlayer) return 3
+                        var waveHeight = 3 + Math.sin(mediaWaveform.wavePhase + index * 0.55) * 4 + 3
+                        return 3 + (waveHeight - 3) * mediaWaveform.playTransition
+                      }
+                      color: {
+                        if (!barPanel.mediaPlayer) return colors.bgSubtle
+                        var frac = (index + 1) / mediaWaveform.barCount
+                        if (frac > mediaWaveform.displayProgress) return colors.bgSubtle
+                        var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
+                        return Qt.rgba(
+                          0.769 - 0.157 * t,
+                          0.655 + 0.157 * t,
+                          0.906 - 0.059 * t,
+                          1
+                        )
+                      }
                     }
+                  }
                 }
+              }
             }
 
             MouseArea {
@@ -642,9 +642,9 @@ PanelWindow {
     }
   }
 
-    PanelWindow {
-        id: tooltipWindow
-        visible: barPanel.tooltipVisible
+  PanelWindow {
+    id: tooltipWindow
+    visible: barPanel.tooltipVisible
     focusable: false
     aboveWindows: true
     exclusionMode: ExclusionMode.Ignore
