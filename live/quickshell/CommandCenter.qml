@@ -184,12 +184,12 @@ PanelWindow {
   readonly property color gradientStart: root ? root.accent : colors.accent
   readonly property color gradientEnd: root ? root.purple : colors.purple
 
-  readonly property int _cardRadius: root ? root.cardRadius : 8
-  readonly property int _cardPadding: root ? root.cardPadding : 14
-  readonly property int _cardSpacing: root ? root.cardSpacing : 6
-  readonly property int _iconSize: root ? root.iconSize : 24
+  readonly property int _cardRadius: root ? root.cardRadius : 16
+  readonly property int _cardPadding: root ? root.cardPadding : 20
+  readonly property int _cardSpacing: root ? root.cardSpacing : 8
+  readonly property int _iconSize: root ? root.iconSize : 28
 
-  // ── Base card with glassmorphism ──
+  // ── Base card with elevation ──
   Rectangle {
     anchors.fill: parent
     radius: controlPanel._cardRadius
@@ -203,11 +203,20 @@ PanelWindow {
       NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
     }
 
+    // Shadow
+    Rectangle {
+      anchors.fill: parent
+      anchors.topMargin: 4
+      radius: controlPanel._cardRadius
+      color: Qt.rgba(0, 0, 0, 0.2)
+      z: -1
+    }
+
     // Gradient accent bar at the top
     Rectangle {
       anchors { top: parent.top; left: parent.left; right: parent.right }
-      height: 3
-      radius: 3
+      height: 4
+      radius: 2
       gradient: Gradient {
         GradientStop { position: 0.0; color: controlPanel.gradientStart }
         GradientStop { position: 1.0; color: controlPanel.gradientEnd }
@@ -225,24 +234,25 @@ PanelWindow {
       // ── Header ──
       RowLayout {
         width: parent.width
-        spacing: 8
+      spacing: 14
 
         Text {
           text: "Command Center"
           color: controlPanel._fg
           font.family: controlPanel._uiFont
-          font.pixelSize: 15
+          font.pixelSize: 18
           font.bold: true
+          font.letterSpacing: 0.5
           verticalAlignment: Text.AlignVCenter
           Layout.fillWidth: true
-          Layout.preferredHeight: 26
+          Layout.preferredHeight: 32
         }
 
         Rectangle {
           id: closePanel
-          Layout.preferredWidth: 26
-          Layout.preferredHeight: 26
-          radius: 6
+          Layout.preferredWidth: 32
+          Layout.preferredHeight: 32
+          radius: 8
           color: "transparent"
           border.width: 1
           border.color: controlPanel._border
@@ -253,10 +263,10 @@ PanelWindow {
 
           Text {
             anchors.centerIn: parent
-            text: "\u00d7"
-            color: controlPanel._fgDim
+            text: "\uDB80\uDD56"
+            color: controlPanel._fgMid
             font.family: controlPanel._uiFont
-            font.pixelSize: 14
+            font.pixelSize: 16
             font.bold: true
           }
 
@@ -266,7 +276,7 @@ PanelWindow {
             hoverEnabled: true
             onEntered: {
               closePanel.color = controlPanel._bgSubtle;
-              closePanel.scale = 0.9;
+              closePanel.scale = 0.92;
             }
             onExited: {
               closePanel.color = "transparent";
@@ -286,64 +296,66 @@ PanelWindow {
 
       // ── System section ──
       Text {
-        text: "System"
-        color: controlPanel._fg
+        text: "SYSTEM"
+        color: controlPanel._fgMid
         font.family: controlPanel._uiFont
         font.pixelSize: 11
         font.bold: true
-        opacity: 0.7
-        bottomPadding: -4
+        font.letterSpacing: 1.2
+        opacity: 1
+        bottomPadding: -2
       }
 
       // Volume
       RowLayout {
         width: parent.width
-        height: 36
-        spacing: 10
+        height: 48
+        spacing: 12
 
-        Rectangle {
-          id: volIconBtn
-          Layout.preferredWidth: 36
-          Layout.preferredHeight: 36
-          radius: 8
-          color: controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.149, 0.149, 0.18, 0.6)
-          border.width: 1
-          border.color: controlPanel.volMuted ? controlPanel._red : controlPanel._border
+          Rectangle {
+            id: volIconBtn
+            Layout.preferredWidth: 42
+            Layout.preferredHeight: 42
+            radius: 10
+            color: controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.15) : Qt.rgba(0.149, 0.149, 0.18, 0.5)
+            border.width: 1
+            border.color: controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : controlPanel._border
 
-          Text {
-            anchors.centerIn: parent
-            text: {
-              if (controlPanel.volMuted) return "\uF09F"
-              var v = controlPanel.volPct
-              if (v <= 0) return "\uF09F"
-              if (v < 0.33) return "\uF15F"
-              if (v < 0.66) return "\uF160"
-              return "\uF16E"
+            Text {
+              anchors.centerIn: parent
+              text: {
+                if (controlPanel.volMuted) return "\uDB81\uDD81"
+                var v = controlPanel.volPct
+                if (v <= 0) return "\uDB81\uDD81"
+                if (v < 0.33) return "\uDB81\uDD7F"
+                if (v < 0.66) return "\uDB81\uDD80"
+                return "\uDB81\uDD7E"
+              }
+              color: controlPanel.volMuted ? controlPanel._red : controlPanel._fg
+              font.family: controlPanel._uiFont
+              font.pixelSize: 16
             }
-            color: controlPanel.volMuted ? controlPanel._red : controlPanel._fg
-            font.family: controlPanel._uiFont
-            font.pixelSize: 14
-          }
 
-          MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: volIconBtn.color = controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : Qt.rgba(0.251, 0.251, 0.314, 0.8)
-            onExited: volIconBtn.color = controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.149, 0.149, 0.18, 0.6)
-            onClicked: {
-              if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-                Pipewire.defaultAudioSink.audio.muted = !controlPanel.volMuted
+            MouseArea {
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onEntered: volIconBtn.color = controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : Qt.rgba(0.251, 0.251, 0.314, 0.75)
+              onExited: volIconBtn.color = controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.15) : Qt.rgba(0.149, 0.149, 0.18, 0.5)
+              onClicked: {
+                if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+                  Pipewire.defaultAudioSink.audio.muted = !controlPanel.volMuted
+                }
               }
             }
           }
-        }
 
         Text {
           text: "Volume"
-          color: controlPanel._fgMid
+          color: controlPanel._fg
           font.family: controlPanel._uiFont
-          font.pixelSize: 11
+          font.pixelSize: 12
+          font.bold: true
           verticalAlignment: Text.AlignVCenter
           Layout.preferredWidth: implicitWidth
         }
@@ -365,8 +377,9 @@ PanelWindow {
           text: Math.round(controlPanel.volPct * 100) + "%"
           color: controlPanel.volMuted ? controlPanel._red : controlPanel._fg
           font.family: controlPanel._uiFont
-          font.pixelSize: 11
+          font.pixelSize: 12
           font.bold: true
+          opacity: 0.85
           verticalAlignment: Text.AlignVCenter
           Layout.preferredWidth: implicitWidth
         }
@@ -375,67 +388,68 @@ PanelWindow {
       // Microphone
       RowLayout {
         width: parent.width
-        height: 36
-        spacing: 10
+        height: 48
+        spacing: 12
         visible: Pipewire.ready && Pipewire.defaultAudioSource !== null
 
-        Rectangle {
-          id: micIconBtn
-          Layout.preferredWidth: 36
-          Layout.preferredHeight: 36
-          radius: 8
-          color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.498, 0.647, 0.388, 0.15)
-          border.width: 1
-          border.color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
+          Rectangle {
+            id: micIconBtn
+            Layout.preferredWidth: 42
+            Layout.preferredHeight: 42
+            radius: 10
+            color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.12) : Qt.rgba(0.498, 0.647, 0.388, 0.12)
+            border.width: 1
+            border.color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : Qt.rgba(0.498, 0.647, 0.388, 0.3)
 
-          Text {
-            anchors.centerIn: parent
-            text: controlPanel.micMuted ? "\uF32D" : "\uF32C"
-            color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
-            font.family: controlPanel._uiFont
-            font.pixelSize: 14
-          }
+            Text {
+              anchors.centerIn: parent
+              text: controlPanel.micMuted ? "\uDB80\uDD6D" : "\uDB80\uDD6C"
+              color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
+              font.family: controlPanel._uiFont
+              font.pixelSize: 16
+            }
 
-          MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: micIconBtn.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.35) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
-            onExited: micIconBtn.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.498, 0.647, 0.388, 0.15)
-            onClicked: {
-              if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
-                Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
+            MouseArea {
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onEntered: micIconBtn.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : Qt.rgba(0.498, 0.647, 0.388, 0.3)
+              onExited: micIconBtn.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.12) : Qt.rgba(0.498, 0.647, 0.388, 0.12)
+              onClicked: {
+                if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
+                  Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
+                }
               }
             }
           }
-        }
 
         Text {
           text: "Microphone"
-          color: controlPanel._fgMid
+          color: controlPanel._fg
           font.family: controlPanel._uiFont
-          font.pixelSize: 11
+          font.pixelSize: 12
+          font.bold: true
           verticalAlignment: Text.AlignVCenter
           Layout.preferredWidth: implicitWidth
         }
 
         Item {
           Layout.fillWidth: true
-          height: 36
+          height: 42
 
           Rectangle {
             id: micTrack
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
-            width: 44
-            height: 24
-            radius: 12
-            color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.25) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
+            width: 52
+            height: 28
+            radius: 14
+            color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.498, 0.647, 0.388, 0.2)
             border.width: 1
-            border.color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
+            border.color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : Qt.rgba(0.498, 0.647, 0.388, 0.3)
 
             Behavior on color {
-              ColorAnimation { duration: 150 }
+              ColorAnimation { duration: 200 }
             }
 
             Rectangle {
@@ -448,10 +462,10 @@ PanelWindow {
               color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
 
               Behavior on x {
-                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+                NumberAnimation { duration: 250; easing.type: Easing.OutBack }
               }
               Behavior on color {
-                ColorAnimation { duration: 150 }
+                ColorAnimation { duration: 200 }
               }
             }
 
@@ -459,8 +473,8 @@ PanelWindow {
               anchors.fill: parent
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
-              onEntered: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.35) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
-              onExited: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.25) : Qt.rgba(0.498, 0.647, 0.388, 0.25)
+              onEntered: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.35) : Qt.rgba(0.498, 0.647, 0.388, 0.35)
+              onExited: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.498, 0.647, 0.388, 0.2)
               onClicked: {
                 if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
                   Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
@@ -472,15 +486,15 @@ PanelWindow {
           Text {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: micTrack.right
-            anchors.leftMargin: 16
+            anchors.leftMargin: 14
             text: controlPanel.micMuted ? "Muted" : "Live"
             color: controlPanel.micMuted ? controlPanel._red : controlPanel._green
             font.family: controlPanel._uiFont
-            font.pixelSize: 11
+            font.pixelSize: 12
             font.bold: true
 
             Behavior on color {
-              ColorAnimation { duration: 150 }
+              ColorAnimation { duration: 200 }
             }
           }
         }
@@ -489,33 +503,42 @@ PanelWindow {
       // Brightness
       RowLayout {
         width: parent.width
-        height: 36
-        spacing: 10
+        height: 48
+        spacing: 12
         visible: controlPanel.brightnessAvailable
 
         Rectangle {
           id: brtIconBtn
-          Layout.preferredWidth: 36
-          Layout.preferredHeight: 36
-          radius: 8
-          color: Qt.rgba(0.953, 0.745, 0.486, 0.12)
+          Layout.preferredWidth: 42
+          Layout.preferredHeight: 42
+          radius: 10
+          color: Qt.rgba(0.953, 0.745, 0.486, 0.1)
           border.width: 1
-          border.color: Qt.rgba(0.953, 0.745, 0.486, 0.3)
+          border.color: Qt.rgba(0.953, 0.745, 0.486, 0.25)
 
           Text {
             anchors.centerIn: parent
-            text: "\uF0C3"
+            text: "\uDB81\uDD99"
             color: controlPanel._yellow
             font.family: controlPanel._uiFont
-            font.pixelSize: 14
+            font.pixelSize: 16
+          }
+
+          MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onEntered: brtIconBtn.color = Qt.rgba(0.953, 0.745, 0.486, 0.25)
+            onExited: brtIconBtn.color = Qt.rgba(0.953, 0.745, 0.486, 0.1)
           }
         }
 
         Text {
           text: "Brightness"
-          color: controlPanel._fgMid
+          color: controlPanel._fg
           font.family: controlPanel._uiFont
-          font.pixelSize: 11
+          font.pixelSize: 12
+          font.bold: true
           verticalAlignment: Text.AlignVCenter
           Layout.preferredWidth: implicitWidth
         }
@@ -535,8 +558,9 @@ PanelWindow {
           text: Math.round(controlPanel.brightnessPct * 100) + "%"
           color: controlPanel._fg
           font.family: controlPanel._uiFont
-          font.pixelSize: 11
+          font.pixelSize: 12
           font.bold: true
+          opacity: 0.85
           verticalAlignment: Text.AlignVCenter
           Layout.preferredWidth: implicitWidth
         }
@@ -551,34 +575,35 @@ PanelWindow {
 
       // ── Media section ──
       Text {
-        text: "Media"
-        color: controlPanel._fg
+        text: "MEDIA"
+        color: controlPanel._fgMid
         font.family: controlPanel._uiFont
         font.pixelSize: 11
         font.bold: true
-        opacity: 0.7
-        bottomPadding: -4
+        font.letterSpacing: 1.2
+        opacity: 1
+        bottomPadding: -2
       }
 
       Item {
         width: parent.width
-        height: mediaPlayer ? 70 : 20
+        height: mediaPlayer ? 92 : 24
 
         Column {
           anchors.verticalCenter: parent.verticalCenter
           width: parent.width
-          spacing: 8
+          spacing: 10
           visible: mediaPlayer !== null
 
           RowLayout {
             width: parent.width
-            spacing: 8
+            spacing: 10
 
             Rectangle {
               id: prevBtn
-              Layout.preferredWidth: 34
-              Layout.preferredHeight: 34
-              radius: 8
+              Layout.preferredWidth: 42
+              Layout.preferredHeight: 42
+              radius: 10
               color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
               border.width: 1
               border.color: controlPanel._border
@@ -589,10 +614,10 @@ PanelWindow {
 
               Text {
                 anchors.centerIn: parent
-                text: "\u23ee"
+                text: "\uDB81\uDCAE"
                 color: controlPanel._fg
                 font.family: controlPanel._uiFont
-                font.pixelSize: 14
+                font.pixelSize: 18
               }
 
               MouseArea {
@@ -614,9 +639,9 @@ PanelWindow {
 
             Rectangle {
               id: playBtn
-              Layout.preferredWidth: 34
-              Layout.preferredHeight: 34
-              radius: 8
+              Layout.preferredWidth: 42
+              Layout.preferredHeight: 42
+              radius: 10
               color: controlPanel._accent
               border.width: 1
               border.color: controlPanel._accent
@@ -627,10 +652,10 @@ PanelWindow {
 
               Text {
                 anchors.centerIn: parent
-                text: controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying ? "\u23f8" : "\u25b6"
+                text: controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying ? "\uDB80\uDFE4" : "\uDB81\uDC0A"
                 color: root ? root.bg : colors.bg
                 font.family: controlPanel._uiFont
-                font.pixelSize: 14
+                font.pixelSize: 18
               }
 
               MouseArea {
@@ -646,9 +671,9 @@ PanelWindow {
 
             Rectangle {
               id: nextBtn
-              Layout.preferredWidth: 34
-              Layout.preferredHeight: 34
-              radius: 8
+              Layout.preferredWidth: 42
+              Layout.preferredHeight: 42
+              radius: 10
               color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
               border.width: 1
               border.color: controlPanel._border
@@ -659,10 +684,10 @@ PanelWindow {
 
               Text {
                 anchors.centerIn: parent
-                text: "\u23ed"
+                text: "\uDB81\uDCAD"
                 color: controlPanel._fg
                 font.family: controlPanel._uiFont
-                font.pixelSize: 14
+                font.pixelSize: 18
               }
 
               MouseArea {
@@ -685,13 +710,14 @@ PanelWindow {
             Column {
               Layout.fillWidth: true
               Layout.alignment: Qt.AlignVCenter
+              spacing: 2
 
               Text {
                 width: parent.width
                 text: controlPanel.mediaText
                 color: controlPanel._fg
                 font.family: controlPanel._uiFont
-                font.pixelSize: 12
+                font.pixelSize: 13
                 font.bold: true
                 elide: Text.ElideRight
               }
@@ -703,7 +729,7 @@ PanelWindow {
                   : ""
                 color: controlPanel._fgDim
                 font.family: controlPanel._uiFont
-                font.pixelSize: 10
+                font.pixelSize: 11
                 elide: Text.ElideRight
                 visible: text.length > 0
               }
@@ -713,14 +739,14 @@ PanelWindow {
           // Media progress bar
           Item {
             width: parent.width
-            height: 4
+            height: 6
             visible: controlPanel.mediaPlayer && controlPanel.mediaPlayer.length > 0
 
             Rectangle {
               anchors.verticalCenter: parent.verticalCenter
               width: parent.width
-              height: 4
-              radius: 2
+              height: 6
+              radius: 3
               color: Qt.rgba(0.145, 0.145, 0.18, 0.7)
 
               Rectangle {
@@ -730,7 +756,7 @@ PanelWindow {
                 width: parent.width * (controlPanel.mediaPlayer && controlPanel.mediaPlayer.length > 0
                   ? Math.min(1, Math.max(0, controlPanel.mediaPlayer.position / controlPanel.mediaPlayer.length))
                   : 0)
-                radius: 2
+                radius: 3
                 color: controlPanel._accent
 
                 Behavior on width {
@@ -757,7 +783,8 @@ PanelWindow {
           text: "No media playing"
           color: controlPanel._fgDim
           font.family: controlPanel._uiFont
-          font.pixelSize: 11
+          font.pixelSize: 12
+          opacity: 0.7
           visible: mediaPlayer === null
         }
       }
@@ -771,40 +798,40 @@ PanelWindow {
 
       // ── Quick actions ──
       Text {
-        text: "Quick Actions"
-        color: controlPanel._fg
+        text: "QUICK ACTIONS"
+        color: controlPanel._fgMid
         font.family: controlPanel._uiFont
         font.pixelSize: 11
         font.bold: true
-        opacity: 0.7
-        bottomPadding: -4
+        font.letterSpacing: 1.2
+        opacity: 1
+        bottomPadding: -2
       }
 
       Row {
         width: parent.width
-        spacing: 6
+        spacing: 8
 
         Repeater {
           model: [
-            { icon: "\uF0BE", label: "Lock", proc: lockProc },
-            { icon: "\uF0C3", label: "Logout", proc: logoutProc },
-            { icon: "\uF0E4", label: "Sleep", proc: sleepProc },
-            { icon: "\uF0D9", label: "Reboot", proc: rebootProc },
-            { icon: "\uF0E5", label: "Power Off", proc: poweroffProc },
+            { icon: "\uDB80\uDD3E", label: "Lock", proc: lockProc },
+            { icon: "\uDB80\uDD43", label: "Logout", proc: logoutProc },
+            { icon: "\uDB81\uDD94", label: "Sleep", proc: sleepProc },
+            { icon: "\uDB81\uDF09", label: "Reboot", proc: rebootProc },
+            { icon: "\uDB81\uDC25", label: "Power Off", proc: poweroffProc },
           ]
 
           delegate: Rectangle {
             required property var modelData
 
             width: (parent.width - parent.spacing * 4) / 5
-            height: 46
-            radius: 8
-            color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
-            border.width: 1
-            border.color: controlPanel._border
+            height: 60
+            radius: 12
+            color: Qt.rgba(0.149, 0.149, 0.18, 0.5)
+            border.width: 0
 
             Behavior on color {
-              ColorAnimation { duration: 100 }
+              ColorAnimation { duration: 150 }
             }
 
             Behavior on scale {
@@ -813,14 +840,14 @@ PanelWindow {
 
             Column {
               anchors.centerIn: parent
-              spacing: 2
+              spacing: 4
 
               Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: modelData.icon
                 color: controlPanel._fg
                 font.family: controlPanel._uiFont
-                font.pixelSize: 16
+                font.pixelSize: 20
               }
 
               Text {
@@ -828,8 +855,8 @@ PanelWindow {
                 text: modelData.label
                 color: controlPanel._fgDim
                 font.family: controlPanel._uiFont
-                font.pixelSize: 9
-                visible: ma.containsMouse
+                font.pixelSize: 10
+                font.bold: true
               }
             }
 
@@ -840,14 +867,14 @@ PanelWindow {
               cursorShape: Qt.PointingHandCursor
 
               onEntered: {
-                parent.color = controlPanel._bgSubtle;
+                parent.color = Qt.rgba(0.251, 0.251, 0.314, 0.7);
                 parent.scale = 0.95;
               }
               onExited: {
-                parent.color = Qt.rgba(0.149, 0.149, 0.18, 0.6);
+                parent.color = Qt.rgba(0.149, 0.149, 0.18, 0.5);
                 parent.scale = 1;
               }
-              onPressed: parent.scale = 0.9
+              onPressed: parent.scale = 0.92
               onReleased: parent.scale = 0.95
               onClicked: { if (modelData.proc) modelData.proc.startDetached() }
             }
@@ -864,49 +891,50 @@ PanelWindow {
 
       // ── Notifications controls ──
       Text {
-        text: "Notifications"
-        color: controlPanel._fg
+        text: "NOTIFICATIONS"
+        color: controlPanel._fgMid
         font.family: controlPanel._uiFont
         font.pixelSize: 11
         font.bold: true
-        opacity: 0.7
-        bottomPadding: -4
+        font.letterSpacing: 1.2
+        opacity: 1
+        bottomPadding: -2
       }
 
       Row {
         width: parent.width
-        spacing: 8
+        spacing: 10
 
         // DND Toggle
         Item {
-          height: 32
+          height: 36
           width: (parent.width - parent.spacing) / 2
 
           Rectangle {
             id: dndTrack
             anchors.verticalCenter: parent.verticalCenter
-            width: 44
-            height: 24
-            radius: 12
-            color: (root && root.doNotDisturb) ? Qt.rgba(0.431, 0.580, 0.698, 0.25) : Qt.rgba(0.145, 0.145, 0.18, 0.7)
+            width: 52
+            height: 28
+            radius: 14
+            color: (root && root.doNotDisturb) ? Qt.rgba(0.431, 0.580, 0.698, 0.2) : Qt.rgba(0.145, 0.145, 0.18, 0.6)
             border.width: 1
             border.color: (root && root.doNotDisturb) ? controlPanel._accent : controlPanel._border
 
             Behavior on color {
-              ColorAnimation { duration: 150 }
+              ColorAnimation { duration: 200 }
             }
 
             Rectangle {
               id: dndThumb
-              x: (root && root.doNotDisturb) ? dndTrack.width - width - 3 : 3
-              y: 3
-              width: dndTrack.height - 6
-              height: dndTrack.height - 6
+              x: (root && root.doNotDisturb) ? dndTrack.width - width - 4 : 4
+              y: 4
+              width: dndTrack.height - 8
+              height: dndTrack.height - 8
               radius: width / 2
-              color: (root && root.doNotDisturb) ? controlPanel._accent : controlPanel._fgDim
+              color: (root && root.doNotDisturb) ? controlPanel._accent : controlPanel._fgMid
 
               Behavior on x {
-                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+                NumberAnimation { duration: 250; easing.type: Easing.OutBack }
               }
             }
 
@@ -921,17 +949,17 @@ PanelWindow {
           Text {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: dndTrack.right
-            anchors.leftMargin: 10
-            text: (root && root.doNotDisturb) ? "Do Not Disturb" : "Allow Notifications"
+            anchors.leftMargin: 12
+            text: (root && root.doNotDisturb) ? "Do Not Disturb" : "Allow All"
             color: (root && root.doNotDisturb) ? controlPanel._accent : controlPanel._fgMid
             font.family: controlPanel._uiFont
-            font.pixelSize: 11
+            font.pixelSize: 12
             font.bold: true
             elide: Text.ElideRight
             width: parent.width - dndTrack.width - anchors.leftMargin - 2
 
             Behavior on color {
-              ColorAnimation { duration: 150 }
+              ColorAnimation { duration: 200 }
             }
           }
         }
@@ -939,22 +967,22 @@ PanelWindow {
         // Clear All
         Rectangle {
           id: clearAll
-          height: 32
+          height: 36
           width: (parent.width - parent.spacing) / 2
-          radius: 8
-          color: "transparent"
-          border.width: 1
-          border.color: controlPanel._border
+          radius: 10
+          color: Qt.rgba(0.145, 0.145, 0.18, 0.5)
+          border.width: 0
 
           Text {
             anchors.centerIn: parent
             text: root
               ? "Clear All (" + root.notificationServer.trackedNotifications.values.length + ")"
-              : "Clear All (0)"
-            color: controlPanel._fgMid
+              : "Clear All"
+            color: controlPanel._fg
             font.family: controlPanel._uiFont
-            font.pixelSize: 11
+            font.pixelSize: 12
             font.bold: true
+            opacity: 0.85
           }
 
           MouseArea {
@@ -962,13 +990,13 @@ PanelWindow {
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             onEntered: {
-              clearAll.color = Qt.rgba(0.847, 0.392, 0.494, 0.15);
-              clearAll.border.color = controlPanel._red;
+              clearAll.color = Qt.rgba(0.847, 0.392, 0.494, 0.25);
             }
             onExited: {
-              clearAll.color = "transparent";
-              clearAll.border.color = controlPanel._border;
+              clearAll.color = Qt.rgba(0.145, 0.145, 0.18, 0.5);
             }
+            onPressed: clearAll.scale = 0.95
+            onReleased: clearAll.scale = 1
             onClicked: { if (root) root.clearNotifications(); }
           }
         }
@@ -977,13 +1005,13 @@ PanelWindow {
       Text {
         width: parent.width
         text: (root && root.doNotDisturb)
-          ? "Do Not Disturb is enabled. Critical alerts still appear."
-          : "Popup timeout adapts to notification urgency and app hints."
+          ? "Critical alerts will still appear"
+          : "Notifications adapt to urgency and app behavior"
         color: controlPanel._fgDim
         font.family: controlPanel._uiFont
-        font.pixelSize: 10
+        font.pixelSize: 11
         wrapMode: Text.Wrap
-        opacity: 0.7
+        opacity: 0.6
       }
 
       Rectangle {
@@ -1007,7 +1035,7 @@ PanelWindow {
         bottomMargin: controlPanel._cardPadding
         topMargin: 8
       }
-      spacing: 8
+      spacing: 10
       clip: true
       model: root ? root.notificationServer.trackedNotifications : null
 
@@ -1018,12 +1046,9 @@ PanelWindow {
         width: notificationList.width
         implicitHeight: panelCardContent.implicitHeight + controlPanel._cardPadding * 2
         height: implicitHeight
-        radius: controlPanel._cardRadius
-        color: Qt.rgba(0.145, 0.145, 0.18, 0.6)
-        border.width: 1
-        border.color: notification && notification.urgency === NotificationUrgency.Critical
-          ? controlPanel._red
-          : controlPanel._border
+        radius: 12
+        color: Qt.rgba(0.145, 0.145, 0.18, 0.5)
+        border.width: 0
 
         opacity: 0
         Behavior on opacity {
@@ -1034,7 +1059,7 @@ PanelWindow {
         // Urgency accent bar
         Rectangle {
           anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
-          width: 3
+          width: 4
           radius: 2
           color: notification && notification.urgency === NotificationUrgency.Critical
             ? controlPanel._red
@@ -1046,14 +1071,14 @@ PanelWindow {
 
         Column {
           id: panelCardContent
-          x: controlPanel._cardPadding + 6
+          x: controlPanel._cardPadding + 8
           y: controlPanel._cardPadding
           width: parent.width - x - controlPanel._cardPadding
-          spacing: root ? root.cardSpacing : 6
+          spacing: root ? root.cardSpacing : 8
 
           Row {
             width: parent.width
-            spacing: 8
+            spacing: 10
 
             AppIcon {
               notification: modelData
@@ -1066,7 +1091,7 @@ PanelWindow {
                 : "Notification"
               color: controlPanel._accent
               font.family: controlPanel._uiFont
-              font.pixelSize: 11
+              font.pixelSize: 12
               font.bold: true
               elide: Text.ElideRight
               verticalAlignment: Text.AlignVCenter
@@ -1076,16 +1101,16 @@ PanelWindow {
 
             Rectangle {
               id: dismissBtn
-              width: root ? root.closeBtnSize : 22
-              height: root ? root.closeBtnSize : 22
-              radius: 5
+              width: 26
+              height: 26
+              radius: 6
               color: "transparent"
               border.width: 1
               border.color: controlPanel._border
 
               Text {
                 anchors.centerIn: parent
-                text: "\u00d7"
+                text: "\uDB80\uDD56"
                 color: controlPanel._fgDim
                 font.family: controlPanel._uiFont
                 font.pixelSize: 13
@@ -1142,18 +1167,19 @@ PanelWindow {
         anchors.centerIn: parent
         visible: notificationList.count === 0
         width: parent.width
+        height: 120
 
         Column {
-          anchors.horizontalCenter: parent.horizontalCenter
-          spacing: 8
+          anchors.centerIn: parent
+          spacing: 10
 
           Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "\uF09A"
+            text: "\uDB80\uDC9C"
             color: controlPanel._fgDim
             font.family: controlPanel._uiFont
-            font.pixelSize: 24
-            opacity: 0.5
+            font.pixelSize: 32
+            opacity: 0.35
           }
 
           Text {
@@ -1161,8 +1187,18 @@ PanelWindow {
             text: "No notifications"
             color: controlPanel._fgDim
             font.family: controlPanel._uiFont
-            font.pixelSize: 12
-            opacity: 0.7
+            font.pixelSize: 13
+            font.bold: true
+            opacity: 0.6
+          }
+
+          Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "You're all caught up"
+            color: controlPanel._fgDim
+            font.family: controlPanel._uiFont
+            font.pixelSize: 11
+            opacity: 0.4
           }
         }
       }
