@@ -17,11 +17,12 @@ Item {
 
   property bool controlPanelVisible: false
   property bool doNotDisturb: false
+  property bool barVisible: true
   property int  popupTimeoutMs: 6000
   property int  maxPopups: 5
   property string uiFont: "JetBrains Mono"
 
-  readonly property int  topMargin: 54
+  readonly property int  topMargin: barVisible ? 54 : sideMargin
   readonly property int  sideMargin: 24
   readonly property int  panelWidth: 520
   readonly property int  cardRadius: 8
