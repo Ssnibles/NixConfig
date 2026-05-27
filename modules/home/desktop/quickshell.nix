@@ -34,6 +34,8 @@ in
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Colors.qml";
     "quickshell/Pill.qml".source =
       config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/Pill.qml";
+    "quickshell/CommandCenter.qml".source =
+      config.lib.file.mkOutOfStoreSymlink "${liveDir}/quickshell/CommandCenter.qml";
     "quickshell/shaders/waveform.frag.qsb".source =
       "${compiledShaders}/waveform.frag.qsb";
     "quickshell/shaders/waveform.frag".source =
