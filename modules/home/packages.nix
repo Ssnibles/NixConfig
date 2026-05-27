@@ -72,13 +72,8 @@
 
     # ── GUI applications ────────────────────────────────────────────────
     foot
-    kdePackages.dolphin
     onlyoffice-desktopeditors
-    prismlauncher
     vesktop
-    google-chrome
-    kando
-    calibre
 
     # ── Document viewers ────────────────────────────────────────────────
     sioyek
@@ -104,6 +99,10 @@
       pkgs.ddcutil
       blender
       via
+      prismlauncher
+      google-chrome
+      kando
+      calibre
     ]
   )
   # ── Laptop-only packages ──────────────────────────────────────────────
