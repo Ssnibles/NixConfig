@@ -36,33 +36,39 @@ PanelWindow {
 
   Process {
     id: niriMonitor
-    command: ["niri", "msg", "--monitor"]
+    command: ["niri", "msg", "--json", "event-stream"]
     running: true
 
     stdout: StdioCollector {
       property int lastPos: 0
+      waitForEnd: false
       onDataChanged: {
         var newText = this.text.substring(lastPos);
-        lastPos = this.text.length;
         var lines = newText.split("\n");
-        for (var i = 0; i < lines.length; i++) {
+        var isComplete = newText.endsWith("\n");
+        if (isComplete) {
+          lastPos = this.text.length;
+        } else {
+          var lastLineIdx = newText.lastIndexOf("\n");
+          if (lastLineIdx >= 0) {
+            lastPos = this.text.length - (newText.length - lastLineIdx) + 1;
+          }
+        }
+        for (var i = 0; i < lines.length - (isComplete ? 0 : 1); i++) {
           var line = lines[i].trim();
           if (line === "") continue;
           try {
             var event = JSON.parse(line);
 
-            // Workspace list changed (add/remove/focus shift)
             if (event.WorkspacesChanged !== undefined) {
-              var ws = event.WorkspacesChanged;
+              var ws = event.WorkspacesChanged.workspaces;
               if (Array.isArray(ws)) {
                 ws.sort(function(a, b) { return a.idx - b.idx; });
                 barPanel.workspaces = ws;
               }
             }
 
-            // Workspace focus changed — re-query full list
-            if (event.WorkspaceActivated !== undefined ||
-                event.WorkspaceActiveOk !== undefined) {
+            if (event.WorkspaceActivated !== undefined) {
               workspaceRefresh.running = false;
               workspaceRefresh.running = true;
             }
@@ -96,44 +102,45 @@ PanelWindow {
     }
   }
 
+  function loadWorkspaces(replyText) {
+    try {
+      var parsed = JSON.parse(replyText.trim());
+      var wsData = null;
+      if (Array.isArray(parsed)) {
+        wsData = parsed;
+      } else if (parsed.Ok) {
+        wsData = parsed.Ok.Workspaces || parsed.Ok;
+      } else if (parsed.Workspaces) {
+        wsData = parsed.Workspaces;
+      }
+      if (Array.isArray(wsData)) {
+        wsData.sort(function(a, b) { return a.idx - b.idx; });
+        barPanel.workspaces = wsData;
+      }
+    } catch(e) {}
+  }
+
   Process {
     id: wsInitQuery
     running: false
-    command: ["sh", "-c", "niri msg -j workspaces"]
+    command: ["niri", "msg", "--json", "workspaces"]
     stdout: StdioCollector {
-      onDataChanged: {
-        try {
-          var wsData = JSON.parse(this.text.trim());
-          if (Array.isArray(wsData)) {
-            wsData.sort(function(a, b) { return a.idx - b.idx; });
-            barPanel.workspaces = wsData;
-          }
-        } catch(e) {}
-      }
+      onDataChanged: { loadWorkspaces(this.text); }
     }
   }
 
   Process {
     id: workspaceRefresh
     running: false
-    command: ["sh", "-c", "niri msg -j workspaces"]
+    command: ["niri", "msg", "--json", "workspaces"]
     stdout: StdioCollector {
-      onDataChanged: {
-        try {
-          var wsData = JSON.parse(this.text.trim());
-          if (Array.isArray(wsData)) {
-            wsData.sort(function(a, b) { return a.idx - b.idx; });
-            barPanel.workspaces = wsData;
-          }
-        } catch(e) {}
-      }
+      onDataChanged: { loadWorkspaces(this.text); }
     }
   }
 
   Process {
     id: wsActionProc
     running: false
-    command: ["sh", "-c", "true"]
   }
 
   // ════════════════════════════════════════════════════════════════
@@ -266,7 +273,7 @@ PanelWindow {
           anchors.fill: parent
           cursorShape: Qt.PointingHandCursor
           onClicked: {
-            wsActionProc.command = ["sh", "-c", "niri msg action focus-workspace " + wsIdx];
+            wsActionProc.command = ["niri", "msg", "action", "focus-workspace", String(wsIdx)];
             wsActionProc.startDetached();
           }
         }
