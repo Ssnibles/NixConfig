@@ -233,16 +233,25 @@ function M.open()
 	vim.wo.statuscolumn = ""
 	vim.bo.filetype = "dashboard"
 
-	vim.api.nvim_create_autocmd("BufLeave", {
+	local win = vim.api.nvim_get_current_win()
+	local restore_group = vim.api.nvim_create_augroup("DashboardRestore", { clear = true })
+	vim.api.nvim_create_autocmd({ "BufLeave", "BufWipeout" }, {
 		buffer = buf,
-		once = true,
+		group = restore_group,
 		callback = function()
-			pcall(vim.api.nvim_win_call, 0, function()
-				vim.wo.number = saved.number
-				vim.wo.relativenumber = saved.relativenumber
-				vim.wo.cursorline = saved.cursorline
-				vim.wo.signcolumn = saved.signcolumn
-				vim.wo.statuscolumn = saved.statuscolumn
+			vim.schedule(function()
+				if not vim.api.nvim_win_is_valid(win) then
+					pcall(vim.api.nvim_del_augroup_by_id, restore_group)
+					return
+				end
+				vim.api.nvim_win_call(win, function()
+					vim.wo.number = saved.number
+					vim.wo.relativenumber = saved.relativenumber
+					vim.wo.cursorline = saved.cursorline
+					vim.wo.signcolumn = saved.signcolumn
+					vim.wo.statuscolumn = saved.statuscolumn
+				end)
+				pcall(vim.api.nvim_del_augroup_by_id, restore_group)
 			end)
 		end,
 	})
