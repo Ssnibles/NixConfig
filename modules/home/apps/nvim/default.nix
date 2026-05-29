@@ -123,7 +123,9 @@ in
 
         rust-analyzer
         tinymist
+        typst
         typstyle
+        neovim-remote
 
         tree-sitter
         ripgrep

@@ -112,31 +112,31 @@ require("blink.cmp").setup({
 	appearance = {
 		nerd_font_variant = "mono",
 		kind_icons = {
-			Text = " ",
-			Method = " ",
-			Function = " ",
-			Constructor = " ",
-			Field = " ",
-			Variable = " ",
-			Class = " ",
-			Interface = " ",
-			Module = " ",
-			Property = " ",
-			Unit = " ",
-			Value = " ",
-			Enum = " ",
-			Keyword = " ",
-			Snippet = " ",
-			Color = " ",
-			File = " ",
-			Folder = " ",
-			Reference = " ",
-			EnumMember = " ",
-			Constant = " ",
-			Struct = " ",
-			Event = " ",
-			Operator = " ",
-			TypeParameter = " ",
+			Text = "󰉿",
+			Method = "󰆧",
+			Function = "󰊕",
+			Constructor = "",
+			Field = "󰜢",
+			Variable = "󰀫",
+			Class = "󰠱",
+			Interface = "",
+			Module = "",
+			Property = "󰜢",
+			Unit = "󰑭",
+			Value = "󰎠",
+			Enum = "",
+			Keyword = "󰌋",
+			Snippet = "",
+			Color = "󰏘",
+			File = "󰈙",
+			Folder = "󰉋",
+			Reference = "󰈇",
+			EnumMember = "",
+			Constant = "󰏿",
+			Struct = "󰙅",
+			Event = "",
+			Operator = "󰆕",
+			TypeParameter = "󰊄",
 		},
 	},
 
@@ -162,7 +162,6 @@ require("blink.cmp").setup({
 
 	-- ── Completion behaviour ────────────────────────────────────
 	completion = {
-		-- Preselect first item but never auto-insert (prevents accidental text injection)
 		list = {
 			selection = {
 				preselect = true,
@@ -176,7 +175,7 @@ require("blink.cmp").setup({
 			draw = {
 				padding = { 1, 1 },
 				columns = {
-					{ "kind_icon" },
+					{ "kind_icon", gap = 1 },
 					{ "label", "label_description", gap = 1 },
 					{ "kind" },
 				},
@@ -184,7 +183,7 @@ require("blink.cmp").setup({
 		},
 		documentation = {
 			auto_show = true,
-			auto_show_delay_ms = 500,
+			auto_show_delay_ms = 300,
 			window = {
 				border = "rounded",
 				max_width = 80,

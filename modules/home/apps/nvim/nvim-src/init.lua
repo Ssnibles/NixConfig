@@ -3,6 +3,10 @@
 -- Enable bytecode caching for faster startup (Neovim 0.9+).
 pcall(vim.loader.enable)
 
+if not vim.env.NVIM_LISTEN_ADDRESS then
+	vim.env.NVIM_LISTEN_ADDRESS = "/tmp/nvim.socket"
+end
+
 -- Modern defaults ----------------------------------------------------
 vim.opt.smoothscroll = true     -- Partial-line scrolling at viewport edges
 vim.opt.jumpoptions = "view"    -- Smarter jump list

@@ -82,8 +82,7 @@ require("lualine").setup({
 				icon = { "  ", align = "left" },
 				color = { fg = c.comment },
 				cond = function()
-					return #vim.lsp.get_clients({ bufnr = 0 }) > 0
-						and vim.bo.filetype ~= ""
+					return #vim.lsp.get_clients({ bufnr = 0 }) > 0 and vim.bo.filetype ~= ""
 				end,
 			},
 		},
@@ -189,7 +188,7 @@ require("noice").setup({
 --  M A R K V I E W
 -- ═══════════════════════════════════════════════════════════════════
 
-local markview_filetypes = { "markdown", "quarto", "rmd", "typst" }
+local markview_filetypes = { "markdown", "quarto", "rmd" }
 local markview_filetype_set = {}
 for _, ft in ipairs(markview_filetypes) do
 	markview_filetype_set[ft] = true

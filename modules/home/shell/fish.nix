@@ -246,6 +246,7 @@ in
   # ── Set fish as the default shell ───────────────────────────────────────────
   home.sessionVariables = {
     SHELL = "${pkgs.fish}/bin/fish";
+    NVIM_LISTEN_ADDRESS = "/tmp/nvim.socket";
   };
 
   # ── Foot terminal ─────────────────────────────────────────────────────────

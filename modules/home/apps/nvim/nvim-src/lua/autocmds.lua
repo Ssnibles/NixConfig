@@ -189,6 +189,50 @@ autocmd("FileType", {
 	end,
 })
 
+-- Typst preview and forward-search sync with Zathura
+local function typst_launch(file, pdf, cmd)
+	if vim.fn.has("gui_running") == 0 then
+		cmd = { "setsid", "-f", unpack(cmd) }
+	end
+	vim.fn.jobstart(cmd, { detach = true, cwd = vim.fn.fnamemodify(file, ":h") })
+end
+
+autocmd("FileType", {
+	group = augroup,
+	pattern = "typst",
+	callback = function()
+		vim.keymap.set("n", "<leader>tp", function()
+			local file = vim.fn.expand("%:p")
+			local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+			local dir = vim.fn.fnamemodify(file, ":h")
+
+			vim.fn.jobstart({ "typst", "compile", file }, {
+				cwd = dir,
+				on_exit = function(_, code)
+					if code ~= 0 then
+						vim.schedule(function()
+							vim.notify("typst compile failed", vim.log.levels.ERROR)
+						end)
+						return
+					end
+					vim.schedule(function()
+						typst_launch(file, pdf, { "typst", "watch", file })
+						typst_launch(file, pdf, { "zathura", pdf })
+					end)
+				end,
+			})
+		end, { buffer = true, desc = "Start Typst live preview" })
+
+		vim.keymap.set("n", "<leader>ts", function()
+			local file = vim.fn.expand("%:p")
+			local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+			local line = vim.fn.line(".")
+			local col = vim.fn.col(".")
+			typst_launch(file, pdf, { "zathura", "--synctex-forward", line .. ":" .. col .. ":" .. file, pdf })
+		end, { buffer = true, desc = "Sync Typst cursor to Zathura" })
+	end,
+})
+
 -- Large files: disable certain features to keep things fast
 autocmd({ "BufReadPre", "BufNewFile" }, {
 	group = augroup,
