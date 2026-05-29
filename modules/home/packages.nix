@@ -63,6 +63,7 @@
     zip
     btop
     microfetch
+    gh-dash
 
     # ── Fonts ───────────────────────────────────────────────────────────
     nerd-fonts.fira-code

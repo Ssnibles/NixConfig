@@ -77,6 +77,7 @@ autocmd("FileType", {
 	callback = function(ev)
 		vim.opt_local.spell = true
 		vim.opt_local.wrap = true
+		vim.wo.colorcolumn = "80"
 		if (vim.version().major == 0 and vim.version().minor >= 12) then
 			if vim.bo[ev.buf].filetype == "markdown" or vim.bo[ev.buf].filetype == "markdown.mdx" then
 				-- Avoid intermittent Neovim 0.12 treesitter node-range crashes in markdown buffers.
@@ -158,5 +159,54 @@ autocmd("WinLeave", {
 	group = augroup,
 	callback = function()
 		vim.wo.cursorline = false
+	end,
+})
+
+-- Per-filetype fold overrides: disable treesitter-folds for prose, use indent for configs
+autocmd("FileType", {
+	group = augroup,
+	pattern = { "markdown", "markdown.mdx", "text", "gitcommit", "typst", "txt" },
+	callback = function()
+		vim.wo.foldmethod = "indent"
+		vim.wo.foldenable = false
+	end,
+})
+
+autocmd("FileType", {
+	group = augroup,
+	pattern = { "yaml", "json", "toml" },
+	callback = function()
+		vim.wo.foldmethod = "indent"
+	end,
+})
+
+-- Keywordprg: use `:help` for lua/vim, `:Man` fallback everywhere else
+autocmd("FileType", {
+	group = augroup,
+	pattern = { "lua", "vim" },
+	callback = function()
+		vim.bo.keywordprg = ":help"
+	end,
+})
+
+-- Large files: disable certain features to keep things fast
+autocmd({ "BufReadPre", "BufNewFile" }, {
+	group = augroup,
+	callback = function()
+		local path = vim.fn.expand("<afile>:p")
+		if vim.bo.buftype ~= "" or not vim.bo.modifiable then
+			return
+		end
+		local ok, stat = pcall(vim.uv.fs_stat, path)
+		if not ok or not stat then
+			return
+		end
+		local size_mb = stat.size / (1024 * 1024)
+		if size_mb > 5 then
+			vim.b.large_file = true
+			vim.wo.foldmethod = "manual"
+			vim.wo.foldenable = false
+			vim.bo.syntax = ""
+		end
 	end,
 })

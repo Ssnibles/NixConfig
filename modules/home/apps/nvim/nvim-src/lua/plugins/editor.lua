@@ -182,5 +182,15 @@ mc.addKeymapLayer(function(layerSet)
 	end)
 end)
 
+-- Neoscroll: smooth scrolling
+require("neoscroll").setup({
+	hf = { "zz", "zt", "zb" },
+	mappings = { "<C-u>", "<C-d>", "<C-b>", "<C-f>", "<C-y>", "<C-e>", "zt", "zz", "zb" },
+	respect_scrolloff = true,
+	cursor_scrolls_alone = false,
+	easing = "sine",
+	performance_mode = false,
+})
+
 -- Autopairs
 require("nvim-autopairs").setup({ check_ts = true, fast_wrap = { map = "<M-e>" } })

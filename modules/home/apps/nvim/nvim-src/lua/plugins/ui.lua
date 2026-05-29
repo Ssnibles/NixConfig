@@ -25,7 +25,7 @@ require("lualine").setup({
 		component_separators = "",
 		section_separators = { left = "", right = "" },
 		globalstatus = true,
-		disabled_filetypes = { statusline = { "alpha", "snacks_terminal" } },
+		disabled_filetypes = { statusline = { "alpha", "dashboard", "snacks_terminal" } },
 	},
 	sections = {
 		lualine_a = {
@@ -66,7 +66,27 @@ require("lualine").setup({
 				symbols = { modified = " ", readonly = " ", new = " ", unnamed = "[No Name]" },
 			},
 		},
-		lualine_x = {},
+		lualine_x = {
+			{
+				function()
+					local clients = vim.lsp.get_clients({ bufnr = 0 })
+					if #clients == 0 then
+						return ""
+					end
+					local names = {}
+					for _, client in ipairs(clients) do
+						names[#names + 1] = client.name
+					end
+					return table.concat(names, ", ")
+				end,
+				icon = { "  ", align = "left" },
+				color = { fg = c.comment },
+				cond = function()
+					return #vim.lsp.get_clients({ bufnr = 0 }) > 0
+						and vim.bo.filetype ~= ""
+				end,
+			},
+		},
 		lualine_y = {
 			{
 				"filetype",
@@ -144,6 +164,10 @@ require("noice").setup({
 		},
 		{
 			filter = { event = "msg_show", kind = "search_count" },
+			opts = { skip = true },
+		},
+		{
+			filter = { event = "msg_show", find = "%%%-%-$" },
 			opts = { skip = true },
 		},
 	},

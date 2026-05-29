@@ -15,6 +15,7 @@ M.core = {
 	"plugins.focus",
 	"plugins.neogit",
 	"plugins.dap",
+	"plugins.dashboard",
 }
 
 M.deferred = {}
