@@ -25,11 +25,7 @@ let
   wallpaperPath = toString stylixThemes.wallpaper;
   awwwBin = "${pkgs.unstable.awww}/bin/awww";
   qsBin = "${pkgs.unstable.quickshell}/bin/qs";
-  flakeTarget =
-    if hostProfile.useDisko then
-      hostProfile.hostName
-    else
-      "${hostProfile.hostName}-test";
+  flakeTarget = if hostProfile.useDisko then hostProfile.hostName else "${hostProfile.hostName}-test";
 
   # ── Toggle floating window (Niri) ──────────────────────────────────────
   toggle-float-niri = pkgs.writeShellScriptBin "toggle-float-niri" ''
@@ -38,7 +34,15 @@ let
 
   # ── Toggle floating window (Hyprland) ──────────────────────────────────
   toggle-float-hyprland = pkgs.writeShellScriptBin "toggle-float-hyprland" ''
+    IS_FLOATING=$(${pkgs.hyprland}/bin/hyprctl activewindow -j \
+      | ${pkgs.jq}/bin/jq -r '.floating')
+
     ${pkgs.hyprland}/bin/hyprctl dispatch togglefloating
+
+    if [ "$IS_FLOATING" != "true" ]; then
+      ${pkgs.hyprland}/bin/hyprctl dispatch resizeactive exact 60% 60%
+      ${pkgs.hyprland}/bin/hyprctl dispatch centerwindow
+    fi
   '';
 
   # ── Toggle floating window (auto-detect compositor) ────────────────────
