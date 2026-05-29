@@ -1,6 +1,6 @@
 local M = {}
 
-function M.safe_require(module)
+local function load_one(module)
 	local ok, err = pcall(require, module)
 	if not ok then
 		vim.schedule(function()
@@ -10,28 +10,26 @@ function M.safe_require(module)
 	return ok
 end
 
-function M.load_modules(modules)
+local function load_all(modules)
 	for _, module in ipairs(modules) do
-		M.safe_require(module)
+		load_one(module)
 	end
 end
 
-function M.defer_modules(modules, event)
-	if not modules or #modules == 0 then
-		return
-	end
+function M.load_modules(core, deferred)
+	load_all(core)
 
-	vim.api.nvim_create_autocmd(event, {
-		once = true,
-		callback = function()
-			if vim.v.exiting ~= 0 then
-				return
-			end
-			vim.schedule(function()
-				M.load_modules(modules)
-			end)
-		end,
-	})
+	if deferred and #deferred > 0 then
+		vim.api.nvim_create_autocmd("VimEnter", {
+			once = true,
+			callback = function()
+				if vim.v.exiting ~= 0 then
+					return
+				end
+				load_all(deferred)
+			end,
+		})
+	end
 end
 
 return M

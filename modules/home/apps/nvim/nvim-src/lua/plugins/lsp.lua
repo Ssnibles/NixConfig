@@ -1,32 +1,27 @@
 -- LSP configuration
 local lsp = vim.lsp
 
--- Neovim version helpers for gating version-specific workarounds.
-local v0_12 = vim.version().major == 0 and vim.version().minor >= 12
-
--- Work around Neovim 0.12 inlay-hint extmarks occasionally landing past EOL.
-if v0_12 then
-	do
-		if not vim.g.__inlay_hint_col_clamp then
-			vim.g.__inlay_hint_col_clamp = true
-			pcall(require, "vim.lsp.inlay_hint")
-			local ns = vim.api.nvim_get_namespaces()["nvim.lsp.inlayhint"]
-			if ns then
-				local original_set_extmark = vim.api.nvim_buf_set_extmark
-				vim.api.nvim_buf_set_extmark = function(bufnr, ns_id, line, col, opts)
-					if ns_id == ns then
-						local line_text = vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1]
-						if line_text then
-							local max_col = #line_text
-							if col > max_col then
-								col = max_col
-							elseif col < 0 then
-								col = 0
-							end
+-- Neovim 0.12 inlay-hint extmark workaround: clamp column to end of line.
+if require("version") then
+	if not vim.g.__inlay_hint_col_clamp then
+		vim.g.__inlay_hint_col_clamp = true
+		pcall(require, "vim.lsp.inlay_hint")
+		local ns = vim.api.nvim_get_namespaces()["nvim.lsp.inlayhint"]
+		if ns then
+			local original_set_extmark = vim.api.nvim_buf_set_extmark
+			vim.api.nvim_buf_set_extmark = function(bufnr, ns_id, line, col, opts)
+				if ns_id == ns then
+					local line_text = vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1]
+					if line_text then
+						local max_col = #line_text
+						if col > max_col then
+							col = max_col
+						elseif col < 0 then
+							col = 0
 						end
 					end
-					return original_set_extmark(bufnr, ns_id, line, col, opts)
 				end
+				return original_set_extmark(bufnr, ns_id, line, col, opts)
 			end
 		end
 	end

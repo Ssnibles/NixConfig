@@ -82,7 +82,6 @@ hip.setup({
 require("mini.cursorword").setup({ delay = 200 })
 
 -- Indent scope: shows the current block's scope line
-local c = require("theme").colors
 require("mini.indentscope").setup({
 	symbol = "│",
 	options = { try_as_border = true },
@@ -91,7 +90,6 @@ require("mini.indentscope").setup({
 		animation = require("mini.indentscope").gen_animation.none(),
 	},
 })
-vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { fg = c.comment, nocombine = true })
 
 -- Additional mini modules
 require("mini.align").setup()

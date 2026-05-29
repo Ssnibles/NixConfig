@@ -54,10 +54,8 @@ function M.setup()
 	end
 
 	-- Mini.base16 drives the core syntax palette.
-	local ok_base16, mini_base16 = pcall(require, "mini.base16")
-	if ok_base16 then
-		mini_base16.setup({
-			palette = {
+	require("mini.base16").setup({
+		palette = {
 				base00 = generated.base00 or c.bg,
 				base01 = generated.base00 or c.bg,
 				base02 = generated.base00 or c.bg,
@@ -76,7 +74,6 @@ function M.setup()
 				base0F = generated.base0F or c.magenta,
 			},
 		})
-	end
 
 	-- Derived colours
 	local separator = blend(c.fg, c.bg, 0.06)
@@ -89,74 +86,28 @@ function M.setup()
 
 	-- ═══════════════════════════════════════════════════════════════
 	-- FLAT UI BACKDROPS
-	-- Every panel, float, popup, and menu shares the editor background
-	-- for a seamless, unified look.
 	-- ═══════════════════════════════════════════════════════════════
 	hl("Normal", { fg = c.fg, bg = c.bg })
 
-	for _, group in ipairs({
-		-- Editor chrome
-		"NormalNC",
-		"NormalFloat",
-		"SignColumn",
-		"FoldColumn",
-		"StatusLine",
-		"StatusLineNC",
-		"WinBar",
-		"WinBarNC",
-		"MsgArea",
-		"MsgSeparator",
-		-- Completion / menu surfaces
-		"Pmenu",
-		"PmenuSbar",
-		"PmenuThumb",
-		"BlinkCmpMenu",
-		"BlinkCmpDoc",
-		"BlinkCmpSignatureHelp",
-		"BlinkCmpGhostText",
-		-- Noice
-		"NoiceCmdlinePopup",
-		"NoiceConfirm",
-		"NoicePopup",
-		"NoicePopupmenu",
-		"NoiceFormatConfirm",
-		"NoiceFormatProgress",
-		"NoiceFormatTitle",
-		-- FzfLua
-		"FzfLuaNormal",
-		"FzfLuaPreviewNormal",
-		"FzfLuaPromptNormal",
-		"FzfLuaCursor",
-		"FzfLuaHelpNormal",
-		"FzfLuaHelpBorder",
-		-- Mini
-		"MiniClueNormal",
-		"MiniAnimateNormalFloat",
-		"MiniDepsChangeAdded",
-		"MiniDepsChangeRemoved",
-		-- Treesitter context
-		"TreesitterContext",
-		"TreesitterContextLineNumber",
-		-- Dashboard (alpha)
-		"AlphaNormal",
-		"AlphaHeader",
-		"AlphaButtons",
-		"AlphaShortcut",
-		"AlphaFooter",
-		-- DAP UI
-		"DAPUINormal",
-		"DAPUIFloatNormal",
-		-- TabLine
-		"TabLine",
-		"TabLineFill",
-		-- Oil
+	local flat_groups = {
+		"NormalNC", "NormalFloat", "SignColumn", "FoldColumn",
+		"StatusLine", "StatusLineNC", "WinBar", "WinBarNC",
+		"MsgArea", "MsgSeparator",
+		"Pmenu", "PmenuSbar", "PmenuThumb",
+		"BlinkCmpMenu", "BlinkCmpDoc", "BlinkCmpSignatureHelp", "BlinkCmpGhostText",
+		"NoiceCmdlinePopup", "NoiceConfirm", "NoicePopup", "NoicePopupmenu",
+		"NoiceFormatConfirm", "NoiceFormatProgress", "NoiceFormatTitle",
+		"FzfLuaNormal", "FzfLuaPreviewNormal", "FzfLuaPromptNormal",
+		"FzfLuaCursor", "FzfLuaHelpNormal", "FzfLuaHelpBorder",
+		"MiniClueNormal", "MiniAnimateNormalFloat",
+		"TreesitterContext", "TreesitterContextLineNumber",
+		"AlphaNormal", "AlphaHeader", "AlphaButtons", "AlphaShortcut", "AlphaFooter",
+		"DAPUINormal", "DAPUIFloatNormal",
+		"TabLine", "TabLineFill",
 		"OilNormal",
-		-- Snacks
-		"SnacksIndent",
-		"SnacksIndentScope",
-		"SnacksIndentChunk",
-	}) do
-		hl(group, { link = "Normal" })
+	}
+	for _, g in ipairs(flat_groups) do
+		hl(g, { link = "Normal" })
 	end
 
 	-- ═══════════════════════════════════════════════════════════════
