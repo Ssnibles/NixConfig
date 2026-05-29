@@ -25,12 +25,20 @@ vim.keymap.set("n", "<leader>fe", function()
 	require("oil").open_float()
 end, { desc = "Explorer (Oil)" })
 
--- Gitsigns: git integration with line highlights instead of gutter signs
+-- Gitsigns: gutter signs + inline blame at end of line
 require("gitsigns").setup({
-	signcolumn = false,
-	linehl = true,
-	numhl = false,
+	signcolumn = true,
+	numhl = true,
+	linehl = false,
 	word_diff = false,
+	current_line_blame = true,
+	current_line_blame_opts = {
+		virt_text = true,
+		virt_text_pos = "eol",
+		delay = 800,
+		ignore_whitespace = false,
+	},
+	current_line_blame_formatter = "  <author>, <author_time:%Y-%m-%d> — <summary>",
 	preview_config = { border = "rounded" },
 	on_attach = function(bufnr)
 		local gs = require("gitsigns")
@@ -46,35 +54,6 @@ require("gitsigns").setup({
 		map("n", "<leader>gd", gs.diffthis, "Diff this")
 	end,
 })
-
--- Derive git sign line backgrounds from theme (works with light & dark).
-local c = require("theme").colors
-local function blend_hex(fg, bg, alpha)
-	local function parse(hex)
-		hex = hex:gsub("#", "")
-		return tonumber(hex:sub(1, 2), 16), tonumber(hex:sub(3, 4), 16), tonumber(hex:sub(5, 6), 16)
-	end
-	local r1, g1, b1 = parse(fg)
-	local r2, g2, b2 = parse(bg)
-	local r = math.floor(r1 * alpha + r2 * (1 - alpha) + 0.5)
-	local g = math.floor(g1 * alpha + g2 * (1 - alpha) + 0.5)
-	local b = math.floor(b1 * alpha + b2 * (1 - alpha) + 0.5)
-	return string.format("#%02x%02x%02x", r, g, b)
-end
-local git_bg = {
-	add = blend_hex(c.green, c.bg, 0.12),
-	delete = blend_hex(c.red, c.bg, 0.12),
-	change = blend_hex(c.yellow, c.bg, 0.12),
-}
-
-for _, staged in ipairs({ "", "Staged" }) do
-	for _, kind in ipairs({ "Ln", "Cul" }) do
-		for ty, bg in pairs(git_bg) do
-			local hl = ("GitSigns%s%s%s"):format(staged, ty:gsub("^%l", string.upper), kind)
-			vim.api.nvim_set_hl(0, hl, { bg = bg })
-		end
-	end
-end
 
 -- Conform: formatting
 vim.g.disable_autoformat = vim.g.disable_autoformat or false

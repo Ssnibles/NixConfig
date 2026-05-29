@@ -1,12 +1,21 @@
--- Completion: blink.cmp, copilot, snippets
+-- Completion: blink.cmp, luasnip snippets, copilot.
+-- Fast, modern, with a sleek Zed-inspired menu design.
 
--- Snippets
+-- ═══════════════════════════════════════════════════════════════════
+--  L U A S N I P   (snippet engine)
+-- ═══════════════════════════════════════════════════════════════════
+
 require("luasnip").setup({
 	history = true,
 	region_check_events = "CursorMoved,CursorHold,InsertEnter,TextChanged,TextChangedI",
 	delete_check_events = "TextChanged,TextChangedI,InsertLeave",
 })
+
 require("luasnip.loaders.from_vscode").lazy_load()
+
+-- ═══════════════════════════════════════════════════════════════════
+--  C O P I L O T   H E L P E R S
+-- ═══════════════════════════════════════════════════════════════════
 
 local function accept_copilot_if_visible()
 	local ok, suggestion = pcall(require, "copilot.suggestion")
@@ -33,10 +42,24 @@ local function copilot_suggestion_action(action)
 	end
 end
 
--- Blink.cmp: fast completion
+-- ═══════════════════════════════════════════════════════════════════
+--  B L I N K . C M P
+-- ═══════════════════════════════════════════════════════════════════
+
 require("blink.cmp").setup({
-	signature = { enabled = true, window = { border = "rounded", show_documentation = true } },
+	-- ── Signature help ──────────────────────────────────────────
+	signature = {
+		enabled = true,
+		window = {
+			border = "rounded",
+			show_documentation = true,
+		},
+	},
+
+	-- ── Snippets ────────────────────────────────────────────────
 	snippets = { preset = "luasnip" },
+
+	-- ── Keymap (Tab-completion, Copilot-aware) ──────────────────
 	keymap = {
 		preset = "none",
 		["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
@@ -56,19 +79,60 @@ require("blink.cmp").setup({
 		["<M-]>"] = { copilot_suggestion_action("next") },
 		["<M-[>"] = { copilot_suggestion_action("prev") },
 	},
+
+	-- ── Appearance ──────────────────────────────────────────────
+	appearance = {
+		nerd_font_variant = "mono",
+		kind_icons = {
+			Text = " ",
+			Method = " ",
+			Function = " ",
+			Constructor = " ",
+			Field = " ",
+			Variable = " ",
+			Class = " ",
+			Interface = " ",
+			Module = " ",
+			Property = " ",
+			Unit = " ",
+			Value = " ",
+			Enum = " ",
+			Keyword = " ",
+			Snippet = " ",
+			Color = " ",
+			File = " ",
+			Folder = " ",
+			Reference = " ",
+			EnumMember = " ",
+			Constant = " ",
+			Struct = " ",
+			Event = " ",
+			Operator = " ",
+			TypeParameter = " ",
+		},
+	},
+
+	-- ── Sources ─────────────────────────────────────────────────
 	sources = {
 		default = { "lsp", "snippets", "buffer", "path", "spell" },
+		per_filetype = {
+			lua = { "lsp", "snippets", "buffer", "path" },
+			nix = { "lsp", "snippets", "buffer", "path" },
+		},
 		providers = {
 			spell = {
 				name = "Spell",
 				module = "blink-cmp-spell",
 				enabled = function()
-					return vim.api.nvim_get_option_value("spell", { scope = "local" })
+					return vim.wo.spell
 				end,
 				opts = { max_entries = 8 },
 			},
+			buffer = {},
 		},
 	},
+
+	-- ── Completion behaviour ────────────────────────────────────
 	completion = {
 		list = {
 			selection = {
@@ -78,19 +142,34 @@ require("blink.cmp").setup({
 		},
 		menu = {
 			auto_show = true,
-			border = "rounded",
+			-- Rounded corners via an 8-char tuple of border glyphs.
+			border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
 			scrollbar = true,
+			-- draw layout: icon | label+description | kind-name
 			draw = {
-				columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "kind" } },
+				padding = { 1, 1 },
+				columns = {
+					{ "kind_icon" },
+					{ "label", "label_description", gap = 1 },
+					{ "kind" },
+				},
 			},
 		},
 		documentation = {
 			auto_show = true,
-			auto_show_delay_ms = 200,
-			window = { border = "rounded" },
+			auto_show_delay_ms = 300,
+			window = {
+				border = "rounded",
+				max_width = 80,
+				max_height = 30,
+			},
 		},
-		ghost_text = { enabled = true },
+		ghost_text = {
+			enabled = true,
+		},
 	},
+
+	-- ── Cmdline completion ──────────────────────────────────────
 	cmdline = {
 		keymap = {
 			["<Tab>"] = { "accept", "fallback" },
@@ -102,11 +181,17 @@ require("blink.cmp").setup({
 			["<C-p>"] = { "select_prev", "fallback" },
 			["<C-n>"] = { "select_next", "fallback" },
 		},
-		completion = { menu = { auto_show = true }, ghost_text = { enabled = true } },
+		completion = {
+			menu = { auto_show = true },
+			ghost_text = { enabled = true },
+		},
 	},
 })
 
--- Copilot
+-- ═══════════════════════════════════════════════════════════════════
+--  C O P I L O T
+-- ═══════════════════════════════════════════════════════════════════
+
 require("copilot").setup({
 	suggestion = {
 		enabled = true,
@@ -123,7 +208,8 @@ require("copilot").setup({
 	panel = { enabled = true },
 })
 
--- Hide Copilot inline suggestions while blink.cmp menu is visible
+-- ── Hide copilot ghost-text while the blink menu is visible ──
+
 vim.api.nvim_create_autocmd("User", {
 	pattern = "BlinkCmpMenuOpen",
 	callback = function()
@@ -138,7 +224,8 @@ vim.api.nvim_create_autocmd("User", {
 	end,
 })
 
--- Toggle copilot on/off
+-- ── Copilot toggles ────────────────────────────────────────────
+
 vim.keymap.set("n", "<leader>ac", function()
 	local copilot = require("copilot")
 	copilot.suggestion.enabled = not copilot.suggestion.enabled
@@ -146,13 +233,11 @@ vim.keymap.set("n", "<leader>ac", function()
 	vim.notify(("Copilot %s"):format(status), vim.log.levels.INFO)
 end, { desc = "Toggle copilot" })
 
--- Open copilot panel
 vim.keymap.set("n", "<leader>ap", function()
 	local copilot = require("copilot")
 	copilot.panel.toggle()
 end, { desc = "Toggle copilot panel" })
 
--- Explicitly trigger copilot suggestion
 vim.keymap.set("i", "<M-\\>", function()
 	local ok, suggestion = pcall(require, "copilot.suggestion")
 	if ok then

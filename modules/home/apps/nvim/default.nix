@@ -60,7 +60,7 @@ in
         linebreak = true;
         breakindent = true;
         conceallevel = 2;
-        fillchars = "fold: ,foldopen:▾,foldclose:▸,diff:╱,eob: ";
+        fillchars = "fold: ,foldopen:▾,foldclose:▸,diff:╱,eob: ,vert:│,horiz:─";
         incsearch = true;
         inccommand = "split";
         splitright = true;

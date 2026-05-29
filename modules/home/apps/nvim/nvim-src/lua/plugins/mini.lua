@@ -1,7 +1,5 @@
 -- mini.nvim suite
 
-local c = require("theme").colors
-
 -- Icons (with nvim-web-devicons compatibility)
 local icons = require("mini.icons")
 icons.setup()
@@ -83,7 +81,8 @@ hip.setup({
 -- Cursor word highlight
 require("mini.cursorword").setup({ delay = 200 })
 
--- Indent scope
+-- Indent scope: shows the current block's scope line
+local c = require("theme").colors
 require("mini.indentscope").setup({
 	symbol = "│",
 	options = { try_as_border = true },
