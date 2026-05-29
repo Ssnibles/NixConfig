@@ -47,7 +47,6 @@ end
 -- ═══════════════════════════════════════════════════════════════════
 
 require("blink.cmp").setup({
-	-- ── Signature help ──────────────────────────────────────────
 	signature = {
 		enabled = true,
 		window = {
@@ -56,26 +55,55 @@ require("blink.cmp").setup({
 		},
 	},
 
-	-- ── Snippets ────────────────────────────────────────────────
 	snippets = { preset = "luasnip" },
 
-	-- ── Keymap (Tab-completion, Copilot-aware) ──────────────────
+	-- ── Keymap: Esc kills everything and exits insert mode in one press ──
 	keymap = {
 		preset = "none",
-		["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
+
+		-- Show / hide help manually
+		["<C-space>"] = { "show_documentation", "hide_documentation" },
+
+		-- One Esc to rule them all: cancel blink → cancel snippet → normal mode
+		["<Esc>"] = {
+			function(cmp)
+				if cmp.is_visible() then
+					cmp.cancel()
+				end
+				return vim.api.nvim_feedkeys(
+					vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+					"n",
+					false
+				)
+			end,
+		},
+
+		-- Alternative: <C-c> forces hard exit
+		["<C-c>"] = { "cancel", "fallback" },
+
+		-- Abort completion without exiting insert mode
 		["<C-e>"] = { "cancel", "fallback" },
-		["<Esc>"] = { "cancel", "fallback" },
+
+		-- Accept current selection
 		["<CR>"] = { "accept", "fallback" },
+
+		-- Tab: copilot ghost → accept completion → snippet forward
 		["<Tab>"] = { accept_copilot_if_visible, "select_and_accept", "snippet_forward", "fallback" },
 		["<S-Tab>"] = { "snippet_backward", "fallback" },
+
+		-- Navigation
 		["<Up>"] = { "select_prev", "fallback" },
 		["<Down>"] = { "select_next", "fallback" },
 		["<C-k>"] = { "select_prev", "fallback" },
 		["<C-j>"] = { "select_next", "fallback" },
 		["<C-p>"] = { "select_prev", "fallback" },
 		["<C-n>"] = { "select_next", "fallback" },
+
+		-- Scroll doc
 		["<C-b>"] = { "scroll_documentation_up", "fallback" },
 		["<C-f>"] = { "scroll_documentation_down", "fallback" },
+
+		-- Copilot suggestion navigation
 		["<M-]>"] = { copilot_suggestion_action("next") },
 		["<M-[>"] = { copilot_suggestion_action("prev") },
 	},
@@ -134,18 +162,17 @@ require("blink.cmp").setup({
 
 	-- ── Completion behaviour ────────────────────────────────────
 	completion = {
+		-- Preselect first item but never auto-insert (prevents accidental text injection)
 		list = {
 			selection = {
 				preselect = true,
-				auto_insert = true,
+				auto_insert = false,
 			},
 		},
 		menu = {
 			auto_show = true,
-			-- Rounded corners via an 8-char tuple of border glyphs.
 			border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
 			scrollbar = true,
-			-- draw layout: icon | label+description | kind-name
 			draw = {
 				padding = { 1, 1 },
 				columns = {
@@ -157,7 +184,7 @@ require("blink.cmp").setup({
 		},
 		documentation = {
 			auto_show = true,
-			auto_show_delay_ms = 300,
+			auto_show_delay_ms = 500,
 			window = {
 				border = "rounded",
 				max_width = 80,
@@ -172,6 +199,8 @@ require("blink.cmp").setup({
 	-- ── Cmdline completion ──────────────────────────────────────
 	cmdline = {
 		keymap = {
+			["<Esc>"] = { "cancel", "fallback" },
+			["<C-c>"] = { "cancel", "fallback" },
 			["<Tab>"] = { "accept", "fallback" },
 			["<S-Tab>"] = { "fallback" },
 			["<Up>"] = { "select_prev", "fallback" },
@@ -202,7 +231,7 @@ require("copilot").setup({
 			accept = false,
 			next = false,
 			prev = false,
-			dismiss = "<Esc>",
+			dismiss = false, -- let blink handle Esc
 		},
 	},
 	panel = { enabled = true },
