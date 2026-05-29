@@ -451,9 +451,36 @@ lsp.config("tinymist", {
 		tinymist = {
 			exportPdf = "onType",
 			formatterMode = "typstyle",
+			preview = {
+				scrollSync = "onSelectionChangeByCursor",
+				cursor = {
+					group = {
+						{
+							name = "primary",
+							highlight = {
+								background = "#ffcc00",
+								foreground = "#000000",
+							},
+						},
+					},
+				},
+			},
 		},
 	},
 })
+
+local ok_typst_preview, typst_preview = pcall(require, "typst-preview")
+if ok_typst_preview then
+	typst_preview.setup({
+		get_root = function(path_of_main_file)
+			local root = os.getenv("TYPST_ROOT")
+			if root then
+				return root
+			end
+			return vim.fn.fnamemodify(path_of_main_file, ":h")
+		end,
+	})
+end
 
 lsp.config("qml_language_server", {
 	cmd = { "qml-language-server" },

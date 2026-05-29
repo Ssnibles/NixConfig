@@ -208,6 +208,7 @@ in
         mini-nvim
         plenary-nvim
         markview-nvim
+        typst-preview-nvim
       ];
 
       luaConfigRC.user-config = ''
