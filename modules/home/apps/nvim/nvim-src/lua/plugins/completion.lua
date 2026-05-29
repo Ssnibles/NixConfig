@@ -12,6 +12,7 @@ require("luasnip").setup({
 })
 
 require("luasnip.loaders.from_vscode").lazy_load()
+require("plugins.typst-snippets")
 
 -- ═══════════════════════════════════════════════════════════════════
 --  C O P I L O T   H E L P E R S
