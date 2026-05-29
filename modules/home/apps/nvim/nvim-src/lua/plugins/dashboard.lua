@@ -226,6 +226,18 @@ function M.open()
 	vim.wo.statuscolumn = ""
 	vim.bo.filetype = "dashboard"
 
+	vim.api.nvim_create_autocmd("BufLeave", {
+		buffer = buf,
+		once = true,
+		callback = function()
+			vim.wo.number = true
+			vim.wo.relativenumber = true
+			vim.wo.cursorline = true
+			vim.wo.signcolumn = "yes"
+			vim.wo.statuscolumn = nil
+		end,
+	})
+
 	-- Apply highlights
 	local ns = vim.api.nvim_create_namespace("dashboard")
 	local max_line = vim.api.nvim_buf_line_count(buf) - 1
