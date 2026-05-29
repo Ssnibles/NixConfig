@@ -66,21 +66,8 @@ map("n", "N", "Nzzzv")
 --  V I S U A L   S E A R C H
 -- ═══════════════════════════════════════════════════════════════════
 
-map("x", "*", function()
-	vim.api.nvim_feedkeys(
-		vim.api.nvim_replace_termcodes("y/\\V<C-r>=escape(@\", '/\\')<CR><CR>", true, false, true),
-		"n",
-		false
-	)
-end, { desc = "Search visual selection forward" })
-
-map("x", "#", function()
-	vim.api.nvim_feedkeys(
-		vim.api.nvim_replace_termcodes("y?\\V<C-r>=escape(@\", '?\\')<CR><CR>", true, false, true),
-		"n",
-		false
-	)
-end, { desc = "Search visual selection backward" })
+map("x", "*", [["zy/\V<C-r>=escape(@z, '/\')<CR><CR>]], { desc = "Search visual selection forward", silent = true })
+map("x", "#", [["zy?\V<C-r>=escape(@z, '?\')<CR><CR>]], { desc = "Search visual selection backward", silent = true })
 
 -- ═══════════════════════════════════════════════════════════════════
 --  W I N D O W   &   S P L I T   O P E R A T I O N S

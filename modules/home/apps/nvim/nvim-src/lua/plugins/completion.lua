@@ -15,13 +15,18 @@ require("luasnip.loaders.from_vscode").lazy_load()
 require("plugins.typst-snippets")
 
 -- ═══════════════════════════════════════════════════════════════════
---  C O P I L O T   H E L P E R S
+--  C O P I L O T
 -- ═══════════════════════════════════════════════════════════════════
 
+local copilot_ok, copilot = pcall(require, "copilot")
+local copilot_suggestion_ok, copilot_suggestion
+if copilot_ok then
+	copilot_suggestion_ok, copilot_suggestion = pcall(require, "copilot.suggestion")
+end
+
 local function accept_copilot_if_visible()
-	local ok, suggestion = pcall(require, "copilot.suggestion")
-	if ok and suggestion.is_visible() and not vim.b.copilot_suggestion_hidden then
-		suggestion.accept()
+	if copilot_suggestion_ok and copilot_suggestion.is_visible() and not vim.b.copilot_suggestion_hidden then
+		copilot_suggestion.accept()
 		return true
 	end
 	return false
@@ -29,16 +34,15 @@ end
 
 local function copilot_suggestion_action(action)
 	return function()
-		local ok, suggestion = pcall(require, "copilot.suggestion")
-		if not ok then
+		if not copilot_suggestion_ok then
 			return
 		end
 		if action == "next" then
-			suggestion.next()
+			copilot_suggestion.next()
 		elseif action == "prev" then
-			suggestion.prev()
+			copilot_suggestion.prev()
 		elseif action == "dismiss" then
-			suggestion.dismiss()
+			copilot_suggestion.dismiss()
 		end
 	end
 end
@@ -221,25 +225,24 @@ require("blink.cmp").setup({
 	},
 })
 
--- ═══════════════════════════════════════════════════════════════════
---  C O P I L O T
--- ═══════════════════════════════════════════════════════════════════
-
-require("copilot").setup({
-	suggestion = {
-		enabled = true,
-		auto_trigger = true,
-		debounce = 150,
-		hide_during_completion = true,
-		keymap = {
-			accept = false,
-			next = false,
-			prev = false,
-			dismiss = false, -- let blink handle Esc
+-- Copilot setup (only if module is available)
+if copilot_ok then
+	copilot.setup({
+		suggestion = {
+			enabled = true,
+			auto_trigger = true,
+			debounce = 150,
+			hide_during_completion = true,
+			keymap = {
+				accept = false,
+				next = false,
+				prev = false,
+				dismiss = false,
+			},
 		},
-	},
-	panel = { enabled = true },
-})
+		panel = { enabled = true },
+	})
+end
 
 -- ── Hide copilot ghost-text while the blink menu is visible ──
 
@@ -260,20 +263,22 @@ vim.api.nvim_create_autocmd("User", {
 -- ── Copilot toggles ────────────────────────────────────────────
 
 vim.keymap.set("n", "<leader>ac", function()
-	local copilot = require("copilot")
+	if not copilot_ok then
+		return
+	end
 	copilot.suggestion.enabled = not copilot.suggestion.enabled
 	local status = copilot.suggestion.enabled and "enabled" or "disabled"
 	vim.notify(("Copilot %s"):format(status), vim.log.levels.INFO)
 end, { desc = "Toggle copilot" })
 
 vim.keymap.set("n", "<leader>ap", function()
-	local copilot = require("copilot")
-	copilot.panel.toggle()
+	if copilot_ok then
+		copilot.panel.toggle()
+	end
 end, { desc = "Toggle copilot panel" })
 
 vim.keymap.set("i", "<M-\\>", function()
-	local ok, suggestion = pcall(require, "copilot.suggestion")
-	if ok then
-		suggestion.next()
+	if copilot_suggestion_ok then
+		copilot_suggestion.next()
 	end
 end, { desc = "Trigger copilot suggestion" })

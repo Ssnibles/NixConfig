@@ -292,7 +292,6 @@ vim.api.nvim_create_autocmd("VimEnter", {
 		local show = vim.fn.argc() == 0
 			and vim.fn.line2byte("$") == -1
 			and vim.bo.filetype == ""
-			and not vim.g.started_with_stdin
 		if show then
 			M.open()
 		end

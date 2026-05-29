@@ -11,7 +11,7 @@ autocmd("TextYankPost", {
 })
 
 -- Check if files changed outside Neovim and keep them in sync
-autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
+autocmd({ "FocusGained" }, {
 	group = augroup,
 	command = "checktime",
 })
@@ -27,7 +27,7 @@ autocmd("BufReadPost", {
 	end,
 })
 
--- Trim trailing whitespace on save (via mini.trailspace if available)
+-- Trim trailing whitespace on save (via mini.trailspace)
 autocmd("BufWritePre", {
 	group = augroup,
 	callback = function()
@@ -38,11 +38,9 @@ autocmd("BufWritePre", {
 		if skip[vim.bo.filetype] then
 			return
 		end
-		local ok, ts = pcall(require, "mini.trailspace")
-		if ok then
-			ts.trim()
-			ts.trim_last_lines()
-		end
+		local ts = require("mini.trailspace")
+		ts.trim()
+		ts.trim_last_lines()
 	end,
 })
 
@@ -78,16 +76,15 @@ autocmd("FileType", {
 		vim.opt_local.spell = true
 		vim.opt_local.wrap = true
 		vim.wo.colorcolumn = "80"
-		if (vim.version().major == 0 and vim.version().minor >= 12) then
+		if require("version") then
 			if vim.bo[ev.buf].filetype == "markdown" or vim.bo[ev.buf].filetype == "markdown.mdx" then
-				-- Avoid intermittent Neovim 0.12 treesitter node-range crashes in markdown buffers.
 				pcall(vim.treesitter.stop, ev.buf)
 			end
 		end
 	end,
 })
 
-if vim.version().major == 0 and vim.version().minor >= 12 then
+if require("version") then
 	autocmd("BufEnter", {
 		group = augroup,
 		callback = function(ev)

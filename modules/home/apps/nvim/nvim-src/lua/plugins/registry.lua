@@ -5,19 +5,20 @@ M.core = {
 	"plugins.completion",
 	"plugins.lsp",
 	"plugins.editor",
-	"plugins.lint",
-	"plugins.ui",
-	"plugins.trouble",
 	"plugins.mini",
 	"plugins.fzf",
 	"plugins.navigation",
-	"plugins.terminal",
-	"plugins.focus",
-	"plugins.neogit",
-	"plugins.dap",
+	"plugins.ui",
+	"plugins.lint",
 	"plugins.dashboard",
 }
 
-M.deferred = {}
+M.deferred = {
+	"plugins.trouble",
+	"plugins.neogit",
+	"plugins.dap",
+	"plugins.terminal",
+	"plugins.focus",
+}
 
 return M
