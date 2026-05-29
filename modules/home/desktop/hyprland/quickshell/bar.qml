@@ -470,13 +470,53 @@ PanelWindow {
             visible: barPanel.mediaPlayer !== null
           }
 
-          Text {
-            id: mediaLabel
-            text: barPanel.mediaText
-            color: colors.fg
-            font.family: barPanel.uiFont
-            font.pixelSize: 12
-            elide: Text.ElideRight
+          Item {
+            id: mediaTextContainer
+            property int marqueeMaxWidth: 200
+            implicitWidth: Math.min(mediaLabelText.implicitWidth, marqueeMaxWidth)
+            height: parent.height
+            clip: true
+
+            Text {
+              id: mediaLabelText
+              text: barPanel.mediaText
+              color: colors.fg
+              font.family: barPanel.uiFont
+              font.pixelSize: 12
+
+              property bool overflow: implicitWidth > mediaTextContainer.width + 2
+
+              onTextChanged: {
+                x = 0
+                if (overflow) scrollAnim.restart()
+              }
+            }
+
+            SequentialAnimation {
+              id: scrollAnim
+              running: mediaLabelText.overflow
+              loops: Animation.Infinite
+
+              PauseAnimation { duration: 2000 }
+
+              PropertyAnimation {
+                target: mediaLabelText
+                property: "x"
+                to: mediaTextContainer.width - mediaLabelText.implicitWidth
+                duration: Math.max((mediaLabelText.implicitWidth - mediaTextContainer.width) * 30, 1000)
+                easing.type: Easing.Linear
+              }
+
+              PauseAnimation { duration: 2000 }
+
+              PropertyAnimation {
+                target: mediaLabelText
+                property: "x"
+                to: 0
+                duration: Math.max((mediaLabelText.implicitWidth - mediaTextContainer.width) * 30, 1000)
+                easing.type: Easing.Linear
+              }
+            }
 
             MouseArea {
               id: mediaLabelArea
