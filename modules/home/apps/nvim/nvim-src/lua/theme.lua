@@ -391,6 +391,21 @@ function M.setup()
 	hl("Folded", { fg = c.comment, bg = c.bgSubtle })
 	hl("FoldColumn", { fg = c.comment })
 
+	-- Smarter fold text: show first line + fold level indicator
+	vim.opt.foldtext = [[
+		v:lua.require('theme').fold_text()
+	]]
+	function M.fold_text()
+		local line = vim.fn.getline(vim.v.foldstart)
+		local width = vim.fn.winwidth(0) - vim.fn.getwinvar(0, '&numberwidth') - 6
+		local folded = vim.fn.printf(" %d lines ", vim.v.foldend - vim.v.foldstart + 1)
+		local text = line:gsub("\t", string.rep(" ", vim.fn.shiftwidth()))
+		if #text > width then
+			text = text:sub(1, width) .. "…"
+		end
+		return text .. string.rep("─", math.max(width - #text - #folded, 1)) .. folded
+	end
+
 	-- Treesitter context: bottom separator line blends into background
 	hl("TreesitterContextSeparator", { fg = c.border })
 	hl("TreesitterContextBottom", { link = "TreesitterContext" })
@@ -457,18 +472,33 @@ function M.setup()
 	-- ═══════════════════════════════════════════════════════════════
 	-- LUALINE THEME CONTRACT
 	-- ═══════════════════════════════════════════════════════════════
+	local lualine_base = {
+		b = { fg = c.fg, bg = c.bg },
+		c = { fg = c.comment, bg = c.bg },
+	}
+
 	M.lualine = {
-		normal = {
+		normal = vim.tbl_deep_extend("force", {
 			a = { fg = c.bg, bg = c.blue, gui = "bold" },
-			b = { fg = c.fg, bg = c.bg },
-			c = { fg = c.comment, bg = c.bg },
-		},
-		insert = { a = { fg = c.bg, bg = c.green, gui = "bold" } },
-		visual = { a = { fg = c.bg, bg = c.purple, gui = "bold" } },
-		replace = { a = { fg = c.bg, bg = c.red, gui = "bold" } },
-		command = { a = { fg = c.bg, bg = c.cyan, gui = "bold" } },
-		terminal = { a = { fg = c.bg, bg = c.orange, gui = "bold" } },
-		inactive = { a = { fg = c.comment, bg = c.bg } },
+		}, lualine_base),
+		insert = vim.tbl_deep_extend("force", {
+			a = { fg = c.bg, bg = c.green, gui = "bold" },
+		}, lualine_base),
+		visual = vim.tbl_deep_extend("force", {
+			a = { fg = c.bg, bg = c.purple, gui = "bold" },
+		}, lualine_base),
+		replace = vim.tbl_deep_extend("force", {
+			a = { fg = c.bg, bg = c.red, gui = "bold" },
+		}, lualine_base),
+		command = vim.tbl_deep_extend("force", {
+			a = { fg = c.bg, bg = c.cyan, gui = "bold" },
+		}, lualine_base),
+		terminal = vim.tbl_deep_extend("force", {
+			a = { fg = c.bg, bg = c.orange, gui = "bold" },
+		}, lualine_base),
+		inactive = vim.tbl_deep_extend("force", {
+			a = { fg = c.comment, bg = c.bg },
+		}, lualine_base),
 	}
 
 	-- ═══════════════════════════════════════════════════════════════

@@ -266,7 +266,7 @@ in
 			expr = ("(builtins.getFlake %s).nixosConfigurations.%s.options"):format(flake_ref, host_attr),
 		},
 		["home-manager"] = {
-			expr = ("(builtins.getFlake %s).nixosConfigurations.%s.options.\"home-manager\".users.type.getSubOptions []"):format(
+			expr = ('(builtins.getFlake %s).nixosConfigurations.%s.options."home-manager".users.type.getSubOptions []'):format(
 				flake_ref,
 				host_attr
 			),
