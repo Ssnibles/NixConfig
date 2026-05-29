@@ -52,7 +52,7 @@ PanelWindow {
     return t
     .replace(/ — Mozilla Firefox$/, "")
     .replace(/ — Zen Browser$/, "Zen")
-    .replace(/ - Neovim$/, "Neovim")
+    .replace(/ - nvim$/, "Neovim")
     .replace(/ - foot$/, "");
   }
 
@@ -377,7 +377,7 @@ PanelWindow {
               id: waveformShader
               anchors.fill: parent
               visible: mediaWaveform.useGpuWaveform && status === ShaderEffect.Ready
-              fragmentShader: "./shaders/waveform.frag.qsb"
+              fragmentShader: "../shaders/waveform.frag.qsb"
 
               property real barCount: mediaWaveform.barCount
               property real barWidth: mediaWaveform.barWidth
