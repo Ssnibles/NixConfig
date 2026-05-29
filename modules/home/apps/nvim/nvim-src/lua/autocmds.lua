@@ -117,6 +117,20 @@ autocmd("TermOpen", {
 	end,
 })
 
+-- Ensure signcolumn is visible on real file buffers (safety net for dashboard/Oil transitions)
+autocmd("BufWinEnter", {
+	group = augroup,
+	callback = function()
+		local bt = vim.bo.buftype
+		if bt == "terminal" or bt == "nofile" or bt == "acwrite" then
+			return
+		end
+		if vim.wo.signcolumn == "no" then
+			vim.wo.signcolumn = vim.o.signcolumn
+		end
+	end,
+})
+
 -- Start terminals in insert mode for immediate shell interaction
 autocmd("BufEnter", {
 	group = augroup,
