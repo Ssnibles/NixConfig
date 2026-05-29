@@ -427,6 +427,34 @@ function M.setup()
 	hl("OilFile", { link = "Normal" })
 
 	-- ═══════════════════════════════════════════════════════════════
+	-- NEOGIT
+	-- ═══════════════════════════════════════════════════════════════
+	hl("NeogitBranch", { fg = c.blue, bold = true })
+	hl("NeogitRemote", { fg = c.yellow })
+	hl("NeogitHunkHeader", { fg = c.blue, bg = c.bgSubtle })
+	hl("NeogitHunkHeaderHighlight", { fg = c.blue, bg = c.selection })
+	hl("NeogitDiffAdd", { fg = c.green, bg = blend(c.green, c.bg, 0.10) })
+	hl("NeogitDiffDelete", { fg = c.red, bg = blend(c.red, c.bg, 0.10) })
+	hl("NeogitDiffAddHighlight", { fg = c.green, bg = blend(c.green, c.bg, 0.18) })
+	hl("NeogitDiffDeleteHighlight", { fg = c.red, bg = blend(c.red, c.bg, 0.18) })
+	hl("NeogitDiffContextHighlight", { bg = c.bgSubtle })
+	hl("NeogitDiffHeader", { fg = c.blue })
+	hl("NeogitSectionHeader", { fg = c.blue, bold = true })
+	hl("NeogitFilePath", { fg = c.blue, italic = true })
+	hl("NeogitGraphRed", { fg = c.red })
+	hl("NeogitGraphGreen", { fg = c.green })
+	hl("NeogitGraphBlue", { fg = c.blue })
+	hl("NeogitGraphPurple", { fg = c.purple })
+	hl("NeogitGraphYellow", { fg = c.yellow })
+	hl("NeogitGraphCyan", { fg = c.cyan })
+	hl("NeogitGraphGray", { fg = c.comment })
+	hl("NeogitGraphWhite", { fg = c.fg })
+	hl("NeogitNotificationInfo", { fg = c.blue })
+	hl("NeogitNotificationWarning", { fg = c.yellow })
+	hl("NeogitNotificationError", { fg = c.red })
+	hl("NeogitCommitViewHeader", { fg = c.blue, bold = true })
+
+	-- ═══════════════════════════════════════════════════════════════
 	-- LUALINE THEME CONTRACT
 	-- ═══════════════════════════════════════════════════════════════
 	M.lualine = {
