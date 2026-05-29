@@ -219,6 +219,13 @@ function M.open()
 	vim.api.nvim_buf_set_option(buf, "modifiable", false)
 
 	-- Window options
+	local saved = {
+		number = vim.wo.number,
+		relativenumber = vim.wo.relativenumber,
+		cursorline = vim.wo.cursorline,
+		signcolumn = vim.wo.signcolumn,
+		statuscolumn = vim.wo.statuscolumn,
+	}
 	vim.wo.number = false
 	vim.wo.relativenumber = false
 	vim.wo.cursorline = false
@@ -230,11 +237,13 @@ function M.open()
 		buffer = buf,
 		once = true,
 		callback = function()
-			vim.wo.number = true
-			vim.wo.relativenumber = true
-			vim.wo.cursorline = true
-			vim.wo.signcolumn = "yes"
-			vim.wo.statuscolumn = nil
+			pcall(vim.api.nvim_win_call, 0, function()
+				vim.wo.number = saved.number
+				vim.wo.relativenumber = saved.relativenumber
+				vim.wo.cursorline = saved.cursorline
+				vim.wo.signcolumn = saved.signcolumn
+				vim.wo.statuscolumn = saved.statuscolumn
+			end)
 		end,
 	})
 
