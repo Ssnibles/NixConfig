@@ -7,8 +7,8 @@
 
 require("luasnip").setup({
 	history = true,
-	region_check_events = "CursorMoved,CursorHold,InsertEnter,TextChanged,TextChangedI",
-	delete_check_events = "TextChanged,TextChangedI,InsertLeave",
+	region_check_events = "InsertEnter,TextChangedI",
+	delete_check_events = "InsertLeave",
 })
 
 require("luasnip.loaders.from_vscode").lazy_load()
@@ -142,10 +142,11 @@ require("blink.cmp").setup({
 
 	-- ── Sources ─────────────────────────────────────────────────
 	sources = {
-		default = { "lsp", "snippets", "buffer", "path", "spell" },
+		default = { "lsp", "snippets", "buffer", "path" },
 		per_filetype = {
-			lua = { "lsp", "snippets", "buffer", "path" },
-			nix = { "lsp", "snippets", "buffer", "path" },
+			markdown = { "lsp", "snippets", "buffer", "path", "spell" },
+			text = { "lsp", "snippets", "buffer", "path", "spell" },
+			gitcommit = { "lsp", "snippets", "buffer", "path", "spell" },
 		},
 		providers = {
 			spell = {
@@ -156,7 +157,10 @@ require("blink.cmp").setup({
 				end,
 				opts = { max_entries = 8 },
 			},
-			buffer = {},
+			buffer = {
+				max_items = 8,
+				min_keyword_length = 3,
+			},
 		},
 	},
 
@@ -165,7 +169,7 @@ require("blink.cmp").setup({
 		list = {
 			selection = {
 				preselect = true,
-				auto_insert = false,
+				auto_insert = true,
 			},
 		},
 		menu = {
@@ -183,7 +187,7 @@ require("blink.cmp").setup({
 		},
 		documentation = {
 			auto_show = true,
-			auto_show_delay_ms = 300,
+			auto_show_delay_ms = 150,
 			window = {
 				border = "rounded",
 				max_width = 80,
