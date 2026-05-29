@@ -1,30 +1,71 @@
--- Core keymaps (plugin keymaps are defined in their respective config files)
+-- Core keymaps: Zed-inspired, ergonomic, and intuitive.
+-- Plugin-local keymaps (LSP, git, etc.) live inside their respective plugin configs.
+-- This file is for editor-global bindings that define the IDE feel.
+
 local map = vim.keymap.set
 
--- General
-map("n", "<Esc>", "<cmd>nohlsearch<CR>")
+-- ═══════════════════════════════════════════════════════════════════
+--  M O D A L   C O N V E N I E N C E
+-- ═══════════════════════════════════════════════════════════════════
+
+-- Return to normal mode without leaving the home row.
 map("i", "jk", "<Esc>")
-map("i", "<C-BS>", "<C-w>", { desc = "Delete previous word" })
-map("i", "<C-s>", "<C-o><cmd>update<CR>", { desc = "Save buffer" })
+
+-- Escape also clears search highlights.
+map("n", "<Esc>", "<cmd>nohlsearch<CR>")
+
+-- Redo with the natural "U" muscle-memory key (default Neovim reclaims U for undo-line).
 map("n", "U", "<C-r>", { desc = "Redo" })
+
+-- ═══════════════════════════════════════════════════════════════════
+--  S A V E   &   Q U I T
+-- ═══════════════════════════════════════════════════════════════════
+
+map("i", "<C-s>", "<C-o><cmd>update<CR>", { desc = "Save buffer" })
 map({ "n", "v" }, "<C-s>", "<cmd>update<CR>", { desc = "Save buffer" })
 map("n", "<leader>q", "<cmd>confirm q<CR>", { desc = "Quit window" })
 map("n", "<leader>qw", "<cmd>wq<CR>", { desc = "Save and quit" })
 map("n", "<leader>qq", "<cmd>qa<CR>", { desc = "Quit all" })
 
--- Better movement
-map("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
-map("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+-- ═══════════════════════════════════════════════════════════════════
+--  T E X T   E D I T I N G
+-- ═══════════════════════════════════════════════════════════════════
+
+map("i", "<C-BS>", "<C-w>", { desc = "Delete previous word" })
 map("i", "<C-h>", "<Left>", { desc = "Move caret left" })
 map("i", "<C-j>", "<Down>", { desc = "Move caret down" })
 map("i", "<C-k>", "<Up>", { desc = "Move caret up" })
 map("i", "<C-l>", "<Right>", { desc = "Move caret right" })
+
+-- Indentation preserves visual selection for rapid adjustments.
+map("v", "<", "<gv")
+map("v", ">", ">gv")
+
+-- Yank/paste helpers that don't obliterate the yank register.
+map("x", "<leader>p", '"_dP', { desc = "Paste without yanking" })
+map({ "n", "v" }, "<leader>D", '"_d', { desc = "Delete to void" })
+map("n", "x", '"_x', { desc = "Delete character to void" })
+
+-- ═══════════════════════════════════════════════════════════════════
+--  M O V E M E N T   &   S C R O L L I N G
+-- ═══════════════════════════════════════════════════════════════════
+
+-- Soft-wrapped lines: j/k move by visual line, count still jumps.
+map("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+map("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+
+-- Cursor stays centred during half-page jumps.
 map("n", "<C-d>", "<C-d>zz")
 map("n", "<C-u>", "<C-u>zz")
+
+-- Search results keep the cursor centred.
 map("n", "n", "nzzzv")
 map("n", "N", "Nzzzv")
 
--- Search selected text in visual mode
+-- ═══════════════════════════════════════════════════════════════════
+--  V I S U A L   S E A R C H
+-- ═══════════════════════════════════════════════════════════════════
+
 map("x", "*", function()
 	vim.api.nvim_feedkeys(
 		vim.api.nvim_replace_termcodes("y/\\V<C-r>=escape(@\", '/\\')<CR><CR>", true, false, true),
@@ -32,6 +73,7 @@ map("x", "*", function()
 		false
 	)
 end, { desc = "Search visual selection forward" })
+
 map("x", "#", function()
 	vim.api.nvim_feedkeys(
 		vim.api.nvim_replace_termcodes("y?\\V<C-r>=escape(@\", '?\\')<CR><CR>", true, false, true),
@@ -40,61 +82,85 @@ map("x", "#", function()
 	)
 end, { desc = "Search visual selection backward" })
 
--- Visual mode
-map("v", "<", "<gv")
-map("v", ">", ">gv")
+-- ═══════════════════════════════════════════════════════════════════
+--  W I N D O W   &   S P L I T   O P E R A T I O N S
+--  (smart-splits handles C-hjkl for navigation; see navigation.lua)
+-- ═══════════════════════════════════════════════════════════════════
 
--- Clipboard
-map("x", "<leader>p", '"_dP', { desc = "Paste without yanking" })
-map({ "n", "v" }, "<leader>D", '"_d', { desc = "Delete to void" })
-
--- Windows
 map("n", "<leader>wv", "<C-w>v", { desc = "Split vertical" })
 map("n", "<leader>ws", "<C-w>s", { desc = "Split horizontal" })
 map("n", "<leader>wc", "<C-w>c", { desc = "Close window" })
 map("n", "<leader>wo", "<C-w>o", { desc = "Only window" })
 map("n", "<leader>w=", "<C-w>=", { desc = "Equalize windows" })
 
--- Buffers
+-- Move windows around (push current to left/right/up/down).
+map("n", "<leader>wh", "<C-w>H", { desc = "Move window left" })
+map("n", "<leader>wl", "<C-w>L", { desc = "Move window right" })
+map("n", "<leader>wj", "<C-w>J", { desc = "Move window down" })
+map("n", "<leader>wk", "<C-w>K", { desc = "Move window up" })
+
+-- ═══════════════════════════════════════════════════════════════════
+--  B U F F E R S
+-- ═══════════════════════════════════════════════════════════════════
+
 map("n", "<leader>bn", "<cmd>bnext<CR>", { desc = "Next buffer" })
 map("n", "<leader>bp", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 map("n", "<leader>bo", "<cmd>%bd|e#|bd#<CR>", { desc = "Close other buffers" })
+map("n", "<leader>`", "<cmd>b#<CR>", { desc = "Alternate buffer" })
 
--- Quickfix
-map("n", "]q", "<cmd>cnext<CR>")
-map("n", "[q", "<cmd>cprevious<CR>")
+map("n", "<C-Tab>", "<cmd>bnext<CR>", { desc = "Next buffer" })
+map("n", "<C-S-Tab>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
+
+-- ═══════════════════════════════════════════════════════════════════
+--  T A B S   (rarely used, but functional)
+-- ═══════════════════════════════════════════════════════════════════
+
+map("n", "]t", "<cmd>tabnext<CR>", { desc = "Next tab" })
+map("n", "[t", "<cmd>tabprevious<CR>", { desc = "Previous tab" })
+map("n", "<leader>Tn", "<cmd>tabnew<CR>", { desc = "New tab" })
+map("n", "<leader>Tc", "<cmd>tabclose<CR>", { desc = "Close tab" })
+
+-- ═══════════════════════════════════════════════════════════════════
+--  Q U I C K F I X   &   L O C A T I O N   L I S T
+-- ═══════════════════════════════════════════════════════════════════
+
+map("n", "]q", "<cmd>cnext<CR>", { desc = "Next quickfix" })
+map("n", "[q", "<cmd>cprevious<CR>", { desc = "Previous quickfix" })
 map("n", "<leader>qo", "<cmd>copen<CR>", { desc = "Open quickfix" })
 map("n", "<leader>qc", "<cmd>cclose<CR>", { desc = "Close quickfix" })
 map("n", "<leader>qa", "<cmd>cclose<CR><cmd>lclose<CR>", { desc = "Close all lists" })
+
 map("n", "]l", "<cmd>lnext<CR>", { desc = "Next location" })
 map("n", "[l", "<cmd>lprevious<CR>", { desc = "Previous location" })
 map("n", "<leader>ql", "<cmd>lopen<CR>", { desc = "Open location list" })
 map("n", "<leader>qL", "<cmd>lclose<CR>", { desc = "Close location list" })
 
--- Diagnostics
+-- ═══════════════════════════════════════════════════════════════════
+--  D I A G N O S T I C S   J U M P S
+--  (inline display is handled by tiny-inline-diagnostic)
+-- ═══════════════════════════════════════════════════════════════════
+
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
+map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
+
 map("n", "]d", function()
 	vim.diagnostic.jump({ count = 1, float = true })
 end, { desc = "Next diagnostic" })
 map("n", "[d", function()
 	vim.diagnostic.jump({ count = -1, float = true })
-end, { desc = "Prev diagnostic" })
-map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
+end, { desc = "Previous diagnostic" })
+
 map("n", "]e", function()
 	vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = true })
 end, { desc = "Next error" })
 map("n", "[e", function()
 	vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })
-end, { desc = "Prev error" })
+end, { desc = "Previous error" })
 
--- LSP (buffer-independent)
-map("n", "<leader>li", "<cmd>LspInfo<CR>", { desc = "LSP info" })
-map("n", "<leader>lr", "<cmd>LspRestart<CR>", { desc = "Restart LSP" })
-map("n", "<leader>lf", "<cmd>FzfLua lsp_finder<CR>", { desc = "LSP finder" })
-map("n", "<leader>lh", "<cmd>LspHealth<CR>", { desc = "LSP health" })
-map("n", "<leader>cr", "<cmd>SmartRename<CR>", { desc = "Context rename/replace" })
+-- ═══════════════════════════════════════════════════════════════════
+--  T O G G L E S
+-- ═══════════════════════════════════════════════════════════════════
 
--- Toggles
 map("n", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "Toggle wrap" })
 map("n", "<leader>ts", "<cmd>set spell!<CR>", { desc = "Toggle spell" })
 map("n", "<leader>tn", "<cmd>set relativenumber!<CR>", { desc = "Toggle relative numbers" })
@@ -116,11 +182,37 @@ map("n", "<leader>tc", function()
 	end
 end, { desc = "Toggle cursor word" })
 
--- Tab navigation
-map("n", "]t", "<cmd>tabnext<CR>", { desc = "Next tab" })
-map("n", "[t", "<cmd>tabprevious<CR>", { desc = "Previous tab" })
-map("n", "<leader>Tn", "<cmd>tabnew<CR>", { desc = "New tab" })
-map("n", "<leader>Tc", "<cmd>tabclose<CR>", { desc = "Close tab" })
+-- ═══════════════════════════════════════════════════════════════════
+--  L S P   G L O B A L S   (buffer-local LSP maps in lua/plugins/lsp.lua)
+-- ═══════════════════════════════════════════════════════════════════
 
--- Unbind
+map("n", "<leader>li", "<cmd>LspInfo<CR>", { desc = "LSP info" })
+map("n", "<leader>lr", "<cmd>LspRestart<CR>", { desc = "Restart LSP" })
+map("n", "<leader>lf", "<cmd>FzfLua lsp_finder<CR>", { desc = "LSP finder" })
+map("n", "<leader>lh", "<cmd>LspHealth<CR>", { desc = "LSP health" })
+map("n", "<leader>cr", "<cmd>SmartRename<CR>", { desc = "Context rename/replace" })
+
+-- ═══════════════════════════════════════════════════════════════════
+--  Z E D   M U S C L E   M E M O R Y   A L I A S E S
+--  These mirror common IDE shortcuts so the transition feels natural.
+-- ═══════════════════════════════════════════════════════════════════
+
+map("n", "<C-p>", "<cmd>FzfLua files<CR>", { desc = "File picker (Cmd+P)" })
+map("n", "<leader>/", "<cmd>FzfLua live_grep<CR>", { desc = "Search project (Cmd+Shift+F)" })
+map("n", "<leader>e", function()
+	require("oil").open_float()
+end, { desc = "Explorer sidebar" })
+map("n", "<leader>E", function()
+	require("oil").open()
+end, { desc = "Explorer (full)" })
+map("n", "<leader>gd", vim.lsp.buf.definition, { desc = "Go to definition" })
+map("n", "<leader>gr", vim.lsp.buf.references, { desc = "Find references" })
+map("n", "<leader>gD", vim.lsp.buf.declaration, { desc = "Go to declaration" })
+map("n", "<leader>gi", vim.lsp.buf.implementation, { desc = "Go to implementation" })
+
+-- ═══════════════════════════════════════════════════════════════════
+--  M I S C
+-- ═══════════════════════════════════════════════════════════════════
+
 map("n", "<C-Z>", "<Nop>")
+map("n", "<C-w>q", "<Nop>")

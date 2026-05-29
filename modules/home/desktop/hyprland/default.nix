@@ -229,11 +229,7 @@ in
         "opacity 0.8 0.8, onworkspace:name:special:special"
         "suppressevent maximize, class:.*"
         "nofocus, class:^$,title:^$,xwayland:1,floating:1,fullscreen:0"
-
-        "workspace 2, class:^(firefox|zen|org\\.mozilla\\.firefox)$"
-        "workspace 5, class:^(discord|vesktop|webcord)$"
-        "workspace , class:^(Spotify|spotify)$"
-
+        "workspace special, class:^(Spotify|spotify)$"
         "noblur, class:^(firefox)$, title:^(Picture-in-Picture)$"
         "noblur, class:^(org\\.pulseaudio\\.pavucontrol)$"
       ];

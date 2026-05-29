@@ -75,6 +75,7 @@
     onlyoffice-desktopeditors
     vesktop
     qownnotes
+    neovide
 
     # ── Document viewers ────────────────────────────────────────────────
     sioyek

@@ -1,47 +1,93 @@
--- UI components: statusline, indentation, scrolling, notifications
+-- UI: lualine, snacks, noice, statuscol, markview, diagnostics.
+-- All surfaces share the editor background for a flat, modern appearance.
 
 local c = require("theme").colors
+local t = require("theme")
 
--- Lualine: statusline
-local lualine_theme = {
-	normal = {
-		a = { fg = c.blue, bg = c.bg, gui = "bold" },
-		b = { fg = c.fg, bg = c.bg },
-		c = { fg = c.comment, bg = c.bg },
-	},
-	insert = { a = { fg = c.green, bg = c.bg, gui = "bold" } },
-	visual = { a = { fg = c.purple, bg = c.bg, gui = "bold" } },
-	inactive = { a = { fg = c.gutter, bg = c.bg } },
-}
+-- ═══════════════════════════════════════════════════════════════════
+--  S N A C K S . N V I M   (terminal)
+-- ═══════════════════════════════════════════════════════════════════
 
-require("lualine").setup({
-	options = {
-		theme = lualine_theme,
-		component_separators = "",
-		section_separators = "",
-		globalstatus = true,
-	},
-	sections = {
-		lualine_a = { "mode" },
-		lualine_b = { "branch", "diff", "diagnostics" },
-		lualine_c = {
-			{ "filename", path = 1 },
-			{ "filetype", icon_only = true, padding = { left = 1, right = 0 } },
-		},
-		lualine_x = { "filetype", "encoding", "fileformat" },
-		lualine_y = {
-			{
-				"progress",
-				fmt = function(str)
-					return str:gsub("%s*(%d+)%%?%s*/%s*(%d+)%%?", "%1/%2")
-				end,
-			},
-		},
-		lualine_z = { "location" },
+require("snacks").setup({
+	terminal = {
+		enabled = true,
+		win = { style = "terminal" },
 	},
 })
 
--- Statuscol: custom status column
+-- ═══════════════════════════════════════════════════════════════════
+--  L U A L I N E
+-- ═══════════════════════════════════════════════════════════════════
+
+require("lualine").setup({
+	options = {
+		theme = t.lualine,
+		component_separators = "",
+		section_separators = { left = "", right = "" },
+		globalstatus = true,
+		disabled_filetypes = { statusline = { "alpha", "snacks_terminal" } },
+	},
+	sections = {
+		lualine_a = {
+			{
+				"mode",
+				fmt = function(str)
+					return " " .. str:sub(1, 1) .. " "
+				end,
+			},
+		},
+		lualine_b = {
+			{
+				"branch",
+				icon = { " ", align = "left" },
+				color = { fg = c.comment },
+			},
+			{
+				"diff",
+				colored = true,
+				symbols = { added = "+", modified = "~", removed = "-" },
+				diff_color = {
+					added = { fg = c.green },
+					modified = { fg = c.yellow },
+					removed = { fg = c.red },
+				},
+			},
+			{
+				"diagnostics",
+				sources = { "nvim_diagnostic" },
+				symbols = { error = "×", warn = "▲", info = "•", hint = "•" },
+				padding = { left = 1, right = 0 },
+			},
+		},
+		lualine_c = {
+			{
+				"filename",
+				path = 1,
+				symbols = { modified = " ", readonly = " ", new = " ", unnamed = "[No Name]" },
+			},
+		},
+		lualine_x = {},
+		lualine_y = {
+			{
+				"filetype",
+				colored = false,
+				padding = { left = 1, right = 0 },
+			},
+		},
+		lualine_z = {
+			{
+				"location",
+				padding = { left = 0, right = 1 },
+			},
+		},
+	},
+	extensions = {},
+})
+
+-- ═══════════════════════════════════════════════════════════════════
+--  S T A T U S C O L
+-- ═══════════════════════════════════════════════════════════════════
+
 local builtin = require("statuscol.builtin")
 require("statuscol").setup({
 	relculright = true,
@@ -52,27 +98,24 @@ require("statuscol").setup({
 	},
 })
 
--- Neoscroll: smooth scrolling
-require("neoscroll").setup({ easing = "quadratic", hide_cursor = true })
+-- ═══════════════════════════════════════════════════════════════════
+--  N O I C E   --  fixed-width top-centred command palette
+-- ═══════════════════════════════════════════════════════════════════
 
--- Noice: enhanced UI
 require("noice").setup({
 	cmdline = {
-		view = "cmdline",
+		view = "cmdline_popup",
 		format = {
-			cmdline = { icon = "", view = "cmdline" },
-			search_down = { icon = " " },
-			search_up = { icon = " " },
-			filter = { icon = "$" },
-			lua = { icon = "", view = "cmdline" },
-			help = { icon = "", view = "cmdline" },
-			input = { icon = "󰥻 " },
+			cmdline = { icon = " ", lang = "vim" },
+			search_down = { icon = "  " },
+			search_up = { icon = "  " },
+			filter = { icon = " " },
+			lua = { icon = " " },
+			help = { icon = " " },
+			input = { icon = " " },
 		},
 	},
-	popupmenu = {
-		enabled = false,
-		backend = "nui",
-	},
+	popupmenu = { enabled = false },
 	lsp = {
 		progress = { enabled = false },
 		signature = { enabled = false },
@@ -81,7 +124,7 @@ require("noice").setup({
 			["vim.lsp.util.stylize_markdown"] = true,
 		},
 	},
-	presets = { bottom_search = true, inc_rename = true },
+	presets = { bottom_search = true, inc_rename = true, long_message_to_split = true },
 	notify = { enabled = false },
 	routes = {
 		{
@@ -100,27 +143,28 @@ require("noice").setup({
 			view = "mini",
 		},
 		{
-			filter = {
-				event = "msg_show",
-				kind = "search_count",
-			},
+			filter = { event = "msg_show", kind = "search_count" },
 			opts = { skip = true },
 		},
 	},
-})
-
--- Tiny inline diagnostics
-require("tiny-inline-diagnostic").setup({
-	preset = "modern",
-	options = {
-		show_source = { enabled = false, if_many = true },
-		multilines = { enabled = true, always_show = true },
-		throttle = 20,
-		enable_on_insert = false,
+	views = {
+		cmdline_popup = {
+			position = { row = "15%", col = "50%" },
+			size = { width = 72, height = "auto" },
+			border = { style = "rounded", padding = { 0, 1 } },
+			win_options = {
+				winblend = 0,
+				winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
+			},
+		},
+		mini = { timeout = 1200, win_options = { winblend = 0 } },
 	},
 })
 
--- Markview: markdown preview
+-- ═══════════════════════════════════════════════════════════════════
+--  M A R K V I E W
+-- ═══════════════════════════════════════════════════════════════════
+
 local markview_filetypes = { "markdown", "quarto", "rmd", "typst" }
 local markview_filetype_set = {}
 for _, ft in ipairs(markview_filetypes) do
@@ -131,7 +175,6 @@ vim.g.__markview_startup_ready = false
 require("markview").setup({
 	preview = {
 		filetypes = markview_filetypes,
-		-- Gate auto-attach until startup settles; manual :Markview commands still work.
 		condition = function()
 			return vim.g.__markview_startup_ready == true
 		end,
@@ -157,7 +200,11 @@ vim.api.nvim_create_autocmd("VimEnter", {
 			vim.g.__markview_startup_ready = true
 			local actions = require("markview.actions")
 			for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-				if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "" and markview_filetype_set[vim.bo[buf].filetype] then
+				if
+					vim.api.nvim_buf_is_valid(buf)
+					and vim.bo[buf].buftype == ""
+					and markview_filetype_set[vim.bo[buf].filetype]
+				then
 					actions.attach(buf)
 				end
 			end
