@@ -79,14 +79,16 @@ Item {
   }
 
   function removePopup(notification) {
-    popupModel.values = popupModel.values.filter(n => n !== notification);
+    const idx = popupList.indexOf(notification);
+    if (idx >= 0) popupList.splice(idx, 1);
+    popupListChanged();
   }
 
   function addPopup(notification) {
     if (!notification) return;
-    const deduped = popupModel.values.filter(n => n && n.id !== notification.id);
+    const deduped = popupList.filter(n => n && n.id !== notification.id);
     deduped.unshift(notification);
-    popupModel.values = deduped.slice(0, notif.maxPopups);
+    popupList = deduped.slice(0, notif.maxPopups);
     notification.closed.connect(() => notif.removePopup(notification));
   }
 
@@ -96,13 +98,10 @@ Item {
   }
 
   onDoNotDisturbChanged: {
-    if (doNotDisturb) popupModel.values = [];
+    if (doNotDisturb) popupList = [];
   }
 
-  ScriptModel {
-    id: popupModel
-    values: []
-  }
+  property var popupList: []
 
   NotificationServer {
     id: notificationServer
@@ -128,7 +127,7 @@ Item {
   // ── Notification popups ──────────────────────────────────────────────────
   PanelWindow {
     id: popupWindow
-    visible: popupModel.values.length > 0
+    visible: popupList.length > 0
     focusable: false
     aboveWindows: true
     exclusionMode: ExclusionMode.Ignore
@@ -146,7 +145,7 @@ Item {
       spacing: 8
 
       Repeater {
-        model: popupModel
+          model: popupList
 
           Rectangle {
             id: popupCard

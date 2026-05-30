@@ -9,6 +9,7 @@ M.core = {
 	"plugins.fzf",
 	"plugins.navigation",
 	"plugins.ui",
+	"plugins.terminal",
 	"plugins.lint",
 	"plugins.dashboard",
 }
@@ -17,7 +18,6 @@ M.deferred = {
 	"plugins.trouble",
 	"plugins.neogit",
 	"plugins.dap",
-	"plugins.terminal",
 	"plugins.focus",
 }
 

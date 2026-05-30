@@ -226,6 +226,7 @@ in
         "float, size 60% 60%, move 20% 20%, title:^(Save As.*)$"
         "float, size 60% 60%, move 20% 20%, title:^(Upload File.*)$"
 
+        "size 50% 50%, floating:1"
         "opacity 0.8 0.8, onworkspace:name:special:special"
         "suppressevent maximize, class:.*"
         "nofocus, class:^$,title:^$,xwayland:1,floating:1,fullscreen:0"
