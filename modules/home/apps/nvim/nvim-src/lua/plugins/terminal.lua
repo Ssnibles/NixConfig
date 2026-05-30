@@ -21,4 +21,13 @@ vim.keymap.set("n", "<leader>tr", function()
 	toggle_terminal("right")
 end, { desc = "Toggle terminal (right)" })
 
-vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Terminal normal mode" })
+vim.keymap.set("n", "<leader>tf", function()
+	local ok, snacks = pcall(require, "snacks")
+	if not ok then
+		vim.notify("snacks.nvim is not available", vim.log.levels.ERROR)
+		return
+	end
+	snacks.terminal.toggle(nil, {
+		cwd = vim.fn.getcwd(),
+	})
+end, { desc = "Toggle terminal (float)" })

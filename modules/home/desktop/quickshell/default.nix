@@ -20,7 +20,9 @@ let
       ''
         mkdir -p $out
         cp ${./shaders/waveform.frag} $out/waveform.frag
+        cp ${./shaders/circleMask.frag} $out/circleMask.frag
         qsb --qt6 $out/waveform.frag -o $out/waveform.frag.qsb
+        qsb --qt6 $out/circleMask.frag -o $out/circleMask.frag.qsb
       '';
 
 in
@@ -31,8 +33,8 @@ in
   };
 
   home.sessionVariables = {
-    QML2_IMPORT_PATH = "${pkgs.unstable.quickshell}/lib/qt-6/qml";
-    QSG_RENDERER = "opengl";
+    QML_IMPORT_PATH = "${pkgs.unstable.quickshell}/lib/qt-6/qml";
+    QSG_RHI_BACKEND = "vulkan";
     QML_XHR_ALLOW_FILE_READ = "1";
   };
 
@@ -50,6 +52,8 @@ in
 
     "quickshell/shaders/waveform.frag.qsb".source = "${compiledShaders}/waveform.frag.qsb";
     "quickshell/shaders/waveform.frag".source = "${compiledShaders}/waveform.frag";
+    "quickshell/shaders/circleMask.frag.qsb".source = "${compiledShaders}/circleMask.frag.qsb";
+    "quickshell/shaders/circleMask.frag".source = "${compiledShaders}/circleMask.frag";
   };
 
   home.activation.writeQuickshellColors = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
