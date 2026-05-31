@@ -41,6 +41,26 @@ map("i", "<C-l>", "<Right>", { desc = "Move caret right" })
 map("v", "<", "<gv")
 map("v", ">", ">gv")
 
+-- 'count o/O' opens lines and puts cursor on the FIRST new line (not the last).
+local function open_lines(key)
+	return function()
+		local count = vim.v.count1
+		if count == 1 then
+			vim.api.nvim_feedkeys(key, "n", false)
+			return
+		end
+		local keys = key
+			.. string.rep("<CR>", count - 1)
+			.. "<Esc>"
+			.. (count - 1)
+			.. "kA"
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "n", false)
+	end
+end
+
+map("n", "o", open_lines("o"), { desc = "Open line(s) below" })
+map("n", "O", open_lines("O"), { desc = "Open line(s) above" })
+
 -- Yank/paste helpers that don't obliterate the yank register.
 map("x", "<leader>p", '"_dP', { desc = "Paste without yanking" })
 map({ "n", "v" }, "<leader>D", '"_d', { desc = "Delete to void" })
