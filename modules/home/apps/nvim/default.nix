@@ -169,7 +169,6 @@ in
         copilot-lua
         fidget-nvim
         roslyn-nvim
-        tiny-inline-diagnostic-nvim
         nvim-lint
         nvim-dap
         nvim-dap-ui
