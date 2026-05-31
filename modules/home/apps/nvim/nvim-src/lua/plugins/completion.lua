@@ -89,9 +89,6 @@ require("blink.cmp").setup({
 		-- Abort completion without exiting insert mode
 		["<C-e>"] = { "cancel", "fallback" },
 
-		-- Accept current selection
-		["<CR>"] = { "accept", "fallback" },
-
 		-- Tab: copilot ghost → accept completion → snippet forward
 		["<Tab>"] = { accept_copilot_if_visible, "select_and_accept", "snippet_forward", "fallback" },
 		["<S-Tab>"] = { "snippet_backward", "fallback" },
