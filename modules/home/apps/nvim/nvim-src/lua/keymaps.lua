@@ -49,11 +49,7 @@ local function open_lines(key)
 			vim.api.nvim_feedkeys(key, "n", false)
 			return
 		end
-		local keys = key
-			.. string.rep("<CR>", count - 1)
-			.. "<Esc>"
-			.. (count - 1)
-			.. "kA"
+		local keys = key .. string.rep("<CR>", count - 1) .. "<Esc>" .. (count - 1) .. "kA"
 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "n", false)
 	end
 end
@@ -222,3 +218,6 @@ map("n", "<leader>gi", vim.lsp.buf.implementation, { desc = "Go to implementatio
 
 map("n", "<C-Z>", "<Nop>")
 map("n", "<C-w>q", "<Nop>")
+map("n", "<leader>gg", function()
+	require("neogit").open()
+end, { desc = "Git status" })

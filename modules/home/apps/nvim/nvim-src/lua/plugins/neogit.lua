@@ -51,5 +51,3 @@ neogit.setup({
 		show_staged_diff = true,
 	},
 })
-
-vim.keymap.set("n", "<leader>gg", neogit.open, { desc = "Git status" })
