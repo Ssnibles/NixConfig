@@ -225,6 +225,20 @@ require("blink.cmp").setup({
 	},
 })
 
+-- Workaround: blink.cmp calls write_to_dot_repeat (which uses complete())
+-- even when not in Insert mode (e.g. during undo_preview after InsertLeave).
+-- Guard it so it only runs when vim is actually in Insert mode.
+local ok_text_edits, text_edits = pcall(require, "blink.cmp.lib.text_edits")
+if ok_text_edits then
+	local original_write_to_dot_repeat = text_edits.write_to_dot_repeat
+	text_edits.write_to_dot_repeat = function(text_edit)
+		if vim.fn.mode() ~= "i" then
+			return
+		end
+		return original_write_to_dot_repeat(text_edit)
+	end
+end
+
 -- Copilot setup (only if module is available)
 if copilot_ok then
 	copilot.setup({
