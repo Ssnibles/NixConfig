@@ -56,24 +56,24 @@ function M.setup()
 	-- Mini.base16 drives the core syntax palette.
 	require("mini.base16").setup({
 		palette = {
-				base00 = generated.base00 or c.bg,
-				base01 = generated.base00 or c.bg,
-				base02 = generated.base00 or c.bg,
-				base03 = generated.base03 or c.comment,
-				base04 = generated.base04 or c.comment,
-				base05 = generated.base05 or c.fg,
-				base06 = generated.base06 or c.fg,
-				base07 = generated.base07 or c.fg,
-				base08 = generated.base08 or c.red,
-				base09 = generated.base09 or c.orange,
-				base0A = generated.base0A or c.yellow,
-				base0B = generated.base0B or c.green,
-				base0C = generated.base0C or c.cyan,
-				base0D = generated.base0D or c.blue,
-				base0E = generated.base0E or c.purple,
-				base0F = generated.base0F or c.magenta,
-			},
-		})
+			base00 = generated.base00 or c.bg,
+			base01 = generated.base00 or c.bg,
+			base02 = generated.base00 or c.bg,
+			base03 = generated.base03 or c.comment,
+			base04 = generated.base04 or c.comment,
+			base05 = generated.base05 or c.fg,
+			base06 = generated.base06 or c.fg,
+			base07 = generated.base07 or c.fg,
+			base08 = generated.base08 or c.red,
+			base09 = generated.base09 or c.orange,
+			base0A = generated.base0A or c.yellow,
+			base0B = generated.base0B or c.green,
+			base0C = generated.base0C or c.cyan,
+			base0D = generated.base0D or c.blue,
+			base0E = generated.base0E or c.purple,
+			base0F = generated.base0F or c.magenta,
+		},
+	})
 
 	-- Derived colours
 	local separator = blend(c.fg, c.bg, 0.06)
@@ -90,20 +90,48 @@ function M.setup()
 	hl("Normal", { fg = c.fg, bg = c.bg })
 
 	local flat_groups = {
-		"NormalNC", "NormalFloat", "SignColumn", "FoldColumn",
-		"StatusLine", "StatusLineNC", "WinBar", "WinBarNC",
-		"MsgArea", "MsgSeparator",
-		"Pmenu", "PmenuSbar", "PmenuThumb",
-		"BlinkCmpMenu", "BlinkCmpDoc", "BlinkCmpSignatureHelp", "BlinkCmpGhostText",
-		"NoiceCmdlinePopup", "NoiceConfirm", "NoicePopup", "NoicePopupmenu",
-		"NoiceFormatConfirm", "NoiceFormatProgress", "NoiceFormatTitle",
-		"FzfLuaNormal", "FzfLuaPreviewNormal", "FzfLuaPromptNormal",
-		"FzfLuaCursor", "FzfLuaHelpNormal", "FzfLuaHelpBorder",
-		"MiniClueNormal", "MiniAnimateNormalFloat",
-		"TreesitterContext", "TreesitterContextLineNumber",
-		"AlphaNormal", "AlphaHeader", "AlphaButtons", "AlphaShortcut", "AlphaFooter",
-		"DAPUINormal", "DAPUIFloatNormal",
-		"TabLine", "TabLineFill",
+		"NormalNC",
+		"NormalFloat",
+		"SignColumn",
+		"FoldColumn",
+		"StatusLine",
+		"StatusLineNC",
+		"WinBar",
+		"WinBarNC",
+		"MsgArea",
+		"MsgSeparator",
+		"Pmenu",
+		"PmenuSbar",
+		"PmenuThumb",
+		"BlinkCmpMenu",
+		"BlinkCmpDoc",
+		"BlinkCmpSignatureHelp",
+		"NoiceCmdlinePopup",
+		"NoiceConfirm",
+		"NoicePopup",
+		"NoicePopupmenu",
+		"NoiceFormatConfirm",
+		"NoiceFormatProgress",
+		"NoiceFormatTitle",
+		"FzfLuaNormal",
+		"FzfLuaPreviewNormal",
+		"FzfLuaPromptNormal",
+		"FzfLuaCursor",
+		"FzfLuaHelpNormal",
+		"FzfLuaHelpBorder",
+		"MiniClueNormal",
+		"MiniAnimateNormalFloat",
+		"TreesitterContext",
+		"TreesitterContextLineNumber",
+		"AlphaNormal",
+		"AlphaHeader",
+		"AlphaButtons",
+		"AlphaShortcut",
+		"AlphaFooter",
+		"DAPUINormal",
+		"DAPUIFloatNormal",
+		"TabLine",
+		"TabLineFill",
 		"OilNormal",
 	}
 	for _, g in ipairs(flat_groups) do
@@ -214,6 +242,7 @@ function M.setup()
 	hl("BlinkCmpLabelDescription", { fg = c.comment })
 	hl("BlinkCmpSource", { fg = c.comment })
 	hl("BlinkCmpKind", { fg = c.comment })
+	hl("BlinkCmpGhostText", { fg = c.comment })
 
 	local kindHls = {
 		Field = c.purple,
@@ -348,7 +377,7 @@ function M.setup()
 	]]
 	function M.fold_text()
 		local line = vim.fn.getline(vim.v.foldstart)
-		local width = vim.fn.winwidth(0) - vim.fn.getwinvar(0, '&numberwidth') - 6
+		local width = vim.fn.winwidth(0) - vim.fn.getwinvar(0, "&numberwidth") - 6
 		local folded = vim.fn.printf(" %d lines ", vim.v.foldend - vim.v.foldstart + 1)
 		local text = line:gsub("\t", string.rep(" ", vim.fn.shiftwidth()))
 		if #text > width then
