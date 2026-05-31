@@ -124,7 +124,6 @@ map("n", "<leader>qL", "<cmd>lclose<CR>", { desc = "Close location list" })
 
 -- ═══════════════════════════════════════════════════════════════════
 --  D I A G N O S T I C S   J U M P S
---  (inline display is handled by tiny-inline-diagnostic)
 -- ═══════════════════════════════════════════════════════════════════
 
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
