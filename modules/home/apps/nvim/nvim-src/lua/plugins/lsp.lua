@@ -306,10 +306,7 @@ end
 lsp.config("*", {
 	capabilities = capabilities,
 	flags = { debounce_text_changes = 150 },
-	on_attach = function(client, bufnr)
-		if client:supports_method("textDocument/inlayHint") then
-			vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-		end
+	on_attach = function(_, bufnr)
 		attach_lsp_keymaps(bufnr)
 	end,
 })
