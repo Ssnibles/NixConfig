@@ -12,7 +12,7 @@ in
   home.packages = [ pkgs.unstable.zellij ];
 
   xdg.configFile."zellij/config.kdl".text = ''
-    default_shell "${pkgs.zsh}/bin/zsh"
+    default_shell "${pkgs.fish}/bin/fish"
     pane_frames true
     mouse_mode true
     scroll_buffer_size 10000

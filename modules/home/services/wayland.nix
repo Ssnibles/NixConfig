@@ -1,17 +1,9 @@
-# =============================================================================
-# Wayland User Services
-# =============================================================================
-# Systemd user services for Wayland-specific utilities.
-# =============================================================================
 {
   pkgs,
-  lib,
-  hostProfile,
   ...
 }:
 
 {
-  # ── Polkit authentication agent ───────────────────────────────────────────
   systemd.user.services.polkit-gnome-authentication-agent = {
     Unit = {
       Description = "Polkit authentication agent";
@@ -26,7 +18,6 @@
     Install.WantedBy = [ "graphical-session.target" ];
   };
 
-  # ── Solaar Logitech device manager ─────────────────────────────────────────
   systemd.user.services.solaar = {
     Unit = {
       Description = "Solaar Logitech device manager";
@@ -34,7 +25,6 @@
       After = [ "graphical-session.target" ];
     };
     Service = {
-      # The --battery flag restricts Solaar to monitoring mode
       ExecStart = "${pkgs.solaar}/bin/solaar --window=hide";
       Restart = "on-failure";
       RestartSec = 1;
@@ -42,7 +32,6 @@
     Install.WantedBy = [ "graphical-session.target" ];
   };
 
-  # ── Awww wallpaper daemon ────────────────────────────────────────────────
   systemd.user.services.awww = {
     Unit = {
       Description = "Awww wallpaper daemon";
@@ -57,12 +46,11 @@
     Install.WantedBy = [ "graphical-session.target" ];
   };
 
-  # ── Vicinae launcher ─────────────────────────────────────────────────────
   systemd.user.services.vicinae = {
     Unit = {
       Description = "Vicinae launcher daemon";
-      PartOf = [ "hyprland-session.target" ];
-      After = [ "hyprland-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
     };
     Service = {
       Environment = [ "QT_QPA_PLATFORM=wayland;xcb" ];
@@ -70,37 +58,6 @@
       Restart = "on-failure";
       RestartSec = 1;
     };
-    Install.WantedBy = [ "hyprland-session.target" ];
-  };
-
-
-  # ── Hypridle ─────────────────────────────────────────────────────────────
-  services.hypridle = {
-    enable = true;
-    package = pkgs.unstable.hypridle;
-    settings = {
-      general = {
-        lock_cmd = "hyprlock";
-        before_sleep_cmd = "hyprlock";
-        after_sleep_cmd = "hyprctl dispatch dpms on";
-      };
-      listener = [
-        {
-          timeout = 300;
-          on-timeout = "hyprlock";
-        }
-        {
-          timeout = 600;
-          on-timeout = "hyprctl dispatch dpms off";
-          on-resume = "hyprctl dispatch dpms on";
-        }
-      ]
-      ++ lib.optionals hostProfile.isLaptop [
-        {
-          timeout = 1200;
-          on-timeout = "systemctl suspend";
-        }
-      ];
-    };
+    Install.WantedBy = [ "graphical-session.target" ];
   };
 }

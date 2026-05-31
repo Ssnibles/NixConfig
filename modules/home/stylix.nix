@@ -32,6 +32,10 @@ in
     zathura = {
       enable = true;
       package = pkgs.unstable.zathura;
+      options = {
+        synctex = true;
+        synctex-editor-command = "nvr --remote-send \"<C-\\><C-n>:edit %{input}<CR>:%{line}<CR>\"";
+      };
     };
   };
 
