@@ -23,6 +23,9 @@
   powerManagement.cpuFreqGovernor = "performance";
 
   # ── Bluetooth ─────────────────────────────────────────────────────────────
+  # MediaTek MT7921 Bluetooth regression in kernel 6.12.90:
+  #   https://github.com/NixOS/nixpkgs/issues/525054
+  # Fixed in 6.12.91 (nixpkgs updated to pull the newer kernel).
   # Ensure the kernel module loads early
   boot.kernelModules = [ "btusb" ];
   # Start Bluetooth at boot and power on the controller.
