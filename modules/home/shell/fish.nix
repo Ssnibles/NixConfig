@@ -22,7 +22,7 @@ in
       hm = "nh home switch";
       update = "nh os switch --update";
       clean = "nh clean all";
-      get-class = "hyprctl clients | grep -A5 'class:'";
+      get-class = "niri msg windows";
       cat = "bat --paging=never --style=plain";
       ls = "eza --group-directories-first --icons=auto";
       ll = "eza -lah --group-directories-first --icons=auto --git";
@@ -243,9 +243,14 @@ in
     ];
   };
 
+  # ── Set fish as the default shell ───────────────────────────────────────────
+  home.sessionVariables = {
+    SHELL = "${pkgs.fish}/bin/fish";
+  };
+
   # ── Foot terminal ─────────────────────────────────────────────────────────
   xdg.configFile."foot/foot.ini".text = ''
-    shell=${pkgs.zsh}/bin/zsh
+    shell=${pkgs.fish}/bin/fish
     font=JetBrainsMono Nerd Font:size=12
     pad=20x20
     [colors-dark]

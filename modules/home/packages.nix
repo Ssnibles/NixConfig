@@ -63,6 +63,7 @@
     zip
     btop
     microfetch
+    gh-dash
 
     # ── Fonts ───────────────────────────────────────────────────────────
     nerd-fonts.fira-code
@@ -74,6 +75,8 @@
     foot
     onlyoffice-desktopeditors
     vesktop
+    qownnotes
+    neovide
 
     # ── Document viewers ────────────────────────────────────────────────
     sioyek

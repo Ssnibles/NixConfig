@@ -22,18 +22,26 @@
   # Desktop stays on performance governor; no TLP needed.
   powerManagement.cpuFreqGovernor = "performance";
 
-  # ── Lower always-on background services ────────────────────────────────────
+  # ── Bluetooth ─────────────────────────────────────────────────────────────
+  # MediaTek MT7921 Bluetooth regression in kernel 6.12.90:
+  #   https://github.com/NixOS/nixpkgs/issues/525054
+  # Fixed in 6.12.91 (nixpkgs updated to pull the newer kernel).
+  # Ensure the kernel module loads early
+  boot.kernelModules = [ "btusb" ];
   # Start Bluetooth at boot and power on the controller.
   hardware.bluetooth.powerOnBoot = lib.mkForce true;
   systemd.services.bluetooth.wantedBy = lib.mkForce [ "multi-user.target" ];
   # Unblock Bluetooth at boot – asus_wmi soft-blocks the adapter
   systemd.services.unblock-bluetooth = {
     description = "Unblock Bluetooth rfkill";
+    after = [ "sysinit.target" ];
     before = [ "bluetooth.service" ];
-    wantedBy = [ "bluetooth.service" ];
+    wantedBy = [ "multi-user.target" ];
     serviceConfig.Type = "oneshot";
     script = "${pkgs.util-linux}/bin/rfkill unblock bluetooth";
   };
+
+  # ── Lower always-on background services ────────────────────────────────────
   services.printing.enable = lib.mkForce false;
   services.avahi.enable = lib.mkForce false;
   services.avahi.nssmdns4 = lib.mkForce false;

@@ -1,7 +1,7 @@
 # =============================================================================
 # Custom Shell Scripts
 # =============================================================================
-# Hyprland helper scripts and the AI commit-message generator.
+# Wayland helper scripts and the AI commit-message generator.
 # All scripts are built with writeShellScriptBin so they end up on $PATH.
 # =============================================================================
 {
@@ -25,15 +25,15 @@ let
   wallpaperPath = toString stylixThemes.wallpaper;
   awwwBin = "${pkgs.unstable.awww}/bin/awww";
   qsBin = "${pkgs.unstable.quickshell}/bin/qs";
-  flakeTarget =
-    if hostProfile.useDisko then
-      hostProfile.hostName
-    else
-      "${hostProfile.hostName}-test";
+  flakeTarget = if hostProfile.useDisko then hostProfile.hostName else "${hostProfile.hostName}-test";
 
-  # ── Toggle floating window ─────────────────────────────────────────────
-  # Floats the active window and centres it at 60 % of screen size.
-  toggle-float = pkgs.writeShellScriptBin "toggle-float" ''
+  # ── Toggle floating window (Niri) ──────────────────────────────────────
+  toggle-float-niri = pkgs.writeShellScriptBin "toggle-float-niri" ''
+    ${pkgs.niri}/bin/niri msg action toggle-window-floating
+  '';
+
+  # ── Toggle floating window (Hyprland) ──────────────────────────────────
+  toggle-float-hyprland = pkgs.writeShellScriptBin "toggle-float-hyprland" ''
     IS_FLOATING=$(${pkgs.hyprland}/bin/hyprctl activewindow -j \
       | ${pkgs.jq}/bin/jq -r '.floating')
 
@@ -45,23 +45,62 @@ let
     fi
   '';
 
+  # ── Toggle floating window (auto-detect compositor) ────────────────────
+  toggle-float = pkgs.writeShellScriptBin "toggle-float" ''
+    if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
+      exec ${toggle-float-hyprland}/bin/toggle-float-hyprland
+    else
+      exec ${toggle-float-niri}/bin/toggle-float-niri
+    fi
+  '';
+
   # ── Reload Quickshell ──────────────────────────────────────────────────
   # Sends an in-process reload request so all QML updates apply instantly.
   reload-shell = pkgs.writeShellScriptBin "reload-shell" ''
     ${qsBin} ipc call quickshell reload all 2>/dev/null || true
   '';
 
-  # ── Reload everything ────────────────────────────────────────────────────
-  # Reloads Hyprland and Quickshell (bar + notifications).
-  reload-all = pkgs.writeShellScriptBin "reload-all" ''
+  # ── Reload everything (Niri) ───────────────────────────────────────────
+  reload-all-niri = pkgs.writeShellScriptBin "reload-all-niri" ''
+    ${pkgs.niri}/bin/niri msg config
+    ${qsBin} ipc call quickshell reload all 2>/dev/null || true
+    ${pkgs.libnotify}/bin/notify-send "Reload" "Niri, Quickshell reloaded"
+  '';
+
+  # ── Reload everything (Hyprland) ───────────────────────────────────────
+  reload-all-hyprland = pkgs.writeShellScriptBin "reload-all-hyprland" ''
     ${pkgs.hyprland}/bin/hyprctl reload
     ${qsBin} ipc call quickshell reload all 2>/dev/null || true
     ${pkgs.libnotify}/bin/notify-send "Reload" "Hyprland, Quickshell reloaded"
   '';
 
-  # ── Focus mode ─────────────────────────────────────────────────────────
-  # Toggles gaps / rounding and hides the Quickshell bar for focus mode.
-  toggle-focus-mode = pkgs.writeShellScriptBin "toggle-focus-mode" ''
+  # ── Reload everything (auto-detect compositor) ─────────────────────────
+  reload-all = pkgs.writeShellScriptBin "reload-all" ''
+    if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
+      exec ${reload-all-hyprland}/bin/reload-all-hyprland
+    else
+      exec ${reload-all-niri}/bin/reload-all-niri
+    fi
+  '';
+
+  # ── Focus mode (Niri) ──────────────────────────────────────────────────
+  toggle-focus-mode-niri = pkgs.writeShellScriptBin "toggle-focus-mode-niri" ''
+    STATE_FILE="/tmp/niri-focus-mode"
+    if [ -f "$STATE_FILE" ] && [ "$(cat $STATE_FILE)" = "focus" ]; then
+      ${pkgs.niri}/bin/niri msg action fullscreen-window
+      qs ipc call bar toggle 2>/dev/null || true
+      echo "normal" > "$STATE_FILE"
+      ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled"
+    else
+      ${pkgs.niri}/bin/niri msg action fullscreen-window
+      qs ipc call bar toggle 2>/dev/null || true
+      echo "focus" > "$STATE_FILE"
+      ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled"
+    fi
+  '';
+
+  # ── Focus mode (Hyprland) ──────────────────────────────────────────────
+  toggle-focus-mode-hyprland = pkgs.writeShellScriptBin "toggle-focus-mode-hyprland" ''
     STATE_FILE="/tmp/hyprland-focus-mode"
     GAPS_IN=8
     GAPS_OUT=16
@@ -70,14 +109,14 @@ let
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in $GAPS_IN
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out $GAPS_OUT
       ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding $ROUNDING
-      qs ipc call bar toggle 2>/dev/null || true
+      qs -c hyprland ipc call bar toggle 2>/dev/null || true
       echo "normal" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled - Normal mode restored"
     else
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in 0
       ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out 0
       ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding 0
-      qs ipc call bar toggle 2>/dev/null || true
+      qs -c hyprland ipc call bar toggle 2>/dev/null || true
       echo "focus" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled - Distractions removed"
     fi
@@ -278,11 +317,14 @@ let
     }
 
     reload_ui() {
-      if [ -z "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+      if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
+        ${pkgs.hyprland}/bin/hyprctl reload >/dev/null 2>&1 || true
+      elif ${pkgs.niri}/bin/niri msg focused-monitor >/dev/null 2>&1; then
+        ${pkgs.niri}/bin/niri msg config >/dev/null 2>&1 || true
+      else
         return 0
       fi
 
-      ${pkgs.hyprland}/bin/hyprctl reload >/dev/null 2>&1 || true
       ${awwwBin} img ${wallpaperPath} >/dev/null 2>&1 || true
       if [ -x "${qsBin}" ]; then
         if ! ${qsBin} ipc call quickshell reload all 2>/dev/null; then
@@ -371,9 +413,14 @@ in
 {
   home.packages = [
     toggle-float
+    toggle-float-niri
+    toggle-float-hyprland
     reload-shell
     reload-all
-    toggle-focus-mode
+    reload-all-niri
+    reload-all-hyprland
+    toggle-focus-mode-niri
+    toggle-focus-mode-hyprland
     aicommit
     setup-fo-prism
     stylix-switch

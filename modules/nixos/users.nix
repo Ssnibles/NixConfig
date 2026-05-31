@@ -5,12 +5,10 @@ let
   spotifySecretAge = ../../secrets/spotify-secret.age;
 in
 {
-  programs.zsh.enable = true;
-
   users.users.${hostProfile.user} = {
     isNormalUser = true;
     description = hostProfile.user;
-    shell = pkgs.zsh;
+    shell = pkgs.fish;
     extraGroups = [
       "networkmanager"
       "wheel"

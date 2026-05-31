@@ -1,12 +1,3 @@
-# =============================================================================
-# Home Manager Entry Point – josh
-# =============================================================================
-# Applies to every host. Host-specific behaviour is driven by hostProfile
-# flags (isDesktop, isLaptop, etc.) inside the individual modules.
-#
-# All imports here must be Home Manager modules (home.*, programs.*, etc.).
-# NixOS-level options belong in modules/nixos/ and hosts/*/configuration.nix.
-# =============================================================================
 {
   pkgs,
   inputs,
@@ -20,36 +11,23 @@
   };
 
   imports = [
-    # Secrets management
     inputs.agenix.homeManagerModules.default
     inputs.stylix.homeModules.stylix
     inputs.nvf.homeManagerModules.default
     inputs.spicetify-nix.homeManagerModules.spicetify
 
-    # ── Shell & terminal ──────────────────────────────────────────────────
-    ../../modules/home/shell/fish.nix
-    ../../modules/home/shell/tmux.nix
-    ../../modules/home/shell/zellij.nix
-    ../../modules/home/shell/zsh.nix
+    ../../modules/home/shell
+    ../../modules/home/desktop
+    ../../modules/home/apps
 
-    # ── Desktop environment ───────────────────────────────────────────────
-    ../../modules/home/desktop/hyprland.nix
-    ../../modules/home/desktop/waybar.nix
-    ../../modules/home/desktop/quickshell.nix
-
-    # ── Editor ────────────────────────────────────────────────────────────
-    ../../modules/home/neovim.nix
-    ../../modules/home/qutebrowser.nix
-
-    # ── Applications & packages ───────────────────────────────────────────
     ../../modules/home/git.nix
     ../../modules/home/packages.nix
     ../../modules/home/programs.nix
+    ../../modules/home/qutebrowser.nix
     ../../modules/home/stylix.nix
     ../../modules/home/scripts.nix
   ];
 
-  # ── Cursor ───────────────────────────────────────────────────────────────
   home.pointerCursor = {
     package = pkgs.bibata-cursors;
     name = "Bibata-Modern-Classic";
@@ -62,20 +40,6 @@
     MOZ_ENABLE_WAYLAND = "1";
     NIXOS_OZONE_WL = "1";
   };
-
-  xdg.configFile."xdg-desktop-portal/portals.conf".text = ''
-    [preferred]
-    default=hyprland;gtk
-
-    [org.freedesktop.impl.portal.ScreenCast]
-    default=hyprland
-
-    [org.freedesktop.impl.portal.Screenshot]
-    default=hyprland
-
-    [org.freedesktop.impl.portal.FileChooser]
-    default=gtk
-  '';
 
   programs.home-manager.enable = true;
 }
