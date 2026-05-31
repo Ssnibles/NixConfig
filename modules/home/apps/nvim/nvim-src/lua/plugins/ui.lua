@@ -90,13 +90,15 @@ require("lualine").setup({
 			{
 				"filetype",
 				colored = false,
-				padding = { left = 1, right = 0 },
+				padding = { left = 1, right = 1 },
 			},
 		},
 		lualine_z = {
 			{
-				"location",
-				padding = { left = 0, right = 1 },
+				function()
+					return vim.fn.line(".") .. "/" .. vim.fn.line("$")
+				end,
+				padding = { left = 1, right = 1 },
 			},
 		},
 	},
