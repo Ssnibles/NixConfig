@@ -2,6 +2,23 @@
 local augroup = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 local autocmd = vim.api.nvim_create_autocmd
 
+-- Enable inlay hints automatically for any buffer that gets an LSP client.
+-- We call enable unconditionally (wrapped in pcall) because some servers
+-- (e.g., jdtls) dynamically register the capability after attach, and
+-- setting the buffer state to "enabled" means hints show up as soon as the
+-- server advertises support. We only do this once per buffer so a manual
+-- toggle off with <leader>ti is respected.
+autocmd("LspAttach", {
+	group = augroup,
+	callback = function(args)
+		if vim.b[args.buf]._inlay_hints_auto_enabled then
+			return
+		end
+		pcall(vim.lsp.inlay_hint.enable, true, { bufnr = args.buf })
+		vim.b[args.buf]._inlay_hints_auto_enabled = true
+	end,
+})
+
 -- Flash yanked region
 autocmd("TextYankPost", {
 	group = augroup,
