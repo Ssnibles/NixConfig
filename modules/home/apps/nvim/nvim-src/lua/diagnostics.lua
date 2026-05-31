@@ -1,6 +1,5 @@
 vim.diagnostic.config({
 	virtual_text = {
-		enabled = true,
 		spacing = 6,
 		prefix = function(diagnostic)
 			local sev = diagnostic.severity

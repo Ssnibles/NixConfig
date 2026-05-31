@@ -412,8 +412,85 @@ lsp.config("kotlin_language_server", {
 })
 
 lsp.config("jdtls", {
+	cmd = { "jdtls" },
 	filetypes = { "java" },
 	root_markers = { "pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", ".git" },
+	settings = {
+		java = {
+			signatureHelp = { enabled = true },
+			contentProvider = { preferred = "fernflower" },
+			completion = {
+				favoriteStaticMembers = {
+					"org.hamcrest.MatcherAssert.assertThat",
+					"org.hamcrest.Matchers.*",
+					"org.hamcrest.CoreMatchers.*",
+					"org.junit.jupiter.api.Assertions.*",
+					"java.util.Objects.requireNonNull",
+					"java.util.Objects.requireNonNullElse",
+					"org.mockito.Mockito.*",
+				},
+				filteredTypes = {
+					"com.sun.*",
+					"io.micrometer.shaded.*",
+					"java.awt.*",
+					"jdk.*",
+					"sun.*",
+				},
+				importOrder = {
+					"java",
+					"javax",
+					"com",
+					"org",
+				},
+			},
+			sources = {
+				organizeImports = {
+					starThreshold = 9999,
+					staticStarThreshold = 9999,
+				},
+			},
+			codeGeneration = {
+				toString = {
+					template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
+				},
+				hashCodeEquals = {
+					useJava7Objects = true,
+				},
+				useBlocks = true,
+			},
+			configuration = {
+				updateBuildConfiguration = "interactive",
+			},
+			saveActions = {
+				organizeImports = false,
+			},
+			format = {
+				enabled = true,
+			},
+			inlayHints = {
+				parameterNames = {
+					enabled = "all",
+				},
+			},
+		},
+	},
+	init_options = {
+		extendedClientCapabilities = {
+			progressReportProvider = true,
+			classFileContentsSupport = true,
+			generateToStringPromptSupport = true,
+			hashCodeEqualsPromptSupport = true,
+			advancedOrganizeImportsSupport = true,
+			advancedGenerateAccessorsSupport = true,
+			advancedExtractRefactoringSupport = true,
+			moveRefactoringSupport = true,
+			inferSelectionSupport = {
+				"extractMethod",
+				"extractVariable",
+				"extractConstant",
+			},
+		},
+	},
 })
 
 lsp.config("marksman", {
