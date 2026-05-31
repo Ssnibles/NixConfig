@@ -102,25 +102,23 @@ let
   # ── Focus mode (Hyprland) ──────────────────────────────────────────────
   toggle-focus-mode-hyprland = pkgs.writeShellScriptBin "toggle-focus-mode-hyprland" ''
     STATE_FILE="/tmp/hyprland-focus-mode"
+    GAPS_IN=8
+    GAPS_OUT=16
+    ROUNDING=16
     if [ -f "$STATE_FILE" ] && [ "$(cat $STATE_FILE)" = "focus" ]; then
-      ${pkgs.hyprland}/bin/hyprctl dispatch fullscreen 0
-      qs ipc call bar toggle 2>/dev/null || true
+      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in $GAPS_IN
+      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out $GAPS_OUT
+      ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding $ROUNDING
+      qs -c hyprland ipc call bar toggle 2>/dev/null || true
       echo "normal" > "$STATE_FILE"
-      ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled"
+      ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled - Normal mode restored"
     else
-      ${pkgs.hyprland}/bin/hyprctl dispatch fullscreen 0
-      qs ipc call bar toggle 2>/dev/null || true
+      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in 0
+      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out 0
+      ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding 0
+      qs -c hyprland ipc call bar toggle 2>/dev/null || true
       echo "focus" > "$STATE_FILE"
-      ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled"
-    fi
-  '';
-
-  # ── Focus mode (auto-detect compositor) ────────────────────────────────
-  toggle-focus-mode = pkgs.writeShellScriptBin "toggle-focus-mode" ''
-    if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
-      exec ${toggle-focus-mode-hyprland}/bin/toggle-focus-mode-hyprland
-    else
-      exec ${toggle-focus-mode-niri}/bin/toggle-focus-mode-niri
+      ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled - Distractions removed"
     fi
   '';
 
@@ -421,7 +419,6 @@ in
     reload-all
     reload-all-niri
     reload-all-hyprland
-    toggle-focus-mode
     toggle-focus-mode-niri
     toggle-focus-mode-hyprland
     aicommit
