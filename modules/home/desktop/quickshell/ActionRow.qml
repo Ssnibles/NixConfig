@@ -5,8 +5,6 @@ import QtQml
 Row {
   id: root
 
-  Colors { id: colors }
-
   property var actions: []
   property string uiFont: "JetBrains Mono"
   property int actionBtnHeight: 26
@@ -27,7 +25,7 @@ Row {
       radius: 6
       color: "transparent"
       border.width: 1
-      border.color: colors.border
+      border.color: Colors.border
       width: btnLabel.implicitWidth + 20
 
       Behavior on scale {
@@ -38,7 +36,7 @@ Row {
         id: btnLabel
         anchors.centerIn: parent
         text: modelData.text
-        color: colors.fgMid
+        color: Colors.fgMid
         font.family: root.uiFont
         font.pixelSize: 11
         textFormat: Text.PlainText
@@ -49,7 +47,7 @@ Row {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onEntered: {
-          parent.color = colors.bgSubtle;
+          parent.color = Colors.bgSubtle;
           parent.scale = 0.96;
         }
         onExited: {

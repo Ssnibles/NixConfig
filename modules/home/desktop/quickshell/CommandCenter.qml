@@ -10,19 +10,17 @@ import QtQml
 PanelWindow {
   id: controlPanel
 
-  Colors { id: colors }
-
   property QtObject root: null
 
-  property color _fg: root ? root.fg : colors.fg
-  property color _fgMid: root ? root.fgMid : colors.fgMid
-  property color _fgDim: root ? root.fgDim : colors.fgDim
-  property color _bgSubtle: root ? root.bgSubtle : colors.bgSubtle
-  property color _border: root ? root.border : colors.border
-  property color _accent: root ? root.accent : colors.accent
-  property color _red: root ? root.red : colors.red
-  property color _green: root ? root.green : colors.green
-  property color _yellow: root ? root.yellow : colors.yellow
+  property color _fg: root ? root.fg : Colors.fg
+  property color _fgMid: root ? root.fgMid : Colors.fgMid
+  property color _fgDim: root ? root.fgDim : Colors.fgDim
+  property color _bgSubtle: root ? root.bgSubtle : Colors.bgSubtle
+  property color _border: root ? root.border : Colors.border
+  property color _accent: root ? root.accent : Colors.accent
+  property color _red: root ? root.red : Colors.red
+  property color _green: root ? root.green : Colors.green
+  property color _yellow: root ? root.yellow : Colors.yellow
   property string _uiFont: root ? root.uiFont : "JetBrains Mono"
 
   // -- Volume control --
@@ -181,8 +179,8 @@ PanelWindow {
     return null;
   }
 
-  readonly property color gradientStart: root ? root.accent : colors.accent
-  readonly property color gradientEnd: root ? root.purple : colors.purple
+  readonly property color gradientStart: root ? root.accent : Colors.accent
+  readonly property color gradientEnd: root ? root.purple : Colors.purple
 
   readonly property int _cardRadius: root ? root.cardRadius : 16
   readonly property int _cardPadding: root ? root.cardPadding : 20
@@ -193,7 +191,7 @@ PanelWindow {
   Rectangle {
     anchors.fill: parent
     radius: controlPanel._cardRadius
-    color: root ? root.bgRaised : colors.bgRaised
+    color: root ? root.bgRaised : Colors.bgRaised
     border.width: 1
     border.color: controlPanel._border
     opacity: controlPanel.panelOpacity
@@ -653,7 +651,7 @@ PanelWindow {
               Text {
                 anchors.centerIn: parent
                 text: controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying ? "\uDB80\uDFE4" : "\uDB81\uDC0A"
-                color: root ? root.bg : colors.bg
+                color: root ? root.bg : Colors.bg
                 font.family: controlPanel._uiFont
                 font.pixelSize: 18
               }
@@ -1082,7 +1080,7 @@ PanelWindow {
 
             AppIcon {
               notification: modelData
-              fallbackBg: root ? root.bgRaised : colors.bgRaised
+              fallbackBg: root ? root.bgRaised : Colors.bgRaised
             }
 
             Text {

@@ -13,8 +13,6 @@ import QtQml
 
 Item {
   id: notif
-  Colors { id: colors }
-
   property bool doNotDisturb: false
   property bool barVisible: true
   property alias notificationServer: notificationServer
@@ -38,11 +36,11 @@ Item {
   }
 
   function urgencyColor(notification) {
-    if (!notification) return colors.accent;
-    if (notification.urgency === NotificationUrgency.Critical) return colors.red;
-    if (notification.urgency === NotificationUrgency.Low)      return colors.fgDim;
-    if (notification.urgency === NotificationUrgency.Normal)   return colors.accent;
-    return colors.yellow;
+    if (!notification) return Colors.accent;
+    if (notification.urgency === NotificationUrgency.Critical) return Colors.red;
+    if (notification.urgency === NotificationUrgency.Low)      return Colors.fgDim;
+    if (notification.urgency === NotificationUrgency.Normal)   return Colors.accent;
+    return Colors.yellow;
   }
 
   function popupTimeoutFor(notification) {
@@ -135,9 +133,9 @@ Item {
             implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
           height: implicitHeight
           radius: notif.cardRadius
-          color: colors.bgRaised
+          color: Colors.bgRaised
           border.width: 1
-          border.color: colors.border
+          border.color: Colors.border
 
           opacity: 0
           transform: Translate { id: popupTranslate; x: -(notif.panelWidth + notif.sideMargin) }
@@ -169,13 +167,13 @@ Item {
               width: parent.width
               spacing: 8
 
-              AppIcon { notification: popupCard.notification; fallbackBg: colors.bgSubtle }
+              AppIcon { notification: popupCard.notification; fallbackBg: Colors.bgSubtle }
 
               Text {
                 text: (notification && notification.appName && notification.appName.length > 0)
                   ? notification.appName
                   : "Notification"
-                color: colors.accent
+                color: Colors.accent
                 font.family: notif.uiFont
                 font.pixelSize: 11
                 font.bold: true
@@ -192,12 +190,12 @@ Item {
                 radius: 4
                 color: "transparent"
                 border.width: 1
-                border.color: colors.border
+                border.color: Colors.border
 
                 Text {
                   anchors.centerIn: parent
                   text: "×"
-                  color: colors.fgDim
+                  color: Colors.fgDim
                   font.family: notif.uiFont
                   font.pixelSize: 13
                   font.bold: true
@@ -206,7 +204,7 @@ Item {
                 MouseArea {
                   anchors.fill: parent
                   hoverEnabled: true
-                  onEntered: closePopup.color = colors.bgSubtle
+                  onEntered: closePopup.color = Colors.bgSubtle
                   onExited:  closePopup.color = "transparent"
                   onClicked: removeFn(notification)
                 }
@@ -220,7 +218,7 @@ Item {
                     ? notification.appName
                     : "Notification")
               width: parent.width
-              color: colors.fg
+              color: Colors.fg
               font.family: notif.uiFont
               font.pixelSize: 13
               font.bold: true
@@ -232,7 +230,7 @@ Item {
             Text {
               text: notification ? notif.stripMarkup(notification.body || "") : ""
               width: parent.width
-              color: colors.fgMid
+              color: Colors.fgMid
               font.family: notif.uiFont
               font.pixelSize: 12
               wrapMode: Text.Wrap

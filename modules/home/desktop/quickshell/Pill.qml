@@ -2,13 +2,11 @@ import QtQuick
 
 Rectangle {
   id: root
-  Colors { id: colors }
-
   property int padding: 8
 
   height: 22
   radius: height / 2
-  color: colors.bgRaised
+  color: Colors.bgRaised
 
   Item {
     id: contentItem

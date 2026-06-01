@@ -4,10 +4,8 @@ import QtQml
 Item {
   id: root
 
-  Colors { id: colors }
-
   property real value: 0
-  property color fillColor: colors.accent
+  property color fillColor: Colors.accent
 
   readonly property bool hovered: mouse.containsMouse
   readonly property bool active: mouse.dragging

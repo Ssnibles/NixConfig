@@ -4,10 +4,8 @@ import QtQml
 Item {
   id: root
 
-  Colors { id: colors }
-
   property var notification: null
-  property color fallbackBg: colors.bgSubtle
+  property color fallbackBg: Colors.bgSubtle
   property int iconSize: 24
   property string uiFont: "JetBrains Mono"
 
@@ -35,7 +33,7 @@ Item {
     radius: 4
     color: fallbackBg
     border.width: 1
-    border.color: colors.border
+    border.color: Colors.border
     visible: !iconImg.visible
 
     Text {
@@ -43,7 +41,7 @@ Item {
       text: (root.notification && root.notification.appName && root.notification.appName.length > 0)
         ? root.notification.appName[0].toUpperCase()
         : "N"
-      color: colors.teal
+      color: Colors.teal
       font.family: uiFont
       font.pixelSize: 11
       font.bold: true

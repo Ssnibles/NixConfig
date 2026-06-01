@@ -38,11 +38,19 @@ ShellRoot {
     target: "controlpanel"
 
     function toggle(): void  {
+      if (!commandCenterLoader.active) {
+        commandCenterLoader.active = true;
+        return;
+      }
       if (commandCenterLoader.item) {
         commandCenterLoader.item.visible = !commandCenterLoader.item.visible;
       }
     }
     function show(): void    {
+      if (!commandCenterLoader.active) {
+        commandCenterLoader.active = true;
+        return;
+      }
       if (commandCenterLoader.item) commandCenterLoader.item.visible = true;
     }
     function hide(): void    {
@@ -72,10 +80,12 @@ ShellRoot {
 
   Loader {
     id: commandCenterLoader
+    active: false
     source: "CommandCenter.qml"
     onItemChanged: {
       if (item && notificationsLoader.item) {
         item.root = notificationsLoader.item;
+        item.visible = true;
       }
     }
   }
