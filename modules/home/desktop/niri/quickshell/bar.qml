@@ -287,7 +287,7 @@ PanelWindow {
         }
       }
 
-      if (lines[i].indexOf(":") > 0 && lines[i].indexOf("eth") >= 0 || lines[i].indexOf("wlan") >= 0 || lines[i].indexOf("enp") >= 0 || lines[i].indexOf("wlp") >= 0) {
+      if (lines[i].indexOf(":") > 0 && (lines[i].indexOf("eth") >= 0 || lines[i].indexOf("wlan") >= 0 || lines[i].indexOf("enp") >= 0 || lines[i].indexOf("wlp") >= 0)) {
         var iface = lines[i].split(":")[0].trim();
         var stats = lines[i].split(":")[1].trim().split(/\s+/);
         var rxBytes = parseInt(stats[0]);

@@ -1,4 +1,4 @@
-{ pkgs, lib, hostProfile, ... }:
+{ lib, ... }:
 
 {
   networking = {
@@ -13,11 +13,7 @@
     };
     wireless.iwd.settings.General.Country = "NZ";
 
-    firewall = {
-      enable = true;
-      allowedTCPPorts = [ ];
-      allowedUDPPorts = [ ];
-    };
+    firewall.enable = true;
 
     enableIPv6 = true;
   };

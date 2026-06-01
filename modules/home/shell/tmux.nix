@@ -1,12 +1,13 @@
 # =============================================================================
 # Tmux Configuration
 # =============================================================================
-# Terminal multiplexer with vi-mode, TPM plugins, and active Stylix theme.
-# NOTE: TPM itself is bootstrapped outside Nix – see README.md.
+# Terminal multiplexer with vi-mode, Home Manager plugins, and active Stylix theme.
 # =============================================================================
 { pkgs, config, ... }:
 let
-  c = (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
+  c =
+    (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; })
+    .withHash;
 in
 {
   programs.tmux = {
@@ -132,16 +133,7 @@ in
       setw -g automatic-rename        on
       setw -g automatic-rename-format '#{b:pane_current_command}'
 
-      # ── TPM plugins ─────────────────────────────────────────────────────
-      set -g @plugin 'tmux-plugins/tpm'
-      set -g @plugin 'tmux-plugins/tmux-sensible'
-      set -g @plugin 'tmux-plugins/tmux-resurrect'
-      set -g @plugin 'tmux-plugins/tmux-continuum'
-      set -g @plugin 'tmux-plugins/tmux-yank'
-      set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
-      set -g @plugin 'tmux-plugins/tmux-open'
-      set -g @plugin 'christoomey/vim-tmux-navigator'
-
+      # ── Plugin options ──────────────────────────────────────────────────
       set -g @resurrect-capture-pane-contents 'on'
       set -g @resurrect-strategy-nvim 'session'
       set -g @continuum-restore 'on'
@@ -153,9 +145,6 @@ in
       set -g @prefix_highlight_copy_mode_attr  "fg=${c.bg},bg=${c.teal}"
       set -g @prefix_highlight_show_sync_mode  'on'
       set -g @prefix_highlight_sync_mode_attr  "fg=${c.bg},bg=${c.red}"
-
-      # Initialise TPM (must be last)
-      run '~/.tmux/plugins/tpm/tpm'
     '';
   };
 }

@@ -56,9 +56,9 @@ function M.setup()
 	-- Mini.base16 drives the core syntax palette.
 	require("mini.base16").setup({
 		palette = {
-			base00 = generated.base00 or c.bg,
-			base01 = generated.base00 or c.bg,
-			base02 = generated.base00 or c.bg,
+		base00 = generated.base00 or c.bg,
+		base01 = generated.base01 or c.bg,
+		base02 = generated.base02 or c.bg,
 			base03 = generated.base03 or c.comment,
 			base04 = generated.base04 or c.comment,
 			base05 = generated.base05 or c.fg,

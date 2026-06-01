@@ -32,39 +32,17 @@ Item {
   readonly property int  closeBtnSize: 22
   readonly property int  actionBtnHeight: 26
 
-  readonly property color bg:       colors.bg
-  readonly property color bgRaised: colors.bgRaised
-  readonly property color bgSubtle: colors.bgSubtle
-  readonly property color border:   colors.border
-  readonly property color fg:       colors.fg
-  readonly property color fgMid:    colors.fgMid
-  readonly property color fgDim:    colors.fgDim
-  readonly property color accent:   colors.accent
-  readonly property color yellow:   colors.yellow
-  readonly property color teal:     colors.teal
-  readonly property color purple:   colors.purple
-  readonly property color red:      colors.red
-  readonly property color green:    colors.green
-
   function stripMarkup(text) {
     if (!text || text.length === 0) return "";
     return text.replace(/<[^>]*>/g, "");
   }
 
   function urgencyColor(notification) {
-    if (!notification) return notif.accent;
-    if (notification.urgency === NotificationUrgency.Critical) return notif.red;
-    if (notification.urgency === NotificationUrgency.Low)      return notif.fgDim;
-    if (notification.urgency === NotificationUrgency.Normal)   return notif.accent;
-    return notif.yellow;
-  }
-
-  function appIconSource(notification) {
-    if (!notification) return "";
-    if (notification.image && notification.image.length > 0) return notification.image;
-    if (!notification.appIcon || notification.appIcon.length === 0) return "";
-    if (notification.appIcon.startsWith("/")) return "file://" + notification.appIcon;
-    return "image://icon/" + notification.appIcon;
+    if (!notification) return colors.accent;
+    if (notification.urgency === NotificationUrgency.Critical) return colors.red;
+    if (notification.urgency === NotificationUrgency.Low)      return colors.fgDim;
+    if (notification.urgency === NotificationUrgency.Normal)   return colors.accent;
+    return colors.yellow;
   }
 
   function popupTimeoutFor(notification) {
@@ -155,9 +133,9 @@ Item {
             implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
           height: implicitHeight
           radius: notif.cardRadius
-          color: notif.bgRaised
+          color: colors.bgRaised
           border.width: 1
-          border.color: notif.border
+          border.color: colors.border
 
           opacity: 0
           transform: Translate { id: popupTranslate; x: -(notif.panelWidth + notif.sideMargin) }
@@ -186,13 +164,13 @@ Item {
               width: parent.width
               spacing: 8
 
-              AppIcon { notification: popupCard.notification; fallbackBg: notif.bgSubtle }
+              AppIcon { notification: popupCard.notification; fallbackBg: colors.bgSubtle }
 
               Text {
                 text: (notification && notification.appName && notification.appName.length > 0)
                   ? notification.appName
                   : "Notification"
-                color: notif.accent
+                color: colors.accent
                 font.family: notif.uiFont
                 font.pixelSize: 11
                 font.bold: true
@@ -209,12 +187,12 @@ Item {
                 radius: 4
                 color: "transparent"
                 border.width: 1
-                border.color: notif.border
+                border.color: colors.border
 
                 Text {
                   anchors.centerIn: parent
                   text: "×"
-                  color: notif.fgDim
+                  color: colors.fgDim
                   font.family: notif.uiFont
                   font.pixelSize: 13
                   font.bold: true
@@ -223,7 +201,7 @@ Item {
                 MouseArea {
                   anchors.fill: parent
                   hoverEnabled: true
-                  onEntered: closePopup.color = notif.bgSubtle
+                  onEntered: closePopup.color = colors.bgSubtle
                   onExited:  closePopup.color = "transparent"
                   onClicked: notif.removePopup(notification)
                 }
@@ -237,7 +215,7 @@ Item {
                     ? notification.appName
                     : "Notification")
               width: parent.width
-              color: notif.fg
+              color: colors.fg
               font.family: notif.uiFont
               font.pixelSize: 13
               font.bold: true
@@ -249,7 +227,7 @@ Item {
             Text {
               text: notification ? notif.stripMarkup(notification.body || "") : ""
               width: parent.width
-              color: notif.fgMid
+              color: colors.fgMid
               font.family: notif.uiFont
               font.pixelSize: 12
               wrapMode: Text.Wrap
@@ -276,11 +254,6 @@ Item {
           }
 
           HoverHandler { id: popupHover }
-
-          Connections {
-            target: notification
-            function onClosed(reason) { notif.removePopup(notification); }
-          }
         }
       }
     }

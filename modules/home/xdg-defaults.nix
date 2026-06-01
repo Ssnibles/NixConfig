@@ -89,6 +89,6 @@
 
     # ── Chat / Protocols ───────────────────────────────────────────────────
     "x-scheme-handler/discord" = "vesktop.desktop";
-  };
+    };
   };
 }

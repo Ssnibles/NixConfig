@@ -7,53 +7,13 @@
 { pkgs, config, ... }:
 let
   c = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
+  shared = import ./shared.nix;
 in
 {
   programs.fish = {
     enable = true;
 
-    shellAbbrs = {
-      v = "nvim";
-      c = "clear";
-      y = "yazi";
-      # Uses the system hostname so this works on both desktop and laptop
-      # without host-specific abbreviations.
-      rebuild = "nh os switch";
-      hm = "nh home switch";
-      update = "nh os switch --update";
-      clean = "nh clean all";
-      get-class = "niri msg windows";
-      cat = "bat --paging=never --style=plain";
-      ls = "eza --group-directories-first --icons=auto";
-      ll = "eza -lah --group-directories-first --icons=auto --git";
-      lt = "eza --tree --level=2 --icons=auto";
-      du = "dust";
-      df = "duf";
-      ps = "procs";
-      find = "fd";
-      grep = "rg";
-      rga = "ripgrep-all";
-      sed = "sd";
-      tldr = "tlrc";
-      td = "tlrc";
-      http = "xh";
-      watch = "watchexec";
-      gdiff = "git diff";
-      j = "just";
-      pp = "petpick";
-      nf = "nix flake";
-      nfu = "nix flake update";
-      nd = "nix develop";
-      nb = "nix build";
-      ns = "nix search nixpkgs";
-      fr = "nh os switch --update";
-      fmt = "nixfmt";
-      hms = "nh home switch";
-      mng = "manage-nixos";
-      ":q" = "exit";
-      lg = "lazygit";
-      ff = "microfetch";
-    };
+    shellAbbrs = shared.sharedAliases;
 
     interactiveShellInit = ''
       set -g fish_greeting ""
@@ -72,12 +32,11 @@ in
       # Better completion UX: quicker pager response and simplified completion paths.
       set -g fish_complete_path ""
 
-      # FZF defaults for faster fuzzy file/history navigation.
       if type -q fd
-          set -gx FZF_DEFAULT_COMMAND "fd --type f --hidden --follow --exclude .git"
+          set -gx FZF_DEFAULT_COMMAND "${shared.sharedEnv.FZF_DEFAULT_COMMAND}"
           set -gx FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
       end
-      set -gx FZF_DEFAULT_OPTS "--height=45% --layout=reverse --border --info=inline"
+      set -gx FZF_DEFAULT_OPTS "${shared.sharedEnv.FZF_DEFAULT_OPTS}"
       if type -q bat
           set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
       end

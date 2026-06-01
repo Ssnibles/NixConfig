@@ -1,13 +1,8 @@
 {
   pkgs,
-  lib,
-  config,
   user,
   ...
 }:
-let
-  enableUnsupportedProgramExample = false;
-in
 {
   imports = [ ../shared/stylix.nix ];
 
@@ -39,25 +34,9 @@ in
     };
   };
 
-  xdg.configFile = lib.mkMerge [
-    # Take ownership of pre-existing configs on first Stylix migration.
-    {
-      "lazygit/config.yml".force = true;
-    }
-
-    # Example for unsupported programs: render a config file using current
-    # Stylix colors. Set enableUnsupportedProgramExample = true to try it.
-    (lib.mkIf enableUnsupportedProgramExample {
-      "example-app/config.toml".text = ''
-        # Example config for apps without a Stylix target
-        [theme]
-        mode = "${config.lib.stylix.colors.variant}"
-        background = "#${config.lib.stylix.colors.base00}"
-        foreground = "#${config.lib.stylix.colors.base05}"
-        accent = "#${config.lib.stylix.colors.base0D}"
-      '';
-    })
-  ];
+  xdg.configFile = {
+    "lazygit/config.yml".force = true;
+  };
 
   stylix.targets = {
     bat.enable = true;
