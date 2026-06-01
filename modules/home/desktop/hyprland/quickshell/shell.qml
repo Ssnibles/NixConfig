@@ -13,18 +13,18 @@ ShellRoot {
         barLoader.source = ""
         barLoader.source = "bar.qml"
         notificationsLoader.source = ""
-        notificationsLoader.source = "../notifications.qml"
+        notificationsLoader.source = "notifications.qml"
         commandCenterLoader.source = ""
-        commandCenterLoader.source = "../CommandCenter.qml"
+        commandCenterLoader.source = "CommandCenter.qml"
       } else if (component === "bar") {
         barLoader.source = ""
         barLoader.source = "bar.qml"
       } else if (component === "notifications") {
         notificationsLoader.source = ""
-        notificationsLoader.source = "../notifications.qml"
+        notificationsLoader.source = "notifications.qml"
       } else if (component === "commandcenter") {
         commandCenterLoader.source = ""
-        commandCenterLoader.source = "../CommandCenter.qml"
+        commandCenterLoader.source = "CommandCenter.qml"
       }
     }
   }
@@ -61,7 +61,7 @@ ShellRoot {
 
   Loader {
     id: notificationsLoader
-    source: "../notifications.qml"
+    source: "notifications.qml"
     onItemChanged: {
       if (item) {
         item.barVisible = Qt.binding(function() { return root.barVisible; });
@@ -72,7 +72,7 @@ ShellRoot {
 
   Loader {
     id: commandCenterLoader
-    source: "../CommandCenter.qml"
+    source: "CommandCenter.qml"
     onItemChanged: {
       if (item && notificationsLoader.item) {
         item.root = notificationsLoader.item;
