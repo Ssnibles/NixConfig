@@ -27,7 +27,7 @@ let
       ];
   screenshotDir = "~/Pictures/Screenshots";
   sattyFocusCommand = "(sleep 0.15 && (hyprctl dispatch focuswindow 'class:^(satty)$' || hyprctl dispatch focuswindow 'class:^(com\\.gabm\\.satty)$'))";
-  sattyCaptureCommand = "satty --fullscreen current-screen --floating-hack --filename - --output-filename \"${screenshotDir}/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
+  sattyCaptureCommand = "satty --floating-hack --filename - --output-filename \"${screenshotDir}/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
   xdphConfig = ''
     screencopy {
       max_fps = 60
@@ -233,6 +233,10 @@ in
         "workspace special, class:^(Spotify|spotify)$"
         "noblur, class:^(firefox)$, title:^(Picture-in-Picture)$"
         "noblur, class:^(org\\.pulseaudio\\.pavucontrol)$"
+
+        "float, class:^(satty|com\\.gabm\\.satty)$"
+        "size 60% 60%, class:^(satty|com\\.gabm\\.satty)$"
+        "center, class:^(satty|com\\.gabm\\.satty)$"
       ];
 
       layerrule = [
@@ -324,7 +328,7 @@ in
         "$mod SHIFT, J, movewindow, d"
 
         "$mod, S, exec, mkdir -p ${screenshotDir}; ${sattyFocusCommand} & grim -o \"$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')\" - | ${sattyCaptureCommand}"
-        "$mod SHIFT, S, exec, mkdir -p ${screenshotDir}; ${sattyFocusCommand} & grim -g \"$(hyprctl -j clients | jq -r --argjson ws $(hyprctl -j activeworkspace | jq -r '.id') '.[] | select(.mapped and .workspace.id == $ws) | (.at[0]|tostring) + \",\" + (.at[1]|tostring) + \" \" + (.size[0]|tostring) + \"x\" + (.size[1]|tostring)' | slurp)\" - | ${sattyCaptureCommand}"
+        "$mod SHIFT, S, exec, mkdir -p ${screenshotDir}; region=$(hyprctl -j clients | jq -r --argjson ws $(hyprctl -j activeworkspace | jq -r '.id') '.[] | select(.mapped and .workspace.id == $ws) | (.at[0]|tostring) + \",\" + (.at[1]|tostring) + \" \" + (.size[0]|tostring) + \"x\" + (.size[1]|tostring)' | slurp); [ -n \"$region\" ] && { ${sattyFocusCommand} & grim -g \"$region\" - | ${sattyCaptureCommand}; }"
 
         "$mod, mouse_down, workspace, e+1"
         "$mod, mouse_up,   workspace, e-1"

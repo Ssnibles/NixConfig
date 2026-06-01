@@ -193,6 +193,14 @@ window-rule {
     default-window-height { proportion 0.25; }
 }
 
+// ── Satty screenshot editor — float, centered, 60% ───────────────────────
+window-rule {
+    match app-id=r#"^(satty|com\.gabm\.satty)$"#
+    open-floating true
+    default-column-width { proportion 0.6; }
+    default-window-height { proportion 0.6; }
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // Key Binds
 // ══════════════════════════════════════════════════════════════════════════════
@@ -285,11 +293,11 @@ binds {
 
     // ── Screenshots ─────────────────────────────────────────────────────
     Mod+S repeat=false {
-        spawn-sh "mkdir -p $HOME/Pictures/Screenshots; grim -o \"$(niri msg focused-monitor | head -1)\" - | satty --fullscreen current-screen --floating-hack --filename - --output-filename \"$HOME/Pictures/Screenshots/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
+        spawn-sh "mkdir -p $HOME/Pictures/Screenshots; grim -o \"$(niri msg focused-monitor | head -1)\" - | satty --floating-hack --filename - --output-filename \"$HOME/Pictures/Screenshots/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
     }
 
     Mod+Shift+S repeat=false {
-        spawn-sh "mkdir -p $HOME/Pictures/Screenshots; grim -g \"$(slurp)\" - | satty --fullscreen current-screen --floating-hack --filename - --output-filename \"$HOME/Pictures/Screenshots/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
+        spawn-sh "mkdir -p $HOME/Pictures/Screenshots; region=$(slurp); [ -n \"$region\" ] && grim -g \"$region\" - | satty --floating-hack --filename - --output-filename \"$HOME/Pictures/Screenshots/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
     }
 
     // ── Scroll Workspaces ───────────────────────────────────────────────
