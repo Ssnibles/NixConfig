@@ -17,6 +17,7 @@
   home.packages = [
     pkgs.unstable.awww # From nixpkgs-unstable
     pkgs.solaar
+    inputs.pomodoro.packages.${pkgs.system}.default
   ]
   ++ (with pkgs.unstable; [
     # ── Development ────────────────────────────────────────────────────
