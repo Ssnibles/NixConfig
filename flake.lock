@@ -535,6 +535,23 @@
         "type": "github"
       }
     },
+    "pomodoro": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1780280257,
+        "narHash": "sha256-M6GKyTbCsn7T7fy5IFf7ENz7OZuTSUjb5VcjRTBZ0Cc=",
+        "path": "/home/josh/godev/pomodoro",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/josh/godev/pomodoro",
+        "type": "path"
+      }
+    },
     "qml-language-server": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -567,6 +584,7 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nur": "nur",
         "nvf": "nvf",
+        "pomodoro": "pomodoro",
         "qml-language-server": "qml-language-server",
         "solaar": "solaar",
         "spicetify-nix": "spicetify-nix",
