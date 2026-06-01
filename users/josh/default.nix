@@ -26,6 +26,7 @@
     ../../modules/home/qutebrowser.nix
     ../../modules/home/stylix.nix
     ../../modules/home/scripts.nix
+    ../../modules/home/xdg-defaults.nix
   ];
 
   home.pointerCursor = {
