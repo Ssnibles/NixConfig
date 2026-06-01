@@ -128,6 +128,8 @@ Item {
           Rectangle {
             id: popupCard
             property var notification: modelData
+            property var removeFn: notif.removePopup
+            property int timeoutMs: notif.popupTimeoutFor(notification)
 
             width: popupColumn.width
             implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
@@ -139,7 +141,10 @@ Item {
 
           opacity: 0
           transform: Translate { id: popupTranslate; x: -(notif.panelWidth + notif.sideMargin) }
-          Component.onCompleted: appearAnim.start()
+          Component.onCompleted: {
+            appearAnim.start();
+            if (popupTimer.interval > 0) popupTimer.start();
+          }
           ParallelAnimation {
             id: appearAnim
             NumberAnimation { target: popupCard;    property: "opacity"; to: 1; duration: 220; easing.type: Easing.OutCubic }
@@ -203,7 +208,7 @@ Item {
                   hoverEnabled: true
                   onEntered: closePopup.color = colors.bgSubtle
                   onExited:  closePopup.color = "transparent"
-                  onClicked: notif.removePopup(notification)
+                  onClicked: removeFn(notification)
                 }
               }
             }
@@ -238,22 +243,31 @@ Item {
             ActionRow {
               width: parent.width
               actions: (notification && notification.actions) ? notification.actions : []
-              onActionInvoked: notif.removePopup(notification)
+              onActionInvoked: removeFn(notification)
             }
           }
 
           Timer {
             id: popupTimer
-            interval: notif.popupTimeoutFor(notification)
-            running: interval > 0 && !popupHover.hovered
+            interval: popupCard.timeoutMs
             repeat: false
             onTriggered: {
-              if (notification) notification.expire();
-              notif.removePopup(notification);
+              const n = notification;
+              if (n) n.expire();
+              removeFn(n);
             }
           }
 
-          HoverHandler { id: popupHover }
+          HoverHandler {
+            id: popupHover
+            onHoveredChanged: {
+              if (hovered) {
+                popupTimer.stop();
+              } else if (popupTimer.interval > 0) {
+                popupTimer.restart();
+              }
+            }
+          }
         }
       }
     }
