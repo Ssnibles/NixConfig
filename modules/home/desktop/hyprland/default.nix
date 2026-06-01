@@ -350,8 +350,6 @@ in
 
         "$mod, mouse_down, workspace, e+1"
         "$mod, mouse_up,   workspace, e-1"
-
-        ", Ctrl+F12, exec, kando"
       ];
 
       bindm = [
