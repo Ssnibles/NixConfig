@@ -68,6 +68,7 @@ lint.linters.statix_nvim = {
 	append_fname = true,
 	args = { "check", "--format", "errfmt" },
 	parser = parse_statix_errfmt,
+	ignore_exitcode = true,
 }
 
 lint.linters_by_ft = {
