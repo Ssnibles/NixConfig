@@ -472,11 +472,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780199389,
-        "narHash": "sha256-kUyPpxavblgVHsCiZd6gFrCqrvvuHug6AmJPi+Ik91g=",
+        "lastModified": 1780279181,
+        "narHash": "sha256-AWX1q7DL+QE4ba2bmmaMPfeYSNL/ees2AIf4OPj18/U=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "667ad5a6d3666557ef51b15bd1e306955efdfa46",
+        "rev": "5fcd1d6956fa2c2b557a635d7d167dddb8d7fd0e",
         "type": "github"
       },
       "original": {
@@ -542,8 +542,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1780280257,
-        "narHash": "sha256-M6GKyTbCsn7T7fy5IFf7ENz7OZuTSUjb5VcjRTBZ0Cc=",
+        "lastModified": 1780281436,
+        "narHash": "sha256-XrRRV+koYxbOP+/NWUCC3XnACwCJo5Vcvt6DDOfJlNQ=",
         "path": "/home/josh/godev/pomodoro",
         "type": "path"
       },
@@ -620,11 +620,11 @@
         "systems": "systems_6"
       },
       "locked": {
-        "lastModified": 1779824049,
-        "narHash": "sha256-dWHVUjP03KSVG1PaLKA6j9EdxWSxSQvipMUIcSyuA/U=",
+        "lastModified": 1780213729,
+        "narHash": "sha256-rdeBztPA6tiKp6gG4ihZAzeYGC9mYa2tAU4UIOLcZM0=",
         "owner": "Gerg-L",
         "repo": "spicetify-nix",
-        "rev": "1362178e5f5f7a848c49fe9dee004ef8824f100a",
+        "rev": "c679f3fa9fbe86903486a8f7ad71f99e26481d71",
         "type": "github"
       },
       "original": {
