@@ -104,6 +104,24 @@ in
     config.lib.file.mkOutOfStoreSymlink "${qsDir}/Colors.qml";
   xdg.configFile."quickshell/hyprland/Pill.qml".source =
     config.lib.file.mkOutOfStoreSymlink "${qsDir}/Pill.qml";
+  xdg.configFile."quickshell/hyprland/notifications.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/notifications.qml";
+  xdg.configFile."quickshell/hyprland/CommandCenter.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/CommandCenter.qml";
+  xdg.configFile."quickshell/hyprland/AppIcon.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/AppIcon.qml";
+  xdg.configFile."quickshell/hyprland/ActionRow.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/ActionRow.qml";
+  xdg.configFile."quickshell/hyprland/SliderControl.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/SliderControl.qml";
+  xdg.configFile."quickshell/hyprland/shaders/waveform.frag.qsb".source =
+    config.xdg.configFile."quickshell/shaders/waveform.frag.qsb".source;
+  xdg.configFile."quickshell/hyprland/shaders/waveform.frag".source =
+    config.xdg.configFile."quickshell/shaders/waveform.frag".source;
+  xdg.configFile."quickshell/hyprland/shaders/circleMask.frag.qsb".source =
+    config.xdg.configFile."quickshell/shaders/circleMask.frag.qsb".source;
+  xdg.configFile."quickshell/hyprland/shaders/circleMask.frag".source =
+    config.xdg.configFile."quickshell/shaders/circleMask.frag".source;
 
   wayland.windowManager.hyprland = {
     enable = true;

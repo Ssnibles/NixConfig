@@ -85,6 +85,16 @@ in
     config.lib.file.mkOutOfStoreSymlink "${qsDir}/Colors.qml";
   xdg.configFile."quickshell/niri/Pill.qml".source =
     config.lib.file.mkOutOfStoreSymlink "${qsDir}/Pill.qml";
+  xdg.configFile."quickshell/niri/notifications.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/notifications.qml";
+  xdg.configFile."quickshell/niri/CommandCenter.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/CommandCenter.qml";
+  xdg.configFile."quickshell/niri/AppIcon.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/AppIcon.qml";
+  xdg.configFile."quickshell/niri/ActionRow.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/ActionRow.qml";
+  xdg.configFile."quickshell/niri/SliderControl.qml".source =
+    config.lib.file.mkOutOfStoreSymlink "${qsDir}/SliderControl.qml";
 
   programs.vicinae = {
     enable = true;

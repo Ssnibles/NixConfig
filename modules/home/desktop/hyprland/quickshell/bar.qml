@@ -392,7 +392,7 @@ PanelWindow {
               id: waveformShader
               anchors.fill: parent
               visible: mediaWaveform.useGpuWaveform && status === ShaderEffect.Ready
-              fragmentShader: "../shaders/waveform.frag.qsb"
+              fragmentShader: "shaders/waveform.frag.qsb"
 
               property real barCount: mediaWaveform.barCount
               property real barWidth: mediaWaveform.barWidth
