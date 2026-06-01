@@ -258,7 +258,7 @@ in
       bind = [
         "$mod, RETURN, exec, foot"
         "$mod, Q, killactive"
-        "$mod, E, exec, yazi"
+        "$mod, E, exec, foot yazi"
         "$mod, V, exec, toggle-float-hyprland"
         "$mod, G, exec, toggle-focus-mode-hyprland"
         "$mod, SPACE, exec, vicinae toggle"
