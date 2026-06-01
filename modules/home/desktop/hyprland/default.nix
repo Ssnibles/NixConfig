@@ -228,10 +228,12 @@ in
       windowrule = [
         "bordersize 2, floating:1"
         "float, class:(org.pulseaudio.pavucontrol)"
-        "float, class:(blueman-manager)"
+        "float, class:(.blueman-manager-wrapped)"
         "float, title:^(Picture-in-Picture)$"
         "pin, title:^(Picture-in-Picture)$"
         "keepaspectratio, title:^(Picture-in-Picture)$"
+
+        # Put pip into bottom right corner, and make it smaller than the default size, so it doesn't take up too much space while still being usable
         "move 72% 72%, title:^(Picture-in-Picture)$"
         "size 25% 25%, title:^(Picture-in-Picture)$"
         "immediate, class:^(steam_app_.*)$"
