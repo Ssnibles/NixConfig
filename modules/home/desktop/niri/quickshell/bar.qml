@@ -9,14 +9,13 @@ import QtQml
 
 PanelWindow {
   id: barPanel
-  Colors { id: colors }
   focusable: false
   aboveWindows: true
 
   anchors { left: true; top: true; bottom: true }
   implicitWidth: 52
   exclusionMode: ExclusionMode.Auto
-  color: colors.bg
+  color: Colors.bg
 
   property string uiFont: "JetBrains Mono"
 
@@ -92,8 +91,8 @@ PanelWindow {
             }
 
             if (event.WorkspaceActivated !== undefined) {
-              workspaceRefresh.running = false;
-              workspaceRefresh.running = true;
+              wsQuery.running = false;
+              wsQuery.running = true;
             }
 
             if (event.WindowTitleChanged !== undefined) {
@@ -104,8 +103,8 @@ PanelWindow {
             }
 
             if (event.WindowsChanged !== undefined) {
-              windowTitleRefresh.running = false;
-              windowTitleRefresh.running = true;
+              windowQuery.running = false;
+              windowQuery.running = true;
             }
           } catch(e) {}
         }
@@ -128,13 +127,25 @@ PanelWindow {
   }
 
   Timer {
+    id: niriMonitorBufferClear
+    interval: 1800000
+    running: true
+    repeat: true
+    onTriggered: {
+      niriMonitor.running = false;
+      niriMonitor.stdout.lastPos = 0;
+      niriMonitor.running = true;
+    }
+  }
+
+  Timer {
     id: initialQuery
     interval: 500
     running: true
     repeat: false
     onTriggered: {
-      wsInitQuery.running = true;
-      windowTitleQuery.running = true;
+      wsQuery.running = true;
+      windowQuery.running = true;
     }
   }
 
@@ -170,7 +181,7 @@ PanelWindow {
   }
 
   Process {
-    id: wsInitQuery
+    id: wsQuery
     running: false
     command: ["niri", "msg", "--json", "workspaces"]
     stdout: StdioCollector {
@@ -179,25 +190,7 @@ PanelWindow {
   }
 
   Process {
-    id: workspaceRefresh
-    running: false
-    command: ["niri", "msg", "--json", "workspaces"]
-    stdout: StdioCollector {
-      onDataChanged: { loadWorkspaces(this.text); }
-    }
-  }
-
-  Process {
-    id: windowTitleQuery
-    running: false
-    command: ["niri", "msg", "--json", "windows"]
-    stdout: StdioCollector {
-      onDataChanged: { loadActiveTitle(this.text); }
-    }
-  }
-
-  Process {
-    id: windowTitleRefresh
+    id: windowQuery
     running: false
     command: ["niri", "msg", "--json", "windows"]
     stdout: StdioCollector {
@@ -417,7 +410,7 @@ PanelWindow {
     x: 16
     y: 10
     text: barPanel.mediaText
-    color: colors.fg
+    color: Colors.fg
     font.family: barPanel.uiFont
     font.pixelSize: 10
     font.bold: true
@@ -450,7 +443,7 @@ PanelWindow {
         width: 12
         height: isFocused ? 32 : 12
         radius: 6
-        color: isFocused ? colors.accent : colors.fgDim
+        color: isFocused ? Colors.accent : Colors.fgDim
         opacity: isFocused ? 1.0 : 0.45
         anchors.horizontalCenter: parent.horizontalCenter
 
@@ -487,14 +480,14 @@ PanelWindow {
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: "\u{F04BB}"
-        color: barPanel.cpuPercent > 80 ? colors.red : (barPanel.cpuPercent > 50 ? colors.yellow : colors.fgDim)
+        color: barPanel.cpuPercent > 80 ? Colors.red : (barPanel.cpuPercent > 50 ? Colors.yellow : Colors.fgDim)
         font.family: barPanel.uiFont
         font.pixelSize: 13
       }
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: barPanel.cpuPercent + "%"
-        color: barPanel.cpuPercent > 80 ? colors.red : colors.fgDim
+        color: barPanel.cpuPercent > 80 ? Colors.red : Colors.fgDim
         font.family: barPanel.uiFont
         font.pixelSize: 8
         font.bold: true
@@ -508,14 +501,14 @@ PanelWindow {
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: "\u{F035B}"
-        color: barPanel.memPercent > 85 ? colors.red : (barPanel.memPercent > 60 ? colors.yellow : colors.fgDim)
+        color: barPanel.memPercent > 85 ? Colors.red : (barPanel.memPercent > 60 ? Colors.yellow : Colors.fgDim)
         font.family: barPanel.uiFont
         font.pixelSize: 13
       }
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: barPanel.memPercent + "%"
-        color: barPanel.memPercent > 85 ? colors.red : colors.fgDim
+        color: barPanel.memPercent > 85 ? Colors.red : Colors.fgDim
         font.family: barPanel.uiFont
         font.pixelSize: 8
         font.bold: true
@@ -529,14 +522,14 @@ PanelWindow {
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: "\u{F035D}"
-        color: colors.fgDim
+        color: Colors.fgDim
         font.family: barPanel.uiFont
         font.pixelSize: 11
       }
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: barPanel.netDownStr
-        color: colors.green
+        color: Colors.green
         font.family: barPanel.uiFont
         font.pixelSize: 7
         font.bold: true
@@ -544,7 +537,7 @@ PanelWindow {
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: barPanel.netUpStr
-        color: colors.purple
+        color: Colors.purple
         font.family: barPanel.uiFont
         font.pixelSize: 7
         font.bold: true
@@ -563,7 +556,7 @@ PanelWindow {
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
       text: barPanel.hourStr
-      color: colors.fg
+      color: Colors.fg
       font.family: barPanel.uiFont
       font.pixelSize: 14
       font.bold: true
@@ -571,7 +564,7 @@ PanelWindow {
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
       text: barPanel.minuteStr
-      color: colors.accent
+      color: Colors.accent
       font.family: barPanel.uiFont
       font.pixelSize: 14
       font.bold: true
@@ -590,14 +583,14 @@ PanelWindow {
     Rectangle {
       anchors.fill: parent
       radius: 10
-      color: wifiHover.containsMouse ? colors.bgRaised : "transparent"
+      color: wifiHover.containsMouse ? Colors.bgRaised : "transparent"
       Behavior on color { ColorAnimation { duration: 120 } }
     }
 
     Text {
       anchors.centerIn: parent
       text: barPanel.netIconStr
-      color: barPanel.wifiNet ? colors.accent : colors.fgDim
+      color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
       font.family: barPanel.uiFont
       font.pixelSize: 16
     }
@@ -629,7 +622,7 @@ PanelWindow {
     Rectangle {
       anchors.fill: parent
       radius: 10
-      color: volHover.containsMouse ? colors.bgRaised : "transparent"
+      color: volHover.containsMouse ? Colors.bgRaised : "transparent"
       Behavior on color { ColorAnimation { duration: 120 } }
     }
 
@@ -640,14 +633,14 @@ PanelWindow {
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: barPanel.volIconStr
-        color: barPanel.volMuted ? colors.red : colors.fg
+        color: barPanel.volMuted ? Colors.red : Colors.fg
         font.family: barPanel.uiFont
         font.pixelSize: 16
       }
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: Math.round(barPanel.volPct * 100) + "%"
-        color: barPanel.volMuted ? colors.red : colors.fgDim
+        color: barPanel.volMuted ? Colors.red : Colors.fgDim
         font.family: barPanel.uiFont
         font.pixelSize: 10
         font.bold: true

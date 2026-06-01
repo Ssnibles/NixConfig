@@ -12,14 +12,13 @@ import QtQml
 
 PanelWindow {
   id: barPanel
-  Colors { id: colors }
   focusable: false
   aboveWindows: true
 
   anchors { top: true; left: true; right: true }
   implicitHeight: barHeight
   exclusionMode: ExclusionMode.Auto
-  color: colors.bg
+  color: Colors.bg
 
   property string timeStr: ""
   property string uiFont: "JetBrains Mono"
@@ -213,11 +212,11 @@ PanelWindow {
     return pct + "% · " + state;
   }
   property color batColor: {
-    if (!batPresent) return colors.fg;
-    if (batCharging || batPlugged) return colors.green;
-    if (batPct <= 15) return colors.red;
-    if (batPct <= 30) return colors.yellow;
-    return colors.fg;
+    if (!batPresent) return Colors.fg;
+    if (batCharging || batPlugged) return Colors.green;
+    if (batPct <= 15) return Colors.red;
+    if (batPct <= 30) return Colors.yellow;
+    return Colors.fg;
   }
 
   // -- Media --
@@ -298,7 +297,7 @@ PanelWindow {
             width: modelData.focused ? 28 : 12
             height: 12
             radius: height / 2
-            color: modelData.focused ? colors.accent : colors.fgDim
+            color: modelData.focused ? Colors.accent : Colors.fgDim
             anchors.verticalCenter: parent.verticalCenter
 
             Behavior on width {
@@ -321,13 +320,13 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
         height: 22
         radius: height / 2
-        color: colors.bgRaised
+        color: Colors.bgRaised
         width: Math.min(titleLabel.implicitWidth, 400) + 16
 
         Text {
           id: titleLabel
           text: barPanel.currentTitle
-          color: colors.fgMid
+          color: Colors.fgMid
           font.family: barPanel.uiFont
           font.pixelSize: 12
           font.italic: true
@@ -343,7 +342,7 @@ PanelWindow {
       id: centerTime
       anchors.centerIn: parent
       text: barPanel.timeStr
-      color: colors.fg
+      color: Colors.fg
       font.family: barPanel.uiFont
       font.pixelSize: 13
       font.bold: true
@@ -403,7 +402,7 @@ PanelWindow {
               property real progress: mediaWaveform.displayProgress
               property color colorStart: Qt.rgba(0.769, 0.655, 0.906, 1)
               property color colorEnd: Qt.rgba(0.612, 0.812, 0.847, 1)
-              property color bgColor: colors.bgSubtle
+              property color bgColor: Colors.bgSubtle
             }
 
             Loader {
@@ -433,9 +432,9 @@ PanelWindow {
                         return 3 + (waveHeight - 3) * mediaWaveform.playTransition
                       }
                       color: {
-                        if (!barPanel.mediaPlayer) return colors.bgSubtle
+                        if (!barPanel.mediaPlayer) return Colors.bgSubtle
                         var frac = (index + 1) / mediaWaveform.barCount
-                        if (frac > mediaWaveform.displayProgress) return colors.bgSubtle
+                        if (frac > mediaWaveform.displayProgress) return Colors.bgSubtle
                         var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
                         return Qt.rgba(
                           0.769 - 0.157 * t,
@@ -476,7 +475,7 @@ PanelWindow {
               return Math.floor(p/60) + ":" + (p%60).toString().padStart(2,'0')
               + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
             }
-            color: colors.fgMid
+            color: Colors.fgMid
             font.family: barPanel.uiFont
             font.pixelSize: 9
             anchors.verticalCenter: parent.verticalCenter
@@ -493,7 +492,7 @@ PanelWindow {
             Text {
               id: mediaLabelText
               text: barPanel.mediaText
-              color: colors.fg
+              color: Colors.fg
               font.family: barPanel.uiFont
               font.pixelSize: 12
 
@@ -582,7 +581,7 @@ PanelWindow {
               if (v < 0.66) return "󰖀"
               return "󰕾"
             }
-            color: barPanel.volMuted ? colors.red : colors.fg
+            color: barPanel.volMuted ? Colors.red : Colors.fg
             font.family: barPanel.uiFont
             font.pixelSize: 12
           }
@@ -590,7 +589,7 @@ PanelWindow {
           Text {
             id: volPct
             text: Math.round(barPanel.volPct * 100) + "%"
-            color: barPanel.volMuted ? colors.red : colors.fg
+            color: barPanel.volMuted ? Colors.red : Colors.fg
             font.family: barPanel.uiFont
             font.pixelSize: 12
             font.bold: true
@@ -605,7 +604,7 @@ PanelWindow {
               width: parent.width
               height: 8
               radius: 4
-              color: colors.bgSubtle
+              color: Colors.bgSubtle
 
               Rectangle {
                 anchors.top: parent.top
@@ -613,7 +612,7 @@ PanelWindow {
                 anchors.bottom: parent.bottom
                 width: parent.width * barPanel.volPct
                 radius: 4
-                color: barPanel.volMuted ? colors.red : colors.accent
+                color: barPanel.volMuted ? Colors.red : Colors.accent
 
                 Behavior on width {
                   NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
@@ -632,7 +631,7 @@ PanelWindow {
           hoverEnabled: true
           acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-          onEntered: volBg.color = colors.bgRaised
+          onEntered: volBg.color = Colors.bgRaised
           onExited: volBg.color = "transparent"
 
           onClicked: function(mouse) {
@@ -660,7 +659,7 @@ PanelWindow {
         Text {
           id: wifiLabel
           text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
-          color: barPanel.wifiNet ? colors.accent : colors.fgDim
+          color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
           font.family: barPanel.uiFont
           font.pixelSize: 12
           anchors.verticalCenter: parent.verticalCenter
@@ -731,10 +730,10 @@ PanelWindow {
       implicitHeight: tooltipTextItem.paintedHeight + barPanel.tooltipPadding * 2
       height: implicitHeight
       radius: 10
-      color: colors.bgRaised
+      color: Colors.bgRaised
       antialiasing: true
       border.width: 1
-      border.color: colors.border
+      border.color: Colors.border
       opacity: barPanel.tooltipVisible ? 1 : 0
 
       Behavior on opacity {
@@ -748,7 +747,7 @@ PanelWindow {
         anchors.margins: barPanel.tooltipPadding
         width: parent.width - barPanel.tooltipPadding * 2
         text: barPanel.tooltipText
-        color: colors.fg
+        color: Colors.fg
         font.family: barPanel.uiFont
         font.pixelSize: 13
         lineHeightMode: Text.ProportionalHeight
@@ -804,10 +803,10 @@ PanelWindow {
       implicitHeight: popupContent.implicitHeight + 28
       height: implicitHeight
       radius: 12
-      color: colors.bgRaised
+      color: Colors.bgRaised
       antialiasing: true
       border.width: 1
-      border.color: colors.border
+      border.color: Colors.border
 
       Rectangle {
         id: closeBtn
@@ -816,14 +815,14 @@ PanelWindow {
         width: 20
         height: 20
         radius: 10
-        color: colors.bgSubtle
+        color: Colors.bgSubtle
 
         Behavior on scale { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
 
         Text {
           anchors.centerIn: parent
           text: "\uDB80\uDD56"
-          color: colors.fgDim
+          color: Colors.fgDim
           font.family: barPanel.uiFont
           font.pixelSize: 11
         }
@@ -832,8 +831,8 @@ PanelWindow {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
-          onEntered: closeBtn.color = colors.border
-          onExited: closeBtn.color = colors.bgSubtle
+          onEntered: closeBtn.color = Colors.border
+          onExited: closeBtn.color = Colors.bgSubtle
           onClicked: barPanel.mediaPopupVisible = false
         }
       }
@@ -857,7 +856,7 @@ PanelWindow {
             Rectangle {
               anchors.fill: parent
               radius: 12
-              color: colors.bgSubtle
+              color: Colors.bgSubtle
               clip: true
 
               Image {
@@ -872,7 +871,7 @@ PanelWindow {
               Text {
                 anchors.centerIn: parent
                 text: "\uDB80\uDDE2"
-                color: colors.fgDim
+                color: Colors.fgDim
                 font.family: barPanel.uiFont
                 font.pixelSize: 24
                 visible: artImage.status !== Image.Ready && artImage.status !== Image.Loading
@@ -884,7 +883,7 @@ PanelWindow {
               radius: 12
               color: "transparent"
               border.width: 1.5
-              border.color: colors.border
+              border.color: Colors.border
             }
           }
 
@@ -896,7 +895,7 @@ PanelWindow {
             Text {
               width: parent.width
               text: barPanel.mediaText
-              color: colors.fg
+              color: Colors.fg
               font.family: barPanel.uiFont
               font.pixelSize: 13
               font.bold: true
@@ -911,7 +910,7 @@ PanelWindow {
                 if (barPanel.mediaPlayer && barPanel.mediaPlayer.name) parts.push(barPanel.mediaPlayer.name);
                 return parts.join(" \u2014 ");
               }
-              color: colors.fgDim
+              color: Colors.fgDim
               font.family: barPanel.uiFont
               font.pixelSize: 11
               elide: Text.ElideRight
@@ -933,14 +932,14 @@ PanelWindow {
             radius: 8
             color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
             border.width: 1
-            border.color: colors.border
+            border.color: Colors.border
 
             Behavior on scale { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
 
             Text {
               anchors.centerIn: parent
               text: "\uDB81\uDCAE"
-              color: colors.fg
+              color: Colors.fg
               font.family: barPanel.uiFont
               font.pixelSize: 14
             }
@@ -949,7 +948,7 @@ PanelWindow {
               anchors.fill: parent
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
-              onEntered: { mPrevBtn.color = colors.bgSubtle; mPrevBtn.scale = 0.92 }
+              onEntered: { mPrevBtn.color = Colors.bgSubtle; mPrevBtn.scale = 0.92 }
               onExited: { mPrevBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6); mPrevBtn.scale = 1 }
               onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.previous() }
             }
@@ -963,16 +962,16 @@ PanelWindow {
             width: 32
             height: 32
             radius: 8
-            color: colors.accent
+            color: Colors.accent
             border.width: 1
-            border.color: colors.accent
+            border.color: Colors.accent
 
             Behavior on scale { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
 
             Text {
               anchors.centerIn: parent
               text: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying ? "\uDB80\uDFE4" : "\uDB81\uDC0A"
-              color: colors.bg
+              color: Colors.bg
               font.family: barPanel.uiFont
               font.pixelSize: 14
             }
@@ -997,14 +996,14 @@ PanelWindow {
             radius: 8
             color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
             border.width: 1
-            border.color: colors.border
+            border.color: Colors.border
 
             Behavior on scale { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
 
             Text {
               anchors.centerIn: parent
               text: "\uDB81\uDCAD"
-              color: colors.fg
+              color: Colors.fg
               font.family: barPanel.uiFont
               font.pixelSize: 14
             }
@@ -1013,7 +1012,7 @@ PanelWindow {
               anchors.fill: parent
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
-              onEntered: { mNextBtn.color = colors.bgSubtle; mNextBtn.scale = 0.92 }
+              onEntered: { mNextBtn.color = Colors.bgSubtle; mNextBtn.scale = 0.92 }
               onExited: { mNextBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6); mNextBtn.scale = 1 }
               onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.next() }
             }
@@ -1030,7 +1029,7 @@ PanelWindow {
               return Math.floor(p/60) + ":" + (p%60).toString().padStart(2,'0')
               + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
             }
-            color: colors.fgMid
+            color: Colors.fgMid
             font.family: barPanel.uiFont
             font.pixelSize: 10
           }
@@ -1056,7 +1055,7 @@ PanelWindow {
                 ? Math.min(1, Math.max(0, barPanel.mediaPlayer.position / barPanel.mediaPlayer.length))
                 : 0)
               radius: 3
-              color: colors.accent
+              color: Colors.accent
 
               Behavior on width {
                 NumberAnimation { duration: 300; easing.type: Easing.Linear }

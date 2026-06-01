@@ -60,6 +60,7 @@ in
     colors_dir="${qsDir}"
     mkdir -p "$colors_dir"
     cat > "$colors_dir/Colors.qml" << QMLEOF
+    pragma Singleton
     import QtQml
     import QtQuick
     QtObject {
