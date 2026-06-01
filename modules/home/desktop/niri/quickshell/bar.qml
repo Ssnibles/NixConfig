@@ -19,23 +19,16 @@ PanelWindow {
 
   property string uiFont: "JetBrains Mono"
 
-  // ════════════════════════════════════════════════════════════════
-  // Helpers
-  // ════════════════════════════════════════════════════════════════
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function findFirst(list, pred) {
     for (var i = 0; i < list.length; i++) if (pred(list[i])) return list[i];
     return null;
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // Niri event stream — event-driven IPC (no polling)
-  // ════════════════════════════════════════════════════════════════
+  // ═══ Niri event stream — event-driven IPC ═══
   property string activeWindowTitle: ""
 
-  ListModel {
-    id: wsModel
-  }
+  ListModel { id: wsModel }
 
   function syncWorkspaces(wsArray) {
     var rebuild = wsModel.count !== wsArray.length;
@@ -67,21 +60,17 @@ PanelWindow {
       onDataChanged: {
         var newText = this.text.substring(lastPos);
         var lines = newText.split("\n");
-        var isComplete = newText.endsWith("\n");
-        if (isComplete) {
-          lastPos = this.text.length;
-        } else {
-          var lastLineIdx = newText.lastIndexOf("\n");
-          if (lastLineIdx >= 0) {
-            lastPos = this.text.length - (newText.length - lastLineIdx) + 1;
-          }
+        var complete = newText.endsWith("\n");
+        if (complete) lastPos = this.text.length;
+        else {
+          var idx = newText.lastIndexOf("\n");
+          if (idx >= 0) lastPos = this.text.length - (newText.length - idx) + 1;
         }
-        for (var i = 0; i < lines.length - (isComplete ? 0 : 1); i++) {
+        for (var i = 0; i < lines.length - (complete ? 0 : 1); i++) {
           var line = lines[i].trim();
           if (line === "") continue;
           try {
             var event = JSON.parse(line);
-
             if (event.WorkspacesChanged !== undefined) {
               var ws = event.WorkspacesChanged.workspaces;
               if (Array.isArray(ws)) {
@@ -89,29 +78,34 @@ PanelWindow {
                 syncWorkspaces(ws);
               }
             }
-
             if (event.WorkspaceActivated !== undefined) {
               wsQuery.running = false;
               wsQuery.running = true;
             }
-
             if (event.WindowTitleChanged !== undefined) {
-              var titleEvent = event.WindowTitleChanged;
-              if (titleEvent.title) {
-                barPanel.activeWindowTitle = titleEvent.title;
-              }
+              var te = event.WindowTitleChanged;
+              if (te.title) barPanel.activeWindowTitle = te.title;
             }
-
             if (event.WindowsChanged !== undefined) {
               windowQuery.running = false;
               windowQuery.running = true;
             }
           } catch(e) {}
         }
+        // Restart stream when buffer grows too large (prevents memory leak)
+        if (lastPos > 65536) {
+          lastPos = 0;
+          niriMonitor.restart();
+        }
       }
     }
 
     onExited: { restartTimer.start(); }
+
+    function restart() {
+      running = false;
+      running = true;
+    }
   }
 
   Timer {
@@ -121,20 +115,7 @@ PanelWindow {
     repeat: false
     onTriggered: {
       niriMonitor.stdout.lastPos = 0;
-      niriMonitor.running = false;
-      niriMonitor.running = true;
-    }
-  }
-
-  Timer {
-    id: niriMonitorBufferClear
-    interval: 1800000
-    running: true
-    repeat: true
-    onTriggered: {
-      niriMonitor.running = false;
-      niriMonitor.stdout.lastPos = 0;
-      niriMonitor.running = true;
+      niriMonitor.restart();
     }
   }
 
@@ -153,13 +134,9 @@ PanelWindow {
     try {
       var parsed = JSON.parse(replyText.trim());
       var wsData = null;
-      if (Array.isArray(parsed)) {
-        wsData = parsed;
-      } else if (parsed.Ok) {
-        wsData = parsed.Ok.Workspaces || parsed.Ok;
-      } else if (parsed.Workspaces) {
-        wsData = parsed.Workspaces;
-      }
+      if (Array.isArray(parsed)) wsData = parsed;
+      else if (parsed.Ok) wsData = parsed.Ok.Workspaces || parsed.Ok;
+      else if (parsed.Workspaces) wsData = parsed.Workspaces;
       if (Array.isArray(wsData)) {
         wsData.sort(function(a, b) { return a.idx - b.idx; });
         syncWorkspaces(wsData);
@@ -184,122 +161,86 @@ PanelWindow {
     id: wsQuery
     running: false
     command: ["niri", "msg", "--json", "workspaces"]
-    stdout: StdioCollector {
-      onDataChanged: { loadWorkspaces(this.text); }
-    }
+    stdout: StdioCollector { onDataChanged: { loadWorkspaces(this.text); } }
   }
 
   Process {
     id: windowQuery
     running: false
     command: ["niri", "msg", "--json", "windows"]
-    stdout: StdioCollector {
-      onDataChanged: { loadActiveTitle(this.text); }
-    }
+    stdout: StdioCollector { onDataChanged: { loadActiveTitle(this.text); } }
   }
 
-  Process {
-    id: wsActionProc
-    running: false
-  }
+  Process { id: wsActionProc; running: false }
 
-  // ════════════════════════════════════════════════════════════════
-  // Hardware monitoring — lightweight /proc reads
-  // ════════════════════════════════════════════════════════════════
+  // ═══ Hardware monitoring ═══
   property real cpuPercent: 0
   property real memPercent: 0
   property string netDownStr: "0"
   property string netUpStr: "0"
-
-  Process {
-    id: hwMonitor
-    command: ["bash", "-c", "cat /proc/stat /proc/meminfo /proc/net/dev"]
-    running: false
-
-    stdout: StdioCollector {
-      onDataChanged: {
-        parseHwData(this.text);
-      }
-    }
-  }
-
   property string prevCpuLine: ""
   property var prevNetBytes: ({})
 
+  Process {
+    id: hwMonitor
+    command: ["sh", "-c", "awk '/^cpu /{print} /^(MemTotal|MemAvailable):/{print} /^ *(eth|wlan|enp|wlp)/{print}' /proc/stat /proc/meminfo /proc/net/dev"]
+    running: false
+
+    stdout: StdioCollector {
+      onDataChanged: { parseHwData(this.text); }
+    }
+  }
+
   function parseHwData(text) {
     var lines = text.split("\n");
-
     for (var i = 0; i < lines.length; i++) {
       if (lines[i].indexOf("cpu ") === 0) {
         var parts = lines[i].split(/\s+/);
-        var user = parseInt(parts[1]);
-        var nice = parseInt(parts[2]);
-        var system = parseInt(parts[3]);
-        var idle = parseInt(parts[4]);
-        var iowait = parseInt(parts[5]) || 0;
-        var irq = parseInt(parts[6]) || 0;
-        var softirq = parseInt(parts[7]) || 0;
-        var steal = parseInt(parts[8]) || 0;
-
+        var user = parseInt(parts[1]), nice = parseInt(parts[2]), system = parseInt(parts[3]);
+        var idle = parseInt(parts[4]), iowait = parseInt(parts[5]) || 0;
+        var irq = parseInt(parts[6]) || 0, softirq = parseInt(parts[7]) || 0, steal = parseInt(parts[8]) || 0;
         var total = user + nice + system + idle + iowait + irq + softirq + steal;
         var busy = total - idle - iowait;
 
         if (barPanel.prevCpuLine !== "") {
           var prevParts = barPanel.prevCpuLine.split(/\s+/);
-          var prevUser = parseInt(prevParts[1]);
-          var prevNice = parseInt(prevParts[2]);
-          var prevSystem = parseInt(prevParts[3]);
-          var prevIdle = parseInt(prevParts[4]);
-          var prevIowait = parseInt(prevParts[5]) || 0;
-          var prevIrq = parseInt(prevParts[6]) || 0;
-          var prevSoftirq = parseInt(prevParts[7]) || 0;
-          var prevSteal = parseInt(prevParts[8]) || 0;
-
-          var prevTotal = prevUser + prevNice + prevSystem + prevIdle + prevIowait + prevIrq + prevSoftirq + prevSteal;
-          var prevBusy = prevTotal - prevIdle - prevIowait;
-
+          var pUser = parseInt(prevParts[1]), pNice = parseInt(prevParts[2]);
+          var pSystem = parseInt(prevParts[3]), pIdle = parseInt(prevParts[4]);
+          var pIowait = parseInt(prevParts[5]) || 0, pIrq = parseInt(prevParts[6]) || 0;
+          var pSoftirq = parseInt(prevParts[7]) || 0, pSteal = parseInt(prevParts[8]) || 0;
+          var prevTotal = pUser + pNice + pSystem + pIdle + pIowait + pIrq + pSoftirq + pSteal;
+          var prevBusy = prevTotal - pIdle - pIowait;
           var dTotal = total - prevTotal;
-          var dBusy = busy - prevBusy;
-          if (dTotal > 0) {
-            barPanel.cpuPercent = Math.round((dBusy / dTotal) * 100);
-          }
+          if (dTotal > 0) barPanel.cpuPercent = Math.round(((busy - prevBusy) / dTotal) * 100);
         }
         barPanel.prevCpuLine = lines[i];
       }
 
       if (lines[i].indexOf("MemTotal:") === 0) {
         var memTotal = parseInt(lines[i].split(/\s+/)[1]);
-        for (var j = i + 1; j < lines.length && j < i + 5; j++) {
+        for (var j = i + 1; j < lines.length && j < i + 3; j++) {
           if (lines[j].indexOf("MemAvailable:") === 0) {
             var memAvail = parseInt(lines[j].split(/\s+/)[1]);
-            if (memTotal > 0) {
-              barPanel.memPercent = Math.round(((memTotal - memAvail) / memTotal) * 100);
-            }
+            if (memTotal > 0) barPanel.memPercent = Math.round(((memTotal - memAvail) / memTotal) * 100);
             break;
           }
         }
       }
 
-      if (lines[i].indexOf(":") > 0 && (lines[i].indexOf("eth") >= 0 || lines[i].indexOf("wlan") >= 0 || lines[i].indexOf("enp") >= 0 || lines[i].indexOf("wlp") >= 0)) {
+      if (lines[i].indexOf(":") > 0) {
         var iface = lines[i].split(":")[0].trim();
         var stats = lines[i].split(":")[1].trim().split(/\s+/);
-        var rxBytes = parseInt(stats[0]);
-        var txBytes = parseInt(stats[8]);
-
+        var rxBytes = parseInt(stats[0]), txBytes = parseInt(stats[8]);
         if (barPanel.prevNetBytes[iface]) {
           var prev = barPanel.prevNetBytes[iface];
-          var drx = rxBytes - prev.rx;
-          var dtx = txBytes - prev.tx;
-          var elapsed = 5;
-          barPanel.netDownStr = formatBytes(Math.max(0, drx / elapsed));
-          barPanel.netUpStr = formatBytes(Math.max(0, dtx / elapsed));
+          var drx = rxBytes - prev.rx, dtx = txBytes - prev.tx;
+          barPanel.netDownStr = formatBytes(Math.max(0, drx / 5));
+          barPanel.netUpStr = formatBytes(Math.max(0, dtx / 5));
         }
-        var newNet = {};
-        newNet[iface] = {rx: rxBytes, tx: txBytes};
-        for (var k in barPanel.prevNetBytes) {
-          if (k !== iface) newNet[k] = barPanel.prevNetBytes[k];
-        }
-        barPanel.prevNetBytes = newNet;
+        var nn = {};
+        nn[iface] = {rx: rxBytes, tx: txBytes};
+        for (var k in barPanel.prevNetBytes) { if (k !== iface) nn[k] = barPanel.prevNetBytes[k]; }
+        barPanel.prevNetBytes = nn;
       }
     }
   }
@@ -315,20 +256,10 @@ PanelWindow {
     interval: 5000
     running: true
     repeat: true
-    onTriggered: {
-      hwMonitor.running = false;
-      hwMonitor.running = true;
-    }
+    onTriggered: { hwMonitor.running = false; hwMonitor.running = true; }
   }
 
-  Component.onCompleted: {
-    updateTime();
-    hwMonitor.running = true;
-  }
-
-  // ════════════════════════════════════════════════════════════════
-  // Clock
-  // ════════════════════════════════════════════════════════════════
+  // ═══ Clock ═══
   property string hourStr: ""
   property string minuteStr: ""
 
@@ -347,9 +278,7 @@ PanelWindow {
     onTriggered: barPanel.updateTime()
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // WiFi
-  // ════════════════════════════════════════════════════════════════
+  // ═══ WiFi ═══
   property var wifiDev: findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi; })
   property var ethDev: findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Ethernet; })
   property var wifiNet: findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected; })
@@ -366,9 +295,7 @@ PanelWindow {
     return "\u{F092F}";
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // Volume
-  // ════════════════════════════════════════════════════════════════
+  // ═══ Volume ═══
   property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
   PwObjectTracker { objects: barPanel.volNodes }
   property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
@@ -384,9 +311,7 @@ PanelWindow {
     return "\u{F057E}";
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // Media
-  // ════════════════════════════════════════════════════════════════
+  // ═══ Media ═══
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: {
     var playing = findFirst(mediaPlayers, function(p) { return p.isPlaying; });
@@ -395,20 +320,17 @@ PanelWindow {
     });
   }
   property string mediaText: mediaPlayer
-  ? (mediaPlayer.trackArtist
-    ? mediaPlayer.trackTitle + " \u2014 " + mediaPlayer.trackArtist
-    : mediaPlayer.trackTitle)
-  : ""
+    ? (mediaPlayer.trackArtist
+      ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
+      : mediaPlayer.trackTitle)
+    : ""
 
-  // ════════════════════════════════════════════════════════════════
-  // Layout
-  // ════════════════════════════════════════════════════════════════
+  // ═══ Layout ═══
 
-  // ── Media indicator (sideways, top) ──
+  // ── Media indicator (sideways) ──
   Text {
     id: mediaLabel
-    x: 16
-    y: 10
+    x: 16; y: 10
     text: barPanel.mediaText
     color: Colors.fg
     font.family: barPanel.uiFont
@@ -418,14 +340,11 @@ PanelWindow {
     transformOrigin: Item.TopLeft
     elide: Text.ElideRight
     visible: barPanel.mediaText !== ""
-    width: barPanel.height - 200
-    height: 20
+    width: barPanel.height - 200; height: 20
     maximumLineCount: 1
-    horizontalAlignment: Text.AlignLeft
-    verticalAlignment: Text.AlignVCenter
   }
 
-  // ── Workspace indicators (vertical pills) ──
+  // ── Workspace indicators ──
   Column {
     id: wsColumn
     anchors.horizontalCenter: parent.horizontalCenter
@@ -447,9 +366,7 @@ PanelWindow {
         opacity: isFocused ? 1.0 : 0.45
         anchors.horizontalCenter: parent.horizontalCenter
 
-        Behavior on height {
-          SpringAnimation { spring: 5.0; damping: 0.3; epsilon: 0.3; mass: 0.5 }
-        }
+        Behavior on height { SpringAnimation { spring: 5.0; damping: 0.3; epsilon: 0.3; mass: 0.5 } }
         Behavior on color  { ColorAnimation { duration: 200 } }
         Behavior on opacity { NumberAnimation { duration: 200 } }
 
@@ -571,19 +488,18 @@ PanelWindow {
     }
   }
 
-  // ── WiFi indicator ──
+  // ── WiFi ──
   Item {
     id: wifiWidget
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: volWidget.top
     anchors.bottomMargin: 8
-    width: 44
-    height: 32
+    width: 44; height: 32
 
     Rectangle {
       anchors.fill: parent
       radius: 10
-      color: wifiHover.containsMouse ? Colors.bgRaised : "transparent"
+      color: wifiHover.hovered ? Colors.bgRaised : "transparent"
       Behavior on color { ColorAnimation { duration: 120 } }
     }
 
@@ -596,9 +512,7 @@ PanelWindow {
     }
 
     MouseArea {
-      id: wifiMouseArea
       anchors.fill: parent
-      hoverEnabled: true
       cursorShape: Qt.PointingHandCursor
       acceptedButtons: Qt.RightButton
       onClicked: {
@@ -610,19 +524,18 @@ PanelWindow {
     HoverHandler { id: wifiHover }
   }
 
-  // ── Volume indicator ──
+  // ── Volume ──
   Item {
     id: volWidget
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: parent.bottom
     anchors.bottomMargin: 12
-    width: 44
-    height: 48
+    width: 44; height: 48
 
     Rectangle {
       anchors.fill: parent
       radius: 10
-      color: volHover.containsMouse ? Colors.bgRaised : "transparent"
+      color: volHover.hovered ? Colors.bgRaised : "transparent"
       Behavior on color { ColorAnimation { duration: 120 } }
     }
 
@@ -648,15 +561,12 @@ PanelWindow {
     }
 
     MouseArea {
-      id: volMouseArea
       anchors.fill: parent
-      hoverEnabled: true
       cursorShape: Qt.PointingHandCursor
       acceptedButtons: Qt.LeftButton | Qt.RightButton
       onClicked: function(mouse) {
-        if (mouse.button === Qt.RightButton) {
-          volProc.startDetached();
-        } else if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+        if (mouse.button === Qt.RightButton) { volProc.startDetached(); }
+        else if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
           Pipewire.defaultAudioSink.audio.muted = !barPanel.volMuted;
         }
       }
@@ -672,4 +582,6 @@ PanelWindow {
 
   Process { id: volProc; command: ["pavucontrol"] }
   Process { id: wifiProc; command: ["sh", "-lc", "foot -e nmtui"] }
+
+  Component.onCompleted: { updateTime(); hwMonitor.running = true; }
 }

@@ -20,19 +20,17 @@ PanelWindow {
   exclusionMode: ExclusionMode.Auto
   color: Colors.bg
 
-  property string timeStr: ""
   property string uiFont: "JetBrains Mono"
   property int barHeight: 30
-  property int tooltipGap: 10
-  property int tooltipPadding: 10
-  property int tooltipMargin: 6
   property int tooltipMaxWidth: 320
+  property int tooltipMargin: 6
+
+  property string timeStr: ""
 
   function updateTime() {
     var d = new Date();
     barPanel.timeStr = Qt.formatTime(d, "hh:mm");
-    var ms = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds());
-    timeTimer.interval = ms;
+    timeTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds());
     timeTimer.restart();
   }
 
@@ -43,9 +41,7 @@ PanelWindow {
     onTriggered: barPanel.updateTime()
   }
 
-  Component.onCompleted: {
-    updateTime();
-  }
+  Component.onCompleted: updateTime()
 
   function formatTitle(t) {
     return t
@@ -66,20 +62,12 @@ PanelWindow {
     return Math.max(min, Math.min(max, value));
   }
 
-  function tooltipX(width) {
-    if (!tooltipAnchor) return 0;
-    var pos = tooltipAnchor.mapToItem(barContent, 0, 0);
-    var x = barContent.x + pos.x + (tooltipAnchor.width - width) / 2;
-    return Math.round(clamp(x, tooltipMargin, barPanel.width - width - tooltipMargin));
-  }
-
   function escapeRegex(value) {
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
   function focusMediaPlayer() {
     if (!barPanel.mediaPlayer) return;
-
     var entry = barPanel.mediaPlayer.desktopEntry || barPanel.mediaPlayer.name || "";
     if (entry) {
       var lowerEntry = entry.toLowerCase();
@@ -96,27 +84,23 @@ PanelWindow {
       Hyprland.dispatch("focuswindow class:(?i)^" + escapeRegex(entry) + "$");
       return;
     }
-
     var identity = barPanel.mediaPlayer.identity || "";
     if (identity) {
-      var toplevels = Hyprland.toplevels.values;
-      for (var i = 0; i < toplevels.length; i++) {
-        var tl = toplevels[i];
-        if (tl.title && tl.title.indexOf(identity) !== -1) {
-          Hyprland.dispatch("focuswindow address:0x" + tl.address);
+      var toplevels2 = Hyprland.toplevels.values;
+      for (var j = 0; j < toplevels2.length; j++) {
+        var tl2 = toplevels2[j];
+        if (tl2.title && tl2.title.indexOf(identity) !== -1) {
+          Hyprland.dispatch("focuswindow address:0x" + tl2.address);
           return;
         }
       }
-      var pattern = escapeRegex(identity).replace(/\s+/g, "\\s+");
-      Hyprland.dispatch("focuswindow title:(?i)" + pattern);
+      Hyprland.dispatch("focuswindow title:(?i)" + escapeRegex(identity).replace(/\s+/g, "\\s+"));
     }
   }
 
   property string currentTitle: Hyprland.activeToplevel ? formatTitle(Hyprland.activeToplevel.title) : ""
 
-  function switchWs(id) {
-    Hyprland.dispatch("workspace " + id);
-  }
+  function switchWs(id) { Hyprland.dispatch("workspace " + id); }
 
   // -- Volume --
   property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
@@ -126,24 +110,14 @@ PanelWindow {
   property bool volMuted: volInfo ? volInfo.muted : false
   property string volTooltip: {
     var pct = Math.round(barPanel.volPct * 100);
-    var state = barPanel.volMuted ? "Muted" : ("Volume " + pct + "%");
-    return state + "\nLeft click: mute\nRight click: pavucontrol\nScroll: adjust";
+    return (barPanel.volMuted ? "Muted" : ("Volume " + pct + "%")) + "\nLeft click: mute\nRight click: pavucontrol\nScroll: adjust";
   }
   Process { id: volProc; command: ["pavucontrol"] }
 
   // -- WiFi --
-  property var wifiDev: findFirst(Networking.devices.values, function(d) {
-      return d.type === DeviceType.Wifi;
-  })
-  property var wifiNet: findFirst(wifiDev ? wifiDev.networks.values : [], function(n) {
-      return n.connected;
-  })
+  property var wifiDev: findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi; })
+  property var wifiNet: findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected; })
   property string wifiSsid: wifiNet ? wifiNet.name : ""
-  property string wifiTooltip: {
-    if (!wifiNet) return "Wi-Fi disconnected\nRight click: nmtui";
-    var strength = Math.round(wifiNet.signalStrength * 100);
-    return wifiNet.name + " (" + strength + "%)\nRight click: nmtui";
-  }
   property string wifiIcon: {
     if (!wifiNet) return "󰤯";
     var s = wifiNet.signalStrength;
@@ -152,10 +126,14 @@ PanelWindow {
     if (s < 0.6) return "󰤥";
     return "󰤨";
   }
+  property string wifiTooltip: {
+    if (!wifiNet) return "Wi-Fi disconnected\nRight click: nmtui";
+    return wifiNet.name + " (" + Math.round(wifiNet.signalStrength * 100) + "%)\nRight click: nmtui";
+  }
   Process { id: wifiProc; command: ["sh", "-lc", "foot -e nmtui"] }
 
-  // -- Battery (UPower) --
-  function batDevice() {
+  // -- Battery --
+  property var batDevice: {
     var count = UPower.devices.count;
     for (var i = 0; i < count; i++) {
       var d = UPower.devices.get(i);
@@ -169,19 +147,11 @@ PanelWindow {
     if (count > 0) return true;
     return UPower.displayDevice && UPower.displayDevice.ready;
   }
-  readonly property int batPct: {
-    var d = batDevice();
-    return d ? Math.round(d.percentage * 100) : 0;
-  }
-  readonly property bool batCharging: {
-    var d = batDevice();
-    return d && d.state === UPowerDeviceState.Charging;
-  }
-  readonly property bool batPlugged: {
-    var d = batDevice();
-    return d && d.state === UPowerDeviceState.FullyCharged;
-  }
-  readonly property int batState: batDevice() ? batDevice().state : UPowerDeviceState.Unknown
+  readonly property int batPct: batDevice ? Math.round(batDevice.percentage * 100) : 0
+  readonly property bool batCharging: batDevice && batDevice.state === UPowerDeviceState.Charging
+  readonly property bool batPlugged: batDevice && batDevice.state === UPowerDeviceState.FullyCharged
+  readonly property int batState: batDevice ? batDevice.state : UPowerDeviceState.Unknown
+
   property string batIcon: {
     if (!batPresent) return "";
     if (batCharging) return "󰂄";
@@ -228,46 +198,48 @@ PanelWindow {
     });
   }
   property string mediaText: mediaPlayer
-  ? (mediaPlayer.trackArtist
-    ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
-    : mediaPlayer.trackTitle)
-  : ""
-  property string mediaTooltip: mediaPlayer
-  ? (barPanel.mediaText + "\nLeft click: playback controls\nRight click: focus app")
-  : ""
-  property bool mediaHover: mediaPill.visible && (mediaWaveArea.containsMouse || mediaLabelArea.containsMouse)
-  property bool volHover: volMouse.containsMouse
-  property bool wifiHover: wifiHoverHandler.hovered || wifiMouse.containsMouse
-  property bool batHover: batPresent && batHoverHandler.hovered
-  property var tooltipAnchor: volHover ? volWidget : (wifiHover ? wifiPill : (batHover ? batteryPill : null))
-  property string tooltipText: volHover ? barPanel.volTooltip : (wifiHover ? barPanel.wifiTooltip : (batHover ? barPanel.batTooltip : ""))
-  property bool tooltipVisible: tooltipText !== ""
-  property int tooltipWidth: Math.round(Math.min(barPanel.tooltipMaxWidth, barPanel.width - barPanel.tooltipMargin * 2))
-  property int tooltipLeft: tooltipAnchor ? tooltipX(tooltipWidth) : 0
-  property int tooltipTop: Math.round(barPanel.barHeight + barPanel.tooltipGap)
+    ? (mediaPlayer.trackArtist
+      ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
+      : mediaPlayer.trackTitle)
+    : ""
+  property bool hasMedia: mediaText !== ""
   property real mediaProgress: mediaPlayer && mediaPlayer.length > 0
-  ? mediaPlayer.position / mediaPlayer.length : 0
+    ? mediaPlayer.position / mediaPlayer.length : 0
+
+  // -- Hover state --
+  property bool volHover: volHoverHandler.hovered
+  property bool wifiHover: wifiHoverHandler.hovered
+  property bool batHover: batPresent && batHoverHandler.hovered
+  property bool mediaHover: mediaPillHover.hovered
   property bool mediaPopupVisible: false
   property bool popupHovered: false
-  property bool popupClosed: false
+  property bool tooltipVisible: volHover || wifiHover || batHover
 
-  onMediaTextChanged: { if (!mediaText) mediaPopupVisible = false; }
-
-  Timer {
-    interval: 1000
-    running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying && mediaPill.visible
-    repeat: true
-    onTriggered: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.positionChanged(); }
+  property string tooltipText: {
+    if (volHover) return barPanel.volTooltip;
+    if (wifiHover) return barPanel.wifiTooltip;
+    if (batHover) return barPanel.batTooltip;
+    return "";
   }
 
+  property int tooltipWidth: Math.round(Math.min(barPanel.tooltipMaxWidth, barPanel.width - barPanel.tooltipMargin * 2))
+
+  onHasMediaChanged: { if (!hasMedia) mediaPopupVisible = false; }
+
+  // Single unified tick for media + waveform (replaces 3 separate timers)
   Timer {
-    id: popupCloseTimer
-    interval: 150
+    id: tickTimer
+    interval: 200
+    running: hasMedia
+    repeat: true
+    property real wavePhase: 0
     onTriggered: {
-      if (!popupHovered && !mediaHover) {
-        mediaPopupVisible = false;
+      if (mediaPlayer && mediaPlayer.isPlaying) {
+        mediaPlayer.positionChanged();
+        wavePhase = (wavePhase + 1.256) % (Math.PI * 2);
       }
     }
+    onRunningChanged: { if (!running) wavePhase = 0; }
   }
 
   Item {
@@ -285,32 +257,27 @@ PanelWindow {
       anchors.verticalCenter: parent.verticalCenter
       spacing: 6
 
-      Row {
-        spacing: 4
-        anchors.verticalCenter: parent.verticalCenter
+      Repeater {
+        model: Hyprland.workspaces
+        delegate: Rectangle {
+          required property var modelData
+          visible: !String(modelData.name).startsWith("special")
+          width: modelData.focused ? 28 : 12
+          height: 12
+          radius: height / 2
+          color: modelData.focused ? Colors.accent : Colors.fgDim
+          anchors.verticalCenter: parent.verticalCenter
 
-        Repeater {
-          model: Hyprland.workspaces
-          delegate: Rectangle {
-            required property var modelData
-            visible: !String(modelData.name).startsWith("special")
-            width: modelData.focused ? 28 : 12
-            height: 12
-            radius: height / 2
-            color: modelData.focused ? Colors.accent : Colors.fgDim
-            anchors.verticalCenter: parent.verticalCenter
+          Behavior on width {
+            NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
+          }
+          Behavior on color {
+            ColorAnimation { duration: 200; easing.type: Easing.InOutQuad }
+          }
 
-            Behavior on width {
-              NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
-            }
-            Behavior on color {
-              ColorAnimation { duration: 200; easing.type: Easing.InOutQuad }
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              onClicked: modelData.activate()
-            }
+          MouseArea {
+            anchors.fill: parent
+            onClicked: modelData.activate()
           }
         }
       }
@@ -356,7 +323,8 @@ PanelWindow {
 
       Pill {
         id: mediaPill
-        visible: barPanel.mediaText !== ""
+        visible: barPanel.hasMedia
+        HoverHandler { id: mediaPillHover }
 
         Row {
           anchors.verticalCenter: parent.verticalCenter
@@ -371,95 +339,55 @@ PanelWindow {
             height: 16
             anchors.verticalCenter: parent.verticalCenter
 
-            property real wavePhase: 0
-            property real displayProgress: barPanel.mediaProgress
-            property real playTransition: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying ? 1 : 0
-            property bool useGpuWaveform: true
-
-            Behavior on playTransition {
-              NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
-            }
-
-            Timer {
-              interval: 200
-              running: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying && mediaPill.visible
-              repeat: true
-              onTriggered: mediaWaveform.wavePhase = (mediaWaveform.wavePhase + 1.256) % (Math.PI * 2)
-            }
-
             ShaderEffect {
               id: waveformShader
               anchors.fill: parent
-              visible: mediaWaveform.useGpuWaveform && status === ShaderEffect.Ready
+              visible: status === ShaderEffect.Ready && mediaPlayer && mediaPlayer.isPlaying
               fragmentShader: "shaders/waveform.frag.qsb"
 
               property real barCount: mediaWaveform.barCount
               property real barWidth: mediaWaveform.barWidth
               property real barSpacing: mediaWaveform.barSpacing
               property real heightPx: mediaWaveform.height
-              property real phase: mediaWaveform.wavePhase
-              property real play: mediaWaveform.playTransition
-              property real progress: mediaWaveform.displayProgress
+              property real phase: tickTimer.wavePhase
+              property real play: 1.0
+              property real progress: barPanel.mediaProgress
               property color colorStart: Qt.rgba(0.769, 0.655, 0.906, 1)
               property color colorEnd: Qt.rgba(0.612, 0.812, 0.847, 1)
               property color bgColor: Colors.bgSubtle
             }
 
-            Loader {
-              id: waveformFallback
-              active: !waveformShader.visible
-              width: mediaWaveform.width
-              height: mediaWaveform.height
-              anchors.verticalCenter: parent.verticalCenter
-
-              sourceComponent: Component {
-                Item {
-                  width: mediaWaveform.width
-                  height: mediaWaveform.height
-
-                  Repeater {
-                    model: mediaWaveform.barCount
-                    delegate: Rectangle {
-                      required property int index
-                      width: mediaWaveform.barWidth
-                      radius: width / 2
-                      x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
-                      y: (mediaWaveform.height - height) / 2
-
-                      height: {
-                        if (!barPanel.mediaPlayer) return 3
-                        var waveHeight = 3 + Math.sin(mediaWaveform.wavePhase + index * 0.55) * 4 + 3
-                        return 3 + (waveHeight - 3) * mediaWaveform.playTransition
-                      }
-                      color: {
-                        if (!barPanel.mediaPlayer) return Colors.bgSubtle
-                        var frac = (index + 1) / mediaWaveform.barCount
-                        if (frac > mediaWaveform.displayProgress) return Colors.bgSubtle
-                        var t = frac / Math.max(mediaWaveform.displayProgress, 0.01)
-                        return Qt.rgba(
-                          0.769 - 0.157 * t,
-                          0.655 + 0.157 * t,
-                          0.906 - 0.059 * t,
-                          1
-                        )
-                      }
-                    }
-                  }
+            Repeater {
+              id: waveformBars
+              model: mediaWaveform.barCount
+              visible: !waveformShader.visible
+              delegate: Rectangle {
+                required property int index
+                width: mediaWaveform.barWidth
+                radius: width / 2
+                x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
+                y: (mediaWaveform.height - height) / 2
+                height: {
+                  if (!barPanel.mediaPlayer) return 3
+                  var waveH = 3 + Math.sin(tickTimer.wavePhase + index * 0.55) * 4 + 3
+                  return 3 + (waveH - 3) * (mediaPlayer && mediaPlayer.isPlaying ? 1 : 0)
+                }
+                color: {
+                  if (!barPanel.mediaPlayer) return Colors.bgSubtle
+                  var frac = (index + 1) / mediaWaveform.barCount
+                  if (frac > barPanel.mediaProgress) return Colors.bgSubtle
+                  var t = frac / Math.max(barPanel.mediaProgress, 0.01)
+                  return Qt.rgba(0.769 - 0.157 * t, 0.655 + 0.157 * t, 0.906 - 0.059 * t, 1)
                 }
               }
             }
 
             MouseArea {
-              id: mediaWaveArea
               anchors.fill: parent
-              hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
               acceptedButtons: Qt.LeftButton | Qt.RightButton
               onClicked: function(mouse) {
-                if (mouse.button === Qt.RightButton) {
-                  barPanel.focusMediaPlayer();
-                  return;
-                }
+                if (mouse.button === Qt.RightButton) { barPanel.focusMediaPlayer(); return; }
                 barPanel.mediaPopupVisible = !barPanel.mediaPopupVisible;
               }
             }
@@ -473,7 +401,7 @@ PanelWindow {
               var l = Math.round(barPanel.mediaPlayer.length)
               if (l <= 0) return ""
               return Math.floor(p/60) + ":" + (p%60).toString().padStart(2,'0')
-              + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
+                + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
             }
             color: Colors.fgMid
             font.family: barPanel.uiFont
@@ -495,9 +423,7 @@ PanelWindow {
               color: Colors.fg
               font.family: barPanel.uiFont
               font.pixelSize: 12
-
               property bool overflow: implicitWidth > mediaTextContainer.width + 2
-
               onTextChanged: {
                 x = 0
                 if (overflow) scrollAnim.restart()
@@ -508,39 +434,19 @@ PanelWindow {
               id: scrollAnim
               running: mediaLabelText.overflow
               loops: Animation.Infinite
-
               PauseAnimation { duration: 2000 }
-
               PropertyAnimation {
-                target: mediaLabelText
-                property: "x"
+                target: mediaLabelText; property: "x"
                 to: mediaTextContainer.width - mediaLabelText.implicitWidth
                 duration: Math.max((mediaLabelText.implicitWidth - mediaTextContainer.width) * 30, 1000)
                 easing.type: Easing.Linear
               }
-
               PauseAnimation { duration: 2000 }
-
               PropertyAnimation {
-                target: mediaLabelText
-                property: "x"
+                target: mediaLabelText; property: "x"
                 to: 0
                 duration: Math.max((mediaLabelText.implicitWidth - mediaTextContainer.width) * 30, 1000)
                 easing.type: Easing.Linear
-              }
-            }
-
-            MouseArea {
-              id: mediaLabelArea
-              anchors.fill: parent
-              hoverEnabled: true
-              acceptedButtons: Qt.LeftButton | Qt.RightButton
-              onClicked: function(mouse) {
-                if (mouse.button === Qt.RightButton) {
-                  barPanel.focusMediaPlayer();
-                  return;
-                }
-                barPanel.mediaPopupVisible = !barPanel.mediaPopupVisible;
               }
             }
           }
@@ -553,15 +459,14 @@ PanelWindow {
         height: parent.height
         anchors.verticalCenter: parent.verticalCenter
 
+        HoverHandler { id: volHoverHandler }
+
         Rectangle {
           id: volBg
           anchors.fill: parent
           radius: 4
-          color: "transparent"
-
-          Behavior on color {
-            ColorAnimation { duration: 100 }
-          }
+          color: volHoverHandler.hovered ? Colors.bgRaised : "transparent"
+          Behavior on color { ColorAnimation { duration: 100 } }
         }
 
         Row {
@@ -572,7 +477,6 @@ PanelWindow {
           spacing: 4
 
           Text {
-            id: volIcon
             text: {
               if (barPanel.volMuted) return "󰝟"
               var v = barPanel.volPct
@@ -587,7 +491,6 @@ PanelWindow {
           }
 
           Text {
-            id: volPct
             text: Math.round(barPanel.volPct * 100) + "%"
             color: barPanel.volMuted ? Colors.red : Colors.fg
             font.family: barPanel.uiFont
@@ -598,14 +501,12 @@ PanelWindow {
           Item {
             width: 32
             height: parent.height
-
             Rectangle {
               anchors.centerIn: parent
               width: parent.width
               height: 8
               radius: 4
               color: Colors.bgSubtle
-
               Rectangle {
                 anchors.top: parent.top
                 anchors.left: parent.left
@@ -613,13 +514,8 @@ PanelWindow {
                 width: parent.width * barPanel.volPct
                 radius: 4
                 color: barPanel.volMuted ? Colors.red : Colors.accent
-
-                Behavior on width {
-                  NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
-                }
-                Behavior on color {
-                  ColorAnimation { duration: 150 }
-                }
+                Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
+                Behavior on color { ColorAnimation { duration: 150 } }
               }
             }
           }
@@ -628,47 +524,34 @@ PanelWindow {
         MouseArea {
           id: volMouse
           anchors.fill: parent
-          hoverEnabled: true
           acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-          onEntered: volBg.color = Colors.bgRaised
-          onExited: volBg.color = "transparent"
-
           onClicked: function(mouse) {
-            if (mouse.button === Qt.RightButton) {
-              volProc.startDetached()
-            } else if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-              Pipewire.defaultAudioSink.audio.muted = !barPanel.volMuted
+            if (mouse.button === Qt.RightButton) { volProc.startDetached(); }
+            else if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+              Pipewire.defaultAudioSink.audio.muted = !barPanel.volMuted;
             }
           }
-
           onWheel: function(wheel) {
-            if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return
-            var step = 0.05
-            var dir = wheel.angleDelta.y > 0 ? 1 : -1
-            Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(1, barPanel.volPct + dir * step))
+            if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return;
+            var step = 0.05;
+            var dir = wheel.angleDelta.y > 0 ? 1 : -1;
+            Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(1, barPanel.volPct + dir * step));
           }
         }
       }
 
       Pill {
         id: wifiPill
-
         HoverHandler { id: wifiHoverHandler }
-
         Text {
-          id: wifiLabel
           text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
           color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
           font.family: barPanel.uiFont
           font.pixelSize: 12
           anchors.verticalCenter: parent.verticalCenter
         }
-
         MouseArea {
-          id: wifiMouse
           anchors.fill: parent
-          hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
           acceptedButtons: Qt.RightButton
           onClicked: wifiProc.startDetached()
@@ -678,9 +561,7 @@ PanelWindow {
       Pill {
         id: batteryPill
         visible: barPanel.batPresent
-
         HoverHandler { id: batHoverHandler }
-
         Text {
           text: barPanel.batIcon + " " + Math.round(barPanel.batPct) + "%"
           color: barPanel.batColor
@@ -692,383 +573,398 @@ PanelWindow {
     }
   }
 
-  PanelWindow {
-    id: tooltipWindow
-    visible: barPanel.tooltipVisible
-    focusable: false
-    aboveWindows: true
-    exclusionMode: ExclusionMode.Ignore
-    color: "transparent"
+  // Lazy-loaded tooltip (only creates PanelWindow when needed)
+  Loader {
+    id: tooltipLoader
+    active: barPanel.tooltipVisible
 
-    anchors { top: true; left: true }
-    margins { top: barPanel.tooltipTop; left: 0 }
-
-    implicitWidth: barPanel.width
-    implicitHeight: tooltipCard.implicitHeight + 3
-
-    Rectangle {
-      id: tooltipShadow
-      x: barPanel.tooltipLeft
-      width: barPanel.tooltipWidth
-      implicitHeight: tooltipTextItem.paintedHeight + barPanel.tooltipPadding * 2
-      height: implicitHeight
-      radius: 10
-      color: Qt.rgba(0, 0, 0, 0.25)
-      opacity: barPanel.tooltipVisible ? 0.7 : 0
-      y: 3
-      antialiasing: true
-
-      Behavior on opacity {
-        NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
-      }
+    function computeX(targetW) {
+      var anchor = { volWidget: 1, wifiPill: 1, batteryPill: 1 };
+      var pill;
+      if (volHover) pill = volWidget;
+      else if (wifiHover) pill = wifiPill;
+      else pill = batteryPill;
+      if (!pill) return 0;
+      var pos = pill.mapToItem(barContent, 0, 0);
+      var x = barContent.x + pos.x + (pill.width - targetW) / 2;
+      return Math.round(clamp(x, barPanel.tooltipMargin, barPanel.width - targetW - barPanel.tooltipMargin));
     }
 
-    Rectangle {
-      id: tooltipCard
-      x: barPanel.tooltipLeft
-      width: barPanel.tooltipWidth
-      implicitHeight: tooltipTextItem.paintedHeight + barPanel.tooltipPadding * 2
-      height: implicitHeight
-      radius: 10
-      color: Colors.bgRaised
-      antialiasing: true
-      border.width: 1
-      border.color: Colors.border
-      opacity: barPanel.tooltipVisible ? 1 : 0
+    sourceComponent: Component {
+      PanelWindow {
+        id: tooltipWindow
+        focusable: false
+        aboveWindows: true
+        exclusionMode: ExclusionMode.Ignore
+        color: "transparent"
+        anchors { top: true; left: true }
+        margins { top: barPanel.barHeight + 10; left: 0 }
+        implicitWidth: barPanel.width
+        implicitHeight: tooltipCard.implicitHeight + 3
 
-      Behavior on opacity {
-        NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
-      }
+        Rectangle {
+          id: tooltipCard
+          x: tooltipLoader.computeX(barPanel.tooltipWidth)
+          width: barPanel.tooltipWidth
+          implicitHeight: tipText.paintedHeight + 20
+          height: implicitHeight
+          radius: 10
+          color: Colors.bgRaised
+          antialiasing: true
+          border.width: 1
+          border.color: Colors.border
+          opacity: barPanel.tooltipVisible ? 1 : 0
+          Behavior on opacity { NumberAnimation { duration: 80 } }
 
-      Text {
-        id: tooltipTextItem
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.margins: barPanel.tooltipPadding
-        width: parent.width - barPanel.tooltipPadding * 2
-        text: barPanel.tooltipText
-        color: Colors.fg
-        font.family: barPanel.uiFont
-        font.pixelSize: 13
-        lineHeightMode: Text.ProportionalHeight
-        lineHeight: 1.2
-        wrapMode: Text.Wrap
+          Rectangle {
+            anchors.fill: parent
+            radius: 10
+            color: Qt.rgba(0, 0, 0, 0.25)
+            opacity: barPanel.tooltipVisible ? 0.7 : 0
+            y: 3
+            z: -1
+            Behavior on opacity { NumberAnimation { duration: 80 } }
+          }
+
+          Text {
+            id: tipText
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.margins: 10
+            width: parent.width - 20
+            text: barPanel.tooltipText
+            color: Colors.fg
+            font.family: barPanel.uiFont
+            font.pixelSize: 13
+            lineHeight: 1.2
+            wrapMode: Text.Wrap
+          }
+        }
       }
     }
   }
 
-  PanelWindow {
-    id: mediaPopup
-    visible: barPanel.mediaPopupVisible && barPanel.mediaPlayer !== null
-    focusable: false
-    aboveWindows: true
-    exclusionMode: ExclusionMode.Ignore
-    color: "transparent"
+  // Lazy-loaded media popup
+  Loader {
+    id: mediaPopupLoader
+    active: barPanel.mediaPopupVisible && barPanel.mediaPlayer !== null
 
-    anchors { top: true; left: true }
-    margins { top: mediaPopup.popupMarginTop; left: 0 }
-
-    implicitWidth: barPanel.width
-    implicitHeight: 160
-
-    property int popupWidth: 300
-    property int popupX: {
+    function computeX(popupW) {
       var pillW = mediaPill.width;
       var pillX = rightRow.x + mediaPill.x;
-      var x = barContent.x + pillX + (pillW - popupWidth) / 2;
-      return Math.round(barPanel.clamp(x, barPanel.tooltipMargin, barPanel.width - popupWidth - barPanel.tooltipMargin));
+      var x = barContent.x + pillX + (pillW - popupW) / 2;
+      return Math.round(clamp(x, barPanel.tooltipMargin, barPanel.width - popupW - barPanel.tooltipMargin));
     }
-    property int popupMarginTop: {
+
+    function computeTop() {
       var pillY = rightRow.y + mediaPill.y;
       return barContent.y + pillY + mediaPill.height + 4;
     }
 
-    Rectangle {
-      id: popupShadow
-      x: mediaPopup.popupX
-      y: 3
-      width: mediaPopup.popupWidth
-      implicitHeight: popupCard.implicitHeight
-      height: implicitHeight
-      radius: 12
-      color: Qt.rgba(0, 0, 0, 0.25)
-      opacity: 0.7
-      antialiasing: true
-    }
+    sourceComponent: Component {
+      PanelWindow {
+        id: mediaPopup
+        focusable: false
+        aboveWindows: true
+        exclusionMode: ExclusionMode.Ignore
+        color: "transparent"
+        anchors { top: true; left: true }
+        margins { top: mediaPopupLoader.computeTop(); left: 0 }
+        implicitWidth: barPanel.width
+        implicitHeight: 160
 
-    Rectangle {
-      id: popupCard
-      x: mediaPopup.popupX
-      width: mediaPopup.popupWidth
-      implicitHeight: popupContent.implicitHeight + 28
-      height: implicitHeight
-      radius: 12
-      color: Colors.bgRaised
-      antialiasing: true
-      border.width: 1
-      border.color: Colors.border
+        property int popupWidth: 300
 
-      Rectangle {
-        id: closeBtn
-        x: parent.width - 28
-        y: 8
-        width: 20
-        height: 20
-        radius: 10
-        color: Colors.bgSubtle
-
-        Behavior on scale { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-
-        Text {
-          anchors.centerIn: parent
-          text: "\uDB80\uDD56"
-          color: Colors.fgDim
-          font.family: barPanel.uiFont
-          font.pixelSize: 11
+        HoverHandler {
+          onHoveredChanged: barPanel.popupHovered = hovered
         }
 
-        MouseArea {
-          anchors.fill: parent
-          hoverEnabled: true
-          cursorShape: Qt.PointingHandCursor
-          onEntered: closeBtn.color = Colors.border
-          onExited: closeBtn.color = Colors.bgSubtle
-          onClicked: barPanel.mediaPopupVisible = false
+        Timer {
+          id: popupCloseTimer
+          interval: 150
+          onTriggered: {
+            if (!barPanel.popupHovered && !barPanel.mediaHover) barPanel.mediaPopupVisible = false;
+          }
         }
-      }
 
-      Column {
-        id: popupContent
-        anchors { left: parent.left; top: parent.top; right: parent.right }
-        anchors.margins: 14
-        spacing: 8
+        Connections {
+          target: barPanel
+          function onMediaHoverChanged() {
+            if (!barPanel.mediaHover && !barPanel.popupHovered) popupCloseTimer.restart();
+          }
+        }
 
-        Row {
-          spacing: 12
-          width: parent.width
+        Rectangle {
+          x: mediaPopupLoader.computeX(mediaPopup.popupWidth)
+          y: 0
+          width: mediaPopup.popupWidth
+          implicitHeight: popupContent.implicitHeight + 28
+          height: implicitHeight
+          radius: 12
+          color: Colors.bgRaised
+          antialiasing: true
+          border.width: 1
+          border.color: Colors.border
 
-          Item {
-            id: artContainer
-            width: 64
-            height: 64
-            anchors.verticalCenter: parent.verticalCenter
+          Rectangle {
+            anchors.fill: parent
+            radius: 12
+            color: Qt.rgba(0, 0, 0, 0.25)
+            y: 3
+            z: -1
+          }
 
-            Rectangle {
-              anchors.fill: parent
-              radius: 12
-              color: Colors.bgSubtle
-              clip: true
+          Rectangle {
+            id: closeBtn
+            x: parent.width - 28
+            y: 8
+            width: 20
+            height: 20
+            radius: 10
+            color: Colors.bgSubtle
+            Behavior on scale { NumberAnimation { duration: 80 } }
 
-              Image {
-                id: artImage
-                anchors.fill: parent
-                source: barPanel.mediaPlayer ? (barPanel.mediaPlayer.trackArtUrl || "") : ""
-                fillMode: Image.PreserveAspectCrop
-                smooth: true
-                visible: status === Image.Ready || status === Image.Loading
-              }
-
-              Text {
-                anchors.centerIn: parent
-                text: "\uDB80\uDDE2"
-                color: Colors.fgDim
-                font.family: barPanel.uiFont
-                font.pixelSize: 24
-                visible: artImage.status !== Image.Ready && artImage.status !== Image.Loading
-              }
+            Text {
+              anchors.centerIn: parent
+              text: "\uDB80\uDD56"
+              color: Colors.fgDim
+              font.family: barPanel.uiFont
+              font.pixelSize: 11
             }
 
-            Rectangle {
+            MouseArea {
               anchors.fill: parent
-              radius: 12
-              color: "transparent"
-              border.width: 1.5
-              border.color: Colors.border
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onEntered: closeBtn.color = Colors.border
+              onExited: closeBtn.color = Colors.bgSubtle
+              onClicked: barPanel.mediaPopupVisible = false
             }
           }
 
           Column {
-            spacing: 2
-            anchors.verticalCenter: parent.verticalCenter
-            width: parent.width - artContainer.width - parent.spacing - closeBtn.width - 8
+            id: popupContent
+            anchors { left: parent.left; top: parent.top; right: parent.right }
+            anchors.margins: 14
+            spacing: 8
 
-            Text {
+            Row {
+              spacing: 12
               width: parent.width
-              text: barPanel.mediaText
-              color: Colors.fg
-              font.family: barPanel.uiFont
-              font.pixelSize: 13
-              font.bold: true
-              elide: Text.ElideRight
-            }
 
-            Text {
-              width: parent.width
-              text: {
-                var parts = [];
-                if (barPanel.mediaPlayer && barPanel.mediaPlayer.trackAlbum) parts.push(barPanel.mediaPlayer.trackAlbum);
-                if (barPanel.mediaPlayer && barPanel.mediaPlayer.name) parts.push(barPanel.mediaPlayer.name);
-                return parts.join(" \u2014 ");
+              Item {
+                id: artContainer
+                width: 64
+                height: 64
+                anchors.verticalCenter: parent.verticalCenter
+
+                Rectangle {
+                  anchors.fill: parent
+                  radius: 12
+                  color: Colors.bgSubtle
+                  clip: true
+
+                  Image {
+                    id: artImage
+                    anchors.fill: parent
+                    source: barPanel.mediaPlayer ? (barPanel.mediaPlayer.trackArtUrl || "") : ""
+                    fillMode: Image.PreserveAspectCrop
+                    smooth: true
+                    visible: status === Image.Ready || status === Image.Loading
+                  }
+
+                  Text {
+                    anchors.centerIn: parent
+                    text: "\uDB80\uDDE2"
+                    color: Colors.fgDim
+                    font.family: barPanel.uiFont
+                    font.pixelSize: 24
+                    visible: artImage.status !== Image.Ready && artImage.status !== Image.Loading
+                  }
+                }
+
+                Rectangle {
+                  anchors.fill: parent
+                  radius: 12
+                  color: "transparent"
+                  border.width: 1.5
+                  border.color: Colors.border
+                }
               }
-              color: Colors.fgDim
-              font.family: barPanel.uiFont
-              font.pixelSize: 11
-              elide: Text.ElideRight
-              visible: text.length > 0
-            }
-          }
-        }
 
-        Item {
-          width: parent.width
-          height: 32
+              Column {
+                spacing: 2
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - artContainer.width - parent.spacing - closeBtn.width - 8
 
-          Rectangle {
-            id: mPrevBtn
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            width: 32
-            height: 32
-            radius: 8
-            color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
-            border.width: 1
-            border.color: Colors.border
+                Text {
+                  width: parent.width
+                  text: barPanel.mediaText
+                  color: Colors.fg
+                  font.family: barPanel.uiFont
+                  font.pixelSize: 13
+                  font.bold: true
+                  elide: Text.ElideRight
+                }
 
-            Behavior on scale { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-
-            Text {
-              anchors.centerIn: parent
-              text: "\uDB81\uDCAE"
-              color: Colors.fg
-              font.family: barPanel.uiFont
-              font.pixelSize: 14
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onEntered: { mPrevBtn.color = Colors.bgSubtle; mPrevBtn.scale = 0.92 }
-              onExited: { mPrevBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6); mPrevBtn.scale = 1 }
-              onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.previous() }
-            }
-          }
-
-          Rectangle {
-            id: mPlayBtn
-            anchors.left: mPrevBtn.right
-            anchors.leftMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            width: 32
-            height: 32
-            radius: 8
-            color: Colors.accent
-            border.width: 1
-            border.color: Colors.accent
-
-            Behavior on scale { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-
-            Text {
-              anchors.centerIn: parent
-              text: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying ? "\uDB80\uDFE4" : "\uDB81\uDC0A"
-              color: Colors.bg
-              font.family: barPanel.uiFont
-              font.pixelSize: 14
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onEntered: mPlayBtn.scale = 0.92
-              onExited: mPlayBtn.scale = 1
-              onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.togglePlaying() }
-            }
-          }
-
-          Rectangle {
-            id: mNextBtn
-            anchors.left: mPlayBtn.right
-            anchors.leftMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            width: 32
-            height: 32
-            radius: 8
-            color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
-            border.width: 1
-            border.color: Colors.border
-
-            Behavior on scale { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-
-            Text {
-              anchors.centerIn: parent
-              text: "\uDB81\uDCAD"
-              color: Colors.fg
-              font.family: barPanel.uiFont
-              font.pixelSize: 14
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onEntered: { mNextBtn.color = Colors.bgSubtle; mNextBtn.scale = 0.92 }
-              onExited: { mNextBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6); mNextBtn.scale = 1 }
-              onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.next() }
-            }
-          }
-
-          Text {
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            text: {
-              if (!barPanel.mediaPlayer) return ""
-              var p = Math.round(barPanel.mediaPlayer.position)
-              var l = Math.round(barPanel.mediaPlayer.length)
-              if (l <= 0) return ""
-              return Math.floor(p/60) + ":" + (p%60).toString().padStart(2,'0')
-              + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
-            }
-            color: Colors.fgMid
-            font.family: barPanel.uiFont
-            font.pixelSize: 10
-          }
-        }
-
-        Item {
-          width: parent.width
-          height: 6
-          visible: barPanel.mediaPlayer && barPanel.mediaPlayer.length > 0
-
-          Rectangle {
-            anchors.verticalCenter: parent.verticalCenter
-            width: parent.width
-            height: 6
-            radius: 3
-            color: Qt.rgba(0.145, 0.145, 0.18, 0.7)
-
-            Rectangle {
-              anchors.top: parent.top
-              anchors.left: parent.left
-              anchors.bottom: parent.bottom
-              width: parent.width * (barPanel.mediaPlayer && barPanel.mediaPlayer.length > 0
-                ? Math.min(1, Math.max(0, barPanel.mediaPlayer.position / barPanel.mediaPlayer.length))
-                : 0)
-              radius: 3
-              color: Colors.accent
-
-              Behavior on width {
-                NumberAnimation { duration: 300; easing.type: Easing.Linear }
+                Text {
+                  width: parent.width
+                  text: {
+                    var parts = [];
+                    if (barPanel.mediaPlayer && barPanel.mediaPlayer.trackAlbum) parts.push(barPanel.mediaPlayer.trackAlbum);
+                    if (barPanel.mediaPlayer && barPanel.mediaPlayer.name) parts.push(barPanel.mediaPlayer.name);
+                    return parts.join(" — ");
+                  }
+                  color: Colors.fgDim
+                  font.family: barPanel.uiFont
+                  font.pixelSize: 11
+                  elide: Text.ElideRight
+                  visible: text.length > 0
+                }
               }
             }
 
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: function(mouse) {
-                if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek) {
-                  barPanel.mediaPlayer.position = mouse.x / width * barPanel.mediaPlayer.length;
+            Item {
+              width: parent.width
+              height: 32
+
+              Rectangle {
+                id: mPrevBtn
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                width: 32; height: 32
+                radius: 8
+                color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
+                border.width: 1
+                border.color: Colors.border
+                Behavior on scale { NumberAnimation { duration: 80 } }
+
+                Text {
+                  anchors.centerIn: parent
+                  text: "\uDB81\uDCAE"
+                  color: Colors.fg
+                  font.family: barPanel.uiFont
+                  font.pixelSize: 14
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: { mPrevBtn.color = Colors.bgSubtle; mPrevBtn.scale = 0.92 }
+                  onExited: { mPrevBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6); mPrevBtn.scale = 1 }
+                  onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.previous() }
+                }
+              }
+
+              Rectangle {
+                id: mPlayBtn
+                anchors.left: mPrevBtn.right
+                anchors.leftMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
+                width: 32; height: 32
+                radius: 8
+                color: Colors.accent
+                border.width: 1
+                border.color: Colors.accent
+                Behavior on scale { NumberAnimation { duration: 80 } }
+
+                Text {
+                  anchors.centerIn: parent
+                  text: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying ? "\uDB80\uDFE4" : "\uDB81\uDC0A"
+                  color: Colors.bg
+                  font.family: barPanel.uiFont
+                  font.pixelSize: 14
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: mPlayBtn.scale = 0.92
+                  onExited: mPlayBtn.scale = 1
+                  onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.togglePlaying() }
+                }
+              }
+
+              Rectangle {
+                id: mNextBtn
+                anchors.left: mPlayBtn.right
+                anchors.leftMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
+                width: 32; height: 32
+                radius: 8
+                color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
+                border.width: 1
+                border.color: Colors.border
+                Behavior on scale { NumberAnimation { duration: 80 } }
+
+                Text {
+                  anchors.centerIn: parent
+                  text: "\uDB81\uDCAD"
+                  color: Colors.fg
+                  font.family: barPanel.uiFont
+                  font.pixelSize: 14
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: { mNextBtn.color = Colors.bgSubtle; mNextBtn.scale = 0.92 }
+                  onExited: { mNextBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6); mNextBtn.scale = 1 }
+                  onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.next() }
+                }
+              }
+
+              Text {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: {
+                  if (!barPanel.mediaPlayer) return ""
+                  var p = Math.round(barPanel.mediaPlayer.position)
+                  var l = Math.round(barPanel.mediaPlayer.length)
+                  if (l <= 0) return ""
+                  return Math.floor(p/60) + ":" + (p%60).toString().padStart(2,'0')
+                    + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
+                }
+                color: Colors.fgMid
+                font.family: barPanel.uiFont
+                font.pixelSize: 10
+              }
+            }
+
+            Item {
+              width: parent.width
+              height: 6
+              visible: barPanel.mediaPlayer && barPanel.mediaPlayer.length > 0
+
+              Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width
+                height: 6
+                radius: 3
+                color: Qt.rgba(0.145, 0.145, 0.18, 0.7)
+
+                Rectangle {
+                  anchors.top: parent.top
+                  anchors.left: parent.left
+                  anchors.bottom: parent.bottom
+                  width: parent.width * barPanel.mediaProgress
+                  radius: 3
+                  color: Colors.accent
+                  Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.Linear } }
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: function(mouse) {
+                    if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek) {
+                      barPanel.mediaPlayer.position = mouse.x / width * barPanel.mediaPlayer.length;
+                    }
+                  }
                 }
               }
             }

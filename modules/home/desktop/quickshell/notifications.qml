@@ -5,12 +5,6 @@ import QtQuick
 import QtQuick.Layouts
 import QtQml
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Notification Daemon — Quickshell QML
-// ═══════════════════════════════════════════════════════════════════════════
-// Colors loaded from Colors.qml (generated from Stylix). Rebuild to refresh.
-// ═══════════════════════════════════════════════════════════════════════════
-
 Item {
   id: notif
   property bool doNotDisturb: false
@@ -20,19 +14,24 @@ Item {
   property int  maxPopups: 5
   property string uiFont: "JetBrains Mono"
 
-  readonly property int  topMargin: barVisible ? 54 : sideMargin
+  readonly property int  topMargin: barVisible ? 54 : 24
   readonly property int  sideMargin: 24
   readonly property int  panelWidth: 520
   readonly property int  cardRadius: 8
   readonly property int  cardPadding: 14
   readonly property int  cardSpacing: 6
   readonly property int  iconSize: 24
-  readonly property int  closeBtnSize: 22
-  readonly property int  actionBtnHeight: 26
+
+  property var _stripCache: ({})
 
   function stripMarkup(text) {
     if (!text || text.length === 0) return "";
-    return text.replace(/<[^>]*>/g, "");
+    var c = notif._stripCache;
+    var r = c[text];
+    if (r !== undefined) return r;
+    r = text.replace(/<[^>]*>/g, "");
+    if (Object.keys(c).length < 100) c[text] = r;
+    return r;
   }
 
   function urgencyColor(notification) {
@@ -47,7 +46,7 @@ Item {
     if (!notification) return notif.popupTimeoutMs;
     if (notification.urgency === NotificationUrgency.Critical) return 0;
     if (notification.expireTimeout > 0) {
-      const ms = Math.round(notification.expireTimeout * 1000);
+      var ms = Math.round(notification.expireTimeout * 1000);
       return Math.max(2500, Math.min(15000, ms));
     }
     if (notification.urgency === NotificationUrgency.Low) return 3500;
@@ -55,29 +54,29 @@ Item {
   }
 
   function removePopup(notification) {
-    const idx = popupList.indexOf(notification);
+    var idx = popupList.indexOf(notification);
     if (idx >= 0) popupList.splice(idx, 1);
     popupListChanged();
   }
 
   function addPopup(notification) {
     if (!notification) return;
-    const deduped = popupList.filter(n => n && n.id !== notification.id);
+    var deduped = popupList.filter(function(n) { return n && n.id !== notification.id; });
     deduped.unshift(notification);
     popupList = deduped.slice(0, notif.maxPopups);
-    notification.closed.connect(() => notif.removePopup(notification));
+    notification.closed.connect(function() { notif.removePopup(notification); });
   }
 
   function clearNotifications() {
-    const all = [...notificationServer.trackedNotifications.values];
-    for (let i = 0; i < all.length; i++) all[i].dismiss();
+    var all = notificationServer.trackedNotifications.values;
+    for (var i = 0; i < all.length; i++) all[i].dismiss();
   }
 
-  onDoNotDisturbChanged: {
-    if (doNotDisturb) popupList = [];
-  }
+  onDoNotDisturbChanged: { if (doNotDisturb) popupList = []; }
 
   property var popupList: []
+
+  property bool _hasPopups: popupList.length > 0
 
   NotificationServer {
     id: notificationServer
@@ -92,7 +91,7 @@ Item {
     bodyImagesSupported:     false
     persistenceSupported:    true
 
-    onNotification: (notification) => {
+    onNotification: function(notification) {
       notification.tracked = true;
       if (notification.lastGeneration) return;
       if (notif.doNotDisturb && notification.urgency !== NotificationUrgency.Critical) return;
@@ -100,169 +99,166 @@ Item {
     }
   }
 
-  // ── Notification popups ──────────────────────────────────────────────────
-  PanelWindow {
-    id: popupWindow
-    visible: popupList.length > 0
-    focusable: false
-    aboveWindows: true
-    exclusionMode: ExclusionMode.Ignore
-    color: "transparent"
+  // Lazy popup window — only created when popups exist
+  Loader {
+    id: popupWindowLoader
+    active: notif._hasPopups
 
-    anchors { top: true; left: true }
-    margins { top: notif.topMargin; left: notif.sideMargin }
+    sourceComponent: Component {
+      PanelWindow {
+        id: popupWindow
+        focusable: false
+        aboveWindows: true
+        exclusionMode: ExclusionMode.Ignore
+        color: "transparent"
 
-    implicitWidth: notif.panelWidth
-    implicitHeight: popupColumn.implicitHeight
+        anchors { top: true; left: true }
+        margins { top: notif.topMargin; left: notif.sideMargin }
 
-    Column {
-      id: popupColumn
-      width: parent.width
-      spacing: 8
+        implicitWidth: notif.panelWidth
+        implicitHeight: popupColumn.implicitHeight
 
-      Repeater {
-          model: popupList
+        Column {
+          id: popupColumn
+          width: parent.width
+          spacing: 8
 
-          Rectangle {
-            id: popupCard
-            property var notification: modelData
-            property var removeFn: notif.removePopup
-            property int timeoutMs: notif.popupTimeoutFor(notification)
+          Repeater {
+            model: popupList
 
-            width: popupColumn.width
-            implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
-          height: implicitHeight
-          radius: notif.cardRadius
-          color: Colors.bgRaised
-          border.width: 1
-          border.color: Colors.border
+            Rectangle {
+              id: popupCard
+              property var notification: modelData
+              property int timeoutMs: notif.popupTimeoutFor(notification)
 
-          opacity: 0
-          transform: Translate { id: popupTranslate; x: -(notif.panelWidth + notif.sideMargin) }
-          Component.onCompleted: {
-            appearAnim.start();
-            if (popupTimer.interval > 0) popupTimer.start();
-          }
-          ParallelAnimation {
-            id: appearAnim
-            NumberAnimation { target: popupCard;    property: "opacity"; to: 1; duration: 220; easing.type: Easing.OutCubic }
-            NumberAnimation { target: popupTranslate; property: "x";    to: 0; duration: 220; easing.type: Easing.OutCubic }
-          }
+              width: popupColumn.width
+              implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
+              height: implicitHeight
+              radius: notif.cardRadius
+              color: Colors.bgRaised
+              border.width: 1
+              border.color: Colors.border
 
-          Rectangle {
-            anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
-            width: 3
-            radius: notif.cardRadius
-            color: notif.urgencyColor(notification)
-          }
-
-          Column {
-            id: popupInner
-            x: notif.cardPadding + 8
-            y: notif.cardPadding
-            width: parent.width - x - notif.cardPadding
-            spacing: notif.cardSpacing
-
-            Row {
-              width: parent.width
-              spacing: 8
-
-              AppIcon { notification: popupCard.notification; fallbackBg: Colors.bgSubtle }
-
-              Text {
-                text: (notification && notification.appName && notification.appName.length > 0)
-                  ? notification.appName
-                  : "Notification"
-                color: Colors.accent
-                font.family: notif.uiFont
-                font.pixelSize: 11
-                font.bold: true
-                elide: Text.ElideRight
-                verticalAlignment: Text.AlignVCenter
-                height: notif.iconSize
-                width: Math.max(0, parent.width - closePopup.width - parent.spacing - notif.iconSize - parent.spacing)
+              opacity: 0
+              transform: Translate { id: popupTranslate; x: -(notif.panelWidth + notif.sideMargin) }
+              Component.onCompleted: {
+                appearAnim.start();
+                if (popupTimer.interval > 0) popupTimer.start();
+              }
+              ParallelAnimation {
+                id: appearAnim
+                NumberAnimation { target: popupCard;    property: "opacity"; to: 1; duration: 220; easing.type: Easing.OutCubic }
+                NumberAnimation { target: popupTranslate; property: "x";    to: 0; duration: 220; easing.type: Easing.OutCubic }
               }
 
               Rectangle {
-                id: closePopup
-                width: notif.closeBtnSize
-                height: notif.closeBtnSize
-                radius: 4
-                color: "transparent"
-                border.width: 1
-                border.color: Colors.border
+                anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                width: 3; radius: notif.cardRadius
+                color: notif.urgencyColor(notification)
+              }
+
+              Column {
+                id: popupInner
+                x: notif.cardPadding + 8; y: notif.cardPadding
+                width: parent.width - x - notif.cardPadding
+                spacing: notif.cardSpacing
+
+                Row {
+                  width: parent.width
+                  spacing: 8
+
+                  AppIcon { notification: popupCard.notification; fallbackBg: Colors.bgSubtle }
+
+                  Text {
+                    text: (notification && notification.appName && notification.appName.length > 0)
+                      ? notification.appName : "Notification"
+                    color: Colors.accent
+                    font.family: notif.uiFont
+                    font.pixelSize: 11
+                    font.bold: true
+                    elide: Text.ElideRight
+                    verticalAlignment: Text.AlignVCenter
+                    height: notif.iconSize
+                    width: Math.max(0, parent.width - closePopup.width - parent.spacing - notif.iconSize - parent.spacing)
+                  }
+
+                  Rectangle {
+                    id: closePopup
+                    width: 22; height: 22
+                    radius: 4
+                    color: "transparent"
+                    border.width: 1
+                    border.color: Colors.border
+
+                    Text {
+                      anchors.centerIn: parent
+                      text: "\u00D7"
+                      color: Colors.fgDim
+                      font.family: notif.uiFont
+                      font.pixelSize: 13
+                      font.bold: true
+                    }
+
+                    MouseArea {
+                      anchors.fill: parent
+                      hoverEnabled: true
+                      onEntered: closePopup.color = Colors.bgSubtle
+                      onExited:  closePopup.color = "transparent"
+                      onClicked: notif.removePopup(notification)
+                    }
+                  }
+                }
 
                 Text {
-                  anchors.centerIn: parent
-                  text: "×"
-                  color: Colors.fgDim
+                  text: (notification && notification.summary && notification.summary.length > 0)
+                    ? notif.stripMarkup(notification.summary)
+                    : ((notification && notification.appName && notification.appName.length > 0)
+                      ? notification.appName : "Notification")
+                  width: parent.width
+                  color: Colors.fg
                   font.family: notif.uiFont
                   font.pixelSize: 13
                   font.bold: true
+                  wrapMode: Text.Wrap
+                  textFormat: Text.PlainText
+                  visible: text.length > 0
                 }
 
-                MouseArea {
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  onEntered: closePopup.color = Colors.bgSubtle
-                  onExited:  closePopup.color = "transparent"
-                  onClicked: removeFn(notification)
+                Text {
+                  text: notification ? notif.stripMarkup(notification.body || "") : ""
+                  width: parent.width
+                  color: Colors.fgMid
+                  font.family: notif.uiFont
+                  font.pixelSize: 12
+                  wrapMode: Text.Wrap
+                  textFormat: Text.PlainText
+                  visible: text.length > 0
+                }
+
+                ActionRow {
+                  width: parent.width
+                  actions: (notification && notification.actions) ? notification.actions : []
+                  onActionInvoked: notif.removePopup(notification)
                 }
               }
-            }
 
-            Text {
-              text: (notification && notification.summary && notification.summary.length > 0)
-                ? notif.stripMarkup(notification.summary)
-                : ((notification && notification.appName && notification.appName.length > 0)
-                    ? notification.appName
-                    : "Notification")
-              width: parent.width
-              color: Colors.fg
-              font.family: notif.uiFont
-              font.pixelSize: 13
-              font.bold: true
-              wrapMode: Text.Wrap
-              textFormat: Text.PlainText
-              visible: text.length > 0
-            }
+              Timer {
+                id: popupTimer
+                interval: popupCard.timeoutMs
+                repeat: false
+                onTriggered: {
+                  var n = notification;
+                  if (n) n.expire();
+                  notif.removePopup(n);
+                }
+              }
 
-            Text {
-              text: notification ? notif.stripMarkup(notification.body || "") : ""
-              width: parent.width
-              color: Colors.fgMid
-              font.family: notif.uiFont
-              font.pixelSize: 12
-              wrapMode: Text.Wrap
-              textFormat: Text.PlainText
-              visible: text.length > 0
-            }
-
-            ActionRow {
-              width: parent.width
-              actions: (notification && notification.actions) ? notification.actions : []
-              onActionInvoked: removeFn(notification)
-            }
-          }
-
-          Timer {
-            id: popupTimer
-            interval: popupCard.timeoutMs
-            repeat: false
-            onTriggered: {
-              const n = notification;
-              if (n) n.expire();
-              removeFn(n);
-            }
-          }
-
-          HoverHandler {
-            id: popupHover
-            onHoveredChanged: {
-              if (hovered) {
-                popupTimer.stop();
-              } else if (popupTimer.interval > 0) {
-                popupTimer.restart();
+              HoverHandler {
+                id: popupHover
+                onHoveredChanged: {
+                  if (hovered) popupTimer.stop();
+                  else if (popupTimer.interval > 0) popupTimer.restart();
+                }
               }
             }
           }
@@ -270,5 +266,4 @@ Item {
       }
     }
   }
-
 }

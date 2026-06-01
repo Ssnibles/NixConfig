@@ -8,6 +8,9 @@ Rectangle {
   radius: height / 2
   color: Colors.bgRaised
 
+  default property alias data: contentItem.data
+  implicitWidth: Math.max(contentItem.childrenRect.width + padding * 2, height)
+
   Item {
     id: contentItem
     anchors.left: parent.left
@@ -17,8 +20,4 @@ Rectangle {
     anchors.verticalCenter: parent.verticalCenter
     height: parent.height
   }
-
-  default property alias data: contentItem.data
-
-  implicitWidth: Math.max(contentItem.childrenRect.width + padding * 2, height)
 }
