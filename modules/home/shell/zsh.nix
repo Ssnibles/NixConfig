@@ -4,9 +4,10 @@
 # Zsh setup ported from the existing fish config: aliases, functions, plugins,
 # prompt, and Stylix-coloured syntax highlighting.
 # =============================================================================
-{ pkgs, config, lib, ... }:
+{ pkgs, config, ... }:
 let
   c = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
+  shared = import ./shared.nix;
 in
 {
   programs.zsh = {
@@ -18,43 +19,47 @@ in
     autosuggestion = {
       enable = true;
       highlight = "fg=${c.withHash.fgDim}";
-      strategy = [ "match_prev_cmd" "history" "completion" ];
+      strategy = [
+        "match_prev_cmd"
+        "history"
+        "completion"
+      ];
     };
 
     syntaxHighlighting = {
       enable = true;
       styles = {
-        default             = "none";
-        unknown-token       = "fg=${c.withHash.red}";
-        reserved-word       = "fg=${c.withHash.accent}";
-        alias               = "fg=${c.withHash.accent}";
-        builtin             = "fg=${c.withHash.accent}";
-        function            = "fg=${c.withHash.accent}";
-        command             = "fg=${c.withHash.accent}";
-        precommand          = "fg=${c.withHash.purple}";
-        commandseparator    = "fg=${c.withHash.teal}";
-        hashed-command      = "fg=${c.withHash.accent}";
-        path                = "fg=${c.withHash.green}";
-        path_prefix         = "none";
-        path_approx         = "fg=${c.withHash.orange}";
-        globbing            = "fg=${c.withHash.teal}";
-        history-expansion   = "fg=${c.withHash.purple}";
-        single-hyphen-option  = "fg=${c.withHash.yellow}";
-        double-hyphen-option  = "fg=${c.withHash.yellow}";
-        back-quoted-argument  = "fg=${c.withHash.purple}";
+        default = "none";
+        unknown-token = "fg=${c.withHash.red}";
+        reserved-word = "fg=${c.withHash.accent}";
+        alias = "fg=${c.withHash.accent}";
+        builtin = "fg=${c.withHash.accent}";
+        function = "fg=${c.withHash.accent}";
+        command = "fg=${c.withHash.accent}";
+        precommand = "fg=${c.withHash.purple}";
+        commandseparator = "fg=${c.withHash.teal}";
+        hashed-command = "fg=${c.withHash.accent}";
+        path = "fg=${c.withHash.green}";
+        path_prefix = "none";
+        path_approx = "fg=${c.withHash.orange}";
+        globbing = "fg=${c.withHash.teal}";
+        history-expansion = "fg=${c.withHash.purple}";
+        single-hyphen-option = "fg=${c.withHash.yellow}";
+        double-hyphen-option = "fg=${c.withHash.yellow}";
+        back-quoted-argument = "fg=${c.withHash.purple}";
         single-quoted-argument = "fg=${c.withHash.green}";
         double-quoted-argument = "fg=${c.withHash.green}";
         dollar-quoted-argument = "fg=${c.withHash.green}";
         back-double-quoted-argument = "fg=${c.withHash.purple}";
         back-dollar-quoted-argument = "fg=${c.withHash.purple}";
-        assign              = "fg=${c.withHash.fg}";
-        redirection         = "fg=${c.withHash.teal}";
-        comment             = "fg=${c.withHash.fgDim}";
-        variable            = "fg=${c.withHash.fgMid}";
-        mathnum             = "fg=${c.withHash.teal}";
-        named-fd            = "fg=${c.withHash.teal}";
-        numeric-fd          = "fg=${c.withHash.yellow}";
-        arg0                = "fg=${c.withHash.accent}";
+        assign = "fg=${c.withHash.fg}";
+        redirection = "fg=${c.withHash.teal}";
+        comment = "fg=${c.withHash.fgDim}";
+        variable = "fg=${c.withHash.fgMid}";
+        mathnum = "fg=${c.withHash.teal}";
+        named-fd = "fg=${c.withHash.teal}";
+        numeric-fd = "fg=${c.withHash.yellow}";
+        arg0 = "fg=${c.withHash.accent}";
       };
     };
 
@@ -71,47 +76,7 @@ in
       size = 100000;
     };
 
-    # ── Aliases (ported from fish abbreviations) ───────────────────────────
-    shellAliases = {
-      v       = "nvim";
-      c       = "clear";
-      y       = "yazi";
-      rebuild = "nh os switch";
-      hm      = "nh home switch";
-      update  = "nh os switch --update";
-      clean   = "nh clean all";
-      cat     = "bat --paging=never --style=plain";
-      ls      = "eza --group-directories-first --icons=auto";
-      ll      = "eza -lah --group-directories-first --icons=auto --git";
-      lt      = "eza --tree --level=2 --icons=auto";
-      du      = "dust";
-      df      = "duf";
-      ps      = "procs";
-      find    = "fd";
-      grep    = "rg";
-      rga     = "ripgrep-all";
-      sed     = "sd";
-      tldr    = "tlrc";
-      td      = "tlrc";
-      http    = "xh";
-      watch   = "watchexec";
-      gdiff   = "git diff";
-      j       = "just";
-      pp      = "petpick";
-      nf      = "nix flake";
-      nfu     = "nix flake update";
-      nd      = "nix develop";
-      nb      = "nix build";
-      ns      = "nix search nixpkgs";
-      fr      = "nh os switch --update";
-      fmt     = "nixfmt";
-      hms     = "nh home switch";
-      mng     = "manage-nixos";
-      ":q"    = "exit";
-      lg      = "lazygit";
-      ff      = "microfetch";
-      get-class = "niri msg windows";
-    };
+    shellAliases = shared.sharedAliases;
 
     # ── Completion tweaks ──────────────────────────────────────────────────
     completionInit = ''
@@ -125,12 +90,12 @@ in
     plugins = [
       {
         name = "forgit";
-        src  = pkgs.zsh-forgit;
+        src = pkgs.zsh-forgit;
         file = "forgit.plugin.zsh";
       }
       {
         name = "done";
-        src  = pkgs.done;
+        src = pkgs.done;
         file = "done.zsh";
       }
     ];
@@ -175,12 +140,11 @@ in
         microfetch
       fi
 
-      # ── FZF defaults ──
       if (( $+commands[fd] )); then
-        export FZF_DEFAULT_COMMAND="fd --type f --hidden --follow --exclude .git"
+        export FZF_DEFAULT_COMMAND="${shared.sharedEnv.FZF_DEFAULT_COMMAND}"
         export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
       fi
-      export FZF_DEFAULT_OPTS="--height=45% --layout=reverse --border --info=inline"
+      export FZF_DEFAULT_OPTS="${shared.sharedEnv.FZF_DEFAULT_OPTS}"
       if (( $+commands[bat] )); then
         export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       fi
@@ -287,6 +251,5 @@ in
     zsh-forgit
     done
   ];
-
 
 }

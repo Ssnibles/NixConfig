@@ -17,8 +17,10 @@
   home.packages = [
     pkgs.unstable.awww # From nixpkgs-unstable
     pkgs.solaar
-    inputs.pomodoro.packages.${pkgs.system}.default
   ]
+  # Pomodoro is a local development package - only include if available
+  ++ lib.optional (inputs ? pomodoro && inputs.pomodoro ? packages)
+    inputs.pomodoro.packages.${pkgs.system}.default
   ++ (with pkgs.unstable; [
     # ── Development ────────────────────────────────────────────────────
     kotlin

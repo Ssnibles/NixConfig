@@ -94,13 +94,13 @@ vim.keymap.set({ "n", "v" }, "<leader>cf", function()
 	require("conform").format({ async = true, lsp_format = "fallback" })
 end, { desc = "Format buffer" })
 
-vim.keymap.set("n", "<leader>tf", function()
+vim.keymap.set("n", "<leader>ta", function()
 	vim.g.disable_autoformat = not vim.g.disable_autoformat
 	local msg = vim.g.disable_autoformat and "disabled" or "enabled"
 	vim.notify(("Autoformat %s"):format(msg), vim.log.levels.INFO)
 end, { desc = "Toggle autoformat" })
 
-vim.keymap.set("n", "<leader>tF", function()
+vim.keymap.set("n", "<leader>tA", function()
 	local ft = vim.bo.filetype
 	if ft == "" then
 		return

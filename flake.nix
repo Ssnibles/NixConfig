@@ -16,6 +16,8 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
+    # Local development input - only available on your machine
+    # CI will skip this gracefully
     pomodoro = {
       url = "path:/home/josh/godev/pomodoro";
       inputs.nixpkgs.follows = "nixpkgs";
