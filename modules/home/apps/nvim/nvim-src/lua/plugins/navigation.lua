@@ -10,6 +10,38 @@ vim.keymap.set({ "n", "x", "o" }, "S", flash.treesitter, { desc = "Flash treesit
 require("grug-far").setup()
 vim.keymap.set("n", "<leader>fR", "<cmd>GrugFar<CR>", { desc = "Find and replace" })
 
+-- Simple buffer-local find/replace (lighter than grug-far for single-buffer edits)
+local function buffer_find_replace(default_search)
+	vim.ui.input({ prompt = "Find in buffer: ", default = default_search or "" }, function(find)
+		if not find or find == "" then
+			return
+		end
+		vim.ui.input({ prompt = "Replace with: " }, function(replace)
+			if replace == nil then
+				return
+			end
+			local escaped_find = vim.fn.escape(find, "/")
+			local escaped_replace = vim.fn.escape(replace, "/&")
+			local keys = string.format(":<C-u>%%s/\\V%s/%s/g", escaped_find, escaped_replace)
+			vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "n", false)
+		end)
+	end)
+end
+
+vim.keymap.set("n", "<leader>fr", function()
+	buffer_find_replace(vim.fn.expand("<cword>"))
+end, { desc = "Find and replace in buffer" })
+
+vim.keymap.set("x", "<leader>fr", function()
+	local old_reg = vim.fn.getreg("z")
+	local old_regtype = vim.fn.getregtype("z")
+	vim.cmd([[noautocmd silent! normal! gv"zy]])
+	local selection = vim.fn.getreg("z")
+	vim.fn.setreg("z", old_reg, old_regtype)
+	selection = selection:match("^[^\r\n]*") or ""
+	buffer_find_replace(selection)
+end, { desc = "Find and replace selection in buffer" })
+
 -- Smart-splits: resize and move splits intuitively
 local smart_splits = require("smart-splits")
 local smart_config = {}
