@@ -228,10 +228,54 @@ PanelWindow {
   // mediaTick is incremented on a timer so that mediaProgress (a computed property)
   // re-evaluates and the seek-bar / waveform stay in sync while playing.
   property int mediaTick: 0
+  property real mediaLastPosition: 0
+  property real mediaLastLength: 0
+  property int mediaResetToken: 0
+  function resetMediaTiming(pos, len) {
+    barPanel.mediaLastPosition = Math.max(0, pos || 0);
+    barPanel.mediaLastLength = Math.max(0, len || 0);
+    barPanel.mediaTick = 0;
+    barPanel.mediaResetToken++;
+    if (tickTimer) tickTimer.wavePhase = 0;
+  }
+  function updateMediaPosition(pos, len) {
+    var p = Math.max(0, pos || 0);
+    var l = Math.max(0, len || 0);
+    if (p + 0.5 < barPanel.mediaLastPosition) {
+      barPanel.resetMediaTiming(p, l);
+      return;
+    }
+    barPanel.mediaLastPosition = p;
+    barPanel.mediaLastLength = l;
+  }
   property real mediaProgress: {
     var _ = barPanel.mediaTick;
-    return mediaPlayer && mediaPlayer.length > 0
-      ? Math.min(1, Math.max(0, mediaPlayer.position / mediaPlayer.length)) : 0;
+    var __ = barPanel.mediaResetToken;
+    return mediaPlayer && barPanel.mediaLastLength > 0
+      ? Math.min(1, Math.max(0, barPanel.mediaLastPosition / barPanel.mediaLastLength)) : 0;
+  }
+  onMediaPlayerChanged: {
+    if (!mediaPlayer) {
+      barPanel.resetMediaTiming(0, 0);
+      return;
+    }
+    barPanel.resetMediaTiming(mediaPlayer.position, mediaPlayer.length);
+  }
+
+  Connections {
+    target: barPanel.mediaPlayer
+    function onPositionChanged() {
+      if (!barPanel.mediaPlayer) return;
+      barPanel.updateMediaPosition(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length);
+    }
+    function onLengthChanged() {
+      if (!barPanel.mediaPlayer) return;
+      barPanel.mediaLastLength = Math.max(0, barPanel.mediaPlayer.length || 0);
+    }
+    function onTrackChanged() {
+      if (!barPanel.mediaPlayer) return;
+      barPanel.resetMediaTiming(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length);
+    }
   }
 
   // -- Hover state --
@@ -260,6 +304,9 @@ PanelWindow {
     onTriggered: {
       // Advance sine wave phase by ~72 degrees each tick for the fallback bars.
       wavePhase = (wavePhase + 1.256) % (Math.PI * 2);
+      if (barPanel.mediaPlayer) {
+        barPanel.updateMediaPosition(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length);
+      }
       barPanel.mediaTick++;
     }
     onRunningChanged: { if (!running) wavePhase = 0; }
@@ -442,8 +489,9 @@ PanelWindow {
             text: {
               if (!barPanel.mediaPlayer) return ""
               var _ = barPanel.mediaTick;
-              var p = Math.round(barPanel.mediaPlayer.position)
-              var l = Math.round(barPanel.mediaPlayer.length)
+              var __ = barPanel.mediaResetToken;
+              var p = Math.round(barPanel.mediaLastPosition)
+              var l = Math.round(barPanel.mediaLastLength)
               if (l <= 0) return ""
               return Math.floor(p/60) + ":" + pad2(p%60)
                 + " / " + Math.floor(l/60) + ":" + pad2(l%60)

@@ -86,17 +86,65 @@ PanelWindow {
   // _mediaTick is bumped by a timer so this computed property re-evaluates,
   // keeping the seek-bar position in sync while music is playing.
   property int _mediaTick: 0
+  property real mediaLastPosition: 0
+  property real mediaLastLength: 0
+  property int mediaResetToken: 0
+  function resetMediaTiming(pos, len) {
+    controlPanel.mediaLastPosition = Math.max(0, pos || 0);
+    controlPanel.mediaLastLength = Math.max(0, len || 0);
+    controlPanel._mediaTick = 0;
+    controlPanel.mediaResetToken++;
+  }
+  function updateMediaPosition(pos, len) {
+    var p = Math.max(0, pos || 0);
+    var l = Math.max(0, len || 0);
+    if (p + 0.5 < controlPanel.mediaLastPosition) {
+      controlPanel.resetMediaTiming(p, l);
+      return;
+    }
+    controlPanel.mediaLastPosition = p;
+    controlPanel.mediaLastLength = l;
+  }
   property real mediaProgress: {
     var _ = controlPanel._mediaTick;
-    return mediaPlayer && mediaPlayer.length > 0
-    ? Math.min(1, Math.max(0, mediaPlayer.position / mediaPlayer.length)) : 0;
+    var __ = controlPanel.mediaResetToken;
+    return mediaPlayer && controlPanel.mediaLastLength > 0
+    ? Math.min(1, Math.max(0, controlPanel.mediaLastPosition / controlPanel.mediaLastLength)) : 0;
+  }
+  onMediaPlayerChanged: {
+    if (!mediaPlayer) {
+      controlPanel.resetMediaTiming(0, 0);
+      return;
+    }
+    controlPanel.resetMediaTiming(mediaPlayer.position, mediaPlayer.length);
+  }
+
+  Connections {
+    target: controlPanel.mediaPlayer
+    function onPositionChanged() {
+      if (!controlPanel.mediaPlayer) return;
+      controlPanel.updateMediaPosition(controlPanel.mediaPlayer.position, controlPanel.mediaPlayer.length);
+    }
+    function onLengthChanged() {
+      if (!controlPanel.mediaPlayer) return;
+      controlPanel.mediaLastLength = Math.max(0, controlPanel.mediaPlayer.length || 0);
+    }
+    function onTrackChanged() {
+      if (!controlPanel.mediaPlayer) return;
+      controlPanel.resetMediaTiming(controlPanel.mediaPlayer.position, controlPanel.mediaPlayer.length);
+    }
   }
 
   Timer {
     interval: 500
     running: controlPanel.visible && controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying
     repeat: true
-    onTriggered: controlPanel._mediaTick++
+    onTriggered: {
+      if (controlPanel.mediaPlayer) {
+        controlPanel.updateMediaPosition(controlPanel.mediaPlayer.position, controlPanel.mediaPlayer.length);
+      }
+      controlPanel._mediaTick++;
+    }
   }
 
   // ── Animation state ──
@@ -606,7 +654,8 @@ PanelWindow {
               Text {
                 text: {
                   var _ = controlPanel._mediaTick;
-                  return controlPanel.formatTime(controlPanel.mediaPlayer ? controlPanel.mediaPlayer.position : 0)
+                  var __ = controlPanel.mediaResetToken;
+                  return controlPanel.formatTime(controlPanel.mediaLastPosition)
                 }
                 color: _p.fgMid
                 font.family: _p.uiFont
@@ -647,7 +696,7 @@ PanelWindow {
               }
 
               Text {
-                text: controlPanel.formatTime(controlPanel.mediaPlayer ? controlPanel.mediaPlayer.length : 0)
+                text: controlPanel.formatTime(controlPanel.mediaLastLength)
                 color: _p.fgMid
                 font.family: _p.uiFont
                 font.pixelSize: 10
