@@ -1,11 +1,3 @@
-# =============================================================================
-# Home Manager Package List
-# =============================================================================
-# Packages installed at the user level via Home Manager.
-# Host-conditional sets use hostProfile flags set in flake.nix.
-#
-# Note: system-level tools (git, vim, etc.) live in nixos/common.nix.
-# =============================================================================
 {
   pkgs,
   lib,
@@ -13,114 +5,106 @@
   inputs,
   ...
 }:
+let
+  unstable = pkgs.unstable;
+in
 {
   home.packages = [
-    pkgs.unstable.awww # From nixpkgs-unstable
+    unstable.awww
     pkgs.solaar
   ]
-  # Pomodoro is a local development package - only include if available
   ++ lib.optional (inputs ? pomodoro && inputs.pomodoro ? packages)
-    inputs.pomodoro.packages.${pkgs.system}.default
-  ++ (with pkgs.unstable; [
+    inputs.pomodoro.packages.${pkgs.stdenv.hostPlatform.system}.default
+  ++ [
     # ── Development ────────────────────────────────────────────────────
-    kotlin
-    openjdk25
-    code2prompt
-    nodejs
-    dotnet-sdk_9
-    roslyn
+    unstable.kotlin
+    unstable.openjdk25
+    unstable.code2prompt
+    unstable.nodejs
+    unstable.dotnet-sdk_9
+    unstable.roslyn
 
     # ── CLI utilities ───────────────────────────────────────────────────
-    quickemu
-    git-lfs
-    github-copilot-cli
-    opencode
-    wl-clipboard
+    unstable.quickemu
+    unstable.git-lfs
+    unstable.github-copilot-cli
+    unstable.opencode
+    unstable.wl-clipboard
     pkgs.age
-    inputs.agenix.packages.${pkgs.system}.default
-    fd
-    ripgrep
-    ripgrep-all
-    grc
-    eza
-    dust
-    duf
-    procs
-    zoxide
-    tlrc
-    hyperfine
-    sd
-    choose
-    just
-    watchexec
-    xh
-    android-tools
-    pet
-    jq
-    nix-tree
-    nix-output-monitor
-    deadnix
-    statix
-    texliveBasic
-    imagemagick
-    zip
-    btop
-    microfetch
-    gh-dash
+    inputs.agenix.packages.${pkgs.stdenv.hostPlatform.system}.default
+    unstable.fd
+    unstable.ripgrep
+    unstable.ripgrep-all
+    unstable.grc
+    unstable.eza
+    unstable.dust
+    unstable.duf
+    unstable.procs
+    unstable.zoxide
+    unstable.tlrc
+    unstable.hyperfine
+    unstable.sd
+    unstable.choose
+    unstable.just
+    unstable.watchexec
+    unstable.xh
+    unstable.android-tools
+    unstable.pet
+    unstable.jq
+    unstable.nix-tree
+    unstable.nix-output-monitor
+    unstable.deadnix
+    unstable.statix
+    unstable.texliveBasic
+    unstable.imagemagick
+    unstable.zip
+    unstable.btop
+    unstable.microfetch
+    unstable.gh-dash
 
     # ── Fonts ───────────────────────────────────────────────────────────
-    nerd-fonts.fira-code
-    nerd-fonts.zed-mono
-    nerd-fonts.jetbrains-mono
-    alice
+    unstable.nerd-fonts.fira-code
+    unstable.nerd-fonts.zed-mono
+    unstable.nerd-fonts.jetbrains-mono
+    unstable.alice
 
     # ── GUI applications ────────────────────────────────────────────────
-    foot
-    onlyoffice-desktopeditors
-    vesktop
-    qownnotes
-    neovide
+    unstable.foot
+    unstable.onlyoffice-desktopeditors
+    unstable.vesktop
+    unstable.qownnotes
+    unstable.neovide
 
     # ── Document viewers ────────────────────────────────────────────────
-    sioyek
+    unstable.sioyek
 
     # ── Media ─────────────────────────────────────────────────────────────
-    mpv
-    imv
-
-    # ── Media ───────────────────────────────────────────────────────────
-    picard
-    easytag
-    pavucontrol
+    unstable.mpv
+    unstable.imv
+    unstable.picard
+    unstable.easytag
+    unstable.pavucontrol
 
     # ── System / connectivity ────────────────────────────────────────────
-    localsend
-    impala
-    bluetui
-    blueman
-    satty
-    grim
-    slurp
-  ])
-  # ── Desktop-only packages ─────────────────────────────────────────────
-  ++ lib.optionals hostProfile.isDesktop (
-    with pkgs.unstable;
-    [
-      pkgs.ddcutil
-      blender
-      via
-      prismlauncher
-      google-chrome
-      calibre
-    ]
-  )
-  # ── Laptop-only packages ──────────────────────────────────────────────
-  ++ lib.optionals hostProfile.isLaptop (
-    with pkgs.unstable;
-    [
-      powertop
-      acpi
-      brightnessctl
-    ]
-  );
+    unstable.localsend
+    unstable.impala
+    unstable.bluetui
+    unstable.blueman
+    unstable.satty
+    unstable.grim
+    unstable.slurp
+  ]
+  ++ lib.optionals hostProfile.isDesktop [
+    pkgs.ddcutil
+    unstable.blender
+    unstable.via
+    unstable.prismlauncher
+    unstable.google-chrome
+    unstable.calibre
+  ]
+  ++ lib.optionals hostProfile.isLaptop [
+    unstable.powertop
+    unstable.acpi
+    unstable.brightnessctl
+  ];
 }

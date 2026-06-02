@@ -2,28 +2,24 @@
 
 let
   lib = inputs.nixpkgs.lib;
+  mkProfile = import ./profile.nix;
 in
 {
   mkHost =
-    {
-      hostName,
-      isLaptop ? false,
-      hasNvidia ? false,
-      isVM ? false,
-      useDisko ? true,
-      system ? "x86_64-linux",
-      user ? "josh",
-    }:
+    args:
     let
-      hostProfile = {
-        inherit hostName isLaptop hasNvidia isVM useDisko user;
-        isDesktop = !isLaptop;
-      };
+      hostProfile = mkProfile args;
+      hostName = hostProfile.hostName;
+      user = hostProfile.user;
+      system = args.system or "x86_64-linux";
     in
     lib.nixosSystem {
       inherit system;
 
-      specialArgs = { inherit inputs hostProfile user; };
+      specialArgs = {
+        inherit inputs hostProfile user;
+        semanticColors = import ./colors.nix;
+      };
 
       modules = [
         {
@@ -41,13 +37,16 @@ in
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
-            extraSpecialArgs = { inherit inputs hostProfile user; };
+            extraSpecialArgs = {
+              inherit inputs hostProfile user;
+              semanticColors = import ./colors.nix;
+            };
             users.${user} = import ../users/${user};
           };
         }
       ]
-      ++ lib.optional useDisko inputs.disko.nixosModules.disko
-      ++ lib.optional useDisko ../disko/${hostName}.nix
-      ++ lib.optional hasNvidia ../modules/nixos/hardware/nvidia.nix;
+      ++ lib.optional hostProfile.useDisko inputs.disko.nixosModules.disko
+      ++ lib.optional hostProfile.useDisko ../disko/${hostName}.nix
+      ++ lib.optional hostProfile.hasNvidia ../modules/nixos/hardware/nvidia.nix;
     };
 }

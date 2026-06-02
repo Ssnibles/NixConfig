@@ -1,16 +1,9 @@
-# =============================================================================
-# Hyprlock Configuration
-# =============================================================================
-# Lock screen for Hyprland with active Stylix theme styling.
-# =============================================================================
-{ config, ... }:
+{ config, semanticColors, ... }:
 let
-  c = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
-
+  c = semanticColors { colors = config.lib.stylix.colors; };
   wallpaper = toString (import ../../../lib/stylix/themes.nix).wallpaper;
 
   rgb = hex: "rgb(${hex})";
-  # Hyprlock/Hyprlang requires escaping '#' as '##' inside markup strings.
   span = hex: text: "<span foreground='##${hex}'>${text}</span>";
   italicSpan = hex: text: "<span style='italic' foreground='##${hex}'>${text}</span>";
 in
@@ -78,7 +71,7 @@ in
       label = [
         {
           monitor = "";
-          text = "cmd[update:1000] echo \"${italicSpan c.fg "$(date +'%H:%M')"}\"";
+          text = ''cmd[update:1000] echo "${italicSpan c.fg "$(date +'%H:%M')"}"'';
           color = rgb c.fg;
           font_size = 72;
           font_family = "Alice";
@@ -89,7 +82,7 @@ in
         }
         {
           monitor = "";
-          text = "cmd[update:1000] echo \"${span c.fg "$(date +'%A, %d %B')"}\"";
+          text = ''cmd[update:1000] echo "${span c.fg "$(date +'%A, %d %B')"}"'';
           color = rgb c.fg;
           font_size = 14;
           font_family = "JetBrains Mono";
@@ -99,7 +92,7 @@ in
         }
         {
           monitor = "";
-          text = "cmd[update:60000] echo \"${span c.fgDim "$USER@$(hostname)"}\"";
+          text = ''cmd[update:60000] echo "${span c.fgDim "$USER@$(hostname)"}"'';
           color = rgb c.fg;
           font_size = 14;
           font_family = "JetBrains Mono";

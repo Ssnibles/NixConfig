@@ -1,19 +1,12 @@
-# =============================================================================
-# Zsh Shell & Terminal Emulator Configuration
-# =============================================================================
-# Zsh setup ported from the existing fish config: aliases, functions, plugins,
-# prompt, and Stylix-coloured syntax highlighting.
-# =============================================================================
-{ pkgs, config, ... }:
+{ pkgs, config, semanticColors, ... }:
 let
-  c = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
+  c = semanticColors { colors = config.lib.stylix.colors; };
   shared = import ./shared.nix;
 in
 {
   programs.zsh = {
     enable = true;
 
-    # ── Options ────────────────────────────────────────────────────────────
     enableCompletion = true;
 
     autosuggestion = {
@@ -63,7 +56,6 @@ in
       };
     };
 
-    # ── History ────────────────────────────────────────────────────────────
     history = {
       append = true;
       expireDuplicatesFirst = true;
@@ -78,7 +70,6 @@ in
 
     shellAliases = shared.sharedAliases;
 
-    # ── Completion tweaks ──────────────────────────────────────────────────
     completionInit = ''
       zstyle ':completion:*' menu select
       zstyle ':completion:*' completer _expand _complete _approximate
@@ -86,7 +77,6 @@ in
       zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
     '';
 
-    # ── Plugins ────────────────────────────────────────────────────────────
     plugins = [
       {
         name = "forgit";
@@ -100,9 +90,7 @@ in
       }
     ];
 
-    # ── Init ────────────────────────────────────────────────────────────────
     initContent = ''
-      # ── Init (early) ───────────────────────────────────────
       setopt AUTO_CD
       setopt COMPLETE_IN_WORD
       setopt CORRECT_ALL
@@ -111,8 +99,6 @@ in
       setopt NO_BEEP
       setopt PUSHD_IGNORE_DUPS
 
-      # ── Init (sourced at the end of .zshrc) ────────────────
-      # ── Cursor shapes (line in insert, block in normal) ──
       function _zsh_set_cursor() {
         case $1 in
           block) printf '\e[2 q';;
@@ -131,11 +117,9 @@ in
       zle -N zle-keymap-select
       _zsh_set_cursor line
 
-      # ── Autosuggestion tweaks ──
       ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=120
       ZSH_AUTOSUGGEST_HISTORY_IGNORE="(l[ls]|c[lear]|microfetch|exi[t]|cd\.\.)"
 
-      # ── Microfetch on startup ──
       if (( $+commands[microfetch] )); then
         microfetch
       fi
@@ -149,24 +133,18 @@ in
         export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       fi
 
-      # ── Zoxide ──
       if (( $+commands[zoxide] )); then
         eval "$(zoxide init zsh)"
       fi
 
-      # ── FZF key bindings ──
       if (( $+commands[fzf] )); then
         source <(fzf --zsh)
       fi
 
-      # ── GRC (generic colorizer) ──
       if (( $+commands[grc] )); then
         source ${pkgs.grc}/etc/grc.zsh
       fi
 
-      # ── Functions ──
-
-      # petpick – Insert a pet snippet selected with fzf
       function petpick() {
         if ! (( $+commands[pet] )); then
           echo "petpick: pet is not installed" >&2
@@ -182,7 +160,6 @@ in
       zle -N petpick
       bindkey '\ep' petpick
 
-      # mkcd – Create a directory and enter it
       function mkcd() {
         if [[ $# -eq 0 ]]; then
           echo "mkcd: missing directory name" >&2
@@ -191,7 +168,6 @@ in
         mkdir -p -- "$1" && cd "$1"
       }
 
-      # cdr – cd to the git repository root
       function cdr() {
         local root
         root="$(git rev-parse --show-toplevel 2>/dev/null)"
@@ -203,7 +179,6 @@ in
         return 1
       }
 
-      # cdf – cd into a directory selected with fzf
       function cdf() {
         if ! (( $+commands[fd] )) || ! (( $+commands[fzf] )); then
           echo "cdf: fd and fzf are required" >&2
@@ -231,11 +206,9 @@ in
         fi
       }
 
-      # ── Prompt (Pure) ──
       fpath+=("${pkgs.pure-prompt}/share/zsh/site-functions")
       autoload -U promptinit && promptinit && prompt pure
 
-      # ── Key bindings (history search with up/down) ──
       autoload -U up-line-or-beginning-search
       autoload -U down-line-or-beginning-search
       zle -N up-line-or-beginning-search
@@ -245,11 +218,9 @@ in
     '';
   };
 
-  # ── Packages needed exclusively by this config ──────────────────────────────
   home.packages = with pkgs; [
     pure-prompt
     zsh-forgit
     done
   ];
-
 }

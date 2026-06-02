@@ -112,7 +112,9 @@
         overlays = overlays;
       };
 
+      mkProfile = import ./lib/profile.nix;
       inherit (import ./lib/mkHost.nix { inherit inputs overlays; }) mkHost;
+      semanticColors = import ./lib/colors.nix;
 
       mkHome =
         {
@@ -122,22 +124,14 @@
           user ? "josh",
         }:
         let
-          hostProfile = {
-            inherit
-              hostName
-              isLaptop
-              hasNvidia
-              user
-              ;
-            isDesktop = !isLaptop;
-            isVM = false;
-            useDisko = false;
-          };
+          hostProfile = mkProfile { inherit hostName isLaptop hasNvidia user; };
         in
         inputs.home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           modules = [ ./users/${user} ];
-          extraSpecialArgs = { inherit inputs hostProfile user; };
+          extraSpecialArgs = {
+            inherit inputs hostProfile user semanticColors;
+          };
         };
     in
     {

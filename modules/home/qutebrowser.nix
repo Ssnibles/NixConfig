@@ -1,15 +1,11 @@
-# =============================================================================
-# Qutebrowser Module (Home Manager)
-# =============================================================================
-# Declarative qutebrowser setup aligned with the active Stylix palette.
-# =============================================================================
 {
   config,
   pkgs,
+  semanticColors,
   ...
 }:
 let
-  c = (import ../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).withHash;
+  c = semanticColors { colors = config.lib.stylix.colors; };
   isDark = config.lib.stylix.colors.variant != "light";
 in
 {
@@ -45,11 +41,8 @@ in
       auto_save.session = true;
       content = {
         autoplay = false;
-        # Use one blocker backend for lower per-request overhead.
-        # Uses hosts blocking unless python-adblock is overridden into the package.
         blocking.method = "auto";
         cookies.accept = "no-3rdparty";
-        # Ask sites to reduce animations/transitions.
         prefers_reduced_motion = true;
       };
       downloads = {
@@ -62,9 +55,7 @@ in
         "-c"
         "normal {line}G{column0}l"
       ];
-      # Smoother visuals cost extra CPU; disable for responsiveness/battery.
       scrolling.smooth = false;
-      # Restore tabs lazily to lower startup memory and CPU spikes.
       session.lazy_restore = true;
       statusbar.show = "in-mode";
       tabs = {
@@ -91,125 +82,125 @@ in
 
         completion = {
           category = {
-            bg = c.bgRaised;
-            fg = c.accent;
+            bg = c.withHash.bgRaised;
+            fg = c.withHash.accent;
           };
-          even.bg = c.bg;
-          fg = c.fg;
+          even.bg = c.withHash.bg;
+          fg = c.withHash.fg;
           item.selected = {
-            bg = c.bgSubtle;
-            fg = c.fg;
-            match.fg = c.teal;
+            bg = c.withHash.bgSubtle;
+            fg = c.withHash.fg;
+            match.fg = c.withHash.teal;
           };
-          match.fg = c.accent;
-          odd.bg = c.bgRaised;
+          match.fg = c.withHash.accent;
+          odd.bg = c.withHash.bgRaised;
           scrollbar = {
-            bg = c.bgRaised;
-            fg = c.fgDim;
+            bg = c.withHash.bgRaised;
+            fg = c.withHash.fgDim;
           };
         };
 
         downloads = {
-          bar.bg = c.bgRaised;
+          bar.bg = c.withHash.bgRaised;
           error = {
-            bg = c.red;
-            fg = c.bg;
+            bg = c.withHash.red;
+            fg = c.withHash.bg;
           };
           start = {
-            bg = c.accent;
-            fg = c.bg;
+            bg = c.withHash.accent;
+            fg = c.withHash.bg;
           };
           stop = {
-            bg = c.green;
-            fg = c.bg;
+            bg = c.withHash.green;
+            fg = c.withHash.bg;
           };
         };
 
         hints = {
-          bg = c.yellow;
-          fg = c.bg;
-          match.fg = c.red;
+          bg = c.withHash.yellow;
+          fg = c.withHash.bg;
+          match.fg = c.withHash.red;
         };
 
         statusbar = {
           caret = {
-            bg = c.bgRaised;
-            fg = c.orange;
+            bg = c.withHash.bgRaised;
+            fg = c.withHash.orange;
           };
           command = {
-            bg = c.bgRaised;
-            fg = c.fg;
+            bg = c.withHash.bgRaised;
+            fg = c.withHash.fg;
           };
           insert = {
-            bg = c.bgRaised;
-            fg = c.teal;
+            bg = c.withHash.bgRaised;
+            fg = c.withHash.teal;
           };
           normal = {
-            bg = c.bgRaised;
-            fg = c.fg;
+            bg = c.withHash.bgRaised;
+            fg = c.withHash.fg;
           };
           passthrough = {
-            bg = c.bgRaised;
-            fg = c.yellow;
+            bg = c.withHash.bgRaised;
+            fg = c.withHash.yellow;
           };
           private = {
-            bg = c.bgRaised;
-            fg = c.purple;
+            bg = c.withHash.bgRaised;
+            fg = c.withHash.purple;
           };
-          progress.bg = c.accent;
+          progress.bg = c.withHash.accent;
           url = {
-            error.fg = c.red;
-            fg = c.fg;
-            hover.fg = c.accent;
-            success.http.fg = c.teal;
-            success.https.fg = c.green;
-            warn.fg = c.yellow;
+            error.fg = c.withHash.red;
+            fg = c.withHash.fg;
+            hover.fg = c.withHash.accent;
+            success.http.fg = c.withHash.teal;
+            success.https.fg = c.withHash.green;
+            warn.fg = c.withHash.yellow;
           };
         };
 
         tabs = {
-          bar.bg = c.bgRaised;
+          bar.bg = c.withHash.bgRaised;
           even = {
-            bg = c.bg;
-            fg = c.fgMid;
+            bg = c.withHash.bg;
+            fg = c.withHash.fgMid;
           };
           indicator = {
-            error = c.red;
-            start = c.accent;
-            stop = c.green;
+            error = c.withHash.red;
+            start = c.withHash.accent;
+            stop = c.withHash.green;
           };
           odd = {
-            bg = c.bg;
-            fg = c.fgMid;
+            bg = c.withHash.bg;
+            fg = c.withHash.fgMid;
           };
           pinned = {
             even = {
-              bg = c.bg;
-              fg = c.purple;
+              bg = c.withHash.bg;
+              fg = c.withHash.purple;
             };
             odd = {
-              bg = c.bg;
-              fg = c.purple;
+              bg = c.withHash.bg;
+              fg = c.withHash.purple;
             };
             selected = {
               even = {
-                bg = c.bgSubtle;
-                fg = c.purple;
+                bg = c.withHash.bgSubtle;
+                fg = c.withHash.purple;
               };
               odd = {
-                bg = c.bgSubtle;
-                fg = c.purple;
+                bg = c.withHash.bgSubtle;
+                fg = c.withHash.purple;
               };
             };
           };
           selected = {
             even = {
-              bg = c.bgSubtle;
-              fg = c.fg;
+              bg = c.withHash.bgSubtle;
+              fg = c.withHash.fg;
             };
             odd = {
-              bg = c.bgSubtle;
-              fg = c.fg;
+              bg = c.withHash.bgSubtle;
+              fg = c.withHash.fg;
             };
           };
         };
@@ -243,5 +234,4 @@ in
       config.set("content.javascript.enabled", True, "qute://*/*")
     '';
   };
-
 }
