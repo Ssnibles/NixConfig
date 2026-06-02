@@ -217,7 +217,7 @@ PanelWindow {
   property real mediaProgress: {
     var _ = barPanel.mediaTick;
     return mediaPlayer && mediaPlayer.length > 0
-      ? mediaPlayer.position / mediaPlayer.length : 0
+      ? Math.min(1, Math.max(0, mediaPlayer.position / mediaPlayer.length)) : 0;
   }
 
   // -- Hover state --
