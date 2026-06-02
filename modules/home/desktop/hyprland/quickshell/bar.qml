@@ -5,6 +5,7 @@ import Quickshell.Services.Pipewire
 import Quickshell.Services.Mpris
 import Quickshell.Networking
 import Quickshell.Services.UPower
+import Quickshell.Widgets
 
 import QtQuick
 import QtQuick.Layouts
@@ -74,9 +75,11 @@ PanelWindow {
       var toplevels = Hyprland.toplevels.values;
       for (var i = 0; i < toplevels.length; i++) {
         var tl = toplevels[i];
-        if (tl.lastIpcObject && tl.lastIpcObject.class) {
+          if (tl.lastIpcObject && tl.lastIpcObject.class) {
           if (tl.lastIpcObject.class.toLowerCase() === lowerEntry) {
-            Hyprland.dispatch("focuswindow address:0x" + tl.address);
+            var addr = String(tl.address);
+            if (addr.startsWith("0x")) addr = addr.slice(2);
+            Hyprland.dispatch("focuswindow address:0x" + addr);
             return;
           }
         }
@@ -90,7 +93,9 @@ PanelWindow {
       for (var j = 0; j < toplevels2.length; j++) {
         var tl2 = toplevels2[j];
         if (tl2.title && tl2.title.indexOf(identity) !== -1) {
-          Hyprland.dispatch("focuswindow address:0x" + tl2.address);
+          var addr2 = String(tl2.address);
+          if (addr2.startsWith("0x")) addr2 = addr2.slice(2);
+          Hyprland.dispatch("focuswindow address:0x" + addr2);
           return;
         }
       }
@@ -235,7 +240,6 @@ PanelWindow {
     property real wavePhase: 0
     onTriggered: {
       if (mediaPlayer && mediaPlayer.isPlaying) {
-        mediaPlayer.positionChanged();
         wavePhase = (wavePhase + 1.256) % (Math.PI * 2);
       }
     }
@@ -387,8 +391,22 @@ PanelWindow {
               cursorShape: Qt.PointingHandCursor
               acceptedButtons: Qt.LeftButton | Qt.RightButton
               onClicked: function(mouse) {
-                if (mouse.button === Qt.RightButton) { barPanel.focusMediaPlayer(); return; }
-                barPanel.mediaPopupVisible = !barPanel.mediaPopupVisible;
+                if (!barPanel.mediaPlayer) return;
+                if (mouse.button === Qt.RightButton) {
+                  barPanel.focusMediaPlayer();
+                } else {
+                  if (barPanel.mediaPlayer.canTogglePlaying)
+                    barPanel.mediaPlayer.togglePlaying();
+                }
+              }
+              onWheel: function(wheel) {
+                if (!barPanel.mediaPlayer) return;
+                if (wheel.angleDelta.y > 0) {
+                  if (barPanel.mediaPlayer.canGoNext) barPanel.mediaPlayer.next();
+                } else if (wheel.angleDelta.y < 0) {
+                  if (barPanel.mediaPlayer.canGoPrevious) barPanel.mediaPlayer.previous();
+                }
+                wheel.accepted = true;
               }
             }
           }
@@ -447,6 +465,29 @@ PanelWindow {
                 to: 0
                 duration: Math.max((mediaLabelText.implicitWidth - mediaTextContainer.width) * 30, 1000)
                 easing.type: Easing.Linear
+              }
+            }
+
+            MouseArea {
+              anchors.fill: parent
+              cursorShape: Qt.PointingHandCursor
+              acceptedButtons: Qt.LeftButton | Qt.RightButton
+              onClicked: function(mouse) {
+                if (!barPanel.mediaPlayer) return;
+                if (mouse.button === Qt.RightButton) {
+                  barPanel.focusMediaPlayer();
+                } else {
+                  barPanel.mediaPopupVisible = !barPanel.mediaPopupVisible;
+                }
+              }
+              onWheel: function(wheel) {
+                if (!barPanel.mediaPlayer) return;
+                if (wheel.angleDelta.y > 0) {
+                  if (barPanel.mediaPlayer.canGoNext) barPanel.mediaPlayer.next();
+                } else if (wheel.angleDelta.y < 0) {
+                  if (barPanel.mediaPlayer.canGoPrevious) barPanel.mediaPlayer.previous();
+                }
+                wheel.accepted = true;
               }
             }
           }
@@ -758,16 +799,37 @@ PanelWindow {
                 height: 64
                 anchors.verticalCenter: parent.verticalCenter
 
-                Rectangle {
+                ClippingRectangle {
                   anchors.fill: parent
                   radius: 12
                   color: Colors.bgSubtle
-                  clip: true
+                  border.width: 2
+                  border.color: Colors.border
 
                   Image {
                     id: artImage
                     anchors.fill: parent
-                    source: barPanel.mediaPlayer ? (barPanel.mediaPlayer.trackArtUrl || "") : ""
+                    source: {
+                      if (!barPanel.mediaPlayer) return "";
+                      var url = barPanel.mediaPlayer.trackArtUrl;
+                      if (url) {
+                        url = String(url).trim();
+                        if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"')
+                          url = url.slice(1, -1);
+                        return url;
+                      }
+                      var meta = barPanel.mediaPlayer.metadata;
+                      if (meta) {
+                        var raw = meta["mpris:artUrl"];
+                        if (raw) {
+                          url = String(raw).trim();
+                          if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"')
+                            url = url.slice(1, -1);
+                          return url;
+                        }
+                      }
+                      return "";
+                    }
                     fillMode: Image.PreserveAspectCrop
                     smooth: true
                     visible: status === Image.Ready || status === Image.Loading
@@ -782,14 +844,6 @@ PanelWindow {
                     visible: artImage.status !== Image.Ready && artImage.status !== Image.Loading
                   }
                 }
-
-                Rectangle {
-                  anchors.fill: parent
-                  radius: 12
-                  color: "transparent"
-                  border.width: 1.5
-                  border.color: Colors.border
-                }
               }
 
               Column {
@@ -798,7 +852,7 @@ PanelWindow {
                 width: parent.width - artContainer.width - parent.spacing - closeBtn.width - 8
 
                 Text {
-                  width: parent.width
+                  width: Math.min(implicitWidth, parent.width)
                   text: barPanel.mediaText
                   color: Colors.fg
                   font.family: barPanel.uiFont
@@ -808,7 +862,7 @@ PanelWindow {
                 }
 
                 Text {
-                  width: parent.width
+                  width: Math.min(implicitWidth, parent.width)
                   text: {
                     var parts = [];
                     if (barPanel.mediaPlayer && barPanel.mediaPlayer.trackAlbum) parts.push(barPanel.mediaPlayer.trackAlbum);

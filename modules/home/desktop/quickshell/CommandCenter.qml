@@ -153,7 +153,7 @@ PanelWindow {
     interval: 1000
     running: controlPanel._isOpen && controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying
     repeat: true
-    onTriggered: { if (controlPanel.mediaPlayer) controlPanel.mediaPlayer.positionChanged(); }
+    onTriggered: {}
   }
 
   // -- Quick action processes --
@@ -625,7 +625,7 @@ PanelWindow {
               spacing: 2
 
               Text {
-                width: parent.width
+                width: Math.min(implicitWidth, parent.width)
                 text: controlPanel.mediaText
                 color: _p.fg
                 font.family: _p.uiFont
@@ -635,7 +635,7 @@ PanelWindow {
               }
 
               Text {
-                width: parent.width
+                width: Math.min(implicitWidth, parent.width)
                 text: controlPanel.mediaPlayer ? (controlPanel.mediaPlayer.name || "") : ""
                 color: _p.fgDim
                 font.family: _p.uiFont
