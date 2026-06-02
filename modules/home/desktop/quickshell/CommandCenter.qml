@@ -69,13 +69,13 @@ PanelWindow {
     parts.push(mediaPlayer.name || "");
     return parts.join(" \u2014 ");
   }
+  property int _mediaTick: 0
   property real mediaProgress: {
     var _ = controlPanel._mediaTick;
     return mediaPlayer && mediaPlayer.length > 0
       ? Math.min(1, Math.max(0, mediaPlayer.position / mediaPlayer.length)) : 0;
   }
 
-  property int _mediaTick: 0
   Timer {
     interval: 500
     running: controlPanel.visible && controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying
