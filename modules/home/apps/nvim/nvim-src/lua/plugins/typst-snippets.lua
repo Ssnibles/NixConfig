@@ -359,6 +359,16 @@ ls.add_snippets("typst", {
 		t({ "", "]" }),
 	}),
 
+	s({ trig = "page", desc = "New page boilerplate" }, {
+		t({ "#set page(paper: \"a4\", margin: (x: 2.5cm, y: 2.5cm))", "" }),
+		t({ "#set text(font: \"Libertinus Serif\", size: 12pt)", "" }),
+		t({ "#set par(justify: true)", "", "" }),
+		t("= "),
+		i(1, "Title"),
+		t({ "", "", "" }),
+		i(2, "Content here..."),
+	}),
+
 	s({ trig = "```", desc = "Raw block" }, {
 		t("```"),
 		i(1, "typ"),
