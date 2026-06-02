@@ -98,15 +98,21 @@ in
 
   programs.vicinae = {
     enable = true;
-    settings = {
+  };
+
+  xdg.configFile."vicinae/settings.json" = {
+    force = true;
+    text = builtins.toJSON {
       search_files_in_root = false;
       pixmap_cache_mb = 128;
       launcher_window = {
         opacity = 1.0;
-        blur.enabled = false;
-        dim_around = false;
+        blur = { enabled = false; };
+      };
+      theme = {
+        dark = { name = "stylix"; };
+        light = { name = "stylix"; };
       };
     };
   };
-  xdg.configFile."vicinae/vicinae.json".force = true;
 }
