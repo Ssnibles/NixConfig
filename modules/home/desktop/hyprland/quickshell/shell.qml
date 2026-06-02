@@ -43,7 +43,11 @@ ShellRoot {
         return;
       }
       if (commandCenterLoader.item) {
-        commandCenterLoader.item.visible = !commandCenterLoader.item.visible;
+        if (commandCenterLoader.item.visible) {
+          commandCenterLoader.item.requestHide();
+        } else {
+          commandCenterLoader.item.visible = true;
+        }
       }
     }
     function show(): void    {
@@ -54,7 +58,7 @@ ShellRoot {
       if (commandCenterLoader.item) commandCenterLoader.item.visible = true;
     }
     function hide(): void    {
-      if (commandCenterLoader.item) commandCenterLoader.item.visible = false;
+      if (commandCenterLoader.item) commandCenterLoader.item.requestHide();
     }
     function toggleDnd(): void {
       if (notificationsLoader.item) notificationsLoader.item.doNotDisturb = !notificationsLoader.item.doNotDisturb;
