@@ -236,18 +236,16 @@ PanelWindow {
 
   property int tooltipWidth: Math.round(Math.min(barPanel.tooltipMaxWidth, barPanel.width - barPanel.tooltipMargin * 2))
 
-  // Single unified tick for media + waveform (replaces 3 separate timers)
+  // Single unified tick for media + waveform
   Timer {
     id: tickTimer
-    interval: 200
-    running: hasMedia
+    interval: 500
+    running: mediaPlayer && mediaPlayer.isPlaying
     repeat: true
     property real wavePhase: 0
     onTriggered: {
-      if (mediaPlayer && mediaPlayer.isPlaying) {
-        wavePhase = (wavePhase + 1.256) % (Math.PI * 2);
-        barPanel.mediaTick++;
-      }
+      wavePhase = (wavePhase + 1.256) % (Math.PI * 2);
+      barPanel.mediaTick++;
     }
     onRunningChanged: { if (!running) wavePhase = 0; }
   }
@@ -378,12 +376,11 @@ PanelWindow {
                 x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
                 y: (mediaWaveform.height - height) / 2
                 height: {
-                  if (!barPanel.mediaPlayer) return 3
-                  var waveH = 3 + Math.sin(tickTimer.wavePhase + index * 0.55) * 4 + 3
-                  return 3 + (waveH - 3) * (mediaPlayer && mediaPlayer.isPlaying ? 1 : 0)
+                  if (!barPanel.mediaPlayer || !barPanel.mediaPlayer.isPlaying) return 3
+                  return 3 + Math.sin(tickTimer.wavePhase + index * 0.55) * 4 + 3
                 }
                 color: {
-                  if (!barPanel.mediaPlayer) return Colors.bgSubtle
+                  if (!barPanel.mediaPlayer || !barPanel.mediaPlayer.isPlaying) return Colors.bgSubtle
                   var frac = (index + 1) / mediaWaveform.barCount
                   if (frac > barPanel.mediaProgress) return Colors.bgSubtle
                   var t = frac / Math.max(barPanel.mediaProgress, 0.01)
@@ -462,7 +459,7 @@ PanelWindow {
 
             SequentialAnimation {
               id: scrollAnim
-              running: mediaLabelText.overflow
+              running: mediaPill.visible && mediaLabelText.overflow
               loops: Animation.Infinite
               PauseAnimation { duration: 2000 }
               PropertyAnimation {
