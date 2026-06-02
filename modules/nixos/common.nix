@@ -18,7 +18,6 @@ let
 
     ./desktop/display-manager.nix
     ./desktop/stylix.nix
-    ./desktop/niri.nix
     ./desktop/hyprland.nix
 
     ./users.nix

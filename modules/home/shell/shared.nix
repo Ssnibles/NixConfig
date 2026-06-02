@@ -35,7 +35,6 @@
     ":q" = "exit";
     lg = "lazygit";
     ff = "microfetch";
-    get-class = "niri msg windows";
   };
 
   sharedEnv = {

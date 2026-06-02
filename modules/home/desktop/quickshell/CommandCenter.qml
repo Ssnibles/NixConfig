@@ -220,8 +220,8 @@ PanelWindow {
   Process { id: volSetProc }
 
   // ── Quick action processes ──
-  Process { id: lockProc;    command: ["sh", "-c", "if [ -n \"$NIRI_SOCKET\" ]; then swaylock; else hyprlock; fi"] }
-  Process { id: logoutProc;  command: ["sh", "-c", "if [ -n \"$NIRI_SOCKET\" ]; then niri msg action quit; else hyprctl dispatch exit; fi"] }
+  Process { id: lockProc;    command: ["hyprlock"] }
+  Process { id: logoutProc;  command: ["hyprctl", "dispatch", "exit"] }
   Process { id: sleepProc;   command: ["systemctl", "suspend"] }
   Process { id: rebootProc;  command: ["systemctl", "reboot"] }
   Process { id: poweroffProc; command: ["systemctl", "poweroff"] }
