@@ -37,9 +37,12 @@ PanelWindow {
   property bool volMuted: volInfo ? volInfo.muted : false
 
   // ── Microphone ──
-  property var micNodes: Pipewire.ready && Pipewire.defaultAudioSource ? [Pipewire.defaultAudioSource] : []
+  // Pipewire.defaultAudioSource is broken on some systems (resolves to sink)
+  // so we manually find the first non-monitor audio source node
+  property var micNode: controlPanel.findMicNode()
+  property var micNodes: controlPanel.micNode ? [controlPanel.micNode] : []
   PwObjectTracker { objects: controlPanel.micNodes }
-  property var micInfo: Pipewire.defaultAudioSource ? Pipewire.defaultAudioSource.audio : null
+  property var micInfo: controlPanel.micNode ? controlPanel.micNode.audio : null
   property bool micMuted: micInfo ? micInfo.muted : false
 
   // ── Brightness ──
@@ -48,6 +51,8 @@ PanelWindow {
   property real brightnessPct: 0.8
   property bool brightnessAvailable: true
   property bool brightnessDiscovered: false
+  property string brightnessBackend: ""  // "sysfs", "brightnessctl", "ddcutil", or ""
+  property bool brightnessDragging: false
 
   // ── Media ──
   property var mediaPlayers: Mpris.players.values
@@ -87,20 +92,51 @@ PanelWindow {
   property real panelOpacity: 0
   property real panelSlide: -20
   property bool _isOpen: panelOpacity > 0
+  property bool _closeRequested: false
 
   onVisibleChanged: {
     if (visible) {
+      controlPanel._closeRequested = false;
+      fadeOutAnim.stop();
+      panelOpacity = 0;
+      panelSlide = -20;
       fadeInAnim.start();
       if (!controlPanel.brightnessDiscovered) controlPanel.discoverBacklight();
-      else if (controlPanel.backlightPath) controlPanel.refreshBrightness();
+      else if (controlPanel.brightnessBackend.length > 0) controlPanel.refreshBrightness();
+    } else {
+      panelOpacity = 0;
+      panelSlide = -20;
+      controlPanel._closeRequested = false;
     }
   }
 
   SequentialAnimation {
     id: fadeInAnim
+    PauseAnimation { duration: 1 }
     ParallelAnimation {
       NumberAnimation { target: controlPanel; property: "panelOpacity"; to: 1; duration: 300; easing.type: Easing.OutCubic }
       NumberAnimation { target: controlPanel; property: "panelSlide";   to: 0; duration: 300; easing.type: Easing.OutCubic }
+    }
+  }
+
+  SequentialAnimation {
+    id: fadeOutAnim
+    ParallelAnimation {
+      NumberAnimation { target: controlPanel; property: "panelOpacity"; to: 0; duration: 200; easing.type: Easing.OutCubic }
+      NumberAnimation { target: controlPanel; property: "panelSlide";   to: -20; duration: 200; easing.type: Easing.OutCubic }
+    }
+    onFinished: {
+      if (controlPanel._closeRequested) {
+        controlPanel.visible = false;
+        controlPanel._closeRequested = false;
+      }
+    }
+  }
+
+  function requestHide() {
+    if (controlPanel.visible && !controlPanel._closeRequested) {
+      controlPanel._closeRequested = true;
+      fadeOutAnim.start();
     }
   }
 
@@ -121,29 +157,60 @@ PanelWindow {
           if (!isNaN(maxVal) && maxVal > 0) {
             controlPanel.backlightPath = base + dirs[i];
             controlPanel.brightnessMax = maxVal;
+            controlPanel.brightnessBackend = "sysfs";
+            controlPanel.brightnessAvailable = true;
             controlPanel.refreshBrightness();
             return;
           }
         }
       } catch(e) {}
     }
-    controlPanel.brightnessAvailable = false;
+    // No sysfs backlight found — try brightnessctl fallback
+    brightnessFallbackProc.exec(["sh", "-c", "echo $(brightnessctl get 2>/dev/null) $(brightnessctl max 2>/dev/null)"]);
   }
 
   function refreshBrightness() {
-    if (!controlPanel.backlightPath) return;
-    brightnessReadProc.exec(["brightnessctl", "get"]);
+    if (controlPanel.brightnessBackend === "sysfs" && controlPanel.backlightPath) {
+      brightnessReadProc.exec(["brightnessctl", "get"]);
+    } else if (controlPanel.brightnessBackend === "brightnessctl") {
+      brightnessFallbackProc.exec(["sh", "-c", "echo $(brightnessctl get 2>/dev/null) $(brightnessctl max 2>/dev/null)"]);
+    } else if (controlPanel.brightnessBackend === "ddcutil") {
+      ddcutilReadProc.exec(["ddcutil", "getvcp", "10", "--brief"]);
+    }
   }
 
   function setBrightness(pct) {
     controlPanel.brightnessPct = Math.max(0.05, Math.min(1, pct));
-    brightnessSetProc.command = ["brightnessctl", "set", Math.round(controlPanel.brightnessPct * 100) + "%"];
-    brightnessSetProc.startDetached();
+    if (controlPanel.brightnessBackend === "sysfs" || controlPanel.brightnessBackend === "brightnessctl") {
+      brightnessSetProc.command = ["brightnessctl", "set", Math.round(controlPanel.brightnessPct * 100) + "%"];
+      brightnessSetProc.startDetached();
+    } else if (controlPanel.brightnessBackend === "ddcutil") {
+      var val = Math.round(controlPanel.brightnessPct * controlPanel.brightnessMax);
+      ddcutilSetProc.command = [
+        "ddcutil", "--sleep-multiplier", "0.1", "setvcp", "--noverify", "10", "" + val
+      ];
+      ddcutilSetProc.startDetached();
+    }
   }
 
   function findFirst(list, predicate) {
     for (var i = 0; i < list.length; i++) {
       if (predicate(list[i])) return list[i];
+    }
+    return null;
+  }
+
+  function findMicNode() {
+    if (!Pipewire.ready) return null;
+    var nodes = Pipewire.nodes;
+    var arr = nodes && nodes.values ? nodes.values : nodes;
+    for (var i = 0; i < arr.length; i++) {
+      var n = arr[i];
+      if (n && n.audio && !n.isSink) {
+        var name = n.name || "";
+        if (name.indexOf("monitor") !== -1) continue;
+        return n;
+      }
     }
     return null;
   }
@@ -177,6 +244,7 @@ PanelWindow {
   }
 
   Process { id: brightnessSetProc }
+  Process { id: ddcutilSetProc }
   Process {
     id: brightnessReadProc
     stdout: StdioCollector {
@@ -184,6 +252,67 @@ PanelWindow {
         var val = parseInt(this.text.trim());
         if (!isNaN(val) && controlPanel.brightnessMax > 0) {
           controlPanel.brightnessPct = Math.max(0, Math.min(1, val / controlPanel.brightnessMax));
+        }
+      }
+    }
+  }
+  Process {
+    id: brightnessFallbackProc
+    stdout: StdioCollector {
+      onDataChanged: {
+        var parts = this.text.trim().split(/\s+/).filter(function(s) { return s.length > 0; });
+        if (parts.length >= 2) {
+          var cur = parseInt(parts[0]);
+          var max = parseInt(parts[1]);
+          if (!isNaN(cur) && !isNaN(max) && max > 1) {
+            controlPanel.brightnessMax = max;
+            controlPanel.brightnessPct = Math.max(0, Math.min(1, cur / max));
+            controlPanel.brightnessAvailable = true;
+            controlPanel.brightnessBackend = "brightnessctl";
+            return;
+          }
+        }
+        // brightnessctl fallback failed — try ddcutil for desktop monitors
+        ddcutilDiscoverProc.exec(["ddcutil", "getvcp", "10", "--brief"]);
+      }
+    }
+  }
+  Process {
+    id: ddcutilDiscoverProc
+    stdout: StdioCollector {
+      onDataChanged: {
+        var parts = this.text.trim().split(/\s+/).filter(function(s) { return s.length > 0; });
+        // Format: VCP 10 C <current> <max>
+        if (parts.length >= 5 && parts[0] === "VCP" && parts[1] === "10") {
+          var cur = parseInt(parts[3]);
+          var max = parseInt(parts[4]);
+          if (!isNaN(cur) && !isNaN(max) && max > 0) {
+            controlPanel.brightnessMax = max;
+            controlPanel.brightnessPct = Math.max(0, Math.min(1, cur / max));
+            controlPanel.brightnessAvailable = true;
+            controlPanel.brightnessBackend = "ddcutil";
+            return;
+          }
+        }
+        controlPanel.brightnessAvailable = false;
+        controlPanel.brightnessBackend = "";
+      }
+    }
+  }
+  Process {
+    id: ddcutilReadProc
+    stdout: StdioCollector {
+      onDataChanged: {
+        var parts = this.text.trim().split(/\s+/).filter(function(s) { return s.length > 0; });
+        if (parts.length >= 5 && parts[0] === "VCP" && parts[1] === "10") {
+          var cur = parseInt(parts[3]);
+          var max = parseInt(parts[4]);
+          if (!isNaN(cur) && !isNaN(max) && max > 0) {
+            controlPanel.brightnessMax = max;
+            if (!controlPanel.brightnessDragging) {
+              controlPanel.brightnessPct = Math.max(0, Math.min(1, cur / max));
+            }
+          }
         }
       }
     }
@@ -200,7 +329,7 @@ PanelWindow {
 
   Timer {
     interval: 500
-    running: controlPanel._isOpen && controlPanel.brightnessAvailable && controlPanel.backlightPath.length > 0
+    running: controlPanel._isOpen && controlPanel.brightnessAvailable && controlPanel.brightnessBackend.length > 0 && !controlPanel.brightnessDragging
     repeat: true
     onTriggered: controlPanel.refreshBrightness()
   }
@@ -219,6 +348,15 @@ PanelWindow {
   }
   Process { id: volSetProc }
 
+  // ── Brightness debounce (batch rapid slider updates) ──
+  Timer {
+    id: brightnessSetTimer
+    interval: 80
+    repeat: false
+    property real target: 0
+    onTriggered: controlPanel.setBrightness(target)
+  }
+
   // ── Quick action processes ──
   Process { id: lockProc;    command: ["hyprlock"] }
   Process { id: logoutProc;  command: ["hyprctl", "dispatch", "exit"] }
@@ -227,7 +365,7 @@ PanelWindow {
   Process { id: poweroffProc; command: ["systemctl", "poweroff"] }
 
   visible: false
-  focusable: true
+  focusable: false
   aboveWindows: true
   exclusionMode: ExclusionMode.Ignore
   color: "transparent"
@@ -294,32 +432,6 @@ PanelWindow {
             }
           }
 
-          Rectangle {
-            id: closeBtn
-            Layout.preferredWidth: 36
-            Layout.preferredHeight: 36
-            radius: 18
-            color: "transparent"
-            border.width: 1
-            border.color: _p.border
-
-            Text {
-              anchors.centerIn: parent
-              text: "\uDB80\uDD56"
-              color: _p.fgMid
-              font.family: _p.uiFont
-              font.pixelSize: 14
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onEntered: closeBtn.color = _p.bgSubtle
-              onExited:  closeBtn.color = "transparent"
-              onClicked: controlPanel.visible = false
-            }
-          }
         }
 
         // ════════════════ MEDIA CARD ════════════════
@@ -577,6 +689,7 @@ PanelWindow {
 
             RowLayout {
               width: parent.width
+              spacing: 10
 
               Rectangle {
                 width: 6; height: 16; radius: 3
@@ -593,6 +706,8 @@ PanelWindow {
                 font.letterSpacing: 1.2
                 Layout.alignment: Qt.AlignVCenter
               }
+
+              Item { Layout.fillWidth: true }
             }
 
             // Volume
@@ -652,6 +767,7 @@ PanelWindow {
                 Layout.alignment: Qt.AlignVCenter
                 value: controlPanel.volPct
                 fillColor: controlPanel.volMuted ? _p.red : _p.accent
+                snapPercent: 5
                 onMoved: function(v) {
                   volSetTimer.target = v;
                   volSetTimer.restart();
@@ -673,7 +789,7 @@ PanelWindow {
             RowLayout {
               width: parent.width
               spacing: 12
-              visible: Pipewire.ready && Pipewire.defaultAudioSource !== null
+              visible: Pipewire.ready && controlPanel.micNode !== null
 
               Rectangle {
                 id: micIconBox
@@ -698,8 +814,8 @@ PanelWindow {
                   onEntered: micIconBox.color = controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.25) : Qt.rgba(0.28, 0.28, 0.36, 1)
                   onExited:  micIconBox.color = controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.10) : Colors.bgSubtle
                   onClicked: {
-                    if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
-                      Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
+                    if (controlPanel.micNode && controlPanel.micNode.audio) {
+                      controlPanel.micNode.audio.muted = !controlPanel.micMuted;
                     }
                   }
                 }
@@ -744,8 +860,8 @@ PanelWindow {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                      if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
-                        Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
+                      if (controlPanel.micNode && controlPanel.micNode.audio) {
+                        controlPanel.micNode.audio.muted = !controlPanel.micMuted;
                       }
                     }
                   }
@@ -811,7 +927,14 @@ PanelWindow {
                 Layout.alignment: Qt.AlignVCenter
                 value: controlPanel.brightnessPct
                 fillColor: _p.yellow
-                onMoved: function(v) { controlPanel.setBrightness(v) }
+                snapPercent: 5
+                onMoved: function(v) {
+                  controlPanel.brightnessDragging = true;
+                  controlPanel.brightnessPct = v;
+                  brightnessSetTimer.target = v;
+                  brightnessSetTimer.restart();
+                }
+                onDragEnded: controlPanel.brightnessDragging = false
               }
 
               Text {
@@ -843,6 +966,7 @@ PanelWindow {
 
             RowLayout {
               width: parent.width
+              spacing: 10
 
               Rectangle {
                 width: 6; height: 16; radius: 3
@@ -859,6 +983,8 @@ PanelWindow {
                 font.letterSpacing: 1.2
                 Layout.alignment: Qt.AlignVCenter
               }
+
+              Item { Layout.fillWidth: true }
             }
 
             Grid {

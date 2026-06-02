@@ -6,8 +6,11 @@ Item {
 
   property real value: 0
   property color fillColor: Colors.accent
+  property real snapPercent: 0
 
   signal moved(real value)
+  signal dragStarted()
+  signal dragEnded()
 
   implicitHeight: 36
   implicitWidth: 120
@@ -40,11 +43,6 @@ Item {
       width: parent.width * root._visualValue
       radius: root._trackHeight / 2
       color: root.fillColor
-
-      Behavior on width {
-        enabled: !mouse.dragging
-        NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
-      }
       Behavior on color { ColorAnimation { duration: 150 } }
     }
 
@@ -59,12 +57,8 @@ Item {
       border.width: root._visualValue > 0 || mouse.containsMouse ? 0 : 2
       border.color: root.fillColor
 
-      Behavior on x {
-        enabled: !mouse.dragging
-        NumberAnimation { duration: 120; easing.type: Easing.OutQuad }
-      }
-      Behavior on width { NumberAnimation { duration: 120; easing.type: Easing.OutBack } }
-      Behavior on height { NumberAnimation { duration: 120; easing.type: Easing.OutBack } }
+      Behavior on width { NumberAnimation { duration: 80 } }
+      Behavior on height { NumberAnimation { duration: 80 } }
     }
 
     MouseArea {
@@ -74,16 +68,26 @@ Item {
       cursorShape: Qt.PointingHandCursor
       property bool dragging: false
 
+      function snap(v) {
+        if (root.snapPercent <= 0) return v;
+        return Math.round(v / (root.snapPercent / 100)) * (root.snapPercent / 100);
+      }
+
       function computeValue(mx) {
-        return Math.max(0, Math.min(1, mx / width));
+        var raw = Math.max(0, Math.min(1, mx / width));
+        return root.snapPercent > 0 ? snap(raw) : raw;
       }
 
       onPressed: function(mouse) {
         dragging = true;
+        root.dragStarted();
         root._dragValue = computeValue(mouse.x);
         root.moved(root._dragValue);
       }
-      onReleased: dragging = false
+      onReleased: {
+        dragging = false;
+        root.dragEnded();
+      }
       onExited: { if (!dragging) dragging = false; }
       onPositionChanged: function(mouse) {
         if (dragging) {
