@@ -15,6 +15,10 @@ Item {
   Image {
     id: iconImg
     anchors.fill: parent
+    // Resolve icon source from notification data:
+    // 1. Inline image data if provided
+    // 2. App icon path (local paths need file:// prefix for QML Image)
+    // 3. Freedesktop icon name via icon:// scheme
     source: {
       if (!root.notification) return "";
       if (root.notification.image && root.notification.image.length > 0) return root.notification.image;

@@ -1,5 +1,6 @@
 import QtQuick
 
+// Rounded pill container used in the bar for grouping related widgets (e.g. media, wifi).
 Rectangle {
   id: root
   property int padding: 8

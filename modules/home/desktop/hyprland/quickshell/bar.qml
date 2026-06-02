@@ -27,6 +27,8 @@ PanelWindow {
 
   property string timeStr: ""
 
+  // Update clock display and schedule the next update so it fires exactly
+  // at the next minute boundary, keeping the clock perfectly in sync.
   function updateTime() {
     var d = new Date();
     barPanel.timeStr = Qt.formatTime(d, "hh:mm");
@@ -43,6 +45,7 @@ PanelWindow {
 
   Component.onCompleted: updateTime()
 
+  // Clean up common window titles so the bar pill isn't cluttered.
   function formatTitle(t) {
     return t
     .replace(/ — Mozilla Firefox$/, "")
@@ -70,6 +73,8 @@ PanelWindow {
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
+  // Try to focus the Hyprland window belonging to the current media player.
+  // First match by desktop entry / app class, then fall back to window title.
   function focusMediaPlayer() {
     if (!barPanel.mediaPlayer) return;
     var entry = barPanel.mediaPlayer.desktopEntry || barPanel.mediaPlayer.name || "";
@@ -78,7 +83,8 @@ PanelWindow {
       var toplevels = Hyprland.toplevels.values;
       for (var i = 0; i < toplevels.length; i++) {
         var tl = toplevels[i];
-          if (tl.lastIpcObject && tl.lastIpcObject.class) {
+        // lastIpcObject.class is the Hyprland window class (e.g. "firefox", "spotify").
+        if (tl.lastIpcObject && tl.lastIpcObject.class) {
           if (tl.lastIpcObject.class.toLowerCase() === lowerEntry) {
             var addr = String(tl.address);
             if (addr.startsWith("0x")) addr = addr.slice(2);
@@ -87,6 +93,7 @@ PanelWindow {
           }
         }
       }
+      // Fallback: focus by class regex if direct address match failed.
       Hyprland.dispatch("focuswindow class:(?i)^" + escapeRegex(entry) + "$");
       return;
     }
@@ -111,6 +118,8 @@ PanelWindow {
   function switchWs(id) { Hyprland.dispatch("workspace " + id); }
 
   // -- Volume --
+  // PwObjectTracker is required by Quickshell so property bindings on Pipewire
+  // nodes actually update when the underlying object changes.
   property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
   PwObjectTracker { objects: barPanel.volNodes }
   property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
@@ -142,6 +151,8 @@ PanelWindow {
   Process { id: wifiProc; command: ["sh", "-lc", "foot -e nmtui"] }
 
   // -- Battery --
+  // Look for an actual laptop battery first; if none is found, fall back to UPower's
+  // aggregated display device (useful on desktops that report a UPS or display device).
   property var batDevice: {
     var count = UPower.devices.count;
     for (var i = 0; i < count; i++) {
@@ -200,6 +211,7 @@ PanelWindow {
   }
 
   // -- Media --
+  // Prefer the currently playing player; if none, show the most recently paused one.
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: {
     var playing = findFirst(mediaPlayers, function(p) { return p.isPlaying; });
@@ -213,6 +225,8 @@ PanelWindow {
       : mediaPlayer.trackTitle)
     : ""
   property bool hasMedia: mediaText !== ""
+  // mediaTick is incremented on a timer so that mediaProgress (a computed property)
+  // re-evaluates and the seek-bar / waveform stay in sync while playing.
   property int mediaTick: 0
   property real mediaProgress: {
     var _ = barPanel.mediaTick;
@@ -244,6 +258,7 @@ PanelWindow {
     repeat: true
     property real wavePhase: 0
     onTriggered: {
+      // Advance sine wave phase by ~72 degrees each tick for the fallback bars.
       wavePhase = (wavePhase + 1.256) % (Math.PI * 2);
       barPanel.mediaTick++;
     }
@@ -347,6 +362,8 @@ PanelWindow {
             height: 16
             anchors.verticalCenter: parent.verticalCenter
 
+            // GLSL shader version of the waveform; falls back to plain Rectangles below
+            // if the shader hasn't compiled or the player is paused.
             ShaderEffect {
               id: waveformShader
               anchors.fill: parent
@@ -365,6 +382,7 @@ PanelWindow {
               property color bgColor: Colors.bgSubtle
             }
 
+            // CPU-drawn fallback bars when the shader isn't available or music is paused.
             Repeater {
               id: waveformBars
               model: mediaWaveform.barCount
@@ -437,6 +455,7 @@ PanelWindow {
             visible: barPanel.mediaPlayer !== null
           }
 
+          // Marquee scroll: if the media title is too long, scroll it back and forth.
           Item {
             id: mediaTextContainer
             property int marqueeMaxWidth: 200
@@ -623,11 +642,12 @@ PanelWindow {
     }
   }
 
-  // Lazy-loaded tooltip (only creates PanelWindow when needed)
+  // Lazy-loaded tooltip: avoids creating a PanelWindow until a bar widget is hovered.
   Loader {
     id: tooltipLoader
     active: barPanel.tooltipVisible
 
+    // Center the tooltip horizontally above the hovered pill, clamped to screen bounds.
     function computeX(targetW) {
       var anchor = { volWidget: 1, wifiPill: 1, batteryPill: 1 };
       var pill;

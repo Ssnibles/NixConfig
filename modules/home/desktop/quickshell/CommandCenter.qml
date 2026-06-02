@@ -11,9 +11,12 @@ import QtQml
 PanelWindow {
   id: controlPanel
 
+  // root is injected by shell.qml when embedded; when running standalone it's null.
   property QtObject root: null
   property QtObject _p: palette
 
+  // Local palette that falls back to the global Colors singleton so this panel
+  // works both standalone (loaded directly) and embedded (via shell.qml).
   QtObject {
     id: palette
     property color fg:        (controlPanel.root || Colors).fg
@@ -32,6 +35,7 @@ PanelWindow {
   }
 
   // ── Volume ──
+  // PwObjectTracker is required by Quickshell so bindings update when the default sink changes.
   property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
   PwObjectTracker { objects: controlPanel.volNodes }
   property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
@@ -39,8 +43,8 @@ PanelWindow {
   property bool volMuted: volInfo ? volInfo.muted : false
 
   // ── Microphone ──
-  // Pipewire.defaultAudioSource is broken on some systems (resolves to sink)
-  // so we manually find the first non-monitor audio source node
+  // Pipewire.defaultAudioSource is broken on some systems (it resolves to the sink),
+  // so we manually scan Pipewire.nodes for the first non-monitor audio source.
   property var micNode: controlPanel.findMicNode()
   property var micNodes: controlPanel.micNode ? [controlPanel.micNode] : []
   PwObjectTracker { objects: controlPanel.micNodes }
@@ -48,6 +52,8 @@ PanelWindow {
   property bool micMuted: micInfo ? micInfo.muted : false
 
   // ── Brightness ──
+  // Supports three backends, tried in order: sysfs (laptop), brightnessctl (generic),
+  // and ddcutil (external monitors via DDC/CI).
   property string backlightPath: ""
   property real brightnessMax: 0
   property real brightnessPct: 0.8
@@ -57,18 +63,19 @@ PanelWindow {
   property bool brightnessDragging: false
 
   // ── Media ──
+  // Prefer the currently playing player; fall back to the most recently paused one.
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: {
     var playing = findFirst(mediaPlayers, function(p) { return p.isPlaying; });
     return playing ? playing : findFirst(mediaPlayers, function(p) {
-      return p.playbackState === MprisPlaybackState.Paused;
+        return p.playbackState === MprisPlaybackState.Paused;
     });
   }
   property string mediaText: mediaPlayer
-    ? (mediaPlayer.trackArtist
-      ? mediaPlayer.trackTitle + " \u2014 " + mediaPlayer.trackArtist
-      : mediaPlayer.trackTitle)
-    : ""
+  ? (mediaPlayer.trackArtist
+    ? mediaPlayer.trackTitle + " \u2014 " + mediaPlayer.trackArtist
+    : mediaPlayer.trackTitle)
+  : ""
   property string mediaSubtext: {
     if (!mediaPlayer) return "";
     var parts = [];
@@ -76,11 +83,13 @@ PanelWindow {
     parts.push(mediaPlayer.name || "");
     return parts.join(" \u2014 ");
   }
+  // _mediaTick is bumped by a timer so this computed property re-evaluates,
+  // keeping the seek-bar position in sync while music is playing.
   property int _mediaTick: 0
   property real mediaProgress: {
     var _ = controlPanel._mediaTick;
     return mediaPlayer && mediaPlayer.length > 0
-      ? Math.min(1, Math.max(0, mediaPlayer.position / mediaPlayer.length)) : 0;
+    ? Math.min(1, Math.max(0, mediaPlayer.position / mediaPlayer.length)) : 0;
   }
 
   Timer {
@@ -95,6 +104,7 @@ PanelWindow {
   property real panelSlide: 60
   property bool _isOpen: panelOpacity > 0
   property bool _closeRequested: false
+  // Workaround: mark surface as prerendered so onCompleted logic only runs once.
   property bool _surfacePrerendered: false
 
   Component.onCompleted: {
@@ -109,7 +119,7 @@ PanelWindow {
       panelOpacity = 0;
       panelSlide = 60;
       fadeInAnim.start();
-      // Only refresh fast backends on show; ddcutil is updated by timer
+      // Only refresh fast backends on show; ddcutil is slow and updated by its own timer.
       if (controlPanel.brightnessBackend === "sysfs" || controlPanel.brightnessBackend === "brightnessctl") {
         controlPanel.refreshBrightness();
       }
@@ -122,6 +132,7 @@ PanelWindow {
 
   SequentialAnimation {
     id: fadeInAnim
+    // Tiny pause ensures the surface is ready before animating in.
     PauseAnimation { duration: 1 }
     ParallelAnimation {
       NumberAnimation { target: controlPanel; property: "panelOpacity"; to: 1; duration: 300; easing.type: Easing.OutCubic }
@@ -135,6 +146,7 @@ PanelWindow {
       NumberAnimation { target: controlPanel; property: "panelOpacity"; to: 0; duration: 200; easing.type: Easing.OutCubic }
       NumberAnimation { target: controlPanel; property: "panelSlide";   to: 60; duration: 200; easing.type: Easing.OutCubic }
     }
+    // Only actually hide the window after the animation finishes.
     onFinished: {
       if (controlPanel._closeRequested) {
         controlPanel.visible = false;
@@ -150,15 +162,18 @@ PanelWindow {
     }
   }
 
+  // Kick off brightness discovery by listing sysfs backlight devices.
   function discoverBacklight() {
     controlPanel.brightnessDiscovered = true;
     backlightDiscoverProc.exec(["sh", "-c", "ls -1 /sys/class/backlight/ 2>/dev/null || true"]);
   }
 
+  // Try each sysfs backlight directory; if none work, fall back to brightnessctl, then ddcutil.
   function tryBacklightDirs(dirs) {
     var base = "/sys/class/backlight/";
     for (var i = 0; i < dirs.length; i++) {
       try {
+        // Use synchronous XMLHttpRequest to read local sysfs files from QML.
         var xhr = new XMLHttpRequest();
         xhr.open("GET", "file://" + base + dirs[i] + "/max_brightness", false);
         xhr.send();
@@ -179,6 +194,7 @@ PanelWindow {
     brightnessFallbackProc.exec(["sh", "-c", "echo $(brightnessctl get 2>/dev/null) $(brightnessctl max 2>/dev/null)"]);
   }
 
+  // Query the current brightness value from whichever backend is active.
   function refreshBrightness() {
     if (controlPanel.brightnessBackend === "sysfs" && controlPanel.backlightPath) {
       brightnessReadProc.exec(["brightnessctl", "get"]);
@@ -189,6 +205,7 @@ PanelWindow {
     }
   }
 
+  // Clamp to 5% minimum, then dispatch to the active brightness backend.
   function setBrightness(pct) {
     controlPanel.brightnessPct = Math.max(0.05, Math.min(1, pct));
     if (controlPanel.brightnessBackend === "sysfs" || controlPanel.brightnessBackend === "brightnessctl") {
@@ -197,7 +214,7 @@ PanelWindow {
     } else if (controlPanel.brightnessBackend === "ddcutil") {
       var val = Math.round(controlPanel.brightnessPct * controlPanel.brightnessMax);
       ddcutilSetProc.command = [
-        "ddcutil", "--sleep-multiplier", "0.1", "setvcp", "--noverify", "10", "" + val
+      "ddcutil", "--sleep-multiplier", "0.1", "setvcp", "--noverify", "10", "" + val
       ];
       ddcutilSetProc.startDetached();
     }
@@ -210,6 +227,8 @@ PanelWindow {
     return null;
   }
 
+  // Scan all Pipewire nodes for the first real capture (source) device.
+  // Excludes monitor sources because those are loopback, not physical mics.
   function findMicNode() {
     if (!Pipewire.ready) return null;
     var nodes = Pipewire.nodes;
@@ -233,6 +252,7 @@ PanelWindow {
     return m + ":" + (s < 10 ? "0" : "") + s;
   }
 
+  // Some MPRIS players return URLs wrapped in literal quotes; strip them.
   function coverArtUrl() {
     if (!controlPanel.mediaPlayer) return "";
     var url = controlPanel.mediaPlayer.trackArtUrl;
@@ -292,7 +312,7 @@ PanelWindow {
     stdout: StdioCollector {
       onDataChanged: {
         var parts = this.text.trim().split(/\s+/).filter(function(s) { return s.length > 0; });
-        // Format: VCP 10 C <current> <max>
+        // ddcutil brief output format: VCP 10 C <current> <max>
         if (parts.length >= 5 && parts[0] === "VCP" && parts[1] === "10") {
           var cur = parseInt(parts[3]);
           var max = parseInt(parts[4]);
@@ -337,6 +357,8 @@ PanelWindow {
     }
   }
 
+  // Poll brightness while the panel is open so external changes (e.g. Fn keys)
+  // are reflected in the slider. Disabled during dragging to avoid fighting the user.
   Timer {
     interval: 500
     running: controlPanel._isOpen && controlPanel.brightnessAvailable && controlPanel.brightnessBackend.length > 0 && !controlPanel.brightnessDragging
@@ -345,6 +367,7 @@ PanelWindow {
   }
 
   // ── Volume debounce (batch rapid slider updates) ──
+  // Fires 80ms after the slider stops moving so we don't spam wpctl.
   Timer {
     id: volSetTimer
     interval: 80
@@ -375,6 +398,8 @@ PanelWindow {
   Process { id: poweroffProc; command: ["systemctl", "poweroff"] }
 
   // ── Caffeinate (idle inhibit) ──
+  // Uses systemd-inhibit to block idle/sleep. We store the PID in a tmpfile
+  // so we can kill it later and check whether it's still running.
   property bool caffeinated: false
 
   Process {
@@ -390,6 +415,7 @@ PanelWindow {
     running: controlPanel.visible
     repeat: true
     onTriggered: {
+      // kill -0 checks if the process exists without sending a real signal.
       caffeinateCheckProc.exec(["sh", "-c", "kill -0 $(cat /tmp/quickshell-caffeine.pid 2>/dev/null) 2>/dev/null && echo active || echo inactive"]);
     }
   }
@@ -1031,12 +1057,12 @@ PanelWindow {
 
               Repeater {
                 model: [
-                  { id: "lock", icon: "\uDB80\uDD3E", label: "Lock",    color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.15), accent: _p.accent, proc: lockProc },
-                  { id: "caffeinate", icon: "\uF0F4", label: "Caffeinate", color: Qt.rgba(Colors.orange.r, Colors.orange.g, Colors.orange.b, 0.15), accent: _p.orange },
-                  { id: "logout", icon: "\uDB80\uDD43", label: "Logout",  color: Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.15), accent: _p.yellow, proc: logoutProc },
-                  { id: "sleep", icon: "\uDB81\uDD94", label: "Sleep",   color: Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.15), accent: _p.green,  proc: sleepProc },
-                  { id: "reboot", icon: "\uDB81\uDF09", label: "Reboot",  color: Qt.rgba(Colors.purple.r, Colors.purple.g, Colors.purple.b, 0.15), accent: _p.purple, proc: rebootProc },
-                  { id: "poweroff", icon: "\uDB81\uDC25", label: "Off",     color: Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15), accent: _p.red,    proc: poweroffProc },
+                { id: "lock", icon: "\uDB80\uDD3E", label: "Lock",    color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.15), accent: _p.accent, proc: lockProc },
+                { id: "caffeinate", icon: "\uF0F4", label: "Caffeinate", color: Qt.rgba(Colors.orange.r, Colors.orange.g, Colors.orange.b, 0.15), accent: _p.orange },
+                { id: "logout", icon: "\uDB80\uDD43", label: "Logout",  color: Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.15), accent: _p.yellow, proc: logoutProc },
+                { id: "sleep", icon: "\uDB81\uDD94", label: "Sleep",   color: Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.15), accent: _p.green,  proc: sleepProc },
+                { id: "reboot", icon: "\uDB81\uDF09", label: "Reboot",  color: Qt.rgba(Colors.purple.r, Colors.purple.g, Colors.purple.b, 0.15), accent: _p.purple, proc: rebootProc },
+                { id: "poweroff", icon: "\uDB81\uDC25", label: "Off",     color: Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15), accent: _p.red,    proc: poweroffProc },
                 ]
 
                 delegate: Rectangle {
@@ -1224,7 +1250,7 @@ PanelWindow {
                 required property QtObject modelData
                 property QtObject notification: modelData
                 property color _urgencyColor: notification && notification.urgency === NotificationUrgency.Critical
-                  ? _p.red : (notification && notification.urgency === NotificationUrgency.Low ? _p.fgDim : _p.accent)
+                ? _p.red : (notification && notification.urgency === NotificationUrgency.Low ? _p.fgDim : _p.accent)
 
                 width: parent.width
                 implicitHeight: notifCardCol.implicitHeight + 28
@@ -1270,7 +1296,7 @@ PanelWindow {
 
                     Text {
                       text: (notification && notification.appName && notification.appName.length > 0)
-                        ? notification.appName.toUpperCase() : "NOTIFICATION"
+                      ? notification.appName.toUpperCase() : "NOTIFICATION"
                       color: _p.accent
                       font.family: _p.uiFont
                       font.pixelSize: 10

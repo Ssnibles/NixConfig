@@ -22,6 +22,7 @@ Item {
   readonly property int  cardSpacing: 6
   readonly property int  iconSize: 24
 
+  // Tiny LRU-ish cache so we don't re-strip HTML tags from the same text repeatedly.
   property var _stripCache: ({})
 
   function stripMarkup(text) {
@@ -55,6 +56,9 @@ Item {
     return Colors.border;
   }
 
+  // Determine how long a popup stays open.
+  // Critical notifications never auto-expire (0 = infinite).
+  // Otherwise respect the app's requested timeout, clamped to a sane 2.5s–15s range.
   function popupTimeoutFor(notification) {
     if (!notification) return notif.popupTimeoutMs;
     if (notification.urgency === NotificationUrgency.Critical) return 0;
@@ -77,6 +81,7 @@ Item {
     var idx = popupList.indexOf(notification);
     if (idx === 0) return;                    // already newest — nothing to do
     if (idx > 0) popupList.splice(idx, 1);    // remove from old position
+    // Push to front so newest notifications appear at the top.
     popupList.unshift(notification);
     if (popupList.length > notif.maxPopups) popupList.length = notif.maxPopups;
     popupListChanged();
@@ -110,6 +115,8 @@ Item {
 
     onNotification: function(notification) {
       notification.tracked = true;
+      // lastGeneration is true for notifications that existed before quickshell started;
+      // we only want to show newly arriving ones as popups.
       if (notification.lastGeneration) return;
       if (notif.doNotDisturb && notification.urgency !== NotificationUrgency.Critical) return;
       notif.addPopup(notification);
@@ -158,6 +165,8 @@ Item {
 
               opacity: 0
               transform: Translate { id: popupTranslate; x: -(notif.panelWidth + notif.sideMargin) }
+              // Only animate in the first time this popup is shown.
+              // On quickshell reloads the same notification objects may be reused.
               Component.onCompleted: {
                 if (!notification._qsShown) {
                   notification._qsShown = true;
@@ -291,6 +300,7 @@ Item {
                 }
               }
 
+              // Pause auto-dismiss timer while the user is hovering the popup.
               HoverHandler {
                 id: popupHover
                 onHoveredChanged: {
