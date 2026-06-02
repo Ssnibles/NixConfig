@@ -386,7 +386,7 @@ PanelWindow {
   }
   Timer {
     interval: 3000
-    running: true
+    running: controlPanel.visible
     repeat: true
     onTriggered: {
       caffeinateCheckProc.exec(["sh", "-c", "kill -0 $(cat /tmp/quickshell-caffeine.pid 2>/dev/null) 2>/dev/null && echo active || echo inactive"]);
@@ -540,7 +540,7 @@ PanelWindow {
 
                   SequentialAnimation {
                     id: mediaScroll1
-                    running: mediaTitleText.overflow
+                    running: controlPanel.visible && mediaTitleText.overflow
                     loops: Animation.Infinite
                     PauseAnimation { duration: 2000 }
                     PropertyAnimation {
@@ -1091,8 +1091,13 @@ PanelWindow {
                     onExited:  parent._hovered = false
                     onClicked: {
                       if (modelData.id === "caffeinate") {
-                        if (controlPanel.caffeinated) caffeinateStopProc.startDetached();
-                        else caffeinateStartProc.startDetached();
+                        if (controlPanel.caffeinated) {
+                          controlPanel.caffeinated = false;
+                          caffeinateStopProc.startDetached();
+                        } else {
+                          controlPanel.caffeinated = true;
+                          caffeinateStartProc.startDetached();
+                        }
                       } else if (modelData.proc) {
                         modelData.proc.startDetached();
                       }
@@ -1219,7 +1224,7 @@ PanelWindow {
             }
 
             Repeater {
-              model: root ? root.notificationServer.trackedNotifications : null
+              model: controlPanel.visible ? (root ? root.notificationServer.trackedNotifications : null) : null
 
               delegate: Rectangle {
                 required property QtObject modelData
@@ -1333,7 +1338,7 @@ PanelWindow {
             Item {
               width: parent.width
               height: visible ? 100 : 0
-              visible: !root || !root.notificationServer || root.notificationServer.trackedNotifications.values.length === 0
+              visible: controlPanel.visible && (!root || !root.notificationServer || root.notificationServer.trackedNotifications.values.length === 0)
 
               Column {
                 anchors.centerIn: parent
