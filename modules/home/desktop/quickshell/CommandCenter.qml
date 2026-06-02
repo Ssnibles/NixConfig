@@ -535,7 +535,7 @@ PanelWindow {
 
                 Text {
                   anchors.centerIn: parent
-                  text: "\uDB80\uDDE2"
+                  text: "\udb81\udf5a"
                   color: _p.fgDim
                   font.family: _p.uiFont
                   font.pixelSize: 28
@@ -1057,12 +1057,12 @@ PanelWindow {
 
               Repeater {
                 model: [
-                { id: "lock", icon: "\uDB80\uDD3E", label: "Lock",    color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.15), accent: _p.accent, proc: lockProc },
+                { id: "lock", icon: "\udb80\udf3e", label: "Lock Screen",    color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.15), accent: _p.accent, proc: lockProc },
                 { id: "caffeinate", icon: "\uF0F4", label: "Caffeinate", color: Qt.rgba(Colors.orange.r, Colors.orange.g, Colors.orange.b, 0.15), accent: _p.orange },
-                { id: "logout", icon: "\uDB80\uDD43", label: "Logout",  color: Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.15), accent: _p.yellow, proc: logoutProc },
-                { id: "sleep", icon: "\uDB81\uDD94", label: "Sleep",   color: Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.15), accent: _p.green,  proc: sleepProc },
+                { id: "logout", icon: "\udb80\udf43", label: "Logout",  color: Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.15), accent: _p.yellow, proc: logoutProc },
+                { id: "sleep", icon: "\udb81\udcb2", label: "Sleep",   color: Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.15), accent: _p.green,  proc: sleepProc },
                 { id: "reboot", icon: "\uDB81\uDF09", label: "Reboot",  color: Qt.rgba(Colors.purple.r, Colors.purple.g, Colors.purple.b, 0.15), accent: _p.purple, proc: rebootProc },
-                { id: "poweroff", icon: "\uDB81\uDC25", label: "Off",     color: Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15), accent: _p.red,    proc: poweroffProc },
+                { id: "poweroff", icon: "\uf011", label: "Power Off",     color: Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15), accent: _p.red,    proc: poweroffProc },
                 ]
 
                 delegate: Rectangle {
