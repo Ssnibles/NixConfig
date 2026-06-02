@@ -13,7 +13,11 @@
     };
     wireless.iwd.settings.General.Country = "NZ";
 
-    firewall.enable = true;
+    firewall = {
+      enable = true;
+      allowedTCPPorts = [ 53317 ]; # LocalSend
+      allowedUDPPorts = [ 53317 ]; # LocalSend
+    };
 
     enableIPv6 = true;
   };
