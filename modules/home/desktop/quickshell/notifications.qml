@@ -68,8 +68,9 @@ Item {
   }
 
   function clearNotifications() {
+    popupList = [];
     var all = notificationServer.trackedNotifications.values;
-    for (var i = 0; i < all.length; i++) all[i].dismiss();
+    while (all.length > 0) all[0].dismiss();
   }
 
   onDoNotDisturbChanged: { if (doNotDisturb) popupList = []; }
@@ -247,6 +248,7 @@ Item {
                 interval: popupCard.timeoutMs
                 repeat: false
                 onTriggered: {
+                  if (!notif) return;
                   var n = notification;
                   if (n) n.expire();
                   notif.removePopup(n);

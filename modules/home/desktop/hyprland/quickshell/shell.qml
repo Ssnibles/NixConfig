@@ -38,10 +38,6 @@ ShellRoot {
     target: "controlpanel"
 
     function toggle(): void  {
-      if (!commandCenterLoader.active) {
-        commandCenterLoader.active = true;
-        return;
-      }
       if (commandCenterLoader.item) {
         if (commandCenterLoader.item.visible) {
           commandCenterLoader.item.requestHide();
@@ -51,10 +47,6 @@ ShellRoot {
       }
     }
     function show(): void    {
-      if (!commandCenterLoader.active) {
-        commandCenterLoader.active = true;
-        return;
-      }
       if (commandCenterLoader.item) commandCenterLoader.item.visible = true;
     }
     function hide(): void    {
@@ -84,12 +76,11 @@ ShellRoot {
 
   Loader {
     id: commandCenterLoader
-    active: false
+    active: true
     source: "CommandCenter.qml"
     onItemChanged: {
       if (item && notificationsLoader.item) {
         item.root = notificationsLoader.item;
-        item.visible = true;
       }
     }
   }

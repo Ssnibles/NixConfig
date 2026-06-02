@@ -25,6 +25,7 @@ PanelWindow {
     property color green:     (controlPanel.root || Colors).green
     property color yellow:    (controlPanel.root || Colors).yellow
     property color purple:    (controlPanel.root || Colors).purple
+    property color orange:    (controlPanel.root || Colors).orange
     property color teal:      (controlPanel.root || Colors).teal
     property string uiFont:   (controlPanel.root || { uiFont: "JetBrains Mono" }).uiFont
   }
@@ -90,22 +91,30 @@ PanelWindow {
 
   // ── Animation state ──
   property real panelOpacity: 0
-  property real panelSlide: -20
+  property real panelSlide: 60
   property bool _isOpen: panelOpacity > 0
   property bool _closeRequested: false
+  property bool _surfacePrerendered: false
+
+  Component.onCompleted: {
+    _surfacePrerendered = true;
+    discoverBacklight();
+  }
 
   onVisibleChanged: {
     if (visible) {
       controlPanel._closeRequested = false;
       fadeOutAnim.stop();
       panelOpacity = 0;
-      panelSlide = -20;
+      panelSlide = 60;
       fadeInAnim.start();
-      if (!controlPanel.brightnessDiscovered) controlPanel.discoverBacklight();
-      else if (controlPanel.brightnessBackend.length > 0) controlPanel.refreshBrightness();
+      // Only refresh fast backends on show; ddcutil is updated by timer
+      if (controlPanel.brightnessBackend === "sysfs" || controlPanel.brightnessBackend === "brightnessctl") {
+        controlPanel.refreshBrightness();
+      }
     } else {
       panelOpacity = 0;
-      panelSlide = -20;
+      panelSlide = 60;
       controlPanel._closeRequested = false;
     }
   }
@@ -123,7 +132,7 @@ PanelWindow {
     id: fadeOutAnim
     ParallelAnimation {
       NumberAnimation { target: controlPanel; property: "panelOpacity"; to: 0; duration: 200; easing.type: Easing.OutCubic }
-      NumberAnimation { target: controlPanel; property: "panelSlide";   to: -20; duration: 200; easing.type: Easing.OutCubic }
+      NumberAnimation { target: controlPanel; property: "panelSlide";   to: 60; duration: 200; easing.type: Easing.OutCubic }
     }
     onFinished: {
       if (controlPanel._closeRequested) {
@@ -175,7 +184,7 @@ PanelWindow {
     } else if (controlPanel.brightnessBackend === "brightnessctl") {
       brightnessFallbackProc.exec(["sh", "-c", "echo $(brightnessctl get 2>/dev/null) $(brightnessctl max 2>/dev/null)"]);
     } else if (controlPanel.brightnessBackend === "ddcutil") {
-      ddcutilReadProc.exec(["ddcutil", "getvcp", "10", "--brief"]);
+      ddcutilReadProc.exec(["ddcutil", "--sleep-multiplier", "0.1", "getvcp", "10", "--brief"]);
     }
   }
 
@@ -273,7 +282,7 @@ PanelWindow {
           }
         }
         // brightnessctl fallback failed — try ddcutil for desktop monitors
-        ddcutilDiscoverProc.exec(["ddcutil", "getvcp", "10", "--brief"]);
+        ddcutilDiscoverProc.exec(["ddcutil", "--sleep-multiplier", "0.1", "getvcp", "10", "--brief"]);
       }
     }
   }
@@ -364,6 +373,34 @@ PanelWindow {
   Process { id: rebootProc;  command: ["systemctl", "reboot"] }
   Process { id: poweroffProc; command: ["systemctl", "poweroff"] }
 
+  // ── Caffeinate (idle inhibit) ──
+  property bool caffeinated: false
+
+  Process {
+    id: caffeinateStartProc
+    command: ["sh", "-c", "systemd-inhibit --what=idle:sleep --why='Quickshell caffeinate' --who=quickshell sleep infinity & echo $! > /tmp/quickshell-caffeine.pid"]
+  }
+  Process {
+    id: caffeinateStopProc
+    command: ["sh", "-c", "kill $(cat /tmp/quickshell-caffeine.pid 2>/dev/null) 2>/dev/null; rm -f /tmp/quickshell-caffeine.pid"]
+  }
+  Timer {
+    interval: 3000
+    running: true
+    repeat: true
+    onTriggered: {
+      caffeinateCheckProc.exec(["sh", "-c", "kill -0 $(cat /tmp/quickshell-caffeine.pid 2>/dev/null) 2>/dev/null && echo active || echo inactive"]);
+    }
+  }
+  Process {
+    id: caffeinateCheckProc
+    stdout: StdioCollector {
+      onDataChanged: {
+        controlPanel.caffeinated = (this.text.trim() === "active");
+      }
+    }
+  }
+
   visible: false
   focusable: false
   aboveWindows: true
@@ -383,7 +420,7 @@ PanelWindow {
     border.width: 1
     border.color: _p.border
     opacity: controlPanel.panelOpacity
-    transform: Translate { y: controlPanel.panelSlide }
+    transform: Translate { x: controlPanel.panelSlide }
 
     Flickable {
       id: flickable
@@ -994,22 +1031,35 @@ PanelWindow {
 
               Repeater {
                 model: [
-                  { icon: "\uDB80\uDD3E", label: "Lock",    color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.15), accent: _p.accent, proc: lockProc },
-                  { icon: "\uDB80\uDD43", label: "Logout",  color: Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.15), accent: _p.yellow, proc: logoutProc },
-                  { icon: "\uDB81\uDD94", label: "Sleep",   color: Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.15), accent: _p.green,  proc: sleepProc },
-                  { icon: "\uDB81\uDF09", label: "Reboot",  color: Qt.rgba(Colors.purple.r, Colors.purple.g, Colors.purple.b, 0.15), accent: _p.purple, proc: rebootProc },
-                  { icon: "\uDB81\uDC25", label: "Off",     color: Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15), accent: _p.red,    proc: poweroffProc },
+                  { id: "lock", icon: "\uDB80\uDD3E", label: "Lock",    color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.15), accent: _p.accent, proc: lockProc },
+                  { id: "caffeinate", icon: "\uF0F4", label: "Caffeinate", color: Qt.rgba(Colors.orange.r, Colors.orange.g, Colors.orange.b, 0.15), accent: _p.orange },
+                  { id: "logout", icon: "\uDB80\uDD43", label: "Logout",  color: Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.15), accent: _p.yellow, proc: logoutProc },
+                  { id: "sleep", icon: "\uDB81\uDD94", label: "Sleep",   color: Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.15), accent: _p.green,  proc: sleepProc },
+                  { id: "reboot", icon: "\uDB81\uDF09", label: "Reboot",  color: Qt.rgba(Colors.purple.r, Colors.purple.g, Colors.purple.b, 0.15), accent: _p.purple, proc: rebootProc },
+                  { id: "poweroff", icon: "\uDB81\uDC25", label: "Off",     color: Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15), accent: _p.red,    proc: poweroffProc },
                 ]
 
                 delegate: Rectangle {
                   required property var modelData
+                  property bool _isCaffeineActive: modelData.id === "caffeinate" && controlPanel.caffeinated
+                  property bool _hovered: false
                   width: (parent.width - parent.spacing) / 2
                   height: 52
                   radius: 14
-                  color: modelData.color
+
+                  color: {
+                    if (_isCaffeineActive)
+                      return _hovered ? Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.45)
+                                      : Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.35);
+                    return _hovered ? Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.25)
+                                    : modelData.color;
+                  }
                   border.width: 1
-                  border.color: Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.2)
-                  Behavior on scale { NumberAnimation { duration: 100 } }
+                  border.color: _isCaffeineActive ? modelData.accent : Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.2)
+
+                  Behavior on scale  { NumberAnimation { duration: 80 } }
+                  Behavior on color  { ColorAnimation { duration: 60 } }
+                  Behavior on border.color { ColorAnimation { duration: 60 } }
 
                   Row {
                     anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: 14 }
@@ -1037,15 +1087,16 @@ PanelWindow {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onEntered: {
-                      parent.color = Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.25);
-                      parent.scale = 0.97
+                    onEntered: parent._hovered = true
+                    onExited:  parent._hovered = false
+                    onClicked: {
+                      if (modelData.id === "caffeinate") {
+                        if (controlPanel.caffeinated) caffeinateStopProc.startDetached();
+                        else caffeinateStartProc.startDetached();
+                      } else if (modelData.proc) {
+                        modelData.proc.startDetached();
+                      }
                     }
-                    onExited: {
-                      parent.color = modelData.color;
-                      parent.scale = 1
-                    }
-                    onClicked: { if (modelData.proc) modelData.proc.startDetached() }
                   }
                 }
               }
