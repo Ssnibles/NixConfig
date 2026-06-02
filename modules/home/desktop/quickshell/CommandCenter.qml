@@ -11,46 +11,81 @@ PanelWindow {
   id: controlPanel
 
   property QtObject root: null
-
   property QtObject _p: palette
 
   QtObject {
     id: palette
-    property color fg: (controlPanel.root || Colors).fg
-    property color fgMid: (controlPanel.root || Colors).fgMid
-    property color fgDim: (controlPanel.root || Colors).fgDim
-    property color bgSubtle: (controlPanel.root || Colors).bgSubtle
-    property color border: (controlPanel.root || Colors).border
-    property color accent: (controlPanel.root || Colors).accent
-    property color red: (controlPanel.root || Colors).red
-    property color green: (controlPanel.root || Colors).green
-    property color yellow: (controlPanel.root || Colors).yellow
-    property string uiFont: (controlPanel.root || { uiFont: "JetBrains Mono" }).uiFont
+    property color fg:        (controlPanel.root || Colors).fg
+    property color fgMid:     (controlPanel.root || Colors).fgMid
+    property color fgDim:     (controlPanel.root || Colors).fgDim
+    property color bgSubtle:  (controlPanel.root || Colors).bgSubtle
+    property color border:    (controlPanel.root || Colors).border
+    property color accent:    (controlPanel.root || Colors).accent
+    property color red:       (controlPanel.root || Colors).red
+    property color green:     (controlPanel.root || Colors).green
+    property color yellow:    (controlPanel.root || Colors).yellow
+    property color purple:    (controlPanel.root || Colors).purple
+    property color teal:      (controlPanel.root || Colors).teal
+    property string uiFont:   (controlPanel.root || { uiFont: "JetBrains Mono" }).uiFont
   }
 
-  // -- Volume --
+  // ── Volume ──
   property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
   PwObjectTracker { objects: controlPanel.volNodes }
   property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
   property real volPct: volInfo ? volInfo.volume : 0
   property bool volMuted: volInfo ? volInfo.muted : false
 
-  // -- Microphone --
+  // ── Microphone ──
   property var micNodes: Pipewire.ready && Pipewire.defaultAudioSource ? [Pipewire.defaultAudioSource] : []
   PwObjectTracker { objects: controlPanel.micNodes }
   property var micInfo: Pipewire.defaultAudioSource ? Pipewire.defaultAudioSource.audio : null
   property bool micMuted: micInfo ? micInfo.muted : false
 
-  // -- Brightness --
+  // ── Brightness ──
   property string backlightPath: ""
   property real brightnessMax: 0
   property real brightnessPct: 0.8
   property bool brightnessAvailable: true
   property bool brightnessDiscovered: false
 
+  // ── Media ──
+  property var mediaPlayers: Mpris.players.values
+  property var mediaPlayer: {
+    var playing = findFirst(mediaPlayers, function(p) { return p.isPlaying; });
+    return playing ? playing : findFirst(mediaPlayers, function(p) {
+      return p.playbackState === MprisPlaybackState.Paused;
+    });
+  }
+  property string mediaText: mediaPlayer
+    ? (mediaPlayer.trackArtist
+      ? mediaPlayer.trackTitle + " \u2014 " + mediaPlayer.trackArtist
+      : mediaPlayer.trackTitle)
+    : ""
+  property string mediaSubtext: {
+    if (!mediaPlayer) return "";
+    var parts = [];
+    if (mediaPlayer.trackAlbum) parts.push(mediaPlayer.trackAlbum);
+    parts.push(mediaPlayer.name || "");
+    return parts.join(" \u2014 ");
+  }
+  property real mediaProgress: {
+    var _ = controlPanel._mediaTick;
+    return mediaPlayer && mediaPlayer.length > 0
+      ? Math.min(1, Math.max(0, mediaPlayer.position / mediaPlayer.length)) : 0;
+  }
+
+  property int _mediaTick: 0
+  Timer {
+    interval: 500
+    running: controlPanel.visible && controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying
+    repeat: true
+    onTriggered: controlPanel._mediaTick++
+  }
+
+  // ── Animation state ──
   property real panelOpacity: 0
   property real panelSlide: -20
-
   property bool _isOpen: panelOpacity > 0
 
   onVisibleChanged: {
@@ -64,8 +99,8 @@ PanelWindow {
   SequentialAnimation {
     id: fadeInAnim
     ParallelAnimation {
-      NumberAnimation { target: controlPanel; property: "panelOpacity"; to: 1; duration: 250; easing.type: Easing.OutCubic }
-      NumberAnimation { target: controlPanel; property: "panelSlide"; to: 0; duration: 250; easing.type: Easing.OutCubic }
+      NumberAnimation { target: controlPanel; property: "panelOpacity"; to: 1; duration: 300; easing.type: Easing.OutCubic }
+      NumberAnimation { target: controlPanel; property: "panelSlide";   to: 0; duration: 300; easing.type: Easing.OutCubic }
     }
   }
 
@@ -106,6 +141,41 @@ PanelWindow {
     brightnessSetProc.startDetached();
   }
 
+  function findFirst(list, predicate) {
+    for (var i = 0; i < list.length; i++) {
+      if (predicate(list[i])) return list[i];
+    }
+    return null;
+  }
+
+  function formatTime(seconds) {
+    var s = Math.round(seconds);
+    if (s < 0) s = 0;
+    var m = Math.floor(s / 60);
+    s = s % 60;
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function coverArtUrl() {
+    if (!controlPanel.mediaPlayer) return "";
+    var url = controlPanel.mediaPlayer.trackArtUrl;
+    if (url) {
+      url = String(url).trim();
+      if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"') url = url.slice(1, -1);
+      return url;
+    }
+    var meta = controlPanel.mediaPlayer.metadata;
+    if (meta) {
+      var raw = meta["mpris:artUrl"];
+      if (raw) {
+        url = String(raw).trim();
+        if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"') url = url.slice(1, -1);
+        return url;
+      }
+    }
+    return "";
+  }
+
   Process { id: brightnessSetProc }
   Process {
     id: brightnessReadProc
@@ -135,32 +205,25 @@ PanelWindow {
     onTriggered: controlPanel.refreshBrightness()
   }
 
-  // -- Media --
-  property var mediaPlayers: Mpris.players.values
-  property var mediaPlayer: {
-    var playing = findFirst(mediaPlayers, function(p) { return p.isPlaying; });
-    return playing ? playing : findFirst(mediaPlayers, function(p) {
-      return p.playbackState === MprisPlaybackState.Paused;
-    });
-  }
-  property string mediaText: mediaPlayer
-    ? (mediaPlayer.trackArtist
-      ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
-      : mediaPlayer.trackTitle)
-    : ""
-
+  // ── Volume debounce (batch rapid slider updates) ──
   Timer {
-    interval: 1000
-    running: controlPanel._isOpen && controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying
-    repeat: true
-    onTriggered: {}
+    id: volSetTimer
+    interval: 80
+    repeat: false
+    property real target: 0
+    onTriggered: {
+      var pct = Math.round(target * 100);
+      volSetProc.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", pct + "%"];
+      volSetProc.startDetached();
+    }
   }
+  Process { id: volSetProc }
 
-  // -- Quick action processes --
-  Process { id: lockProc; command: ["sh", "-c", "if [ -n \"$NIRI_SOCKET\" ]; then swaylock; else hyprlock; fi"] }
-  Process { id: logoutProc; command: ["sh", "-c", "if [ -n \"$NIRI_SOCKET\" ]; then niri msg action quit; else hyprctl dispatch exit; fi"] }
-  Process { id: sleepProc; command: ["systemctl", "suspend"] }
-  Process { id: rebootProc; command: ["systemctl", "reboot"] }
+  // ── Quick action processes ──
+  Process { id: lockProc;    command: ["sh", "-c", "if [ -n \"$NIRI_SOCKET\" ]; then swaylock; else hyprlock; fi"] }
+  Process { id: logoutProc;  command: ["sh", "-c", "if [ -n \"$NIRI_SOCKET\" ]; then niri msg action quit; else hyprctl dispatch exit; fi"] }
+  Process { id: sleepProc;   command: ["systemctl", "suspend"] }
+  Process { id: rebootProc;  command: ["systemctl", "reboot"] }
   Process { id: poweroffProc; command: ["systemctl", "poweroff"] }
 
   visible: false
@@ -172,967 +235,953 @@ PanelWindow {
   anchors { top: true; bottom: true; right: true }
   margins { top: root ? root.topMargin : 54; bottom: root ? root.topMargin : 54; right: root ? root.sideMargin : 24 }
 
-  implicitWidth: 620
+  implicitWidth: 520
   implicitHeight: 700
-
-  function findFirst(list, predicate) {
-    for (var i = 0; i < list.length; i++) {
-      if (predicate(list[i])) return list[i];
-    }
-    return null;
-  }
 
   Rectangle {
     anchors.fill: parent
-    radius: 16
-    color: (root || Colors).bgRaised
+    radius: 28
+    color: Colors.bg
     border.width: 1
     border.color: _p.border
     opacity: controlPanel.panelOpacity
     transform: Translate { y: controlPanel.panelSlide }
 
-    Rectangle {
-      anchors.fill: parent
-      anchors.topMargin: 4
-      radius: 16
-      color: Qt.rgba(0, 0, 0, 0.2)
-      z: -1
-    }
-
-    Rectangle {
-      anchors { top: parent.top; left: parent.left; right: parent.right }
-      height: 4
-      radius: 2
-      gradient: Gradient {
-        GradientStop { position: 0.0; color: (root || Colors).accent }
-        GradientStop { position: 1.0; color: (root || Colors).purple }
-      }
-    }
-
-    Column {
-      id: topSection
-      anchors { top: parent.top; left: parent.left; right: parent.right }
-      anchors.topMargin: 26
-      anchors.leftMargin: 20
-      anchors.rightMargin: 20
-      spacing: 12
-
-      // Header
-      RowLayout {
-        width: parent.width
-        spacing: 14
-
-        Text {
-          text: "Command Center"
-          color: _p.fg
-          font.family: _p.uiFont
-          font.pixelSize: 18
-          font.bold: true
-          font.letterSpacing: 0.5
-          verticalAlignment: Text.AlignVCenter
-          Layout.fillWidth: true
-          Layout.preferredHeight: 32
-        }
-
-        Rectangle {
-          id: closePanel
-          Layout.preferredWidth: 32
-          Layout.preferredHeight: 32
-          radius: 8
-          color: "transparent"
-          border.width: 1
-          border.color: _p.border
-          Behavior on scale { NumberAnimation { duration: 80 } }
-
-          Text {
-            anchors.centerIn: parent
-            text: "\uDB80\uDD56"
-            color: _p.fgMid
-            font.family: _p.uiFont
-            font.pixelSize: 16
-            font.bold: true
-          }
-
-          MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            onEntered: { closePanel.color = _p.bgSubtle; closePanel.scale = 0.92 }
-            onExited: { closePanel.color = "transparent"; closePanel.scale = 1 }
-            onClicked: controlPanel.visible = false
-          }
-        }
-      }
-
-      Rectangle { width: parent.width; height: 1; color: _p.border; opacity: 0.6 }
-
-      // ── SYSTEM ──
-      Text {
-        text: "SYSTEM"
-        color: _p.fgMid
-        font.family: _p.uiFont
-        font.pixelSize: 11
-        font.bold: true
-        font.letterSpacing: 1.2
-      }
-
-      // Volume row
-      RowLayout {
-        width: parent.width
-        height: 48
-        spacing: 12
-
-        Rectangle {
-          id: volIconBtn
-          Layout.preferredWidth: 42; Layout.preferredHeight: 42
-          radius: 10
-          color: controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.15) : Qt.rgba(0.149, 0.149, 0.18, 0.5)
-          border.width: 1
-          border.color: controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : _p.border
-
-          Text {
-            anchors.centerIn: parent
-            text: {
-              if (controlPanel.volMuted) return "\uDB81\uDD81"
-              var v = controlPanel.volPct
-              if (v <= 0) return "\uDB81\uDD81"
-              if (v < 0.33) return "\uDB81\uDD7F"
-              if (v < 0.66) return "\uDB81\uDD80"
-              return "\uDB81\uDD7E"
-            }
-            color: controlPanel.volMuted ? _p.red : _p.fg
-            font.family: _p.uiFont
-            font.pixelSize: 16
-          }
-
-          MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: volIconBtn.color = controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : Qt.rgba(0.251, 0.251, 0.314, 0.75)
-            onExited: volIconBtn.color = controlPanel.volMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.15) : Qt.rgba(0.149, 0.149, 0.18, 0.5)
-            onClicked: {
-              if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-                Pipewire.defaultAudioSink.audio.muted = !controlPanel.volMuted
-              }
-            }
-          }
-        }
-
-        Text {
-          text: "Volume"
-          color: _p.fg
-          font.family: _p.uiFont
-          font.pixelSize: 12
-          font.bold: true
-          verticalAlignment: Text.AlignVCenter
-          Layout.preferredWidth: implicitWidth
-        }
-
-        SliderControl {
-          Layout.fillWidth: true
-          Layout.alignment: Qt.AlignVCenter
-          value: controlPanel.volPct
-          fillColor: controlPanel.volMuted ? _p.red : _p.accent
-          onMoved: function(v) {
-            if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-              Pipewire.defaultAudioSink.audio.volume = v
-            }
-          }
-        }
-
-        Text {
-          text: Math.round(controlPanel.volPct * 100) + "%"
-          color: controlPanel.volMuted ? _p.red : _p.fg
-          font.family: _p.uiFont
-          font.pixelSize: 12
-          font.bold: true
-          opacity: 0.85
-          verticalAlignment: Text.AlignVCenter
-          Layout.preferredWidth: implicitWidth
-        }
-      }
-
-      // Microphone row
-      RowLayout {
-        width: parent.width
-        height: 48
-        spacing: 12
-        visible: Pipewire.ready && Pipewire.defaultAudioSource !== null
-
-        Rectangle {
-          id: micIconBtn
-          Layout.preferredWidth: 42; Layout.preferredHeight: 42
-          radius: 10
-          color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.12) : Qt.rgba(0.498, 0.647, 0.388, 0.12)
-          border.width: 1
-          border.color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : Qt.rgba(0.498, 0.647, 0.388, 0.3)
-
-          Text {
-            anchors.centerIn: parent
-            text: controlPanel.micMuted ? "\uDB80\uDD6D" : "\uDB80\uDD6C"
-            color: controlPanel.micMuted ? _p.red : _p.green
-            font.family: _p.uiFont
-            font.pixelSize: 16
-          }
-
-          MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: micIconBtn.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : Qt.rgba(0.498, 0.647, 0.388, 0.3)
-            onExited: micIconBtn.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.12) : Qt.rgba(0.498, 0.647, 0.388, 0.12)
-            onClicked: {
-              if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
-                Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
-              }
-            }
-          }
-        }
-
-        Text {
-          text: "Microphone"
-          color: _p.fg
-          font.family: _p.uiFont
-          font.pixelSize: 12
-          font.bold: true
-          verticalAlignment: Text.AlignVCenter
-          Layout.preferredWidth: implicitWidth
-        }
-
-        Item {
-          Layout.fillWidth: true
-          height: 42
-
-          Rectangle {
-            id: micTrack
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.left
-            width: 52; height: 28
-            radius: 14
-            color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.498, 0.647, 0.388, 0.2)
-            border.width: 1
-            border.color: controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.3) : Qt.rgba(0.498, 0.647, 0.388, 0.3)
-            Behavior on color { ColorAnimation { duration: 200 } }
-
-            Rectangle {
-              id: micThumb
-              x: controlPanel.micMuted ? 3 : micTrack.width - width - 3
-              y: 3
-              width: micTrack.height - 6; height: micTrack.height - 6
-              radius: width / 2
-              color: controlPanel.micMuted ? _p.red : _p.green
-              Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
-              Behavior on color { ColorAnimation { duration: 200 } }
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onEntered: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.35) : Qt.rgba(0.498, 0.647, 0.388, 0.35)
-              onExited: micTrack.color = controlPanel.micMuted ? Qt.rgba(0.847, 0.392, 0.494, 0.2) : Qt.rgba(0.498, 0.647, 0.388, 0.2)
-              onClicked: {
-                if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
-                  Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
-                }
-              }
-            }
-          }
-
-          Text {
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: micTrack.right
-            anchors.leftMargin: 14
-            text: controlPanel.micMuted ? "Muted" : "Live"
-            color: controlPanel.micMuted ? _p.red : _p.green
-            font.family: _p.uiFont
-            font.pixelSize: 12
-            font.bold: true
-            Behavior on color { ColorAnimation { duration: 200 } }
-          }
-        }
-      }
-
-      // Brightness row
-      RowLayout {
-        width: parent.width
-        height: 48
-        spacing: 12
-        visible: controlPanel.brightnessAvailable
-
-        Rectangle {
-          id: brtIconBtn
-          Layout.preferredWidth: 42; Layout.preferredHeight: 42
-          radius: 10
-          color: Qt.rgba(0.953, 0.745, 0.486, 0.1)
-          border.width: 1
-          border.color: Qt.rgba(0.953, 0.745, 0.486, 0.25)
-
-          Text {
-            anchors.centerIn: parent
-            text: "\uDB81\uDD99"
-            color: _p.yellow
-            font.family: _p.uiFont
-            font.pixelSize: 16
-          }
-
-          MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: brtIconBtn.color = Qt.rgba(0.953, 0.745, 0.486, 0.25)
-            onExited: brtIconBtn.color = Qt.rgba(0.953, 0.745, 0.486, 0.1)
-          }
-        }
-
-        Text {
-          text: "Brightness"
-          color: _p.fg
-          font.family: _p.uiFont
-          font.pixelSize: 12
-          font.bold: true
-          verticalAlignment: Text.AlignVCenter
-          Layout.preferredWidth: implicitWidth
-        }
-
-        SliderControl {
-          Layout.fillWidth: true
-          Layout.alignment: Qt.AlignVCenter
-          value: controlPanel.brightnessPct
-          fillColor: _p.yellow
-          onMoved: function(v) { controlPanel.setBrightness(v) }
-        }
-
-        Text {
-          text: Math.round(controlPanel.brightnessPct * 100) + "%"
-          color: _p.fg
-          font.family: _p.uiFont
-          font.pixelSize: 12
-          font.bold: true
-          opacity: 0.85
-          verticalAlignment: Text.AlignVCenter
-          Layout.preferredWidth: implicitWidth
-        }
-      }
-
-      Rectangle { width: parent.width; height: 1; color: _p.border; opacity: 0.6 }
-
-      // ── MEDIA ──
-      Text {
-        text: "MEDIA"
-        color: _p.fgMid
-        font.family: _p.uiFont
-        font.pixelSize: 11
-        font.bold: true
-        font.letterSpacing: 1.2
-      }
-
-      Item {
-        width: parent.width
-        height: mediaPlayer ? 92 : 24
-
-        Column {
-          anchors.verticalCenter: parent.verticalCenter
-          width: parent.width
-          spacing: 10
-          visible: mediaPlayer !== null
-
-          RowLayout {
-            width: parent.width
-            spacing: 10
-
-            Rectangle {
-              Layout.preferredWidth: 64; Layout.preferredHeight: 64
-              radius: 10
-              color: Colors.bgSubtle
-              clip: true
-
-              Image {
-                anchors.fill: parent
-                source: {
-                  if (!controlPanel.mediaPlayer) return "";
-                  var url = controlPanel.mediaPlayer.trackArtUrl;
-                  if (url) {
-                    url = String(url).trim();
-                    if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"')
-                      url = url.slice(1, -1);
-                    return url;
-                  }
-                  var meta = controlPanel.mediaPlayer.metadata;
-                  if (meta) {
-                    var raw = meta["mpris:artUrl"];
-                    if (raw) {
-                      url = String(raw).trim();
-                      if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"')
-                        url = url.slice(1, -1);
-                      return url;
-                    }
-                  }
-                  return "";
-                }
-                fillMode: Image.PreserveAspectCrop
-                smooth: true
-                visible: status === Image.Ready || status === Image.Loading
-              }
-
-              Text {
-                anchors.centerIn: parent
-                text: "\uDB80\uDDE2"
-                color: _p.fgDim
-                font.family: _p.uiFont
-                font.pixelSize: 24
-                visible: parent.children[0].status !== Image.Ready && parent.children[0].status !== Image.Loading
-              }
-            }
-
-            Rectangle {
-              id: prevBtn
-              Layout.preferredWidth: 42; Layout.preferredHeight: 42
-              radius: 10
-              color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
-              border.width: 1
-              border.color: _p.border
-              Behavior on scale { NumberAnimation { duration: 80 } }
-
-              Text {
-                anchors.centerIn: parent
-                text: "\uDB81\uDCAE"
-                color: _p.fg
-                font.family: _p.uiFont
-                font.pixelSize: 18
-              }
-
-              MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: { prevBtn.color = _p.bgSubtle; prevBtn.scale = 0.92 }
-                onExited: { prevBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6); prevBtn.scale = 1 }
-                onClicked: { if (controlPanel.mediaPlayer) controlPanel.mediaPlayer.previous() }
-              }
-            }
-
-            Rectangle {
-              id: playBtn
-              Layout.preferredWidth: 42; Layout.preferredHeight: 42
-              radius: 10
-              color: _p.accent
-              border.width: 1
-              border.color: _p.accent
-              Behavior on scale { NumberAnimation { duration: 80 } }
-
-              Text {
-                anchors.centerIn: parent
-                text: controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying ? "\uDB80\uDFE4" : "\uDB81\uDC0A"
-                color: Colors.bg
-                font.family: _p.uiFont
-                font.pixelSize: 18
-              }
-
-              MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: playBtn.scale = 0.92
-                onExited: playBtn.scale = 1
-                onClicked: { if (controlPanel.mediaPlayer) controlPanel.mediaPlayer.togglePlaying() }
-              }
-            }
-
-            Rectangle {
-              id: nextBtn
-              Layout.preferredWidth: 42; Layout.preferredHeight: 42
-              radius: 10
-              color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
-              border.width: 1
-              border.color: _p.border
-              Behavior on scale { NumberAnimation { duration: 80 } }
-
-              Text {
-                anchors.centerIn: parent
-                text: "\uDB81\uDCAD"
-                color: _p.fg
-                font.family: _p.uiFont
-                font.pixelSize: 18
-              }
-
-              MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: { nextBtn.color = _p.bgSubtle; nextBtn.scale = 0.92 }
-                onExited: { nextBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6); nextBtn.scale = 1 }
-                onClicked: { if (controlPanel.mediaPlayer) controlPanel.mediaPlayer.next() }
-              }
-            }
-
-            Column {
-              Layout.fillWidth: true
-              Layout.alignment: Qt.AlignVCenter
-              spacing: 2
-
-              Item {
-                id: ccTrackTitleContainer
-                width: parent.width
-                height: ccTrackTitle.implicitHeight
-                clip: true
-
-                Text {
-                  id: ccTrackTitle
-                  text: controlPanel.mediaText
-                  width: implicitWidth
-                  color: _p.fg
-                  font.family: _p.uiFont
-                  font.pixelSize: 13
-                  font.bold: true
-                  property bool overflow: implicitWidth > ccTrackTitleContainer.width + 2
-                  onTextChanged: { x = 0; if (overflow) ccScroll1.restart() }
-                }
-
-                SequentialAnimation {
-                  id: ccScroll1
-                  running: ccTrackTitle.overflow
-                  loops: Animation.Infinite
-                  PauseAnimation { duration: 2000 }
-                  PropertyAnimation {
-                    target: ccTrackTitle; property: "x"
-                    to: ccTrackTitleContainer.width - ccTrackTitle.implicitWidth
-                    duration: Math.max((ccTrackTitle.implicitWidth - ccTrackTitleContainer.width) * 30, 1000)
-                    easing.type: Easing.Linear
-                  }
-                  PauseAnimation { duration: 2000 }
-                  PropertyAnimation {
-                    target: ccTrackTitle; property: "x"
-                    to: 0
-                    duration: Math.max((ccTrackTitle.implicitWidth - ccTrackTitleContainer.width) * 30, 1000)
-                    easing.type: Easing.Linear
-                  }
-                }
-              }
-
-              Item {
-                id: ccPlayerNameContainer
-                width: parent.width
-                height: ccPlayerName.implicitHeight
-                clip: true
-                visible: ccPlayerName.text.length > 0
-
-                Text {
-                  id: ccPlayerName
-                  width: implicitWidth
-                  text: controlPanel.mediaPlayer ? (controlPanel.mediaPlayer.name || "") : ""
-                  color: _p.fgDim
-                  font.family: _p.uiFont
-                  font.pixelSize: 11
-                  property bool overflow: implicitWidth > ccPlayerNameContainer.width + 2
-                  onTextChanged: { x = 0; if (overflow) ccScroll2.restart() }
-                }
-
-                SequentialAnimation {
-                  id: ccScroll2
-                  running: ccPlayerName.overflow
-                  loops: Animation.Infinite
-                  PauseAnimation { duration: 2000 }
-                  PropertyAnimation {
-                    target: ccPlayerName; property: "x"
-                    to: ccPlayerNameContainer.width - ccPlayerName.implicitWidth
-                    duration: Math.max((ccPlayerName.implicitWidth - ccPlayerNameContainer.width) * 30, 1000)
-                    easing.type: Easing.Linear
-                  }
-                  PauseAnimation { duration: 2000 }
-                  PropertyAnimation {
-                    target: ccPlayerName; property: "x"
-                    to: 0
-                    duration: Math.max((ccPlayerName.implicitWidth - ccPlayerNameContainer.width) * 30, 1000)
-                    easing.type: Easing.Linear
-                  }
-                }
-              }
-            }
-          }
-
-          Item {
-            width: parent.width
-            height: 6
-            visible: controlPanel.mediaPlayer && controlPanel.mediaPlayer.length > 0
-
-            Rectangle {
-              anchors.verticalCenter: parent.verticalCenter
-              width: parent.width
-              height: 6
-              radius: 3
-              color: Qt.rgba(0.145, 0.145, 0.18, 0.7)
-
-              Rectangle {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.bottom: parent.bottom
-                width: parent.width * (controlPanel.mediaPlayer && controlPanel.mediaPlayer.length > 0
-                  ? Math.min(1, Math.max(0, controlPanel.mediaPlayer.position / controlPanel.mediaPlayer.length))
-                  : 0)
-                radius: 3
-                color: _p.accent
-                Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.Linear } }
-              }
-
-              MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: function(mouse) {
-                  if (controlPanel.mediaPlayer && controlPanel.mediaPlayer.canSeek) {
-                    controlPanel.mediaPlayer.position = mouse.x / width * controlPanel.mediaPlayer.length;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        Text {
-          anchors.verticalCenter: parent.verticalCenter
-          text: "No media playing"
-          color: _p.fgDim
-          font.family: _p.uiFont
-          font.pixelSize: 12
-          opacity: 0.7
-          visible: mediaPlayer === null
-        }
-      }
-
-      Rectangle { width: parent.width; height: 1; color: _p.border; opacity: 0.6 }
-
-      // ── QUICK ACTIONS ──
-      Text {
-        text: "QUICK ACTIONS"
-        color: _p.fgMid
-        font.family: _p.uiFont
-        font.pixelSize: 11
-        font.bold: true
-        font.letterSpacing: 1.2
-      }
-
-      Row {
-        width: parent.width
-        spacing: 8
-
-        Repeater {
-          model: [
-            { icon: "\uDB80\uDD3E", label: "Lock", proc: lockProc },
-            { icon: "\uDB80\uDD43", label: "Logout", proc: logoutProc },
-            { icon: "\uDB81\uDD94", label: "Sleep", proc: sleepProc },
-            { icon: "\uDB81\uDF09", label: "Reboot", proc: rebootProc },
-            { icon: "\uDB81\uDC25", label: "Power Off", proc: poweroffProc },
-          ]
-
-          delegate: Rectangle {
-            required property var modelData
-            width: (parent.width - parent.spacing * 4) / 5
-            height: 60
-            radius: 12
-            color: Qt.rgba(0.149, 0.149, 0.18, 0.5)
-            Behavior on scale { NumberAnimation { duration: 80 } }
-
-            Column {
-              anchors.centerIn: parent
-              spacing: 4
-              Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: modelData.icon
-                color: _p.fg
-                font.family: _p.uiFont
-                font.pixelSize: 20
-              }
-              Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: modelData.label
-                color: _p.fgDim
-                font.family: _p.uiFont
-                font.pixelSize: 10
-                font.bold: true
-              }
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onEntered: { parent.color = Qt.rgba(0.251, 0.251, 0.314, 0.7); parent.scale = 0.95 }
-              onExited: { parent.color = Qt.rgba(0.149, 0.149, 0.18, 0.5); parent.scale = 1 }
-              onPressed: parent.scale = 0.92
-              onReleased: parent.scale = 0.95
-              onClicked: { if (modelData.proc) modelData.proc.startDetached() }
-            }
-          }
-        }
-      }
-
-      Rectangle { width: parent.width; height: 1; color: _p.border; opacity: 0.6 }
-
-      // ── NOTIFICATIONS ──
-      Text {
-        text: "NOTIFICATIONS"
-        color: _p.fgMid
-        font.family: _p.uiFont
-        font.pixelSize: 11
-        font.bold: true
-        font.letterSpacing: 1.2
-      }
-
-      Row {
-        width: parent.width
-        spacing: 10
-
-        Item {
-          height: 36
-          width: (parent.width - parent.spacing) / 2
-
-          Rectangle {
-            id: dndTrack
-            anchors.verticalCenter: parent.verticalCenter
-            width: 52; height: 28
-            radius: 14
-            color: (root && root.doNotDisturb) ? Qt.rgba(0.431, 0.580, 0.698, 0.2) : Qt.rgba(0.145, 0.145, 0.18, 0.6)
-            border.width: 1
-            border.color: (root && root.doNotDisturb) ? _p.accent : _p.border
-            Behavior on color { ColorAnimation { duration: 200 } }
-
-            Rectangle {
-              id: dndThumb
-              x: (root && root.doNotDisturb) ? dndTrack.width - width - 4 : 4
-              y: 4
-              width: dndTrack.height - 8; height: dndTrack.height - 8
-              radius: width / 2
-              color: (root && root.doNotDisturb) ? _p.accent : _p.fgMid
-              Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: { if (root) root.doNotDisturb = !root.doNotDisturb; }
-            }
-          }
-
-          Text {
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: dndTrack.right
-            anchors.leftMargin: 12
-            text: (root && root.doNotDisturb) ? "Do Not Disturb" : "Allow All"
-            color: (root && root.doNotDisturb) ? _p.accent : _p.fgMid
-            font.family: _p.uiFont
-            font.pixelSize: 12
-            font.bold: true
-            elide: Text.ElideRight
-            width: parent.width - dndTrack.width - anchors.leftMargin - 2
-            Behavior on color { ColorAnimation { duration: 200 } }
-          }
-        }
-
-        Rectangle {
-          id: clearAll
-          height: 36
-          width: (parent.width - parent.spacing) / 2
-          radius: 10
-          color: Qt.rgba(0.145, 0.145, 0.18, 0.5)
-
-          Text {
-            anchors.centerIn: parent
-            text: root
-              ? "Clear All (" + root.notificationServer.trackedNotifications.values.length + ")"
-              : "Clear All"
-            color: _p.fg
-            font.family: _p.uiFont
-            font.pixelSize: 12
-            font.bold: true
-            opacity: 0.85
-          }
-
-          MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: clearAll.color = Qt.rgba(0.847, 0.392, 0.494, 0.25)
-            onExited: clearAll.color = Qt.rgba(0.145, 0.145, 0.18, 0.5)
-            onPressed: clearAll.scale = 0.95
-            onReleased: clearAll.scale = 1
-            onClicked: { if (root) root.clearNotifications(); }
-          }
-        }
-      }
-
-      Text {
-        width: parent.width
-        text: (root && root.doNotDisturb) ? "Critical alerts will still appear" : "Notifications adapt to urgency and app behavior"
-        color: _p.fgDim
-        font.family: _p.uiFont
-        font.pixelSize: 11
-        wrapMode: Text.Wrap
-        opacity: 0.6
-      }
-
-      Rectangle { width: parent.width; height: 1; color: _p.border; opacity: 0.6 }
-    }
-
-    // ── Notification History ──
-    ListView {
-      id: notificationList
-      anchors {
-        top: topSection.bottom
-        left: parent.left
-        right: parent.right
-        bottom: parent.bottom
-        leftMargin: 20
-        rightMargin: 20
-        bottomMargin: 20
-        topMargin: 8
-      }
-      spacing: 10
+    Flickable {
+      id: flickable
+      anchors { top: parent.top; left: parent.left; right: parent.right; bottom: parent.bottom }
+      anchors.margins: 20
+      anchors.topMargin: 18
+      contentHeight: contentColumn.height + 20
       clip: true
-      model: root ? root.notificationServer.trackedNotifications : null
+      boundsBehavior: Flickable.StopAtBounds
 
-      delegate: Rectangle {
-        required property QtObject modelData
-        property QtObject notification: modelData
+      Column {
+        id: contentColumn
+        width: parent.width
+        spacing: 20
 
-        width: notificationList.width
-        implicitHeight: panelCardContent.implicitHeight + 40
-        height: implicitHeight
-        radius: 12
-        color: Qt.rgba(0.145, 0.145, 0.18, 0.5)
+        // ════════════════ HEADER ════════════════
+        RowLayout {
+          width: parent.width
+          spacing: 12
 
-        opacity: 0
-        Behavior on opacity { NumberAnimation { duration: 200 } }
-        Component.onCompleted: opacity = 1
+          Column {
+            Layout.fillWidth: true
+            spacing: 2
 
-        Rectangle {
-          anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
-          width: 4; radius: 2
-          color: notification && notification.urgency === NotificationUrgency.Critical
-            ? _p.red : (notification && notification.urgency === NotificationUrgency.Low
-              ? _p.fgDim : _p.accent)
-          visible: notification !== null
-        }
+            Text {
+              id: headerTime
+              text: Qt.formatDateTime(new Date(), "hh:mm")
+              color: _p.fg
+              font.family: _p.uiFont
+              font.pixelSize: 32
+              font.bold: true
 
-        Column {
-          id: panelCardContent
-          x: 28; y: 20
-          width: parent.width - x - 20
-          spacing: root ? root.cardSpacing : 8
-
-          Row {
-            width: parent.width
-            spacing: 10
-
-            AppIcon {
-              notification: modelData
-              fallbackBg: root ? root.bgRaised : Colors.bgRaised
+              Timer {
+                interval: 1000
+                running: controlPanel.visible
+                repeat: true
+                onTriggered: headerTime.text = Qt.formatDateTime(new Date(), "hh:mm")
+              }
             }
 
             Text {
-              text: (notification && notification.appName && notification.appName.length > 0)
-                ? notification.appName : "Notification"
-              color: _p.accent
+              text: Qt.formatDateTime(new Date(), "dddd, MMMM d")
+              color: _p.fgDim
               font.family: _p.uiFont
-              font.pixelSize: 12
-              font.bold: true
-              elide: Text.ElideRight
-              verticalAlignment: Text.AlignVCenter
-              height: 28
-              width: Math.max(0, parent.width - dismissBtn.width - parent.spacing - 28 - parent.spacing)
-            }
-
-            Rectangle {
-              id: dismissBtn
-              width: 26; height: 26
-              radius: 6
-              color: "transparent"
-              border.width: 1
-              border.color: _p.border
-
-              Text {
-                anchors.centerIn: parent
-                text: "\uDB80\uDD56"
-                color: _p.fgDim
-                font.family: _p.uiFont
-                font.pixelSize: 13
-                font.bold: true
-              }
-
-              MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: { dismissBtn.color = Qt.rgba(0.847, 0.392, 0.494, 0.15); dismissBtn.border.color = _p.red }
-                onExited: { dismissBtn.color = "transparent"; dismissBtn.border.color = _p.border }
-                onClicked: notification.dismiss()
-              }
+              font.pixelSize: 13
             }
           }
 
-          Text {
-            text: notification ? (root ? root.stripMarkup(notification.summary || "") : notification.summary || "") : ""
-            width: parent.width
-            color: _p.fg
-            font.family: _p.uiFont
-            font.pixelSize: 13
-            font.bold: true
-            wrapMode: Text.Wrap
-            textFormat: Text.PlainText
-            visible: text.length > 0
-          }
+          Rectangle {
+            id: closeBtn
+            Layout.preferredWidth: 36
+            Layout.preferredHeight: 36
+            radius: 18
+            color: "transparent"
+            border.width: 1
+            border.color: _p.border
 
-          Text {
-            text: notification ? (root ? root.stripMarkup(notification.body || "") : notification.body || "") : ""
-            width: parent.width
-            color: _p.fgMid
-            font.family: _p.uiFont
-            font.pixelSize: 12
-            wrapMode: Text.Wrap
-            textFormat: Text.PlainText
-            visible: text.length > 0
-          }
+            Text {
+              anchors.centerIn: parent
+              text: "\uDB80\uDD56"
+              color: _p.fgMid
+              font.family: _p.uiFont
+              font.pixelSize: 14
+            }
 
-          ActionRow {
-            width: parent.width
-            actions: notification && notification.actions ? notification.actions : []
+            MouseArea {
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onEntered: closeBtn.color = _p.bgSubtle
+              onExited:  closeBtn.color = "transparent"
+              onClicked: controlPanel.visible = false
+            }
           }
         }
-      }
 
-      Item {
-        anchors.centerIn: parent
-        visible: notificationList.count === 0
-        width: parent.width
-        height: 120
+        // ════════════════ MEDIA CARD ════════════════
+        Rectangle {
+          width: parent.width
+          radius: 20
+          color: Colors.bgRaised
+          border.width: 1
+          border.color: _p.border
+          visible: mediaPlayer !== null
+          implicitHeight: mediaCardCol.implicitHeight + 40
 
-        Column {
-          anchors.centerIn: parent
-          spacing: 10
+          Column {
+            id: mediaCardCol
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 20 }
+            spacing: 16
 
-          Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "\uDB80\uDC9C"
-            color: _p.fgDim
-            font.family: _p.uiFont
-            font.pixelSize: 32
-            opacity: 0.35
+            RowLayout {
+              width: parent.width
+              spacing: 16
+
+              Rectangle {
+                id: mediaArtContainer
+                Layout.preferredWidth: 88
+                Layout.preferredHeight: 88
+                radius: 16
+                color: Colors.bgSubtle
+                clip: true
+
+                Image {
+                  id: mediaArtImage
+                  anchors.fill: parent
+                  source: controlPanel.coverArtUrl()
+                  fillMode: Image.PreserveAspectCrop
+                  smooth: true
+                  visible: status === Image.Ready || status === Image.Loading
+                }
+
+                Text {
+                  anchors.centerIn: parent
+                  text: "\uDB80\uDDE2"
+                  color: _p.fgDim
+                  font.family: _p.uiFont
+                  font.pixelSize: 28
+                  visible: mediaArtImage.status !== Image.Ready && mediaArtImage.status !== Image.Loading
+                }
+              }
+
+              Column {
+                Layout.fillWidth: true
+                spacing: 3
+
+                Item {
+                  width: parent.width
+                  height: mediaTitleText.implicitHeight
+                  clip: true
+
+                  Text {
+                    id: mediaTitleText
+                    text: controlPanel.mediaText
+                    width: implicitWidth
+                    color: _p.fg
+                    font.family: _p.uiFont
+                    font.pixelSize: 14
+                    font.bold: true
+                    property bool overflow: implicitWidth > parent.width + 2
+                    onTextChanged: { x = 0; if (overflow) mediaScroll1.restart() }
+                  }
+
+                  SequentialAnimation {
+                    id: mediaScroll1
+                    running: mediaTitleText.overflow
+                    loops: Animation.Infinite
+                    PauseAnimation { duration: 2000 }
+                    PropertyAnimation {
+                      target: mediaTitleText; property: "x"
+                      to: mediaTitleText.parent.width - mediaTitleText.implicitWidth
+                      duration: Math.max((mediaTitleText.implicitWidth - mediaTitleText.parent.width) * 30, 1000)
+                      easing.type: Easing.Linear
+                    }
+                    PauseAnimation { duration: 2000 }
+                    PropertyAnimation {
+                      target: mediaTitleText; property: "x"
+                      to: 0
+                      duration: Math.max((mediaTitleText.implicitWidth - mediaTitleText.parent.width) * 30, 1000)
+                      easing.type: Easing.Linear
+                    }
+                  }
+                }
+
+                Text {
+                  text: controlPanel.mediaSubtext
+                  width: Math.min(implicitWidth, parent.width)
+                  color: _p.fgDim
+                  font.family: _p.uiFont
+                  font.pixelSize: 11
+                  elide: Text.ElideRight
+                  visible: text.length > 0
+                }
+              }
+            }
+
+            // Seek bar
+            RowLayout {
+              width: parent.width
+              spacing: 8
+              visible: controlPanel.mediaPlayer && controlPanel.mediaPlayer.length > 0
+
+              Text {
+                text: {
+                  var _ = controlPanel._mediaTick;
+                  return controlPanel.formatTime(controlPanel.mediaPlayer ? controlPanel.mediaPlayer.position : 0)
+                }
+                color: _p.fgMid
+                font.family: _p.uiFont
+                font.pixelSize: 10
+                Layout.preferredWidth: implicitWidth
+              }
+
+              Item {
+                Layout.fillWidth: true
+                height: 28
+
+                Rectangle {
+                  anchors.verticalCenter: parent.verticalCenter
+                  width: parent.width
+                  height: 8
+                  radius: 4
+                  color: Colors.bgSubtle
+
+                  Rectangle {
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.bottom: parent.bottom
+                    width: parent.width * controlPanel.mediaProgress
+                    radius: 4
+                    color: _p.accent
+                  }
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: function(mouse) {
+                    if (controlPanel.mediaPlayer && controlPanel.mediaPlayer.canSeek) {
+                      controlPanel.mediaPlayer.position = mouse.x / width * controlPanel.mediaPlayer.length;
+                    }
+                  }
+                }
+              }
+
+              Text {
+                text: controlPanel.formatTime(controlPanel.mediaPlayer ? controlPanel.mediaPlayer.length : 0)
+                color: _p.fgMid
+                font.family: _p.uiFont
+                font.pixelSize: 10
+                Layout.preferredWidth: implicitWidth
+              }
+            }
+
+            // Controls
+            Row {
+              anchors.horizontalCenter: parent.horizontalCenter
+              spacing: 20
+
+              Rectangle {
+                width: 40; height: 40; radius: 20
+                color: Colors.bgSubtle
+                border.width: 1
+                border.color: _p.border
+                Behavior on scale { NumberAnimation { duration: 100 } }
+
+                Text {
+                  anchors.centerIn: parent
+                  text: "\uDB81\uDCAE"
+                  color: _p.fg
+                  font.family: _p.uiFont
+                  font.pixelSize: 16
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: parent.scale = 0.92
+                  onExited:  parent.scale = 1
+                  onClicked: { if (controlPanel.mediaPlayer) controlPanel.mediaPlayer.previous() }
+                }
+              }
+
+              Rectangle {
+                width: 48; height: 48; radius: 24
+                color: _p.accent
+                Behavior on scale { NumberAnimation { duration: 100 } }
+
+                Text {
+                  anchors.centerIn: parent
+                  text: controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying ? "\uDB80\uDFE4" : "\uDB81\uDC0A"
+                  color: Colors.bg
+                  font.family: _p.uiFont
+                  font.pixelSize: 20
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: parent.scale = 0.92
+                  onExited:  parent.scale = 1
+                  onClicked: { if (controlPanel.mediaPlayer) controlPanel.mediaPlayer.togglePlaying() }
+                }
+              }
+
+              Rectangle {
+                width: 40; height: 40; radius: 20
+                color: Colors.bgSubtle
+                border.width: 1
+                border.color: _p.border
+                Behavior on scale { NumberAnimation { duration: 100 } }
+
+                Text {
+                  anchors.centerIn: parent
+                  text: "\uDB81\uDCAD"
+                  color: _p.fg
+                  font.family: _p.uiFont
+                  font.pixelSize: 16
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: parent.scale = 0.92
+                  onExited:  parent.scale = 1
+                  onClicked: { if (controlPanel.mediaPlayer) controlPanel.mediaPlayer.next() }
+                }
+              }
+            }
           }
+        }
 
-          Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "No notifications"
-            color: _p.fgDim
-            font.family: _p.uiFont
-            font.pixelSize: 13
-            font.bold: true
-            opacity: 0.6
+        // ════════════════ SYSTEM CARD ════════════════
+        Rectangle {
+          width: parent.width
+          radius: 20
+          color: Colors.bgRaised
+          border.width: 1
+          border.color: _p.border
+          implicitHeight: systemCol.implicitHeight + 40
+
+          Column {
+            id: systemCol
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 20 }
+            spacing: 18
+
+            RowLayout {
+              width: parent.width
+
+              Rectangle {
+                width: 6; height: 16; radius: 3
+                color: _p.accent
+                Layout.alignment: Qt.AlignVCenter
+              }
+
+              Text {
+                text: "System"
+                color: _p.fgMid
+                font.family: _p.uiFont
+                font.pixelSize: 11
+                font.bold: true
+                font.letterSpacing: 1.2
+                Layout.alignment: Qt.AlignVCenter
+              }
+            }
+
+            // Volume
+            RowLayout {
+              width: parent.width
+              spacing: 12
+
+              Rectangle {
+                id: volIconBox
+                Layout.preferredWidth: 38; Layout.preferredHeight: 38
+                radius: 12
+                color: controlPanel.volMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.12) : Colors.bgSubtle
+                border.width: 1
+                border.color: controlPanel.volMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.25) : _p.border
+
+                Text {
+                  anchors.centerIn: parent
+                  text: {
+                    if (controlPanel.volMuted) return "\uDB81\uDD81"
+                    var v = controlPanel.volPct
+                    if (v <= 0) return "\uDB81\uDD81"
+                    if (v < 0.33) return "\uDB81\uDD7F"
+                    if (v < 0.66) return "\uDB81\uDD80"
+                    return "\uDB81\uDD7E"
+                  }
+                  color: controlPanel.volMuted ? _p.red : _p.fg
+                  font.family: _p.uiFont
+                  font.pixelSize: 16
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: volIconBox.color = controlPanel.volMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.25) : Qt.rgba(0.28, 0.28, 0.36, 1)
+                  onExited:  volIconBox.color = controlPanel.volMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.12) : Colors.bgSubtle
+                  onClicked: {
+                    if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+                      Pipewire.defaultAudioSink.audio.muted = !controlPanel.volMuted
+                    }
+                  }
+                }
+              }
+
+              Text {
+                text: "Volume"
+                color: _p.fg
+                font.family: _p.uiFont
+                font.pixelSize: 12
+                font.bold: true
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: implicitWidth
+              }
+
+              SliderControl {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
+                value: controlPanel.volPct
+                fillColor: controlPanel.volMuted ? _p.red : _p.accent
+                onMoved: function(v) {
+                  volSetTimer.target = v;
+                  volSetTimer.restart();
+                }
+              }
+
+              Text {
+                text: Math.round(controlPanel.volPct * 100) + "%"
+                color: controlPanel.volMuted ? _p.red : _p.fg
+                font.family: _p.uiFont
+                font.pixelSize: 12
+                font.bold: true
+                opacity: 0.8
+                Layout.preferredWidth: implicitWidth
+              }
+            }
+
+            // Microphone
+            RowLayout {
+              width: parent.width
+              spacing: 12
+              visible: Pipewire.ready && Pipewire.defaultAudioSource !== null
+
+              Rectangle {
+                id: micIconBox
+                Layout.preferredWidth: 38; Layout.preferredHeight: 38
+                radius: 12
+                color: controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.10) : Colors.bgSubtle
+                border.width: 1
+                border.color: controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.25) : _p.border
+
+                Text {
+                  anchors.centerIn: parent
+                  text: controlPanel.micMuted ? "\uDB80\uDD6D" : "\uDB80\uDD6C"
+                  color: controlPanel.micMuted ? _p.red : _p.green
+                  font.family: _p.uiFont
+                  font.pixelSize: 16
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: micIconBox.color = controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.25) : Qt.rgba(0.28, 0.28, 0.36, 1)
+                  onExited:  micIconBox.color = controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.10) : Colors.bgSubtle
+                  onClicked: {
+                    if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
+                      Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
+                    }
+                  }
+                }
+              }
+
+              Text {
+                text: "Mic"
+                color: _p.fg
+                font.family: _p.uiFont
+                font.pixelSize: 12
+                font.bold: true
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: implicitWidth
+              }
+
+              Item {
+                Layout.fillWidth: true
+                height: 38
+
+                Rectangle {
+                  id: micToggle
+                  anchors.verticalCenter: parent.verticalCenter
+                  anchors.left: parent.left
+                  width: 52; height: 28
+                  radius: 14
+                  color: controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.18) : Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.18)
+                  border.width: 1
+                  border.color: controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.3) : Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.3)
+
+                  Rectangle {
+                    x: controlPanel.micMuted ? 3 : micToggle.width - width - 3
+                    y: 3
+                    width: micToggle.height - 6; height: micToggle.height - 6
+                    radius: width / 2
+                    color: controlPanel.micMuted ? _p.red : _p.green
+                    Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                  }
+
+                  MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                      if (Pipewire.defaultAudioSource && Pipewire.defaultAudioSource.audio) {
+                        Pipewire.defaultAudioSource.audio.muted = !controlPanel.micMuted
+                      }
+                    }
+                  }
+                }
+
+                Text {
+                  anchors.verticalCenter: parent.verticalCenter
+                  anchors.left: micToggle.right
+                  anchors.leftMargin: 12
+                  text: controlPanel.micMuted ? "Muted" : "Live"
+                  color: controlPanel.micMuted ? _p.red : _p.green
+                  font.family: _p.uiFont
+                  font.pixelSize: 11
+                  font.bold: true
+                  Behavior on color { ColorAnimation { duration: 150 } }
+                }
+              }
+            }
+
+            // Brightness
+            RowLayout {
+              width: parent.width
+              spacing: 12
+              visible: controlPanel.brightnessAvailable
+
+              Rectangle {
+                id: brtIconBox
+                Layout.preferredWidth: 38; Layout.preferredHeight: 38
+                radius: 12
+                color: Colors.bgSubtle
+                border.width: 1
+                border.color: _p.border
+
+                Text {
+                  anchors.centerIn: parent
+                  text: "\uDB81\uDD99"
+                  color: _p.yellow
+                  font.family: _p.uiFont
+                  font.pixelSize: 16
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: brtIconBox.color = Qt.rgba(0.28, 0.28, 0.36, 1)
+                  onExited:  brtIconBox.color = Colors.bgSubtle
+                }
+              }
+
+              Text {
+                text: "Brightness"
+                color: _p.fg
+                font.family: _p.uiFont
+                font.pixelSize: 12
+                font.bold: true
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: implicitWidth
+              }
+
+              SliderControl {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
+                value: controlPanel.brightnessPct
+                fillColor: _p.yellow
+                onMoved: function(v) { controlPanel.setBrightness(v) }
+              }
+
+              Text {
+                text: Math.round(controlPanel.brightnessPct * 100) + "%"
+                color: _p.fg
+                font.family: _p.uiFont
+                font.pixelSize: 12
+                font.bold: true
+                opacity: 0.8
+                Layout.preferredWidth: implicitWidth
+              }
+            }
           }
+        }
 
-          Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "You're all caught up"
-            color: _p.fgDim
-            font.family: _p.uiFont
-            font.pixelSize: 11
-            opacity: 0.4
+        // ════════════════ QUICK ACTIONS ════════════════
+        Rectangle {
+          width: parent.width
+          radius: 20
+          color: Colors.bgRaised
+          border.width: 1
+          border.color: _p.border
+          implicitHeight: actionsCol.implicitHeight + 40
+
+          Column {
+            id: actionsCol
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 20 }
+            spacing: 14
+
+            RowLayout {
+              width: parent.width
+
+              Rectangle {
+                width: 6; height: 16; radius: 3
+                color: _p.purple
+                Layout.alignment: Qt.AlignVCenter
+              }
+
+              Text {
+                text: "Power"
+                color: _p.fgMid
+                font.family: _p.uiFont
+                font.pixelSize: 11
+                font.bold: true
+                font.letterSpacing: 1.2
+                Layout.alignment: Qt.AlignVCenter
+              }
+            }
+
+            Grid {
+              width: parent.width
+              columns: 2
+              spacing: 10
+
+              Repeater {
+                model: [
+                  { icon: "\uDB80\uDD3E", label: "Lock",    color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.15), accent: _p.accent, proc: lockProc },
+                  { icon: "\uDB80\uDD43", label: "Logout",  color: Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.15), accent: _p.yellow, proc: logoutProc },
+                  { icon: "\uDB81\uDD94", label: "Sleep",   color: Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.15), accent: _p.green,  proc: sleepProc },
+                  { icon: "\uDB81\uDF09", label: "Reboot",  color: Qt.rgba(Colors.purple.r, Colors.purple.g, Colors.purple.b, 0.15), accent: _p.purple, proc: rebootProc },
+                  { icon: "\uDB81\uDC25", label: "Off",     color: Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15), accent: _p.red,    proc: poweroffProc },
+                ]
+
+                delegate: Rectangle {
+                  required property var modelData
+                  width: (parent.width - parent.spacing) / 2
+                  height: 52
+                  radius: 14
+                  color: modelData.color
+                  border.width: 1
+                  border.color: Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.2)
+                  Behavior on scale { NumberAnimation { duration: 100 } }
+
+                  Row {
+                    anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: 14 }
+                    spacing: 10
+
+                    Text {
+                      anchors.verticalCenter: parent.verticalCenter
+                      text: modelData.icon
+                      color: modelData.accent
+                      font.family: _p.uiFont
+                      font.pixelSize: 18
+                    }
+
+                    Text {
+                      anchors.verticalCenter: parent.verticalCenter
+                      text: modelData.label
+                      color: _p.fg
+                      font.family: _p.uiFont
+                      font.pixelSize: 12
+                      font.bold: true
+                    }
+                  }
+
+                  MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onEntered: {
+                      parent.color = Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.25);
+                      parent.scale = 0.97
+                    }
+                    onExited: {
+                      parent.color = modelData.color;
+                      parent.scale = 1
+                    }
+                    onClicked: { if (modelData.proc) modelData.proc.startDetached() }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // ════════════════ NOTIFICATIONS ════════════════
+        Rectangle {
+          width: parent.width
+          radius: 20
+          color: Colors.bgRaised
+          border.width: 1
+          border.color: _p.border
+          implicitHeight: notifCol.implicitHeight + 40
+
+          Column {
+            id: notifCol
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 20 }
+            spacing: 14
+
+            RowLayout {
+              width: parent.width
+              spacing: 10
+
+              Rectangle {
+                width: 6; height: 16; radius: 3
+                color: _p.teal
+                Layout.alignment: Qt.AlignVCenter
+              }
+
+              Text {
+                text: "Notifications"
+                color: _p.fgMid
+                font.family: _p.uiFont
+                font.pixelSize: 11
+                font.bold: true
+                font.letterSpacing: 1.2
+                Layout.alignment: Qt.AlignVCenter
+              }
+
+              Item { Layout.fillWidth: true }
+
+              Rectangle {
+                id: dndToggle
+                Layout.preferredWidth: 48; Layout.preferredHeight: 26
+                radius: 13
+                color: (root && root.doNotDisturb) ? Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.25) : Colors.bgSubtle
+                border.width: 1
+                border.color: (root && root.doNotDisturb) ? _p.accent : _p.border
+
+                Rectangle {
+                  x: (root && root.doNotDisturb) ? parent.width - width - 3 : 3
+                  y: 3
+                  width: parent.height - 6; height: parent.height - 6
+                  radius: width / 2
+                  color: (root && root.doNotDisturb) ? _p.accent : _p.fgDim
+                  Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+                  Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: { if (root) root.doNotDisturb = !root.doNotDisturb; }
+                }
+              }
+
+              Text {
+                text: (root && root.doNotDisturb) ? "DND" : "All"
+                color: (root && root.doNotDisturb) ? _p.accent : _p.fgDim
+                font.family: _p.uiFont
+                font.pixelSize: 11
+                font.bold: true
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: implicitWidth
+                Behavior on color { ColorAnimation { duration: 150 } }
+              }
+
+              Rectangle {
+                id: clearAllBtn
+                Layout.preferredWidth: clearAllText.implicitWidth + 20
+                Layout.preferredHeight: 28
+                Layout.alignment: Qt.AlignVCenter
+                radius: 8
+                color: "transparent"
+                border.width: 1
+                border.color: _p.border
+
+                Text {
+                  id: clearAllText
+                  anchors.centerIn: parent
+                  text: root ? "Clear (" + root.notificationServer.trackedNotifications.values.length + ")" : "Clear"
+                  color: _p.fgMid
+                  font.family: _p.uiFont
+                  font.pixelSize: 10
+                  font.bold: true
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: { clearAllBtn.color = Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15); clearAllBtn.border.color = _p.red }
+                  onExited:  { clearAllBtn.color = "transparent"; clearAllBtn.border.color = _p.border }
+                  onClicked: { if (root) root.clearNotifications(); }
+                }
+              }
+            }
+
+            Text {
+              width: parent.width
+              text: (root && root.doNotDisturb) ? "Critical alerts will still appear" : "Notifications adapt to urgency"
+              color: _p.fgDim
+              font.family: _p.uiFont
+              font.pixelSize: 10
+              wrapMode: Text.Wrap
+              opacity: 0.5
+            }
+
+            Repeater {
+              model: root ? root.notificationServer.trackedNotifications : null
+
+              delegate: Rectangle {
+                required property QtObject modelData
+                property QtObject notification: modelData
+
+                width: parent.width
+                implicitHeight: notifCardCol.implicitHeight + 28
+                height: implicitHeight
+                radius: 14
+                color: Colors.bg
+                border.width: 1
+                border.color: _p.border
+                opacity: 0
+                Behavior on opacity { NumberAnimation { duration: 200 } }
+                Component.onCompleted: opacity = 1
+
+                Rectangle {
+                  anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                  width: 3; radius: 1.5
+                  color: notification && notification.urgency === NotificationUrgency.Critical
+                    ? _p.red : (notification && notification.urgency === NotificationUrgency.Low
+                      ? _p.fgDim : _p.accent)
+                }
+
+                Column {
+                  id: notifCardCol
+                  anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
+                  anchors.leftMargin: 22
+                  spacing: root ? root.cardSpacing : 6
+
+                  Row {
+                    width: parent.width
+                    spacing: 8
+
+                    AppIcon {
+                      notification: modelData
+                      fallbackBg: root ? root.bgRaised : Colors.bgRaised
+                    }
+
+                    Text {
+                      width: Math.max(0, parent.width - dismissNotif.width - parent.spacing - 24 - parent.spacing)
+                      text: (notification && notification.appName && notification.appName.length > 0)
+                        ? notification.appName : "Notification"
+                      color: _p.accent
+                      font.family: _p.uiFont
+                      font.pixelSize: 11
+                      font.bold: true
+                      elide: Text.ElideRight
+                      verticalAlignment: Text.AlignVCenter
+                      height: 24
+                    }
+
+                    Rectangle {
+                      id: dismissNotif
+                      width: 22; height: 22
+                      radius: 6
+                      color: "transparent"
+                      border.width: 1
+                      border.color: _p.border
+
+                      Text {
+                        anchors.centerIn: parent
+                        text: "\uDB80\uDD56"
+                        color: _p.fgDim
+                        font.family: _p.uiFont
+                        font.pixelSize: 11
+                      }
+
+                      MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: { dismissNotif.color = Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15); dismissNotif.border.color = _p.red }
+                        onExited:  { dismissNotif.color = "transparent"; dismissNotif.border.color = _p.border }
+                        onClicked: notification.dismiss()
+                      }
+                    }
+                  }
+
+                  Text {
+                    text: notification ? (root ? root.stripMarkup(notification.summary || "") : notification.summary || "") : ""
+                    width: parent.width
+                    color: _p.fg
+                    font.family: _p.uiFont
+                    font.pixelSize: 12
+                    font.bold: true
+                    wrapMode: Text.Wrap
+                    textFormat: Text.PlainText
+                    visible: text.length > 0
+                  }
+
+                  Text {
+                    text: notification ? (root ? root.stripMarkup(notification.body || "") : notification.body || "") : ""
+                    width: parent.width
+                    color: _p.fgMid
+                    font.family: _p.uiFont
+                    font.pixelSize: 11
+                    wrapMode: Text.Wrap
+                    textFormat: Text.PlainText
+                    visible: text.length > 0
+                  }
+
+                  ActionRow {
+                    width: parent.width
+                    actions: notification && notification.actions ? notification.actions : []
+                  }
+                }
+              }
+            }
+
+            // Empty state
+            Item {
+              width: parent.width
+              height: visible ? 100 : 0
+              visible: !root || !root.notificationServer || root.notificationServer.trackedNotifications.values.length === 0
+
+              Column {
+                anchors.centerIn: parent
+                spacing: 6
+
+                Text {
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  text: "\uDB80\uDC9C"
+                  color: _p.fgDim
+                  font.family: _p.uiFont
+                  font.pixelSize: 28
+                  opacity: 0.3
+                }
+
+                Text {
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  text: "No notifications"
+                  color: _p.fgDim
+                  font.family: _p.uiFont
+                  font.pixelSize: 12
+                  font.bold: true
+                  opacity: 0.5
+                }
+              }
+            }
           }
         }
       }

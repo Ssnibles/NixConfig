@@ -62,6 +62,10 @@ PanelWindow {
     return Math.max(min, Math.min(max, value));
   }
 
+  function pad2(n) {
+    return n < 10 ? "0" + n : "" + n;
+  }
+
   function escapeRegex(value) {
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
@@ -176,14 +180,15 @@ PanelWindow {
   property string batTooltip: {
     if (!batPresent) return "";
     var pct = Math.round(batPct);
-    var states = {
-      [UPowerDeviceState.Charging]: "Charging",
-      [UPowerDeviceState.FullyCharged]: "Plugged in",
-      [UPowerDeviceState.PendingCharge]: "Pending charge",
-      [UPowerDeviceState.PendingDischarge]: "Pending discharge",
-      [UPowerDeviceState.Empty]: "Empty",
-    };
-    var state = states[batState] || "Discharging";
+    var state;
+    switch (batState) {
+      case UPowerDeviceState.Charging:        state = "Charging"; break;
+      case UPowerDeviceState.FullyCharged:    state = "Plugged in"; break;
+      case UPowerDeviceState.PendingCharge:   state = "Pending charge"; break;
+      case UPowerDeviceState.PendingDischarge:state = "Pending discharge"; break;
+      case UPowerDeviceState.Empty:           state = "Empty"; break;
+      default:                                state = "Discharging"; break;
+    }
     return pct + "% · " + state;
   }
   property color batColor: {
@@ -208,8 +213,12 @@ PanelWindow {
       : mediaPlayer.trackTitle)
     : ""
   property bool hasMedia: mediaText !== ""
-  property real mediaProgress: mediaPlayer && mediaPlayer.length > 0
-    ? mediaPlayer.position / mediaPlayer.length : 0
+  property int mediaTick: 0
+  property real mediaProgress: {
+    var _ = barPanel.mediaTick;
+    return mediaPlayer && mediaPlayer.length > 0
+      ? mediaPlayer.position / mediaPlayer.length : 0
+  }
 
   // -- Hover state --
   property bool volHover: volHoverHandler.hovered
@@ -237,6 +246,7 @@ PanelWindow {
     onTriggered: {
       if (mediaPlayer && mediaPlayer.isPlaying) {
         wavePhase = (wavePhase + 1.256) % (Math.PI * 2);
+        barPanel.mediaTick++;
       }
     }
     onRunningChanged: { if (!running) wavePhase = 0; }
@@ -352,8 +362,8 @@ PanelWindow {
               property real phase: tickTimer.wavePhase
               property real play: 1.0
               property real progress: barPanel.mediaProgress
-              property color colorStart: Qt.rgba(0.769, 0.655, 0.906, 1)
-              property color colorEnd: Qt.rgba(0.612, 0.812, 0.847, 1)
+              property color colorStart: Colors.purple
+              property color colorEnd: Colors.teal
               property color bgColor: Colors.bgSubtle
             }
 
@@ -377,7 +387,12 @@ PanelWindow {
                   var frac = (index + 1) / mediaWaveform.barCount
                   if (frac > barPanel.mediaProgress) return Colors.bgSubtle
                   var t = frac / Math.max(barPanel.mediaProgress, 0.01)
-                  return Qt.rgba(0.769 - 0.157 * t, 0.655 + 0.157 * t, 0.906 - 0.059 * t, 1)
+                  return Qt.rgba(
+                    Colors.purple.r + (Colors.teal.r - Colors.purple.r) * t,
+                    Colors.purple.g + (Colors.teal.g - Colors.purple.g) * t,
+                    Colors.purple.b + (Colors.teal.b - Colors.purple.b) * t,
+                    1
+                  )
                 }
               }
             }
@@ -411,11 +426,12 @@ PanelWindow {
             id: mediaTimeLabel
             text: {
               if (!barPanel.mediaPlayer) return ""
+              var _ = barPanel.mediaTick;
               var p = Math.round(barPanel.mediaPlayer.position)
               var l = Math.round(barPanel.mediaPlayer.length)
               if (l <= 0) return ""
-              return Math.floor(p/60) + ":" + (p%60).toString().padStart(2,'0')
-                + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
+              return Math.floor(p/60) + ":" + pad2(p%60)
+                + " / " + Math.floor(l/60) + ":" + pad2(l%60)
             }
             color: Colors.fgMid
             font.family: barPanel.uiFont
