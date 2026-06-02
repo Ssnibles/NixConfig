@@ -1,5 +1,3 @@
-// Singleton color palette used across all quickshell UI components.
-// Falls back to these values when a panel is loaded standalone without a root context.
 pragma Singleton
 import QtQml
 import QtQuick
