@@ -1,12 +1,6 @@
-# =============================================================================
-# Zellij Configuration
-# =============================================================================
-# Terminal multiplexer configured to feel close to the existing tmux workflow:
-# backtick "prefix"-style controls, vi-like pane movement, and the same palette.
-# =============================================================================
-{ pkgs, config, ... }:
+{ pkgs, config, semanticColors, ... }:
 let
-  rgb = (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; }).rgb;
+  rgb = (semanticColors { colors = config.lib.stylix.colors; }).rgb;
 in
 {
   home.packages = [ pkgs.unstable.zellij ];

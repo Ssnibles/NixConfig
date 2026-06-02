@@ -48,7 +48,7 @@
 
   "custom/special-workspace": {
     "return-type": "json",
-    "exec": "/home/josh/NixConfig/live/waybar/special-workspace-indicator.sh",
+    "exec": "special-workspace-indicator.sh",
     "interval": 2,
     "format": "{}",
     "on-click": "hyprctl dispatch togglespecialworkspace work",

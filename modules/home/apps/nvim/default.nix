@@ -3,12 +3,11 @@
   lib,
   pkgs,
   inputs,
+  semanticColors,
   ...
 }:
 let
-  c =
-    (import ../../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; })
-    .withHash;
+  c = semanticColors { colors = config.lib.stylix.colors; };
   s = config.lib.stylix.colors.withHashtag;
   repoRoot = "${config.home.homeDirectory}/NixConfig";
   nvimSrcDir = "${repoRoot}/modules/home/apps/nvim/nvim-src";
@@ -24,6 +23,48 @@ let
     };
     doCheck = false;
   };
+
+  colorsLua = ''
+    local M = {
+      bg = "${c.withHash.bg}",
+      raised_background = "${c.withHash.raisedBackground}",
+      bg_subtle = "${c.withHash.bgSubtle}",
+      border = "${c.withHash.border}",
+      fg = "${c.withHash.fg}",
+      fg_mid = "${c.withHash.fgMid}",
+      fg_dim = "${c.withHash.fgDim}",
+      accent = "${c.withHash.accent}",
+      teal = "${c.withHash.teal}",
+      purple = "${c.withHash.purple}",
+      green = "${c.withHash.green}",
+      yellow = "${c.withHash.yellow}",
+      red = "${c.withHash.red}",
+      orange = "${c.withHash.orange}",
+      magenta = "${c.withHash.magenta}",
+      selection = "${c.withHash.selection}",
+      search = "${c.withHash.search}",
+      trailspace = "${c.withHash.trailspace}",
+      variant = "${config.lib.stylix.colors.variant}",
+      base00 = "${s.base00}",
+      base01 = "${s.base01}",
+      base02 = "${s.base02}",
+      base03 = "${s.base03}",
+      base04 = "${s.base04}",
+      base05 = "${s.base05}",
+      base06 = "${s.base06}",
+      base07 = "${s.base07}",
+      base08 = "${s.base08}",
+      base09 = "${s.base09}",
+      base0A = "${s.base0A}",
+      base0B = "${s.base0B}",
+      base0C = "${s.base0C}",
+      base0D = "${s.base0D}",
+      base0E = "${s.base0E}",
+      base0F = "${s.base0F}",
+    }
+
+    return M
+  '';
 in
 {
   programs.nvf = {
@@ -100,7 +141,7 @@ in
         jdt-language-server
         marksman
         ltex-ls-plus
-        inputs.qml-language-server.packages.${pkgs.system}.default
+        inputs.qml-language-server.packages.${pkgs.stdenv.hostPlatform.system}.default
         roslyn-ls
 
         nixfmt-rfc-style
@@ -219,55 +260,7 @@ in
     force = true;
   };
 
-  home.activation.removeOldNvfDir = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
-    if [[ -d "$HOME/.config/nvf" && ! -L "$HOME/.config/nvf" ]]; then
-      rm -rf "$HOME/.config/nvf"
-    fi
-  '';
-
-  home.activation.writeNvfColors = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    colors_dir="${nvimSrcDir}/lua/generated"
-    mkdir -p "$colors_dir"
-    cat > "$colors_dir/colors.lua" << LUAEOF
-    local M = {
-      bg = "${c.bg}",
-      raised_background = "${c.raisedBackground}",
-      bg_subtle = "${c.bgSubtle}",
-      border = "${c.border}",
-      fg = "${c.fg}",
-      fg_mid = "${c.fgMid}",
-      fg_dim = "${c.fgDim}",
-      accent = "${c.accent}",
-      teal = "${c.teal}",
-      purple = "${c.purple}",
-      green = "${c.green}",
-      yellow = "${c.yellow}",
-      red = "${c.red}",
-      orange = "${c.orange}",
-      magenta = "${c.magenta}",
-      selection = "${c.selection}",
-      search = "${c.search}",
-      trailspace = "${c.trailspace}",
-      variant = "${config.lib.stylix.colors.variant}",
-      base00 = "${s.base00}",
-      base01 = "${s.base01}",
-      base02 = "${s.base02}",
-      base03 = "${s.base03}",
-      base04 = "${s.base04}",
-      base05 = "${s.base05}",
-      base06 = "${s.base06}",
-      base07 = "${s.base07}",
-      base08 = "${s.base08}",
-      base09 = "${s.base09}",
-      base0A = "${s.base0A}",
-      base0B = "${s.base0B}",
-      base0C = "${s.base0C}",
-      base0D = "${s.base0D}",
-      base0E = "${s.base0E}",
-      base0F = "${s.base0F}",
-    }
-
-    return M
-    LUAEOF
-  '';
+  # Write generated colors directly into the repo checkout so the symlink
+  # picks them up without an imperative activation script.
+  home.file."NixConfig/modules/home/apps/nvim/nvim-src/lua/generated/colors.lua".text = colorsLua;
 }

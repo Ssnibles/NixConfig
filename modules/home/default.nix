@@ -11,8 +11,7 @@ let
   ) entries;
   imports =
     lib.mapAttrsToList (name: _: ./${name}) nixFiles
-    ++ lib.mapAttrsToList (name: _: ./${name}) nixDirs
-    ++ [ ../services/wayland.nix ];
+    ++ lib.mapAttrsToList (name: _: ./${name}) nixDirs;
 in
 {
   inherit imports;

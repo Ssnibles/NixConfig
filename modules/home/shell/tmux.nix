@@ -1,13 +1,6 @@
-# =============================================================================
-# Tmux Configuration
-# =============================================================================
-# Terminal multiplexer with vi-mode, Home Manager plugins, and active Stylix theme.
-# =============================================================================
-{ pkgs, config, ... }:
+{ pkgs, config, semanticColors, ... }:
 let
-  c =
-    (import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; })
-    .withHash;
+  c = semanticColors { colors = config.lib.stylix.colors; };
 in
 {
   programs.tmux = {
@@ -33,13 +26,11 @@ in
     ];
 
     extraConfig = ''
-      # ── Terminal capabilities ───────────────────────────────────────────
       set -g  default-terminal "tmux-256color"
       set -as terminal-overrides ",*:RGB"
       set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'
       set -as terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d;m'
 
-      # ── Usability ───────────────────────────────────────────────────────
       set  -g renumber-windows on
       setw -g pane-base-index 1
       set  -g repeat-time 500
@@ -47,23 +38,17 @@ in
       set  -g set-titles on
       set  -g set-titles-string "#S / #W"
 
-      # Send the prefix character itself when pressed twice
       bind ` send-prefix
-
-      # Reload config
       bind r source-file ~/.config/tmux/tmux.conf \; display-message "󰞌 tmux.conf reloaded!"
 
-      # ── Pane resizing ───────────────────────────────────────────────────
       bind -r H resize-pane -L 5
       bind -r J resize-pane -D 5
       bind -r K resize-pane -U 5
       bind -r L resize-pane -R 5
 
-      # ── Pane splitting ──────────────────────────────────────────────────
       bind v split-window -v -c "#{pane_current_path}"
       bind h split-window -h -c "#{pane_current_path}"
 
-      # ── Window management ───────────────────────────────────────────────
       bind q   kill-pane
       bind Q   kill-window
       bind f   resize-pane -Z
@@ -73,7 +58,6 @@ in
       bind y   setw synchronize-panes \; display-message "Pane synchronization: #{?pane_synchronized,ON,OFF}"
       bind n   new-window -c "#{pane_current_path}"
 
-      # ── Copy mode (vi-like) ─────────────────────────────────────────────
       bind -T copy-mode-vi v   send-keys -X begin-selection
       bind -T copy-mode-vi C-v send-keys -X rectangle-toggle
       bind -T copy-mode-vi y   send-keys -X copy-selection-and-cancel
@@ -81,8 +65,6 @@ in
       bind P paste-buffer
       bind C clear-history
 
-      # ── Vim-aware pane navigation ───────────────────────────────────────
-      # Smart Ctrl+h/j/k/l: passes through to Neovim when at a split edge.
       is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
           | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?|fzf)(diff)?$'"
 
@@ -96,7 +78,6 @@ in
       bind-key -T copy-mode-vi 'C-k' select-pane -U
       bind-key -T copy-mode-vi 'C-l' select-pane -R
 
-      # ── Status bar ──────────────────────────────────────────────────────
       set -g status-position top
       set -g status-style    "fg=${c.fg},bg=${c.bg}"
       set -g status-justify  left
@@ -114,16 +95,13 @@ in
       set -g status-right-length 150
       set -g status-right "#[fg=${c.fg},bg=${c.bg}] #{continuum_status} #[fg=${c.fgMid},bg=${c.bg}]%H:%M #[fg=${c.fg},bg=${c.bg}] #H "
 
-      # ── Pane borders ────────────────────────────────────────────────────
       set -g pane-border-lines        simple
       set -g pane-border-style        "fg=${c.fgMid}"
       set -g pane-active-border-style "fg=${c.accent}"
 
-      # ── Message bar ─────────────────────────────────────────────────────
       set -g message-style         "fg=${c.fg},bg=${c.bgRaised},bold"
       set -g message-command-style "fg=${c.fg},bg=${c.bgRaised},bold"
 
-      # ── Bell & activity ─────────────────────────────────────────────────
       set  -g visual-activity  off
       set  -g visual-bell      off
       set  -g visual-silence   off
@@ -133,7 +111,6 @@ in
       setw -g automatic-rename        on
       setw -g automatic-rename-format '#{b:pane_current_command}'
 
-      # ── Plugin options ──────────────────────────────────────────────────
       set -g @resurrect-capture-pane-contents 'on'
       set -g @resurrect-strategy-nvim 'session'
       set -g @continuum-restore 'on'

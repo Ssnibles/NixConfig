@@ -1,6 +1,7 @@
 {
   pkgs,
   inputs,
+  semanticColors,
   ...
 }:
 {
@@ -16,17 +17,7 @@
     inputs.nvf.homeManagerModules.default
     inputs.spicetify-nix.homeManagerModules.spicetify
 
-    ../../modules/home/shell
-    ../../modules/home/desktop
-    ../../modules/home/apps
-
-    ../../modules/home/git.nix
-    ../../modules/home/packages.nix
-    ../../modules/home/programs.nix
-    ../../modules/home/qutebrowser.nix
-    ../../modules/home/stylix.nix
-    ../../modules/home/scripts.nix
-    ../../modules/home/xdg-defaults.nix
+    ../../modules/home
   ];
 
   home.pointerCursor = {

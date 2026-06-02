@@ -1,12 +1,6 @@
-# =============================================================================
-# Fish Shell & Terminal Emulator Configuration
-# =============================================================================
-# Fish shell setup, plugins, and a colour-matched Foot config.
-# Both consume the active Stylix palette.
-# =============================================================================
-{ pkgs, config, ... }:
+{ pkgs, config, semanticColors, ... }:
 let
-  c = import ../../../lib/stylix/semantic-colors.nix { stylixColors = config.lib.stylix.colors; };
+  c = semanticColors { colors = config.lib.stylix.colors; };
   shared = import ./shared.nix;
 in
 {
@@ -19,7 +13,6 @@ in
       set -g fish_greeting ""
       set -g fish_autosuggestion_enabled 1
 
-      # Cursor shape hints for mode/insert state.
       set -g fish_cursor_default block
       set -g fish_cursor_insert line
       set -g fish_cursor_replace_one underscore
@@ -29,7 +22,6 @@ in
           microfetch
       end
 
-      # Better completion UX: quicker pager response and simplified completion paths.
       set -g fish_complete_path ""
 
       if type -q fd
@@ -120,7 +112,6 @@ in
           end
       end
 
-      # Fish syntax + completion colors aligned to the active Stylix palette.
       set -g fish_color_normal ${c.fg}
       set -g fish_color_command ${c.accent}
       set -g fish_color_keyword ${c.purple}
@@ -162,43 +153,20 @@ in
     '';
 
     plugins = with pkgs.fishPlugins; [
-      {
-        name = "grc";
-        src = grc.src;
-      }
-      {
-        name = "pure";
-        src = pure.src;
-      }
-      {
-        name = "done";
-        src = done.src;
-      }
-      {
-        name = "fzf";
-        src = fzf.src;
-      }
-      {
-        name = "pisces";
-        src = pisces.src;
-      }
-      {
-        name = "sponge";
-        src = sponge.src;
-      }
-      {
-        name = "forgit";
-        src = forgit.src;
-      }
+      { name = "grc"; src = grc.src; }
+      { name = "pure"; src = pure.src; }
+      { name = "done"; src = done.src; }
+      { name = "fzf"; src = fzf.src; }
+      { name = "pisces"; src = pisces.src; }
+      { name = "sponge"; src = sponge.src; }
+      { name = "forgit"; src = forgit.src; }
     ];
   };
 
-  # ── Set fish as the default shell ───────────────────────────────────────────
   home.sessionVariables = {
     SHELL = "${pkgs.fish}/bin/fish";
   };
 
-  # ── Foot terminal ─────────────────────────────────────────────────────────
   xdg.configFile."foot/foot.ini".text = ''
     shell=${pkgs.fish}/bin/fish
     font=JetBrainsMono Nerd Font:size=12

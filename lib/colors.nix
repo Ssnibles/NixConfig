@@ -1,5 +1,7 @@
-{ stylixColors }:
+{ colors }:
 let
+  s = colors.withHashtag;
+
   hexDigitValues = {
     "0" = 0;
     "1" = 1;
@@ -30,39 +32,44 @@ let
     (hexDigitValues.${builtins.substring 0 1 pair} * 16)
     + hexDigitValues.${builtins.substring 1 1 pair};
 
-  hexToRgb = hex: [
-    (hexPairToInt (builtins.substring 0 2 hex))
-    (hexPairToInt (builtins.substring 2 2 hex))
-    (hexPairToInt (builtins.substring 4 2 hex))
-  ];
+  hexToRgb =
+    hex:
+    if builtins.stringLength hex < 6 then
+      [ 0 0 0 ]
+    else
+      [
+        (hexPairToInt (builtins.substring 0 2 hex))
+        (hexPairToInt (builtins.substring 2 2 hex))
+        (hexPairToInt (builtins.substring 4 2 hex))
+      ];
 
   palette = rec {
-    bg = stylixColors.base00;
-    raisedBackground = stylixColors.base01;
+    bg = colors.base00;
+    raisedBackground = colors.base01;
     bgRaised = raisedBackground;
-    bgSubtle = stylixColors.base02;
-    border = stylixColors.base02;
+    bgSubtle = colors.base02;
+    border = colors.base02;
 
-    fg = stylixColors.base05;
-    fgMid = stylixColors.base04;
-    fgDim = stylixColors.base03;
+    fg = colors.base05;
+    fgMid = colors.base04;
+    fgDim = colors.base03;
 
-    accent = stylixColors.base0D;
-    teal = stylixColors.base0C;
-    purple = stylixColors.base0E;
+    accent = colors.base0D;
+    teal = colors.base0C;
+    purple = colors.base0E;
 
-    green = stylixColors.base0B;
-    yellow = stylixColors.base0A;
-    red = stylixColors.base08;
-    orange = stylixColors.base09;
+    green = colors.base0B;
+    yellow = colors.base0A;
+    red = colors.base08;
+    orange = colors.base09;
 
-    magenta = stylixColors.base0F;
-    blueBright = stylixColors.base0D;
-    tealBright = stylixColors.base0C;
+    magenta = colors.base0F;
+    blueBright = colors.base0D;
+    tealBright = colors.base0C;
 
-    selection = stylixColors.base02;
-    search = stylixColors.base01;
-    trailspace = stylixColors.base08;
+    selection = colors.base02;
+    search = colors.base01;
+    trailspace = colors.base08;
   };
 in
 palette
