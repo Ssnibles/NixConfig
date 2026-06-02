@@ -19,7 +19,13 @@ Item {
   readonly property real _trackHeight: 8
 
   property real _dragValue: 0
-  readonly property real _visualValue: mouse.dragging ? _dragValue : value
+  property real _pendingValue: -1
+  readonly property real _visualValue: mouse.dragging ? _dragValue : (_pendingValue >= 0 ? _pendingValue : value)
+
+  onValueChanged: {
+    if (mouse && !mouse.dragging && _pendingValue >= 0 && Math.abs(value - _pendingValue) < 0.001)
+      _pendingValue = -1;
+  }
 
   Item {
     anchors.verticalCenter: parent.verticalCenter
@@ -79,13 +85,17 @@ Item {
       }
 
       onPressed: function(mouse) {
-        dragging = true;
-        root.dragStarted();
+        if (!dragging) {
+          dragging = true;
+          root.dragStarted();
+        }
         root._dragValue = computeValue(mouse.x);
         root.moved(root._dragValue);
       }
       onReleased: {
+        if (!dragging) return;
         dragging = false;
+        root._pendingValue = root._dragValue;
         root.dragEnded();
       }
       onExited: { if (!dragging) dragging = false; }
