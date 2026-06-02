@@ -16,16 +16,16 @@ PanelWindow {
 
   QtObject {
     id: palette
-    property color fg: controlPanel.root ? controlPanel.root.fg : Colors.fg
-    property color fgMid: controlPanel.root ? controlPanel.root.fgMid : Colors.fgMid
-    property color fgDim: controlPanel.root ? controlPanel.root.fgDim : Colors.fgDim
-    property color bgSubtle: controlPanel.root ? controlPanel.root.bgSubtle : Colors.bgSubtle
-    property color border: controlPanel.root ? controlPanel.root.border : Colors.border
-    property color accent: controlPanel.root ? controlPanel.root.accent : Colors.accent
-    property color red: controlPanel.root ? controlPanel.root.red : Colors.red
-    property color green: controlPanel.root ? controlPanel.root.green : Colors.green
-    property color yellow: controlPanel.root ? controlPanel.root.yellow : Colors.yellow
-    property string uiFont: controlPanel.root ? controlPanel.root.uiFont : "JetBrains Mono"
+    property color fg: (controlPanel.root || Colors).fg
+    property color fgMid: (controlPanel.root || Colors).fgMid
+    property color fgDim: (controlPanel.root || Colors).fgDim
+    property color bgSubtle: (controlPanel.root || Colors).bgSubtle
+    property color border: (controlPanel.root || Colors).border
+    property color accent: (controlPanel.root || Colors).accent
+    property color red: (controlPanel.root || Colors).red
+    property color green: (controlPanel.root || Colors).green
+    property color yellow: (controlPanel.root || Colors).yellow
+    property string uiFont: (controlPanel.root || { uiFont: "JetBrains Mono" }).uiFont
   }
 
   // -- Volume --
@@ -185,7 +185,7 @@ PanelWindow {
   Rectangle {
     anchors.fill: parent
     radius: 16
-    color: root ? root.bgRaised : Colors.bgRaised
+    color: (root || Colors).bgRaised
     border.width: 1
     border.color: _p.border
     opacity: controlPanel.panelOpacity
@@ -204,8 +204,8 @@ PanelWindow {
       height: 4
       radius: 2
       gradient: Gradient {
-        GradientStop { position: 0.0; color: root ? root.accent : Colors.accent }
-        GradientStop { position: 1.0; color: root ? root.purple : Colors.purple }
+        GradientStop { position: 0.0; color: (root || Colors).accent }
+        GradientStop { position: 1.0; color: (root || Colors).purple }
       }
     }
 
@@ -542,6 +542,50 @@ PanelWindow {
             spacing: 10
 
             Rectangle {
+              Layout.preferredWidth: 64; Layout.preferredHeight: 64
+              radius: 10
+              color: Colors.bgSubtle
+              clip: true
+
+              Image {
+                anchors.fill: parent
+                source: {
+                  if (!controlPanel.mediaPlayer) return "";
+                  var url = controlPanel.mediaPlayer.trackArtUrl;
+                  if (url) {
+                    url = String(url).trim();
+                    if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"')
+                      url = url.slice(1, -1);
+                    return url;
+                  }
+                  var meta = controlPanel.mediaPlayer.metadata;
+                  if (meta) {
+                    var raw = meta["mpris:artUrl"];
+                    if (raw) {
+                      url = String(raw).trim();
+                      if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"')
+                        url = url.slice(1, -1);
+                      return url;
+                    }
+                  }
+                  return "";
+                }
+                fillMode: Image.PreserveAspectCrop
+                smooth: true
+                visible: status === Image.Ready || status === Image.Loading
+              }
+
+              Text {
+                anchors.centerIn: parent
+                text: "\uDB80\uDDE2"
+                color: _p.fgDim
+                font.family: _p.uiFont
+                font.pixelSize: 24
+                visible: parent.children[0].status !== Image.Ready && parent.children[0].status !== Image.Loading
+              }
+            }
+
+            Rectangle {
               id: prevBtn
               Layout.preferredWidth: 42; Layout.preferredHeight: 42
               radius: 10
@@ -624,24 +668,82 @@ PanelWindow {
               Layout.alignment: Qt.AlignVCenter
               spacing: 2
 
-              Text {
-                width: Math.min(implicitWidth, parent.width)
-                text: controlPanel.mediaText
-                color: _p.fg
-                font.family: _p.uiFont
-                font.pixelSize: 13
-                font.bold: true
-                elide: Text.ElideRight
+              Item {
+                id: ccTrackTitleContainer
+                width: parent.width
+                height: ccTrackTitle.implicitHeight
+                clip: true
+
+                Text {
+                  id: ccTrackTitle
+                  text: controlPanel.mediaText
+                  width: implicitWidth
+                  color: _p.fg
+                  font.family: _p.uiFont
+                  font.pixelSize: 13
+                  font.bold: true
+                  property bool overflow: implicitWidth > ccTrackTitleContainer.width + 2
+                  onTextChanged: { x = 0; if (overflow) ccScroll1.restart() }
+                }
+
+                SequentialAnimation {
+                  id: ccScroll1
+                  running: ccTrackTitle.overflow
+                  loops: Animation.Infinite
+                  PauseAnimation { duration: 2000 }
+                  PropertyAnimation {
+                    target: ccTrackTitle; property: "x"
+                    to: ccTrackTitleContainer.width - ccTrackTitle.implicitWidth
+                    duration: Math.max((ccTrackTitle.implicitWidth - ccTrackTitleContainer.width) * 30, 1000)
+                    easing.type: Easing.Linear
+                  }
+                  PauseAnimation { duration: 2000 }
+                  PropertyAnimation {
+                    target: ccTrackTitle; property: "x"
+                    to: 0
+                    duration: Math.max((ccTrackTitle.implicitWidth - ccTrackTitleContainer.width) * 30, 1000)
+                    easing.type: Easing.Linear
+                  }
+                }
               }
 
-              Text {
-                width: Math.min(implicitWidth, parent.width)
-                text: controlPanel.mediaPlayer ? (controlPanel.mediaPlayer.name || "") : ""
-                color: _p.fgDim
-                font.family: _p.uiFont
-                font.pixelSize: 11
-                elide: Text.ElideRight
-                visible: text.length > 0
+              Item {
+                id: ccPlayerNameContainer
+                width: parent.width
+                height: ccPlayerName.implicitHeight
+                clip: true
+                visible: ccPlayerName.text.length > 0
+
+                Text {
+                  id: ccPlayerName
+                  width: implicitWidth
+                  text: controlPanel.mediaPlayer ? (controlPanel.mediaPlayer.name || "") : ""
+                  color: _p.fgDim
+                  font.family: _p.uiFont
+                  font.pixelSize: 11
+                  property bool overflow: implicitWidth > ccPlayerNameContainer.width + 2
+                  onTextChanged: { x = 0; if (overflow) ccScroll2.restart() }
+                }
+
+                SequentialAnimation {
+                  id: ccScroll2
+                  running: ccPlayerName.overflow
+                  loops: Animation.Infinite
+                  PauseAnimation { duration: 2000 }
+                  PropertyAnimation {
+                    target: ccPlayerName; property: "x"
+                    to: ccPlayerNameContainer.width - ccPlayerName.implicitWidth
+                    duration: Math.max((ccPlayerName.implicitWidth - ccPlayerNameContainer.width) * 30, 1000)
+                    easing.type: Easing.Linear
+                  }
+                  PauseAnimation { duration: 2000 }
+                  PropertyAnimation {
+                    target: ccPlayerName; property: "x"
+                    to: 0
+                    duration: Math.max((ccPlayerName.implicitWidth - ccPlayerNameContainer.width) * 30, 1000)
+                    easing.type: Easing.Linear
+                  }
+                }
               }
             }
           }
