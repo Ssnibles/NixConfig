@@ -3,6 +3,7 @@ import Quickshell.Io
 import Quickshell.Services.Notifications
 import Quickshell.Services.Pipewire
 import Quickshell.Services.Mpris
+import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import QtQml
@@ -490,13 +491,12 @@ PanelWindow {
               width: parent.width
               spacing: 16
 
-              Rectangle {
+              ClippingRectangle {
                 id: mediaArtContainer
                 Layout.preferredWidth: 88
                 Layout.preferredHeight: 88
                 radius: 16
                 color: Colors.bgSubtle
-                clip: true
 
                 Image {
                   id: mediaArtImage
@@ -756,9 +756,9 @@ PanelWindow {
                 id: volIconBox
                 Layout.preferredWidth: 38; Layout.preferredHeight: 38
                 radius: 12
-                color: controlPanel.volMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.12) : Colors.bgSubtle
+                color: Colors.bgSubtle
                 border.width: 1
-                border.color: controlPanel.volMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.25) : _p.border
+                border.color: controlPanel.volMuted ? _p.red : _p.border
 
                 Text {
                   anchors.centerIn: parent
@@ -779,8 +779,8 @@ PanelWindow {
                   anchors.fill: parent
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
-                  onEntered: volIconBox.color = controlPanel.volMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.25) : Qt.rgba(0.28, 0.28, 0.36, 1)
-                  onExited:  volIconBox.color = controlPanel.volMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.12) : Colors.bgSubtle
+                  onEntered: { volIconBox.color = Colors.bgRaised; volIconBox.border.color = controlPanel.volMuted ? _p.red : _p.accent; }
+                  onExited:  { volIconBox.color = Colors.bgSubtle; volIconBox.border.color = controlPanel.volMuted ? _p.red : _p.border; }
                   onClicked: {
                     if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
                       Pipewire.defaultAudioSink.audio.muted = !controlPanel.volMuted
@@ -832,9 +832,9 @@ PanelWindow {
                 id: micIconBox
                 Layout.preferredWidth: 38; Layout.preferredHeight: 38
                 radius: 12
-                color: controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.10) : Colors.bgSubtle
+                color: Colors.bgSubtle
                 border.width: 1
-                border.color: controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.25) : _p.border
+                border.color: controlPanel.micMuted ? _p.red : _p.border
 
                 Text {
                   anchors.centerIn: parent
@@ -848,8 +848,8 @@ PanelWindow {
                   anchors.fill: parent
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
-                  onEntered: micIconBox.color = controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.25) : Qt.rgba(0.28, 0.28, 0.36, 1)
-                  onExited:  micIconBox.color = controlPanel.micMuted ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.10) : Colors.bgSubtle
+                  onEntered: { micIconBox.color = Colors.bgRaised; micIconBox.border.color = controlPanel.micMuted ? _p.red : _p.accent; }
+                  onExited:  { micIconBox.color = Colors.bgSubtle; micIconBox.border.color = controlPanel.micMuted ? _p.red : _p.border; }
                   onClicked: {
                     if (controlPanel.micNode && controlPanel.micNode.audio) {
                       controlPanel.micNode.audio.muted = !controlPanel.micMuted;
@@ -944,8 +944,8 @@ PanelWindow {
                   anchors.fill: parent
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
-                  onEntered: brtIconBox.color = Qt.rgba(0.28, 0.28, 0.36, 1)
-                  onExited:  brtIconBox.color = Colors.bgSubtle
+                  onEntered: { brtIconBox.color = Colors.bgRaised; brtIconBox.border.color = _p.yellow; }
+                  onExited:  { brtIconBox.color = Colors.bgSubtle; brtIconBox.border.color = _p.border; }
                 }
               }
 
@@ -1044,18 +1044,12 @@ PanelWindow {
                   property bool _isCaffeineActive: modelData.id === "caffeinate" && controlPanel.caffeinated
                   property bool _hovered: false
                   width: (parent.width - parent.spacing) / 2
-                  height: 52
-                  radius: 14
+                  height: 48
+                  radius: 12
 
-                  color: {
-                    if (_isCaffeineActive)
-                      return _hovered ? Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.45)
-                                      : Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.35);
-                    return _hovered ? Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.25)
-                                    : modelData.color;
-                  }
+                  color: _isCaffeineActive ? Colors.bgRaised : Colors.bgSubtle
                   border.width: 1
-                  border.color: _isCaffeineActive ? modelData.accent : Qt.rgba(modelData.accent.r, modelData.accent.g, modelData.accent.b, 0.2)
+                  border.color: _isCaffeineActive ? modelData.accent : (_hovered ? modelData.accent : Colors.border)
 
                   Behavior on scale  { NumberAnimation { duration: 80 } }
                   Behavior on color  { ColorAnimation { duration: 60 } }
@@ -1229,75 +1223,87 @@ PanelWindow {
               delegate: Rectangle {
                 required property QtObject modelData
                 property QtObject notification: modelData
+                property color _urgencyColor: notification && notification.urgency === NotificationUrgency.Critical
+                  ? _p.red : (notification && notification.urgency === NotificationUrgency.Low ? _p.fgDim : _p.accent)
 
                 width: parent.width
                 implicitHeight: notifCardCol.implicitHeight + 28
                 height: implicitHeight
-                radius: 14
-                color: Colors.bg
+                radius: 20
+                color: Colors.bgRaised
                 border.width: 1
-                border.color: _p.border
+                border.color: _urgencyColor
                 opacity: 0
                 Behavior on opacity { NumberAnimation { duration: 200 } }
                 Component.onCompleted: opacity = 1
 
-                Rectangle {
-                  anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
-                  width: 3; radius: 1.5
-                  color: notification && notification.urgency === NotificationUrgency.Critical
-                    ? _p.red : (notification && notification.urgency === NotificationUrgency.Low
-                      ? _p.fgDim : _p.accent)
-                }
-
                 Column {
                   id: notifCardCol
                   anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
-                  anchors.leftMargin: 22
-                  spacing: root ? root.cardSpacing : 6
+                  spacing: 8
 
-                  Row {
+                  RowLayout {
                     width: parent.width
                     spacing: 8
 
-                    AppIcon {
-                      notification: modelData
-                      fallbackBg: root ? root.bgRaised : Colors.bgRaised
+                    Rectangle {
+                      Layout.preferredWidth: 28; Layout.preferredHeight: 28
+                      radius: 8
+                      color: Colors.bgSubtle
+                      border.width: 1
+                      border.color: Colors.border
+
+                      AppIcon {
+                        anchors.centerIn: parent
+                        notification: modelData
+                        iconSize: 18
+                        fallbackBg: Colors.bgSubtle
+                      }
+                    }
+
+                    Rectangle {
+                      Layout.preferredWidth: 4; Layout.preferredHeight: 14
+                      radius: 2
+                      color: _urgencyColor
+                      Layout.alignment: Qt.AlignVCenter
                     }
 
                     Text {
-                      width: Math.max(0, parent.width - dismissNotif.width - parent.spacing - 24 - parent.spacing)
                       text: (notification && notification.appName && notification.appName.length > 0)
-                        ? notification.appName : "Notification"
+                        ? notification.appName.toUpperCase() : "NOTIFICATION"
                       color: _p.accent
                       font.family: _p.uiFont
-                      font.pixelSize: 11
+                      font.pixelSize: 10
                       font.bold: true
+                      font.letterSpacing: 1.2
                       elide: Text.ElideRight
-                      verticalAlignment: Text.AlignVCenter
-                      height: 24
+                      Layout.fillWidth: true
+                      Layout.alignment: Qt.AlignVCenter
                     }
 
                     Rectangle {
                       id: dismissNotif
-                      width: 22; height: 22
-                      radius: 6
+                      Layout.preferredWidth: 20; Layout.preferredHeight: 20
+                      radius: 5
                       color: "transparent"
                       border.width: 1
-                      border.color: _p.border
+                      border.color: Colors.border
+                      Layout.alignment: Qt.AlignVCenter
 
                       Text {
                         anchors.centerIn: parent
-                        text: "\uDB80\uDD56"
+                        text: "\u00D7"
                         color: _p.fgDim
                         font.family: _p.uiFont
-                        font.pixelSize: 11
+                        font.pixelSize: 12
+                        font.bold: true
                       }
 
                       MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
-                        onEntered: { dismissNotif.color = Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15); dismissNotif.border.color = _p.red }
-                        onExited:  { dismissNotif.color = "transparent"; dismissNotif.border.color = _p.border }
+                        onEntered: { dismissNotif.color = Colors.bgSubtle; dismissNotif.border.color = _p.red }
+                        onExited:  { dismissNotif.color = "transparent"; dismissNotif.border.color = Colors.border }
                         onClicked: notification.dismiss()
                       }
                     }

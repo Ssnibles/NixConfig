@@ -17,7 +17,7 @@ Item {
   readonly property int  topMargin: barVisible ? 54 : 24
   readonly property int  sideMargin: 24
   readonly property int  panelWidth: 520
-  readonly property int  cardRadius: 8
+  readonly property int  cardRadius: 20
   readonly property int  cardPadding: 14
   readonly property int  cardSpacing: 6
   readonly property int  iconSize: 24
@@ -42,6 +42,19 @@ Item {
     return Colors.yellow;
   }
 
+  function cardBgFor(notification) {
+    return Colors.bgRaised;
+  }
+
+  function cardBorderFor(notification) {
+    if (!notification) return Colors.border;
+    if (notification.urgency === NotificationUrgency.Critical)
+      return Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.30);
+    if (notification.urgency === NotificationUrgency.Low)
+      return Qt.rgba(Colors.fgDim.r, Colors.fgDim.g, Colors.fgDim.b, 0.20);
+    return Colors.border;
+  }
+
   function popupTimeoutFor(notification) {
     if (!notification) return notif.popupTimeoutMs;
     if (notification.urgency === NotificationUrgency.Critical) return 0;
@@ -61,9 +74,12 @@ Item {
 
   function addPopup(notification) {
     if (!notification) return;
-    var deduped = popupList.filter(function(n) { return n && n.id !== notification.id; });
-    deduped.unshift(notification);
-    popupList = deduped.slice(0, notif.maxPopups);
+    var idx = popupList.indexOf(notification);
+    if (idx === 0) return;                    // already newest — nothing to do
+    if (idx > 0) popupList.splice(idx, 1);    // remove from old position
+    popupList.unshift(notification);
+    if (popupList.length > notif.maxPopups) popupList.length = notif.maxPopups;
+    popupListChanged();
     notification.closed.connect(function() { notif.removePopup(notification); });
   }
 
@@ -136,15 +152,21 @@ Item {
               implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
               height: implicitHeight
               radius: notif.cardRadius
-              color: Colors.bgRaised
+              color: notif.cardBgFor(notification)
               border.width: 1
-              border.color: Colors.border
+              border.color: notif.cardBorderFor(notification)
 
               opacity: 0
               transform: Translate { id: popupTranslate; x: -(notif.panelWidth + notif.sideMargin) }
               Component.onCompleted: {
-                appearAnim.start();
-                if (popupTimer.interval > 0) popupTimer.start();
+                if (!notification._qsShown) {
+                  notification._qsShown = true;
+                  appearAnim.start();
+                  if (popupTimer.interval > 0) popupTimer.start();
+                } else {
+                  opacity = 1;
+                  popupTranslate.x = 0;
+                }
               }
               ParallelAnimation {
                 id: appearAnim
@@ -152,51 +174,66 @@ Item {
                 NumberAnimation { target: popupTranslate; property: "x";    to: 0; duration: 220; easing.type: Easing.OutCubic }
               }
 
-              Rectangle {
-                anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
-                width: 3; radius: notif.cardRadius
-                color: notif.urgencyColor(notification)
-              }
-
               Column {
                 id: popupInner
-                x: notif.cardPadding + 8; y: notif.cardPadding
-                width: parent.width - x - notif.cardPadding
-                spacing: notif.cardSpacing
+                anchors { left: parent.left; right: parent.right; top: parent.top; margins: notif.cardPadding }
+                spacing: 8
 
-                Row {
+                // Header: icon + urgency bar + app name + close
+                RowLayout {
                   width: parent.width
                   spacing: 8
 
-                  AppIcon { notification: popupCard.notification; fallbackBg: Colors.bgSubtle }
+                  Rectangle {
+                    Layout.preferredWidth: 28; Layout.preferredHeight: 28
+                    radius: 8
+                    color: Colors.bgSubtle
+                    border.width: 1
+                    border.color: Colors.border
+
+                    AppIcon {
+                      anchors.centerIn: parent
+                      notification: popupCard.notification
+                      iconSize: 18
+                      fallbackBg: Colors.bgSubtle
+                    }
+                  }
+
+                  Rectangle {
+                    Layout.preferredWidth: 4; Layout.preferredHeight: 14
+                    radius: 2
+                    color: notif.urgencyColor(notification)
+                    Layout.alignment: Qt.AlignVCenter
+                  }
 
                   Text {
                     text: (notification && notification.appName && notification.appName.length > 0)
-                      ? notification.appName : "Notification"
+                      ? notification.appName.toUpperCase() : "NOTIFICATION"
                     color: Colors.accent
                     font.family: notif.uiFont
-                    font.pixelSize: 11
+                    font.pixelSize: 10
                     font.bold: true
+                    font.letterSpacing: 1.2
                     elide: Text.ElideRight
-                    verticalAlignment: Text.AlignVCenter
-                    height: notif.iconSize
-                    width: Math.max(0, parent.width - closePopup.width - parent.spacing - notif.iconSize - parent.spacing)
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
                   }
 
                   Rectangle {
                     id: closePopup
-                    width: 22; height: 22
-                    radius: 4
+                    Layout.preferredWidth: 20; Layout.preferredHeight: 20
+                    radius: 5
                     color: "transparent"
                     border.width: 1
                     border.color: Colors.border
+                    Layout.alignment: Qt.AlignVCenter
 
                     Text {
                       anchors.centerIn: parent
                       text: "\u00D7"
                       color: Colors.fgDim
                       font.family: notif.uiFont
-                      font.pixelSize: 13
+                      font.pixelSize: 12
                       font.bold: true
                     }
 
@@ -210,27 +247,26 @@ Item {
                   }
                 }
 
+                // Summary
                 Text {
-                  text: (notification && notification.summary && notification.summary.length > 0)
-                    ? notif.stripMarkup(notification.summary)
-                    : ((notification && notification.appName && notification.appName.length > 0)
-                      ? notification.appName : "Notification")
+                  text: notification ? notif.stripMarkup(notification.summary || "") : ""
                   width: parent.width
                   color: Colors.fg
                   font.family: notif.uiFont
-                  font.pixelSize: 13
+                  font.pixelSize: 12
                   font.bold: true
                   wrapMode: Text.Wrap
                   textFormat: Text.PlainText
                   visible: text.length > 0
                 }
 
+                // Body
                 Text {
                   text: notification ? notif.stripMarkup(notification.body || "") : ""
                   width: parent.width
                   color: Colors.fgMid
                   font.family: notif.uiFont
-                  font.pixelSize: 12
+                  font.pixelSize: 11
                   wrapMode: Text.Wrap
                   textFormat: Text.PlainText
                   visible: text.length > 0
