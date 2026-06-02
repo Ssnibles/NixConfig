@@ -18,10 +18,13 @@ Item {
   readonly property real _thumbSize: mouse.dragging ? 26 : (mouse.containsMouse ? 22 : 18)
   readonly property real _trackHeight: 8
 
+  // Internal drag state: _dragValue is live during drag, _pendingValue
+  // holds the last dragged value until the bound 'value' property catches up.
   property real _dragValue: 0
   property real _pendingValue: -1
   readonly property real _visualValue: mouse.dragging ? _dragValue : (_pendingValue >= 0 ? _pendingValue : value)
 
+  // Clear the pending value once the external source reflects our drag.
   onValueChanged: {
     if (mouse && !mouse.dragging && _pendingValue >= 0 && Math.abs(value - _pendingValue) < 0.001)
       _pendingValue = -1;
@@ -74,6 +77,7 @@ Item {
       cursorShape: Qt.PointingHandCursor
       property bool dragging: false
 
+      // Snap slider to increments (e.g. 5% steps) when snapPercent > 0.
       function snap(v) {
         if (root.snapPercent <= 0) return v;
         return Math.round(v / (root.snapPercent / 100)) * (root.snapPercent / 100);

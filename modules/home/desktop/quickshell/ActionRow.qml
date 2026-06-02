@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQml
 
+// Horizontal row of action buttons for notification popups and the command center.
 Row {
   id: root
 

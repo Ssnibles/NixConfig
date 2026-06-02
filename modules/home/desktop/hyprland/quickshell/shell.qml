@@ -2,6 +2,8 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
+// Root shell that loads bar, notifications, and command center as separate QML
+// components so they can be individually reloaded via IPC without restarting.
 ShellRoot {
   id: root
   property bool barVisible: true
@@ -68,6 +70,8 @@ ShellRoot {
     source: "notifications.qml"
     onItemChanged: {
       if (item) {
+        // Bind notification popup top-margin to bar visibility so popups
+        // don't overlap the bar when it's shown.
         item.barVisible = Qt.binding(function() { return root.barVisible; });
         if (commandCenterLoader.item) commandCenterLoader.item.root = item;
       }
