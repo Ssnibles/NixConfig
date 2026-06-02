@@ -95,7 +95,7 @@ local function git_status()  fzf.git_status(responsive()) end
 
 local map = vim.keymap.set
 map("n", "<leader>ff", files, { desc = "Find files" })
-map("n", "<leader>fr", oldfiles, { desc = "Recent files" })
+map("n", "<leader>fo", oldfiles, { desc = "Recent files" })
 map("n", "<leader>fb", buffers, { desc = "Buffers" })
 map("n", "<leader>fg", grep, { desc = "Live grep" })
 map("n", "<leader>fw", grep_cword, { desc = "Grep word" })
