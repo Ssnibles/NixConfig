@@ -5,7 +5,6 @@ import Quickshell.Services.Pipewire
 import Quickshell.Services.Mpris
 import Quickshell.Networking
 import Quickshell.Services.UPower
-import Quickshell.Widgets
 
 import QtQuick
 import QtQuick.Layouts
@@ -118,6 +117,7 @@ PanelWindow {
     return (barPanel.volMuted ? "Muted" : ("Volume " + pct + "%")) + "\nLeft click: mute\nRight click: pavucontrol\nScroll: adjust";
   }
   Process { id: volProc; command: ["pavucontrol"] }
+  Process { id: controlPanelProc; command: ["qs", "ipc", "call", "controlpanel", "toggle"] }
 
   // -- WiFi --
   property var wifiDev: findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi; })
@@ -216,8 +216,6 @@ PanelWindow {
   property bool wifiHover: wifiHoverHandler.hovered
   property bool batHover: batPresent && batHoverHandler.hovered
   property bool mediaHover: mediaPillHover.hovered
-  property bool mediaPopupVisible: false
-  property bool popupHovered: false
   property bool tooltipVisible: volHover || wifiHover || batHover
 
   property string tooltipText: {
@@ -228,8 +226,6 @@ PanelWindow {
   }
 
   property int tooltipWidth: Math.round(Math.min(barPanel.tooltipMaxWidth, barPanel.width - barPanel.tooltipMargin * 2))
-
-  onHasMediaChanged: { if (!hasMedia) mediaPopupVisible = false; }
 
   // Single unified tick for media + waveform (replaces 3 separate timers)
   Timer {
@@ -477,7 +473,7 @@ PanelWindow {
                 if (mouse.button === Qt.RightButton) {
                   barPanel.focusMediaPlayer();
                 } else {
-                  barPanel.mediaPopupVisible = !barPanel.mediaPopupVisible;
+                  controlPanelProc.startDetached();
                 }
               }
               onWheel: function(wheel) {
@@ -685,346 +681,4 @@ PanelWindow {
     }
   }
 
-  // Lazy-loaded media popup
-  Loader {
-    id: mediaPopupLoader
-    active: barPanel.mediaPopupVisible && barPanel.mediaPlayer !== null
-
-    function computeX(popupW) {
-      var pillW = mediaPill.width;
-      var pillX = rightRow.x + mediaPill.x;
-      var x = barContent.x + pillX + (pillW - popupW) / 2;
-      return Math.round(clamp(x, barPanel.tooltipMargin, barPanel.width - popupW - barPanel.tooltipMargin));
-    }
-
-    function computeTop() {
-      var pillY = rightRow.y + mediaPill.y;
-      return barContent.y + pillY + mediaPill.height + 4;
-    }
-
-    sourceComponent: Component {
-      PanelWindow {
-        id: mediaPopup
-        focusable: false
-        aboveWindows: true
-        exclusionMode: ExclusionMode.Ignore
-        color: "transparent"
-        anchors { top: true; left: true }
-        margins { top: mediaPopupLoader.computeTop(); left: 0 }
-        implicitWidth: barPanel.width
-        implicitHeight: 160
-
-        property int popupWidth: 300
-
-        HoverHandler {
-          onHoveredChanged: barPanel.popupHovered = hovered
-        }
-
-        Timer {
-          id: popupCloseTimer
-          interval: 150
-          onTriggered: {
-            if (!barPanel.popupHovered && !barPanel.mediaHover) barPanel.mediaPopupVisible = false;
-          }
-        }
-
-        Connections {
-          target: barPanel
-          function onMediaHoverChanged() {
-            if (!barPanel.mediaHover && !barPanel.popupHovered) popupCloseTimer.restart();
-          }
-        }
-
-        Rectangle {
-          x: mediaPopupLoader.computeX(mediaPopup.popupWidth)
-          y: 0
-          width: mediaPopup.popupWidth
-          implicitHeight: popupContent.implicitHeight + 28
-          height: implicitHeight
-          radius: 12
-          color: Colors.bgRaised
-          antialiasing: true
-          border.width: 1
-          border.color: Colors.border
-
-          Rectangle {
-            anchors.fill: parent
-            radius: 12
-            color: Qt.rgba(0, 0, 0, 0.25)
-            y: 3
-            z: -1
-          }
-
-          Rectangle {
-            id: closeBtn
-            x: parent.width - 28
-            y: 8
-            width: 20
-            height: 20
-            radius: 10
-            color: Colors.bgSubtle
-            Behavior on scale { NumberAnimation { duration: 80 } }
-
-            Text {
-              anchors.centerIn: parent
-              text: "\uDB80\uDD56"
-              color: Colors.fgDim
-              font.family: barPanel.uiFont
-              font.pixelSize: 11
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onEntered: closeBtn.color = Colors.border
-              onExited: closeBtn.color = Colors.bgSubtle
-              onClicked: barPanel.mediaPopupVisible = false
-            }
-          }
-
-          Column {
-            id: popupContent
-            anchors { left: parent.left; top: parent.top; right: parent.right }
-            anchors.margins: 14
-            spacing: 8
-
-            Row {
-              spacing: 12
-              width: parent.width
-
-              Item {
-                id: artContainer
-                width: 64
-                height: 64
-                anchors.verticalCenter: parent.verticalCenter
-
-                ClippingRectangle {
-                  anchors.fill: parent
-                  radius: 12
-                  color: Colors.bgSubtle
-                  border.width: 2
-                  border.color: Colors.border
-
-                  Image {
-                    id: artImage
-                    anchors.fill: parent
-                    source: {
-                      if (!barPanel.mediaPlayer) return "";
-                      var url = barPanel.mediaPlayer.trackArtUrl;
-                      if (url) {
-                        url = String(url).trim();
-                        if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"')
-                          url = url.slice(1, -1);
-                        return url;
-                      }
-                      var meta = barPanel.mediaPlayer.metadata;
-                      if (meta) {
-                        var raw = meta["mpris:artUrl"];
-                        if (raw) {
-                          url = String(raw).trim();
-                          if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"')
-                            url = url.slice(1, -1);
-                          return url;
-                        }
-                      }
-                      return "";
-                    }
-                    fillMode: Image.PreserveAspectCrop
-                    smooth: true
-                    visible: status === Image.Ready || status === Image.Loading
-                  }
-
-                  Text {
-                    anchors.centerIn: parent
-                    text: "\uDB80\uDDE2"
-                    color: Colors.fgDim
-                    font.family: barPanel.uiFont
-                    font.pixelSize: 24
-                    visible: artImage.status !== Image.Ready && artImage.status !== Image.Loading
-                  }
-                }
-              }
-
-              Column {
-                spacing: 2
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width - artContainer.width - parent.spacing - closeBtn.width - 8
-
-                Text {
-                  width: Math.min(implicitWidth, parent.width)
-                  text: barPanel.mediaText
-                  color: Colors.fg
-                  font.family: barPanel.uiFont
-                  font.pixelSize: 13
-                  font.bold: true
-                  elide: Text.ElideRight
-                }
-
-                Text {
-                  width: Math.min(implicitWidth, parent.width)
-                  text: {
-                    var parts = [];
-                    if (barPanel.mediaPlayer && barPanel.mediaPlayer.trackAlbum) parts.push(barPanel.mediaPlayer.trackAlbum);
-                    if (barPanel.mediaPlayer && barPanel.mediaPlayer.name) parts.push(barPanel.mediaPlayer.name);
-                    return parts.join(" — ");
-                  }
-                  color: Colors.fgDim
-                  font.family: barPanel.uiFont
-                  font.pixelSize: 11
-                  elide: Text.ElideRight
-                  visible: text.length > 0
-                }
-              }
-            }
-
-            Item {
-              width: parent.width
-              height: 32
-
-              Rectangle {
-                id: mPrevBtn
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                width: 32; height: 32
-                radius: 8
-                color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
-                border.width: 1
-                border.color: Colors.border
-                Behavior on scale { NumberAnimation { duration: 80 } }
-
-                Text {
-                  anchors.centerIn: parent
-                  text: "\uDB81\uDCAE"
-                  color: Colors.fg
-                  font.family: barPanel.uiFont
-                  font.pixelSize: 14
-                }
-
-                MouseArea {
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onEntered: { mPrevBtn.color = Colors.bgSubtle; mPrevBtn.scale = 0.92 }
-                  onExited: { mPrevBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6); mPrevBtn.scale = 1 }
-                  onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.previous() }
-                }
-              }
-
-              Rectangle {
-                id: mPlayBtn
-                anchors.left: mPrevBtn.right
-                anchors.leftMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                width: 32; height: 32
-                radius: 8
-                color: Colors.accent
-                border.width: 1
-                border.color: Colors.accent
-                Behavior on scale { NumberAnimation { duration: 80 } }
-
-                Text {
-                  anchors.centerIn: parent
-                  text: barPanel.mediaPlayer && barPanel.mediaPlayer.isPlaying ? "\uDB80\uDFE4" : "\uDB81\uDC0A"
-                  color: Colors.bg
-                  font.family: barPanel.uiFont
-                  font.pixelSize: 14
-                }
-
-                MouseArea {
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onEntered: mPlayBtn.scale = 0.92
-                  onExited: mPlayBtn.scale = 1
-                  onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.togglePlaying() }
-                }
-              }
-
-              Rectangle {
-                id: mNextBtn
-                anchors.left: mPlayBtn.right
-                anchors.leftMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                width: 32; height: 32
-                radius: 8
-                color: Qt.rgba(0.149, 0.149, 0.18, 0.6)
-                border.width: 1
-                border.color: Colors.border
-                Behavior on scale { NumberAnimation { duration: 80 } }
-
-                Text {
-                  anchors.centerIn: parent
-                  text: "\uDB81\uDCAD"
-                  color: Colors.fg
-                  font.family: barPanel.uiFont
-                  font.pixelSize: 14
-                }
-
-                MouseArea {
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onEntered: { mNextBtn.color = Colors.bgSubtle; mNextBtn.scale = 0.92 }
-                  onExited: { mNextBtn.color = Qt.rgba(0.149, 0.149, 0.18, 0.6); mNextBtn.scale = 1 }
-                  onClicked: { if (barPanel.mediaPlayer) barPanel.mediaPlayer.next() }
-                }
-              }
-
-              Text {
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                text: {
-                  if (!barPanel.mediaPlayer) return ""
-                  var p = Math.round(barPanel.mediaPlayer.position)
-                  var l = Math.round(barPanel.mediaPlayer.length)
-                  if (l <= 0) return ""
-                  return Math.floor(p/60) + ":" + (p%60).toString().padStart(2,'0')
-                    + " / " + Math.floor(l/60) + ":" + (l%60).toString().padStart(2,'0')
-                }
-                color: Colors.fgMid
-                font.family: barPanel.uiFont
-                font.pixelSize: 10
-              }
-            }
-
-            Item {
-              width: parent.width
-              height: 6
-              visible: barPanel.mediaPlayer && barPanel.mediaPlayer.length > 0
-
-              Rectangle {
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width
-                height: 6
-                radius: 3
-                color: Qt.rgba(0.145, 0.145, 0.18, 0.7)
-
-                Rectangle {
-                  anchors.top: parent.top
-                  anchors.left: parent.left
-                  anchors.bottom: parent.bottom
-                  width: parent.width * barPanel.mediaProgress
-                  radius: 3
-                  color: Colors.accent
-                  Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.Linear } }
-                }
-
-                MouseArea {
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: function(mouse) {
-                    if (barPanel.mediaPlayer && barPanel.mediaPlayer.canSeek) {
-                      barPanel.mediaPlayer.position = mouse.x / width * barPanel.mediaPlayer.length;
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
 }

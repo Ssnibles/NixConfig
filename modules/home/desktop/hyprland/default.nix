@@ -282,7 +282,7 @@ in
         "$mod, V, exec, toggle-float-hyprland"
         "$mod, G, exec, toggle-focus-mode-hyprland"
         "$mod, SPACE, exec, vicinae toggle"
-        "$mod, P, exec, qs ipc call controlpanel toggle"
+        "$mod, P, exec, qs -c hyprland ipc call controlpanel toggle"
         "$mod, DELETE, exec, hyprlock"
         "$mod SHIFT, R, exec, reload-all-hyprland"
         "$mod, F, fullscreen"
@@ -390,11 +390,17 @@ in
       pixmap_cache_mb = 128;
       launcher_window = {
         opacity = 1.0;
-        blur = { enabled = false; };
+        blur = {
+          enabled = false;
+        };
       };
       theme = {
-        dark = { name = "stylix"; };
-        light = { name = "stylix"; };
+        dark = {
+          name = "stylix";
+        };
+        light = {
+          name = "stylix";
+        };
       };
     };
   };
