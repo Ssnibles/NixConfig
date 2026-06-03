@@ -13,15 +13,14 @@
   };
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+      nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+      nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    # Local development input - only available on your machine
-    # CI will skip this gracefully
-    pomodoro = {
-      url = "path:/home/josh/godev/pomodoro";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+      # Local development input
+      pomodoro = {
+        url = "path:/home/josh/pomodoro";
+        inputs.nixpkgs.follows = "nixpkgs";
+      };
 
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";

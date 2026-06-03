@@ -6,9 +6,10 @@
 # home configuration.
 # =============================================================================
 {
-  xdg.mimeApps = {
-    enable = true;
-    defaultApplications = {
+  xdg = {
+    mimeApps = {
+      enable = true;
+      defaultApplications = {
     # ── Web / Browser ──────────────────────────────────────────────────────
     "text/html" = "zen.desktop";
     "application/xhtml+xml" = "zen.desktop";
@@ -88,7 +89,11 @@
     "application/vnd.oasis.opendocument.presentation" = "onlyoffice-desktopeditors.desktop";
 
     # ── Chat / Protocols ───────────────────────────────────────────────────
-    "x-scheme-handler/discord" = "vesktop.desktop";
+        "x-scheme-handler/discord" = "vesktop.desktop";
+      };
     };
+
+    configFile."mimeapps.list".force = true;
+    dataFile."applications/mimeapps.list".force = true;
   };
 }
