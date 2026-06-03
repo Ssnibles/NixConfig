@@ -542,13 +542,13 @@
         ]
       },
       "locked": {
-        "lastModified": 1780281436,
-        "narHash": "sha256-XrRRV+koYxbOP+/NWUCC3XnACwCJo5Vcvt6DDOfJlNQ=",
-        "path": "/home/josh/godev/pomodoro",
+        "lastModified": 1780443153,
+        "narHash": "sha256-9/LafbRPPe5LvxJ7t9iD+aVUY5fNBdyZPJO3r25nUOE=",
+        "path": "/home/josh/pomodoro",
         "type": "path"
       },
       "original": {
-        "path": "/home/josh/godev/pomodoro",
+        "path": "/home/josh/pomodoro",
         "type": "path"
       }
     },

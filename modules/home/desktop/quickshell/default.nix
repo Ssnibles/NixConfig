@@ -82,5 +82,8 @@ in
 
   # Write Colors.qml directly into the repo checkout so the out-of-store
   # symlinks pick it up without an imperative activation script.
-  home.file."NixConfig/modules/home/desktop/quickshell/Colors.qml".text = colorsQml;
+  home.file."NixConfig/modules/home/desktop/quickshell/Colors.qml" = {
+    text = colorsQml;
+    force = true;
+  };
 }
