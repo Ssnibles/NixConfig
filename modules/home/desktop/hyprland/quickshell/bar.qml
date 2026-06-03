@@ -47,14 +47,14 @@ PanelWindow {
 
   // Keep the active window label concise and consistent across apps.
   property var appNameOverrides: ({
-    "zen": "Zen",
-    "zen-browser": "Zen",
-    "zen-beta": "Zen",
-    "firefox": "Firefox",
-    "org.mozilla.firefox": "Firefox",
-    "nvim": "Neovim",
-    "neovim": "Neovim",
-    "foot": "Foot"
+      "zen": "Zen",
+      "zen-browser": "Zen",
+      "zen-beta": "Zen",
+      "firefox": "Firefox",
+      "org.mozilla.firefox": "Firefox",
+      "nvim": "Neovim",
+      "neovim": "Neovim",
+      "foot": "Foot"
   })
 
   function prettifyAppName(className) {
@@ -263,10 +263,10 @@ PanelWindow {
     });
   }
   property string mediaText: mediaPlayer
-    ? (mediaPlayer.trackArtist
-      ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
-      : mediaPlayer.trackTitle)
-    : ""
+  ? (mediaPlayer.trackArtist
+    ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
+    : mediaPlayer.trackTitle)
+  : ""
   property bool hasMedia: mediaText !== ""
   // mediaTick is incremented on a timer so that mediaProgress (a computed property)
   // re-evaluates and the seek-bar / waveform stay in sync while playing.
@@ -295,7 +295,7 @@ PanelWindow {
     var _ = barPanel.mediaTick;
     var __ = barPanel.mediaResetToken;
     return mediaPlayer && barPanel.mediaLastLength > 0
-      ? Math.min(1, Math.max(0, barPanel.mediaLastPosition / barPanel.mediaLastLength)) : 0;
+    ? Math.min(1, Math.max(0, barPanel.mediaLastPosition / barPanel.mediaLastLength)) : 0;
   }
   onMediaPlayerChanged: {
     if (!mediaPlayer) {
@@ -340,7 +340,7 @@ PanelWindow {
   // Single unified tick for media + waveform
   Timer {
     id: tickTimer
-    interval: 500
+    interval: 300
     running: mediaPlayer && mediaPlayer.isPlaying
     repeat: true
     property real wavePhase: 0
@@ -512,7 +512,7 @@ PanelWindow {
                   barPanel.focusMediaPlayer();
                 } else {
                   if (barPanel.mediaPlayer.canTogglePlaying)
-                    barPanel.mediaPlayer.togglePlaying();
+                  barPanel.mediaPlayer.togglePlaying();
                 }
               }
               onWheel: function(wheel) {
@@ -537,7 +537,7 @@ PanelWindow {
               var l = Math.round(barPanel.mediaLastLength)
               if (l <= 0) return ""
               return Math.floor(p/60) + ":" + pad2(p%60)
-                + " / " + Math.floor(l/60) + ":" + pad2(l%60)
+              + " / " + Math.floor(l/60) + ":" + pad2(l%60)
             }
             color: Colors.fgMid
             font.family: barPanel.uiFont
