@@ -45,13 +45,56 @@ PanelWindow {
 
   Component.onCompleted: updateTime()
 
-  // Clean up common window titles so the bar pill isn't cluttered.
-  function formatTitle(t) {
-    return t
-    .replace(/ — Mozilla Firefox$/, "")
-    .replace(/ — Zen Browser$/, "Zen")
-    .replace(/ - nvim$/, "Neovim")
-    .replace(/ - foot$/, "");
+  // Keep the active window label concise and consistent across apps.
+  property var appNameOverrides: ({
+    "zen": "Zen",
+    "zen-browser": "Zen",
+    "zen-beta": "Zen",
+    "firefox": "Firefox",
+    "org.mozilla.firefox": "Firefox",
+    "nvim": "Neovim",
+    "neovim": "Neovim",
+    "foot": "Foot"
+  })
+
+  function prettifyAppName(className) {
+    if (!className) return "";
+    var key = String(className).toLowerCase();
+    if (appNameOverrides[key]) return appNameOverrides[key];
+    key = key.replace(/\.desktop$/, "");
+    if (appNameOverrides[key]) return appNameOverrides[key];
+    var base = String(className).split(".").pop();
+    base = base.replace(/[-_]+/g, " ");
+    return base.replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+  }
+
+  function formatActiveTitle(toplevel) {
+    if (!toplevel) return "";
+    var title = toplevel.title || "";
+    var className = "";
+    if (toplevel.lastIpcObject && toplevel.lastIpcObject.class) {
+      className = toplevel.lastIpcObject.class;
+    }
+    var appName = prettifyAppName(className);
+
+    if (title.endsWith(" — Zen Browser")) {
+      title = title.slice(0, title.length - " — Zen Browser".length);
+      appName = "Zen";
+    } else if (title.endsWith(" — Mozilla Firefox")) {
+      title = title.slice(0, title.length - " — Mozilla Firefox".length);
+      appName = "Firefox";
+    }
+
+    if (title.endsWith(" - nvim")) {
+      title = title.slice(0, title.length - " - nvim".length);
+      appName = "Neovim";
+    } else if (title.endsWith(" - foot")) {
+      title = title.slice(0, title.length - " - foot".length);
+    }
+
+    title = String(title).trim();
+    if (appName && title && title !== appName) return appName + ": " + title;
+    return appName || title;
   }
 
   function findFirst(list, predicate) {
@@ -113,7 +156,7 @@ PanelWindow {
     }
   }
 
-  property string currentTitle: Hyprland.activeToplevel ? formatTitle(Hyprland.activeToplevel.title) : ""
+  property string currentTitle: formatActiveTitle(Hyprland.activeToplevel)
 
   function switchWs(id) { Hyprland.dispatch("workspace " + id); }
 
