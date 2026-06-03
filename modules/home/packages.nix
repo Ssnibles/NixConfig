@@ -13,8 +13,9 @@ in
     unstable.awww
     pkgs.solaar
   ]
-  ++ lib.optional (inputs ? pomodoro && inputs.pomodoro ? packages)
-    inputs.pomodoro.packages.${pkgs.stdenv.hostPlatform.system}.default
+  ++ lib.optional (
+    inputs ? pomodoro && inputs.pomodoro ? packages
+  ) inputs.pomodoro.packages.${pkgs.stdenv.hostPlatform.system}.default
   ++ [
     # ── Development ────────────────────────────────────────────────────
     unstable.kotlin
@@ -72,7 +73,6 @@ in
     unstable.foot
     unstable.onlyoffice-desktopeditors
     unstable.vesktop
-    unstable.qownnotes
     unstable.neovide
 
     # ── Document viewers ────────────────────────────────────────────────
