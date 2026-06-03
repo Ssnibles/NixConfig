@@ -3,6 +3,7 @@
     v = "nvim";
     c = "clear";
     y = "yazi";
+    b = "btop";
     rebuild = "nh os switch";
     hm = "nh home switch";
     update = "nh os switch --update";
