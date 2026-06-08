@@ -13,14 +13,20 @@
   };
 
   inputs = {
-      nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
-      nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
-      # Local development input
-      pomodoro = {
-        url = "path:/home/josh/pomodoro";
-        inputs.nixpkgs.follows = "nixpkgs";
-      };
+    # Local development input
+    pomodoro = {
+      url = "path:/home/josh/pomodoro";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    tuxedo = {
+      url = "github:webstonehq/tuxedo";
+      inputs.nixpkgs.follows = "nixpkgs";
+      flake = false;
+    };
 
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
@@ -123,13 +129,25 @@
           user ? "josh",
         }:
         let
-          hostProfile = mkProfile { inherit hostName isLaptop hasNvidia user; };
+          hostProfile = mkProfile {
+            inherit
+              hostName
+              isLaptop
+              hasNvidia
+              user
+              ;
+          };
         in
         inputs.home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           modules = [ ./users/${user} ];
           extraSpecialArgs = {
-            inherit inputs hostProfile user semanticColors;
+            inherit
+              inputs
+              hostProfile
+              user
+              semanticColors
+              ;
           };
         };
     in

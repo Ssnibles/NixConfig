@@ -589,6 +589,7 @@
         "solaar": "solaar",
         "spicetify-nix": "spicetify-nix",
         "stylix": "stylix",
+        "tuxedo": "tuxedo",
         "zen-browser": "zen-browser"
       }
     },
@@ -851,6 +852,22 @@
       "original": {
         "owner": "tinted-theming",
         "repo": "base16-zed",
+        "type": "github"
+      }
+    },
+    "tuxedo": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779404145,
+        "narHash": "sha256-FNb8jt3NntA65GEGhao4HG/m0hO23ORjrrXYwMPe1jA=",
+        "owner": "webstonehq",
+        "repo": "tuxedo",
+        "rev": "c04363625cad9da68752bf9874110461c109bb0e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "webstonehq",
+        "repo": "tuxedo",
         "type": "github"
       }
     },
