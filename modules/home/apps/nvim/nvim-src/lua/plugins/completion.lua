@@ -13,6 +13,7 @@ require("luasnip").setup({
 
 require("luasnip.loaders.from_vscode").lazy_load()
 require("plugins.typst-snippets")
+require("plugins.java-snippets")
 
 -- ═══════════════════════════════════════════════════════════════════
 --  C O P I L O T
@@ -75,11 +76,7 @@ require("blink.cmp").setup({
 				if cmp.is_visible() then
 					cmp.cancel()
 				end
-				return vim.api.nvim_feedkeys(
-					vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-					"n",
-					false
-				)
+				return vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
 			end,
 		},
 
