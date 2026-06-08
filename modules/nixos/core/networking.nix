@@ -26,14 +26,14 @@
 
   services.resolved = {
     enable = true;
-    dnssec = "allow-downgrade";
-    dnsovertls = "opportunistic";
-    domains = [ "~." ];
-    extraConfig = ''
-      [Resolve]
-      DNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111
-      FallbackDNS=8.8.8.8#dns.google 8.8.4.4#dns.google
-      Cache=yes
-    '';
+    settings = {
+      Resolve = {
+        DNS = "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111";
+        FallbackDNS = "8.8.8.8#dns.google 8.8.4.4#dns.google";
+        DNSSEC = "allow-downgrade";
+        DNSOverTLS = "opportunistic";
+        Domains = [ "~." ];
+      };
+    };
   };
 }

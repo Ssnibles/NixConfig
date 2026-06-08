@@ -83,11 +83,6 @@ in
         src = pkgs.zsh-forgit;
         file = "forgit.plugin.zsh";
       }
-      {
-        name = "done";
-        src = pkgs.done;
-        file = "done.zsh";
-      }
     ];
 
     initContent = ''
@@ -221,6 +216,5 @@ in
   home.packages = with pkgs; [
     pure-prompt
     zsh-forgit
-    done
   ];
 }
