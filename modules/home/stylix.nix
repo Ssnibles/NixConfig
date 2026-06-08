@@ -23,6 +23,7 @@
     yazi = {
       enable = true;
       package = pkgs.unstable.yazi;
+      shellWrapperName = "yy";
     };
     zathura = {
       enable = true;
@@ -32,10 +33,6 @@
         synctex-editor-command = "nvr --remote-send \"<C-\\><C-n>:edit %{input}<CR>:%{line}<CR>\"";
       };
     };
-  };
-
-  xdg.configFile = {
-    "lazygit/config.yml".force = true;
   };
 
   stylix.targets = {
