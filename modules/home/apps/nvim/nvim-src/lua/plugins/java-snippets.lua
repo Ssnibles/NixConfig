@@ -17,7 +17,7 @@ ls.add_snippets("java", {
 	wrap("pr", "System.out.print(", ")", "Print"),
 	wrap("prl", "System.out.println(", ")", "Print Line"),
 
-	s({ trig = "javadoc comment", desc = "JavaDoc Comment" }, {
+	s({ trig = "jd", desc = "JavaDoc Comment" }, {
 		t({ "/**", " * " }),
 		i(1),
 		t({ "", " */" }),
