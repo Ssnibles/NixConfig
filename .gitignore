@@ -1,5 +1,6 @@
 *.age
 *.qsb
+modules/home/desktop/hyprland/generated.lua
 secrets/
 .direnv/
 result
