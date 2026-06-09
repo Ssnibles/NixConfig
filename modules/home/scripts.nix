@@ -289,6 +289,10 @@ let
         return 0
       fi
 
+      # Ensure awww daemon is running before trying to set wallpaper
+      if ! ${pkgs.systemd}/bin/systemctl --user is-active --quiet awww 2>/dev/null; then
+        ${pkgs.systemd}/bin/systemctl --user start awww 2>/dev/null || true
+      fi
       ${awwwBin} img ${wallpaperPath} >/dev/null 2>&1 || true
       if [ -x "${qsBin}" ]; then
         if ! ${qsBin} ipc call quickshell reload all 2>/dev/null; then
