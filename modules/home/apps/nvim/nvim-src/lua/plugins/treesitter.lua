@@ -18,36 +18,63 @@ if require("version") then
 			error(result)
 		end
 	end
+
+	if not vim.g.__treesitter_safe_start then
+		vim.g.__treesitter_safe_start = true
+		local original_start = vim.treesitter.start
+		vim.treesitter.start = function(bufnr, lang)
+			local ok, result = pcall(original_start, bufnr, lang)
+			if ok then
+				return result
+			end
+			local msg = tostring(result)
+			if msg:find("Parser could not be created", 1, true)
+				or msg:find("Parser not found", 1, true) then
+				return false
+			end
+			error(result)
+		end
+	end
 end
 
-require("nvim-treesitter.configs").setup({
-	highlight = {
-		enable = true,
-		disable = { "markdown", "markdown_inline" },
-		additional_vim_regex_highlighting = { "markdown" },
-	},
-	indent = { enable = true },
-	textobjects = {
-		select = {
-			enable = true,
-			lookahead = true,
-			keymaps = {
-				["af"] = "@function.outer",
-				["if"] = "@function.inner",
-				["ac"] = "@class.outer",
-				["ic"] = "@class.inner",
-				["aa"] = "@parameter.outer",
-				["ia"] = "@parameter.inner",
-			},
-		},
-		move = {
-			enable = true,
-			set_jumps = true,
-			goto_next_start = { ["]f"] = "@function.outer", ["]c"] = "@class.outer" },
-			goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer" },
-		},
-	},
+-- Treesitter highlighting and indentation are built-in in Neovim 0.12.
+-- Markdown disable and prose settings are handled by autocmds.lua.
+
+-- Textobjects: select and move
+require("nvim-treesitter-textobjects").setup({
+	select = { lookahead = true },
+	move = { set_jumps = true },
 })
+
+local ts_select = require("nvim-treesitter-textobjects.select")
+local ts_move = require("nvim-treesitter-textobjects.move")
+
+local select_keymaps = {
+	["af"] = "@function.outer",
+	["if"] = "@function.inner",
+	["ac"] = "@class.outer",
+	["ic"] = "@class.inner",
+	["aa"] = "@parameter.outer",
+	["ia"] = "@parameter.inner",
+}
+for key, query in pairs(select_keymaps) do
+	vim.keymap.set({ "o", "x" }, key, function()
+		ts_select.select_textobject(query)
+	end, { silent = true })
+end
+
+vim.keymap.set({ "n", "o", "x" }, "]f", function()
+	ts_move.goto_next_start("@function.outer")
+end, { silent = true })
+vim.keymap.set({ "n", "o", "x" }, "[f", function()
+	ts_move.goto_previous_start("@function.outer")
+end, { silent = true })
+vim.keymap.set({ "n", "o", "x" }, "]c", function()
+	ts_move.goto_next_start("@class.outer")
+end, { silent = true })
+vim.keymap.set({ "n", "o", "x" }, "[c", function()
+	ts_move.goto_previous_start("@class.outer")
+end, { silent = true })
 
 -- Treesitter context: sticky headers
 require("treesitter-context").setup({

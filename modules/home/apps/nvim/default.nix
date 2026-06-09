@@ -176,6 +176,7 @@ in
       startPlugins = with pkgs.vimPlugins; [
         tiny-code-action
 
+        nvim-treesitter
         (nvim-treesitter.withPlugins (
           p: with p; [
             lua
