@@ -51,7 +51,7 @@
     "exec": "special-workspace-indicator.sh",
     "interval": 2,
     "format": "{}",
-    "on-click": "hyprctl dispatch togglespecialworkspace work",
+    "on-click": "hyprctl dispatch 'hl.dsp.workspace.toggle_special(\"work\")'",
     "tooltip": true
   },
 
