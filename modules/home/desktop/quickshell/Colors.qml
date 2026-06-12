@@ -1,1 +1,1 @@
-/nix/store/ka5h0agr4ry7jvdm6hh1mcmpqmmxl53j-home-manager-files/NixConfig/modules/home/desktop/quickshell/Colors.qml
+/nix/store/c84slrji2zvqyddq0y6rp4sy6m8l30lf-home-manager-files/NixConfig/modules/home/desktop/quickshell/Colors.qml

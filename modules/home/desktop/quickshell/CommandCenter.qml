@@ -440,7 +440,7 @@ PanelWindow {
 
   // ── Quick action processes ──
   Process { id: lockProc;    command: ["hyprlock"] }
-  Process { id: logoutProc;  command: ["hyprctl", "dispatch", "exit"] }
+  Process { id: logoutProc;  command: ["hyprctl", "dispatch", "hl.dsp.exit()"] }
   Process { id: sleepProc;   command: ["systemctl", "suspend"] }
   Process { id: rebootProc;  command: ["systemctl", "reboot"] }
   Process { id: poweroffProc; command: ["systemctl", "poweroff"] }

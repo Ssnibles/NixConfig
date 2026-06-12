@@ -27,22 +27,24 @@ let
   qsBin = "${pkgs.unstable.quickshell}/bin/qs";
   flakeTarget = if hostProfile.useDisko then hostProfile.hostName else "${hostProfile.hostName}-test";
 
-  # ── Toggle floating window (Hyprland) ──────────────────────────────────
-  toggle-float-hyprland = pkgs.writeShellScriptBin "toggle-float-hyprland" ''
+  # ── Toggle floating window ───────────────────────────────────────────
+  toggle-float = pkgs.writeShellScriptBin "toggle-float" ''
     IS_FLOATING=$(${pkgs.hyprland}/bin/hyprctl activewindow -j \
       | ${pkgs.jq}/bin/jq -r '.floating')
 
-    ${pkgs.hyprland}/bin/hyprctl dispatch togglefloating
+    ${pkgs.hyprland}/bin/hyprctl dispatch 'hl.dsp.window.float({ action = "toggle" })'
 
     if [ "$IS_FLOATING" != "true" ]; then
-      ${pkgs.hyprland}/bin/hyprctl dispatch resizeactive exact 60% 60%
-      ${pkgs.hyprland}/bin/hyprctl dispatch centerwindow
+      MONITOR=$(${pkgs.hyprland}/bin/hyprctl -j monitors | ${pkgs.jq}/bin/jq -r '.[] | select(.focused)')
+      W=$(echo "$MONITOR" | ${pkgs.jq}/bin/jq -r '.width')
+      H=$(echo "$MONITOR" | ${pkgs.jq}/bin/jq -r '.height')
+      W60=$(( W * 60 / 100 ))
+      H60=$(( H * 60 / 100 ))
+      CX=$(((W - W60) / 2))
+      CY=$(((H - H60) / 2))
+      ${pkgs.hyprland}/bin/hyprctl dispatch "hl.dsp.window.resize({x = $W60, y = $H60, relative = false})"
+      ${pkgs.hyprland}/bin/hyprctl dispatch "hl.dsp.window.move({x = $CX, y = $CY, relative = false})"
     fi
-  '';
-
-  # ── Toggle floating window ─────────────────────────────────────────────
-  toggle-float = pkgs.writeShellScriptBin "toggle-float" ''
-    exec ${toggle-float-hyprland}/bin/toggle-float-hyprland
   '';
 
   # ── Reload Quickshell ──────────────────────────────────────────────────
@@ -51,21 +53,16 @@ let
     ${qsBin} ipc call quickshell reload all 2>/dev/null || true
   '';
 
-  # ── Reload everything (Hyprland) ───────────────────────────────────────
-  reload-all-hyprland = pkgs.writeShellScriptBin "reload-all-hyprland" ''
+  # ── Reload everything ──────────────────────────────────────────────────
+  reload-all = pkgs.writeShellScriptBin "reload-all" ''
     ${pkgs.hyprland}/bin/hyprctl reload
     ${qsBin} ipc call quickshell reload all 2>/dev/null || true
     ${pkgs.libnotify}/bin/notify-send "Reload" "Hyprland, Quickshell reloaded"
   '';
 
-  # ── Reload everything ──────────────────────────────────────────────────
-  reload-all = pkgs.writeShellScriptBin "reload-all" ''
-    exec ${reload-all-hyprland}/bin/reload-all-hyprland
-  '';
-
-  # ── Focus mode (Hyprland) ──────────────────────────────────────────────
-  toggle-focus-mode-hyprland = pkgs.writeShellScriptBin "toggle-focus-mode-hyprland" ''
-    STATE_FILE="/tmp/hyprland-focus-mode"
+  # ── Focus mode ─────────────────────────────────────────────────────────
+  toggle-focus-mode = pkgs.writeShellScriptBin "toggle-focus-mode" ''
+    STATE_FILE="/tmp/focus-mode"
     GAPS_IN=8
     GAPS_OUT=16
     ROUNDING=16
@@ -381,11 +378,9 @@ in
 {
   home.packages = [
     toggle-float
-    toggle-float-hyprland
     reload-shell
     reload-all
-    reload-all-hyprland
-    toggle-focus-mode-hyprland
+    toggle-focus-mode
     aicommit
     setup-fo-prism
     stylix-switch

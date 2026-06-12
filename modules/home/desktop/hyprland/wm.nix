@@ -8,7 +8,7 @@
 }:
 let
   screenshotDir = "~/Pictures/Screenshots";
-  sattyFocusCommand = "(sleep 0.15 && (hyprctl dispatch focuswindow 'class:^(satty)$' || hyprctl dispatch focuswindow 'class:^(com\\.gabm\\.satty)$'))";
+  sattyFocusCommand = "(sleep 0.15 && (hyprctl dispatch 'hl.dsp.focus({window = \"class:^(satty)$\"})' || hyprctl dispatch 'hl.dsp.focus({window = \"class:^(com\\.gabm\\.satty)$\"})'))";
   sattyCaptureCommand = "satty --floating-hack --filename - --output-filename \"${screenshotDir}/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
   c = semanticColors { colors = config.lib.stylix.colors; };
   wallpaper = (import ../../../../lib/stylix/themes.nix).wallpaper;
