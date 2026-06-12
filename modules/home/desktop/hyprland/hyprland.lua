@@ -221,6 +221,11 @@ hl.window_rule({
 })
 
 -- ── Layer rules ────────────────────────────────────────────────────────
+hl.layer_rule({
+	name = "slurp-noanim",
+	match = { namespace = "selection" },
+	no_anim = true,
+})
 
 -- ── Screenshot commands ────────────────────────────────────────────────
 local screenshotFull = "mkdir -p "
@@ -236,7 +241,7 @@ local screenshotRegion = "mkdir -p "
 	.. 'region=$(hyprctl -j clients | jq -r --argjson ws $(hyprctl -j activeworkspace | jq -r \'.id\') \'.[] | select(.mapped and .workspace.id == $ws) | (.at[0]|tostring) + "," + (.at[1]|tostring) + " " + (.size[0]|tostring) + "x" + (.size[1]|tostring)\' | slurp); '
 	.. '[ -n "$region" ] && { '
 	.. G.satty_focus
-	.. ' & grim -g "$region" - | '
+	.. ' & sleep 0.05 && grim -g "$region" - | '
 	.. G.satty_capture
 	.. "; }"
 
