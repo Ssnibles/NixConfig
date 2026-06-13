@@ -2,6 +2,11 @@
 
 vim.loader.enable()
 
+-- Disable netrw so oil.nvim can fully take over as the default file explorer.
+-- Without this, oil's buffer can render empty when it conflicts with netrw.
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
 if not vim.env.NVIM_LISTEN_ADDRESS then
 	vim.env.NVIM_LISTEN_ADDRESS = "/tmp/nvim.socket"
 end

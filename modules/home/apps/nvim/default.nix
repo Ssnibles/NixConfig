@@ -221,6 +221,7 @@ in
 
         fzf-lua
         oil-nvim
+        nvim-web-devicons
         flash-nvim
         smart-splits-nvim
 
