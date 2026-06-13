@@ -12,5 +12,6 @@
     nvme-cli
     smartmontools
     iwd
+    pkgs.tuxedo
   ];
 }
