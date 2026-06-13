@@ -71,6 +71,7 @@ in
 
     # ── GUI applications ────────────────────────────────────────────────
     unstable.foot
+    pkgs.helium-browser
     unstable.onlyoffice-desktopeditors
     unstable.vesktop
     unstable.neovide

@@ -86,6 +86,11 @@
       url = "https://flakehub.com/f/Svenum/Solaar-Flake/*.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    helium-browser = {
+      url = "github:schembriaiden/helium-browser-nix-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -104,6 +109,15 @@
           zen-browser = inputs.zen-browser.packages.${system}.default;
           nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
           solaar = inputs.solaar.packages.${system}.default;
+          helium-browser = inputs.helium-browser.packages.${system}.default;
+
+          tuxedo = final.rustPlatform.buildRustPackage {
+            pname = "tuxedo";
+            version = "unstable-2026-06-13";
+            src = inputs.tuxedo;
+            cargoLock.lockFile = "${inputs.tuxedo}/Cargo.lock";
+            doCheck = false;
+          };
 
           neovim = final.unstable.neovim;
           neovim-unwrapped = final.unstable.neovim-unwrapped;
