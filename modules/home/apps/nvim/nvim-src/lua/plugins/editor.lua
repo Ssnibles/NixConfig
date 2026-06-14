@@ -9,11 +9,6 @@ require("oil").setup({
 		"permissions",
 		"size",
 	},
-	view_options = {
-		is_hidden_file = function(name, _)
-			return name ~= ".." and name:match("^%.") ~= nil
-		end,
-	},
 	float = {
 		border = "rounded",
 		max_width = 0.8,
