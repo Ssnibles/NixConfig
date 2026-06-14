@@ -26,7 +26,6 @@ in
     unstable.roslyn
 
     # ── CLI utilities ───────────────────────────────────────────────────
-    unstable.quickemu
     unstable.git-lfs
     unstable.github-copilot-cli
     unstable.opencode
@@ -76,14 +75,9 @@ in
     unstable.vesktop
     unstable.neovide
 
-    # ── Document viewers ────────────────────────────────────────────────
-    unstable.sioyek
-
     # ── Media ─────────────────────────────────────────────────────────────
     unstable.mpv
     unstable.imv
-    unstable.picard
-    unstable.easytag
     unstable.pavucontrol
 
     # ── System / connectivity ────────────────────────────────────────────
@@ -100,7 +94,6 @@ in
     unstable.blender
     unstable.via
     unstable.prismlauncher
-    unstable.google-chrome
     unstable.calibre
   ]
   ++ lib.optionals hostProfile.isLaptop [
