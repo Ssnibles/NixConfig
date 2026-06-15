@@ -1,24 +1,26 @@
 -- Editor enhancements: file manager, git signs, formatting, pairs
 
 -- Oil: file manager
-require("oil").setup({
-	default_file_explorer = true,
-	delete_to_trash = true,
-	columns = {
-		"icon",
-		"permissions",
-		"size",
-	},
-	float = {
-		border = "rounded",
-		max_width = 0.8,
-		max_height = 0.8,
-	},
-})
+-- require("oil").setup({
+-- 	default_file_explorer = true,
+-- 	delete_to_trash = true,
+-- 	columns = {
+-- 		"icon",
+-- 		"permissions",
+-- 		"size",
+-- 	},
+-- 	float = {
+-- 		border = "rounded",
+-- 		max_width = 0.8,
+-- 		max_height = 0.8,
+-- 	},
+-- })
 
-vim.keymap.set("n", "<leader>fe", function()
-	require("oil").open_float()
-end, { desc = "Explorer (Oil)" })
+-- vim.keymap.set("n", "<leader>fe", function()
+-- 	require("oil").open_float()
+-- end, { desc = "Explorer (Oil)" })
+
+require("fyler").setup()
 
 -- Gitsigns: gutter signs + inline blame at end of line
 require("gitsigns").setup({
