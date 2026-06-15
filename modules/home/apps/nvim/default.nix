@@ -144,7 +144,7 @@ in
         inputs.qml-language-server.packages.${pkgs.stdenv.hostPlatform.system}.default
         roslyn-ls
 
-        nixfmt-rfc-style
+        nixfmt
         stylua
         black
         isort
@@ -220,7 +220,8 @@ in
         trouble-nvim
 
         fzf-lua
-        oil-nvim
+        # oil-nvim
+        fyler-nvim
         nvim-web-devicons
         flash-nvim
         smart-splits-nvim
