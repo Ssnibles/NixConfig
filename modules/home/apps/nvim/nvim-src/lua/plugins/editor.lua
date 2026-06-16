@@ -31,11 +31,11 @@ require("fyler").setup({
 })
 
 vim.keymap.set("n", "<leader>e", function()
-	require("fyler").open({ kind = "floating" })
+	require("fyler").open({ kind = "float" })
 end, { desc = "Explorer (Fyler)" })
 
 -- Gitsigns: gutter signs + inline blame at end of line
-require("").setup({
+require("gitsigns").setup({
 	signcolumn = true,
 	numhl = true,
 	linehl = false,
