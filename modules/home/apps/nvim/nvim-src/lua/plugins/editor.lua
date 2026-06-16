@@ -20,10 +20,22 @@
 -- 	require("oil").open_float()
 -- end, { desc = "Explorer (Oil)" })
 
-require("fyler").setup()
+require("fyler").setup({
+	kind_presets = {
+		floating = {
+			border = "rounder",
+			max_width = 0.8,
+			max_height = 0.8,
+		},
+	},
+})
+
+vim.keymap.set("n", "<leader>e", function()
+	require("fyler").open({ kind = "floating" })
+end, { desc = "Explorer (Fyler)" })
 
 -- Gitsigns: gutter signs + inline blame at end of line
-require("gitsigns").setup({
+require("").setup({
 	signcolumn = true,
 	numhl = true,
 	linehl = false,
