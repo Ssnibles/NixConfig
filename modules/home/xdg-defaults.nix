@@ -25,10 +25,10 @@
         "application/x-extension-xht" = "helium.desktop";
 
         # ── PDF / E-book ───────────────────────────────────────────────────────
-        "application/pdf" = "sioyek.desktop";
-        "application/x-pdf" = "sioyek.desktop";
-        "application/x-cbz" = "sioyek.desktop";
-        "application/x-cbr" = "sioyek.desktop";
+        "application/pdf" = "helium.desktop";
+        "application/x-pdf" = "helium.desktop";
+        "application/x-cbz" = "helium.desktop";
+        "application/x-cbr" = "helium.desktop";
 
         # ── Text / Code ────────────────────────────────────────────────────────
         "text/plain" = "neovide.desktop";

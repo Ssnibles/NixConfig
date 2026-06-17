@@ -101,29 +101,6 @@ autocmd("FileType", {
 	end,
 })
 
-if require("version") then
-	autocmd("BufEnter", {
-		group = augroup,
-		callback = function(ev)
-			local ft = vim.bo[ev.buf].filetype
-			if ft ~= "markdown" and ft ~= "markdown.mdx" then
-				return
-			end
-			-- Some plugins start treesitter on BufEnter; stop it again after callbacks settle.
-			pcall(vim.treesitter.stop, ev.buf)
-			vim.schedule(function()
-				if not vim.api.nvim_buf_is_valid(ev.buf) then
-					return
-				end
-				local scheduled_ft = vim.bo[ev.buf].filetype
-				if scheduled_ft == "markdown" or scheduled_ft == "markdown.mdx" then
-					pcall(vim.treesitter.stop, ev.buf)
-				end
-			end)
-		end,
-	})
-end
-
 autocmd("TermOpen", {
 	group = augroup,
 	callback = function()
