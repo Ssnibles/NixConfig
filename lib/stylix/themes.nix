@@ -108,8 +108,8 @@
         base03 = "606079";
         base04 = "878787";
         base05 = "cdcdcd";
-        base06 = "9bb4bc";
-        base07 = "b4d4cf";
+        base06 = "d8d8d8";
+        base07 = "e6e6e6";
         base08 = "d8647e";
         base09 = "e8b589";
         base0A = "f3be7c";
