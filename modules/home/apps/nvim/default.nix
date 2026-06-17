@@ -265,5 +265,8 @@ in
 
   # Write generated colors directly into the repo checkout so the symlink
   # picks them up without an imperative activation script.
-  home.file."NixConfig/modules/home/apps/nvim/nvim-src/lua/generated/colors.lua".text = colorsLua;
+  home.file."NixConfig/modules/home/apps/nvim/nvim-src/lua/generated/colors.lua" = {
+    text = colorsLua;
+    force = true;
+  };
 }

@@ -15,6 +15,8 @@ let
         scheme = "catppuccin-mocha.yaml";
         polarity = "dark";
       };
+
+  jbMonoNerd = pkgs.unstable.nerd-fonts.jetbrains-mono;
 in
 {
   assertions = [
@@ -36,5 +38,20 @@ in
       else
         "${pkgs.base16-schemes}/share/themes/${selectedTheme.scheme}";
     polarity = selectedTheme.polarity;
+
+    fonts = {
+      serif = {
+        package = jbMonoNerd;
+        name = "JetBrainsMono Nerd Font";
+      };
+      sansSerif = {
+        package = jbMonoNerd;
+        name = "JetBrainsMono Nerd Font";
+      };
+      monospace = {
+        package = jbMonoNerd;
+        name = "JetBrainsMono Nerd Font";
+      };
+    };
   };
 }
