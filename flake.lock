@@ -491,11 +491,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781684359,
-        "narHash": "sha256-QJFaFfUWMeqNzW2XFxdCWjBXqHnoASU6F82Nxpu9rwI=",
+        "lastModified": 1781731990,
+        "narHash": "sha256-FPg/2x1C8EHbq8yOv238gpTUfLZirpyPGeFi3jLScXc=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "b7c1bc5e9f25443914ec0c4aced700ce6811d9ea",
+        "rev": "d10dc8a232aa7b1cbb8a3e0e15681a7653c449c2",
         "type": "github"
       },
       "original": {
@@ -561,8 +561,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1780469087,
-        "narHash": "sha256-cWvk18mYwmt872Uf6qW/wO5fvM2kuoxSDFeH+il4VJE=",
+        "lastModified": 1781571142,
+        "narHash": "sha256-dNZl1D/dz0voB4Noaqa41wYYPy3dobg8OX16902sqb8=",
         "path": "/home/josh/pomodoro",
         "type": "path"
       },
@@ -875,11 +875,11 @@
     "tuxedo": {
       "flake": false,
       "locked": {
-        "lastModified": 1781645191,
-        "narHash": "sha256-1uTa+S1bUyBsWy5FpmXFbggFc7lMbnDKul0h1O4NvMI=",
+        "lastModified": 1781731566,
+        "narHash": "sha256-lhWaCFAcZSa5I0tPo0/ua2tC1G2nxmMOTL65Wa4NOJg=",
         "owner": "webstonehq",
         "repo": "tuxedo",
-        "rev": "bc6a81258978d074317dfc1b1482e968dce65f03",
+        "rev": "2958a39007b7c9693225ed3d79220f1dcf1beb10",
         "type": "github"
       },
       "original": {
