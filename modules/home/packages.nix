@@ -66,6 +66,7 @@ in
     unstable.nerd-fonts.fira-code
     unstable.nerd-fonts.zed-mono
     unstable.nerd-fonts.jetbrains-mono
+    unstable.texlivePackages.opensans
     unstable.alice
 
     # ── GUI applications ────────────────────────────────────────────────
