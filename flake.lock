@@ -337,11 +337,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1781324208,
-        "narHash": "sha256-bygOOsF1MFbhpl420ja6Md5bGIyRIJ2/UDS2nqEX1eA=",
+        "lastModified": 1781798188,
+        "narHash": "sha256-OLv+WvKNVX1aOgDYa94MecwQAH7VEv+s1htqVsaYeug=",
         "owner": "schembriaiden",
         "repo": "helium-browser-nix-flake",
-        "rev": "87c5dbbabd13547db8e14937c77bd3abce315d56",
+        "rev": "715cacbdf9f719cfe562675783efd86102b948d5",
         "type": "github"
       },
       "original": {
@@ -491,11 +491,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781737552,
-        "narHash": "sha256-NpiiXC/92jZl9CDhy8TzEFA+ilDVCna637Rple2ephg=",
+        "lastModified": 1781855004,
+        "narHash": "sha256-O+L4HvRG7axtKlyoRTjuvaVzF4+WMcY97E7mUK+fOfc=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "b2c84106da64ba040c4005449bdd0222d703ec71",
+        "rev": "193c72903ea63e980edc129ae567a36afafa1035",
         "type": "github"
       },
       "original": {
@@ -561,8 +561,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1781571142,
-        "narHash": "sha256-dNZl1D/dz0voB4Noaqa41wYYPy3dobg8OX16902sqb8=",
+        "lastModified": 1780469087,
+        "narHash": "sha256-cWvk18mYwmt872Uf6qW/wO5fvM2kuoxSDFeH+il4VJE=",
         "path": "/home/josh/pomodoro",
         "type": "path"
       },
@@ -875,11 +875,11 @@
     "tuxedo": {
       "flake": false,
       "locked": {
-        "lastModified": 1781731566,
-        "narHash": "sha256-lhWaCFAcZSa5I0tPo0/ua2tC1G2nxmMOTL65Wa4NOJg=",
+        "lastModified": 1781851694,
+        "narHash": "sha256-0Z0PDGnwIb8hXCG3+py7CR2Yq9lNkhWsdc+trPDQzA0=",
         "owner": "webstonehq",
         "repo": "tuxedo",
-        "rev": "2958a39007b7c9693225ed3d79220f1dcf1beb10",
+        "rev": "751119b26cd6a739b96234f579ead1d1080409a6",
         "type": "github"
       },
       "original": {
@@ -932,11 +932,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781415399,
-        "narHash": "sha256-t7l/1scSsVAlw1r/vjEIX+SquZa/z6ibcOLBuXdJH7E=",
+        "lastModified": 1781847955,
+        "narHash": "sha256-1OSYOGuJp/NoODmSHjsz+6TB/kSilJ+BsFihjY7TTnc=",
         "owner": "youwen5",
         "repo": "zen-browser-flake",
-        "rev": "83ab3c3da2ba1a76a20882dbd253711d2cb8dcba",
+        "rev": "4bca251cd556677f7b765ff324d1638ae215be13",
         "type": "github"
       },
       "original": {
