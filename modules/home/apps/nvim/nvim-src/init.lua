@@ -25,5 +25,7 @@ require("diagnostics")
 
 require("theme").setup()
 
+vim.api.nvim_create_user_command("Mes", 'new | put =execute("messages")', {})
+
 local plugins = require("plugins.registry")
 require("bootstrap").load_modules(plugins.core, plugins.deferred)

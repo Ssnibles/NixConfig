@@ -2,6 +2,24 @@
 local augroup = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 local autocmd = vim.api.nvim_create_autocmd
 
+-- Workaround: files opened via fyler's :edit don't always trigger filetype
+-- detection. Uses match() which is available in all modern Neovim versions.
+vim.api.nvim_create_autocmd("BufEnter", {
+	group = vim.api.nvim_create_augroup("FixFiletypeDetection", { clear = true }),
+	desc = "Detect filetype if empty (fyler workaround)",
+	callback = function(ev)
+		if vim.bo[ev.buf].filetype == "" and vim.bo[ev.buf].buftype == "" then
+			local name = vim.api.nvim_buf_get_name(ev.buf)
+			if name and name ~= "" and vim.fn.filereadable(name) == 1 then
+				local ft = vim.filetype.match({ filename = name, buf = ev.buf })
+				if ft and ft ~= "" then
+					vim.bo[ev.buf].filetype = ft
+				end
+			end
+		end
+	end,
+})
+
 -- Enable inlay hints automatically for any buffer that gets an LSP client.
 -- We call enable unconditionally (wrapped in pcall) because some servers
 -- (e.g., jdtls) dynamically register the capability after attach, and
