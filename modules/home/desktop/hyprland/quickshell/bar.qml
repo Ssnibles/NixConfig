@@ -269,7 +269,7 @@ PanelWindow {
   : ""
   property bool hasMedia: mediaText !== ""
   // mediaTick is incremented on a timer so that mediaProgress (a computed property)
-  // re-evaluates and the seek-bar / waveform stay in sync while playing.
+  // re-evaluates and the progress bar stays in sync while playing.
   property int mediaTick: 0
   property real mediaLastPosition: 0
   property real mediaLastLength: 0
@@ -279,7 +279,6 @@ PanelWindow {
     barPanel.mediaLastLength = Math.max(0, len || 0);
     barPanel.mediaTick = 0;
     barPanel.mediaResetToken++;
-    if (tickTimer) tickTimer.wavePhase = 0;
   }
   function updateMediaPosition(pos, len) {
     var p = Math.max(0, pos || 0);
@@ -337,22 +336,18 @@ PanelWindow {
 
   property int tooltipWidth: Math.round(Math.min(barPanel.tooltipMaxWidth, barPanel.width - barPanel.tooltipMargin * 2))
 
-  // Single unified tick for media + waveform
+  // Timer to keep media position in sync while playing
   Timer {
     id: tickTimer
     interval: 300
     running: mediaPlayer && mediaPlayer.isPlaying
     repeat: true
-    property real wavePhase: 0
     onTriggered: {
-      // Advance sine wave phase by ~72 degrees each tick for the fallback bars.
-      wavePhase = (wavePhase + 1.256) % (Math.PI * 2);
       if (barPanel.mediaPlayer) {
         barPanel.updateMediaPosition(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length);
       }
       barPanel.mediaTick++;
     }
-    onRunningChanged: { if (!running) wavePhase = 0; }
   }
 
   Item {
@@ -444,61 +439,25 @@ PanelWindow {
           spacing: 6
 
           Item {
-            id: mediaWaveform
-            property int barCount: 20
-            property int barWidth: 2
-            property int barSpacing: 2
-            width: barCount * barWidth + (barCount - 1) * barSpacing
+            id: mediaSeekBar
+            width: 100
             height: 16
             anchors.verticalCenter: parent.verticalCenter
 
-            // GLSL shader version of the waveform; falls back to plain Rectangles below
-            // if the shader hasn't compiled or the player is paused.
-            ShaderEffect {
-              id: waveformShader
-              anchors.fill: parent
-              visible: status === ShaderEffect.Ready && mediaPlayer && mediaPlayer.isPlaying
-              fragmentShader: "shaders/waveform.frag.qsb"
+            Rectangle {
+              anchors.verticalCenter: parent.verticalCenter
+              width: parent.width
+              height: 6
+              radius: 3
+              color: Colors.bgSubtle
 
-              property real barCount: mediaWaveform.barCount
-              property real barWidth: mediaWaveform.barWidth
-              property real barSpacing: mediaWaveform.barSpacing
-              property real heightPx: mediaWaveform.height
-              property real phase: tickTimer.wavePhase
-              property real play: 1.0
-              property real progress: barPanel.mediaProgress
-              property color colorStart: Colors.purple
-              property color colorEnd: Colors.teal
-              property color bgColor: Colors.bgSubtle
-            }
-
-            // CPU-drawn fallback bars when the shader isn't available or music is paused.
-            Repeater {
-              id: waveformBars
-              model: mediaWaveform.barCount
-              visible: !waveformShader.visible
-              delegate: Rectangle {
-                required property int index
-                width: mediaWaveform.barWidth
-                radius: width / 2
-                x: index * (mediaWaveform.barWidth + mediaWaveform.barSpacing)
-                y: (mediaWaveform.height - height) / 2
-                height: {
-                  if (!barPanel.mediaPlayer || !barPanel.mediaPlayer.isPlaying) return 3
-                  return 3 + Math.sin(tickTimer.wavePhase + index * 0.55) * 4 + 3
-                }
-                color: {
-                  if (!barPanel.mediaPlayer || !barPanel.mediaPlayer.isPlaying) return Colors.bgSubtle
-                  var frac = (index + 1) / mediaWaveform.barCount
-                  if (frac > barPanel.mediaProgress) return Colors.bgSubtle
-                  var t = frac / Math.max(barPanel.mediaProgress, 0.01)
-                  return Qt.rgba(
-                    Colors.purple.r + (Colors.teal.r - Colors.purple.r) * t,
-                    Colors.purple.g + (Colors.teal.g - Colors.purple.g) * t,
-                    Colors.purple.b + (Colors.teal.b - Colors.purple.b) * t,
-                    1
-                  )
-                }
+              Rectangle {
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                width: parent.width * barPanel.mediaProgress
+                radius: 3
+                color: Colors.accent
               }
             }
 
@@ -510,9 +469,8 @@ PanelWindow {
                 if (!barPanel.mediaPlayer) return;
                 if (mouse.button === Qt.RightButton) {
                   barPanel.focusMediaPlayer();
-                } else {
-                  if (barPanel.mediaPlayer.canTogglePlaying)
-                  barPanel.mediaPlayer.togglePlaying();
+                } else if (barPanel.mediaPlayer.canSeek) {
+                  barPanel.mediaPlayer.position = mouse.x / width * barPanel.mediaPlayer.length;
                 }
               }
               onWheel: function(wheel) {

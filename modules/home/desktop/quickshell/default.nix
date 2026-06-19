@@ -18,9 +18,7 @@ let
       }
       ''
         mkdir -p $out
-        cp ${./shaders/waveform.frag} $out/waveform.frag
         cp ${./shaders/circleMask.frag} $out/circleMask.frag
-        qsb --qt6 $out/waveform.frag -o $out/waveform.frag.qsb
         qsb --qt6 $out/circleMask.frag -o $out/circleMask.frag.qsb
       '';
 
@@ -56,8 +54,6 @@ let
     "quickshell/AppIcon.qml" = "${qsDir}/AppIcon.qml";
     "quickshell/ActionRow.qml" = "${qsDir}/ActionRow.qml";
     "quickshell/SliderControl.qml" = "${qsDir}/SliderControl.qml";
-    "quickshell/shaders/waveform.frag.qsb" = "${compiledShaders}/waveform.frag.qsb";
-    "quickshell/shaders/waveform.frag" = "${compiledShaders}/waveform.frag";
     "quickshell/shaders/circleMask.frag.qsb" = "${compiledShaders}/circleMask.frag.qsb";
     "quickshell/shaders/circleMask.frag" = "${compiledShaders}/circleMask.frag";
   };
