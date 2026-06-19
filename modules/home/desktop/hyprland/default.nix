@@ -15,8 +15,6 @@ let
     "SliderControl.qml"
     "notifications.qml"
     "CommandCenter.qml"
-    "shaders/waveform.frag.qsb"
-    "shaders/waveform.frag"
     "shaders/circleMask.frag.qsb"
     "shaders/circleMask.frag"
   ];
