@@ -125,12 +125,5 @@ lib.mkIf hostProfile.hasNvidia {
     WLR_NO_HARDWARE_CURSORS = "1"; # Disable hardware cursors (fixes cursor issues in Wayland)
 
     LIBVA_DRIVER_NAME = "nvidia"; # Use NVIDIA VA-API driver for video acceleration
-
-    # Force driver-level vsync to prevent screen tearing in games.
-    # GL: sync OpenGL buffer swaps to vblank
-    __GL_SYNC_TO_VBLANK = "1";
-
-    # Limit pre-rendered frames to 1 for lower input lag + smoother output
-    __GL_MaxFramesAllowed = "1";
   };
 }
