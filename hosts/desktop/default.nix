@@ -73,6 +73,14 @@
     capSysNice = false;
   };
 
+  # ── Gaming environment ────────────────────────────────────────────────────
+  # DXVK_FRAME_RATE caps DXVK/VKD3D games (Proton) to the monitor's refresh
+  # rate, preventing over-rendering that causes tearing when in-game vsync
+  # doesn't properly engage (common with DXVK).
+  environment.sessionVariables = {
+    DXVK_FRAME_RATE = "165";
+  };
+
   # ── Packages ──────────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
     gamemode
