@@ -12,18 +12,6 @@ let
   repoRoot = "${config.home.homeDirectory}/NixConfig";
   nvimSrcDir = "${repoRoot}/modules/home/apps/nvim/nvim-src";
 
-  tiny-code-action = pkgs.vimUtils.buildVimPlugin {
-    pname = "tiny-code-action";
-    version = "main";
-    src = pkgs.fetchFromGitHub {
-      owner = "rachartier";
-      repo = "tiny-code-action.nvim";
-      rev = "main";
-      sha256 = "sha256-UF9zeO5Uujdt2MEwy2d2Lhk6JRnEN4vrEvYslv0/zaA=";
-    };
-    doCheck = false;
-  };
-
   colorsLua = ''
     local M = {
       bg = "${c.withHash.bg}",
@@ -174,7 +162,7 @@ in
       ];
 
       startPlugins = with pkgs.vimPlugins; [
-        tiny-code-action
+        pkgs.tiny-code-action
 
         nvim-treesitter
         (nvim-treesitter.withPlugins (

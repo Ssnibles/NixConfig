@@ -72,8 +72,7 @@ array_contains() {
 
 strip_nix_noise() {
     sed \
-        -e "/trusted-public-keys/d" \
-        -e "/unknown flake output 'diskoConfigurations'/d"
+        -e "/trusted-public-keys/d"
 }
 
 discover_hosts() {
@@ -291,21 +290,6 @@ check_flake_outputs() {
             ((errors += 1))
         fi
     done
-
-    if output="$(nix eval --raw '.#diskoConfigurations' --apply 'cfgs: builtins.concatStringsSep "\n" (builtins.attrNames cfgs)' 2>/dev/null)"; then
-        local -a disko_configs=()
-        while IFS= read -r cfg; do
-            [[ -n "$cfg" ]] && disko_configs+=("$cfg")
-        done <<< "$output"
-
-        for host in "${hosts[@]}"; do
-            if ! array_contains "$host" "${disko_configs[@]}"; then
-                log_warning "Host '$host' has no matching diskoConfigurations entry"
-            fi
-        done
-    else
-        log_warning "Could not evaluate .#diskoConfigurations"
-    fi
 
     if [[ $errors -eq 0 ]]; then
         log_success "Flake output evaluation successful"
