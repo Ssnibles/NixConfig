@@ -5,6 +5,7 @@
     extra-substituters = [
       "https://cache.nixos.org"
       "https://nix-community.cachix.org"
+      "https://nvf.cachix.org"
     ];
     extra-trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
@@ -13,7 +14,7 @@
   };
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
+    nixpkgs.url = "github:nixos/nixpkgs/26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     # Local development input
@@ -100,28 +101,7 @@
 
       overlays = [
         inputs.nur.overlays.default
-        (final: prev: {
-          unstable = import inputs.nixpkgs-unstable {
-            inherit system;
-            config.allowUnfree = true;
-          };
-
-          zen-browser = inputs.zen-browser.packages.${system}.default;
-          nix-minecraft = inputs.nix-minecraft.legacyPackages.${system};
-          solaar = inputs.solaar.packages.${system}.default;
-          helium-browser = inputs.helium-browser.packages.${system}.default;
-
-          tuxedo = final.rustPlatform.buildRustPackage {
-            pname = "tuxedo";
-            version = "unstable-2026-06-13";
-            src = inputs.tuxedo;
-            cargoLock.lockFile = "${inputs.tuxedo}/Cargo.lock";
-            doCheck = false;
-          };
-
-          neovim = final.unstable.neovim;
-          neovim-unwrapped = final.unstable.neovim-unwrapped;
-        })
+        (import ./modules/shared/overlay.nix { inherit inputs system; })
       ];
 
       pkgs = import nixpkgs {
@@ -173,6 +153,7 @@
         laptop = mkHost {
           hostName = "laptop";
           isLaptop = true;
+          hasPrinting = true;
         };
         desktop-test = mkHost {
           hostName = "desktop";
@@ -182,6 +163,7 @@
         laptop-test = mkHost {
           hostName = "laptop";
           isLaptop = true;
+          hasPrinting = true;
           useDisko = false;
         };
       };

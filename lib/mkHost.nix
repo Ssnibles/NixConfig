@@ -29,7 +29,7 @@ in
 
         inputs.agenix.nixosModules.default
         inputs.stylix.nixosModules.stylix
-        ../modules/nixos/common.nix
+        ../modules/nixos
         ../hosts/${hostName}
 
         inputs.home-manager.nixosModules.home-manager
@@ -46,7 +46,6 @@ in
         }
       ]
       ++ lib.optional hostProfile.useDisko inputs.disko.nixosModules.disko
-      ++ lib.optional hostProfile.useDisko ../disko/${hostName}.nix
-      ++ lib.optional hostProfile.hasNvidia ../modules/nixos/hardware/nvidia.nix;
+      ++ lib.optional hostProfile.useDisko ../disko/${hostName}.nix;
     };
 }

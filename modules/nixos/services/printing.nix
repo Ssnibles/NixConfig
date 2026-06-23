@@ -1,6 +1,6 @@
-{ ... }:
+{ lib, hostProfile, ... }:
 
-{
+lib.mkIf hostProfile.hasPrinting {
   services.printing = {
     enable = true;
     startWhenNeeded = true;
