@@ -3,31 +3,21 @@
   user,
   ...
 }:
+let
+  unstableProg = pkg: { enable = true; package = pkg; };
+in
 {
   imports = [ ../shared/stylix.nix ];
 
   # Enable HM program modules so Stylix targets can actually theme them.
   programs = {
-    bat = {
-      enable = true;
-      package = pkgs.unstable.bat;
-    };
-    fzf = {
-      enable = true;
-      package = pkgs.unstable.fzf;
-    };
-    lazygit = {
-      enable = true;
-      package = pkgs.unstable.lazygit;
-    };
-    yazi = {
-      enable = true;
-      package = pkgs.unstable.yazi;
+    bat = unstableProg pkgs.unstable.bat;
+    fzf = unstableProg pkgs.unstable.fzf;
+    lazygit = unstableProg pkgs.unstable.lazygit;
+    yazi = unstableProg pkgs.unstable.yazi // {
       shellWrapperName = "yy";
     };
-    zathura = {
-      enable = true;
-      package = pkgs.unstable.zathura;
+    zathura = unstableProg pkgs.unstable.zathura // {
       options = {
         synctex = true;
         synctex-editor-command = "nvr --remote-send \"<C-\\><C-n>:edit %{input}<CR>:%{line}<CR>\"";

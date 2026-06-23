@@ -538,14 +538,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1780469087,
-        "narHash": "sha256-cWvk18mYwmt872Uf6qW/wO5fvM2kuoxSDFeH+il4VJE=",
-        "path": "/home/josh/pomodoro",
-        "type": "path"
+        "lastModified": 1781568411,
+        "narHash": "sha256-cx58TzqAlcQVnkGs3eO4GrU7/LSv+p9cGtDpufnBSTk=",
+        "owner": "Ssnibles",
+        "repo": "pomodoro",
+        "rev": "a17d129740df6dd51b769624705bbcf7b193cd71",
+        "type": "github"
       },
       "original": {
-        "path": "/home/josh/pomodoro",
-        "type": "path"
+        "owner": "Ssnibles",
+        "repo": "pomodoro",
+        "type": "github"
       }
     },
     "qml-language-server": {

@@ -108,8 +108,7 @@ let
 in
 {
   home.packages =
-    lib.optional (inputs ? pomodoro) (flakePkg "pomodoro")
-    ++ [ unstable.awww (flakePkg "solaar") ]
+    [ (flakePkg "pomodoro") unstable.awww (flakePkg "solaar") ]
     ++ development
     ++ cli
     ++ fonts
