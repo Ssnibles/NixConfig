@@ -101,7 +101,7 @@
 
       overlays = [
         inputs.nur.overlays.default
-        (import ./modules/shared/overlay.nix { inherit inputs system; })
+        (import ./pkgs { inherit inputs; })
       ];
 
       pkgs = import nixpkgs {

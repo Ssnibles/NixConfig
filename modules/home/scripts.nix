@@ -8,10 +8,11 @@
   pkgs,
   lib,
   hostProfile,
+  inputs,
   ...
 }:
 let
-  fabulouslyOptimizedPack = pkgs.nix-minecraft.fetchModrinthModpack {
+  fabulouslyOptimizedPack = inputs.nix-minecraft.legacyPackages.${pkgs.stdenv.hostPlatform.system}.fetchModrinthModpack {
     pname = "fabulously-optimized";
     version = "12.0.8-mc1.21.11";
     url = "https://cdn.modrinth.com/data/1KVo5zza/versions/lwASzTsb/Fabulously.Optimized-v12.0.8.mrpack";
