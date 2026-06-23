@@ -3,13 +3,13 @@
 
   nixConfig = {
     extra-substituters = [
-      "https://cache.nixos.org"
       "https://nix-community.cachix.org"
       "https://nvf.cachix.org"
     ];
     extra-trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "nvf.cachix.org-1:d1jGkCz8QF7lo4C1m5SwCaLl9TQRHPJ2T/RijAfv0Oc="
     ];
   };
 
@@ -17,9 +17,8 @@
     nixpkgs.url = "github:nixos/nixpkgs/26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    # Local development input
     pomodoro = {
-      url = "path:/home/josh/pomodoro";
+      url = "github:Ssnibles/pomodoro";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
