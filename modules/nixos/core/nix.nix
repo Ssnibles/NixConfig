@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 
 {
   nixpkgs.config.allowUnfree = true;
@@ -19,13 +19,10 @@
         "https://nvf.cachix.org"
       ];
       extra-trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
         "nvf.cachix.org-1:d1jGkCz8QF7lo4C1m5SwCaLl9TQRHPJ2T/RijAfv0Oc="
       ];
     };
-    gc = {
-      automatic = false;
-    };
+    gc.automatic = lib.mkDefault false;
   };
 }

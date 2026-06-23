@@ -1,1 +1,0 @@
-/nix/store/fs0wrqmnp3fhzbadp9ycdwl2ywzx8gq3-home-manager-files/NixConfig/modules/home/apps/nvim/nvim-src/lua/generated/colors.lua
