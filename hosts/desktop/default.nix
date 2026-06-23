@@ -41,11 +41,6 @@
     script = "${pkgs.util-linux}/bin/rfkill unblock bluetooth";
   };
 
-  # ── Lower always-on background services ────────────────────────────────────
-  services.printing.enable = lib.mkForce false;
-  services.avahi.enable = lib.mkForce false;
-  services.avahi.nssmdns4 = lib.mkForce false;
-
   # Enable Solaar service natively (Handles all UDEV rules and permissions automatically)
   hardware.logitech.wireless.enable = true;
 

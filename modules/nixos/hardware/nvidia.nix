@@ -95,8 +95,8 @@ lib.mkIf hostProfile.hasNvidia {
   # ═══════════════════════════════════════════════════════════════════════════
   hardware.graphics = {
     enable = true;
-    # 32-bit driver support (required for Steam, Wine, older games)
-    enable32Bit = true;
+      # 32-bit driver support (required for Steam, Wine, older games)
+      enable32Bit = lib.mkForce false;
 
     extraPackages = with pkgs; [
       # Hardware-accelerated video decoding (VA-API via NVDEC)
