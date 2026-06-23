@@ -3,6 +3,7 @@
 let
   lib = inputs.nixpkgs.lib;
   mkProfile = import ./profile.nix;
+  semanticColors = import ./colors.nix;
 in
 {
   mkHost =
@@ -17,8 +18,7 @@ in
       inherit system;
 
       specialArgs = {
-        inherit inputs hostProfile user;
-        semanticColors = import ./colors.nix;
+        inherit inputs hostProfile user semanticColors;
       };
 
       modules = [
@@ -38,8 +38,7 @@ in
             useGlobalPkgs = true;
             useUserPackages = true;
             extraSpecialArgs = {
-              inherit inputs hostProfile user;
-              semanticColors = import ./colors.nix;
+              inherit inputs hostProfile user semanticColors;
             };
             users.${user} = import ../users/${user};
           };

@@ -179,17 +179,6 @@
         };
       };
 
-      diskoConfigurations = {
-        desktop = inputs.disko.lib.diskoConfig {
-          system = "x86_64-linux";
-          modules = [ ./disko/desktop.nix ];
-        };
-        laptop = inputs.disko.lib.diskoConfig {
-          system = "x86_64-linux";
-          modules = [ ./disko/laptop.nix ];
-        };
-      };
-
       formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-rfc-style;
     };
 }
