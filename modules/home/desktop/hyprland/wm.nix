@@ -51,14 +51,16 @@ in
   ];
 
   xdg.configFile."hypr/xdph.conf".text =
-    ''
-      screencopy {
-          max_fps = 60
-    ''
-    + lib.optionalString hostProfile.hasNvidia "          force_shm = true\n"
-    + ''
-      }
-    '';
+    lib.concatStrings [
+      ''
+        screencopy {
+            max_fps = 60
+      ''
+      (lib.optionalString hostProfile.hasNvidia "    force_shm = true\n")
+      ''
+        }
+      ''
+    ];
 
   programs.vicinae.enable = true;
 

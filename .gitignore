@@ -1,6 +1,8 @@
 *.age
 *.qsb
 modules/home/desktop/hyprland/generated.lua
+modules/home/apps/nvim/nvim-src/lua/generated/colors.lua
+modules/home/desktop/quickshell/Colors.qml
 secrets/
 .direnv/
 result

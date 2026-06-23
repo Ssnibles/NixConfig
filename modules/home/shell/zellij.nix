@@ -1,6 +1,12 @@
 { pkgs, config, semanticColors, ... }:
 let
-  rgb = (semanticColors { colors = config.lib.stylix.colors; }).rgb;
+  inherit (semanticColors { colors = config.lib.stylix.colors; }) rgb;
+  rgbValues =
+    attr:
+    let
+      vals = rgb.${attr};
+    in
+    "${toString (builtins.elemAt vals 0)} ${toString (builtins.elemAt vals 1)} ${toString (builtins.elemAt vals 2)}";
 in
 {
   home.packages = [ pkgs.unstable.zellij ];
@@ -22,17 +28,17 @@ in
 
     themes {
       stylix {
-        fg ${toString (builtins.elemAt rgb.fg 0)} ${toString (builtins.elemAt rgb.fg 1)} ${toString (builtins.elemAt rgb.fg 2)}
-        bg ${toString (builtins.elemAt rgb.bg 0)} ${toString (builtins.elemAt rgb.bg 1)} ${toString (builtins.elemAt rgb.bg 2)}
-        red ${toString (builtins.elemAt rgb.red 0)} ${toString (builtins.elemAt rgb.red 1)} ${toString (builtins.elemAt rgb.red 2)}
-        green ${toString (builtins.elemAt rgb.green 0)} ${toString (builtins.elemAt rgb.green 1)} ${toString (builtins.elemAt rgb.green 2)}
-        yellow ${toString (builtins.elemAt rgb.yellow 0)} ${toString (builtins.elemAt rgb.yellow 1)} ${toString (builtins.elemAt rgb.yellow 2)}
-        blue ${toString (builtins.elemAt rgb.blue 0)} ${toString (builtins.elemAt rgb.blue 1)} ${toString (builtins.elemAt rgb.blue 2)}
-        magenta ${toString (builtins.elemAt rgb.magenta 0)} ${toString (builtins.elemAt rgb.magenta 1)} ${toString (builtins.elemAt rgb.magenta 2)}
-        orange ${toString (builtins.elemAt rgb.orange 0)} ${toString (builtins.elemAt rgb.orange 1)} ${toString (builtins.elemAt rgb.orange 2)}
-        cyan ${toString (builtins.elemAt rgb.cyan 0)} ${toString (builtins.elemAt rgb.cyan 1)} ${toString (builtins.elemAt rgb.cyan 2)}
-        black ${toString (builtins.elemAt rgb.black 0)} ${toString (builtins.elemAt rgb.black 1)} ${toString (builtins.elemAt rgb.black 2)}
-        white ${toString (builtins.elemAt rgb.white 0)} ${toString (builtins.elemAt rgb.white 1)} ${toString (builtins.elemAt rgb.white 2)}
+        fg ${rgbValues "fg"}
+        bg ${rgbValues "bg"}
+        red ${rgbValues "red"}
+        green ${rgbValues "green"}
+        yellow ${rgbValues "yellow"}
+        blue ${rgbValues "blue"}
+        magenta ${rgbValues "magenta"}
+        orange ${rgbValues "orange"}
+        cyan ${rgbValues "cyan"}
+        black ${rgbValues "black"}
+        white ${rgbValues "white"}
       }
     }
     theme "stylix"
