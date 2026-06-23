@@ -6,7 +6,7 @@
 {
   programs.firefox = {
     enable = true;
-    package = pkgs.zen-browser;
+    package = inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default;
     configPath = ".zen";
     profiles.josh = {
       isDefault = true;

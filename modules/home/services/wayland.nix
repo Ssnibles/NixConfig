@@ -1,7 +1,12 @@
 {
   pkgs,
+  inputs,
   ...
 }:
+
+let
+  solaar = inputs.solaar.packages.${pkgs.stdenv.hostPlatform.system}.default;
+in
 
 {
   systemd.user.services.polkit-gnome-authentication-agent = {
@@ -25,7 +30,7 @@
       After = [ "graphical-session.target" ];
     };
     Service = {
-      ExecStart = "${pkgs.solaar}/bin/solaar --window=hide";
+      ExecStart = "${solaar}/bin/solaar --window=hide";
       Restart = "on-failure";
       RestartSec = 1;
     };
