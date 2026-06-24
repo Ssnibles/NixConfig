@@ -18,8 +18,6 @@ let
       }
       ''
         mkdir -p $out
-        cp ${./shaders/circleMask.frag} $out/circleMask.frag
-        qsb --qt6 $out/circleMask.frag -o $out/circleMask.frag.qsb
       '';
 
   colorsQml = ''
@@ -54,8 +52,6 @@ let
     "quickshell/AppIcon.qml" = "${qsDir}/AppIcon.qml";
     "quickshell/ActionRow.qml" = "${qsDir}/ActionRow.qml";
     "quickshell/SliderControl.qml" = "${qsDir}/SliderControl.qml";
-    "quickshell/shaders/circleMask.frag.qsb" = "${compiledShaders}/circleMask.frag.qsb";
-    "quickshell/shaders/circleMask.frag" = "${compiledShaders}/circleMask.frag";
   };
 
 in
@@ -72,8 +68,7 @@ in
   };
 
   xdg.configFile = lib.mapAttrs' (
-    name: path:
-    lib.nameValuePair name { source = config.lib.file.mkOutOfStoreSymlink path; }
+    name: path: lib.nameValuePair name { source = config.lib.file.mkOutOfStoreSymlink path; }
   ) commonQsFiles;
 
   # Write Colors.qml directly into the repo checkout so the out-of-store

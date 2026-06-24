@@ -15,8 +15,6 @@ let
     "SliderControl.qml"
     "notifications.qml"
     "CommandCenter.qml"
-    "shaders/circleMask.frag.qsb"
-    "shaders/circleMask.frag"
   ];
 in
 {
@@ -33,7 +31,9 @@ in
     lib.listToAttrs (
       map (name: {
         name = "quickshell/hyprland/${name}";
-        value = { source = config.xdg.configFile."quickshell/${name}".source; };
+        value = {
+          source = config.xdg.configFile."quickshell/${name}".source;
+        };
       }) qsCommonNames
     )
     // {
