@@ -35,6 +35,7 @@
     Unit = {
       Description = "Hyprland idle daemon";
       PartOf = [ "hyprland-session.target" ];
+      BindsTo = [ "hyprland-session.target" ];
       After = [ "hyprland-session.target" ];
     };
     Service = {
