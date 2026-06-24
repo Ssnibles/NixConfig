@@ -9,11 +9,15 @@ let
 in
 
 {
+  # ── Early session services ───────────────────────────────────────────────
+  # These start before graphical-session.target so they're ready immediately.
+
   systemd.user.services.polkit-gnome-authentication-agent = {
     Unit = {
       Description = "Polkit authentication agent";
       PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" ];
+      Before = [ "graphical-session.target" ];
+      After = [ "graphical-session-pre.target" ];
     };
     Service = {
       ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
@@ -27,7 +31,8 @@ in
     Unit = {
       Description = "Solaar Logitech device manager";
       PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" ];
+      Before = [ "graphical-session.target" ];
+      After = [ "graphical-session-pre.target" ];
     };
     Service = {
       ExecStart = "${solaar}/bin/solaar --window=hide";
@@ -37,32 +42,22 @@ in
     Install.WantedBy = [ "graphical-session.target" ];
   };
 
+  # ── Hyprland-bound services ─────────────────────────────────────────────
+  # These start after the compositor is up and stop when it goes down.
+
   systemd.user.services.awww = {
     Unit = {
       Description = "Awww wallpaper daemon";
-      PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" "wayland-session@hyprland.desktop.target" ];
-      StartLimitBurst = 10;
-      StartLimitIntervalSec = 60;
+      PartOf = [ "hyprland-session.target" ];
+      BindsTo = [ "hyprland-session.target" ];
+      After = [ "hyprland-session.target" ];
     };
     Service = {
-      ExecStart = "${pkgs.writeShellScript "awww-launch" ''
-        for _ in $(seq 50); do
-          for socket in "$XDG_RUNTIME_DIR"/wayland-*; do
-            if [ -S "$socket" ]; then
-              WAYLAND_DISPLAY=$(basename "$socket") \
-                exec ${pkgs.unstable.awww}/bin/awww-daemon
-            fi
-          done
-          sleep 0.1
-        done
-        echo "Awww: Wayland socket not ready" >&2
-        exit 1
-      ''}";
-      Restart = "always";
+      ExecStart = "${pkgs.unstable.awww}/bin/awww-daemon";
+      Restart = "on-failure";
       RestartSec = 2;
     };
-    Install.WantedBy = [ "graphical-session.target" ];
+    Install.WantedBy = [ "hyprland-session.target" ];
   };
 
   programs.vicinae.systemd.enable = true;
