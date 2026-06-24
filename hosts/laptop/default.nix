@@ -55,8 +55,6 @@
       CPU_BOOST_ON_BAT = 0;
       CPU_SCALING_GOVERNOR_ON_AC = "performance";
       CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
-      START_CHARGE_THRESH_BAT0 = 40;
-      STOP_CHARGE_THRESH_BAT0 = 85;
       WIFI_PWR_ON_AC = "off";
       WIFI_PWR_ON_BAT = "off";
       USB_AUTOSUSPEND = 1;
@@ -85,12 +83,17 @@
       HandleLidSwitch = "suspend";
       HandleLidSwitchExternalPower = "ignore";
       HandleLidSwitchDocked = "ignore";
-      IgnoreInhibited = "yes";
     };
+  };
+
+  # ── Groups used by services ───────────────────────────────────────────────
+  users.groups = {
+    keyd = { };
+    netdev = { };
   };
 
   # ── UDEV rules ───────────────────────────────────────────────────────────
   services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme[0-9]*n[0-9]*", ATTR{queue/read_ahead_kb}="1024"
+    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme[0-9]*n[0-9]*", KERNEL!="nvme[0-9]*n[0-9]*p[0-9]*", ATTR{queue/read_ahead_kb}="1024"
   '';
 }

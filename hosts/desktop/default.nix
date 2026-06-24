@@ -53,7 +53,7 @@
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="nvidia", ATTR{power/control}="on"
 
     # Higher NVMe read-ahead for desktop performance
-    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme[0-9]*n[0-9]*", ATTR{queue/read_ahead_kb}="2048"
+    ACTION=="add", SUBSYSTEM=="block", KERNEL=="nvme[0-9]*n[0-9]*", KERNEL!="nvme[0-9]*n[0-9]*p[0-9]*", ATTR{queue/read_ahead_kb}="2048"
   '';
 
   programs.steam = {
