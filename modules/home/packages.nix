@@ -90,6 +90,7 @@ let
     unstable.satty
     unstable.grim
     unstable.slurp
+    unstable.grimblast
   ];
 
   perHost =
