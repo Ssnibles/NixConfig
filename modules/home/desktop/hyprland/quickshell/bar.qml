@@ -21,6 +21,7 @@ PanelWindow {
   color: Colors.bg
 
   property string uiFont: "JetBrains Mono"
+  property string specialFont: "Instrument Serif"
   property int barHeight: 30
   property int tooltipMaxWidth: 320
   property int tooltipMargin: 6
@@ -419,7 +420,7 @@ PanelWindow {
       text: barPanel.timeStr
       color: Colors.fg
       font.family: barPanel.uiFont
-      font.pixelSize: 13
+      font.pixelSize: 14
       font.bold: true
     }
 
