@@ -65,6 +65,7 @@ let
     unstable.nerd-fonts.jetbrains-mono
     unstable.texlivePackages.opensans
     unstable.alice
+    pkgs.instrument-serif
   ];
 
   gui = [
@@ -107,13 +108,16 @@ let
 
 in
 {
-  home.packages =
-    [ (flakePkg "pomodoro") unstable.awww (flakePkg "solaar") ]
-    ++ development
-    ++ cli
-    ++ fonts
-    ++ gui
-    ++ media
-    ++ connectivity
-    ++ perHost;
+  home.packages = [
+    (flakePkg "pomodoro")
+    unstable.awww
+    (flakePkg "solaar")
+  ]
+  ++ development
+  ++ cli
+  ++ fonts
+  ++ gui
+  ++ media
+  ++ connectivity
+  ++ perHost;
 }
