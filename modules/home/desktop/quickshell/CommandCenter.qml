@@ -32,6 +32,7 @@ PanelWindow {
     property color orange:    (controlPanel.root || Colors).orange
     property color teal:      (controlPanel.root || Colors).teal
     property string uiFont:   (controlPanel.root || { uiFont: "JetBrains Mono" }).uiFont
+    property string specialFont: (controlPanel.root || { specialFont: "Instrument Serif"}).specialFont
   }
 
   // ── Volume ──
@@ -524,9 +525,10 @@ PanelWindow {
               id: headerTime
               text: Qt.formatDateTime(new Date(), "hh:mm")
               color: _p.fg
-              font.family: _p.uiFont
-              font.pixelSize: 32
+              font.family: _p.specialFont
+              font.pixelSize: 64
               font.bold: true
+              font.italic: true
 
               Timer {
                 interval: 1000
