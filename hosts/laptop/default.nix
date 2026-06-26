@@ -88,7 +88,6 @@
 
   # ── Groups used by services ───────────────────────────────────────────────
   users.groups = {
-    keyd = { };
     netdev = { };
   };
 
