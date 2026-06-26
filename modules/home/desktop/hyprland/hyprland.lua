@@ -214,10 +214,12 @@ hl.window_rule({
 })
 hl.window_rule({
 	name = "satty",
-	match = { class = "^(satty)$" },
+	match = { class = "^(com\\.gabm\\.satty)$" },
+	max_size = { 200, 200 },
 	float = true,
-	size = "60% 60%",
 	center = true,
+	size = "60% 60%",
+	dim_around = true,
 })
 
 -- ── Layer rules ────────────────────────────────────────────────────────

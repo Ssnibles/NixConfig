@@ -9,7 +9,7 @@
 let
   screenshotDir = "~/Pictures/Screenshots";
   sattyFocusCommand = "(sleep 0.15 && (hyprctl dispatch 'hl.dsp.focus({window = \"class:^(satty)$\"})' || hyprctl dispatch 'hl.dsp.focus({window = \"class:^(com\\.gabm\\.satty)$\"})'))";
-  sattyCaptureCommand = "satty --disable-notifications --floating-hack --filename - --output-filename \"${screenshotDir}/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
+  sattyCaptureCommand = "satty --disable-notifications --resize 0.8x0.8--filename - --output-filename \"${screenshotDir}/Screenshot-%Y-%m-%d_%H-%M-%S.png\" --copy-command wl-copy --actions-on-enter save-to-file,save-to-clipboard,exit";
   c = semanticColors { colors = config.lib.stylix.colors; };
   wallpaper = (import ../../../../lib/stylix/themes.nix).wallpaper;
   hyprDir = "${config.home.homeDirectory}/NixConfig/modules/home/desktop/hyprland";
@@ -50,17 +50,16 @@ in
     adwaita-icon-theme
   ];
 
-  xdg.configFile."hypr/xdph.conf".text =
-    lib.concatStrings [
-      ''
-        screencopy {
-            max_fps = 60
-      ''
-      (lib.optionalString hostProfile.hasNvidia "    force_shm = true\n")
-      ''
-        }
-      ''
-    ];
+  xdg.configFile."hypr/xdph.conf".text = lib.concatStrings [
+    ''
+      screencopy {
+          max_fps = 60
+    ''
+    (lib.optionalString hostProfile.hasNvidia "    force_shm = true\n")
+    ''
+      }
+    ''
+  ];
 
   programs.vicinae.enable = true;
 
