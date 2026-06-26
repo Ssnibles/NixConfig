@@ -214,7 +214,7 @@ hl.window_rule({
 })
 hl.window_rule({
 	name = "satty",
-	match = { class = "^(satty|com\\.gabm\\.satty)$" },
+	match = { class = "^(satty)$" },
 	float = true,
 	size = "60% 60%",
 	center = true,
@@ -322,3 +322,6 @@ hl.bind(
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
+
+-- ── Gestures ───────────────────────────────────────────────────────────
+hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
