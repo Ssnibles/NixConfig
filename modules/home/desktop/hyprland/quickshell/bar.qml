@@ -378,7 +378,7 @@ PanelWindow {
           anchors.verticalCenter: parent.verticalCenter
 
           Behavior on width {
-            SpringAnimation { spring: 4.5; damping: 0.28 }
+            SpringAnimation { spring: 10; damping: 0.3 }
           }
           Behavior on color {
             ColorAnimation { duration: 200; easing.type: Easing.InOutQuad }
