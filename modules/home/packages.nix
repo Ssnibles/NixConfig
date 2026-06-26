@@ -88,8 +88,6 @@ let
     unstable.bluetui
     unstable.blueman
     unstable.satty
-    unstable.grim
-    unstable.slurp
     unstable.grimblast
   ];
 

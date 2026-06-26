@@ -232,18 +232,15 @@ local screenshotFull = "mkdir -p "
 	.. screenshotDir
 	.. "; "
 	.. G.satty_focus
-	.. " & grim -o \"$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')\" - | "
+	.. " & grimblast --freeze save output - | "
 	.. G.satty_capture
 
 local screenshotRegion = "mkdir -p "
 	.. screenshotDir
 	.. "; "
-	.. 'region=$(hyprctl -j clients | jq -r --argjson ws $(hyprctl -j activeworkspace | jq -r \'.id\') \'.[] | select(.mapped and .workspace.id == $ws) | (.at[0]|tostring) + "," + (.at[1]|tostring) + " " + (.size[0]|tostring) + "x" + (.size[1]|tostring)\' | slurp); '
-	.. '[ -n "$region" ] && { '
 	.. G.satty_focus
-	.. ' & sleep 0.05 && grim -g "$region" - | '
+	.. " & grimblast --freeze save area - | "
 	.. G.satty_capture
-	.. "; }"
 
 -- ── Keybinds ───────────────────────────────────────────────────────────
 hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("foot"))
