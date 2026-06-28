@@ -16,7 +16,6 @@ fzf.setup({
 			title = false,
 		},
 	},
-	-- Header / prompt polish
 	hl = {
 		normal = "FzfLuaNormal",
 		border = "FzfLuaBorder",
@@ -48,8 +47,6 @@ fzf.setup({
 	},
 })
 
--- Responsive layout: side-by-side on wide windows, stacked on narrow ones
----@return table winopts
 local function responsive()
 	local width = vim.api.nvim_win_get_width(0)
 	if width < 110 then
@@ -76,7 +73,6 @@ local function responsive()
 	}
 end
 
--- Wrappers that inject responsive winopts
 local function files()     fzf.files(responsive()) end
 local function grep()      fzf.live_grep(responsive()) end
 local function oldfiles()  fzf.oldfiles(responsive()) end
@@ -94,6 +90,11 @@ local function git_commits() fzf.git_commits(responsive()) end
 local function git_status()  fzf.git_status(responsive()) end
 
 local map = vim.keymap.set
+
+-- ═══════════════════════════════════════════════════════════════════
+--  F I N D   (<leader>f)
+-- ═══════════════════════════════════════════════════════════════════
+
 map("n", "<leader>ff", files, { desc = "Find files" })
 map("n", "<leader>fo", oldfiles, { desc = "Recent files" })
 map("n", "<leader>fb", buffers, { desc = "Buffers" })
@@ -106,6 +107,26 @@ map("n", "<leader>fS", lsp_wsyms, { desc = "Workspace symbols" })
 map("n", "<leader>fd", lsp_diag, { desc = "Diagnostics" })
 map("n", "<leader>fh", help_tags, { desc = "Help" })
 map("n", "<leader>fk", keymaps, { desc = "Keymaps" })
-map("n", "<leader>f.", resume, { desc = "Resume" })
+map("n", "<leader>f.", resume, { desc = "Resume last picker" })
+
+-- ═══════════════════════════════════════════════════════════════════
+--  G I T   (<leader>g)  -- consolidated
+-- ═══════════════════════════════════════════════════════════════════
+
+map("n", "<leader>gg", function()
+	require("neogit").open()
+end, { desc = "Neogit status" })
 map("n", "<leader>gc", git_commits, { desc = "Git commits" })
-map("n", "<leader>gt", git_status, { desc = "Git status" })
+map("n", "<leader>gS", git_status, { desc = "Git status (picker)" })
+map("n", "<leader>gl", function()
+	fzf.git_log({ winopts = responsive().winopts })
+end, { desc = "Git log" })
+map("n", "<leader>gL", function()
+	fzf.git_log_line({ winopts = responsive().winopts })
+end, { desc = "Git log (current line)" })
+map("n", "<leader>gB", function()
+	fzf.git_branches({ winopts = responsive().winopts })
+end, { desc = "Git branches" })
+map("n", "<leader>gF", function()
+	fzf.git_stash({ winopts = responsive().winopts })
+end, { desc = "Git stash" })

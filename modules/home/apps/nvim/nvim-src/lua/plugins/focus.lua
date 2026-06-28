@@ -21,5 +21,9 @@ require("twilight").setup({
 	},
 })
 
-vim.keymap.set("n", "<leader>zz", "<cmd>NoNeckPain<CR>", { desc = "Toggle no neck pain" })
-vim.keymap.set("n", "<leader>zt", "<cmd>Twilight<CR>", { desc = "Toggle twilight" })
+vim.keymap.set("n", "<leader>zz", "<cmd>NoNeckPain<CR>", { desc = "Toggle center (no neck pain)" })
+vim.keymap.set("n", "<leader>zt", "<cmd>Twilight<CR>", { desc = "Toggle twilight (dim inactive)" })
+vim.keymap.set("n", "<leader>zf", function()
+	vim.cmd("NoNeckPain")
+	vim.cmd("Twilight")
+end, { desc = "Toggle full focus mode" })

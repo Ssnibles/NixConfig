@@ -11,14 +11,12 @@ neogit.setup({
 	auto_refresh = true,
 	refresh_interval = 3000,
 
-	-- Signs: clean unicode symbols for each state
 	signs = {
 		hunk = { "", "" },
 		item = { "▸", "▾" },
 		section = { "▸", "▾" },
 	},
 
-	-- Tidy section labels: no garish capitalised headers
 	sections = {
 		untracked = { folded = false, hidden = false },
 		unstaged = { folded = false, hidden = false },
@@ -32,10 +30,8 @@ neogit.setup({
 		rebase = { folded = true, hidden = false },
 	},
 
-	-- Fzf is our fuzzy friend everywhere
 	integrations = { fzf_lua = true },
 
-	-- Popup buffers use rounded borders and smooth theme
 	popup = {
 		kind = "split",
 	},

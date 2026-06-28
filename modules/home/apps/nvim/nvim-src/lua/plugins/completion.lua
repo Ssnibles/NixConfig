@@ -1,8 +1,7 @@
 -- Completion: blink.cmp, luasnip snippets, copilot.
--- Fast, modern, with a sleek Zed-inspired menu design.
 
 -- ═══════════════════════════════════════════════════════════════════
---  L U A S N I P   (snippet engine)
+--  L U A S N I P
 -- ═══════════════════════════════════════════════════════════════════
 
 require("luasnip").setup({
@@ -63,42 +62,34 @@ require("blink.cmp").setup({
 
 	snippets = { preset = "luasnip" },
 
-	-- ── Keymap: Esc kills everything and exits insert mode in one press ──
 	keymap = {
 		preset = "none",
 
-		-- Show / hide help manually
 		["<C-space>"] = { "show_documentation", "hide_documentation" },
-
-		-- One Esc to rule them all: cancel completion then fall through to normal mode
-		["<Esc>"] = { "cancel", "fallback" },
-
-		-- Alternative: <C-c> forces hard exit
+		["<Esc>"] = {
+			function()
+				require("blink.cmp").cancel()
+			end,
+			"fallback",
+		},
 		["<C-c>"] = { "cancel", "fallback" },
-
-		-- Abort completion without exiting insert mode
 		["<C-e>"] = { "cancel", "fallback" },
 
-		-- Tab: copilot ghost → accept completion → snippet forward
 		["<Tab>"] = { accept_copilot_if_visible, "select_and_accept", "snippet_forward", "fallback" },
 		["<S-Tab>"] = { "snippet_backward", "fallback" },
 
-		-- Navigation (C-j/k are kept free for insert-mode cursor movement)
 		["<Up>"] = { "select_prev", "fallback" },
 		["<Down>"] = { "select_next", "fallback" },
 		["<C-p>"] = { "select_prev", "fallback" },
 		["<C-n>"] = { "select_next", "fallback" },
 
-		-- Scroll doc
 		["<C-b>"] = { "scroll_documentation_up", "fallback" },
 		["<C-f>"] = { "scroll_documentation_down", "fallback" },
 
-		-- Copilot suggestion navigation
 		["<M-]>"] = { copilot_suggestion_action("next") },
 		["<M-[>"] = { copilot_suggestion_action("prev") },
 	},
 
-	-- ── Appearance ──────────────────────────────────────────────
 	appearance = {
 		nerd_font_variant = "mono",
 		kind_icons = {
@@ -130,7 +121,6 @@ require("blink.cmp").setup({
 		},
 	},
 
-	-- ── Sources ─────────────────────────────────────────────────
 	sources = {
 		default = { "lsp", "snippets", "buffer", "path" },
 		per_filetype = {
@@ -154,7 +144,6 @@ require("blink.cmp").setup({
 		},
 	},
 
-	-- ── Completion behaviour ────────────────────────────────────
 	completion = {
 		list = {
 			selection = {
@@ -185,16 +174,21 @@ require("blink.cmp").setup({
 			},
 		},
 		ghost_text = {
-			-- Disabled: Copilot already provides inline ghost text;
-			-- having both causes visual overlap when the menu is closed.
 			enabled = false,
 		},
 	},
 
-	-- ── Cmdline completion ──────────────────────────────────────
 	cmdline = {
 		keymap = {
-			["<Esc>"] = { "cancel", "fallback" },
+		["<Esc>"] = {
+			function()
+				local cmp = require("blink.cmp")
+				if cmp.is_active() then
+					cmp.cancel()
+				end
+				vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+			end,
+		},
 			["<C-c>"] = { "cancel", "fallback" },
 			["<Tab>"] = { "accept", "fallback" },
 			["<S-Tab>"] = { "fallback" },
@@ -212,9 +206,6 @@ require("blink.cmp").setup({
 	},
 })
 
--- Workaround: blink.cmp calls write_to_dot_repeat (which uses complete())
--- even when not in Insert mode (e.g. during undo_preview after InsertLeave).
--- Guard it so it only runs when vim is actually in Insert mode.
 local ok_text_edits, text_edits = pcall(require, "blink.cmp.lib.text_edits")
 if ok_text_edits then
 	local original_write_to_dot_repeat = text_edits.write_to_dot_repeat
@@ -226,7 +217,6 @@ if ok_text_edits then
 	end
 end
 
--- Copilot setup (only if module is available)
 if copilot_ok then
 	copilot.setup({
 		suggestion = {
@@ -245,8 +235,6 @@ if copilot_ok then
 	})
 end
 
--- ── Hide copilot ghost-text while the blink menu is visible ──
-
 vim.api.nvim_create_autocmd("User", {
 	pattern = "BlinkCmpMenuOpen",
 	callback = function()
@@ -261,7 +249,9 @@ vim.api.nvim_create_autocmd("User", {
 	end,
 })
 
--- ── Copilot toggles ────────────────────────────────────────────
+-- ═══════════════════════════════════════════════════════════════════
+--  C O P I L O T   T O G G L E S   (<leader>a)
+-- ═══════════════════════════════════════════════════════════════════
 
 vim.keymap.set("n", "<leader>ac", function()
 	if not copilot_ok then

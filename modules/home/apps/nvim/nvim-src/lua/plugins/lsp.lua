@@ -287,6 +287,7 @@ local function attach_lsp_keymaps(bufnr)
 		require("fzf-lua").lsp_references({ jump_to_single_result = true })
 	end, "Find references")
 	map("K", lsp.buf.hover, "Hover documentation")
+	map("<C-k>", lsp.buf.signature_help, "Signature help")
 	map("<leader>rn", function()
 		if not supports_lsp_rename(vim.api.nvim_get_current_buf()) then
 			vim.notify("No attached LSP supports rename in this buffer", vim.log.levels.WARN)

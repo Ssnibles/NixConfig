@@ -1,17 +1,11 @@
 -- Dashboard: minimal, centred startup screen with composable sections.
--- Add, remove, or reorder entries in M.sections to customise the layout.
--- Each section is a function(dashboard) that returns { lines, highlights, keymaps }.
---   lines:       string array of content lines (centring is automatic).
---   highlights:  {{ line, col, end_line, end_col, group }, ...}  — all 0-indexed.
---   keymaps:     {{ key, cmd }, ...}  — buffer-local mappings.
 
 local M = {}
 
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════
 --  S E C T I O N   D E F I N I T I O N S
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════
 
---- ASCII banner (N E O V I M)
 local function section_header()
 	return {
 		lines = {
@@ -36,14 +30,12 @@ local function section_header()
 	}
 end
 
---- Quick-action shortcuts bar
---- Format: each entry is { key, label, command }
 local function section_shortcuts()
 	local entries = {
 		{ "f", "Find file",  "<cmd>FzfLua files<CR>" },
 		{ "r", "Recent",     "<cmd>FzfLua oldfiles<CR>" },
 		{ "g", "Grep",       "<cmd>FzfLua live_grep<CR>" },
-		{ "e", "Explorer",   "<cmd>Fyler<CR>" },
+		{ "e", "Explorer",   function() require("fyler").open({ kind = "float" }) end },
 		{ "q", "Quit",       "<cmd>qa<CR>" },
 	}
 
@@ -77,7 +69,6 @@ local function section_shortcuts()
 	}
 end
 
---- Working-directory footer
 local function section_footer()
 	local cwd = vim.fn.getcwd():gsub(vim.env.HOME or "~", "~")
 	return {
@@ -93,10 +84,9 @@ local function section_footer()
 	}
 end
 
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════
 --  S E C T I O N   R E G I S T R Y
---  Reorder / remove / insert sections here.
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════
 
 M.sections = {
 	section_header(),
@@ -104,9 +94,9 @@ M.sections = {
 	section_footer(),
 }
 
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════
 --  R E N D E R I N G
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════
 
 local function strwidth(s)
 	return vim.fn.strdisplaywidth(s)
@@ -129,7 +119,6 @@ function M.open()
 	local width = vim.api.nvim_win_get_width(0)
 	local height = vim.api.nvim_win_get_height(0)
 
-	-- Collect all section output
 	local body = {}
 	local highlight_defs = {}
 	local keymap_defs = {}
@@ -193,7 +182,6 @@ function M.open()
 		end
 	end
 
-	-- Vertical centring
 	local top_pad = math.floor((height - #body) / 2)
 	if top_pad < 0 then
 		top_pad = 0
@@ -205,20 +193,17 @@ function M.open()
 	end
 	vim.list_extend(lines, body)
 
-	-- Shift highlights down by top_pad
 	for _, h in ipairs(highlight_defs) do
 		h.line = h.line + top_pad
 		h.end_line = h.end_line + top_pad
 	end
 
-	-- Write buffer
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 	vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
 	vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
 	vim.api.nvim_buf_set_option(buf, "swapfile", false)
 	vim.api.nvim_buf_set_option(buf, "modifiable", false)
 
-	-- Window options
 	local saved = {
 		number = vim.wo.number,
 		relativenumber = vim.wo.relativenumber,
@@ -256,7 +241,6 @@ function M.open()
 		end,
 	})
 
-	-- Apply highlights
 	local ns = vim.api.nvim_create_namespace("dashboard")
 	local max_line = vim.api.nvim_buf_line_count(buf) - 1
 	for _, h in ipairs(highlight_defs) do
@@ -283,17 +267,24 @@ function M.open()
 		::continue::
 	end
 
-	-- Apply keymaps
 	for _, km in ipairs(keymap_defs) do
-		vim.keymap.set("n", km[1], km[3] or km[2], {
-			buffer = buf,
-			silent = true,
-			nowait = true,
-		})
+		local action = km[3] or km[2]
+		if type(action) == "function" then
+			vim.keymap.set("n", km[1], action, {
+				buffer = buf,
+				silent = true,
+				nowait = true,
+			})
+		else
+			vim.keymap.set("n", km[1], action, {
+				buffer = buf,
+				silent = true,
+				nowait = true,
+			})
+		end
 	end
 end
 
--- Open on empty startup
 vim.api.nvim_create_autocmd("VimEnter", {
 	group = vim.api.nvim_create_augroup("Dashboard", { clear = true }),
 	once = true,

@@ -13,15 +13,15 @@ local function toggle_terminal(position)
 	})
 end
 
-vim.keymap.set("n", "<leader>tt", function()
+vim.keymap.set({ "n", "t" }, "<leader>tt", function()
 	toggle_terminal("bottom")
-end, { desc = "Toggle terminal" })
+end, { desc = "Toggle terminal (bottom)" })
 
-vim.keymap.set("n", "<leader>tr", function()
+vim.keymap.set({ "n", "t" }, "<leader>tr", function()
 	toggle_terminal("right")
 end, { desc = "Toggle terminal (right)" })
 
-vim.keymap.set("n", "<leader>tf", function()
+vim.keymap.set({ "n", "t" }, "<leader>tf", function()
 	local ok, snacks = pcall(require, "snacks")
 	if not ok then
 		vim.notify("snacks.nvim is not available", vim.log.levels.ERROR)

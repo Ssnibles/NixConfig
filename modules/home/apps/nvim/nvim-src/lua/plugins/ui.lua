@@ -1,11 +1,10 @@
 -- UI: lualine, snacks, noice, statuscol, markview, diagnostics.
--- All surfaces share the editor background for a flat, modern appearance.
 
 local c = require("theme").colors
 local t = require("theme")
 
 -- ═══════════════════════════════════════════════════════════════════
---  S N A C K S . N V I M   (terminal)
+--  S N A C K S . N V I M
 -- ═══════════════════════════════════════════════════════════════════
 
 require("snacks").setup({
@@ -120,7 +119,7 @@ require("statuscol").setup({
 })
 
 -- ═══════════════════════════════════════════════════════════════════
---  N O I C E   --  fixed-width top-centred command palette
+--  N O I C E
 -- ═══════════════════════════════════════════════════════════════════
 
 require("noice").setup({

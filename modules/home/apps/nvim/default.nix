@@ -82,7 +82,7 @@ in
         shiftround = true;
         termguicolors = true;
         cursorline = true;
-        scrolloff = 999;
+        scrolloff = 8;
         sidescrolloff = 8;
         showmode = false;
         wrap = false;
@@ -99,7 +99,7 @@ in
         foldexpr = "v:lua.vim.treesitter.foldexpr()";
         foldlevelstart = 99;
         updatetime = 200;
-        timeoutlen = 300;
+        timeoutlen = 400;
         ttimeoutlen = 10;
         swapfile = false;
         autoread = true;
@@ -228,7 +228,7 @@ in
         nvim-autopairs
         conform-nvim
         dial-nvim
-        multicursor-nvim
+
         (grug-far-nvim.overrideAttrs (_: {
           doCheck = false;
         }))

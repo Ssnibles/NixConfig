@@ -1,11 +1,9 @@
 -- mini.nvim suite
 
--- Icons (with nvim-web-devicons compatibility)
 local icons = require("mini.icons")
 icons.setup()
 icons.mock_nvim_web_devicons()
 
--- Text objects
 require("mini.ai").setup({
 	n_lines = 500,
 	custom_textobjects = {
@@ -18,7 +16,6 @@ require("mini.ai").setup({
 	},
 })
 
--- Surround
 require("mini.surround").setup({
 	mappings = {
 		add = "sa",
@@ -31,7 +28,10 @@ require("mini.surround").setup({
 	},
 })
 
--- Key hints (which-key alternative)
+-- ═══════════════════════════════════════════════════════════════════
+--  M I N I . C L U E   (which-key)
+-- ═══════════════════════════════════════════════════════════════════
+
 local clue = require("mini.clue")
 clue.setup({
 	clues = {
@@ -48,13 +48,15 @@ clue.setup({
 		{ mode = "n", keys = "<Leader>f", desc = "+find" },
 		{ mode = "n", keys = "<Leader>g", desc = "+git" },
 		{ mode = "n", keys = "<Leader>l", desc = "+lsp" },
-		{ mode = "n", keys = "<Leader>m", desc = "+debug" },
+		{ mode = "n", keys = "<Leader>m", desc = "+dap" },
 		{ mode = "n", keys = "<Leader>q", desc = "+quit/lists" },
 		{ mode = "n", keys = "<Leader>t", desc = "+toggles/terminal" },
 		{ mode = "n", keys = "<Leader>T", desc = "+tabs" },
 		{ mode = "n", keys = "<Leader>w", desc = "+window" },
 		{ mode = "n", keys = "<Leader>z", desc = "+zen" },
 		{ mode = "n", keys = "<Leader>a", desc = "+copilot" },
+		{ mode = "n", keys = "<Leader>v", desc = "+select" },
+		{ mode = "n", keys = "<Leader>h", desc = "+highlights" },
 	},
 	triggers = {
 		{ mode = "n", keys = "<Leader>" },
@@ -67,7 +69,10 @@ clue.setup({
 	window = { delay = 300, config = { border = "rounded", width = "auto" } },
 })
 
--- Highlight patterns (TODO, FIXME, etc.)
+-- ═══════════════════════════════════════════════════════════════════
+--  H I G H L I G H T   P A T T E R N S
+-- ═══════════════════════════════════════════════════════════════════
+
 local hip = require("mini.hipatterns")
 hip.setup({
 	highlighters = {
@@ -79,10 +84,12 @@ hip.setup({
 	},
 })
 
--- Cursor word highlight
+-- ═══════════════════════════════════════════════════════════════════
+--  O T H E R   M I N I   M O D U L E S
+-- ═══════════════════════════════════════════════════════════════════
+
 require("mini.cursorword").setup({ delay = 200 })
 
--- Indent scope: shows the current block's scope line
 require("mini.indentscope").setup({
 	symbol = "│",
 	options = { try_as_border = true },
@@ -92,7 +99,6 @@ require("mini.indentscope").setup({
 	},
 })
 
--- Additional mini modules
 require("mini.align").setup()
 require("mini.move").setup()
 require("mini.operators").setup()
@@ -100,7 +106,6 @@ require("mini.splitjoin").setup()
 require("mini.trailspace").setup()
 require("mini.bufremove").setup()
 
--- Buffer delete keymap
 vim.keymap.set("n", "<leader>bd", function()
 	require("mini.bufremove").delete()
 end, { desc = "Delete buffer" })
