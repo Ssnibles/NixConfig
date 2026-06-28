@@ -78,10 +78,11 @@ local function ensure_win(b, width, height)
 	width = math.max(width, 40)
 	width = math.min(width, math.floor(cols * 0.8))
 	height = height or 1
+	local col = math.floor((cols - width) / 2)
 	local cfg = {
 		relative = "editor",
 		row = 0,
-		col = math.floor((cols - width) / 2),
+		col = col,
 		width = width,
 		height = height,
 		style = "minimal",
@@ -94,6 +95,7 @@ local function ensure_win(b, width, height)
 		win = vim.api.nvim_open_win(b, false, cfg)
 		vim.wo[win].winhighlight = "Normal:Normal,FloatBorder:FloatBorder"
 	end
+	vim.g.ui_cmdline_pos = { 2, col }
 end
 
 local function close_win()
@@ -101,6 +103,7 @@ local function close_win()
 		vim.api.nvim_win_close(win, true)
 	end
 	win = nil
+	vim.g.ui_cmdline_pos = nil
 end
 
 local function prepare_buf(content, pos)

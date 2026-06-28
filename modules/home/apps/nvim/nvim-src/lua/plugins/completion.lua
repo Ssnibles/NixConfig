@@ -153,6 +153,7 @@ require("blink.cmp").setup({
 		},
 		menu = {
 			auto_show = true,
+			direction_priority = { "s", "n" },
 			border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
 			scrollbar = true,
 			draw = {
