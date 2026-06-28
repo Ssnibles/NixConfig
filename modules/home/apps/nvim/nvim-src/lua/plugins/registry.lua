@@ -9,6 +9,7 @@ M.core = {
 	"plugins.fzf",
 	"plugins.navigation",
 	"plugins.ui",
+	"plugins.cmdline",
 	"plugins.terminal",
 	"plugins.lint",
 	"plugins.dashboard",
