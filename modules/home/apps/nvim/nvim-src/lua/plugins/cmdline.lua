@@ -2,7 +2,7 @@ local M = {}
 
 local ns = vim.api.nvim_create_namespace("float_cmdline")
 local buf, win
-local state = { firstc = "", prompt = "", prefix_len = 0, visible = false, last_content = nil }
+local state = { firstc = "", prompt = "", prefix_len = 0, visible = false, last_content = nil, last_input = "" }
 local block_lines = {}
 
 vim.opt.cmdheight = 0
@@ -116,7 +116,9 @@ local function prepare_buf(content, pos)
 	for _, chunk in ipairs(content or {}) do
 		parts[#parts + 1] = chunk[2]
 	end
-	local display = prefix .. table.concat(parts)
+	local input = table.concat(parts)
+	state.last_input = input
+	local display = prefix .. input
 	if display == "" then
 		display = " "
 	end
@@ -126,20 +128,23 @@ local function prepare_buf(content, pos)
 	apply_chunk_highlights(b, content, #prefix)
 	apply_cursor(display, pos)
 
-	return b, vim.fn.strdisplaywidth(display) + 6
+	return b, #display + 6
 end
 
 local function update_cursor_buf(pos)
 	if not is_buf_valid() then
 		return
 	end
-	local line = vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] or ""
-	if line == "" then
-		return
+	local prefix = get_prefix()
+	local display = prefix .. state.last_input
+	if display == "" then
+		display = " "
 	end
+
+	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { display })
 	vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 	apply_chunk_highlights(buf, state.last_content, state.prefix_len)
-	apply_cursor(line, pos)
+	apply_cursor(display, pos)
 end
 
 local function prepare_block(lines)
@@ -165,7 +170,7 @@ local function prepare_block(lines)
 
 	local max_width = 40
 	for _, dl in ipairs(display_lines) do
-		max_width = math.max(max_width, vim.fn.strdisplaywidth(dl) + 2)
+		max_width = math.max(max_width, #dl + 2)
 	end
 
 	return b, max_width, #display_lines
