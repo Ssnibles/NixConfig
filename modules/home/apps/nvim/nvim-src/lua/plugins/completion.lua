@@ -70,15 +70,8 @@ require("blink.cmp").setup({
 		-- Show / hide help manually
 		["<C-space>"] = { "show_documentation", "hide_documentation" },
 
-		-- One Esc to rule them all: cancel blink → cancel snippet → normal mode
-		["<Esc>"] = {
-			function(cmp)
-				if cmp.is_visible() then
-					cmp.cancel()
-				end
-				return vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
-			end,
-		},
+		-- One Esc to rule them all: cancel completion then fall through to normal mode
+		["<Esc>"] = { "cancel", "fallback" },
 
 		-- Alternative: <C-c> forces hard exit
 		["<C-c>"] = { "cancel", "fallback" },
@@ -90,11 +83,9 @@ require("blink.cmp").setup({
 		["<Tab>"] = { accept_copilot_if_visible, "select_and_accept", "snippet_forward", "fallback" },
 		["<S-Tab>"] = { "snippet_backward", "fallback" },
 
-		-- Navigation
+		-- Navigation (C-j/k are kept free for insert-mode cursor movement)
 		["<Up>"] = { "select_prev", "fallback" },
 		["<Down>"] = { "select_next", "fallback" },
-		["<C-k>"] = { "select_prev", "fallback" },
-		["<C-j>"] = { "select_next", "fallback" },
 		["<C-p>"] = { "select_prev", "fallback" },
 		["<C-n>"] = { "select_next", "fallback" },
 
@@ -194,7 +185,9 @@ require("blink.cmp").setup({
 			},
 		},
 		ghost_text = {
-			enabled = true,
+			-- Disabled: Copilot already provides inline ghost text;
+			-- having both causes visual overlap when the menu is closed.
+			enabled = false,
 		},
 	},
 

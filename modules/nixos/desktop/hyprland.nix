@@ -3,17 +3,8 @@
 {
   programs.hyprland.enable = true;
 
-  environment.etc."xdg-desktop-portal/Hyprland-portals.conf".text = ''
-    [preferred]
-    default=hyprland;gtk
-
-    [org.freedesktop.impl.portal.ScreenCast]
-    default=hyprland
-
-    [org.freedesktop.impl.portal.Screenshot]
-    default=hyprland
-
-    [org.freedesktop.impl.portal.FileChooser]
-    default=gtk
-  '';
+  # Tell applications (Discord/Vesktop, browsers, etc.) to use the Hyprland
+  # portal backend for screen casting. Without this, screen sharing via
+  # xdg-desktop-portal won't work on Wayland.
+  environment.sessionVariables.XDG_CURRENT_DESKTOP = "Hyprland";
 }

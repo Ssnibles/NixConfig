@@ -23,7 +23,7 @@
 require("fyler").setup({
 	kind_presets = {
 		floating = {
-			border = "rounder",
+			border = "rounded",
 			max_width = 0.8,
 			max_height = 0.8,
 		},
@@ -215,9 +215,9 @@ mc.addKeymapLayer(function(layerSet)
 end)
 
 -- Neoscroll: smooth scrolling
+-- We exclude <C-u>/<C-d> so that keymaps.lua can centre the cursor after half-page jumps.
 require("neoscroll").setup({
-	hf = { "zz", "zt", "zb" },
-	mappings = { "<C-u>", "<C-d>", "<C-b>", "<C-f>", "<C-y>", "<C-e>", "zt", "zz", "zb" },
+	mappings = { "<C-b>", "<C-f>", "<C-y>", "<C-e>", "zt", "zz", "zb" },
 	respect_scrolloff = true,
 	cursor_scrolls_alone = false,
 	easing = "sine",

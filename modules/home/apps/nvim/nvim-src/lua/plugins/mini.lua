@@ -54,6 +54,7 @@ clue.setup({
 		{ mode = "n", keys = "<Leader>T", desc = "+tabs" },
 		{ mode = "n", keys = "<Leader>w", desc = "+window" },
 		{ mode = "n", keys = "<Leader>z", desc = "+zen" },
+		{ mode = "n", keys = "<Leader>a", desc = "+copilot" },
 	},
 	triggers = {
 		{ mode = "n", keys = "<Leader>" },

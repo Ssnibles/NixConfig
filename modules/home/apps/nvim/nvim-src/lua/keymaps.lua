@@ -17,6 +17,11 @@ map("n", "<Esc>", "<cmd>nohlsearch<CR>")
 -- Redo with the natural "U" muscle-memory key (default Neovim reclaims U for undo-line).
 map("n", "U", "<C-r>", { desc = "Redo" })
 
+-- Disable accidental ex mode and suspend.
+map("n", "Q", "<Nop>")
+map("n", "<C-z>", "<Nop>")
+map("n", "<C-w>q", "<Nop>")
+
 -- ═══════════════════════════════════════════════════════════════════
 --  S A V E   &   Q U I T
 -- ═══════════════════════════════════════════════════════════════════
@@ -31,10 +36,12 @@ map("n", "<leader>qq", "<cmd>qa<CR>", { desc = "Quit all" })
 --  T E X T   E D I T I N G
 -- ═══════════════════════════════════════════════════════════════════
 
+-- Insert-mode word delete (terminal-safe fallbacks).
 map("i", "<C-BS>", "<C-w>", { desc = "Delete previous word" })
+map("i", "<M-BS>", "<C-w>", { desc = "Delete previous word" })
+
+-- Insert-mode caret movement (hjkl-free: we keep j/k for completion nav).
 map("i", "<C-h>", "<Left>", { desc = "Move caret left" })
-map("i", "<C-j>", "<Down>", { desc = "Move caret down" })
-map("i", "<C-k>", "<Up>", { desc = "Move caret up" })
 map("i", "<C-l>", "<Right>", { desc = "Move caret right" })
 
 -- Indentation preserves visual selection for rapid adjustments.
@@ -62,6 +69,14 @@ map("x", "<leader>p", '"_dP', { desc = "Paste without yanking" })
 map({ "n", "v" }, "<leader>D", '"_d', { desc = "Delete to void" })
 map("n", "x", '"_x', { desc = "Delete character to void" })
 
+-- System clipboard bridge.
+map({ "n", "v" }, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
+map("n", "<leader>Y", '"+Y', { desc = "Yank line to system clipboard" })
+map({ "n", "v" }, "<leader>P", '"+p', { desc = "Paste from system clipboard" })
+
+-- Select all (mnemonic: leader + a for "all" — avoids shadowing <C-a> increment).
+map("n", "<leader>va", "ggVG", { desc = "Select all" })
+
 -- ═══════════════════════════════════════════════════════════════════
 --  M O V E M E N T   &   S C R O L L I N G
 -- ═══════════════════════════════════════════════════════════════════
@@ -70,13 +85,13 @@ map("n", "x", '"_x', { desc = "Delete character to void" })
 map("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 map("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 
--- Cursor stays centred during half-page jumps.
-map("n", "<C-d>", "<C-d>zz")
-map("n", "<C-u>", "<C-u>zz")
-
 -- Search results keep the cursor centred.
 map("n", "n", "nzzzv")
 map("n", "N", "Nzzzv")
+
+-- Centre on next/previous matching brace.
+map("n", "*", "*zz")
+map("n", "#", "#zz")
 
 -- ═══════════════════════════════════════════════════════════════════
 --  V I S U A L   S E A R C H
@@ -201,23 +216,12 @@ map("n", "<leader>cr", "<cmd>SmartRename<CR>", { desc = "Context rename/replace"
 
 map("n", "<C-p>", "<cmd>FzfLua files<CR>", { desc = "File picker (Cmd+P)" })
 map("n", "<leader>/", "<cmd>FzfLua live_grep<CR>", { desc = "Search project (Cmd+Shift+F)" })
--- map("n", "<leader>e", function()
--- 	require("oil").open_float()
--- end, { desc = "Explorer sidebar" })
--- map("n", "<leader>E", function()
--- 	require("oil").open()
--- end, { desc = "Explorer (full)" })
-map("n", "<leader>gd", vim.lsp.buf.definition, { desc = "Go to definition" })
-map("n", "<leader>gr", vim.lsp.buf.references, { desc = "Find references" })
-map("n", "<leader>gD", vim.lsp.buf.declaration, { desc = "Go to declaration" })
-map("n", "<leader>gi", vim.lsp.buf.implementation, { desc = "Go to implementation" })
 
 -- ═══════════════════════════════════════════════════════════════════
 --  M I S C
 -- ═══════════════════════════════════════════════════════════════════
 
-map("n", "<C-Z>", "<Nop>")
-map("n", "<C-w>q", "<Nop>")
+map("n", "<leader>cd", "<cmd>cd %:p:h<CR>", { desc = "Change to file directory" })
 map("n", "<leader>gg", function()
 	require("neogit").open()
 end, { desc = "Git status" })
