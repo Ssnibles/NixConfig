@@ -86,6 +86,18 @@
     };
   };
 
+  # ── Gaming ────────────────────────────────────────────────────────────────
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
+  };
+
+  # 32-bit graphics support (required by Steam and 32-bit games)
+  hardware.graphics = {
+    enable32Bit = true;
+  };
+
   # ── Groups used by services ───────────────────────────────────────────────
   users.groups = {
     netdev = { };
