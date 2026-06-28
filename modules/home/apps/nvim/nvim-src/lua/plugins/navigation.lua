@@ -1,16 +1,21 @@
 -- Navigation: motion, search/replace, tmux integration
 
--- Flash: motion plugin
+-- ═══════════════════════════════════════════════════════════════════
+--  F L A S H   (motion)
+-- ═══════════════════════════════════════════════════════════════════
+
 local flash = require("flash")
 flash.setup({})
 vim.keymap.set({ "n", "x", "o" }, "<leader><leader>", flash.jump, { desc = "Flash jump" })
 vim.keymap.set({ "n", "x", "o" }, "S", flash.treesitter, { desc = "Flash treesitter" })
 
--- Grug-far: project-wide search/replace
-require("grug-far").setup()
-vim.keymap.set("n", "<leader>fR", "<cmd>GrugFar<CR>", { desc = "Find and replace" })
+-- ═══════════════════════════════════════════════════════════════════
+--  G R U G - F A R   (project-wide search/replace)
+-- ═══════════════════════════════════════════════════════════════════
 
--- Simple buffer-local find/replace (lighter than grug-far for single-buffer edits)
+require("grug-far").setup()
+vim.keymap.set("n", "<leader>fR", "<cmd>GrugFar<CR>", { desc = "Find and replace (project)" })
+
 local function buffer_find_replace(default_search)
 	vim.ui.input({ prompt = "Find in buffer: ", default = default_search or "" }, function(find)
 		if not find or find == "" then
@@ -30,7 +35,7 @@ end
 
 vim.keymap.set("n", "<leader>fr", function()
 	buffer_find_replace(vim.fn.expand("<cword>"))
-end, { desc = "Find and replace in buffer" })
+end, { desc = "Find and replace (buffer)" })
 
 vim.keymap.set("x", "<leader>fr", function()
 	local old_reg = vim.fn.getreg("z")
@@ -40,9 +45,12 @@ vim.keymap.set("x", "<leader>fr", function()
 	vim.fn.setreg("z", old_reg, old_regtype)
 	selection = selection:match("^[^\r\n]*") or ""
 	buffer_find_replace(selection)
-end, { desc = "Find and replace selection in buffer" })
+end, { desc = "Find and replace selection (buffer)" })
 
--- Smart-splits: resize and move splits intuitively
+-- ═══════════════════════════════════════════════════════════════════
+--  S M A R T - S P L I T S
+-- ═══════════════════════════════════════════════════════════════════
+
 local smart_splits = require("smart-splits")
 local smart_config = {}
 if vim.env.TMUX and vim.env.TMUX ~= "" then

@@ -92,4 +92,4 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
 vim.keymap.set("n", "<leader>cl", function()
 	run_lint()
 	vim.notify("Ran Nix linters (deadnix + statix)", vim.log.levels.INFO)
-end, { desc = "Run linter" })
+end, { desc = "Lint buffer" })

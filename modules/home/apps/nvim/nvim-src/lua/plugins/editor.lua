@@ -1,25 +1,5 @@
 -- Editor enhancements: file manager, git signs, formatting, pairs
 
--- Oil: file manager
--- require("oil").setup({
--- 	default_file_explorer = true,
--- 	delete_to_trash = true,
--- 	columns = {
--- 		"icon",
--- 		"permissions",
--- 		"size",
--- 	},
--- 	float = {
--- 		border = "rounded",
--- 		max_width = 0.8,
--- 		max_height = 0.8,
--- 	},
--- })
-
--- vim.keymap.set("n", "<leader>fe", function()
--- 	require("oil").open_float()
--- end, { desc = "Explorer (Oil)" })
-
 require("fyler").setup({
 	kind_presets = {
 		floating = {
@@ -34,7 +14,10 @@ vim.keymap.set("n", "<leader>e", function()
 	require("fyler").open({ kind = "float" })
 end, { desc = "Explorer (Fyler)" })
 
--- Gitsigns: gutter signs + inline blame at end of line
+-- ═══════════════════════════════════════════════════════════════════
+--  G I T S I G N S
+-- ═══════════════════════════════════════════════════════════════════
+
 require("gitsigns").setup({
 	signcolumn = true,
 	numhl = true,
@@ -81,13 +64,16 @@ require("gitsigns").setup({
 		map("n", "[g", gs.prev_hunk, "Prev hunk")
 		map("n", "<leader>gp", gs.preview_hunk, "Preview hunk")
 		map("n", "<leader>gs", gs.stage_hunk, "Stage hunk")
-		map("n", "<leader>gr", gs.reset_hunk, "Reset hunk")
+		map("n", "<leader>gu", gs.reset_hunk, "Unstage/reset hunk")
 		map("n", "<leader>gb", gs.blame_line, "Blame line")
-		map("n", "<leader>gd", gs.diffthis, "Diff this")
+		map("n", "<leader>gD", gs.diffthis, "Diff this")
 	end,
 })
 
--- Conform: formatting
+-- ═══════════════════════════════════════════════════════════════════
+--  C O N F O R M   (formatting)
+-- ═══════════════════════════════════════════════════════════════════
+
 vim.g.disable_autoformat = vim.g.disable_autoformat or false
 vim.g.disable_autoformat_ft = vim.g.disable_autoformat_ft or { c = true, cpp = true }
 
@@ -126,11 +112,11 @@ vim.keymap.set({ "n", "v" }, "<leader>cf", function()
 	require("conform").format({ async = true, lsp_format = "fallback" })
 end, { desc = "Format buffer" })
 
-vim.keymap.set("n", "<leader>ta", function()
+vim.keymap.set("n", "<leader>tF", function()
 	vim.g.disable_autoformat = not vim.g.disable_autoformat
 	local msg = vim.g.disable_autoformat and "disabled" or "enabled"
 	vim.notify(("Autoformat %s"):format(msg), vim.log.levels.INFO)
-end, { desc = "Toggle autoformat" })
+end, { desc = "Toggle autoformat (global)" })
 
 vim.keymap.set("n", "<leader>tA", function()
 	local ft = vim.bo.filetype
@@ -142,7 +128,10 @@ vim.keymap.set("n", "<leader>tA", function()
 	vim.notify(("Autoformat for %s %s"):format(ft, msg), vim.log.levels.INFO)
 end, { desc = "Toggle autoformat for filetype" })
 
--- Dial: enhanced increment/decrement
+-- ═══════════════════════════════════════════════════════════════════
+--  D I A L   (increment/decrement)
+-- ═══════════════════════════════════════════════════════════════════
+
 local augend = require("dial.augend")
 require("dial.config").augends:register_group({
 	default = {
@@ -166,56 +155,10 @@ vim.keymap.set("n", "g<C-x>", dial_map.dec_gnormal(), { desc = "Decrement (g)" }
 vim.keymap.set("v", "g<C-a>", dial_map.inc_gvisual(), { desc = "Increment selection (g)" })
 vim.keymap.set("v", "g<C-x>", dial_map.dec_gvisual(), { desc = "Decrement selection (g)" })
 
--- Multicursor (default-style mappings)
-local mc = require("multicursor-nvim")
-mc.setup()
+-- ═══════════════════════════════════════════════════════════════════
+--  N E O S C R O L L
+-- ═══════════════════════════════════════════════════════════════════
 
-vim.keymap.set({ "n", "x" }, "<Up>", function()
-	mc.lineAddCursor(-1)
-end, { desc = "Multicursor add above" })
-vim.keymap.set({ "n", "x" }, "<Down>", function()
-	mc.lineAddCursor(1)
-end, { desc = "Multicursor add below" })
-vim.keymap.set({ "n", "x" }, "<leader><Up>", function()
-	mc.lineSkipCursor(-1)
-end, { desc = "Multicursor skip above" })
-vim.keymap.set({ "n", "x" }, "<leader><Down>", function()
-	mc.lineSkipCursor(1)
-end, { desc = "Multicursor skip below" })
-
-vim.keymap.set({ "n", "x" }, "<leader>n", function()
-	mc.matchAddCursor(1)
-end, { desc = "Multicursor add next match" })
-vim.keymap.set({ "n", "x" }, "<leader>s", function()
-	mc.matchSkipCursor(1)
-end, { desc = "Multicursor skip next match" })
-vim.keymap.set({ "n", "x" }, "<leader>N", function()
-	mc.matchAddCursor(-1)
-end, { desc = "Multicursor add prev match" })
-vim.keymap.set({ "n", "x" }, "<leader>S", function()
-	mc.matchSkipCursor(-1)
-end, { desc = "Multicursor skip prev match" })
-
-vim.keymap.set({ "n", "x" }, "<C-q>", mc.toggleCursor, { desc = "Multicursor toggle at cursor" })
-vim.keymap.set("n", "<C-LeftMouse>", mc.handleMouse, { desc = "Multicursor mouse toggle" })
-vim.keymap.set("n", "<C-LeftDrag>", mc.handleMouseDrag)
-vim.keymap.set("n", "<C-LeftRelease>", mc.handleMouseRelease)
-
-mc.addKeymapLayer(function(layerSet)
-	layerSet({ "n", "x" }, "<Left>", mc.prevCursor)
-	layerSet({ "n", "x" }, "<Right>", mc.nextCursor)
-	layerSet({ "n", "x" }, "<leader>x", mc.deleteCursor)
-	layerSet("n", "<Esc>", function()
-		if not mc.cursorsEnabled() then
-			mc.enableCursors()
-		else
-			mc.clearCursors()
-		end
-	end)
-end)
-
--- Neoscroll: smooth scrolling
--- We exclude <C-u>/<C-d> so that keymaps.lua can centre the cursor after half-page jumps.
 require("neoscroll").setup({
 	mappings = { "<C-b>", "<C-f>", "<C-y>", "<C-e>", "zt", "zz", "zb" },
 	respect_scrolloff = true,
@@ -224,5 +167,8 @@ require("neoscroll").setup({
 	performance_mode = false,
 })
 
--- Autopairs
+-- ═══════════════════════════════════════════════════════════════════
+--  A U T O P A I R S
+-- ═══════════════════════════════════════════════════════════════════
+
 require("nvim-autopairs").setup({ check_ts = true, fast_wrap = { map = "<M-e>" } })
