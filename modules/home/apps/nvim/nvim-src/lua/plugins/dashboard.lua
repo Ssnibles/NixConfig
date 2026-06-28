@@ -43,7 +43,7 @@ local function section_shortcuts()
 		{ "f", "Find file",  "<cmd>FzfLua files<CR>" },
 		{ "r", "Recent",     "<cmd>FzfLua oldfiles<CR>" },
 		{ "g", "Grep",       "<cmd>FzfLua live_grep<CR>" },
-		{ "e", "Explorer",   "<cmd>Oil<CR>" },
+		{ "e", "Explorer",   "<cmd>Fyler<CR>" },
 		{ "q", "Quit",       "<cmd>qa<CR>" },
 	}
 
