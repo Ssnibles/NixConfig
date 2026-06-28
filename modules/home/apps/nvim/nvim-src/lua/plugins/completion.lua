@@ -180,15 +180,15 @@ require("blink.cmp").setup({
 
 	cmdline = {
 		keymap = {
-		["<Esc>"] = {
-			function()
-				local cmp = require("blink.cmp")
-				if cmp.is_active() then
-					cmp.cancel()
-				end
-				vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
-			end,
-		},
+			["<Esc>"] = {
+				function()
+					local cmp = require("blink.cmp")
+					if cmp.is_active() then
+						cmp.cancel()
+					end
+					vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+				end,
+			},
 			["<C-c>"] = { "cancel", "fallback" },
 			["<Tab>"] = { "accept", "fallback" },
 			["<S-Tab>"] = { "fallback" },
@@ -201,7 +201,7 @@ require("blink.cmp").setup({
 		},
 		completion = {
 			menu = { auto_show = true },
-			ghost_text = { enabled = true },
+			ghost_text = { enabled = false },
 		},
 	},
 })

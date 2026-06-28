@@ -283,7 +283,7 @@ Extracted from \`plugins/lsp.lua\`:
 - **Treesitter folds** with custom fold text
 - **Zed-inspired keybindings** (Ctrl+P for files, leader+/ for grep)
 - **Oil** as file explorer (buffer-based, not a sidebar tree)
-- **Noice** for cmdline popup (fixed-width, top-centered)
+- **Custom floating cmdline** (minimal, top-centered, replaces built-in cmdline)
 - **Snacks** for floating terminal
 - **Smart Rename** (\`<leader>cr\`): picks between LSP rename, literal project replace, or regex replace
 "

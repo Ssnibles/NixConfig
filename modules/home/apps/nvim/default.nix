@@ -217,7 +217,6 @@ in
         statuscol-nvim
         neoscroll-nvim
         nui-nvim
-        noice-nvim
         no-neck-pain-nvim
         snacks-nvim
         twilight-nvim

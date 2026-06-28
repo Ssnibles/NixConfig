@@ -362,6 +362,7 @@ function M.setup()
 	hl("TabLineSel", { bg = c.bg, fg = c.fg, bold = true })
 	hl("QuickFixLine", { bg = c.selection, bold = true })
 	hl("ColorColumn", { bg = c.bgSubtle })
+	hl("CmdlineCursor", { fg = c.bg, bg = c.blue })
 
 	hl("SpellBad", { undercurl = true, sp = c.red })
 	hl("SpellCap", { undercurl = true, sp = c.yellow })
