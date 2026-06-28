@@ -337,11 +337,19 @@
         "utils": "utils"
       },
       "locked": {
+<<<<<<< HEAD
         "lastModified": 1782532589,
         "narHash": "sha256-SbRcgRa3CYE0UWW+Zbbgih4amUqYKCaFQe/v3H4380U=",
         "owner": "schembriaiden",
         "repo": "helium-browser-nix-flake",
         "rev": "66082f4d174c15ff00b25a20bbd593255fce6d35",
+=======
+        "lastModified": 1782474838,
+        "narHash": "sha256-TUFVwwTofzuxJiHx/xXa7jqVkVIwreOYH47YxhmCHEo=",
+        "owner": "schembriaiden",
+        "repo": "helium-browser-nix-flake",
+        "rev": "849135b2ce70edc2edfb8865e7d839c8297a545e",
+>>>>>>> 89c4940 (Add steam to laptop)
         "type": "github"
       },
       "original": {
@@ -469,11 +477,19 @@
         ]
       },
       "locked": {
+<<<<<<< HEAD
         "lastModified": 1782647288,
         "narHash": "sha256-4+T7mlyK0S3U6cgXOPurAA5KEryxyz+BzsqEQHbKvEo=",
         "owner": "nix-community",
         "repo": "NUR",
         "rev": "e34b90be45750357ce17461deecf8feeb6336867",
+=======
+        "lastModified": 1782519522,
+        "narHash": "sha256-+fSo6liae8ujDGG3K5CGY168QtdAZhZTmgTSNbAjwPQ=",
+        "owner": "nix-community",
+        "repo": "NUR",
+        "rev": "a94583039a0f54dd9a90139a15cb349820ff8753",
+>>>>>>> 89c4940 (Add steam to laptop)
         "type": "github"
       },
       "original": {
@@ -855,11 +871,19 @@
     "tuxedo": {
       "flake": false,
       "locked": {
+<<<<<<< HEAD
         "lastModified": 1782542212,
         "narHash": "sha256-NLbQRd0sPOpDMWBYdfthNcb46Qgy7ootOlHorg1dje0=",
         "owner": "webstonehq",
         "repo": "tuxedo",
         "rev": "042d2a1e36d4caf240a83aa6846de383651acdfd",
+=======
+        "lastModified": 1782505437,
+        "narHash": "sha256-GW3udzQmDjiqSjZ3flWzsidYd2PdQ0Y+ROEqbxB9tAs=",
+        "owner": "webstonehq",
+        "repo": "tuxedo",
+        "rev": "05eba42679bbe26f4b2faeaae616b3b780bb3884",
+>>>>>>> 89c4940 (Add steam to laptop)
         "type": "github"
       },
       "original": {

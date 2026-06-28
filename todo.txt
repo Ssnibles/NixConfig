@@ -1,2 +1,3 @@
 x 2026-06-26 2026-06-25 Switch from grim to grimblast +scripts
 2026-06-25 Fix notification window animation sliding in from top left +quickshell
+2026-06-27 Fix keyring
