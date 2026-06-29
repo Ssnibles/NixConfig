@@ -201,7 +201,9 @@ require("blink.cmp").setup({
 			["<C-n>"] = { "select_next", "fallback" },
 		},
 		completion = {
-			menu = { auto_show = true },
+			menu = {
+				auto_show = true,
+			},
 			ghost_text = { enabled = false },
 		},
 	},

@@ -118,7 +118,7 @@ require("statuscol").setup({
 	},
 })
 
--- cmdline handled by custom plugins/cmdline.lua
+-- cmdline handled by tiny-cmdline plugin
 
 -- ═══════════════════════════════════════════════════════════════════
 --  M A R K V I E W

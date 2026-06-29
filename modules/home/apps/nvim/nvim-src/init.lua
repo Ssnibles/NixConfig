@@ -2,6 +2,17 @@
 
 vim.loader.enable()
 
+-- Enable ui2 for tiny-cmdline (Neovim 0.12+)
+if vim.fn.has("nvim-0.12") == 1 then
+	local ok, ui2 = pcall(require, "vim._core.ui2")
+	if ok then
+		ui2.enable({})
+	end
+end
+
+-- Add local plugins to runtimepath
+vim.opt.runtimepath:append(vim.fn.expand("$HOME") .. "/tiny-cmdline")
+
 -- Disable netrw so oil.nvim can fully take over as the default file explorer.
 -- Without this, oil's buffer can render empty when it conflicts with netrw.
 vim.g.loaded_netrw = 1
