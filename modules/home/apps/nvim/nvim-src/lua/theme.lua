@@ -123,11 +123,7 @@ function M.setup()
 		"MiniAnimateNormalFloat",
 		"TreesitterContext",
 		"TreesitterContextLineNumber",
-		"AlphaNormal",
-		"AlphaHeader",
-		"AlphaButtons",
-		"AlphaShortcut",
-		"AlphaFooter",
+		"SnacksDashboardNormal",
 		"DAPUINormal",
 		"DAPUIFloatNormal",
 		"TabLine",
@@ -226,12 +222,11 @@ function M.setup()
 	hl("SnacksTerminalNormal", { link = "Normal" })
 	hl("SnacksIndentScope", { fg = indentScope, nocombine = true })
 
-	-- Alpha dashboard tinting
-	hl("AlphaHeader", { fg = c.blue, bold = true })
-	hl("AlphaHeaderLabel", { fg = c.comment })
-	hl("AlphaShortcut", { fg = c.orange })
-	hl("AlphaButtons", { link = "Normal" })
-	hl("AlphaFooter", { fg = c.comment, italic = true })
+	hl("SnacksDashboardHeader", { fg = c.blue, bold = true })
+	hl("SnacksDashboardFooter", { fg = c.comment, italic = true })
+	hl("SnacksDashboardDesc", { fg = c.fg })
+	hl("SnacksDashboardKey", { fg = c.orange, bold = true })
+	hl("SnacksDashboardIcon", { fg = c.blue })
 
 	-- ═══════════════════════════════════════════════════════════════
 	-- BLINK.CMP DETAILS

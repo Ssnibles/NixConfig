@@ -56,7 +56,6 @@ clue.setup({
 		{ mode = "n", keys = "<Leader>z", desc = "+zen" },
 		{ mode = "n", keys = "<Leader>a", desc = "+copilot" },
 		{ mode = "n", keys = "<Leader>v", desc = "+select" },
-		{ mode = "n", keys = "<Leader>h", desc = "+highlights" },
 	},
 	triggers = {
 		{ mode = "n", keys = "<Leader>" },
@@ -92,18 +91,52 @@ require("mini.cursorword").setup({ delay = 200 })
 
 require("mini.indentscope").setup({
 	symbol = "│",
-	options = { try_as_border = true },
+	options = {
+		try_as_border = true,
+	},
 	draw = {
 		delay = 100,
 		animation = require("mini.indentscope").gen_animation.none(),
+		-- Use a predicate function to filter out specific filetypes and buffertypes
+		predicate = function()
+			-- List the filetypes you want to ignore
+			local ignore_filetypes = {
+				"help",
+				"dashboard",
+				"alpha",
+				"NvimTree",
+				"neo-tree",
+				"lazy",
+				"mason",
+				"trouble",
+			}
+
+			-- List the buffertypes you want to ignore
+			local ignore_buftypes = {
+				"nofile",
+				"quickfix",
+				"terminal",
+				"prompt",
+			}
+
+			local ft = vim.bo.filetype
+			local bt = vim.bo.buftype
+
+			-- Disable if the current filetype or buffertype matches the lists
+			if vim.tbl_contains(ignore_filetypes, ft) or vim.tbl_contains(ignore_buftypes, bt) then
+				return false
+			end
+
+			return true
+		end,
 	},
 })
-
 require("mini.align").setup()
 require("mini.move").setup()
 require("mini.operators").setup()
 require("mini.splitjoin").setup()
-require("mini.trailspace").setup()
+require("mini.pairs").setup()
+require("mini.trailspace").setup({})
 require("mini.bufremove").setup()
 
 vim.keymap.set("n", "<leader>bd", function()

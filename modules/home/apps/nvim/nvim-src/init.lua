@@ -61,7 +61,7 @@ vim.opt.grepformat = "%f:%l:%c:%m"
 -- UI polish: hide redundant mode text (lualine shows it), live substitution preview
 vim.opt.showmode = false
 vim.opt.inccommand = "split"
-vim.opt.shortmess:append("cC")            -- suppress completion and `scanning` messages
+vim.opt.shortmess:append("cCFW")          -- suppress completion, `scanning`, file info, and write messages
 
 require("keymaps")
 require("autocmds")
