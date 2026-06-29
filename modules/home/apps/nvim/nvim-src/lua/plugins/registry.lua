@@ -12,7 +12,6 @@ M.core = {
 	"plugins.tiny-cmdline",
 	"plugins.terminal",
 	"plugins.lint",
-	"plugins.dashboard",
 }
 
 M.deferred = {

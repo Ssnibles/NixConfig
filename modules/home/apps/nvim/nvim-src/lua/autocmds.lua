@@ -110,7 +110,6 @@ autocmd("FileType", {
 	callback = function(ev)
 		vim.opt_local.spell = true
 		vim.opt_local.wrap = true
-		vim.wo.colorcolumn = "80"
 		if require("version") then
 			if vim.bo[ev.buf].filetype == "markdown" or vim.bo[ev.buf].filetype == "markdown.mdx" then
 				pcall(vim.treesitter.stop, ev.buf)
@@ -242,4 +241,60 @@ autocmd({ "BufReadPre", "BufNewFile" }, {
 			vim.bo.syntax = ""
 		end
 	end,
+})
+
+-- Completely suppress trailspace for specified utility and UI buffers
+local function disable_trailspace(ev)
+	local ignore_filetypes = {
+		"help",
+		"snacks_dashboard",
+		"alpha",
+		"NvimTree",
+		"neo-tree",
+		"lazy",
+		"mason",
+		"trouble",
+	}
+
+	local ignore_buftypes = {
+		"nofile",
+		"quickfix",
+		"terminal",
+		"prompt",
+	}
+
+	local ft = vim.bo.filetype
+	local bt = vim.bo.buftype
+	local name = vim.api.nvim_buf_get_name(0)
+
+	if
+		name:match("snacks_dashboard")
+		or vim.tbl_contains(ignore_filetypes, ft)
+		or vim.tbl_contains(ignore_buftypes, bt)
+	then
+		-- 1. Set the block variable for mini.trailspace
+		vim.b.minitrailspace_disable = true
+
+		-- 2. Force-clear any matches immediately in this window ID to kill the flash
+		pcall(vim.fn.clearmatches)
+
+		-- 3. If an explicit buffer ID exists from the event, clear it directly
+		if ev and ev.buf then
+			pcall(vim.api.nvim_buf_set_var, ev.buf, "minitrailspace_disable", true)
+		end
+	end
+end
+
+-- Hook onto the earliest layout creation hooks
+autocmd({ "BufNewFile", "BufReadPre", "BufWinEnter", "FileType", "BufEnter" }, {
+	group = augroup,
+	pattern = "*",
+	callback = disable_trailspace,
+})
+
+-- Targeted trigger for when snacks dashboard starts initialization
+autocmd("User", {
+	group = augroup,
+	pattern = "SnacksDashboardOpened",
+	callback = disable_trailspace,
 })

@@ -197,4 +197,4 @@ map("n", "<leader>/", "<cmd>FzfLua live_grep<CR>", { desc = "Search project" })
 -- ═══════════════════════════════════════════════════════════════════
 
 map("n", "<leader>cd", "<cmd>cd %:p:h<CR>", { desc = "Change to file directory" })
-map("n", "<leader>h", "<cmd>nohlsearch<CR>", { desc = "Clear search highlights" })
+

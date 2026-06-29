@@ -155,20 +155,3 @@ vim.keymap.set("n", "g<C-x>", dial_map.dec_gnormal(), { desc = "Decrement (g)" }
 vim.keymap.set("v", "g<C-a>", dial_map.inc_gvisual(), { desc = "Increment selection (g)" })
 vim.keymap.set("v", "g<C-x>", dial_map.dec_gvisual(), { desc = "Decrement selection (g)" })
 
--- ═══════════════════════════════════════════════════════════════════
---  N E O S C R O L L
--- ═══════════════════════════════════════════════════════════════════
-
-require("neoscroll").setup({
-	mappings = { "<C-b>", "<C-f>", "<C-y>", "<C-e>", "zt", "zz", "zb" },
-	respect_scrolloff = true,
-	cursor_scrolls_alone = false,
-	easing = "sine",
-	performance_mode = false,
-})
-
--- ═══════════════════════════════════════════════════════════════════
---  A U T O P A I R S
--- ═══════════════════════════════════════════════════════════════════
-
-require("nvim-autopairs").setup({ check_ts = true, fast_wrap = { map = "<M-e>" } })

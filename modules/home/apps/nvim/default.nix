@@ -209,13 +209,11 @@ in
         fzf-lua
         # oil-nvim
         fyler-nvim
-        nvim-web-devicons
         flash-nvim
         smart-splits-nvim
 
         lualine-nvim
         statuscol-nvim
-        neoscroll-nvim
         nui-nvim
         no-neck-pain-nvim
         snacks-nvim
@@ -224,7 +222,6 @@ in
         gitsigns-nvim
         neogit
 
-        nvim-autopairs
         conform-nvim
         dial-nvim
 

@@ -12,6 +12,29 @@ require("snacks").setup({
 		enabled = true,
 		win = { style = "terminal" },
 	},
+	dashboard = {
+		preset = {
+			header = table.concat({
+				"███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗",
+				"████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║",
+				"██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║",
+				"██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║",
+				"██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║",
+				"╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝",
+			}, "\n"),
+			keys = {
+				{ icon = " ", key = "f", desc = "Find file", action = ":FzfLua files" },
+				{ icon = " ", key = "r", desc = "Recent", action = ":FzfLua oldfiles" },
+				{ icon = " ", key = "g", desc = "Grep", action = ":FzfLua live_grep" },
+				{ icon = " ", key = "e", desc = "Explorer", action = function() require("fyler").open({ kind = "float" }) end },
+				{ icon = " ", key = "q", desc = "Quit", action = ":qa" },
+			},
+		},
+		sections = {
+			{ section = "header" },
+			{ section = "keys", gap = 1, padding = 1 },
+		},
+	},
 })
 
 -- ═══════════════════════════════════════════════════════════════════
@@ -24,7 +47,7 @@ require("lualine").setup({
 		component_separators = "",
 		section_separators = { left = "", right = "" },
 		globalstatus = true,
-		disabled_filetypes = { statusline = { "dashboard", "snacks_terminal" } },
+		disabled_filetypes = { statusline = { "snacks_dashboard" } },
 	},
 	sections = {
 		lualine_a = {
