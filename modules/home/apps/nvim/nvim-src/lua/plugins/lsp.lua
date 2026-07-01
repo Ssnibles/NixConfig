@@ -498,17 +498,6 @@ lsp.config("marksman", {
 	root_markers = { "marksman.toml", ".git" },
 })
 
-lsp.config("rust_analyzer", {
-	cmd = { "rust-analyzer" },
-	filetypes = { "rust" },
-	root_markers = { "Cargo.toml", ".git" },
-	settings = {
-		["rust-analyzer"] = {
-			checkOnSave = { command = "clippy" },
-		},
-	},
-})
-
 lsp.config("ltex_plus", {
 	cmd = { "ltex-ls-plus" },
 	filetypes = { "tex", "latex", "bib", "markdown", "html", "org" },
@@ -607,7 +596,6 @@ local managed_servers = {
 	{ name = "nixd", cmd = "nixd" },
 	{ name = "lua_ls", cmd = "lua-language-server" },
 	{ name = "pyright", cmd = "pyright-langserver" },
-	{ name = "rust_analyzer", cmd = "rust-analyzer" },
 	{ name = "vtsls", cmd = "vtsls" },
 	{ name = "kotlin_language_server", cmd = "kotlin-language-server" },
 	{ name = "jdtls", cmd = "jdtls" },

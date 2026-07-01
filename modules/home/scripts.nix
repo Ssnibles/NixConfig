@@ -12,13 +12,15 @@
   ...
 }:
 let
-  fabulouslyOptimizedPack = inputs.nix-minecraft.legacyPackages.${pkgs.stdenv.hostPlatform.system}.fetchModrinthModpack {
-    pname = "fabulously-optimized";
-    version = "12.0.8-mc1.21.11";
-    url = "https://cdn.modrinth.com/data/1KVo5zza/versions/lwASzTsb/Fabulously.Optimized-v12.0.8.mrpack";
-    side = "client";
-    packHash = "sha256-iBkTKENX1TriQWHXdns3rvS/XD/gz1q6cxMT/IMyclQ=";
-  };
+  fabulouslyOptimizedPack =
+    inputs.nix-minecraft.legacyPackages.${pkgs.stdenv.hostPlatform.system}.fetchModrinthModpack
+      {
+        pname = "fabulously-optimized";
+        version = "12.0.8-mc1.21.11";
+        url = "https://cdn.modrinth.com/data/1KVo5zza/versions/lwASzTsb/Fabulously.Optimized-v12.0.8.mrpack";
+        side = "client";
+        packHash = "sha256-iBkTKENX1TriQWHXdns3rvS/XD/gz1q6cxMT/IMyclQ=";
+      };
   stylixThemes = import ../../lib/stylix/themes.nix;
   stylixThemeNames = builtins.attrNames stylixThemes.themes;
   stylixThemeNamesShell = builtins.concatStringsSep " " (map lib.escapeShellArg stylixThemeNames);
@@ -68,18 +70,16 @@ let
     GAPS_OUT=16
     ROUNDING=16
     if [ -f "$STATE_FILE" ] && [ "$(cat $STATE_FILE)" = "focus" ]; then
-      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in $GAPS_IN
-      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out $GAPS_OUT
-      ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding $ROUNDING
-      ${pkgs.hyprland}/bin/hyprctl keyword decoration:dim_inactive true
+      ${pkgs.hyprland}/bin/hyprctl eval "hl.config({general={gaps_in=$GAPS_IN,gaps_out=$GAPS_OUT}})"
+      ${pkgs.hyprland}/bin/hyprctl eval "hl.config({decoration={rounding=$ROUNDING}})"
+      ${pkgs.hyprland}/bin/hyprctl eval "hl.config({decoration={dim_inactive=true}})"
       ${qsBin} -c hyprland ipc call bar toggle 2>/dev/null || true
       echo "normal" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled - Normal mode restored"
     else
-      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_in 0
-      ${pkgs.hyprland}/bin/hyprctl keyword general:gaps_out 0
-      ${pkgs.hyprland}/bin/hyprctl keyword decoration:rounding 0
-      ${pkgs.hyprland}/bin/hyprctl keyword decoration:dim_inactive false
+      ${pkgs.hyprland}/bin/hyprctl eval "hl.config({general={gaps_in=0,gaps_out=0}})"
+      ${pkgs.hyprland}/bin/hyprctl eval "hl.config({decoration={rounding=0}})"
+      ${pkgs.hyprland}/bin/hyprctl eval "hl.config({decoration={dim_inactive=false}})"
       ${qsBin} -c hyprland ipc call bar toggle 2>/dev/null || true
       echo "focus" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled - Distractions removed"

@@ -1,7 +1,12 @@
 { lib, ... }:
 
 {
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    permittedInsecurePackages = [
+      "pnpm-10.29.2"
+    ];
+  };
 
   nix = {
     settings = {
