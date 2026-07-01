@@ -74,7 +74,7 @@ in
           text = ''cmd[update:1000] echo "${italicSpan c.fg "$(date +'%H:%M')"}"'';
           color = rgb c.fg;
           font_size = 72;
-          font_family = "Alice";
+          font_family = "Instrument Serif";
           text_align = "center";
           position = "0, 200";
           halign = "center";
