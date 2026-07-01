@@ -77,4 +77,47 @@ in
     text = colorsQml;
     force = true;
   };
+
+  # Reload quickshell after a home-manager switch so Stylix color changes
+  # and regenerated Colors.qml are picked up immediately.
+  home.activation.reloadQuickshell = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    ${pkgs.runtimeShell} -c '${pkgs.unstable.quickshell}/bin/qs -c hyprland ipc call quickshell reload all >/dev/null 2>&1 || true'
+  '';
+
+  # Watch the repository QML sources (the actual targets of the out-of-store
+  # symlinks) and reload quickshell whenever a .qml file changes.
+  systemd.user.services.quickshell-reload-watcher = {
+    Unit = {
+      Description = "Watch Quickshell QML sources and reload on changes";
+      After = ["graphical-session.target"];
+      PartOf = ["graphical-session.target"];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = toString (pkgs.writeShellScript "quickshell-reload-watcher" ''
+        set -euo pipefail
+        WATCH_DIRS=("${qsDir}" "${repoRoot}/modules/home/desktop/hyprland/quickshell")
+        RELOAD_CMD="${pkgs.unstable.quickshell}/bin/qs -c hyprland ipc call quickshell reload all"
+
+        ${pkgs.inotify-tools}/bin/inotifywait -m \
+          -e modify,move,create,delete \
+          -r \
+          --include '.*\.qml$' \
+          "''${WATCH_DIRS[@]}" \
+          2>/dev/null | while read -r _directory _event _filename; do
+          # Debounce: keep consuming events while they arrive within 300 ms,
+          # then reload once after the burst ends.
+          while ${pkgs.coreutils}/bin/timeout 0.3 read -r _directory _event _filename 2>/dev/null; do
+            :
+          done
+          ''${RELOAD_CMD} >/dev/null 2>&1 || true
+        done
+      '');
+      Restart = "always";
+      RestartSec = 5;
+    };
+    Install = {
+      WantedBy = ["graphical-session.target"];
+    };
+  };
 }

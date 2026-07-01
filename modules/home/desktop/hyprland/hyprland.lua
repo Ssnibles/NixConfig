@@ -214,8 +214,8 @@ hl.window_rule({
 })
 hl.window_rule({
 	name = "satty",
-	match = { class = "^(com\\.gabm\\.satty)$" },
-	max_size = { 200, 200 },
+	match = { class = "com.gabm.satty" },
+	max_size = { 1000, 800 },
 	float = true,
 	center = true,
 	size = "60% 60%",
