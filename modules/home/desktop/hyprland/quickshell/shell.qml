@@ -10,7 +10,9 @@ ShellRoot {
 
   IpcHandler {
     target: "quickshell"
-    function reload(component: string): void {
+    // Keep parameters untyped: quickshell IPC passes JSON values and typed
+    // signatures can prevent the method from being invoked by some builds.
+    function reload(component) {
       if (!component || component === "all") {
         barLoader.source = ""
         barLoader.source = "bar.qml"
@@ -33,13 +35,13 @@ ShellRoot {
 
   IpcHandler {
     target: "bar"
-    function toggle(): void { root.barVisible = !root.barVisible; }
+    function toggle() { root.barVisible = !root.barVisible; }
   }
 
   IpcHandler {
     target: "controlpanel"
 
-    function toggle(): void  {
+    function toggle() {
       if (commandCenterLoader.item) {
         if (commandCenterLoader.item.visible) {
           commandCenterLoader.item.requestHide();
@@ -48,13 +50,13 @@ ShellRoot {
         }
       }
     }
-    function show(): void    {
+    function show() {
       if (commandCenterLoader.item) commandCenterLoader.item.visible = true;
     }
-    function hide(): void    {
+    function hide() {
       if (commandCenterLoader.item) commandCenterLoader.item.requestHide();
     }
-    function toggleDnd(): void {
+    function toggleDnd() {
       if (notificationsLoader.item) notificationsLoader.item.doNotDisturb = !notificationsLoader.item.doNotDisturb;
     }
   }

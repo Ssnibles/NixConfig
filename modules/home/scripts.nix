@@ -52,14 +52,15 @@ let
 
   # ── Reload Quickshell ──────────────────────────────────────────────────
   # Sends an in-process reload request so all QML updates apply instantly.
+  # Must use -c hyprland so the IPC socket matches the running instance.
   reload-shell = pkgs.writeShellScriptBin "reload-shell" ''
-    ${qsBin} ipc call quickshell reload all 2>/dev/null || true
+    ${qsBin} -c hyprland ipc call quickshell reload all 2>/dev/null || true
   '';
 
   # ── Reload everything ──────────────────────────────────────────────────
   reload-all = pkgs.writeShellScriptBin "reload-all" ''
     ${pkgs.hyprland}/bin/hyprctl reload
-    ${qsBin} ipc call quickshell reload all 2>/dev/null || true
+    ${qsBin} -c hyprland ipc call quickshell reload all 2>/dev/null || true
     ${pkgs.libnotify}/bin/notify-send "Reload" "Hyprland, Quickshell reloaded"
   '';
 
@@ -293,7 +294,7 @@ let
       fi
       ${awwwBin} img ${wallpaperPath} >/dev/null 2>&1 || true
       if [ -x "${qsBin}" ]; then
-        if ! ${qsBin} ipc call quickshell reload all 2>/dev/null; then
+        if ! ${qsBin} -c hyprland ipc call quickshell reload all 2>/dev/null; then
           echo "Quickshell reload failed." >&2
         fi
       fi
