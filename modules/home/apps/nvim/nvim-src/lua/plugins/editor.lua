@@ -94,6 +94,7 @@ require("conform").setup({
 		kotlin = { "ktlint" },
 		java = { "google-java-format" },
 		cs = { "csharpier" },
+		rust = { "rustfmt" },
 		typst = { "typstyle" },
 	},
 	format_on_save = function(bufnr)

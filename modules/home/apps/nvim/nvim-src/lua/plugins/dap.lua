@@ -224,7 +224,6 @@ if lldb then
 		},
 	}
 
-	dap.configurations.rust = vim.deepcopy(lldb_configs)
 	dap.configurations.c = vim.deepcopy(lldb_configs)
 	dap.configurations.cpp = vim.deepcopy(lldb_configs)
 end

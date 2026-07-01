@@ -104,7 +104,12 @@
 
       pkgs = import nixpkgs {
         inherit system;
-        config.allowUnfree = true;
+        config = {
+          allowUnfree = true;
+          permittedInsecurePackages = [
+            "pnpm-10.29.2"
+          ];
+        };
         overlays = overlays;
       };
 

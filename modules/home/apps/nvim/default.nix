@@ -151,6 +151,8 @@ in
         vscode-js-debug
 
         rust-analyzer
+        rustfmt
+        cargo
         tinymist
         typst
         typstyle
@@ -186,6 +188,7 @@ in
             latex
             typst
             c_sharp
+            rust
           ]
         ))
         nvim-treesitter-context
@@ -233,6 +236,7 @@ in
         plenary-nvim
         markview-nvim
         typst-preview-nvim
+        rustaceanvim
       ];
 
       luaConfigRC.user-config = ''

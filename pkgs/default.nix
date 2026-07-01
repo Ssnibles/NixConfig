@@ -19,6 +19,11 @@ customPackages // {
   # Make unstable nixpkgs available as pkgs.unstable
   unstable = import inputs.nixpkgs-unstable {
     inherit (prev.stdenv.hostPlatform) system;
-    config.allowUnfree = true;
+    config = {
+      allowUnfree = true;
+      permittedInsecurePackages = [
+        "pnpm-10.29.2"
+      ];
+    };
   };
 }
