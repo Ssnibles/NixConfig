@@ -2,6 +2,47 @@
 local augroup = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 local autocmd = vim.api.nvim_create_autocmd
 
+-- Suppress native :write file-info messages so they don't cover lualine.
+-- BufWriteCmd runs instead of the built-in write, letting us use :silent.
+-- We manually fire BufWritePre/Post so format-on-save and trailspace trimming keep working.
+local writing = false
+autocmd("BufWriteCmd", {
+	group = augroup,
+	pattern = "*",
+	callback = function(ev)
+		if writing then
+			return
+		end
+		writing = true
+
+		local buf = ev.buf
+		local bo = vim.bo[buf]
+		local name = vim.api.nvim_buf_get_name(buf)
+
+		-- For special or unnamed buffers, fall back to the built-in behavior.
+		if bo.buftype ~= "" or name == "" then
+			pcall(vim.cmd, "noautocmd write")
+			writing = false
+			return
+		end
+
+		-- Run BufWritePre hooks (format-on-save, trailspace trim, etc.).
+		vim.api.nvim_exec_autocmds("BufWritePre", { buffer = buf, modeline = false })
+
+		-- Actually write the file, silently suppressing the file-info message.
+		local ok, err = pcall(vim.cmd, "silent noautocmd write")
+
+		-- Run BufWritePost hooks.
+		vim.api.nvim_exec_autocmds("BufWritePost", { buffer = buf, modeline = false })
+
+		writing = false
+
+		if not ok then
+			vim.notify("Write failed: " .. tostring(err), vim.log.levels.ERROR)
+		end
+	end,
+})
+
 -- Workaround: files opened via fyler's :edit don't always trigger filetype
 -- detection. Uses match() which is available in all modern Neovim versions.
 vim.api.nvim_create_autocmd("BufEnter", {
