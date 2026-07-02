@@ -585,7 +585,7 @@ PanelWindow {
 
                 Text {
                   anchors.centerIn: parent
-                  text: "\uf075a"
+                  text: "\u{F075A}"
                   color: _p.fgDim
                   font.family: _p.uiFont
                   font.pixelSize: 28
@@ -720,7 +720,7 @@ PanelWindow {
 
                 Text {
                   anchors.centerIn: parent
-                  text: "\uf04ae"
+                  text: "\u{F04AE}"
                   color: _p.fg
                   font.family: _p.uiFont
                   font.pixelSize: 16
@@ -743,7 +743,7 @@ PanelWindow {
 
                 Text {
                   anchors.centerIn: parent
-                  text: controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying ? "\uf03e4" : "\uf040a"
+                  text: controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying ? "\u{F03E4}" : "\u{F040A}"
                   color: Colors.bg
                   font.family: _p.uiFont
                   font.pixelSize: 20
@@ -768,7 +768,7 @@ PanelWindow {
 
                 Text {
                   anchors.centerIn: parent
-                  text: "\uf04ad"
+                  text: "\u{F04AD}"
                   color: _p.fg
                   font.family: _p.uiFont
                   font.pixelSize: 16
@@ -840,12 +840,12 @@ PanelWindow {
                 Text {
                   anchors.centerIn: parent
                   text: {
-                    if (controlPanel.volMuted) return "\uf075f"
+                    if (controlPanel.volMuted) return "\u{F075F}"
                     var v = controlPanel.volPct
-                    if (v <= 0) return "\uf075f"
-                    if (v < 0.33) return "\uf057f"
-                    if (v < 0.66) return "\uf0580"
-                    return "\uf057e"
+                    if (v <= 0) return "\u{F075F}"
+                    if (v < 0.33) return "\u{F057F}"
+                    if (v < 0.66) return "\u{F0580}"
+                    return "\u{F057E}"
                   }
                   color: controlPanel.volMuted ? _p.red : _p.fg
                   font.family: _p.uiFont
@@ -915,7 +915,7 @@ PanelWindow {
 
                 Text {
                   anchors.centerIn: parent
-                  text: controlPanel.micMuted ? "\uf036d" : "\uf036c"
+                  text: controlPanel.micMuted ? "\u{F036D}" : "\u{F036C}"
                   color: controlPanel.micMuted ? _p.red : _p.green
                   font.family: _p.uiFont
                   font.pixelSize: 16
@@ -1011,7 +1011,7 @@ PanelWindow {
 
                 Text {
                   anchors.centerIn: parent
-                  text: "\uf00df"
+                  text: "\u{F00DF}"
                   color: _p.yellow
                   font.family: _p.uiFont
                   font.pixelSize: 16
@@ -1108,12 +1108,12 @@ PanelWindow {
 
               Repeater {
                 model: [
-                { id: "lock", icon: "\uf033e", label: "Lock Screen",    color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.15), accent: _p.accent, proc: lockProc },
-                { id: "caffeinate", icon: "\uf0176", label: "Caffeinate", color: Qt.rgba(Colors.orange.r, Colors.orange.g, Colors.orange.b, 0.15), accent: _p.orange },
-                { id: "logout", icon: "\uf0343", label: "Logout",  color: Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.15), accent: _p.yellow, proc: logoutProc },
-                { id: "sleep", icon: "\uf0904", label: "Sleep",   color: Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.15), accent: _p.green,  proc: sleepProc },
-                { id: "reboot", icon: "\uf0709", label: "Reboot",  color: Qt.rgba(Colors.purple.r, Colors.purple.g, Colors.purple.b, 0.15), accent: _p.purple, proc: rebootProc },
-                { id: "poweroff", icon: "\uf0425", label: "Power Off",     color: Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15), accent: _p.red,    proc: poweroffProc },
+                { id: "lock", icon: "\u{F033E}", label: "Lock Screen",    color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.15), accent: _p.accent, proc: lockProc },
+                { id: "caffeinate", icon: "\u{F0176}", label: "Caffeinate", color: Qt.rgba(Colors.orange.r, Colors.orange.g, Colors.orange.b, 0.15), accent: _p.orange },
+                { id: "logout", icon: "\u{F0343}", label: "Logout",  color: Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.15), accent: _p.yellow, proc: logoutProc },
+                { id: "sleep", icon: "\u{F0904}", label: "Sleep",   color: Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.15), accent: _p.green,  proc: sleepProc },
+                { id: "reboot", icon: "\u{F0709}", label: "Reboot",  color: Qt.rgba(Colors.purple.r, Colors.purple.g, Colors.purple.b, 0.15), accent: _p.purple, proc: rebootProc },
+                { id: "poweroff", icon: "\u{F0425}", label: "Power Off",     color: Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15), accent: _p.red,    proc: poweroffProc },
                 ]
 
                 delegate: Rectangle {
@@ -1429,7 +1429,7 @@ PanelWindow {
 
                 Text {
                   anchors.horizontalCenter: parent.horizontalCenter
-                  text: "\uf009c"
+                  text: "\u{F009C}"
                   color: _p.fgDim
                   font.family: _p.uiFont
                   font.pixelSize: 28
