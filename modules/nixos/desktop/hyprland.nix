@@ -1,7 +1,10 @@
 { ... }:
 
 {
-  programs.hyprland.enable = true;
+  programs.hyprland = {
+    enable = true;
+    withUWSM = true;
+  };
 
   # Tell applications (Discord/Vesktop, browsers, etc.) to use the Hyprland
   # portal backend for screen casting. Without this, screen sharing via
