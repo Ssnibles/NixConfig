@@ -1,3 +1,4 @@
+import Quickshell
 import QtQuick
 import QtQml
 
@@ -18,13 +19,15 @@ Item {
     // Resolve icon source from notification data:
     // 1. Inline image data if provided
     // 2. App icon path (local paths need file:// prefix for QML Image)
-    // 3. Freedesktop icon name via icon:// scheme
+    // 3. Freedesktop icon name via Quickshell.iconPath()
     source: {
       if (!root.notification) return "";
       if (root.notification.image && root.notification.image.length > 0) return root.notification.image;
-      if (!root.notification.appIcon || root.notification.appIcon.length === 0) return "";
-      if (root.notification.appIcon.startsWith("/")) return "file://" + root.notification.appIcon;
-      return "image://icon/" + root.notification.appIcon;
+      var appIcon = root.notification.appIcon || "";
+      if (appIcon.length === 0) return "";
+      if (appIcon.startsWith("/")) return "file://" + appIcon;
+      var iconUrl = Quickshell.iconPath(appIcon, true);
+      return iconUrl && iconUrl.length > 0 ? iconUrl : "";
     }
     sourceSize.width: iconSize
     sourceSize.height: iconSize

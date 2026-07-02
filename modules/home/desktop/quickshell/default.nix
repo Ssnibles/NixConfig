@@ -10,6 +10,7 @@ let
   c = semanticColors { colors = config.lib.stylix.colors; };
   repoRoot = "${config.home.homeDirectory}/NixConfig";
   qsDir = "${repoRoot}/modules/home/desktop/quickshell";
+  shellName = "default";
 
   compiledShaders =
     pkgs.runCommand "quickshell-shaders"
@@ -44,14 +45,16 @@ let
     }
   '';
 
-  commonQsFiles = {
-    "quickshell/notifications.qml" = "${qsDir}/notifications.qml";
-    "quickshell/CommandCenter.qml" = "${qsDir}/CommandCenter.qml";
-    "quickshell/Colors.qml" = "${qsDir}/Colors.qml";
-    "quickshell/Pill.qml" = "${qsDir}/Pill.qml";
-    "quickshell/AppIcon.qml" = "${qsDir}/AppIcon.qml";
-    "quickshell/ActionRow.qml" = "${qsDir}/ActionRow.qml";
-    "quickshell/SliderControl.qml" = "${qsDir}/SliderControl.qml";
+  qsFiles = {
+    "quickshell/${shellName}/shell.qml" = "${qsDir}/shell.qml";
+    "quickshell/${shellName}/bar.qml" = "${qsDir}/bar.qml";
+    "quickshell/${shellName}/notifications.qml" = "${qsDir}/notifications.qml";
+    "quickshell/${shellName}/CommandCenter.qml" = "${qsDir}/CommandCenter.qml";
+    "quickshell/${shellName}/Colors.qml" = "${qsDir}/Colors.qml";
+    "quickshell/${shellName}/Pill.qml" = "${qsDir}/Pill.qml";
+    "quickshell/${shellName}/AppIcon.qml" = "${qsDir}/AppIcon.qml";
+    "quickshell/${shellName}/ActionRow.qml" = "${qsDir}/ActionRow.qml";
+    "quickshell/${shellName}/SliderControl.qml" = "${qsDir}/SliderControl.qml";
   };
 
 in
@@ -69,7 +72,7 @@ in
 
   xdg.configFile = lib.mapAttrs' (
     name: path: lib.nameValuePair name { source = config.lib.file.mkOutOfStoreSymlink path; }
-  ) commonQsFiles;
+  ) qsFiles;
 
   # Write Colors.qml directly into the repo checkout so the out-of-store
   # symlinks pick it up without an imperative activation script.
@@ -80,8 +83,24 @@ in
 
   # Reload quickshell after a home-manager switch so Stylix color changes
   # and regenerated Colors.qml are picked up immediately.
-  home.activation.reloadQuickshell = lib.hm.dag.entryAfter ["linkGeneration"] ''
-    ${pkgs.runtimeShell} -c '${pkgs.unstable.quickshell}/bin/qs -c hyprland ipc call quickshell reload all >/dev/null 2>&1 || true'
+  home.activation.reloadQuickshell = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    ${pkgs.runtimeShell} -c '${pkgs.unstable.quickshell}/bin/qs -c default ipc call quickshell reload all >/dev/null 2>&1 || true'
+  '';
+
+  # The QML files used to be symlinked directly into ~/.config/quickshell/ and
+  # again into ~/.config/quickshell/hyprland/. Now everything lives under the
+  # default shell directory, so remove any stale symlinks/directories left
+  # behind by earlier generations.
+  home.activation.cleanupOldQuickshellFiles = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    ${pkgs.coreutils}/bin/rm -f \
+      "${config.xdg.configHome}/quickshell/notifications.qml" \
+      "${config.xdg.configHome}/quickshell/CommandCenter.qml" \
+      "${config.xdg.configHome}/quickshell/Colors.qml" \
+      "${config.xdg.configHome}/quickshell/Pill.qml" \
+      "${config.xdg.configHome}/quickshell/AppIcon.qml" \
+      "${config.xdg.configHome}/quickshell/ActionRow.qml" \
+      "${config.xdg.configHome}/quickshell/SliderControl.qml"
+    ${pkgs.coreutils}/bin/rm -rf "${config.xdg.configHome}/quickshell/hyprland"
   '';
 
   # Watch the repository QML sources (the actual targets of the out-of-store
@@ -89,35 +108,37 @@ in
   systemd.user.services.quickshell-reload-watcher = {
     Unit = {
       Description = "Watch Quickshell QML sources and reload on changes";
-      After = ["graphical-session.target"];
-      PartOf = ["graphical-session.target"];
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
     };
     Service = {
       Type = "simple";
-      ExecStart = toString (pkgs.writeShellScript "quickshell-reload-watcher" ''
-        set -euo pipefail
-        WATCH_DIRS=("${qsDir}" "${repoRoot}/modules/home/desktop/hyprland/quickshell")
-        RELOAD_CMD="${pkgs.unstable.quickshell}/bin/qs -c hyprland ipc call quickshell reload all"
+      ExecStart = toString (
+        pkgs.writeShellScript "quickshell-reload-watcher" ''
+          set -euo pipefail
+          WATCH_DIRS=("${qsDir}")
+          RELOAD_CMD="${pkgs.unstable.quickshell}/bin/qs -c default ipc call quickshell reload all"
 
-        ${pkgs.inotify-tools}/bin/inotifywait -m \
-          -e modify,move,create,delete \
-          -r \
-          --include '.*\.qml$' \
-          "''${WATCH_DIRS[@]}" \
-          2>/dev/null | while read -r _directory _event _filename; do
-          # Debounce: keep consuming events while they arrive within 300 ms,
-          # then reload once after the burst ends.
-          while ${pkgs.coreutils}/bin/timeout 0.3 read -r _directory _event _filename 2>/dev/null; do
-            :
+          ${pkgs.inotify-tools}/bin/inotifywait -m \
+            -e modify,move,create,delete \
+            -r \
+            --include '.*\.qml$' \
+            "''${WATCH_DIRS[@]}" \
+            2>/dev/null | while read -r _directory _event _filename; do
+            # Debounce: keep consuming events while they arrive within 300 ms,
+            # then reload once after the burst ends.
+            while ${pkgs.coreutils}/bin/timeout 0.3 read -r _directory _event _filename 2>/dev/null; do
+              :
+            done
+            ''${RELOAD_CMD} >/dev/null 2>&1 || true
           done
-          ''${RELOAD_CMD} >/dev/null 2>&1 || true
-        done
-      '');
+        ''
+      );
       Restart = "always";
       RestartSec = 5;
     };
     Install = {
-      WantedBy = ["graphical-session.target"];
+      WantedBy = [ "graphical-session.target" ];
     };
   };
 }

@@ -96,7 +96,7 @@
 
 [[snippets]]
   description = "Reload Quickshell UI in-place"
-  command = "qs -c hyprland ipc call quickshell reload all"
+  command = "qs -c default ipc call quickshell reload all"
   tag = ["quickshell", "ui", "reload"]
   output = ""
 

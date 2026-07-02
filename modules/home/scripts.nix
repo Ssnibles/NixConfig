@@ -52,15 +52,15 @@ let
 
   # ── Reload Quickshell ──────────────────────────────────────────────────
   # Sends an in-process reload request so all QML updates apply instantly.
-  # Must use -c hyprland so the IPC socket matches the running instance.
+  # Must use -c default so the IPC socket matches the running instance.
   reload-shell = pkgs.writeShellScriptBin "reload-shell" ''
-    ${qsBin} -c hyprland ipc call quickshell reload all 2>/dev/null || true
+    ${qsBin} -c default ipc call quickshell reload all 2>/dev/null || true
   '';
 
   # ── Reload everything ──────────────────────────────────────────────────
   reload-all = pkgs.writeShellScriptBin "reload-all" ''
     ${pkgs.hyprland}/bin/hyprctl reload
-    ${qsBin} -c hyprland ipc call quickshell reload all 2>/dev/null || true
+    ${qsBin} -c default ipc call quickshell reload all 2>/dev/null || true
     ${pkgs.libnotify}/bin/notify-send "Reload" "Hyprland, Quickshell reloaded"
   '';
 
@@ -74,14 +74,14 @@ let
       ${pkgs.hyprland}/bin/hyprctl eval "hl.config({general={gaps_in=$GAPS_IN,gaps_out=$GAPS_OUT}})"
       ${pkgs.hyprland}/bin/hyprctl eval "hl.config({decoration={rounding=$ROUNDING}})"
       ${pkgs.hyprland}/bin/hyprctl eval "hl.config({decoration={dim_inactive=true}})"
-      ${qsBin} -c hyprland ipc call bar toggle 2>/dev/null || true
+      ${qsBin} -c default ipc call bar toggle 2>/dev/null || true
       echo "normal" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Disabled - Normal mode restored"
     else
       ${pkgs.hyprland}/bin/hyprctl eval "hl.config({general={gaps_in=0,gaps_out=0}})"
       ${pkgs.hyprland}/bin/hyprctl eval "hl.config({decoration={rounding=0}})"
       ${pkgs.hyprland}/bin/hyprctl eval "hl.config({decoration={dim_inactive=false}})"
-      ${qsBin} -c hyprland ipc call bar toggle 2>/dev/null || true
+      ${qsBin} -c default ipc call bar toggle 2>/dev/null || true
       echo "focus" > "$STATE_FILE"
       ${pkgs.libnotify}/bin/notify-send "Focus Mode" "Enabled - Distractions removed"
     fi
@@ -294,7 +294,7 @@ let
       fi
       ${awwwBin} img ${wallpaperPath} >/dev/null 2>&1 || true
       if [ -x "${qsBin}" ]; then
-        if ! ${qsBin} -c hyprland ipc call quickshell reload all 2>/dev/null; then
+        if ! ${qsBin} -c default ipc call quickshell reload all 2>/dev/null; then
           echo "Quickshell reload failed." >&2
         fi
       fi
