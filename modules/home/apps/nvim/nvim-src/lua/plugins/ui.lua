@@ -8,6 +8,7 @@ local t = require("theme")
 -- ═══════════════════════════════════════════════════════════════════
 
 require("snacks").setup({
+	notifier = { enabled = false }, -- fidget handles notifications
 	terminal = {
 		enabled = true,
 		win = { style = "terminal" },

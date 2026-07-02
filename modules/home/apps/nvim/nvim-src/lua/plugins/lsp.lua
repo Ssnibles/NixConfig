@@ -209,17 +209,33 @@ vim.api.nvim_create_user_command("SmartRename", smart_rename_replace, {
 	desc = "Context-aware rename and project replace",
 })
 
--- Fidget: LSP progress indicator
+-- Fidget: LSP progress indicator and notification router
 require("fidget").setup({
 	progress = {
 		suppress_on_insert = true,
 		display = { done_icon = "✓", done_ttl = 2 },
 	},
 	notification = {
+		override_vim_notify = true,
 		filter = vim.log.levels.INFO,
 		window = { winblend = 0, border = "none" },
 	},
 })
+
+-- Suppress save-file notifications; route everything else through fidget.
+local fidget_notify = vim.notify
+local save_keywords = { "written", "saved", "wrote" }
+vim.notify = function(msg, level, opts)
+	if type(msg) == "string" then
+		local lower = msg:lower()
+		for _, keyword in ipairs(save_keywords) do
+			if lower:find(keyword, 1, true) then
+				return
+			end
+		end
+	end
+	return fidget_notify(msg, level, opts)
+end
 
 -- Tiny code action UI
 require("tiny-code-action").setup({

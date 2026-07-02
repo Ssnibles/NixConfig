@@ -117,7 +117,7 @@ in
         showcmdloc = "statusline";
         grepprg = "rg --vimgrep --smart-case";
         grepformat = "%f:%l:%c:%m";
-        shortmess = "sIcW";
+        shortmess = "sIcWF";
       };
 
       extraPackages = with pkgs; [
