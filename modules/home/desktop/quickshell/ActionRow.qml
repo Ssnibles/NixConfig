@@ -7,7 +7,7 @@ Row {
   id: root
 
   property var actions: []
-  property string uiFont: "JetBrains Mono"
+  property string uiFont: "JetBrainsMono Nerd Font"
   property int actionBtnHeight: 26
   property int cardSpacing: 6
 

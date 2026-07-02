@@ -153,6 +153,8 @@ in
         rust-analyzer
         rustfmt
         cargo
+        rustc
+        clippy
         tinymist
         typst
         typstyle

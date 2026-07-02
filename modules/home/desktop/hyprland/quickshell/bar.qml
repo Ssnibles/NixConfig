@@ -20,7 +20,7 @@ PanelWindow {
   exclusionMode: ExclusionMode.Auto
   color: Colors.bg
 
-  property string uiFont: "JetBrains Mono"
+  property string uiFont: "JetBrainsMono Nerd Font"
   property string specialFont: "Instrument Serif"
   property int barHeight: 30
   property int tooltipMaxWidth: 320

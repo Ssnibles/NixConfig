@@ -12,7 +12,7 @@ Item {
   property alias notificationServer: notificationServer
   property int  popupTimeoutMs: 6000
   property int  maxPopups: 5
-  property string uiFont: "JetBrains Mono"
+  property string uiFont: "JetBrainsMono Nerd Font"
 
   readonly property int  topMargin: barVisible ? 54 : 24
   readonly property int  sideMargin: 24
