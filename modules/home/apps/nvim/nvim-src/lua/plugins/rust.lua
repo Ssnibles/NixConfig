@@ -9,20 +9,41 @@ end
 
 vim.g.rustaceanvim = {
 	server = {
-		settings = {
-			["rust-analyzer"] = {
-				checkOnSave = { command = "clippy" },
-				cargo = {
-					allFeatures = true,
+		-- rust-analyzer's standalone file support creates a synthetic Cargo
+		-- project for .rs files with no Cargo.toml. That synthetic project
+		-- defaults to edition 2024 and injects nightly-only flags such as
+		-- `-Z crate-attr=feature(frontmatter)`, which fails on a stable
+		-- toolchain. Disable check-on-save for standalone files while keeping
+		-- clippy for real Cargo projects.
+		settings = function(project_root, default_settings)
+			local has_cargo_toml = project_root ~= nil
+				and vim.uv.fs_stat(vim.fs.joinpath(project_root, "Cargo.toml")) ~= nil
+
+			local ra_settings = {
+				["rust-analyzer"] = {
+					cargo = {
+						allFeatures = true,
+					},
+					procMacro = {
+						enable = true,
+					},
+					completion = {
+						autoimport = { enable = true },
+					},
 				},
-				procMacro = {
-					enable = true,
-				},
-				completion = {
-					autoimport = { enable = true },
-				},
-			},
-		},
+			}
+
+			if has_cargo_toml then
+				ra_settings["rust-analyzer"].checkOnSave = true
+				ra_settings["rust-analyzer"].check = {
+					command = "clippy",
+				}
+			else
+				ra_settings["rust-analyzer"].checkOnSave = false
+			end
+
+			return vim.tbl_deep_extend("force", default_settings, ra_settings)
+		end,
 	},
 	dap = {
 		adapter = function(_, config)

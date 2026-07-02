@@ -7,7 +7,7 @@ Item {
   property var notification: null
   property color fallbackBg: Colors.bgSubtle
   property int iconSize: 24
-  property string uiFont: "JetBrains Mono"
+  property string uiFont: "JetBrainsMono Nerd Font"
 
   width: iconSize
   height: iconSize
