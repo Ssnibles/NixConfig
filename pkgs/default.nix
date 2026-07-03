@@ -8,14 +8,14 @@ let
   # Each package is called with `inputs` available so it can access flake inputs.
   customPackages = lib.pipe (builtins.readDir ./.) [
     (lib.filterAttrs (
-      name: type:
-      type == "directory" && builtins.pathExists (./. + "/${name}/default.nix")
+      name: type: type == "directory" && builtins.pathExists (./. + "/${name}/default.nix")
     ))
     (lib.mapAttrs (name: _: callPackage (./. + "/${name}") { inherit inputs; }))
   ];
 in
 
-customPackages // {
+customPackages
+// {
   # Make unstable nixpkgs available as pkgs.unstable
   unstable = import inputs.nixpkgs-unstable {
     inherit (prev.stdenv.hostPlatform) system;

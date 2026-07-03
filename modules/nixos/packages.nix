@@ -9,8 +9,6 @@
     vim
     htop
     rsync
-    nvme-cli
-    smartmontools
     iwd
     tuxedo
   ];

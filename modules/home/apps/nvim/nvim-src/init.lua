@@ -10,9 +10,6 @@ if vim.fn.has("nvim-0.12") == 1 then
 	end
 end
 
--- Add local plugins to runtimepath
-vim.opt.runtimepath:append(vim.fn.expand("$HOME") .. "/tiny-cmdline")
-
 -- Disable netrw so oil.nvim can fully take over as the default file explorer.
 -- Without this, oil's buffer can render empty when it conflicts with netrw.
 vim.g.loaded_netrw = 1

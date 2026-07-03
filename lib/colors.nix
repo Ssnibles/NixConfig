@@ -1,7 +1,5 @@
 { colors }:
 let
-  s = colors.withHashtag;
-
   hexDigitValues = {
     "0" = 0;
     "1" = 1;
@@ -35,7 +33,11 @@ let
   hexToRgb =
     hex:
     if builtins.stringLength hex < 6 then
-      [ 0 0 0 ]
+      [
+        0
+        0
+        0
+      ]
     else
       [
         (hexPairToInt (builtins.substring 0 2 hex))
