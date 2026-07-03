@@ -85,6 +85,14 @@ in
     };
   };
 
+  xdg.dataFile."applications/vesktop.desktop" = {
+    force = true;
+    source = pkgs.runCommand "vesktop-ozone.desktop" { } ''
+      sed 's/^Exec=vesktop/Exec=vesktop --ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true/' \
+        ${pkgs.unstable.vesktop}/share/applications/vesktop.desktop > $out
+    '';
+  };
+
   wayland.windowManager.hyprland = {
     enable = true;
     xwayland.enable = true;
