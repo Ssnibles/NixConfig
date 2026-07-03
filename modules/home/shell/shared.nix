@@ -32,7 +32,6 @@
     nb = "nix build";
     ns = "nix search nixpkgs";
     fmt = "nixfmt";
-    mng = "manage-nixos";
     ":q" = "exit";
     lg = "lazygit";
     ff = "microfetch";

@@ -5,7 +5,7 @@
 }:
 
 {
-  system.stateVersion = "24.05";
+  system.stateVersion = "26.05";
 
   boot.loader = {
     systemd-boot = {

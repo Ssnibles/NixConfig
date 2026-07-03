@@ -69,33 +69,6 @@
       };
     };
 
-    # Example custom inline Base16 theme.
-    # Copy this block, rename the key, and adjust base00-base0F.
-    "example-custom-ocean" = {
-      polarity = "dark";
-      scheme = {
-        scheme = "Example Custom Ocean";
-        author = "You";
-        variant = "dark";
-        base00 = "0b0f14";
-        base01 = "111822";
-        base02 = "1a2431";
-        base03 = "5b6b81";
-        base04 = "7d8fa6";
-        base05 = "c7d2e0";
-        base06 = "dbe5f2";
-        base07 = "f2f7ff";
-        base08 = "ff7b72";
-        base09 = "ffb86b";
-        base0A = "ffd866";
-        base0B = "7ee787";
-        base0C = "79c0ff";
-        base0D = "58a6ff";
-        base0E = "d2a8ff";
-        base0F = "ffa198";
-      };
-    };
-
     "vague" = {
       polarity = "dark";
       scheme = {

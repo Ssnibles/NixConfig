@@ -90,6 +90,16 @@
       url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    tiny-code-action = {
+      url = "github:rachartier/tiny-code-action.nvim";
+      flake = false;
+    };
+
+    tiny-cmdline = {
+      url = "github:rachartier/tiny-cmdline.nvim";
+      flake = false;
+    };
   };
 
   outputs =
@@ -106,9 +116,6 @@
         inherit system;
         config = {
           allowUnfree = true;
-          permittedInsecurePackages = [
-            "pnpm-10.29.2"
-          ];
         };
         overlays = overlays;
       };

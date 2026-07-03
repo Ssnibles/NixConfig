@@ -166,7 +166,18 @@ in
       ];
 
       startPlugins = with pkgs.vimPlugins; [
-        pkgs.tiny-code-action
+        (pkgs.vimUtils.buildVimPlugin {
+          pname = "tiny-code-action.nvim";
+          version = "flake";
+          src = inputs.tiny-code-action;
+          doCheck = false;
+        })
+        (pkgs.vimUtils.buildVimPlugin {
+          pname = "tiny-cmdline.nvim";
+          version = "flake";
+          src = inputs.tiny-cmdline;
+          doCheck = false;
+        })
 
         (nvim-treesitter.withPlugins (
           p: with p; [
@@ -212,7 +223,6 @@ in
         trouble-nvim
 
         fzf-lua
-        # oil-nvim
         fyler-nvim
         flash-nvim
         smart-splits-nvim
