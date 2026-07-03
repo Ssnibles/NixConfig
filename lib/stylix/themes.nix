@@ -1,6 +1,6 @@
 {
   # Default wallpaper used by any theme that doesn't specify its own.
-  wallpaper = ../../wallpapers/400556mtsdl.jpg;
+  wallpaper = ../../wallpapers/celestial-lighter.png;
 
   # Theme key => base16 scheme metadata used by modules/home/stylix.nix
   themes = {
