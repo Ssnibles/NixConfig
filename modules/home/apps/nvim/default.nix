@@ -82,14 +82,11 @@ in
         shiftround = true;
         termguicolors = true;
         cursorline = true;
-        scrolloff = 8;
-        sidescrolloff = 8;
         showmode = false;
         wrap = false;
         linebreak = true;
         breakindent = true;
         conceallevel = 2;
-        fillchars = "fold: ,foldopen:▾,foldclose:▸,diff:╱,eob: ,vert:│,horiz:─";
         incsearch = true;
         inccommand = "split";
         splitright = true;
@@ -98,8 +95,6 @@ in
         foldmethod = "expr";
         foldexpr = "v:lua.vim.treesitter.foldexpr()";
         foldlevelstart = 99;
-        updatetime = 200;
-        timeoutlen = 400;
         ttimeoutlen = 10;
         swapfile = false;
         autoread = true;
@@ -115,7 +110,6 @@ in
         laststatus = 3;
         cmdheight = 0;
         showcmdloc = "statusline";
-        grepprg = "rg --vimgrep --smart-case";
         grepformat = "%f:%l:%c:%m";
         shortmess = "sIcWF";
       };
