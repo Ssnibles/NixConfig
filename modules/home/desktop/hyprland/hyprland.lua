@@ -205,6 +205,11 @@ hl.window_rule({
 	workspace = "special",
 })
 hl.window_rule({
+	name = "discrod-special",
+	match = { class = "^(vesktop|discord)$" },
+	workspace = "special",
+})
+hl.window_rule({
 	name = "pip-noblur",
 	match = { class = "^(firefox)$", title = "^(Picture-in-Picture)$" },
 })
