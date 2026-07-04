@@ -20,25 +20,27 @@
   # ── Networking ───────────────────────────────────────────────────────────
   networking.networkmanager = {
     wifi = {
-      scanRandMacAddress = false;        # Avoid scan-triggered disconnects
-      powersave = false;                 # Force nm-level power save off
+      scanRandMacAddress = false; # Avoid scan-triggered disconnects
+      powersave = false; # Force nm-level power save off
     };
-    dispatcherScripts = [{
-      source = pkgs.writeShellScript "wifi-powersave-off" ''
-        # Disable nl80211/mac80211 power saving on wifi interface up.
-        # This is the kernel-level power save, separate from the driver PS mode.
-        if [ "$2" = "up" ]; then
-          ${pkgs.iw}/bin/iw dev "$1" set power_save off
-        fi
-      '';
-      type = "basic";
-    }];
+    dispatcherScripts = [
+      {
+        source = pkgs.writeShellScript "wifi-powersave-off" ''
+          # Disable nl80211/mac80211 power saving on wifi interface up.
+          # This is the kernel-level power save, separate from the driver PS mode.
+          if [ "$2" = "up" ]; then
+            ${pkgs.iw}/bin/iw dev "$1" set power_save off
+          fi
+        '';
+        type = "basic";
+      }
+    ];
   };
 
   networking.wireless.iwd.settings = {
     General = {
       EnableNetworkConfiguration = false;
-      DisableANQP = true;                # Realtek rtw89 FW stumbles on ANQP queries
+      DisableANQP = true; # Realtek rtw89 FW stumbles on ANQP queries
     };
     DriverQuirks = {
       # Disable power save for rtw89 variants (value is a driver glob list).
@@ -60,6 +62,9 @@
       USB_AUTOSUSPEND = 1;
       AHCI_RUNTIME_PM_ON_BAT = "auto";
       RUNTIME_PM_ON_BAT = "auto";
+      RUNTIME_PM_ON_AC = "auto";
+      PCIE_ASPM_ON_AC = "performance";
+      PCIE_ASPM_ON_BAT = "powersave";
       LAPTOP_MODE = 5;
     };
   };
@@ -93,10 +98,38 @@
     dedicatedServer.openFirewall = true;
   };
 
+  programs.gamemode = {
+    enable = true;
+    settings = {
+      general = {
+        renice = 10;
+        desiredgov = "performance";
+      };
+      gpu = {
+        apply_gpu_optimisations = "accept-responsibility";
+        gpu_device = 0;
+        amd_performance_level = "high";
+      };
+    };
+  };
+
+  programs.gamescope = {
+    enable = true;
+    args = [
+      "--fullscreen"
+      "--expose-wayland"
+    ];
+  };
+
   # 32-bit graphics support (required by Steam and 32-bit games)
   hardware.graphics = {
+    enable = true;
     enable32Bit = true;
   };
+
+  environment.systemPackages = with pkgs; [
+    vulkan-tools
+  ];
 
   # ── Groups used by services ───────────────────────────────────────────────
   users.groups = {
