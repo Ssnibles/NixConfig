@@ -16,7 +16,6 @@
       resurrect
       continuum
       yank
-      prefix-highlight
       open
       vim-tmux-navigator
     ];
@@ -96,7 +95,7 @@
       set -g status-interval 1
 
       set -g status-left-length 50
-      set -g status-left "#[fg=#6e94b2,bold] #S "
+      set -g status-left "#{prefix_highlight}#[fg=#6e94b2,bold] #S "
 
       setw -g window-status-format "#[fg=#606079] #I #W "
       setw -g window-status-current-format "#[fg=#6e94b2,bold] #I #W "
@@ -133,12 +132,16 @@
       set -g @continuum-restore 'on'
       set -g @continuum-save-interval '1'
 
-      set -g @prefix_highlight_fg "#6e94b2"
-      set -g @prefix_highlight_bg "#1c1c24"
+      set -g @prefix_highlight_output_prefix " PREFIX "
+      set -g @prefix_highlight_output_lower ""
+      set -g @prefix_highlight_fg "#1c1c24"
+      set -g @prefix_highlight_bg "#6e94b2"
       set -g @prefix_highlight_show_copy_mode 'on'
-      set -g @prefix_highlight_copy_mode_attr "fg=#b4d4cf,bg=#1c1c24"
+      set -g @prefix_highlight_copy_mode_attr "fg=#1c1c24,bg=#b4d4cf"
       set -g @prefix_highlight_show_sync_mode 'on'
-      set -g @prefix_highlight_sync_mode_attr "fg=#d8647e,bg=#1c1c24"
+      set -g @prefix_highlight_sync_mode_attr "fg=#1c1c24,bg=#d8647e"
+
+      run-shell "${pkgs.tmuxPlugins.prefix-highlight}/share/tmux-plugins/prefix-highlight/prefix_highlight.tmux"
     '';
   };
 }
