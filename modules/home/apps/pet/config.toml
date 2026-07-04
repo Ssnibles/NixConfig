@@ -1,6 +1,0 @@
-[General]
-  snippetfile = "/home/josh/.config/pet/snippet.toml"
-  editor = "/home/josh/.config/nvf/nvim/init.lua"
-  selectcmd = "fzf --ansi --layout=reverse --height=40%"
-  color = true
-  sortby = "recency"

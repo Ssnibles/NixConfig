@@ -21,9 +21,6 @@ customPackages
     inherit (prev.stdenv.hostPlatform) system;
     config = {
       allowUnfree = true;
-      permittedInsecurePackages = [
-        "pnpm-10.29.2"
-      ];
     };
   };
 }
