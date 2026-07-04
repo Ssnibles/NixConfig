@@ -28,7 +28,16 @@ in
           set -gx FZF_DEFAULT_COMMAND "${shared.sharedEnv.FZF_DEFAULT_COMMAND}"
           set -gx FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
       end
-      set -gx FZF_DEFAULT_OPTS "${shared.sharedEnv.FZF_DEFAULT_OPTS}"
+      set -gx FZF_DEFAULT_OPTS "
+          ${shared.sharedEnv.FZF_DEFAULT_OPTS}
+          --color=fg:#${c.fg},bg:#${c.bg},hl:#${c.accent}
+          --color=fg+:#${c.fg},bg+:#${c.bgSubtle},hl+:#${c.accent}
+          --color=info:#${c.purple},prompt:#${c.accent},pointer:#${c.accent}
+          --color=marker:#${c.green},spinner:#${c.purple},header:#${c.fgDim}
+          --color=border:#${c.fgDim}
+          --color=selected-bg:#${c.bgSubtle},selected-fg:#${c.fg}
+          --color=gutter:#${c.bg}
+      "
       if type -q bat
           set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
       end
@@ -40,6 +49,10 @@ in
       if functions -q fzf_configure_bindings
           fzf_configure_bindings --directory=\cf --git_status=\cg --history=\cr --processes=\cp --variables=\cv
       end
+
+      set -gx FZF_CTRL_R_OPTS "--preview='echo {}' --preview-window=up,3,wrap --header='Search history'"
+      set -gx FZF_CTRL_T_OPTS "--preview='bat --style=numbers --color=always --line-range :200 {} 2>/dev/null || tree -C -L 2 {} 2>/dev/null || echo {}' --preview-window=right,50%"
+      set -gx FZF_ALT_C_OPTS "--preview='eza --icons=auto --group-directories-first --git --color=always {} 2>/dev/null || ls -la {}' --preview-window=right,60%"
 
       function petpick --description "Insert a pet snippet selected with fzf"
           if not type -q pet
@@ -104,7 +117,7 @@ in
           set -l target (
               printf '%s\n' "." \
               (fd --type d --hidden --follow --exclude .git . "$search_root" 2>/dev/null) \
-              | fzf --height=45% --layout=reverse --border --prompt="cd > " --preview="$preview_cmd" --preview-window=right,60%,border-left
+              | fzf --prompt="cd ❯ " --preview="$preview_cmd" --preview-window=right,60%,border-left --header="Select directory"
           )
 
           if test -n "$target"
