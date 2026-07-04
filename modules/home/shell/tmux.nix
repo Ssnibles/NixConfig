@@ -1,7 +1,4 @@
-{ pkgs, config, semanticColors, ... }:
-let
-  c = semanticColors { colors = config.lib.stylix.colors; };
-in
+{ pkgs, config, ... }:
 {
   programs.tmux = {
     enable = true;
@@ -16,7 +13,6 @@ in
     terminal = "tmux-256color";
 
     plugins = with pkgs.tmuxPlugins; [
-      sensible
       resurrect
       continuum
       yank
@@ -26,21 +22,25 @@ in
     ];
 
     extraConfig = ''
-      set -g  default-terminal "tmux-256color"
+      # ── Terminal & Display ──────────────────────────────────────────────
+      set -g default-terminal "tmux-256color"
       set -as terminal-overrides ",*:RGB"
       set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'
       set -as terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d;m'
 
-      set  -g renumber-windows on
+      # ── General ─────────────────────────────────────────────────────────
+      set -g renumber-windows on
       setw -g pane-base-index 1
-      set  -g repeat-time 500
-      set  -g focus-events on
-      set  -g set-titles on
-      set  -g set-titles-string "#S / #W"
+      set -g repeat-time 500
+      set -g focus-events on
+      set -g set-titles on
+      set -g set-titles-string "#S / #W"
 
+      # ── Prefix ──────────────────────────────────────────────────────────
       bind ` send-prefix
-      bind r source-file ~/.config/tmux/tmux.conf \; display-message "󰞌 tmux.conf reloaded!"
+      bind r source-file ~/.config/tmux/tmux.conf \; display-message "tmux.conf reloaded!"
 
+      # ─ Pane Navigation & Resizing ─────────────────────────────────────
       bind -r H resize-pane -L 5
       bind -r J resize-pane -D 5
       bind -r K resize-pane -U 5
@@ -49,15 +49,16 @@ in
       bind v split-window -v -c "#{pane_current_path}"
       bind h split-window -h -c "#{pane_current_path}"
 
-      bind q   kill-pane
-      bind Q   kill-window
-      bind f   resize-pane -Z
-      bind x   detach-client
+      bind q kill-pane
+      bind Q kill-window
+      bind f resize-pane -Z
+      bind x detach-client
       bind -n C-w choose-window -Z
-      bind e   choose-window
-      bind y   setw synchronize-panes \; display-message "Pane synchronization: #{?pane_synchronized,ON,OFF}"
-      bind n   new-window -c "#{pane_current_path}"
+      bind e choose-window
+      bind y setw synchronize-panes \; display-message "Pane synchronization: #{?pane_synchronized,ON,OFF}"
+      bind n new-window -c "#{pane_current_path}"
 
+      # ── Copy Mode ──────────────────────────────────────────────────────
       bind -T copy-mode-vi v   send-keys -X begin-selection
       bind -T copy-mode-vi C-v send-keys -X rectangle-toggle
       bind -T copy-mode-vi y   send-keys -X copy-selection-and-cancel
@@ -65,7 +66,8 @@ in
       bind P paste-buffer
       bind C clear-history
 
-      is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
+      # ── Vim Integration ────────────────────────────────────────────────
+      is_vim="ps -o state= -o comm= -t '#{pane_tty}' \\
           | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?|fzf)(diff)?$'"
 
       bind-key -n 'C-h' if-shell "$is_vim" 'send-keys C-h' 'select-pane -L'
@@ -78,50 +80,65 @@ in
       bind-key -T copy-mode-vi 'C-k' select-pane -U
       bind-key -T copy-mode-vi 'C-l' select-pane -R
 
+      # ─ Status Bar Colors (Vague Theme) ────────────────────────────────
+      # base01 = #1c1c24 (dark background)
+      # base05 = #cdcdcd (foreground)
+      # base03 = #606079 (dim foreground)
+      # base0D = #6e94b2 (accent/blue)
+      # base0C = #b4d4cf (teal)
+      # base08 = #d8647e (red)
+      # base0A = #f3be7c (yellow)
+      # base02 = #252530 (border)
+
       set -g status-position top
-      set -g status-style    "fg=#${c.fg},bg=#${c.bg}"
-      set -g status-justify  left
+      set -g status-style "fg=#cdcdcd,bg=#1c1c24"
+      set -g status-justify left
       set -g status-interval 1
 
-      set -g status-left-length 80
-      set -g status-left "#[fg=#${c.fg},bg=#${c.bg},bold] #S #[default] #{prefix_highlight} "
+      set -g status-left-length 50
+      set -g status-left "#[fg=#6e94b2,bold] #S "
 
-      setw -g window-status-format         "#[fg=#${c.fgMid},bg=#${c.bg}] #I:#W "
-      setw -g window-status-current-format "#[fg=#${c.fg},bold,bg=#${c.bgRaised}] #I:#W #[default]"
-      setw -g window-status-separator      ""
-      setw -g window-status-activity-style "fg=#${c.yellow},bg=#${c.bg}"
-      setw -g window-status-bell-style     "fg=#${c.red},bg=#${c.bg}"
+      setw -g window-status-format "#[fg=#606079] #I #W "
+      setw -g window-status-current-format "#[fg=#6e94b2,bold] #I #W "
+      setw -g window-status-separator ""
+      setw -g window-status-activity-style "fg=#f3be7c"
+      setw -g window-status-bell-style "fg=#d8647e"
 
-      set -g status-right-length 150
-      set -g status-right "#[fg=#${c.fg},bg=#${c.bg}] #{continuum_status} #[fg=#${c.fgMid},bg=#${c.bg}]%H:%M #[fg=#${c.fg},bg=#${c.bg}] #H "
+      set -g status-right-length 100
+      set -g status-right "#[fg=#b4d4cf] #{b:pane_current_path}  #[fg=#cdcdcd]#H  #[fg=#6e94b2,bold]%H:%M %d %b "
 
-      set -g pane-border-lines        simple
-      set -g pane-border-style        "fg=#${c.fgMid}"
-      set -g pane-active-border-style "fg=#${c.accent}"
+      # ── Pane Borders ───────────────────────────────────────────────────
+      set -g pane-border-lines simple
+      set -g pane-border-style "fg=#252530"
+      set -g pane-active-border-style "fg=#6e94b2"
 
-      set -g message-style         "fg=#${c.fg},bg=#${c.bgRaised},bold"
-      set -g message-command-style "fg=#${c.fg},bg=#${c.bgRaised},bold"
+      # ── Messages ───────────────────────────────────────────────────────
+      set -g message-style "fg=#6e94b2,bg=#1c1c24,bold"
+      set -g message-command-style "fg=#6e94b2,bg=#1c1c24,bold"
 
-      set  -g visual-activity  off
-      set  -g visual-bell      off
-      set  -g visual-silence   off
+      # ── Notifications ──────────────────────────────────────────────────
+      set -g visual-activity off
+      set -g visual-bell off
+      set -g visual-silence off
       setw -g monitor-activity off
-      set  -g bell-action      none
+      set -g bell-action none
 
-      setw -g automatic-rename        on
+      # ── Window Naming ──────────────────────────────────────────────────
+      setw -g automatic-rename on
       setw -g automatic-rename-format '#{b:pane_current_command}'
 
+      # ── Plugins ────────────────────────────────────────────────────────
       set -g @resurrect-capture-pane-contents 'on'
       set -g @resurrect-strategy-nvim 'session'
       set -g @continuum-restore 'on'
       set -g @continuum-save-interval '1'
 
-      set -g @prefix_highlight_fg              "#${c.bg}"
-      set -g @prefix_highlight_bg              "#${c.yellow}"
-      set -g @prefix_highlight_show_copy_mode  'on'
-      set -g @prefix_highlight_copy_mode_attr  "fg=#${c.bg},bg=#${c.teal}"
-      set -g @prefix_highlight_show_sync_mode  'on'
-      set -g @prefix_highlight_sync_mode_attr  "fg=#${c.bg},bg=#${c.red}"
+      set -g @prefix_highlight_fg "#6e94b2"
+      set -g @prefix_highlight_bg "#1c1c24"
+      set -g @prefix_highlight_show_copy_mode 'on'
+      set -g @prefix_highlight_copy_mode_attr "fg=#b4d4cf,bg=#1c1c24"
+      set -g @prefix_highlight_show_sync_mode 'on'
+      set -g @prefix_highlight_sync_mode_attr "fg=#d8647e,bg=#1c1c24"
     '';
   };
 }
