@@ -79,28 +79,28 @@ in
       bind-key -T copy-mode-vi 'C-l' select-pane -R
 
       set -g status-position top
-      set -g status-style    "fg=${c.fg},bg=${c.bg}"
+      set -g status-style    "fg=#${c.fg},bg=#${c.bg}"
       set -g status-justify  left
       set -g status-interval 1
 
       set -g status-left-length 80
-      set -g status-left "#[fg=${c.fg},bg=${c.bg},bold] #S #[default] #{prefix_highlight} "
+      set -g status-left "#[fg=#${c.fg},bg=#${c.bg},bold] #S #[default] #{prefix_highlight} "
 
-      setw -g window-status-format         "#[fg=${c.fgMid},bg=${c.bg}] #I:#W "
-      setw -g window-status-current-format "#[fg=${c.fg},bold,bg=${c.bgRaised}] #I:#W #[default]"
+      setw -g window-status-format         "#[fg=#${c.fgMid},bg=#${c.bg}] #I:#W "
+      setw -g window-status-current-format "#[fg=#${c.fg},bold,bg=#${c.bgRaised}] #I:#W #[default]"
       setw -g window-status-separator      ""
-      setw -g window-status-activity-style "fg=${c.yellow},bg=${c.bg}"
-      setw -g window-status-bell-style     "fg=${c.red},bg=${c.bg}"
+      setw -g window-status-activity-style "fg=#${c.yellow},bg=#${c.bg}"
+      setw -g window-status-bell-style     "fg=#${c.red},bg=#${c.bg}"
 
       set -g status-right-length 150
-      set -g status-right "#[fg=${c.fg},bg=${c.bg}] #{continuum_status} #[fg=${c.fgMid},bg=${c.bg}]%H:%M #[fg=${c.fg},bg=${c.bg}] #H "
+      set -g status-right "#[fg=#${c.fg},bg=#${c.bg}] #{continuum_status} #[fg=#${c.fgMid},bg=#${c.bg}]%H:%M #[fg=#${c.fg},bg=#${c.bg}] #H "
 
       set -g pane-border-lines        simple
-      set -g pane-border-style        "fg=${c.fgMid}"
-      set -g pane-active-border-style "fg=${c.accent}"
+      set -g pane-border-style        "fg=#${c.fgMid}"
+      set -g pane-active-border-style "fg=#${c.accent}"
 
-      set -g message-style         "fg=${c.fg},bg=${c.bgRaised},bold"
-      set -g message-command-style "fg=${c.fg},bg=${c.bgRaised},bold"
+      set -g message-style         "fg=#${c.fg},bg=#${c.bgRaised},bold"
+      set -g message-command-style "fg=#${c.fg},bg=#${c.bgRaised},bold"
 
       set  -g visual-activity  off
       set  -g visual-bell      off
@@ -116,12 +116,12 @@ in
       set -g @continuum-restore 'on'
       set -g @continuum-save-interval '1'
 
-      set -g @prefix_highlight_fg              "${c.bg}"
-      set -g @prefix_highlight_bg              "${c.yellow}"
+      set -g @prefix_highlight_fg              "#${c.bg}"
+      set -g @prefix_highlight_bg              "#${c.yellow}"
       set -g @prefix_highlight_show_copy_mode  'on'
-      set -g @prefix_highlight_copy_mode_attr  "fg=${c.bg},bg=${c.teal}"
+      set -g @prefix_highlight_copy_mode_attr  "fg=#${c.bg},bg=#${c.teal}"
       set -g @prefix_highlight_show_sync_mode  'on'
-      set -g @prefix_highlight_sync_mode_attr  "fg=${c.bg},bg=${c.red}"
+      set -g @prefix_highlight_sync_mode_attr  "fg=#${c.bg},bg=#${c.red}"
     '';
   };
 }
