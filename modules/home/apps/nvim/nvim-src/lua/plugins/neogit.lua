@@ -21,7 +21,7 @@ neogit.setup({
 		untracked = { folded = false, hidden = false },
 		unstaged = { folded = false, hidden = false },
 		staged = { folded = false, hidden = false },
-		stash = { folded = true, hidden = false },
+		stashes = { folded = true, hidden = false },
 		unpulled_upstream = { folded = true, hidden = false },
 		unmerged_upstream = { folded = false, hidden = false },
 		unpulled_pushRemote = { folded = true, hidden = false },
