@@ -105,7 +105,7 @@ in
         completeopt = "menuone,noselect,popup";
         pumheight = 12;
         wildmode = "longest:full,full";
-        wildoptions = "pum,fuzzy";
+        wildoptions = "fuzzy";
         wildignorecase = true;
         laststatus = 3;
         cmdheight = 0;
@@ -240,7 +240,6 @@ in
 
         mini-nvim
         plenary-nvim
-        markview-nvim
         typst-preview-nvim
         rustaceanvim
       ];
