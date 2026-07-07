@@ -48,18 +48,18 @@ Row {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onEntered: {
-          parent.color = Colors.bgSubtle;
-          parent.scale = 0.96;
+          parent.color = Colors.bgSubtle
+          parent.scale = 0.96
         }
         onExited: {
-          parent.color = "transparent";
-          parent.scale = 1;
+          parent.color = "transparent"
+          parent.scale = 1
         }
         onPressed: parent.scale = 0.93
         onReleased: parent.scale = 0.96
         onClicked: {
-          modelData.invoke();
-          root.actionInvoked();
+          modelData.invoke()
+          root.actionInvoked()
         }
       }
     }

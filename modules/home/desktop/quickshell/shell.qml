@@ -10,23 +10,21 @@ ShellRoot {
 
   IpcHandler {
     target: "quickshell"
-    // Keep parameters untyped: quickshell IPC passes JSON values and typed
-    // signatures can prevent the method from being invoked by some builds.
-    function reload(component) {
-      if (!component || component === "all") {
+    function reload(name: string) {
+      if (!name || name === "all") {
         barLoader.source = ""
         barLoader.source = "bar.qml"
         notificationsLoader.source = ""
         notificationsLoader.source = "notifications.qml"
         commandCenterLoader.source = ""
         commandCenterLoader.source = "CommandCenter.qml"
-      } else if (component === "bar") {
+      } else if (name === "bar") {
         barLoader.source = ""
         barLoader.source = "bar.qml"
-      } else if (component === "notifications") {
+      } else if (name === "notifications") {
         notificationsLoader.source = ""
         notificationsLoader.source = "notifications.qml"
-      } else if (component === "commandcenter") {
+      } else if (name === "commandcenter") {
         commandCenterLoader.source = ""
         commandCenterLoader.source = "CommandCenter.qml"
       }
@@ -35,7 +33,9 @@ ShellRoot {
 
   IpcHandler {
     target: "bar"
-    function toggle() { root.barVisible = !root.barVisible; }
+    function toggle() {
+      root.barVisible = !root.barVisible
+    }
   }
 
   IpcHandler {
@@ -44,20 +44,25 @@ ShellRoot {
     function toggle() {
       if (commandCenterLoader.item) {
         if (commandCenterLoader.item.visible) {
-          commandCenterLoader.item.requestHide();
+          commandCenterLoader.item.requestHide()
         } else {
-          commandCenterLoader.item.visible = true;
+          commandCenterLoader.item.visible = true
         }
       }
     }
+
     function show() {
-      if (commandCenterLoader.item) commandCenterLoader.item.visible = true;
+      if (commandCenterLoader.item) commandCenterLoader.item.visible = true
     }
+
     function hide() {
-      if (commandCenterLoader.item) commandCenterLoader.item.requestHide();
+      if (commandCenterLoader.item) commandCenterLoader.item.requestHide()
     }
+
     function toggleDnd() {
-      if (notificationsLoader.item) notificationsLoader.item.doNotDisturb = !notificationsLoader.item.doNotDisturb;
+      if (notificationsLoader.item) {
+        notificationsLoader.item.doNotDisturb = !notificationsLoader.item.doNotDisturb
+      }
     }
   }
 
@@ -74,8 +79,8 @@ ShellRoot {
       if (item) {
         // Bind notification popup top-margin to bar visibility so popups
         // don't overlap the bar when it's shown.
-        item.barVisible = Qt.binding(function() { return root.barVisible; });
-        if (commandCenterLoader.item) commandCenterLoader.item.root = item;
+        item.barVisible = Qt.binding(function() { return root.barVisible })
+        if (commandCenterLoader.item) commandCenterLoader.item.root = item
       }
     }
   }
@@ -86,7 +91,7 @@ ShellRoot {
     source: "CommandCenter.qml"
     onItemChanged: {
       if (item && notificationsLoader.item) {
-        item.root = notificationsLoader.item;
+        item.root = notificationsLoader.item
       }
     }
   }
