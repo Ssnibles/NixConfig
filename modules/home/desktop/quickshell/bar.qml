@@ -31,10 +31,10 @@ PanelWindow {
   // Update clock display and schedule the next update so it fires exactly
   // at the next minute boundary, keeping the clock perfectly in sync.
   function updateTime() {
-    var d = new Date();
-    barPanel.timeStr = Qt.formatTime(d, "hh:mm");
-    timeTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds());
-    timeTimer.restart();
+    var d = new Date()
+    barPanel.timeStr = Qt.formatTime(d, "hh:mm")
+    timeTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
+    timeTimer.restart()
   }
 
   Timer {
@@ -48,120 +48,120 @@ PanelWindow {
 
   // Keep the active window label concise and consistent across apps.
   property var appNameOverrides: ({
-      "zen": "Zen",
-      "zen-browser": "Zen",
-      "zen-beta": "Zen",
-      "firefox": "Firefox",
-      "org.mozilla.firefox": "Firefox",
-      "nvim": "Neovim",
-      "neovim": "Neovim",
-      "foot": "Foot"
+    "zen": "Zen",
+    "zen-browser": "Zen",
+    "zen-beta": "Zen",
+    "firefox": "Firefox",
+    "org.mozilla.firefox": "Firefox",
+    "nvim": "Neovim",
+    "neovim": "Neovim",
+    "foot": "Foot"
   })
 
-  function prettifyAppName(className) {
-    if (!className) return "";
-    var key = String(className).toLowerCase();
-    if (appNameOverrides[key]) return appNameOverrides[key];
-    key = key.replace(/\.desktop$/, "");
-    if (appNameOverrides[key]) return appNameOverrides[key];
-    var base = String(className).split(".").pop();
-    base = base.replace(/[-_]+/g, " ");
-    return base.replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+  function _prettifyAppName(className) {
+    if (!className) return ""
+    var key = String(className).toLowerCase()
+    if (appNameOverrides[key]) return appNameOverrides[key]
+    key = key.replace(/\.desktop$/, "")
+    if (appNameOverrides[key]) return appNameOverrides[key]
+    var base = String(className).split(".").pop()
+    base = base.replace(/[-_]+/g, " ")
+    return base.replace(/\b\w/g, function(c) { return c.toUpperCase() })
   }
 
-  function formatActiveTitle(toplevel) {
-    if (!toplevel) return "";
-    var title = toplevel.title || "";
-    var className = "";
+  function _formatActiveTitle(toplevel) {
+    if (!toplevel) return ""
+    var title = toplevel.title || ""
+    var className = ""
     if (toplevel.lastIpcObject && toplevel.lastIpcObject.class) {
-      className = toplevel.lastIpcObject.class;
+      className = toplevel.lastIpcObject.class
     }
-    var appName = prettifyAppName(className);
+    var appName = _prettifyAppName(className)
 
-    if (title.endsWith(" — Zen Browser")) {
-      title = title.slice(0, title.length - " — Zen Browser".length);
-      appName = "Zen";
-    } else if (title.endsWith(" — Mozilla Firefox")) {
-      title = title.slice(0, title.length - " — Mozilla Firefox".length);
-      appName = "Firefox";
+    if (title.endsWith(" \u2014 Zen Browser")) {
+      title = title.slice(0, title.length - " \u2014 Zen Browser".length)
+      appName = "Zen"
+    } else if (title.endsWith(" \u2014 Mozilla Firefox")) {
+      title = title.slice(0, title.length - " \u2014 Mozilla Firefox".length)
+      appName = "Firefox"
     }
 
     if (title.endsWith(" - nvim")) {
-      title = title.slice(0, title.length - " - nvim".length);
-      appName = "Neovim";
+      title = title.slice(0, title.length - " - nvim".length)
+      appName = "Neovim"
     } else if (title.endsWith(" - foot")) {
-      title = title.slice(0, title.length - " - foot".length);
+      title = title.slice(0, title.length - " - foot".length)
     }
 
-    title = String(title).trim();
-    if (appName && title && title !== appName) return appName + ": " + title;
-    return appName || title;
+    title = String(title).trim()
+    if (appName && title && title !== appName) return appName + ": " + title
+    return appName || title
   }
 
-  function findFirst(list, predicate) {
+  function _findFirst(list, predicate) {
     for (var i = 0; i < list.length; i++) {
-      if (predicate(list[i])) return list[i];
+      if (predicate(list[i])) return list[i]
     }
-    return null;
+    return null
   }
 
-  function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
+  function _clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value))
   }
 
-  function pad2(n) {
-    return n < 10 ? "0" + n : "" + n;
+  function _pad2(n) {
+    return n < 10 ? "0" + n : "" + n
   }
 
-  function escapeRegex(value) {
-    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  function _escapeRegex(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
   }
 
   // Try to focus the Hyprland window belonging to the current media player.
   // First match by desktop entry / app class, then fall back to window title.
-  function focusMediaPlayer() {
-    if (!barPanel.mediaPlayer) return;
-    var entry = barPanel.mediaPlayer.desktopEntry || barPanel.mediaPlayer.name || "";
+  function _focusMediaPlayer() {
+    if (!barPanel.mediaPlayer) return
+    var entry = barPanel.mediaPlayer.desktopEntry || barPanel.mediaPlayer.name || ""
     if (entry) {
-      var lowerEntry = entry.toLowerCase();
-      var toplevels = Hyprland.toplevels.values;
+      var lowerEntry = entry.toLowerCase()
+      var toplevels = Hyprland.toplevels.values
       for (var i = 0; i < toplevels.length; i++) {
-        var tl = toplevels[i];
+        var tl = toplevels[i]
         // lastIpcObject.class is the Hyprland window class (e.g. "firefox", "spotify").
         if (tl.lastIpcObject && tl.lastIpcObject.class) {
           if (tl.lastIpcObject.class.toLowerCase() === lowerEntry) {
-            var addr = String(tl.address);
-            if (addr.startsWith("0x")) addr = addr.slice(2);
-            Hyprland.dispatch("focuswindow address:0x" + addr);
-            return;
+            var addr = String(tl.address)
+            if (addr.startsWith("0x")) addr = addr.slice(2)
+            Hyprland.dispatch("focuswindow address:0x" + addr)
+            return
           }
         }
       }
       // Fallback: focus by class regex if direct address match failed.
-      Hyprland.dispatch("focuswindow class:(?i)^" + escapeRegex(entry) + "$");
-      return;
+      Hyprland.dispatch("focuswindow class:(?i)^" + _escapeRegex(entry) + "$")
+      return
     }
-    var identity = barPanel.mediaPlayer.identity || "";
+    var identity = barPanel.mediaPlayer.identity || ""
     if (identity) {
-      var toplevels2 = Hyprland.toplevels.values;
+      var toplevels2 = Hyprland.toplevels.values
       for (var j = 0; j < toplevels2.length; j++) {
-        var tl2 = toplevels2[j];
+        var tl2 = toplevels2[j]
         if (tl2.title && tl2.title.indexOf(identity) !== -1) {
-          var addr2 = String(tl2.address);
-          if (addr2.startsWith("0x")) addr2 = addr2.slice(2);
-          Hyprland.dispatch("focuswindow address:0x" + addr2);
-          return;
+          var addr2 = String(tl2.address)
+          if (addr2.startsWith("0x")) addr2 = addr2.slice(2)
+          Hyprland.dispatch("focuswindow address:0x" + addr2)
+          return
         }
       }
-      Hyprland.dispatch("focuswindow title:(?i)" + escapeRegex(identity).replace(/\s+/g, "\\s+"));
+      Hyprland.dispatch("focuswindow title:(?i)" + _escapeRegex(identity).replace(/\s+/g, "\\s+"))
     }
   }
 
-  property string currentTitle: formatActiveTitle(Hyprland.activeToplevel)
+  property string currentTitle: _formatActiveTitle(Hyprland.activeToplevel)
 
-  function switchWs(id) { Hyprland.dispatch("workspace " + id); }
+  function switchWs(id) { Hyprland.dispatch("workspace " + id) }
 
-  // -- Volume --
+  // ── Volume ──
   // PwObjectTracker is required by Quickshell so property bindings on Pipewire
   // nodes actually update when the underlying object changes.
   property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
@@ -170,46 +170,46 @@ PanelWindow {
   property real volPct: volInfo ? volInfo.volume : 0
   property bool volMuted: volInfo ? volInfo.muted : false
   property string volTooltip: {
-    var pct = Math.round(barPanel.volPct * 100);
-    return (barPanel.volMuted ? "Muted" : ("Volume " + pct + "%")) + "\nLeft click: mute\nRight click: pavucontrol\nScroll: adjust";
+    var pct = Math.round(barPanel.volPct * 100)
+    return (barPanel.volMuted ? "Muted" : ("Volume " + pct + "%")) + "\nLeft click: mute\nRight click: pavucontrol\nScroll: adjust"
   }
   Process { id: volProc; command: ["pavucontrol"] }
   Process { id: controlPanelProc; command: ["qs", "ipc", "call", "controlpanel", "toggle"] }
 
-  // -- WiFi --
-  property var wifiDev: findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi; })
-  property var wifiNet: findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected; })
+  // ── WiFi ──
+  property var wifiDev: _findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
+  property var wifiNet: _findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected })
   property string wifiSsid: wifiNet ? wifiNet.name : ""
   property string wifiIcon: {
-    if (!wifiNet) return "󰤯";
-    var s = wifiNet.signalStrength;
-    if (s < 0.2) return "󰤟";
-    if (s < 0.4) return "󰤢";
-    if (s < 0.6) return "󰤥";
-    return "󰤨";
+    if (!wifiNet) return "\u{F092F}"
+    var s = wifiNet.signalStrength
+    if (s < 0.2) return "\u{F091F}"
+    if (s < 0.4) return "\u{F0922}"
+    if (s < 0.6) return "\u{F0925}"
+    return "\u{F0928}"
   }
   property string wifiTooltip: {
-    if (!wifiNet) return "Wi-Fi disconnected\nRight click: nmtui";
-    return wifiNet.name + " (" + Math.round(wifiNet.signalStrength * 100) + "%)\nRight click: nmtui";
+    if (!wifiNet) return "Wi-Fi disconnected\nRight click: nmtui"
+    return wifiNet.name + " (" + Math.round(wifiNet.signalStrength * 100) + "%)\nRight click: nmtui"
   }
   Process { id: wifiProc; command: ["sh", "-lc", "foot -e nmtui"] }
 
-  // -- Battery --
+  // ── Battery ──
   // Look for an actual laptop battery first; if none is found, fall back to UPower's
   // aggregated display device (useful on desktops that report a UPS or display device).
   property var batDevice: {
-    var count = UPower.devices.count;
+    var count = UPower.devices.count
     for (var i = 0; i < count; i++) {
-      var d = UPower.devices.get(i);
-      if (d.isLaptopBattery && d.ready) return d;
+      var d = UPower.devices.get(i)
+      if (d.isLaptopBattery && d.ready) return d
     }
-    return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null;
+    return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null
   }
 
   readonly property bool batPresent: {
-    var count = UPower.devices.count;
-    if (count > 0) return true;
-    return UPower.displayDevice && UPower.displayDevice.ready;
+    var count = UPower.devices.count
+    if (count > 0) return true
+    return UPower.displayDevice && UPower.displayDevice.ready
   }
   readonly property int batPct: batDevice ? Math.round(batDevice.percentage * 100) : 0
   readonly property bool batCharging: batDevice && batDevice.state === UPowerDeviceState.Charging
@@ -217,57 +217,57 @@ PanelWindow {
   readonly property int batState: batDevice ? batDevice.state : UPowerDeviceState.Unknown
 
   property string batIcon: {
-    if (!batPresent) return "";
-    if (batCharging) return "󰂄";
-    if (batPlugged) return "󰚥";
-    var p = batPct;
-    if (p <= 10) return "󰁺";
-    if (p <= 20) return "󰁻";
-    if (p <= 30) return "󰁼";
-    if (p <= 40) return "󰁽";
-    if (p <= 50) return "󰁾";
-    if (p <= 60) return "󰁿";
-    if (p <= 70) return "󰂀";
-    if (p <= 80) return "󰁂";
-    if (p <= 90) return "󰂂";
-    return "󰁹";
+    if (!batPresent) return ""
+    if (batCharging) return "\u{F0084}"
+    if (batPlugged) return "\u{F06A5}"
+    var p = batPct
+    if (p <= 10) return "\u{F007A}"
+    if (p <= 20) return "\u{F007B}"
+    if (p <= 30) return "\u{F007C}"
+    if (p <= 40) return "\u{F007D}"
+    if (p <= 50) return "\u{F007E}"
+    if (p <= 60) return "\u{F007F}"
+    if (p <= 70) return "\u{F0080}"
+    if (p <= 80) return "\u{F0042}"
+    if (p <= 90) return "\u{F0082}"
+    return "\u{F0079}"
   }
   property string batTooltip: {
-    if (!batPresent) return "";
-    var pct = Math.round(batPct);
-    var state;
+    if (!batPresent) return ""
+    var pct = Math.round(batPct)
+    var state
     switch (batState) {
-      case UPowerDeviceState.Charging:        state = "Charging"; break;
-      case UPowerDeviceState.FullyCharged:    state = "Plugged in"; break;
-      case UPowerDeviceState.PendingCharge:   state = "Pending charge"; break;
-      case UPowerDeviceState.PendingDischarge:state = "Pending discharge"; break;
-      case UPowerDeviceState.Empty:           state = "Empty"; break;
-      default:                                state = "Discharging"; break;
+      case UPowerDeviceState.Charging:        state = "Charging"; break
+      case UPowerDeviceState.FullyCharged:    state = "Plugged in"; break
+      case UPowerDeviceState.PendingCharge:   state = "Pending charge"; break
+      case UPowerDeviceState.PendingDischarge:state = "Pending discharge"; break
+      case UPowerDeviceState.Empty:           state = "Empty"; break
+      default:                                state = "Discharging"; break
     }
-    return pct + "% · " + state;
+    return pct + "% \u00B7 " + state
   }
   property color batColor: {
-    if (!batPresent) return Colors.fg;
-    if (batCharging || batPlugged) return Colors.green;
-    if (batPct <= 15) return Colors.red;
-    if (batPct <= 30) return Colors.yellow;
-    return Colors.fg;
+    if (!batPresent) return Colors.fg
+    if (batCharging || batPlugged) return Colors.green
+    if (batPct <= 15) return Colors.red
+    if (batPct <= 30) return Colors.yellow
+    return Colors.fg
   }
 
-  // -- Media --
+  // ── Media ──
   // Prefer the currently playing player; if none, show the most recently paused one.
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: {
-    var playing = findFirst(mediaPlayers, function(p) { return p.isPlaying; });
-    return playing ? playing : findFirst(mediaPlayers, function(p) {
-        return p.playbackState === MprisPlaybackState.Paused;
-    });
+    var playing = _findFirst(mediaPlayers, function(p) { return p.isPlaying })
+    return playing ? playing : _findFirst(mediaPlayers, function(p) {
+      return p.playbackState === MprisPlaybackState.Paused
+    })
   }
   property string mediaText: mediaPlayer
-  ? (mediaPlayer.trackArtist
-    ? mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
-    : mediaPlayer.trackTitle)
-  : ""
+    ? (mediaPlayer.trackArtist
+      ? mediaPlayer.trackTitle + " \u2014 " + mediaPlayer.trackArtist
+      : mediaPlayer.trackTitle)
+    : ""
   property bool hasMedia: mediaText !== ""
   // mediaTick is incremented on a timer so that mediaProgress (a computed property)
   // re-evaluates and the progress bar stays in sync while playing.
@@ -275,53 +275,54 @@ PanelWindow {
   property real mediaLastPosition: 0
   property real mediaLastLength: 0
   property int mediaResetToken: 0
-  function resetMediaTiming(pos, len) {
-    barPanel.mediaLastPosition = Math.max(0, pos || 0);
-    barPanel.mediaLastLength = Math.max(0, len || 0);
-    barPanel.mediaTick = 0;
-    barPanel.mediaResetToken++;
+  function _resetMediaTiming(pos, len) {
+    barPanel.mediaLastPosition = Math.max(0, pos || 0)
+    barPanel.mediaLastLength = Math.max(0, len || 0)
+    barPanel.mediaTick = 0
+    barPanel.mediaResetToken++
   }
-  function updateMediaPosition(pos, len) {
-    var p = Math.max(0, pos || 0);
-    var l = Math.max(0, len || 0);
+  function _updateMediaPosition(pos, len) {
+    var p = Math.max(0, pos || 0)
+    var l = Math.max(0, len || 0)
     if (p + 0.5 < barPanel.mediaLastPosition) {
-      barPanel.resetMediaTiming(p, l);
-      return;
+      barPanel._resetMediaTiming(p, l)
+      return
     }
-    barPanel.mediaLastPosition = p;
-    barPanel.mediaLastLength = l;
+    barPanel.mediaLastPosition = p
+    barPanel.mediaLastLength = l
   }
   property real mediaProgress: {
-    var _ = barPanel.mediaTick;
-    var __ = barPanel.mediaResetToken;
+    var _ = barPanel.mediaTick
+    var __ = barPanel.mediaResetToken
     return mediaPlayer && barPanel.mediaLastLength > 0
-    ? Math.min(1, Math.max(0, barPanel.mediaLastPosition / barPanel.mediaLastLength)) : 0;
+      ? Math.min(1, Math.max(0, barPanel.mediaLastPosition / barPanel.mediaLastLength))
+      : 0
   }
   onMediaPlayerChanged: {
     if (!mediaPlayer) {
-      barPanel.resetMediaTiming(0, 0);
-      return;
+      barPanel._resetMediaTiming(0, 0)
+      return
     }
-    barPanel.resetMediaTiming(mediaPlayer.position, mediaPlayer.length);
+    barPanel._resetMediaTiming(mediaPlayer.position, mediaPlayer.length)
   }
 
   Connections {
     target: barPanel.mediaPlayer
     function onPositionChanged() {
-      if (!barPanel.mediaPlayer) return;
-      barPanel.updateMediaPosition(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length);
+      if (!barPanel.mediaPlayer) return
+      barPanel._updateMediaPosition(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length)
     }
     function onLengthChanged() {
-      if (!barPanel.mediaPlayer) return;
-      barPanel.mediaLastLength = Math.max(0, barPanel.mediaPlayer.length || 0);
+      if (!barPanel.mediaPlayer) return
+      barPanel.mediaLastLength = Math.max(0, barPanel.mediaPlayer.length || 0)
     }
     function onTrackChanged() {
-      if (!barPanel.mediaPlayer) return;
-      barPanel.resetMediaTiming(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length);
+      if (!barPanel.mediaPlayer) return
+      barPanel._resetMediaTiming(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length)
     }
   }
 
-  // -- Hover state --
+  // ── Hover state ──
   property bool volHover: volHoverHandler.hovered
   property bool wifiHover: wifiHoverHandler.hovered
   property bool batHover: batPresent && batHoverHandler.hovered
@@ -329,15 +330,15 @@ PanelWindow {
   property bool tooltipVisible: volHover || wifiHover || batHover
 
   property string tooltipText: {
-    if (volHover) return barPanel.volTooltip;
-    if (wifiHover) return barPanel.wifiTooltip;
-    if (batHover) return barPanel.batTooltip;
-    return "";
+    if (volHover) return barPanel.volTooltip
+    if (wifiHover) return barPanel.wifiTooltip
+    if (batHover) return barPanel.batTooltip
+    return ""
   }
 
   property int tooltipWidth: Math.round(Math.min(barPanel.tooltipMaxWidth, barPanel.width - barPanel.tooltipMargin * 2))
 
-  // Timer to keep media position in sync while playing
+  // Timer to keep media position in sync while playing.
   Timer {
     id: tickTimer
     interval: 300
@@ -345,9 +346,9 @@ PanelWindow {
     repeat: true
     onTriggered: {
       if (barPanel.mediaPlayer) {
-        barPanel.updateMediaPosition(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length);
+        barPanel._updateMediaPosition(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length)
       }
-      barPanel.mediaTick++;
+      barPanel.mediaTick++
     }
   }
 
@@ -467,21 +468,21 @@ PanelWindow {
               cursorShape: Qt.PointingHandCursor
               acceptedButtons: Qt.LeftButton | Qt.RightButton
               onClicked: function(mouse) {
-                if (!barPanel.mediaPlayer) return;
+                if (!barPanel.mediaPlayer) return
                 if (mouse.button === Qt.RightButton) {
-                  barPanel.focusMediaPlayer();
+                  barPanel._focusMediaPlayer()
                 } else if (barPanel.mediaPlayer.canSeek) {
-                  barPanel.mediaPlayer.position = mouse.x / width * barPanel.mediaPlayer.length;
+                  barPanel.mediaPlayer.position = mouse.x / width * barPanel.mediaPlayer.length
                 }
               }
               onWheel: function(wheel) {
-                if (!barPanel.mediaPlayer) return;
+                if (!barPanel.mediaPlayer) return
                 if (wheel.angleDelta.y > 0) {
-                  if (barPanel.mediaPlayer.canGoNext) barPanel.mediaPlayer.next();
+                  if (barPanel.mediaPlayer.canGoNext) barPanel.mediaPlayer.next()
                 } else if (wheel.angleDelta.y < 0) {
-                  if (barPanel.mediaPlayer.canGoPrevious) barPanel.mediaPlayer.previous();
+                  if (barPanel.mediaPlayer.canGoPrevious) barPanel.mediaPlayer.previous()
                 }
-                wheel.accepted = true;
+                wheel.accepted = true
               }
             }
           }
@@ -490,13 +491,13 @@ PanelWindow {
             id: mediaTimeLabel
             text: {
               if (!barPanel.mediaPlayer) return ""
-              var _ = barPanel.mediaTick;
-              var __ = barPanel.mediaResetToken;
+              var _ = barPanel.mediaTick
+              var __ = barPanel.mediaResetToken
               var p = Math.round(barPanel.mediaLastPosition)
               var l = Math.round(barPanel.mediaLastLength)
               if (l <= 0) return ""
-              return Math.floor(p/60) + ":" + pad2(p%60)
-              + " / " + Math.floor(l/60) + ":" + pad2(l%60)
+              return Math.floor(p / 60) + ":" + _pad2(p % 60)
+                + " / " + Math.floor(l / 60) + ":" + _pad2(l % 60)
             }
             color: Colors.fgMid
             font.family: barPanel.uiFont
@@ -551,21 +552,21 @@ PanelWindow {
               cursorShape: Qt.PointingHandCursor
               acceptedButtons: Qt.LeftButton | Qt.RightButton
               onClicked: function(mouse) {
-                if (!barPanel.mediaPlayer) return;
+                if (!barPanel.mediaPlayer) return
                 if (mouse.button === Qt.RightButton) {
-                  barPanel.focusMediaPlayer();
+                  barPanel._focusMediaPlayer()
                 } else {
-                  controlPanelProc.startDetached();
+                  controlPanelProc.startDetached()
                 }
               }
               onWheel: function(wheel) {
-                if (!barPanel.mediaPlayer) return;
+                if (!barPanel.mediaPlayer) return
                 if (wheel.angleDelta.y > 0) {
-                  if (barPanel.mediaPlayer.canGoNext) barPanel.mediaPlayer.next();
+                  if (barPanel.mediaPlayer.canGoNext) barPanel.mediaPlayer.next()
                 } else if (wheel.angleDelta.y < 0) {
-                  if (barPanel.mediaPlayer.canGoPrevious) barPanel.mediaPlayer.previous();
+                  if (barPanel.mediaPlayer.canGoPrevious) barPanel.mediaPlayer.previous()
                 }
-                wheel.accepted = true;
+                wheel.accepted = true
               }
             }
           }
@@ -597,12 +598,12 @@ PanelWindow {
 
           Text {
             text: {
-              if (barPanel.volMuted) return "󰝟"
+              if (barPanel.volMuted) return "\u{F075F}"
               var v = barPanel.volPct
-              if (v <= 0) return "󰝟"
-              if (v < 0.33) return "󰕿"
-              if (v < 0.66) return "󰖀"
-              return "󰕾"
+              if (v <= 0) return "\u{F075F}"
+              if (v < 0.33) return "\u{F057F}"
+              if (v < 0.66) return "\u{F0580}"
+              return "\u{F057E}"
             }
             color: barPanel.volMuted ? Colors.red : Colors.fg
             font.family: barPanel.uiFont
@@ -645,16 +646,16 @@ PanelWindow {
           anchors.fill: parent
           acceptedButtons: Qt.LeftButton | Qt.RightButton
           onClicked: function(mouse) {
-            if (mouse.button === Qt.RightButton) { volProc.startDetached(); }
+            if (mouse.button === Qt.RightButton) { volProc.startDetached() }
             else if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-              Pipewire.defaultAudioSink.audio.muted = !barPanel.volMuted;
+              Pipewire.defaultAudioSink.audio.muted = !barPanel.volMuted
             }
           }
           onWheel: function(wheel) {
-            if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return;
-            var step = 0.05;
-            var dir = wheel.angleDelta.y > 0 ? 1 : -1;
-            Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(1, barPanel.volPct + dir * step));
+            if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return
+            var step = 0.05
+            var dir = wheel.angleDelta.y > 0 ? 1 : -1
+            Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(1, barPanel.volPct + dir * step))
           }
         }
       }
@@ -699,15 +700,14 @@ PanelWindow {
 
     // Center the tooltip horizontally above the hovered pill, clamped to screen bounds.
     function computeX(targetW) {
-      var anchor = { volWidget: 1, wifiPill: 1, batteryPill: 1 };
-      var pill;
-      if (volHover) pill = volWidget;
-      else if (wifiHover) pill = wifiPill;
-      else pill = batteryPill;
-      if (!pill) return 0;
-      var pos = pill.mapToItem(barContent, 0, 0);
-      var x = barContent.x + pos.x + (pill.width - targetW) / 2;
-      return Math.round(clamp(x, barPanel.tooltipMargin, barPanel.width - targetW - barPanel.tooltipMargin));
+      var pill
+      if (volHover) pill = volWidget
+      else if (wifiHover) pill = wifiPill
+      else pill = batteryPill
+      if (!pill) return 0
+      var pos = pill.mapToItem(barContent, 0, 0)
+      var x = barContent.x + pos.x + (pill.width - targetW) / 2
+      return Math.round(_clamp(x, barPanel.tooltipMargin, barPanel.width - targetW - barPanel.tooltipMargin))
     }
 
     sourceComponent: Component {
@@ -763,5 +763,4 @@ PanelWindow {
       }
     }
   }
-
 }

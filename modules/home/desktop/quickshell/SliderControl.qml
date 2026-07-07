@@ -26,8 +26,9 @@ Item {
 
   // Clear the pending value once the external source reflects our drag.
   onValueChanged: {
-    if (mouse && !mouse.dragging && _pendingValue >= 0 && Math.abs(value - _pendingValue) < 0.001)
-      _pendingValue = -1;
+    if (mouse && !mouse.dragging && _pendingValue >= 0 && Math.abs(value - _pendingValue) < 0.001) {
+      _pendingValue = -1
+    }
   }
 
   Item {
@@ -78,35 +79,35 @@ Item {
       property bool dragging: false
 
       // Snap slider to increments (e.g. 5% steps) when snapPercent > 0.
-      function snap(v) {
-        if (root.snapPercent <= 0) return v;
-        return Math.round(v / (root.snapPercent / 100)) * (root.snapPercent / 100);
+      function _snap(v) {
+        if (root.snapPercent <= 0) return v
+        return Math.round(v / (root.snapPercent / 100)) * (root.snapPercent / 100)
       }
 
-      function computeValue(mx) {
-        var raw = Math.max(0, Math.min(1, mx / width));
-        return root.snapPercent > 0 ? snap(raw) : raw;
+      function _computeValue(mx) {
+        var raw = Math.max(0, Math.min(1, mx / width))
+        return root.snapPercent > 0 ? _snap(raw) : raw
       }
 
       onPressed: function(mouse) {
         if (!dragging) {
-          dragging = true;
-          root.dragStarted();
+          dragging = true
+          root.dragStarted()
         }
-        root._dragValue = computeValue(mouse.x);
-        root.moved(root._dragValue);
+        root._dragValue = _computeValue(mouse.x)
+        root.moved(root._dragValue)
       }
       onReleased: {
-        if (!dragging) return;
-        dragging = false;
-        root._pendingValue = root._dragValue;
-        root.dragEnded();
+        if (!dragging) return
+        dragging = false
+        root._pendingValue = root._dragValue
+        root.dragEnded()
       }
-      onExited: { if (!dragging) dragging = false; }
+      onExited: { if (!dragging) dragging = false }
       onPositionChanged: function(mouse) {
         if (dragging) {
-          root._dragValue = computeValue(mouse.x);
-          root.moved(root._dragValue);
+          root._dragValue = _computeValue(mouse.x)
+          root.moved(root._dragValue)
         }
       }
     }

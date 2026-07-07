@@ -21,13 +21,13 @@ Item {
     // 2. App icon path (local paths need file:// prefix for QML Image)
     // 3. Freedesktop icon name via Quickshell.iconPath()
     source: {
-      if (!root.notification) return "";
-      if (root.notification.image && root.notification.image.length > 0) return root.notification.image;
-      var appIcon = root.notification.appIcon || "";
-      if (appIcon.length === 0) return "";
-      if (appIcon.startsWith("/")) return "file://" + appIcon;
-      var iconUrl = Quickshell.iconPath(appIcon, true);
-      return iconUrl && iconUrl.length > 0 ? iconUrl : "";
+      if (!root.notification) return ""
+      if (root.notification.image && root.notification.image.length > 0) return root.notification.image
+      var appIcon = root.notification.appIcon || ""
+      if (appIcon.length === 0) return ""
+      if (appIcon.startsWith("/")) return "file://" + appIcon
+      var iconUrl = Quickshell.iconPath(appIcon, true)
+      return iconUrl && iconUrl.length > 0 ? iconUrl : ""
     }
     sourceSize.width: iconSize
     sourceSize.height: iconSize
@@ -49,7 +49,7 @@ Item {
         ? root.notification.appName[0].toUpperCase()
         : "N"
       color: Colors.teal
-      font.family: uiFont
+      font.family: root.uiFont
       font.pixelSize: 11
       font.bold: true
     }
