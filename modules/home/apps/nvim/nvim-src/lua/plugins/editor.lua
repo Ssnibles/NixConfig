@@ -1,18 +1,25 @@
 -- Editor enhancements: file manager, git signs, formatting, pairs
 
-require("fyler").setup({
-	kind_presets = {
-		floating = {
-			border = "rounded",
-			max_width = 0.8,
-			max_height = 0.8,
-		},
+require("oil").setup({
+	columns = { "icon" },
+	view_options = {
+		show_hidden = true,
+	},
+	float = {
+		padding = 2,
+		max_width = 0.8,
+		max_height = 0.8,
+		border = "rounded",
+	},
+	keymaps = {
+		["<C-h>"] = false,
+		["<M-h>"] = "actions.select_split",
 	},
 })
 
 vim.keymap.set("n", "<leader>e", function()
-	require("fyler").open({ kind = "float" })
-end, { desc = "Explorer (Fyler)" })
+	require("oil").toggle_float()
+end, { desc = "Explorer (Oil)" })
 
 -- ═══════════════════════════════════════════════════════════════════
 --  G I T S I G N S
