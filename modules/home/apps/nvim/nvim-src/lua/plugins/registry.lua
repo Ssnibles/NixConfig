@@ -18,7 +18,6 @@ M.deferred = {
 	"plugins.trouble",
 	"plugins.neogit",
 	"plugins.dap",
-	"plugins.focus",
 }
 
 return M

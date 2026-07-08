@@ -98,11 +98,8 @@ map("n", "<leader>wk", "<C-w>K", { desc = "Move window up" })
 --  B U F F E R S
 -- ═══════════════════════════════════════════════════════════════════
 
-map("n", "<leader>bn", "<cmd>bnext<CR>", { desc = "Next buffer" })
-map("n", "<leader>bp", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 map("n", "<leader>bo", "<cmd>%bd|e#|bd#<CR>", { desc = "Close other buffers" })
 map("n", "<leader>`", "<cmd>b#<CR>", { desc = "Alternate buffer" })
-
 map("n", "<C-Tab>", "<cmd>bnext<CR>", { desc = "Next buffer" })
 map("n", "<C-S-Tab>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 

@@ -141,17 +141,7 @@ autocmd("FileType", {
 	end,
 })
 
-autocmd("TermOpen", {
-	group = augroup,
-	callback = function()
-		vim.opt_local.number = false
-		vim.opt_local.relativenumber = false
-		vim.opt_local.signcolumn = "no"
-		vim.wo.cursorline = false
-	end,
-})
-
--- Ensure signcolumn is visible on real file buffers (safety net for dashboard/Oil transitions)
+-- Ensure signcolumn is visible on real file buffers (safety net for Oil transitions)
 autocmd("BufWinEnter", {
 	group = augroup,
 	callback = function()
@@ -163,13 +153,6 @@ autocmd("BufWinEnter", {
 			vim.wo.signcolumn = vim.o.signcolumn
 		end
 	end,
-})
-
--- Start terminals in insert mode for immediate shell interaction
-autocmd("BufEnter", {
-	group = augroup,
-	pattern = "term://*",
-	command = "startinsert",
 })
 
 -- Switch to absolute line numbers in insert mode, back to relative on leave
@@ -270,12 +253,10 @@ autocmd({ "BufReadPre", "BufNewFile" }, {
 local function disable_trailspace(ev)
 	local ignore_filetypes = {
 		"help",
-		"alpha",
-		"NvimTree",
-		"neo-tree",
 		"lazy",
 		"mason",
 		"trouble",
+		"oil",
 	}
 
 	local ignore_buftypes = {
