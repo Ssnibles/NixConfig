@@ -194,12 +194,8 @@ autocmd("BufEnter", {
 autocmd("InsertEnter", {
 	group = augroup,
 	callback = function()
-		local ok, _ = pcall(function()
-			return vim.wo.relativenumber
-		end)
-		if ok and vim.wo.relativenumber then
+		if vim.wo.relativenumber then
 			vim.wo.relativenumber = false
-			vim.wo.number = true
 		end
 	end,
 })
@@ -215,13 +211,17 @@ autocmd("InsertLeave", {
 autocmd("WinEnter", {
 	group = augroup,
 	callback = function()
-		vim.wo.cursorline = true
+		if vim.bo.buftype ~= "terminal" then
+			vim.wo.cursorline = true
+		end
 	end,
 })
 autocmd("WinLeave", {
 	group = augroup,
 	callback = function()
-		vim.wo.cursorline = false
+		if vim.bo.buftype ~= "terminal" then
+			vim.wo.cursorline = false
+		end
 	end,
 })
 
@@ -304,24 +304,20 @@ local function disable_trailspace(ev)
 		"prompt",
 	}
 
-	local ft = vim.bo.filetype
-	local bt = vim.bo.buftype
-	local name = vim.api.nvim_buf_get_name(0)
+	local buf = ev and ev.buf or 0
+	local ft = vim.bo[buf].filetype
+	local bt = vim.bo[buf].buftype
+	local name = vim.api.nvim_buf_get_name(buf)
 
 	if
 		name:match("snacks_dashboard")
 		or vim.tbl_contains(ignore_filetypes, ft)
 		or vim.tbl_contains(ignore_buftypes, bt)
 	then
-		-- 1. Set the block variable for mini.trailspace
-		vim.b.minitrailspace_disable = true
+		vim.b[buf].minitrailspace_disable = true
 
-		-- 2. Force-clear any matches immediately in this window ID to kill the flash
-		pcall(vim.fn.clearmatches)
-
-		-- 3. If an explicit buffer ID exists from the event, clear it directly
-		if ev and ev.buf then
-			pcall(vim.api.nvim_buf_set_var, ev.buf, "minitrailspace_disable", true)
+		if buf == vim.api.nvim_get_current_buf() then
+			pcall(vim.fn.clearmatches)
 		end
 	end
 end

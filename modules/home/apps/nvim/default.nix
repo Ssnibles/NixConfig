@@ -102,7 +102,6 @@ in
         mousemodel = "extend";
         confirm = true;
         virtualedit = "block";
-        completeopt = "menuone,noselect,popup";
         pumheight = 12;
         wildmode = "longest:full,full";
         wildoptions = "fuzzy";
@@ -164,12 +163,6 @@ in
           pname = "tiny-code-action.nvim";
           version = "flake";
           src = inputs.tiny-code-action;
-          doCheck = false;
-        })
-        (pkgs.vimUtils.buildVimPlugin {
-          pname = "tiny-cmdline.nvim";
-          version = "flake";
-          src = inputs.tiny-cmdline;
           doCheck = false;
         })
 

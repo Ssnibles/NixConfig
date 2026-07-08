@@ -262,8 +262,8 @@ vim.keymap.set("n", "<leader>ac", function()
 	if not copilot_ok then
 		return
 	end
-	copilot.suggestion.enabled = not copilot.suggestion.enabled
-	local status = copilot.suggestion.enabled and "enabled" or "disabled"
+	copilot.suggestion.toggle()
+	local status = copilot.suggestion.is_enabled() and "enabled" or "disabled"
 	vim.notify(("Copilot %s"):format(status), vim.log.levels.INFO)
 end, { desc = "Toggle copilot" })
 
