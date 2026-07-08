@@ -1,4 +1,4 @@
--- UI: lualine, statuscol.
+-- UI: lualine, native statuscolumn.
 
 local c = require("theme").colors
 local t = require("theme")
@@ -93,19 +93,47 @@ require("lualine").setup({
 })
 
 -- ═══════════════════════════════════════════════════════════════════
---  S T A T U S C O L
+--  N A T I V E   S T A T U S C O L U M N
 -- ═══════════════════════════════════════════════════════════════════
 
-local builtin = require("statuscol.builtin")
-require("statuscol").setup({
-	relculright = true,
-	segments = {
-		{ text = { builtin.foldfunc }, click = "v:lua.ScFa" },
-		{ text = { "%s" }, click = "v:lua.ScSa" },
-		{ text = { builtin.lnumfunc, " " }, click = "v:lua.ScLa" },
-	},
-})
+local function statuscolumn()
+	local foldcol = ""
+	local signcol = "%s"
+	local numcol = ""
 
--- cmdline handled by tiny-cmdline plugin
+	local foldcolumn = tonumber(vim.wo.foldcolumn) or 0
+	if foldcolumn > 0 then
+		local lnum = vim.v.lnum
+		local foldclosed = vim.fn.foldclosed(lnum)
+		local foldlevel = vim.fn.foldlevel(lnum)
 
+		if foldclosed > 0 then
+			foldcol = "▸"
+		elseif foldlevel > 0 then
+			foldcol = "▾"
+		else
+			foldcol = " "
+		end
+		foldcol = foldcol .. " "
+	end
 
+	local lnum = vim.v.lnum
+	local lastlnum = tonumber(vim.fn.line("$")) or 1
+	local width = #tostring(lastlnum)
+
+	if vim.v.relnum == 0 then
+		numcol = string.format("%" .. width .. "d ", lnum)
+	else
+		numcol = string.format("%" .. width .. "d ", vim.v.relnum)
+	end
+
+	return foldcol .. signcol .. numcol
+end
+
+vim.o.statuscolumn = "%!v:lua.require('plugins.ui').statuscolumn()"
+
+-- Export the function so it's accessible from the statuscolumn expression
+local M = {}
+M.statuscolumn = statuscolumn
+
+return M

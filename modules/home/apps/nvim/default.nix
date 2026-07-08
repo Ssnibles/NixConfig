@@ -215,10 +215,7 @@ in
         smart-splits-nvim
 
         lualine-nvim
-        statuscol-nvim
         nui-nvim
-        no-neck-pain-nvim
-        twilight-nvim
 
         gitsigns-nvim
         neogit

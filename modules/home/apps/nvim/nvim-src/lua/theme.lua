@@ -78,7 +78,6 @@ function M.setup()
 	-- Derived colours
 	local separator = blend(c.fg, c.bg, 0.06)
 	local indent = blend(c.comment, c.bg, 0.35)
-	local indentScope = blend(c.blue, c.bg, 0.40)
 
 	local hl = function(name, opts)
 		vim.api.nvim_set_hl(0, name, opts)
@@ -106,13 +105,6 @@ function M.setup()
 		"BlinkCmpMenu",
 		"BlinkCmpDoc",
 		"BlinkCmpSignatureHelp",
-		"NoiceCmdlinePopup",
-		"NoiceConfirm",
-		"NoicePopup",
-		"NoicePopupmenu",
-		"NoiceFormatConfirm",
-		"NoiceFormatProgress",
-		"NoiceFormatTitle",
 		"FzfLuaNormal",
 		"FzfLuaPreviewNormal",
 		"FzfLuaPromptNormal",
@@ -123,7 +115,6 @@ function M.setup()
 		"MiniAnimateNormalFloat",
 		"TreesitterContext",
 		"TreesitterContextLineNumber",
-		"SnacksDashboardNormal",
 		"DAPUINormal",
 		"DAPUIFloatNormal",
 		"TabLine",
@@ -195,15 +186,6 @@ function M.setup()
 	hl("FzfLuaDirPart", { fg = c.blue })
 	hl("FzfLuaFilePart", { fg = c.fg })
 
-	-- Noice
-	hl("NoiceCmdlinePopupBorder", { link = "GlobalBorder" })
-	hl("NoiceConfirmBorder", { link = "GlobalBorder" })
-	hl("NoicePopupBorder", { link = "GlobalBorder" })
-	hl("NoicePopupmenuBorder", { link = "GlobalBorder" })
-	hl("NoiceFormatConfirmBorder", { link = "GlobalBorder" })
-	hl("NoiceCmdlinePopupTitle", { fg = c.blue, bold = true })
-	hl("NoicePopupmenuMatch", { fg = c.blue, bold = true })
-
 	-- Mini.clue
 	hl("MiniClueBorder", { link = "GlobalBorder" })
 	hl("MiniClueTitle", { fg = c.blue, bold = true })
@@ -216,17 +198,6 @@ function M.setup()
 	hl("BlinkCmpMenuBorder", { link = "GlobalBorder" })
 	hl("BlinkCmpDocBorder", { link = "GlobalBorder" })
 	hl("BlinkCmpSignatureHelpBorder", { link = "GlobalBorder" })
-
-	-- Snacks borders
-	hl("SnacksTerminalBorder", { link = "GlobalBorder" })
-	hl("SnacksTerminalNormal", { link = "Normal" })
-	hl("SnacksIndentScope", { fg = indentScope, nocombine = true })
-
-	hl("SnacksDashboardHeader", { fg = c.blue, bold = true })
-	hl("SnacksDashboardFooter", { fg = c.comment, italic = true })
-	hl("SnacksDashboardDesc", { fg = c.fg })
-	hl("SnacksDashboardKey", { fg = c.orange, bold = true })
-	hl("SnacksDashboardIcon", { fg = c.blue })
 
 	-- ═══════════════════════════════════════════════════════════════
 	-- BLINK.CMP DETAILS
@@ -475,16 +446,6 @@ function M.setup()
 		inactive = vim.tbl_deep_extend("force", {
 			a = { fg = c.comment, bg = c.bg },
 		}, lualine_base),
-	}
-
-	-- ═══════════════════════════════════════════════════════════════
-	-- STATUSCOL CONTRACT
-	-- ═══════════════════════════════════════════════════════════════
-	M.statuscol = {
-		fold = c.comment,
-		gutter = c.comment,
-		number = c.comment,
-		current = c.blue,
 	}
 end
 

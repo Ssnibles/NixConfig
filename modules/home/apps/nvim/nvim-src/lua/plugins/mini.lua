@@ -53,7 +53,6 @@ clue.setup({
 		{ mode = "n", keys = "<Leader>t", desc = "+toggles/terminal" },
 		{ mode = "n", keys = "<Leader>T", desc = "+tabs" },
 		{ mode = "n", keys = "<Leader>w", desc = "+window" },
-		{ mode = "n", keys = "<Leader>z", desc = "+zen" },
 		{ mode = "n", keys = "<Leader>a", desc = "+copilot" },
 		{ mode = "n", keys = "<Leader>v", desc = "+select" },
 	},
@@ -97,21 +96,15 @@ require("mini.indentscope").setup({
 	draw = {
 		delay = 100,
 		animation = require("mini.indentscope").gen_animation.none(),
-		-- Use a predicate function to filter out specific filetypes and buffertypes
 		predicate = function()
-			-- List the filetypes you want to ignore
 			local ignore_filetypes = {
 				"help",
-				"dashboard",
-				"alpha",
-				"NvimTree",
-				"neo-tree",
 				"lazy",
 				"mason",
 				"trouble",
+				"oil",
 			}
 
-			-- List the buffertypes you want to ignore
 			local ignore_buftypes = {
 				"nofile",
 				"quickfix",
@@ -122,7 +115,6 @@ require("mini.indentscope").setup({
 			local ft = vim.bo.filetype
 			local bt = vim.bo.buftype
 
-			-- Disable if the current filetype or buffertype matches the lists
 			if vim.tbl_contains(ignore_filetypes, ft) or vim.tbl_contains(ignore_buftypes, bt) then
 				return false
 			end
