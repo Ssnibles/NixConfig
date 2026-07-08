@@ -210,7 +210,7 @@ in
         trouble-nvim
 
         fzf-lua
-        fyler-nvim
+        oil-nvim
         flash-nvim
         smart-splits-nvim
 
@@ -218,7 +218,6 @@ in
         statuscol-nvim
         nui-nvim
         no-neck-pain-nvim
-        snacks-nvim
         twilight-nvim
 
         gitsigns-nvim

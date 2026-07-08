@@ -43,24 +43,6 @@ autocmd("BufWriteCmd", {
 	end,
 })
 
--- Workaround: files opened via fyler's :edit don't always trigger filetype
--- detection. Uses match() which is available in all modern Neovim versions.
-vim.api.nvim_create_autocmd("BufEnter", {
-	group = vim.api.nvim_create_augroup("FixFiletypeDetection", { clear = true }),
-	desc = "Detect filetype if empty (fyler workaround)",
-	callback = function(ev)
-		if vim.bo[ev.buf].filetype == "" and vim.bo[ev.buf].buftype == "" then
-			local name = vim.api.nvim_buf_get_name(ev.buf)
-			if name and name ~= "" and vim.fn.filereadable(name) == 1 then
-				local ft = vim.filetype.match({ filename = name, buf = ev.buf })
-				if ft and ft ~= "" then
-					vim.bo[ev.buf].filetype = ft
-				end
-			end
-		end
-	end,
-})
-
 -- Enable inlay hints automatically for any buffer that gets an LSP client.
 -- We call enable unconditionally (wrapped in pcall) because some servers
 -- (e.g., jdtls) dynamically register the capability after attach, and
@@ -288,7 +270,6 @@ autocmd({ "BufReadPre", "BufNewFile" }, {
 local function disable_trailspace(ev)
 	local ignore_filetypes = {
 		"help",
-		"snacks_dashboard",
 		"alpha",
 		"NvimTree",
 		"neo-tree",
@@ -310,8 +291,7 @@ local function disable_trailspace(ev)
 	local name = vim.api.nvim_buf_get_name(buf)
 
 	if
-		name:match("snacks_dashboard")
-		or vim.tbl_contains(ignore_filetypes, ft)
+		vim.tbl_contains(ignore_filetypes, ft)
 		or vim.tbl_contains(ignore_buftypes, bt)
 	then
 		vim.b[buf].minitrailspace_disable = true
@@ -326,12 +306,5 @@ end
 autocmd({ "BufNewFile", "BufReadPre", "BufWinEnter", "FileType", "BufEnter" }, {
 	group = augroup,
 	pattern = "*",
-	callback = disable_trailspace,
-})
-
--- Targeted trigger for when snacks dashboard starts initialization
-autocmd("User", {
-	group = augroup,
-	pattern = "SnacksDashboardOpened",
 	callback = disable_trailspace,
 })
