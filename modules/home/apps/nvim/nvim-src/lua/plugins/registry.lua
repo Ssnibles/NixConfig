@@ -9,7 +9,6 @@ M.core = {
 	"plugins.fzf",
 	"plugins.navigation",
 	"plugins.ui",
-	"plugins.tiny-cmdline",
 	"plugins.terminal",
 	"plugins.lint",
 	"plugins.rust",

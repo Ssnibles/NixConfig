@@ -2,14 +2,6 @@
 
 vim.loader.enable()
 
--- Enable ui2 for tiny-cmdline (Neovim 0.12+)
-if vim.fn.has("nvim-0.12") == 1 then
-	local ok, ui2 = pcall(require, "vim._core.ui2")
-	if ok then
-		ui2.enable({})
-	end
-end
-
 -- Disable netrw so oil.nvim can fully take over as the default file explorer.
 -- Without this, oil's buffer can render empty when it conflicts with netrw.
 vim.g.loaded_netrw = 1
@@ -34,30 +26,22 @@ vim.opt.updatetime = 250                  -- faster CursorHold, diagnostic float
 vim.opt.timeoutlen = 500                  -- snappier which-key / leader delays
 vim.opt.ignorecase = true                 -- case-insensitive search…
 vim.opt.smartcase = true                  -- …unless uppercase is typed
-vim.opt.confirm = true
-vim.opt.signcolumn = "yes"                -- always show sign column (prevents layout shift)
-vim.opt.cursorline = true                 -- highlight current line
-vim.opt.number = true
-vim.opt.relativenumber = true
-vim.opt.termguicolors = true              -- true-color support
+vim.opt.jumpoptions = "view"
+vim.opt.diffopt:append("vertical")
+vim.opt.diffopt:append("linematch:60")
+vim.opt.display = "lastline"
+vim.opt.whichwrap:append("<,>,[,],h,l")
+vim.opt.sessionoptions:append("globals")
 vim.opt.scrolloff = 4                     -- keep cursor away from screen edge
 vim.opt.sidescrolloff = 8
-vim.opt.wrap = false                      -- no soft-wrap by default
-vim.opt.linebreak = true                  -- when wrap IS on, break at word boundaries
 vim.opt.list = false                      -- don't show invisible chars by default
 vim.opt.joinspaces = false                -- no double spaces after `.` on join
-vim.opt.splitbelow = true                 -- open horizontal splits below
-vim.opt.splitright = true                 -- open vertical splits to the right
-vim.opt.virtualedit = "block"             -- free cursor movement in visual block mode
 vim.opt.fillchars = { eob = " " }         -- hide `~` at end of buffer
-vim.opt.mouse = "a"                       -- full mouse support
 vim.opt.grepprg = "rg --vimgrep --smart-case --hidden"
 vim.opt.grepformat = "%f:%l:%c:%m"
 
--- UI polish: hide redundant mode text (lualine shows it), live substitution preview
-vim.opt.showmode = false
-vim.opt.inccommand = "split"
-vim.opt.shortmess:append("cCFW")          -- suppress completion, `scanning`, file info, and write messages
+-- UI polish: live substitution preview
+vim.opt.shortmess:append("CF")            -- suppress file info and write messages
 
 require("keymaps")
 require("autocmds")

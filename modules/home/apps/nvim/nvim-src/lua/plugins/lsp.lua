@@ -224,12 +224,11 @@ require("fidget").setup({
 
 -- Suppress save-file notifications; route everything else through fidget.
 local fidget_notify = vim.notify
-local save_keywords = { "written", "saved", "wrote" }
+local save_patterns = { "^%d+ lines written", "^\"[^\"]*\" %d+L" }
 vim.notify = function(msg, level, opts)
 	if type(msg) == "string" then
-		local lower = msg:lower()
-		for _, keyword in ipairs(save_keywords) do
-			if lower:find(keyword, 1, true) then
+		for _, pattern in ipairs(save_patterns) do
+			if msg:match(pattern) then
 				return
 			end
 		end
