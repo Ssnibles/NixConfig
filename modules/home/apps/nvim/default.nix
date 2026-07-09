@@ -231,6 +231,7 @@ in
         plenary-nvim
         typst-preview-nvim
         rustaceanvim
+        tiny-inline-diagnostic-nvim
       ];
 
       luaConfigRC.user-config = ''
