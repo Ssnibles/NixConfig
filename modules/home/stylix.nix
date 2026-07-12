@@ -46,6 +46,6 @@ in
   # Clean up stale Kvantum directories/symlinks that survive GC and block
   # subsequent home-manager activations (mkdir fails on broken symlinks).
   home.activation.cleanupKvantum = lib.hm.dag.entryBefore ["linkGeneration"] ''
-    [ -L "$HOME/.config/Kvantum/Base16Kvantum" ] && rm -f "$HOME/.config/Kvantum/Base16Kvantum"
+    [ -L "$HOME/.config/Kvantum/Base16Kvantum" ] && ${pkgs.coreutils}/bin/rm -f "$HOME/.config/Kvantum/Base16Kvantum" || true
   '';
 }

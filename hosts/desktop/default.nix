@@ -37,7 +37,10 @@
     after = [ "sysinit.target" ];
     before = [ "bluetooth.service" ];
     wantedBy = [ "multi-user.target" ];
-    serviceConfig.Type = "oneshot";
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutStartSec = 5;
+    };
     script = "${pkgs.util-linux}/bin/rfkill unblock bluetooth";
   };
 
