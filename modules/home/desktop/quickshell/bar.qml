@@ -275,9 +275,11 @@ PanelWindow {
   property real mediaLastPosition: 0
   property real mediaLastLength: 0
   property int mediaResetToken: 0
+  property real mediaWallClock: 0
   function _resetMediaTiming(pos, len) {
     barPanel.mediaLastPosition = Math.max(0, pos || 0)
     barPanel.mediaLastLength = Math.max(0, len || 0)
+    barPanel.mediaWallClock = Date.now() / 1000
     barPanel.mediaTick = 0
     barPanel.mediaResetToken++
   }
@@ -290,13 +292,21 @@ PanelWindow {
     }
     barPanel.mediaLastPosition = p
     barPanel.mediaLastLength = l
+    barPanel.mediaWallClock = Date.now() / 1000
   }
+  property real mediaEstimatedPosition: {
+    var _ = barPanel.mediaTick
+    var __ = barPanel.mediaResetToken
+    if (!mediaPlayer) return barPanel.mediaLastPosition
+    var elapsed = Date.now() / 1000 - barPanel.mediaWallClock
+    return barPanel.mediaLastPosition + (mediaPlayer.isPlaying ? elapsed : 0)
+  }
+
   property real mediaProgress: {
     var _ = barPanel.mediaTick
     var __ = barPanel.mediaResetToken
-    return mediaPlayer && barPanel.mediaLastLength > 0
-      ? Math.min(1, Math.max(0, barPanel.mediaLastPosition / barPanel.mediaLastLength))
-      : 0
+    if (!mediaPlayer || barPanel.mediaLastLength <= 0) return 0
+    return Math.min(1, Math.max(0, barPanel.mediaEstimatedPosition / barPanel.mediaLastLength))
   }
   onMediaPlayerChanged: {
     if (!mediaPlayer) {
@@ -493,7 +503,7 @@ PanelWindow {
               if (!barPanel.mediaPlayer) return ""
               var _ = barPanel.mediaTick
               var __ = barPanel.mediaResetToken
-              var p = Math.round(barPanel.mediaLastPosition)
+              var p = Math.round(barPanel.mediaEstimatedPosition)
               var l = Math.round(barPanel.mediaLastLength)
               if (l <= 0) return ""
               return Math.floor(p / 60) + ":" + _pad2(p % 60)

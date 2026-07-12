@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
+import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
 import QtQml
@@ -79,6 +80,27 @@ Item {
     popupListChanged()
   }
 
+  function _focusNotificationSource(notification) {
+    if (!notification) return
+    var entry = notification.desktopEntry || notification.appName || ""
+    if (entry) {
+      var lowerEntry = entry.toLowerCase()
+      var toplevels = Hyprland.toplevels.values
+      for (var i = 0; i < toplevels.length; i++) {
+        var tl = toplevels[i]
+        if (tl.lastIpcObject && tl.lastIpcObject.class) {
+          if (tl.lastIpcObject.class.toLowerCase() === lowerEntry) {
+            var addr = String(tl.address)
+            if (addr.startsWith("0x")) addr = addr.slice(2)
+            Hyprland.dispatch("focuswindow address:0x" + addr)
+            return
+          }
+        }
+      }
+      Hyprland.dispatch("focuswindow class:(?i)^" + entry.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$")
+    }
+  }
+
   function _addPopup(notification) {
     if (!notification) return
     var idx = popupList.indexOf(notification)
@@ -139,16 +161,13 @@ Item {
         exclusionMode: ExclusionMode.Ignore
         color: "transparent"
 
-        anchors { top: true; left: true }
-        margins { top: notif.topMargin; left: notif.sideMargin }
-
-        implicitWidth: notif.panelWidth
-        implicitHeight: popupColumn.implicitHeight
+        anchors { top: true; bottom: true; left: true; right: true }
 
         Column {
           id: popupColumn
-          width: parent.width
+          width: notif.panelWidth
           spacing: 8
+          anchors.centerIn: parent
 
           Repeater {
             model: popupList
@@ -167,9 +186,6 @@ Item {
               border.color: notif._cardBorderFor(notification)
 
               opacity: 0
-              transform: Translate { id: popupTranslate; x: -(notif.panelWidth + notif.sideMargin) }
-              // Only animate in the first time this popup is shown.
-              // On quickshell reloads the same notification objects may be reused.
               Component.onCompleted: {
                 if (!notification._qsShown) {
                   notification._qsShown = true
@@ -177,14 +193,30 @@ Item {
                   if (popupTimer.interval > 0) popupTimer.start()
                 } else {
                   opacity = 1
-                  popupTranslate.x = 0
                 }
               }
 
-              ParallelAnimation {
+              NumberAnimation {
                 id: appearAnim
-                NumberAnimation { target: popupCard; property: "opacity"; to: 1; duration: 220; easing.type: Easing.OutCubic }
-                NumberAnimation { target: popupTranslate; property: "x"; to: 0; duration: 220; easing.type: Easing.OutCubic }
+                target: popupCard
+                property: "opacity"
+                to: 1
+                duration: 220
+                easing.type: Easing.OutCubic
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                z: -1
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                cursorShape: Qt.PointingHandCursor
+                onClicked: function(mouse) {
+                  if (mouse.button === Qt.LeftButton) {
+                    notif._removePopup(notification)
+                  } else if (mouse.button === Qt.RightButton) {
+                    notif._focusNotificationSource(notification)
+                  }
+                }
               }
 
               Column {
@@ -206,7 +238,7 @@ Item {
                     border.color: Colors.border
 
                     AppIcon {
-                      anchors.centerIn: parent
+          anchors { top: parent.top; left: parent.left; topMargin: notif.topMargin; leftMargin: notif.sideMargin }
                       notification: popupCard.notification
                       iconSize: 18
                       fallbackBg: Colors.bgSubtle
@@ -233,34 +265,6 @@ Item {
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
-                  }
-
-                  Rectangle {
-                    id: closePopup
-                    Layout.preferredWidth: 20
-                    Layout.preferredHeight: 20
-                    radius: 5
-                    color: "transparent"
-                    border.width: 1
-                    border.color: Colors.border
-                    Layout.alignment: Qt.AlignVCenter
-
-                    Text {
-                      anchors.centerIn: parent
-                      text: "\u00D7"
-                      color: Colors.fgDim
-                      font.family: notif.uiFont
-                      font.pixelSize: 12
-                      font.bold: true
-                    }
-
-                    MouseArea {
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      onEntered: closePopup.color = Colors.bgSubtle
-                      onExited: closePopup.color = "transparent"
-                      onClicked: notif._removePopup(notification)
-                    }
                   }
                 }
 
