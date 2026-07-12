@@ -32,9 +32,8 @@ hl.on("hyprland.start", function()
 	-- Start the systemd session target so all graphical-session services
 	-- (awww, polkit, solaar, etc.) actually come up.
 	hl.exec_cmd("bash -lc 'systemctl --user start hyprland-session.target'")
-	hl.exec_cmd("bash -lc 'for i in {1..100}; do awww img " .. G.wallpaper .. " && exit 0; sleep 0.5; done; exit 1'")
+	hl.exec_cmd("bash -lc 'for i in {1..10}; do awww img " .. G.wallpaper .. " && exit 0; sleep 0.5; done; exit 1'")
 	hl.exec_cmd("qs -c default")
-	hl.exec_cmd("vicinae server")
 	hl.exec_cmd("nm-applet --indicator")
 end)
 

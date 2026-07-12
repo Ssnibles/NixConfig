@@ -84,7 +84,7 @@ in
   # Reload quickshell after a home-manager switch so Stylix color changes
   # and regenerated Colors.qml are picked up immediately.
   home.activation.reloadQuickshell = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    ${pkgs.runtimeShell} -c '${pkgs.unstable.quickshell}/bin/qs -c default ipc call quickshell reload all >/dev/null 2>&1 || true'
+    ${pkgs.runtimeShell} -c 'if [ -n "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then ${pkgs.coreutils}/bin/timeout 5 ${pkgs.unstable.quickshell}/bin/qs -c default ipc call quickshell reload all >/dev/null 2>&1 || true; fi'
   '';
 
   # The QML files used to be symlinked directly into ~/.config/quickshell/ and
@@ -99,8 +99,9 @@ in
       "${config.xdg.configHome}/quickshell/Pill.qml" \
       "${config.xdg.configHome}/quickshell/AppIcon.qml" \
       "${config.xdg.configHome}/quickshell/ActionRow.qml" \
-      "${config.xdg.configHome}/quickshell/SliderControl.qml"
-    ${pkgs.coreutils}/bin/rm -rf "${config.xdg.configHome}/quickshell/hyprland"
+      "${config.xdg.configHome}/quickshell/SliderControl.qml" \
+      2>/dev/null || true
+    ${pkgs.coreutils}/bin/rm -rf "${config.xdg.configHome}/quickshell/hyprland" 2>/dev/null || true
   '';
 
   # Watch the repository QML sources (the actual targets of the out-of-store
@@ -119,6 +120,13 @@ in
           WATCH_DIRS=("${qsDir}")
           RELOAD_CMD="${pkgs.unstable.quickshell}/bin/qs -c default ipc call quickshell reload all"
 
+          for dir in "''${WATCH_DIRS[@]}"; do
+            if [ ! -d "$dir" ]; then
+              echo "Watch directory does not exist: $dir" >&2
+              exit 1
+            fi
+          done
+
           ${pkgs.inotify-tools}/bin/inotifywait -m \
             -e modify,move,create,delete \
             -r \
@@ -130,11 +138,11 @@ in
             while ${pkgs.coreutils}/bin/timeout 0.3 read -r _directory _event _filename 2>/dev/null; do
               :
             done
-            ''${RELOAD_CMD} >/dev/null 2>&1 || true
+            ${pkgs.coreutils}/bin/timeout 5 ''${RELOAD_CMD} >/dev/null 2>&1 || true
           done
         ''
       );
-      Restart = "always";
+      Restart = "on-failure";
       RestartSec = 5;
     };
     Install = {

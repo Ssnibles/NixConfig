@@ -22,7 +22,8 @@ in
     Service = {
       ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
       Restart = "on-failure";
-      RestartSec = 1;
+      RestartSec = 5;
+      TimeoutStartSec = 10;
     };
     Install.WantedBy = [ "graphical-session.target" ];
   };
@@ -37,7 +38,8 @@ in
     Service = {
       ExecStart = "${solaar}/bin/solaar --window=hide";
       Restart = "on-failure";
-      RestartSec = 1;
+      RestartSec = 5;
+      TimeoutStartSec = 10;
     };
     Install.WantedBy = [ "graphical-session.target" ];
   };
@@ -55,7 +57,8 @@ in
     Service = {
       ExecStart = "${pkgs.unstable.awww}/bin/awww-daemon";
       Restart = "on-failure";
-      RestartSec = 2;
+      RestartSec = 5;
+      TimeoutStartSec = 10;
     };
     Install.WantedBy = [ "hyprland-session.target" ];
   };
