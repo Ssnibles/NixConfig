@@ -91,7 +91,7 @@ in
         inccommand = "split";
         splitright = true;
         splitbelow = true;
-        splitkeep = "screen";
+        splitkeep = "cursor";
         foldmethod = "expr";
         foldexpr = "v:lua.vim.treesitter.foldexpr()";
         foldlevelstart = 99;

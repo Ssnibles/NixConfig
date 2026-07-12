@@ -18,13 +18,9 @@
     };
   };
 
-  # Fix gnome-keyring not unlocking with ly:
-  # ly doesn't properly pass PAM_AUTHTOK to pam_gnome_keyring.so.
-  # Using try_first_pass makes it attempt to use the password from
-  # the PAM stack, falling back to a separate prompt if needed.
-  security.pam.services.ly.rules.auth.gnome_keyring.settings = {
-    use_authtok = false;
-    try_first_pass = true;
+  security.pam.services.ly = {
+    gnupg.enable = false;
+    enableGnomeKeyring = true;
   };
 
   xdg.portal = {
