@@ -167,7 +167,7 @@ Item {
           id: popupColumn
           width: notif.panelWidth
           spacing: 8
-          anchors.centerIn: parent
+          anchors { top: parent.top; left: parent.left; topMargin: notif.topMargin; leftMargin: notif.sideMargin }
 
           Repeater {
             model: popupList
@@ -238,7 +238,7 @@ Item {
                     border.color: Colors.border
 
                     AppIcon {
-          anchors { top: parent.top; left: parent.left; topMargin: notif.topMargin; leftMargin: notif.sideMargin }
+                      anchors.centerIn: parent
                       notification: popupCard.notification
                       iconSize: 18
                       fallbackBg: Colors.bgSubtle
