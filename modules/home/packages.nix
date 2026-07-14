@@ -73,6 +73,7 @@ let
     unstable.onlyoffice-desktopeditors
     unstable.vesktop
     unstable.neovide
+    unstable.android-studio
     (flakePkg "helium-browser")
   ];
 
