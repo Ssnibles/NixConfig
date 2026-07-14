@@ -1,5 +1,5 @@
 import Quickshell
-import Quickshell.Io
+import Quickshell.Services.Pam
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
@@ -12,37 +12,47 @@ WlSessionLockSurface {
   readonly property string uiFont: "JetBrainsMono Nerd Font"
   readonly property string specialFont: "Instrument Serif"
 
-  property string enteredPassword: ""
   property bool authFailed: false
   property bool authInProgress: false
   property string statusMsg: ""
 
-  Process {
-    id: authProc
-    stdout: StdioCollector
-    stderr: StdioCollector
+  PamContext {
+    id: pamContext
+    user: "josh"
+    config: "quickshell"
 
-    onExited: function(exitCode) {
+    onResponseRequiredChanged: {
+      if (responseRequired) {
+        respond(passwordField.text)
+        passwordField.text = ""
+      }
+    }
+
+    onCompleted: function(result) {
       authInProgress = false
-      if (exitCode === 0) {
+      if (result === PamResult.Success) {
         lockSurface.authenticated()
       } else {
         authFailed = true
-        enteredPassword = ""
         statusMsg = "Authentication failed"
         failTimer.restart()
       }
     }
+
+    onError: function(error) {
+      authInProgress = false
+      authFailed = true
+      statusMsg = "Authentication error"
+      failTimer.restart()
+    }
   }
 
   function submitPassword() {
-    if (enteredPassword.length === 0 || authInProgress) return
+    if (passwordField.text.length === 0 || authInProgress) return
     authInProgress = true
     authFailed = false
     statusMsg = ""
-    authProc.exec(["unix_chkpwd", "josh"])
-    authProc.write(enteredPassword + "\n")
-    authProc.closeWrite()
+    pamContext.start()
   }
 
   Timer {
