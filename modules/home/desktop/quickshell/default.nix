@@ -11,6 +11,7 @@ let
   repoRoot = "${config.home.homeDirectory}/NixConfig";
   qsDir = "${repoRoot}/modules/home/desktop/quickshell";
   shellName = "default";
+  wallpaper = toString (import ../../../../lib/stylix/themes.nix).wallpaper;
 
   compiledShaders =
     pkgs.runCommand "quickshell-shaders"
@@ -42,6 +43,7 @@ let
       readonly property color orange: "${c.withHash.orange}"
       readonly property color magenta: "${c.withHash.magenta}"
       readonly property color selection: "${c.withHash.selection}"
+      readonly property string wallpaper: "file://${wallpaper}"
     }
   '';
 
@@ -50,6 +52,7 @@ let
     "quickshell/${shellName}/bar.qml" = "${qsDir}/bar.qml";
     "quickshell/${shellName}/notifications.qml" = "${qsDir}/notifications.qml";
     "quickshell/${shellName}/CommandCenter.qml" = "${qsDir}/CommandCenter.qml";
+    "quickshell/${shellName}/LockScreen.qml" = "${qsDir}/LockScreen.qml";
     "quickshell/${shellName}/Colors.qml" = "${qsDir}/Colors.qml";
     "quickshell/${shellName}/Pill.qml" = "${qsDir}/Pill.qml";
     "quickshell/${shellName}/AppIcon.qml" = "${qsDir}/AppIcon.qml";
