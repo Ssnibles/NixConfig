@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import QtQuick
 
 // Root shell that loads bar, notifications, and command center as separate QML
@@ -62,6 +63,22 @@ ShellRoot {
     function toggleDnd() {
       if (notificationsLoader.item) {
         notificationsLoader.item.doNotDisturb = !notificationsLoader.item.doNotDisturb
+      }
+    }
+  }
+
+  IpcHandler {
+    target: "sessionlock"
+    function lock() {
+      sessionLock.locked = true
+    }
+  }
+
+  WlSessionLock {
+    id: sessionLock
+    surface: Component {
+      LockScreen {
+        onAuthenticated: sessionLock.locked = false
       }
     }
   }

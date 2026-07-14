@@ -443,7 +443,7 @@ PanelWindow {
   }
 
   // ── Quick action processes ──
-  Process { id: lockProc; command: ["hyprlock"] }
+  Process { id: lockProc; command: ["qs", "-c", "default", "ipc", "call", "sessionlock", "lock"] }
   Process { id: logoutProc; command: ["hyprctl", "dispatch", "hl.dsp.exit()"] }
   Process { id: sleepProc; command: ["systemctl", "suspend"] }
   Process { id: rebootProc; command: ["systemctl", "reboot"] }
