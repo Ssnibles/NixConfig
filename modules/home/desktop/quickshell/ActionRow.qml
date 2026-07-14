@@ -2,13 +2,12 @@ import QtQuick
 import QtQuick.Layouts
 import QtQml
 
-// Horizontal row of action buttons for notification popups and the command center.
 Row {
   id: root
 
   property var actions: []
   property string uiFont: "JetBrainsMono Nerd Font"
-  property int actionBtnHeight: 26
+  property int actionBtnHeight: 28
   property int cardSpacing: 6
 
   signal actionInvoked()
@@ -23,23 +22,32 @@ Row {
       required property QtObject modelData
 
       height: root.actionBtnHeight
-      radius: 6
+      radius: 8
       color: "transparent"
       border.width: 1
-      border.color: Colors.border
-      width: btnLabel.implicitWidth + 20
+      border.color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.3)
+      width: btnLabel.implicitWidth + 22
 
       Behavior on scale {
-        NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+        NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
+      }
+
+      Behavior on border.color {
+        ColorAnimation { duration: 120 }
+      }
+
+      Behavior on color {
+        ColorAnimation { duration: 120 }
       }
 
       Text {
         id: btnLabel
         anchors.centerIn: parent
         text: modelData.text
-        color: Colors.fgMid
+        color: Colors.accent
         font.family: root.uiFont
-        font.pixelSize: 11
+        font.pixelSize: 10
+        font.bold: true
         textFormat: Text.PlainText
       }
 
@@ -48,11 +56,13 @@ Row {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onEntered: {
-          parent.color = Colors.bgSubtle
+          parent.color = Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.12)
+          parent.border.color = Colors.accent
           parent.scale = 0.96
         }
         onExited: {
           parent.color = "transparent"
+          parent.border.color = Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.3)
           parent.scale = 1
         }
         onPressed: parent.scale = 0.93

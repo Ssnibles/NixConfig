@@ -1225,10 +1225,10 @@ PanelWindow {
         // ── NOTIFICATIONS ──
         Rectangle {
           width: parent.width
-          radius: 20
+          radius: 12
           color: _p.bgRaised
           border.width: 1
-          border.color: _p.border
+          border.color: Qt.rgba(_p.border.r, _p.border.g, _p.border.b, 0.6)
           implicitHeight: notifCol.implicitHeight + 40
 
           Column {
@@ -1363,66 +1363,87 @@ PanelWindow {
                 width: parent.width
                 implicitHeight: notifCardCol.implicitHeight + 28
                 height: implicitHeight
-                radius: 20
+                radius: 12
                 color: _p.bgRaised
-                border.width: 1
-                border.color: _urgencyColor
+                border.width: notification && notification.urgency === NotificationUrgency.Critical ? 1.5 : 1
+                border.color: notification && notification.urgency === NotificationUrgency.Critical
+                  ? Qt.rgba(_urgencyColor.r, _urgencyColor.g, _urgencyColor.b, 0.35)
+                  : Qt.rgba(_p.border.r, _p.border.g, _p.border.b, 0.6)
                 opacity: 0
                 Behavior on opacity { NumberAnimation { duration: 200 } }
                 Component.onCompleted: opacity = 1
 
+                Rectangle {
+                  id: ccUrgencyStrip
+                  width: 3
+                  height: parent.height - 12
+                  radius: 1.5
+                  anchors { left: parent.left; leftMargin: 5; verticalCenter: parent.verticalCenter }
+                  color: _urgencyColor
+                  opacity: 0.9
+                }
+
                 Column {
                   id: notifCardCol
-                  anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
-                  spacing: 8
+                  anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14; leftMargin: 24 }
+                  spacing: 6
 
                   RowLayout {
                     width: parent.width
-                    spacing: 8
+                    spacing: 10
 
                     Rectangle {
-                      Layout.preferredWidth: 28
-                      Layout.preferredHeight: 28
+                      Layout.preferredWidth: 32
+                      Layout.preferredHeight: 32
                       radius: 8
-                      color: _p.bgSubtle
-                      border.width: 1
-                      border.color: _p.border
+                      color: Qt.rgba(_urgencyColor.r, _urgencyColor.g, _urgencyColor.b, 0.12)
 
                       AppIcon {
                         anchors.centerIn: parent
                         notification: modelData
                         iconSize: 18
-                        fallbackBg: _p.bgSubtle
+                        fallbackBg: "transparent"
+                      }
+                    }
+
+                    ColumnLayout {
+                      Layout.fillWidth: true
+                      Layout.alignment: Qt.AlignVCenter
+                      spacing: 1
+
+                      Text {
+                        text: (notification && notification.appName && notification.appName.length > 0)
+                          ? notification.appName
+                          : "Notification"
+                        color: _p.fgMid
+                        font.family: _p.uiFont
+                        font.pixelSize: 10
+                        font.bold: true
+                        font.letterSpacing: 0.5
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                      }
+
+                      Text {
+                        text: notification ? (root ? root.stripMarkup(notification.summary || "") : notification.summary || "") : ""
+                        Layout.fillWidth: true
+                        color: _p.fg
+                        font.family: _p.uiFont
+                        font.pixelSize: 12
+                        font.bold: true
+                        elide: Text.ElideRight
+                        maximumLineCount: 1
+                        wrapMode: Text.NoWrap
+                        textFormat: Text.PlainText
+                        visible: text.length > 0
                       }
                     }
 
                     Rectangle {
-                      Layout.preferredWidth: 4
-                      Layout.preferredHeight: 14
-                      radius: 2
-                      color: _urgencyColor
-                      Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    Text {
-                      text: (notification && notification.appName && notification.appName.length > 0)
-                        ? notification.appName.toUpperCase()
-                        : "NOTIFICATION"
-                      color: _p.accent
-                      font.family: _p.uiFont
-                      font.pixelSize: 10
-                      font.bold: true
-                      font.letterSpacing: 1.2
-                      elide: Text.ElideRight
-                      Layout.fillWidth: true
-                      Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    Rectangle {
                       id: dismissNotif
-                      Layout.preferredWidth: 20
-                      Layout.preferredHeight: 20
-                      radius: 5
+                      Layout.preferredWidth: 22
+                      Layout.preferredHeight: 22
+                      radius: 6
                       color: "transparent"
                       border.width: 1
                       border.color: _p.border
@@ -1433,15 +1454,16 @@ PanelWindow {
                         text: "\u00D7"
                         color: _p.fgDim
                         font.family: _p.uiFont
-                        font.pixelSize: 12
+                        font.pixelSize: 13
                         font.bold: true
                       }
 
                       MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
                         onEntered: {
-                          dismissNotif.color = _p.bgSubtle
+                          dismissNotif.color = Qt.rgba(_p.red.r, _p.red.g, _p.red.b, 0.15)
                           dismissNotif.border.color = _p.red
                         }
                         onExited: {
@@ -1454,18 +1476,6 @@ PanelWindow {
                   }
 
                   Text {
-                    text: notification ? (root ? root.stripMarkup(notification.summary || "") : notification.summary || "") : ""
-                    width: parent.width
-                    color: _p.fg
-                    font.family: _p.uiFont
-                    font.pixelSize: 12
-                    font.bold: true
-                    wrapMode: Text.Wrap
-                    textFormat: Text.PlainText
-                    visible: text.length > 0
-                  }
-
-                  Text {
                     text: notification ? (root ? root.stripMarkup(notification.body || "") : notification.body || "") : ""
                     width: parent.width
                     color: _p.fgMid
@@ -1474,6 +1484,7 @@ PanelWindow {
                     wrapMode: Text.Wrap
                     textFormat: Text.PlainText
                     visible: text.length > 0
+                    lineHeight: 1.3
                   }
 
                   ActionRow {

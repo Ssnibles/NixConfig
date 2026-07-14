@@ -18,13 +18,12 @@ Item {
 
   readonly property int topMargin: barVisible ? 54 : 24
   readonly property int sideMargin: 24
-  readonly property int panelWidth: 520
-  readonly property int cardRadius: 20
+  readonly property int panelWidth: 400
+  readonly property int cardRadius: 12
   readonly property int cardPadding: 14
   readonly property int cardSpacing: 6
   readonly property int iconSize: 24
 
-  // Tiny LRU-ish cache so we don't re-strip HTML tags from the same text repeatedly.
   property var _stripCache: ({})
 
   function stripMarkup(text) {
@@ -52,17 +51,11 @@ Item {
   function _cardBorderFor(notification) {
     if (!notification) return Colors.border
     if (notification.urgency === NotificationUrgency.Critical) {
-      return Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.30)
+      return Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.35)
     }
-    if (notification.urgency === NotificationUrgency.Low) {
-      return Qt.rgba(Colors.fgDim.r, Colors.fgDim.g, Colors.fgDim.b, 0.20)
-    }
-    return Colors.border
+    return Qt.rgba(Colors.border.r, Colors.border.g, Colors.border.b, 0.6)
   }
 
-  // Determine how long a popup stays open.
-  // Critical notifications never auto-expire (0 = infinite).
-  // Otherwise respect the app's requested timeout, clamped to a sane 2.5s–15s range.
   function _popupTimeoutFor(notification) {
     if (!notification) return notif.popupTimeoutMs
     if (notification.urgency === NotificationUrgency.Critical) return 0
@@ -104,9 +97,8 @@ Item {
   function _addPopup(notification) {
     if (!notification) return
     var idx = popupList.indexOf(notification)
-    if (idx === 0) return // already newest — nothing to do
-    if (idx > 0) popupList.splice(idx, 1) // remove from old position
-    // Push to front so newest notifications appear at the top.
+    if (idx === 0) return
+    if (idx > 0) popupList.splice(idx, 1)
     popupList.unshift(notification)
     if (popupList.length > notif.maxPopups) popupList.length = notif.maxPopups
     popupListChanged()
@@ -140,15 +132,12 @@ Item {
 
     onNotification: function(notification) {
       notification.tracked = true
-      // lastGeneration is true for notifications that existed before quickshell started;
-      // we only want to show newly arriving ones as popups.
       if (notification.lastGeneration) return
       if (notif.doNotDisturb && notification.urgency !== NotificationUrgency.Critical) return
       notif._addPopup(notification)
     }
   }
 
-  // Lazy popup window — only created when popups exist.
   Loader {
     id: popupWindowLoader
     active: notif._hasPopups
@@ -176,33 +165,66 @@ Item {
               id: popupCard
               property var notification: modelData
               property int timeoutMs: notif._popupTimeoutFor(notification)
+              property color urgencyCol: notif._urgencyColor(notification)
 
               width: popupColumn.width
               implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
               height: implicitHeight
               radius: notif.cardRadius
               color: notif._cardBgFor(notification)
-              border.width: 1
+              border.width: notification && notification.urgency === NotificationUrgency.Critical ? 1.5 : 1
               border.color: notif._cardBorderFor(notification)
 
               opacity: 0
+              x: 40
               Component.onCompleted: {
                 if (!notification._qsShown) {
                   notification._qsShown = true
+                  notification._qsExpiresAt = Date.now() + popupTimer.interval
                   appearAnim.start()
                   if (popupTimer.interval > 0) popupTimer.start()
                 } else {
                   opacity = 1
+                  x = 0
+                  var remaining = notification._qsExpiresAt - Date.now()
+                  if (remaining > 0 && popupTimer.interval > 0) {
+                    popupTimer.interval = remaining
+                    popupTimer.start()
+                  } else if (remaining <= 0 && popupTimer.interval > 0) {
+                    if (notification) notification.expire()
+                    notif._removePopup(notification)
+                  }
                 }
               }
 
-              NumberAnimation {
+              ParallelAnimation {
                 id: appearAnim
-                target: popupCard
-                property: "opacity"
-                to: 1
-                duration: 220
-                easing.type: Easing.OutCubic
+                NumberAnimation {
+                  target: popupCard
+                  property: "opacity"
+                  from: 0
+                  to: 1
+                  duration: 280
+                  easing.type: Easing.OutCubic
+                }
+                NumberAnimation {
+                  target: popupCard
+                  property: "x"
+                  from: 40
+                  to: 0
+                  duration: 320
+                  easing.type: Easing.OutCubic
+                }
+              }
+
+              Rectangle {
+                id: urgencyStrip
+                width: 3
+                height: parent.height - notif.cardRadius
+                radius: 1.5
+                anchors { left: parent.left; leftMargin: 5; verticalCenter: parent.verticalCenter }
+                color: popupCard.urgencyCol
+                opacity: 0.9
               }
 
               MouseArea {
@@ -221,67 +243,62 @@ Item {
 
               Column {
                 id: popupInner
-                anchors { left: parent.left; right: parent.right; top: parent.top; margins: notif.cardPadding }
-                spacing: 8
+                anchors { left: parent.left; right: parent.right; top: parent.top; margins: notif.cardPadding; leftMargin: notif.cardPadding + 10 }
+                spacing: 6
 
-                // Header: icon + urgency bar + app name + close
                 RowLayout {
                   width: parent.width
-                  spacing: 8
+                  spacing: 10
 
                   Rectangle {
-                    Layout.preferredWidth: 28
-                    Layout.preferredHeight: 28
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
                     radius: 8
-                    color: Colors.bgSubtle
-                    border.width: 1
-                    border.color: Colors.border
+                    color: Qt.rgba(popupCard.urgencyCol.r, popupCard.urgencyCol.g, popupCard.urgencyCol.b, 0.12)
+                    border.width: 0
 
                     AppIcon {
                       anchors.centerIn: parent
                       notification: popupCard.notification
                       iconSize: 18
-                      fallbackBg: Colors.bgSubtle
+                      fallbackBg: "transparent"
                     }
                   }
 
-                  Rectangle {
-                    Layout.preferredWidth: 4
-                    Layout.preferredHeight: 14
-                    radius: 2
-                    color: notif._urgencyColor(notification)
-                    Layout.alignment: Qt.AlignVCenter
-                  }
-
-                  Text {
-                    text: (notification && notification.appName && notification.appName.length > 0)
-                      ? notification.appName.toUpperCase()
-                      : "NOTIFICATION"
-                    color: Colors.accent
-                    font.family: notif.uiFont
-                    font.pixelSize: 10
-                    font.bold: true
-                    font.letterSpacing: 1.2
-                    elide: Text.ElideRight
+                  ColumnLayout {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
+                    spacing: 1
+
+                    Text {
+                      text: (notification && notification.appName && notification.appName.length > 0)
+                        ? notification.appName
+                        : "Notification"
+                      color: Colors.fgMid
+                      font.family: notif.uiFont
+                      font.pixelSize: 10
+                      font.bold: true
+                      font.letterSpacing: 0.5
+                      elide: Text.ElideRight
+                      Layout.fillWidth: true
+                    }
+
+                    Text {
+                      text: notification ? notif.stripMarkup(notification.summary || "") : ""
+                      Layout.fillWidth: true
+                      color: Colors.fg
+                      font.family: notif.uiFont
+                      font.pixelSize: 12
+                      font.bold: true
+                      elide: Text.ElideRight
+                      maximumLineCount: 1
+                      wrapMode: Text.NoWrap
+                      textFormat: Text.PlainText
+                      visible: text.length > 0
+                    }
                   }
                 }
 
-                // Summary
-                Text {
-                  text: notification ? notif.stripMarkup(notification.summary || "") : ""
-                  width: parent.width
-                  color: Colors.fg
-                  font.family: notif.uiFont
-                  font.pixelSize: 12
-                  font.bold: true
-                  wrapMode: Text.Wrap
-                  textFormat: Text.PlainText
-                  visible: text.length > 0
-                }
-
-                // Body
                 Text {
                   text: notification ? notif.stripMarkup(notification.body || "") : ""
                   width: parent.width
@@ -291,6 +308,8 @@ Item {
                   wrapMode: Text.Wrap
                   textFormat: Text.PlainText
                   visible: text.length > 0
+                  maximumLineCount: 3
+                  lineHeight: 1.3
                 }
 
                 ActionRow {
@@ -312,12 +331,21 @@ Item {
                 }
               }
 
-              // Pause auto-dismiss timer while the user is hovering the popup.
               HoverHandler {
                 id: popupHover
                 onHoveredChanged: {
-                  if (hovered) popupTimer.stop()
-                  else if (popupTimer.interval > 0) popupTimer.restart()
+                  if (hovered) {
+                    if (popupTimer.running) {
+                      notification._qsRemainingOnPause = notification._qsExpiresAt - Date.now()
+                    }
+                    popupTimer.stop()
+                  } else {
+                    if (notification._qsRemainingOnPause > 0) {
+                      notification._qsExpiresAt = Date.now() + notification._qsRemainingOnPause
+                      popupTimer.interval = notification._qsRemainingOnPause
+                      popupTimer.restart()
+                    }
+                  }
                 }
               }
             }
