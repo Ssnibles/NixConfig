@@ -16,6 +16,27 @@ WlSessionLockSurface {
   property bool authInProgress: false
   property string statusMsg: ""
 
+  Item {
+    id: focusCatcher
+    anchors.fill: parent
+    focus: true
+
+    Keys.onPressed: function(event) {
+      if (event.key === Qt.Key_Escape) {
+        passwordField.text = ""
+        focusCatcher.forceActiveFocus()
+        event.accepted = true
+      } else if (!passwordField.activeFocus
+                 && event.text.length > 0
+                 && event.key !== Qt.Key_Return
+                 && event.key !== Qt.Key_Enter) {
+        passwordField.forceActiveFocus()
+        passwordField.text = event.text
+        event.accepted = true
+      }
+    }
+  }
+
   PamContext {
     id: pamContext
     user: "josh"
@@ -89,10 +110,7 @@ WlSessionLockSurface {
     opacity: 0
     scale: 0.94
 
-    Component.onCompleted: {
-      cardAnim.start()
-      passwordField.forceActiveFocus()
-    }
+    Component.onCompleted: cardAnim.start()
 
     ParallelAnimation {
       id: cardAnim
@@ -145,42 +163,35 @@ WlSessionLockSurface {
 
         Behavior on border.color { ColorAnimation { duration: 150 } }
 
-        RowLayout {
+        TextInput {
+          id: passwordField
           anchors { fill: parent; leftMargin: 16; rightMargin: 16 }
-          spacing: 10
+          color: Colors.fg
+          font.family: lockSurface.uiFont
+          font.pixelSize: 13
+          horizontalAlignment: TextInput.AlignHCenter
+          verticalAlignment: TextInput.AlignVCenter
+          echoMode: TextInput.Password
+          passwordCharacter: "\u2022"
+          clip: true
+
+          Keys.onEscapePressed: {
+            text = ""
+            focusCatcher.forceActiveFocus()
+          }
 
           Text {
-            text: "\u{F023E}"
-            color: lockSurface.authFailed ? Colors.red : Colors.fgDim
-            font.family: lockSurface.uiFont
-            font.pixelSize: 16
-            Layout.preferredWidth: implicitWidth
-          }
-
-          TextInput {
-            id: passwordField
-            Layout.fillWidth: true
-            Layout.preferredHeight: parent.height
-            color: Colors.fg
+            anchors.fill: parent
+            text: "Enter password..."
+            color: Colors.fgDim
             font.family: lockSurface.uiFont
             font.pixelSize: 13
-            echoMode: TextInput.Password
-            passwordCharacter: "\u2022"
-            verticalAlignment: TextInput.AlignVCenter
-            clip: true
-
-            Text {
-              anchors { fill: parent; leftMargin: 2 }
-              text: "Enter password..."
-              color: Colors.fgDim
-              font.family: lockSurface.uiFont
-              font.pixelSize: 13
-              visible: passwordField.text.length === 0 && !passwordField.activeFocus
-              verticalAlignment: Text.AlignVCenter
-            }
-
-            onAccepted: lockSurface.submitPassword()
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            visible: passwordField.text.length === 0 && !passwordField.activeFocus
           }
+
+          onAccepted: lockSurface.submitPassword()
         }
       }
 
