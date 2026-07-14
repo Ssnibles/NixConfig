@@ -16,10 +16,6 @@ Item {
   Image {
     id: iconImg
     anchors.fill: parent
-    // Resolve icon source from notification data:
-    // 1. Inline image data if provided
-    // 2. App icon path (local paths need file:// prefix for QML Image)
-    // 3. Freedesktop icon name via Quickshell.iconPath()
     source: {
       if (!root.notification) return ""
       if (root.notification.image && root.notification.image.length > 0) return root.notification.image
@@ -37,20 +33,18 @@ Item {
 
   Rectangle {
     anchors.fill: parent
-    radius: 4
+    radius: 6
     color: fallbackBg
-    border.width: 1
-    border.color: Colors.border
     visible: !iconImg.visible
 
     Text {
       anchors.centerIn: parent
       text: (root.notification && root.notification.appName && root.notification.appName.length > 0)
         ? root.notification.appName[0].toUpperCase()
-        : "N"
-      color: Colors.teal
+        : "?"
+      color: Colors.fgMid
       font.family: root.uiFont
-      font.pixelSize: 11
+      font.pixelSize: 12
       font.bold: true
     }
   }
