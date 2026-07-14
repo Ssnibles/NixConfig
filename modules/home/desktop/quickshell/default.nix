@@ -13,6 +13,15 @@ let
   shellName = "default";
   wallpaper = toString (import ../../../../lib/stylix/themes.nix).wallpaper;
 
+  reloadQuickshellScript = pkgs.writeShellScriptBin "qs-reload" ''
+    echo "Restarting quickshell..."
+    ${pkgs.procps}/bin/pkill -f "quickshell" 2>/dev/null || true
+    sleep 0.5
+    ${pkgs.unstable.quickshell}/bin/qs -c default &
+    disown
+    echo "Quickshell restarted"
+  '';
+
   compiledShaders =
     pkgs.runCommand "quickshell-shaders"
       {
@@ -67,6 +76,8 @@ in
     package = pkgs.unstable.quickshell;
   };
 
+  home.packages = [ reloadQuickshellScript ];
+
   home.sessionVariables = {
     QML_IMPORT_PATH = "${pkgs.unstable.quickshell}/lib/qt-6/qml";
     QSG_RHI_BACKEND = "vulkan";
@@ -87,7 +98,14 @@ in
   # Reload quickshell after a home-manager switch so Stylix color changes
   # and regenerated Colors.qml are picked up immediately.
   home.activation.reloadQuickshell = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    ${pkgs.runtimeShell} -c 'if [ -n "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then ${pkgs.coreutils}/bin/timeout 5 ${pkgs.unstable.quickshell}/bin/qs -c default ipc call quickshell reload all >/dev/null 2>&1 || true; fi'
+    ${pkgs.runtimeShell} -c '
+      if [ -n "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+        ${pkgs.procps}/bin/pkill -f "quickshell" || true
+        sleep 0.5
+        ${pkgs.unstable.quickshell}/bin/qs -c default &
+        disown
+      fi
+    '
   '';
 
   # The QML files used to be symlinked directly into ~/.config/quickshell/ and
@@ -108,10 +126,10 @@ in
   '';
 
   # Watch the repository QML sources (the actual targets of the out-of-store
-  # symlinks) and reload quickshell whenever a .qml file changes.
+  # symlinks) and restart quickshell whenever a .qml file changes.
   systemd.user.services.quickshell-reload-watcher = {
     Unit = {
-      Description = "Watch Quickshell QML sources and reload on changes";
+      Description = "Watch Quickshell QML sources and restart on changes";
       After = [ "graphical-session.target" ];
       PartOf = [ "graphical-session.target" ];
     };
@@ -121,7 +139,6 @@ in
         pkgs.writeShellScript "quickshell-reload-watcher" ''
           set -euo pipefail
           WATCH_DIRS=("${qsDir}")
-          RELOAD_CMD="${pkgs.unstable.quickshell}/bin/qs -c default ipc call quickshell reload all"
 
           for dir in "''${WATCH_DIRS[@]}"; do
             if [ ! -d "$dir" ]; then
@@ -131,17 +148,21 @@ in
           done
 
           ${pkgs.inotify-tools}/bin/inotifywait -m \
-            -e modify,move,create,delete \
+            -e close_write,move,create,delete \
             -r \
             --include '.*\.qml$' \
             "''${WATCH_DIRS[@]}" \
             2>/dev/null | while read -r _directory _event _filename; do
-            # Debounce: keep consuming events while they arrive within 300 ms,
-            # then reload once after the burst ends.
-            while ${pkgs.coreutils}/bin/timeout 0.3 read -r _directory _event _filename 2>/dev/null; do
+            # Debounce: keep consuming events while they arrive within 500 ms,
+            # then restart once after the burst ends.
+            while ${pkgs.coreutils}/bin/timeout 0.5 read -r _directory _event _filename 2>/dev/null; do
               :
             done
-            ${pkgs.coreutils}/bin/timeout 5 ''${RELOAD_CMD} >/dev/null 2>&1 || true
+            echo "QML files changed, restarting quickshell..."
+            ${pkgs.procps}/bin/pkill -f "quickshell" 2>/dev/null || true
+            sleep 0.5
+            ${pkgs.unstable.quickshell}/bin/qs -c default &
+            disown
           done
         ''
       );
