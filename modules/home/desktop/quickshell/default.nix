@@ -14,12 +14,13 @@ let
   wallpaper = toString (import ../../../../lib/stylix/themes.nix).wallpaper;
 
   reloadQuickshellScript = pkgs.writeShellScriptBin "qs-reload" ''
-    echo "Restarting quickshell..."
-    ${pkgs.procps}/bin/pkill -f "quickshell" 2>/dev/null || true
-    sleep 0.5
-    ${pkgs.unstable.quickshell}/bin/qs -c default &
-    disown
-    echo "Quickshell restarted"
+    echo "Reloading quickshell..."
+    if ! ${pkgs.unstable.quickshell}/bin/qs -c default ipc call quickshell reload all 2>/dev/null; then
+      echo "Quickshell not running, starting..."
+      ${pkgs.unstable.quickshell}/bin/qs -c default &
+      disown
+    fi
+    echo "Quickshell reloaded"
   '';
 
   compiledShaders =
@@ -158,11 +159,11 @@ in
             while ${pkgs.coreutils}/bin/timeout 0.5 read -r _directory _event _filename 2>/dev/null; do
               :
             done
-            echo "QML files changed, restarting quickshell..."
-            ${pkgs.procps}/bin/pkill -f "quickshell" 2>/dev/null || true
-            sleep 0.5
-            ${pkgs.unstable.quickshell}/bin/qs -c default &
-            disown
+            echo "QML files changed, reloading quickshell..."
+            if ! ${pkgs.unstable.quickshell}/bin/qs -c default ipc call quickshell reload all 2>/dev/null; then
+              ${pkgs.unstable.quickshell}/bin/qs -c default &
+              disown
+            fi
           done
         ''
       );
