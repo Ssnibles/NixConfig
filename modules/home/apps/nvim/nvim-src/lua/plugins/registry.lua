@@ -12,6 +12,7 @@ M.core = {
 	"plugins.terminal",
 	"plugins.lint",
 	"plugins.rust",
+	"plugins.sshinator",
 }
 
 M.deferred = {

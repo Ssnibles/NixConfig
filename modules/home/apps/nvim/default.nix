@@ -156,6 +156,8 @@ in
         tree-sitter
         ripgrep
         fd
+        sshfs
+        fuse
       ];
 
       startPlugins = with pkgs.vimPlugins; [
@@ -232,6 +234,7 @@ in
         typst-preview-nvim
         rustaceanvim
         tiny-inline-diagnostic-nvim
+        inputs.sshinator.packages.${pkgs.stdenv.hostPlatform.system}.default
       ];
 
       luaConfigRC.user-config = ''
