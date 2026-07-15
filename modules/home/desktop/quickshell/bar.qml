@@ -23,8 +23,6 @@ PanelWindow {
   property string uiFont: "JetBrainsMono Nerd Font"
   property string specialFont: "Instrument Serif"
   property int barHeight: 30
-  property int tooltipMaxWidth: 320
-  property int tooltipMargin: 6
 
   property string timeStr: ""
 
@@ -169,10 +167,6 @@ PanelWindow {
   property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
   property real volPct: volInfo ? volInfo.volume : 0
   property bool volMuted: volInfo ? volInfo.muted : false
-  property string volTooltip: {
-    var pct = Math.round(barPanel.volPct * 100)
-    return (barPanel.volMuted ? "Muted" : ("Volume " + pct + "%")) + "\nLeft click: mute\nRight click: pavucontrol\nScroll: adjust"
-  }
   Process { id: volProc; command: ["pavucontrol"] }
   Process { id: controlPanelProc; command: ["qs", "ipc", "call", "controlpanel", "toggle"] }
 
@@ -187,10 +181,6 @@ PanelWindow {
     if (s < 0.4) return "\u{F0922}"
     if (s < 0.6) return "\u{F0925}"
     return "\u{F0928}"
-  }
-  property string wifiTooltip: {
-    if (!wifiNet) return "Wi-Fi disconnected\nRight click: nmtui"
-    return wifiNet.name + " (" + Math.round(wifiNet.signalStrength * 100) + "%)\nRight click: nmtui"
   }
   Process { id: wifiProc; command: ["sh", "-lc", "foot -e nmtui"] }
 
@@ -231,20 +221,6 @@ PanelWindow {
     if (p <= 80) return "\u{F0042}"
     if (p <= 90) return "\u{F0082}"
     return "\u{F0079}"
-  }
-  property string batTooltip: {
-    if (!batPresent) return ""
-    var pct = Math.round(batPct)
-    var state
-    switch (batState) {
-      case UPowerDeviceState.Charging:        state = "Charging"; break
-      case UPowerDeviceState.FullyCharged:    state = "Plugged in"; break
-      case UPowerDeviceState.PendingCharge:   state = "Pending charge"; break
-      case UPowerDeviceState.PendingDischarge:state = "Pending discharge"; break
-      case UPowerDeviceState.Empty:           state = "Empty"; break
-      default:                                state = "Discharging"; break
-    }
-    return pct + "% \u00B7 " + state
   }
   property color batColor: {
     if (!batPresent) return Colors.fg
@@ -331,22 +307,6 @@ PanelWindow {
       barPanel._resetMediaTiming(barPanel.mediaPlayer.position, barPanel.mediaPlayer.length)
     }
   }
-
-  // ── Hover state ──
-  property bool volHover: volHoverHandler.hovered
-  property bool wifiHover: wifiHoverHandler.hovered
-  property bool batHover: batPresent && batHoverHandler.hovered
-  property bool mediaHover: mediaPillHover.hovered
-  property bool tooltipVisible: volHover || wifiHover || batHover
-
-  property string tooltipText: {
-    if (volHover) return barPanel.volTooltip
-    if (wifiHover) return barPanel.wifiTooltip
-    if (batHover) return barPanel.batTooltip
-    return ""
-  }
-
-  property int tooltipWidth: Math.round(Math.min(barPanel.tooltipMaxWidth, barPanel.width - barPanel.tooltipMargin * 2))
 
   // Timer to keep media position in sync while playing.
   Timer {
@@ -444,7 +404,6 @@ PanelWindow {
       Pill {
         id: mediaPill
         visible: barPanel.hasMedia
-        HoverHandler { id: mediaPillHover }
 
         Row {
           anchors.verticalCenter: parent.verticalCenter
@@ -589,13 +548,31 @@ PanelWindow {
         height: parent.height
         anchors.verticalCenter: parent.verticalCenter
 
-        HoverHandler { id: volHoverHandler }
+        Tooltip {
+          id: volTooltip
+          sharedWindow: sharedTipWindow
+          icon: {
+            if (barPanel.volMuted) return "\u{F075F}"
+            var v = barPanel.volPct
+            if (v <= 0) return "\u{F075F}"
+            if (v < 0.33) return "\u{F057F}"
+            if (v < 0.66) return "\u{F0580}"
+            return "\u{F057E}"
+          }
+          iconColor: barPanel.volMuted ? Colors.red : Colors.accent
+          title: {
+            var pct = Math.round(barPanel.volPct * 100)
+            return barPanel.volMuted ? "Muted" : ("Volume " + pct + "%")
+          }
+          details: ["Left click \u00B7 Mute", "Right click \u00B7 pavucontrol", "Scroll \u00B7 Adjust"]
+          topOffset: barPanel.barHeight + 8
+        }
 
         Rectangle {
           id: volBg
           anchors.fill: parent
           radius: 4
-          color: volHoverHandler.hovered ? Colors.bgRaised : "transparent"
+          color: volTooltip.hovered ? Colors.bgRaised : "transparent"
           Behavior on color { ColorAnimation { duration: 100 } }
         }
 
@@ -672,7 +649,20 @@ PanelWindow {
 
       Pill {
         id: wifiPill
-        HoverHandler { id: wifiHoverHandler }
+        Tooltip {
+          target: wifiPill
+          sharedWindow: sharedTipWindow
+          icon: barPanel.wifiIcon
+          iconColor: barPanel.wifiNet ? Colors.accent : Colors.fgDim
+          title: barPanel.wifiNet ? barPanel.wifiNet.name : "Disconnected"
+          details: {
+            var d = []
+            if (barPanel.wifiNet) d.push("Signal \u00B7 " + Math.round(barPanel.wifiNet.signalStrength * 100) + "%")
+            d.push("Right click \u00B7 nmtui")
+            return d
+          }
+          topOffset: barPanel.barHeight + 8
+        }
         Text {
           text: barPanel.wifiSsid ? barPanel.wifiSsid + " " + barPanel.wifiIcon : barPanel.wifiIcon
           color: barPanel.wifiNet ? Colors.accent : Colors.fgDim
@@ -691,7 +681,43 @@ PanelWindow {
       Pill {
         id: batteryPill
         visible: barPanel.batPresent
-        HoverHandler { id: batHoverHandler }
+        Tooltip {
+          target: batteryPill
+          sharedWindow: sharedTipWindow
+          icon: barPanel.batIcon
+          iconColor: barPanel.batColor
+          title: {
+            var pct = Math.round(barPanel.batPct)
+            var state
+            switch (barPanel.batState) {
+              case UPowerDeviceState.Charging:        state = "Charging"; break
+              case UPowerDeviceState.FullyCharged:    state = "Plugged in"; break
+              case UPowerDeviceState.PendingCharge:   state = "Pending charge"; break
+              case UPowerDeviceState.PendingDischarge:state = "Pending discharge"; break
+              case UPowerDeviceState.Empty:           state = "Empty"; break
+              default:                                state = "Discharging"; break
+            }
+            return pct + "% \u00B7 " + state
+          }
+          details: {
+            var d = []
+            if (barPanel.batDevice) {
+              if (barPanel.batCharging && barPanel.batDevice.timeToFull > 0) {
+                var mins = Math.round(barPanel.batDevice.timeToFull / 60)
+                var h = Math.floor(mins / 60)
+                var m = mins % 60
+                d.push((h > 0 ? h + "h " : "") + m + "m until full")
+              } else if (!barPanel.batCharging && !barPanel.batPlugged && barPanel.batDevice.timeToEmpty > 0) {
+                var mins2 = Math.round(barPanel.batDevice.timeToEmpty / 60)
+                var h2 = Math.floor(mins2 / 60)
+                var m2 = mins2 % 60
+                d.push((h2 > 0 ? h2 + "h " : "") + m2 + "m remaining")
+              }
+            }
+            return d
+          }
+          topOffset: barPanel.barHeight + 8
+        }
         Text {
           text: barPanel.batIcon + " " + Math.round(barPanel.batPct) + "%"
           color: barPanel.batColor
@@ -703,71 +729,80 @@ PanelWindow {
     }
   }
 
-  // Lazy-loaded tooltip: avoids creating a PanelWindow until a bar widget is hovered.
-  Loader {
-    id: tooltipLoader
-    active: barPanel.tooltipVisible
+  PanelWindow {
+    id: sharedTipWindow
+    property var _active: null
+    focusable: false
+    aboveWindows: true
+    exclusionMode: ExclusionMode.Ignore
+    color: "transparent"
+    anchors { top: true; bottom: true; left: true; right: true }
 
-    // Center the tooltip horizontally above the hovered pill, clamped to screen bounds.
-    function computeX(targetW) {
-      var pill
-      if (volHover) pill = volWidget
-      else if (wifiHover) pill = wifiPill
-      else pill = batteryPill
-      if (!pill) return 0
-      var pos = pill.mapToItem(barContent, 0, 0)
-      var x = barContent.x + pos.x + (pill.width - targetW) / 2
-      return Math.round(_clamp(x, barPanel.tooltipMargin, barPanel.width - targetW - barPanel.tooltipMargin))
-    }
-
-    sourceComponent: Component {
-      PanelWindow {
-        id: tooltipWindow
-        focusable: false
-        aboveWindows: true
-        exclusionMode: ExclusionMode.Ignore
-        color: "transparent"
-        anchors { top: true; left: true }
-        margins { top: barPanel.barHeight + 10; left: 0 }
-        implicitWidth: barPanel.width
-        implicitHeight: tooltipCard.implicitHeight + 3
-
+    Loader {
+      active: sharedTipWindow._active !== null
+      sourceComponent: Component {
         Rectangle {
-          id: tooltipCard
-          x: tooltipLoader.computeX(barPanel.tooltipWidth)
-          width: barPanel.tooltipWidth
-          implicitHeight: tipText.paintedHeight + 20
+          id: card
+          property var _src: sharedTipWindow._active
+          property real _tgtCenterX: _src && _src.target ? _src.target.mapToGlobal(_src.target.width / 2, 0).x : 0
+          property real _tgtBottomY: _src && _src.target ? _src.target.mapToGlobal(0, _src.target.height).y : 0
+          x: Math.round(Math.max(6, Math.min(_tgtCenterX - width / 2, Screen.width - width - 6)))
+          y: _src && _src.topOffset > 0 ? _src.topOffset : _tgtBottomY + 6
+          width: _src ? _src.maxWidth : 280
+          implicitHeight: content.implicitHeight + 24
           height: implicitHeight
-          radius: 10
+          radius: 12
           color: Colors.bgRaised
           antialiasing: true
           border.width: 1
           border.color: Colors.border
-          opacity: barPanel.tooltipVisible ? 1 : 0
-          Behavior on opacity { NumberAnimation { duration: 80 } }
+          opacity: _src && _src.tipVisible ? 1 : 0
+          Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
 
-          Rectangle {
-            anchors.fill: parent
-            radius: 10
-            color: Qt.rgba(0, 0, 0, 0.25)
-            opacity: barPanel.tooltipVisible ? 0.7 : 0
-            y: 3
-            z: -1
-            Behavior on opacity { NumberAnimation { duration: 80 } }
-          }
-
-          Text {
-            id: tipText
+          Column {
+            id: content
             anchors.left: parent.left
+            anchors.right: parent.right
             anchors.top: parent.top
-            anchors.margins: 10
-            width: parent.width - 20
-            text: barPanel.tooltipText
-            color: Colors.fg
-            font.family: barPanel.uiFont
-            font.pixelSize: 13
-            lineHeight: 1.2
-            wrapMode: Text.Wrap
+            anchors.margins: 12
+            spacing: 6
+
+            Row {
+              spacing: 8
+              Text {
+                text: _src ? _src.icon : ""
+                color: _src ? _src.iconColor : Colors.fg
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 16
+                anchors.verticalCenter: parent.verticalCenter
+              }
+              Text {
+                text: _src ? _src.title : ""
+                color: Colors.fg
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 13
+                font.bold: true
+                anchors.verticalCenter: parent.verticalCenter
+              }
+            }
+
+            Rectangle {
+              visible: _src ? _src.details.length > 0 : false
+              width: parent.width
+              height: 1
+              color: Colors.border
+            }
+
+            Repeater {
+              model: _src ? _src.details : []
+              delegate: Text {
+                required property var modelData
+                text: modelData
+                color: Colors.fgMid
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 11
+              }
+            }
           }
         }
       }
