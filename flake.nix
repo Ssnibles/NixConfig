@@ -100,11 +100,6 @@
       url = "github:rachartier/tiny-cmdline.nvim";
       flake = false;
     };
-
-    sshinator = {
-      url = "github:Ssnibles/sshinator.nvim";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =

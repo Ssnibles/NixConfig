@@ -27,6 +27,7 @@ let
     unstable.opencode
     unstable.wl-clipboard
     unstable.sshfs
+    unstable.sshpass
     unstable.fd
     unstable.ripgrep
     unstable.ripgrep-all
