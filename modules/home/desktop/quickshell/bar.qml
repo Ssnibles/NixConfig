@@ -732,11 +732,13 @@ PanelWindow {
   PanelWindow {
     id: sharedTipWindow
     property var _active: null
+    visible: _active !== null
     focusable: false
     aboveWindows: true
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
     anchors { top: true; bottom: true; left: true; right: true }
+    margins { top: barPanel.barHeight }
 
     Loader {
       active: sharedTipWindow._active !== null
@@ -747,7 +749,7 @@ PanelWindow {
           property real _tgtCenterX: _src && _src.target ? _src.target.mapToGlobal(_src.target.width / 2, 0).x : 0
           property real _tgtBottomY: _src && _src.target ? _src.target.mapToGlobal(0, _src.target.height).y : 0
           x: Math.round(Math.max(6, Math.min(_tgtCenterX - width / 2, Screen.width - width - 6)))
-          y: _src && _src.topOffset > 0 ? _src.topOffset : _tgtBottomY + 6
+          y: (_src && _src.topOffset > 0 ? _src.topOffset : _tgtBottomY + 6) - barPanel.barHeight
           width: _src ? _src.maxWidth : 280
           implicitHeight: content.implicitHeight + 24
           height: implicitHeight

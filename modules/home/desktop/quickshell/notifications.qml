@@ -150,7 +150,9 @@ Item {
         exclusionMode: ExclusionMode.Ignore
         color: "transparent"
 
-        anchors { top: true; bottom: true; left: true; right: true }
+        anchors { top: true; left: true }
+        implicitWidth: notif.sideMargin + notif.panelWidth + 60
+        implicitHeight: notif.topMargin + popupColumn.implicitHeight + 20
 
         Column {
           id: popupColumn
