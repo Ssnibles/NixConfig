@@ -65,6 +65,7 @@ let
     "quickshell/${shellName}/LockScreen.qml" = "${qsDir}/LockScreen.qml";
     "quickshell/${shellName}/Colors.qml" = "${qsDir}/Colors.qml";
     "quickshell/${shellName}/Pill.qml" = "${qsDir}/Pill.qml";
+    "quickshell/${shellName}/Tooltip.qml" = "${qsDir}/Tooltip.qml";
     "quickshell/${shellName}/AppIcon.qml" = "${qsDir}/AppIcon.qml";
     "quickshell/${shellName}/ActionRow.qml" = "${qsDir}/ActionRow.qml";
     "quickshell/${shellName}/SliderControl.qml" = "${qsDir}/SliderControl.qml";
