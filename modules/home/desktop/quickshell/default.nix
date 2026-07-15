@@ -23,15 +23,6 @@ let
     echo "Quickshell reloaded"
   '';
 
-  compiledShaders =
-    pkgs.runCommand "quickshell-shaders"
-      {
-        nativeBuildInputs = [ pkgs.qt6.qtshadertools ];
-      }
-      ''
-        mkdir -p $out
-      '';
-
   colorsQml = ''
     pragma Singleton
     import QtQml
@@ -59,8 +50,8 @@ let
 
   qsFiles = {
     "quickshell/${shellName}/shell.qml" = "${qsDir}/shell.qml";
-    "quickshell/${shellName}/bar.qml" = "${qsDir}/bar.qml";
-    "quickshell/${shellName}/notifications.qml" = "${qsDir}/notifications.qml";
+    "quickshell/${shellName}/Bar.qml" = "${qsDir}/Bar.qml";
+    "quickshell/${shellName}/Notifications.qml" = "${qsDir}/Notifications.qml";
     "quickshell/${shellName}/CommandCenter.qml" = "${qsDir}/CommandCenter.qml";
     "quickshell/${shellName}/LockScreen.qml" = "${qsDir}/LockScreen.qml";
     "quickshell/${shellName}/Colors.qml" = "${qsDir}/Colors.qml";
@@ -69,6 +60,7 @@ let
     "quickshell/${shellName}/AppIcon.qml" = "${qsDir}/AppIcon.qml";
     "quickshell/${shellName}/ActionRow.qml" = "${qsDir}/ActionRow.qml";
     "quickshell/${shellName}/SliderControl.qml" = "${qsDir}/SliderControl.qml";
+    "quickshell/${shellName}/Utils.js" = "${qsDir}/Utils.js";
   };
 
 in
@@ -116,6 +108,7 @@ in
   # behind by earlier generations.
   home.activation.cleanupOldQuickshellFiles = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     ${pkgs.coreutils}/bin/rm -f \
+      "${config.xdg.configHome}/quickshell/bar.qml" \
       "${config.xdg.configHome}/quickshell/notifications.qml" \
       "${config.xdg.configHome}/quickshell/CommandCenter.qml" \
       "${config.xdg.configHome}/quickshell/Colors.qml" \

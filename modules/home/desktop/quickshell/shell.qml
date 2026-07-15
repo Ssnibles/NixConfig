@@ -14,17 +14,17 @@ ShellRoot {
     function reload(name: string) {
       if (!name || name === "all") {
         barLoader.source = ""
-        barLoader.source = "bar.qml"
+        barLoader.source = "Bar.qml"
         notificationsLoader.source = ""
-        notificationsLoader.source = "notifications.qml"
+        notificationsLoader.source = "Notifications.qml"
         commandCenterLoader.source = ""
         commandCenterLoader.source = "CommandCenter.qml"
       } else if (name === "bar") {
         barLoader.source = ""
-        barLoader.source = "bar.qml"
+        barLoader.source = "Bar.qml"
       } else if (name === "notifications") {
         notificationsLoader.source = ""
-        notificationsLoader.source = "notifications.qml"
+        notificationsLoader.source = "Notifications.qml"
       } else if (name === "commandcenter") {
         commandCenterLoader.source = ""
         commandCenterLoader.source = "CommandCenter.qml"
@@ -85,13 +85,13 @@ ShellRoot {
 
   Loader {
     id: barLoader
-    source: "bar.qml"
+    source: "Bar.qml"
     active: root.barVisible
   }
 
   Loader {
     id: notificationsLoader
-    source: "notifications.qml"
+    source: "Notifications.qml"
     onItemChanged: {
       if (item) {
         // Bind notification popup top-margin to bar visibility so popups

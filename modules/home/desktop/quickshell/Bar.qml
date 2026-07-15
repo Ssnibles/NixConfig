@@ -10,6 +10,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQml
 
+import "Utils.js" as Utils
+
 PanelWindow {
   id: barPanel
   focusable: false
@@ -20,9 +22,9 @@ PanelWindow {
   exclusionMode: ExclusionMode.Auto
   color: Colors.bg
 
-  property string uiFont: "JetBrainsMono Nerd Font"
-  property string specialFont: "Instrument Serif"
-  property int barHeight: 30
+  readonly property string uiFont: "JetBrainsMono Nerd Font"
+  readonly property string specialFont: "Instrument Serif"
+  readonly property int barHeight: 30
 
   property string timeStr: ""
 
@@ -44,29 +46,6 @@ PanelWindow {
 
   Component.onCompleted: updateTime()
 
-  // Keep the active window label concise and consistent across apps.
-  property var appNameOverrides: ({
-    "zen": "Zen",
-    "zen-browser": "Zen",
-    "zen-beta": "Zen",
-    "firefox": "Firefox",
-    "org.mozilla.firefox": "Firefox",
-    "nvim": "Neovim",
-    "neovim": "Neovim",
-    "foot": "Foot"
-  })
-
-  function _prettifyAppName(className) {
-    if (!className) return ""
-    var key = String(className).toLowerCase()
-    if (appNameOverrides[key]) return appNameOverrides[key]
-    key = key.replace(/\.desktop$/, "")
-    if (appNameOverrides[key]) return appNameOverrides[key]
-    var base = String(className).split(".").pop()
-    base = base.replace(/[-_]+/g, " ")
-    return base.replace(/\b\w/g, function(c) { return c.toUpperCase() })
-  }
-
   function _formatActiveTitle(toplevel) {
     if (!toplevel) return ""
     var title = toplevel.title || ""
@@ -74,7 +53,7 @@ PanelWindow {
     if (toplevel.lastIpcObject && toplevel.lastIpcObject.class) {
       className = toplevel.lastIpcObject.class
     }
-    var appName = _prettifyAppName(className)
+    var appName = Utils.prettifyAppName(className)
 
     if (title.endsWith(" \u2014 Zen Browser")) {
       title = title.slice(0, title.length - " \u2014 Zen Browser".length)
@@ -94,25 +73,6 @@ PanelWindow {
     title = String(title).trim()
     if (appName && title && title !== appName) return appName + ": " + title
     return appName || title
-  }
-
-  function _findFirst(list, predicate) {
-    for (var i = 0; i < list.length; i++) {
-      if (predicate(list[i])) return list[i]
-    }
-    return null
-  }
-
-  function _clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value))
-  }
-
-  function _pad2(n) {
-    return n < 10 ? "0" + n : "" + n
-  }
-
-  function _escapeRegex(value) {
-    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
   }
 
   // Try to focus the Hyprland window belonging to the current media player.
@@ -136,7 +96,7 @@ PanelWindow {
         }
       }
       // Fallback: focus by class regex if direct address match failed.
-      Hyprland.dispatch("focuswindow class:(?i)^" + _escapeRegex(entry) + "$")
+      Hyprland.dispatch("focuswindow class:(?i)^" + Utils.escapeRegex(entry) + "$")
       return
     }
     var identity = barPanel.mediaPlayer.identity || ""
@@ -151,7 +111,7 @@ PanelWindow {
           return
         }
       }
-      Hyprland.dispatch("focuswindow title:(?i)" + _escapeRegex(identity).replace(/\s+/g, "\\s+"))
+      Hyprland.dispatch("focuswindow title:(?i)" + Utils.escapeRegex(identity).replace(/\s+/g, "\\s+"))
     }
   }
 
@@ -171,17 +131,10 @@ PanelWindow {
   Process { id: controlPanelProc; command: ["qs", "ipc", "call", "controlpanel", "toggle"] }
 
   // ── WiFi ──
-  property var wifiDev: _findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
-  property var wifiNet: _findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected })
+  property var wifiDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
+  property var wifiNet: Utils.findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected })
   property string wifiSsid: wifiNet ? wifiNet.name : ""
-  property string wifiIcon: {
-    if (!wifiNet) return "\u{F092F}"
-    var s = wifiNet.signalStrength
-    if (s < 0.2) return "\u{F091F}"
-    if (s < 0.4) return "\u{F0922}"
-    if (s < 0.6) return "\u{F0925}"
-    return "\u{F0928}"
-  }
+  property string wifiIcon: Utils.wifiIcon(wifiNet ? wifiNet.signalStrength : 0, !!wifiNet)
   Process { id: wifiProc; command: ["sh", "-lc", "foot -e nmtui"] }
 
   // ── Battery ──
@@ -206,22 +159,7 @@ PanelWindow {
   readonly property bool batPlugged: batDevice && batDevice.state === UPowerDeviceState.FullyCharged
   readonly property int batState: batDevice ? batDevice.state : UPowerDeviceState.Unknown
 
-  property string batIcon: {
-    if (!batPresent) return ""
-    if (batCharging) return "\u{F0084}"
-    if (batPlugged) return "\u{F06A5}"
-    var p = batPct
-    if (p <= 10) return "\u{F007A}"
-    if (p <= 20) return "\u{F007B}"
-    if (p <= 30) return "\u{F007C}"
-    if (p <= 40) return "\u{F007D}"
-    if (p <= 50) return "\u{F007E}"
-    if (p <= 60) return "\u{F007F}"
-    if (p <= 70) return "\u{F0080}"
-    if (p <= 80) return "\u{F0042}"
-    if (p <= 90) return "\u{F0082}"
-    return "\u{F0079}"
-  }
+  property string batIcon: Utils.batteryIcon(batPct, batCharging, batPlugged, batPresent)
   property color batColor: {
     if (!batPresent) return Colors.fg
     if (batCharging || batPlugged) return Colors.green
@@ -234,8 +172,8 @@ PanelWindow {
   // Prefer the currently playing player; if none, show the most recently paused one.
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: {
-    var playing = _findFirst(mediaPlayers, function(p) { return p.isPlaying })
-    return playing ? playing : _findFirst(mediaPlayers, function(p) {
+    var playing = Utils.findFirst(mediaPlayers, function(p) { return p.isPlaying })
+    return playing ? playing : Utils.findFirst(mediaPlayers, function(p) {
       return p.playbackState === MprisPlaybackState.Paused
     })
   }
@@ -465,8 +403,8 @@ PanelWindow {
               var p = Math.round(barPanel.mediaEstimatedPosition)
               var l = Math.round(barPanel.mediaLastLength)
               if (l <= 0) return ""
-              return Math.floor(p / 60) + ":" + _pad2(p % 60)
-                + " / " + Math.floor(l / 60) + ":" + _pad2(l % 60)
+              return Math.floor(p / 60) + ":" + Utils.pad2(p % 60)
+                + " / " + Math.floor(l / 60) + ":" + Utils.pad2(l % 60)
             }
             color: Colors.fgMid
             font.family: barPanel.uiFont
@@ -551,14 +489,7 @@ PanelWindow {
         Tooltip {
           id: volTooltip
           sharedWindow: sharedTipWindow
-          icon: {
-            if (barPanel.volMuted) return "\u{F075F}"
-            var v = barPanel.volPct
-            if (v <= 0) return "\u{F075F}"
-            if (v < 0.33) return "\u{F057F}"
-            if (v < 0.66) return "\u{F0580}"
-            return "\u{F057E}"
-          }
+          icon: Utils.volumeIcon(barPanel.volPct, barPanel.volMuted)
           iconColor: barPanel.volMuted ? Colors.red : Colors.accent
           title: {
             var pct = Math.round(barPanel.volPct * 100)
@@ -584,14 +515,7 @@ PanelWindow {
           spacing: 4
 
           Text {
-            text: {
-              if (barPanel.volMuted) return "\u{F075F}"
-              var v = barPanel.volPct
-              if (v <= 0) return "\u{F075F}"
-              if (v < 0.33) return "\u{F057F}"
-              if (v < 0.66) return "\u{F0580}"
-              return "\u{F057E}"
-            }
+            text: Utils.volumeIcon(barPanel.volPct, barPanel.volMuted)
             color: barPanel.volMuted ? Colors.red : Colors.fg
             font.family: barPanel.uiFont
             font.pixelSize: 12
@@ -774,14 +698,14 @@ PanelWindow {
               Text {
                 text: _src ? _src.icon : ""
                 color: _src ? _src.iconColor : Colors.fg
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: barPanel.uiFont
                 font.pixelSize: 16
                 anchors.verticalCenter: parent.verticalCenter
               }
               Text {
                 text: _src ? _src.title : ""
                 color: Colors.fg
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: barPanel.uiFont
                 font.pixelSize: 13
                 font.bold: true
                 anchors.verticalCenter: parent.verticalCenter
@@ -801,7 +725,7 @@ PanelWindow {
                 required property var modelData
                 text: modelData
                 color: Colors.fgMid
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: barPanel.uiFont
                 font.pixelSize: 11
               }
             }

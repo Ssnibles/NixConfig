@@ -6,15 +6,17 @@ import QtQuick
 import QtQuick.Layouts
 import QtQml
 
+import "Utils.js" as Utils
+
 Item {
   id: notif
 
   property bool doNotDisturb: false
   property bool barVisible: true
   property alias notificationServer: notificationServer
-  property int popupTimeoutMs: 6000
-  property int maxPopups: 5
-  property string uiFont: "JetBrainsMono Nerd Font"
+  readonly property int popupTimeoutMs: 6000
+  readonly property int maxPopups: 5
+  readonly property string uiFont: "JetBrainsMono Nerd Font"
 
   readonly property int topMargin: barVisible ? 54 : 24
   readonly property int sideMargin: 24
@@ -24,28 +26,12 @@ Item {
   readonly property int cardSpacing: 6
   readonly property int iconSize: 24
 
-  property var _stripCache: ({})
-
-  function stripMarkup(text) {
-    if (!text || text.length === 0) return ""
-    var c = notif._stripCache
-    var r = c[text]
-    if (r !== undefined) return r
-    r = text.replace(/<[^>]*>/g, "")
-    if (Object.keys(c).length < 100) c[text] = r
-    return r
-  }
-
   function _urgencyColor(notification) {
     if (!notification) return Colors.accent
     if (notification.urgency === NotificationUrgency.Critical) return Colors.red
     if (notification.urgency === NotificationUrgency.Low) return Colors.fgDim
     if (notification.urgency === NotificationUrgency.Normal) return Colors.accent
     return Colors.yellow
-  }
-
-  function _cardBgFor(notification) {
-    return Colors.bgRaised
   }
 
   function _cardBorderFor(notification) {
@@ -90,7 +76,7 @@ Item {
           }
         }
       }
-      Hyprland.dispatch("focuswindow class:(?i)^" + entry.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$")
+      Hyprland.dispatch("focuswindow class:(?i)^" + Utils.escapeRegex(entry) + "$")
     }
   }
 
@@ -173,7 +159,7 @@ Item {
               implicitHeight: popupInner.implicitHeight + notif.cardPadding * 2
               height: implicitHeight
               radius: notif.cardRadius
-              color: notif._cardBgFor(notification)
+              color: Colors.bgRaised
               border.width: notification && notification.urgency === NotificationUrgency.Critical ? 1.5 : 1
               border.color: notif._cardBorderFor(notification)
 
@@ -286,7 +272,7 @@ Item {
                     }
 
                     Text {
-                      text: notification ? notif.stripMarkup(notification.summary || "") : ""
+                      text: notification ? Utils.stripMarkup(notification.summary || "") : ""
                       Layout.fillWidth: true
                       color: Colors.fg
                       font.family: notif.uiFont
@@ -302,7 +288,7 @@ Item {
                 }
 
                 Text {
-                  text: notification ? notif.stripMarkup(notification.body || "") : ""
+                  text: notification ? Utils.stripMarkup(notification.body || "") : ""
                   width: parent.width
                   color: Colors.fgMid
                   font.family: notif.uiFont
