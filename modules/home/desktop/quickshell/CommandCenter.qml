@@ -8,34 +8,15 @@ import QtQuick
 import QtQuick.Layouts
 import QtQml
 
+import "Utils.js" as Utils
+
 PanelWindow {
   id: controlPanel
 
-  // root is injected by shell.qml when embedded; when running standalone it's null.
   property QtObject root: null
-  property QtObject _p: palette
 
-  // Local palette that falls back to the global Colors singleton so this panel
-  // works both standalone (loaded directly) and embedded (via shell.qml).
-  QtObject {
-    id: palette
-    property color fg:        (controlPanel.root && controlPanel.root.fg !== undefined)        ? controlPanel.root.fg        : Colors.fg
-    property color fgMid:     (controlPanel.root && controlPanel.root.fgMid !== undefined)     ? controlPanel.root.fgMid     : Colors.fgMid
-    property color fgDim:     (controlPanel.root && controlPanel.root.fgDim !== undefined)     ? controlPanel.root.fgDim     : Colors.fgDim
-    property color bg:        Colors.bg
-    property color bgRaised:  Colors.bgRaised
-    property color bgSubtle:  (controlPanel.root && controlPanel.root.bgSubtle !== undefined)  ? controlPanel.root.bgSubtle  : Colors.bgSubtle
-    property color border:    (controlPanel.root && controlPanel.root.border !== undefined)    ? controlPanel.root.border    : Colors.border
-    property color accent:    (controlPanel.root && controlPanel.root.accent !== undefined)    ? controlPanel.root.accent    : Colors.accent
-    property color red:       (controlPanel.root && controlPanel.root.red !== undefined)       ? controlPanel.root.red       : Colors.red
-    property color green:     (controlPanel.root && controlPanel.root.green !== undefined)     ? controlPanel.root.green     : Colors.green
-    property color yellow:    (controlPanel.root && controlPanel.root.yellow !== undefined)    ? controlPanel.root.yellow    : Colors.yellow
-    property color purple:    (controlPanel.root && controlPanel.root.purple !== undefined)    ? controlPanel.root.purple    : Colors.purple
-    property color orange:    (controlPanel.root && controlPanel.root.orange !== undefined)    ? controlPanel.root.orange    : Colors.orange
-    property color teal:      (controlPanel.root && controlPanel.root.teal !== undefined)      ? controlPanel.root.teal      : Colors.teal
-    property string uiFont:   (controlPanel.root && controlPanel.root.uiFont !== undefined)    ? controlPanel.root.uiFont    : "JetBrainsMono Nerd Font"
-    property string specialFont: (controlPanel.root && controlPanel.root.specialFont !== undefined) ? controlPanel.root.specialFont : "Instrument Serif"
-  }
+  readonly property string uiFont: "JetBrainsMono Nerd Font"
+  readonly property string specialFont: "Instrument Serif"
 
   // ── Volume ──
   // PwObjectTracker is required by Quickshell so bindings update when the default sink changes.
@@ -69,8 +50,8 @@ PanelWindow {
   // Prefer the currently playing player; fall back to the most recently paused one.
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: {
-    var playing = _findFirst(mediaPlayers, function(p) { return p.isPlaying })
-    return playing ? playing : _findFirst(mediaPlayers, function(p) {
+    var playing = Utils.findFirst(mediaPlayers, function(p) { return p.isPlaying })
+    return playing ? playing : Utils.findFirst(mediaPlayers, function(p) {
       return p.playbackState === MprisPlaybackState.Paused
     })
   }
@@ -272,15 +253,6 @@ PanelWindow {
     }
   }
 
-  function _findFirst(list, predicate) {
-    for (var i = 0; i < list.length; i++) {
-      if (predicate(list[i])) return list[i]
-    }
-    return null
-  }
-
-  // Scan all Pipewire nodes for the first real capture (source) device.
-  // Excludes monitor sources because those are loopback, not physical mics.
   function _findMicNode() {
     if (!Pipewire.ready) return null
     var nodes = Pipewire.nodes
@@ -296,15 +268,6 @@ PanelWindow {
     return null
   }
 
-  function _formatTime(seconds) {
-    var s = Math.round(seconds)
-    if (s < 0) s = 0
-    var m = Math.floor(s / 60)
-    s = s % 60
-    return m + ":" + (s < 10 ? "0" : "") + s
-  }
-
-  // Some MPRIS players return URLs wrapped in literal quotes; strip them.
   function _coverArtUrl() {
     if (!controlPanel.mediaPlayer) return ""
     var url = controlPanel.mediaPlayer.trackArtUrl
@@ -495,9 +458,9 @@ PanelWindow {
   Rectangle {
     anchors.fill: parent
     radius: 28
-    color: _p.bg
+    color: Colors.bg
     border.width: 1
-    border.color: _p.border
+    border.color: Colors.border
     opacity: controlPanel.panelOpacity
     transform: Translate { x: controlPanel.panelSlide }
 
@@ -527,8 +490,8 @@ PanelWindow {
             Text {
               id: headerTime
               text: Qt.formatDateTime(new Date(), "hh:mm")
-              color: _p.fg
-              font.family: _p.specialFont
+              color: Colors.fg
+              font.family: controlPanel.specialFont
               font.pixelSize: 64
               font.bold: true
               font.italic: true
@@ -543,8 +506,8 @@ PanelWindow {
 
             Text {
               text: Qt.formatDateTime(new Date(), "dddd, MMMM d")
-              color: _p.fgDim
-              font.family: _p.uiFont
+              color: Colors.fgDim
+              font.family: controlPanel.uiFont
               font.pixelSize: 13
             }
           }
@@ -554,9 +517,9 @@ PanelWindow {
         Rectangle {
           width: parent.width
           radius: 20
-          color: _p.bgRaised
+          color: Colors.bgRaised
           border.width: 1
-          border.color: _p.border
+          border.color: Colors.border
           visible: mediaPlayer !== null
           implicitHeight: mediaCardCol.implicitHeight + 40
 
@@ -574,7 +537,7 @@ PanelWindow {
                 Layout.preferredWidth: 88
                 Layout.preferredHeight: 88
                 radius: 16
-                color: _p.bgSubtle
+                color: Colors.bgSubtle
 
                 Image {
                   id: mediaArtImage
@@ -588,8 +551,8 @@ PanelWindow {
                 Text {
                   anchors.centerIn: parent
                   text: "\u{F075A}"
-                  color: _p.fgDim
-                  font.family: _p.uiFont
+                  color: Colors.fgDim
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 28
                   visible: mediaArtImage.status !== Image.Ready && mediaArtImage.status !== Image.Loading
                 }
@@ -608,8 +571,8 @@ PanelWindow {
                     id: mediaTitleText
                     text: controlPanel.mediaText
                     width: implicitWidth
-                    color: _p.fg
-                    font.family: _p.uiFont
+                    color: Colors.fg
+                    font.family: controlPanel.uiFont
                     font.pixelSize: 14
                     font.bold: true
                     property bool overflow: implicitWidth > parent.width + 2
@@ -643,8 +606,8 @@ PanelWindow {
                 Text {
                   text: controlPanel.mediaSubtext
                   width: Math.min(implicitWidth, parent.width)
-                  color: _p.fgDim
-                  font.family: _p.uiFont
+                  color: Colors.fgDim
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 11
                   elide: Text.ElideRight
                   visible: text.length > 0
@@ -662,10 +625,10 @@ PanelWindow {
                 text: {
                   var _ = controlPanel._mediaTick
                   var __ = controlPanel.mediaResetToken
-                  return controlPanel._formatTime(controlPanel.mediaLastPosition)
+                  return Utils.formatTime(controlPanel.mediaLastPosition)
                 }
-                color: _p.fgMid
-                font.family: _p.uiFont
+                color: Colors.fgMid
+                font.family: controlPanel.uiFont
                 font.pixelSize: 10
                 Layout.preferredWidth: implicitWidth
               }
@@ -679,7 +642,7 @@ PanelWindow {
                   width: parent.width
                   height: 8
                   radius: 4
-                  color: _p.bgSubtle
+                  color: Colors.bgSubtle
 
                   Rectangle {
                     anchors.top: parent.top
@@ -687,7 +650,7 @@ PanelWindow {
                     anchors.bottom: parent.bottom
                     width: parent.width * controlPanel.mediaProgress
                     radius: 4
-                    color: _p.accent
+                    color: Colors.accent
                   }
                 }
 
@@ -703,9 +666,9 @@ PanelWindow {
               }
 
               Text {
-                text: controlPanel._formatTime(controlPanel.mediaLastLength)
-                color: _p.fgMid
-                font.family: _p.uiFont
+                text: Utils.formatTime(controlPanel.mediaLastLength)
+                color: Colors.fgMid
+                font.family: controlPanel.uiFont
                 font.pixelSize: 10
                 Layout.preferredWidth: implicitWidth
               }
@@ -720,16 +683,16 @@ PanelWindow {
                 width: 40
                 height: 40
                 radius: 20
-                color: _p.bgSubtle
+                color: Colors.bgSubtle
                 border.width: 1
-                border.color: _p.border
+                border.color: Colors.border
                 Behavior on scale { NumberAnimation { duration: 100 } }
 
                 Text {
                   anchors.centerIn: parent
                   text: "\u{F04AE}"
-                  color: _p.fg
-                  font.family: _p.uiFont
+                  color: Colors.fg
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 16
                 }
 
@@ -747,14 +710,14 @@ PanelWindow {
                 width: 48
                 height: 48
                 radius: 24
-                color: _p.accent
+                color: Colors.accent
                 Behavior on scale { NumberAnimation { duration: 100 } }
 
                 Text {
                   anchors.centerIn: parent
                   text: controlPanel.mediaPlayer && controlPanel.mediaPlayer.isPlaying ? "\u{F03E4}" : "\u{F040A}"
-                  color: _p.bg
-                  font.family: _p.uiFont
+                  color: Colors.bg
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 20
                 }
 
@@ -772,16 +735,16 @@ PanelWindow {
                 width: 40
                 height: 40
                 radius: 20
-                color: _p.bgSubtle
+                color: Colors.bgSubtle
                 border.width: 1
-                border.color: _p.border
+                border.color: Colors.border
                 Behavior on scale { NumberAnimation { duration: 100 } }
 
                 Text {
                   anchors.centerIn: parent
                   text: "\u{F04AD}"
-                  color: _p.fg
-                  font.family: _p.uiFont
+                  color: Colors.fg
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 16
                 }
 
@@ -802,9 +765,9 @@ PanelWindow {
         Rectangle {
           width: parent.width
           radius: 20
-          color: _p.bgRaised
+          color: Colors.bgRaised
           border.width: 1
-          border.color: _p.border
+          border.color: Colors.border
           implicitHeight: systemCol.implicitHeight + 40
 
           Column {
@@ -820,14 +783,14 @@ PanelWindow {
                 width: 6
                 height: 16
                 radius: 3
-                color: _p.accent
+                color: Colors.accent
                 Layout.alignment: Qt.AlignVCenter
               }
 
               Text {
                 text: "System"
-                color: _p.fgMid
-                font.family: _p.uiFont
+                color: Colors.fgMid
+                font.family: controlPanel.uiFont
                 font.pixelSize: 11
                 font.bold: true
                 font.letterSpacing: 1.2
@@ -847,22 +810,15 @@ PanelWindow {
                 Layout.preferredWidth: 38
                 Layout.preferredHeight: 38
                 radius: 12
-                color: _p.bgSubtle
+                color: Colors.bgSubtle
                 border.width: 1
-                border.color: controlPanel.volMuted ? _p.red : _p.border
+                border.color: controlPanel.volMuted ? Colors.red : Colors.border
 
                 Text {
                   anchors.centerIn: parent
-                  text: {
-                    if (controlPanel.volMuted) return "\u{F075F}"
-                    var v = controlPanel.volPct
-                    if (v <= 0) return "\u{F075F}"
-                    if (v < 0.33) return "\u{F057F}"
-                    if (v < 0.66) return "\u{F0580}"
-                    return "\u{F057E}"
-                  }
-                  color: controlPanel.volMuted ? _p.red : _p.fg
-                  font.family: _p.uiFont
+                  text: Utils.volumeIcon(controlPanel.volPct, controlPanel.volMuted)
+                  color: controlPanel.volMuted ? Colors.red : Colors.fg
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 16
                 }
 
@@ -871,12 +827,12 @@ PanelWindow {
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
                   onEntered: {
-                    volIconBox.color = _p.bgRaised
-                    volIconBox.border.color = controlPanel.volMuted ? _p.red : _p.accent
+                    volIconBox.color = Colors.bgRaised
+                    volIconBox.border.color = controlPanel.volMuted ? Colors.red : Colors.accent
                   }
                   onExited: {
-                    volIconBox.color = _p.bgSubtle
-                    volIconBox.border.color = controlPanel.volMuted ? _p.red : _p.border
+                    volIconBox.color = Colors.bgSubtle
+                    volIconBox.border.color = controlPanel.volMuted ? Colors.red : Colors.border
                   }
                   onClicked: {
                     if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
@@ -888,8 +844,8 @@ PanelWindow {
 
               Text {
                 text: "Volume"
-                color: _p.fg
-                font.family: _p.uiFont
+                color: Colors.fg
+                font.family: controlPanel.uiFont
                 font.pixelSize: 12
                 font.bold: true
                 Layout.alignment: Qt.AlignVCenter
@@ -900,7 +856,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
                 value: controlPanel.volPct
-                fillColor: controlPanel.volMuted ? _p.red : _p.accent
+                fillColor: controlPanel.volMuted ? Colors.red : Colors.accent
                 snapPercent: 5
                 onMoved: function(v) {
                   volSetTimer.target = v
@@ -910,8 +866,8 @@ PanelWindow {
 
               Text {
                 text: Math.round(controlPanel.volPct * 100) + "%"
-                color: controlPanel.volMuted ? _p.red : _p.fg
-                font.family: _p.uiFont
+                color: controlPanel.volMuted ? Colors.red : Colors.fg
+                font.family: controlPanel.uiFont
                 font.pixelSize: 12
                 font.bold: true
                 opacity: 0.8
@@ -930,15 +886,15 @@ PanelWindow {
                 Layout.preferredWidth: 38
                 Layout.preferredHeight: 38
                 radius: 12
-                color: _p.bgSubtle
+                color: Colors.bgSubtle
                 border.width: 1
-                border.color: controlPanel.micMuted ? _p.red : _p.border
+                border.color: controlPanel.micMuted ? Colors.red : Colors.border
 
                 Text {
                   anchors.centerIn: parent
                   text: controlPanel.micMuted ? "\u{F036D}" : "\u{F036C}"
-                  color: controlPanel.micMuted ? _p.red : _p.green
-                  font.family: _p.uiFont
+                  color: controlPanel.micMuted ? Colors.red : Colors.green
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 16
                 }
 
@@ -947,12 +903,12 @@ PanelWindow {
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
                   onEntered: {
-                    micIconBox.color = _p.bgRaised
-                    micIconBox.border.color = controlPanel.micMuted ? _p.red : _p.accent
+                    micIconBox.color = Colors.bgRaised
+                    micIconBox.border.color = controlPanel.micMuted ? Colors.red : Colors.accent
                   }
                   onExited: {
-                    micIconBox.color = _p.bgSubtle
-                    micIconBox.border.color = controlPanel.micMuted ? _p.red : _p.border
+                    micIconBox.color = Colors.bgSubtle
+                    micIconBox.border.color = controlPanel.micMuted ? Colors.red : Colors.border
                   }
                   onClicked: {
                     if (controlPanel.micNode && controlPanel.micNode.audio) {
@@ -964,8 +920,8 @@ PanelWindow {
 
               Text {
                 text: "Mic"
-                color: _p.fg
-                font.family: _p.uiFont
+                color: Colors.fg
+                font.family: controlPanel.uiFont
                 font.pixelSize: 12
                 font.bold: true
                 Layout.alignment: Qt.AlignVCenter
@@ -984,12 +940,12 @@ PanelWindow {
                   height: 28
                   radius: 14
                   color: controlPanel.micMuted
-                    ? Qt.rgba(_p.red.r, _p.red.g, _p.red.b, 0.18)
-                    : Qt.rgba(_p.green.r, _p.green.g, _p.green.b, 0.18)
+                    ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.18)
+                    : Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.18)
                   border.width: 1
                   border.color: controlPanel.micMuted
-                    ? Qt.rgba(_p.red.r, _p.red.g, _p.red.b, 0.3)
-                    : Qt.rgba(_p.green.r, _p.green.g, _p.green.b, 0.3)
+                    ? Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.3)
+                    : Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.3)
 
                   Rectangle {
                     x: controlPanel.micMuted ? 3 : micToggle.width - width - 3
@@ -997,7 +953,7 @@ PanelWindow {
                     width: micToggle.height - 6
                     height: micToggle.height - 6
                     radius: width / 2
-                    color: controlPanel.micMuted ? _p.red : _p.green
+                    color: controlPanel.micMuted ? Colors.red : Colors.green
                     Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
                     Behavior on color { ColorAnimation { duration: 150 } }
                   }
@@ -1019,8 +975,8 @@ PanelWindow {
                   anchors.left: micToggle.right
                   anchors.leftMargin: 12
                   text: controlPanel.micMuted ? "Muted" : "Live"
-                  color: controlPanel.micMuted ? _p.red : _p.green
-                  font.family: _p.uiFont
+                  color: controlPanel.micMuted ? Colors.red : Colors.green
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 11
                   font.bold: true
                   Behavior on color { ColorAnimation { duration: 150 } }
@@ -1039,15 +995,15 @@ PanelWindow {
                 Layout.preferredWidth: 38
                 Layout.preferredHeight: 38
                 radius: 12
-                color: _p.bgSubtle
+                color: Colors.bgSubtle
                 border.width: 1
-                border.color: _p.border
+                border.color: Colors.border
 
                 Text {
                   anchors.centerIn: parent
                   text: "\u{F00DF}"
-                  color: _p.yellow
-                  font.family: _p.uiFont
+                  color: Colors.yellow
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 16
                 }
 
@@ -1056,20 +1012,20 @@ PanelWindow {
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
                   onEntered: {
-                    brtIconBox.color = _p.bgRaised
-                    brtIconBox.border.color = _p.yellow
+                    brtIconBox.color = Colors.bgRaised
+                    brtIconBox.border.color = Colors.yellow
                   }
                   onExited: {
-                    brtIconBox.color = _p.bgSubtle
-                    brtIconBox.border.color = _p.border
+                    brtIconBox.color = Colors.bgSubtle
+                    brtIconBox.border.color = Colors.border
                   }
                 }
               }
 
               Text {
                 text: "Brightness"
-                color: _p.fg
-                font.family: _p.uiFont
+                color: Colors.fg
+                font.family: controlPanel.uiFont
                 font.pixelSize: 12
                 font.bold: true
                 Layout.alignment: Qt.AlignVCenter
@@ -1080,7 +1036,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
                 value: controlPanel.brightnessPct
-                fillColor: _p.yellow
+                fillColor: Colors.yellow
                 snapPercent: 5
                 onMoved: function(v) {
                   controlPanel.brightnessDragging = true
@@ -1093,8 +1049,8 @@ PanelWindow {
 
               Text {
                 text: Math.round(controlPanel.brightnessPct * 100) + "%"
-                color: _p.fg
-                font.family: _p.uiFont
+                color: Colors.fg
+                font.family: controlPanel.uiFont
                 font.pixelSize: 12
                 font.bold: true
                 opacity: 0.8
@@ -1108,9 +1064,9 @@ PanelWindow {
         Rectangle {
           width: parent.width
           radius: 20
-          color: _p.bgRaised
+          color: Colors.bgRaised
           border.width: 1
-          border.color: _p.border
+          border.color: Colors.border
           implicitHeight: actionsCol.implicitHeight + 40
 
           Column {
@@ -1126,14 +1082,14 @@ PanelWindow {
                 width: 6
                 height: 16
                 radius: 3
-                color: _p.purple
+                color: Colors.purple
                 Layout.alignment: Qt.AlignVCenter
               }
 
               Text {
                 text: "Power"
-                color: _p.fgMid
-                font.family: _p.uiFont
+                color: Colors.fgMid
+                font.family: controlPanel.uiFont
                 font.pixelSize: 11
                 font.bold: true
                 font.letterSpacing: 1.2
@@ -1150,12 +1106,12 @@ PanelWindow {
 
               Repeater {
                 model: [
-                  { id: "lock", icon: "\u{F033E}", label: "Lock Screen", color: Qt.rgba(_p.accent.r, _p.accent.g, _p.accent.b, 0.15), accent: _p.accent, proc: lockProc },
-                  { id: "caffeinate", icon: "\u{F0176}", label: "Caffeinate", color: Qt.rgba(_p.orange.r, _p.orange.g, _p.orange.b, 0.15), accent: _p.orange },
-                  { id: "logout", icon: "\u{F0343}", label: "Logout", color: Qt.rgba(_p.yellow.r, _p.yellow.g, _p.yellow.b, 0.15), accent: _p.yellow, proc: logoutProc },
-                  { id: "sleep", icon: "\u{F0904}", label: "Sleep", color: Qt.rgba(_p.green.r, _p.green.g, _p.green.b, 0.15), accent: _p.green, proc: sleepProc },
-                  { id: "reboot", icon: "\u{F0709}", label: "Reboot", color: Qt.rgba(_p.purple.r, _p.purple.g, _p.purple.b, 0.15), accent: _p.purple, proc: rebootProc },
-                  { id: "poweroff", icon: "\u{F0425}", label: "Power Off", color: Qt.rgba(_p.red.r, _p.red.g, _p.red.b, 0.15), accent: _p.red, proc: poweroffProc }
+                  { id: "lock", icon: "\u{F033E}", label: "Lock Screen", color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.15), accent: Colors.accent, proc: lockProc },
+                  { id: "caffeinate", icon: "\u{F0176}", label: "Caffeinate", color: Qt.rgba(Colors.orange.r, Colors.orange.g, Colors.orange.b, 0.15), accent: Colors.orange },
+                  { id: "logout", icon: "\u{F0343}", label: "Logout", color: Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.15), accent: Colors.yellow, proc: logoutProc },
+                  { id: "sleep", icon: "\u{F0904}", label: "Sleep", color: Qt.rgba(Colors.green.r, Colors.green.g, Colors.green.b, 0.15), accent: Colors.green, proc: sleepProc },
+                  { id: "reboot", icon: "\u{F0709}", label: "Reboot", color: Qt.rgba(Colors.purple.r, Colors.purple.g, Colors.purple.b, 0.15), accent: Colors.purple, proc: rebootProc },
+                  { id: "poweroff", icon: "\u{F0425}", label: "Power Off", color: Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15), accent: Colors.red, proc: poweroffProc }
                 ]
 
                 delegate: Rectangle {
@@ -1166,9 +1122,9 @@ PanelWindow {
                   height: 48
                   radius: 12
 
-                  color: _isCaffeineActive ? _p.bgRaised : _p.bgSubtle
+                  color: _isCaffeineActive ? Colors.bgRaised : Colors.bgSubtle
                   border.width: 1
-                  border.color: _isCaffeineActive ? modelData.accent : (_hovered ? modelData.accent : _p.border)
+                  border.color: _isCaffeineActive ? modelData.accent : (_hovered ? modelData.accent : Colors.border)
 
                   Behavior on scale { NumberAnimation { duration: 80 } }
                   Behavior on color { ColorAnimation { duration: 60 } }
@@ -1182,15 +1138,15 @@ PanelWindow {
                       anchors.verticalCenter: parent.verticalCenter
                       text: modelData.icon
                       color: modelData.accent
-                      font.family: _p.uiFont
+                      font.family: controlPanel.uiFont
                       font.pixelSize: 18
                     }
 
                     Text {
                       anchors.verticalCenter: parent.verticalCenter
                       text: modelData.label
-                      color: _p.fg
-                      font.family: _p.uiFont
+                      color: Colors.fg
+                      font.family: controlPanel.uiFont
                       font.pixelSize: 12
                       font.bold: true
                     }
@@ -1226,9 +1182,9 @@ PanelWindow {
         Rectangle {
           width: parent.width
           radius: 12
-          color: _p.bgRaised
+          color: Colors.bgRaised
           border.width: 1
-          border.color: Qt.rgba(_p.border.r, _p.border.g, _p.border.b, 0.6)
+          border.color: Qt.rgba(Colors.border.r, Colors.border.g, Colors.border.b, 0.6)
           implicitHeight: notifCol.implicitHeight + 40
 
           Column {
@@ -1244,14 +1200,14 @@ PanelWindow {
                 width: 6
                 height: 16
                 radius: 3
-                color: _p.teal
+                color: Colors.teal
                 Layout.alignment: Qt.AlignVCenter
               }
 
               Text {
                 text: "Notifications"
-                color: _p.fgMid
-                font.family: _p.uiFont
+                color: Colors.fgMid
+                font.family: controlPanel.uiFont
                 font.pixelSize: 11
                 font.bold: true
                 font.letterSpacing: 1.2
@@ -1266,10 +1222,10 @@ PanelWindow {
                 Layout.preferredHeight: 26
                 radius: 13
                 color: (root && root.doNotDisturb)
-                  ? Qt.rgba(_p.accent.r, _p.accent.g, _p.accent.b, 0.25)
-                  : _p.bgSubtle
+                  ? Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.25)
+                  : Colors.bgSubtle
                 border.width: 1
-                border.color: (root && root.doNotDisturb) ? _p.accent : _p.border
+                border.color: (root && root.doNotDisturb) ? Colors.accent : Colors.border
 
                 Rectangle {
                   x: (root && root.doNotDisturb) ? parent.width - width - 3 : 3
@@ -1277,7 +1233,7 @@ PanelWindow {
                   width: parent.height - 6
                   height: parent.height - 6
                   radius: width / 2
-                  color: (root && root.doNotDisturb) ? _p.accent : _p.fgDim
+                  color: (root && root.doNotDisturb) ? Colors.accent : Colors.fgDim
                   Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
                   Behavior on color { ColorAnimation { duration: 150 } }
                 }
@@ -1292,8 +1248,8 @@ PanelWindow {
 
               Text {
                 text: (root && root.doNotDisturb) ? "DND" : "All"
-                color: (root && root.doNotDisturb) ? _p.accent : _p.fgDim
-                font.family: _p.uiFont
+                color: (root && root.doNotDisturb) ? Colors.accent : Colors.fgDim
+                font.family: controlPanel.uiFont
                 font.pixelSize: 11
                 font.bold: true
                 Layout.alignment: Qt.AlignVCenter
@@ -1309,14 +1265,14 @@ PanelWindow {
                 radius: 8
                 color: "transparent"
                 border.width: 1
-                border.color: _p.border
+                border.color: Colors.border
 
                 Text {
                   id: clearAllText
                   anchors.centerIn: parent
                   text: root ? "Clear (" + root.notificationServer.trackedNotifications.values.length + ")" : "Clear"
-                  color: _p.fgMid
-                  font.family: _p.uiFont
+                  color: Colors.fgMid
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 10
                   font.bold: true
                 }
@@ -1326,12 +1282,12 @@ PanelWindow {
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
                   onEntered: {
-                    clearAllBtn.color = Qt.rgba(_p.red.r, _p.red.g, _p.red.b, 0.15)
-                    clearAllBtn.border.color = _p.red
+                    clearAllBtn.color = Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15)
+                    clearAllBtn.border.color = Colors.red
                   }
                   onExited: {
                     clearAllBtn.color = "transparent"
-                    clearAllBtn.border.color = _p.border
+                    clearAllBtn.border.color = Colors.border
                   }
                   onClicked: { if (root) root.clearNotifications() }
                 }
@@ -1343,8 +1299,8 @@ PanelWindow {
               text: (root && root.doNotDisturb)
                 ? "Critical alerts will still appear"
                 : "Notifications adapt to urgency"
-              color: _p.fgDim
-              font.family: _p.uiFont
+              color: Colors.fgDim
+              font.family: controlPanel.uiFont
               font.pixelSize: 10
               wrapMode: Text.Wrap
               opacity: 0.5
@@ -1357,18 +1313,18 @@ PanelWindow {
                 required property QtObject modelData
                 property QtObject notification: modelData
                 property color _urgencyColor: notification && notification.urgency === NotificationUrgency.Critical
-                  ? _p.red
-                  : (notification && notification.urgency === NotificationUrgency.Low ? _p.fgDim : _p.accent)
+                  ? Colors.red
+                  : (notification && notification.urgency === NotificationUrgency.Low ? Colors.fgDim : Colors.accent)
 
                 width: parent.width
                 implicitHeight: notifCardCol.implicitHeight + 28
                 height: implicitHeight
                 radius: 12
-                color: _p.bgRaised
+                color: Colors.bgRaised
                 border.width: notification && notification.urgency === NotificationUrgency.Critical ? 1.5 : 1
                 border.color: notification && notification.urgency === NotificationUrgency.Critical
                   ? Qt.rgba(_urgencyColor.r, _urgencyColor.g, _urgencyColor.b, 0.35)
-                  : Qt.rgba(_p.border.r, _p.border.g, _p.border.b, 0.6)
+                  : Qt.rgba(Colors.border.r, Colors.border.g, Colors.border.b, 0.6)
                 opacity: 0
                 Behavior on opacity { NumberAnimation { duration: 200 } }
                 Component.onCompleted: opacity = 1
@@ -1415,8 +1371,8 @@ PanelWindow {
                         text: (notification && notification.appName && notification.appName.length > 0)
                           ? notification.appName
                           : "Notification"
-                        color: _p.fgMid
-                        font.family: _p.uiFont
+                        color: Colors.fgMid
+                        font.family: controlPanel.uiFont
                         font.pixelSize: 10
                         font.bold: true
                         font.letterSpacing: 0.5
@@ -1425,10 +1381,10 @@ PanelWindow {
                       }
 
                       Text {
-                        text: notification ? (root ? root.stripMarkup(notification.summary || "") : notification.summary || "") : ""
+                        text: notification ? Utils.stripMarkup(notification.summary || "") : ""
                         Layout.fillWidth: true
-                        color: _p.fg
-                        font.family: _p.uiFont
+                        color: Colors.fg
+                        font.family: controlPanel.uiFont
                         font.pixelSize: 12
                         font.bold: true
                         elide: Text.ElideRight
@@ -1446,14 +1402,14 @@ PanelWindow {
                       radius: 6
                       color: "transparent"
                       border.width: 1
-                      border.color: _p.border
+                      border.color: Colors.border
                       Layout.alignment: Qt.AlignVCenter
 
                       Text {
                         anchors.centerIn: parent
                         text: "\u00D7"
-                        color: _p.fgDim
-                        font.family: _p.uiFont
+                        color: Colors.fgDim
+                        font.family: controlPanel.uiFont
                         font.pixelSize: 13
                         font.bold: true
                       }
@@ -1463,12 +1419,12 @@ PanelWindow {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onEntered: {
-                          dismissNotif.color = Qt.rgba(_p.red.r, _p.red.g, _p.red.b, 0.15)
-                          dismissNotif.border.color = _p.red
+                          dismissNotif.color = Qt.rgba(Colors.red.r, Colors.red.g, Colors.red.b, 0.15)
+                          dismissNotif.border.color = Colors.red
                         }
                         onExited: {
                           dismissNotif.color = "transparent"
-                          dismissNotif.border.color = _p.border
+                          dismissNotif.border.color = Colors.border
                         }
                         onClicked: notification.dismiss()
                       }
@@ -1476,10 +1432,10 @@ PanelWindow {
                   }
 
                   Text {
-                    text: notification ? (root ? root.stripMarkup(notification.body || "") : notification.body || "") : ""
+                    text: notification ? Utils.stripMarkup(notification.body || "") : ""
                     width: parent.width
-                    color: _p.fgMid
-                    font.family: _p.uiFont
+                    color: Colors.fgMid
+                    font.family: controlPanel.uiFont
                     font.pixelSize: 11
                     wrapMode: Text.Wrap
                     textFormat: Text.PlainText
@@ -1508,8 +1464,8 @@ PanelWindow {
                 Text {
                   anchors.horizontalCenter: parent.horizontalCenter
                   text: "\u{F009C}"
-                  color: _p.fgDim
-                  font.family: _p.uiFont
+                  color: Colors.fgDim
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 28
                   opacity: 0.3
                 }
@@ -1517,8 +1473,8 @@ PanelWindow {
                 Text {
                   anchors.horizontalCenter: parent.horizontalCenter
                   text: "No notifications"
-                  color: _p.fgDim
-                  font.family: _p.uiFont
+                  color: Colors.fgDim
+                  font.family: controlPanel.uiFont
                   font.pixelSize: 12
                   font.bold: true
                   opacity: 0.5
