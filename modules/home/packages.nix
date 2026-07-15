@@ -18,6 +18,7 @@ let
     unstable.nodejs
     unstable.dotnet-sdk_9
     unstable.roslyn
+    unstable.gnumake
   ];
 
   cli = [

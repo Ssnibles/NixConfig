@@ -465,11 +465,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784088695,
-        "narHash": "sha256-0zxeLkIqqB46c2OMfsCU12UIJqwfoLGytDas7ai5V1I=",
+        "lastModified": 1784119598,
+        "narHash": "sha256-W5+n7OBX0mo/xJr395fqNZI3CbHLZ8gpcTXUqSVcAb0=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "d16f9460aad363ebccb8ade52bbb0ffd585b6f25",
+        "rev": "65eb7f1bec0ff4ef18ce6e1748c9aeaf358738b8",
         "type": "github"
       },
       "original": {
@@ -582,6 +582,7 @@
         "qml-language-server": "qml-language-server",
         "solaar": "solaar",
         "spicetify-nix": "spicetify-nix",
+        "sshinator": "sshinator",
         "stylix": "stylix",
         "tiny-cmdline": "tiny-cmdline",
         "tiny-code-action": "tiny-code-action",
@@ -627,6 +628,26 @@
       "original": {
         "owner": "Gerg-L",
         "repo": "spicetify-nix",
+        "type": "github"
+      }
+    },
+    "sshinator": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1784119516,
+        "narHash": "sha256-Een1qAEgYMUr1ovsdSbuPzrl9Q9tIXI1xdEzYPWdvwQ=",
+        "owner": "Ssnibles",
+        "repo": "sshinator.nvim",
+        "rev": "a1caea4e35a15999d0e5ffb6a06986d414e5ec47",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Ssnibles",
+        "repo": "sshinator.nvim",
         "type": "github"
       }
     },
@@ -868,11 +889,11 @@
     "tuxedo": {
       "flake": false,
       "locked": {
-        "lastModified": 1783837579,
-        "narHash": "sha256-neo6bSYe8kkgXlwX5DigWmPwhd6VHkYvdXVV/M+c/CI=",
+        "lastModified": 1784101523,
+        "narHash": "sha256-4tkKjFQN6giCBVOs8K/EjGFAG73CWtPGC4e8YPpxFEs=",
         "owner": "webstonehq",
         "repo": "tuxedo",
-        "rev": "90c96cc6f7b69b9253d3e144b0b6bf6621154a37",
+        "rev": "4077422c002db0d5e92883ea194e36b0e63f0640",
         "type": "github"
       },
       "original": {
