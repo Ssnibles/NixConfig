@@ -234,7 +234,6 @@ in
         typst-preview-nvim
         rustaceanvim
         tiny-inline-diagnostic-nvim
-        inputs.sshinator.packages.${pkgs.stdenv.hostPlatform.system}.default
       ];
 
       luaConfigRC.user-config = ''

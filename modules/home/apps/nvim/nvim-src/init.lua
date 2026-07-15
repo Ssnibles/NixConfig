@@ -2,6 +2,9 @@
 
 vim.loader.enable()
 
+-- Load sshinator from local development path
+vim.opt.runtimepath:append("/home/josh/sshinator.nvim")
+
 -- Disable netrw so oil.nvim can fully take over as the default file explorer.
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
