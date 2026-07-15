@@ -41,6 +41,12 @@
   output = ""
 
 [[snippets]]
+  description = "Git clone via SSH"
+  command = "git clone git@github.com:<username>/<repo_name>.git"
+  tag = ["git", "debug"]
+  output = ""
+
+[[snippets]]
   description = "Search TODO/FIXME excluding .git"
   command = "rg -n --hidden --glob '!.git' '<query=TODO|FIXME|HACK>' <path=.>"
   tag = ["search", "ripgrep"]
