@@ -37,7 +37,7 @@ fzf.setup({
 		},
 	},
 	files = { cmd = "fd --type f --hidden --exclude .git" },
-	oldfiles = { include_current_session = true, cwd_only = true },
+	oldfiles = { include_current_session = true, cwd_only = true, stat_file = false },
 	grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },
 	keymap = {
 		fzf = {
