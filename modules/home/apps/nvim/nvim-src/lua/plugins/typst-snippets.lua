@@ -75,7 +75,7 @@ ls.add_snippets("typst", {
 		t("],"),
 		t({ "", ")" }),
 	}),
-	s({ trig = "img", desc = "Image insertion element" }, { t('image("'), i(1, "path"), t('")') }),
+	s({ trig = "img", desc = "Image insertion element" }, { t('#image("'), i(1, "path"), t('")') }),
 	s({ trig = "tbl", desc = "Table block spanning full horizontal width with template entries" }, {
 		t("#table("),
 		t({ "", "  columns: (1fr, 1fr)," }), -- Full width divided equally between columns
