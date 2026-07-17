@@ -19,11 +19,13 @@ let
     unstable.dotnet-sdk_9
     unstable.roslyn
     unstable.gnumake
+    unstable.go
   ];
 
   cli = [
     unstable.git-lfs
     unstable.github-copilot-cli
+    unstable.gh
     unstable.opencode
     unstable.wl-clipboard
     unstable.sshfs
@@ -94,6 +96,10 @@ let
     unstable.grimblast
   ];
 
+  dependencies = [
+    unstable.electron
+  ];
+
   perHost =
     lib.optionals hostProfile.isDesktop [
       pkgs.ddcutil
@@ -121,5 +127,6 @@ in
   ++ gui
   ++ media
   ++ connectivity
+  ++ dependencies
   ++ perHost;
 }

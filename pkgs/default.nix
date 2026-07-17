@@ -21,6 +21,10 @@ customPackages
     inherit (prev.stdenv.hostPlatform) system;
     config = {
       allowUnfree = true;
+      allowInsecure = true;
+      permittedInsecurePackages = [
+        "electron-40.10.5"
+      ];
     };
   };
 }
