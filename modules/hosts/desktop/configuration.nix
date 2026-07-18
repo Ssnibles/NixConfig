@@ -1,16 +1,7 @@
 { self, inputs, ... }:
-let
-  mkPkgsStable = system: import inputs.nixpkgs-stable {
-    inherit system;
-    config.allowUnfree = true;
-  };
-in
 {
   flake.nixosModules.desktopConfiguration =
     { pkgs, lib, ... }:
-    let
-      pkgs-stable = mkPkgsStable pkgs.system;
-    in
     {
       imports = [
         self.nixosModules.base
@@ -41,15 +32,16 @@ in
       # List packages installed in system profile. To search, run:
       # $ nix search wget
       environment.systemPackages = with pkgs; [
-        vesktop
         pavucontrol
+      ] ++ (with pkgs.unstable; [
+        vesktop
         keepassxc
         amberol
         chromium
         (element-desktop.override {
           commandLineArgs = "--password-store=gnome-libsecret";
         })
-      ];
+      ]);
 
       nix.settings.experimental-features = [
         "nix-command"
@@ -68,7 +60,7 @@ in
       boot.loader.efi.canTouchEfiVariables = true;
 
       # Use latest kernel.
-      boot.kernelPackages = pkgs-stable.linuxPackages_latest;
+      boot.kernelPackages = pkgs.linuxPackages_latest;
 
       networking.hostName = "nixos"; # Define your hostname.
       # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.

@@ -1,16 +1,7 @@
 { self, inputs, ... }:
-let
-  mkPkgsStable = system: import inputs.nixpkgs-stable {
-    inherit system;
-    config.allowUnfree = true;
-  };
-in
 {
   flake.nixosModules.laptopConfiguration =
     { pkgs, lib, ... }:
-    let
-      pkgs-stable = mkPkgsStable pkgs.system;
-    in
     {
       imports = [
         self.nixosModules.base
@@ -31,7 +22,7 @@ in
       boot.loader.efi.canTouchEfiVariables = true;
 
       # Use latest kernel.
-      boot.kernelPackages = pkgs-stable.linuxPackages_latest;
+      boot.kernelPackages = pkgs.linuxPackages_latest;
 
       networking.hostName = "nixos"; # Define your hostname.
       # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -63,17 +54,9 @@ in
       # $ nix search wget
       environment.systemPackages = with pkgs; [
         vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-        fastfetch
         wget
         git
-        self.packages.${pkgs.stdenv.hostPlatform.system}.kitty
-        wofi
-        waybar
-        wl-clipboard
         ripgrep
-        emacs-pgtk
-        zsh
-        zellij
         zip
         unzip
         gnome-keyring
@@ -82,6 +65,15 @@ in
         libsecret
         seahorse
         gnupg
+      ] ++ (with pkgs.unstable; [
+        fastfetch
+        self.packages.${pkgs.stdenv.hostPlatform.system}.kitty
+        wofi
+        waybar
+        wl-clipboard
+        emacs-pgtk
+        zsh
+        zellij
         gowall
         gimp3
         chatterino7
@@ -90,7 +82,7 @@ in
         (element-desktop.override {
           commandLineArgs = "--password-store=gnome-libsecret";
         })
-      ];
+      ]);
 
       programs.zsh.enable = true;
 

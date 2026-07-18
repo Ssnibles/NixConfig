@@ -10,7 +10,22 @@
 
       config = {
         username = "josh";
-        nixpkgs.overlays = [ inputs.millennium.overlays.default ];
+        nixpkgs.overlays = [
+          inputs.millennium.overlays.default
+          (final: prev: {
+            unstable = import inputs.nixpkgs-unstable {
+              inherit (prev.stdenv.hostPlatform) system;
+              config = {
+                allowUnfree = true;
+                allowInsecure = true;
+                permittedInsecurePackages = [
+                  "pnpm-10.29.2"
+                  "electron-40.10.5"
+                ];
+              };
+            };
+          })
+        ];
         # Set your time zone.
         time.timeZone = "America/Chicago";
 
