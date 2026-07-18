@@ -1,7 +1,16 @@
 { self, inputs, ... }:
+let
+  mkPkgsStable = system: import inputs.nixpkgs-stable {
+    inherit system;
+    config.allowUnfree = true;
+  };
+in
 {
   flake.nixosModules.desktopConfiguration =
     { pkgs, lib, ... }:
+    let
+      pkgs-stable = mkPkgsStable pkgs.system;
+    in
     {
       imports = [
         self.nixosModules.base
@@ -9,7 +18,6 @@
         self.nixosModules.fonts
         self.nixosModules.gaming
         self.nixosModules.development
-        self.nixosModules.niri
         self.nixosModules.contentCreation
         # self.nixosModules.hyprland-noctalia
         self.nixosModules.librewolf
@@ -60,7 +68,7 @@
       boot.loader.efi.canTouchEfiVariables = true;
 
       # Use latest kernel.
-      boot.kernelPackages = pkgs.linuxPackages_latest;
+      boot.kernelPackages = pkgs-stable.linuxPackages_latest;
 
       networking.hostName = "nixos"; # Define your hostname.
       # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
