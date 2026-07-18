@@ -4,7 +4,6 @@
     { pkgs, lib, ... }:
     {
       imports = [
-        self.nixosModules.laptopHardware
         self.nixosModules.base
         self.nixosModules.communications
         self.nixosModules.fonts

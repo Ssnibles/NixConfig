@@ -9,7 +9,6 @@
         self.nixosModules.fonts
         self.nixosModules.gaming
         self.nixosModules.development
-        self.nixosModules.desktopHardware
         self.nixosModules.niri
         self.nixosModules.contentCreation
         # self.nixosModules.hyprland-noctalia
