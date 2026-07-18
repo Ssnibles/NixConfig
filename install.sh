@@ -130,10 +130,12 @@ else
   info "Wiping old signatures from $DISK..."
   wipefs -a "$DISK" --force >/dev/null
 
-  info "Creating GPT partition table..."
-  sgdisk --zap-all "$DISK" >/dev/null 2>&1
-  sgdisk -n 1:1MiB:513MiB -t 1:ef00 -c 1:EFI    "$DISK" >/dev/null
-  sgdisk -n 2:513MiB:0    -t 2:8300 -c 2:nixos "$DISK" >/dev/null
+  info "Creating GPT partition table and defining partitions atomically..."
+  # Combining everything into one command avoids kernel race conditions/locks
+  sgdisk --zap-all \
+         --new=1:1MiB:513MiB --typecode=1:ef00 --change-name=1:EFI \
+         --new=2:513MiB:0    --typecode=2:8300 --change-name=2:nixos \
+         "$DISK" >/dev/null
 
   info "Forcing kernel to re-read partition table..."
   partprobe "$DISK"
