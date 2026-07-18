@@ -9,7 +9,7 @@
       ];
 
       config = {
-        username = "jingus";
+        username = "josh";
         nixpkgs.overlays = [ inputs.millennium.overlays.default ];
         # Set your time zone.
         time.timeZone = "America/Chicago";
