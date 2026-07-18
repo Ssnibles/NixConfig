@@ -94,11 +94,16 @@ if [[ -z "$DISK" ]]; then
   lsblk -d -o NAME,SIZE,MODEL --noheadings | grep -v loop \
     | awk '{printf "    /dev/%-12s %6s  %s\n", $1, $2, $3}'
   echo
-  read -rp "  Enter disk (e.g. /dev/sda or /dev/nvme0n1): " DISK
+  read -rp "  Enter disk (e.g., /dev/sda or /dev/nvme0n1): " DISK
 fi
 [[ -b "$DISK" ]] || die "Disk '$DISK' not found."
 
-# Determine partition naming scheme (NVMe/loop uses p1/p2, SATA/SCSI uses 1/2)
+# NEW: Verify target is a whole disk, not a partition
+if [[ "$(lsblk -dno TYPE "$DISK")" != "disk" ]]; then
+  die "Target '$DISK' is not a whole disk (type: $(lsblk -dno TYPE "$DISK")). Please specify the base disk (e.g., /dev/sda, /dev/nvme0n1)."
+fi
+
+# Determine partition naming scheme (NVMe/loop/mmc uses p1/p2, SATA/SCSI uses 1/2)
 if [[ "$DISK" =~ [0-9]$ ]]; then
   PART_PREFIX="p"
 else
@@ -123,29 +128,43 @@ if [[ "$DRY_RUN" == true ]]; then
   echo "    $PART_EFI   — 512 MiB EFI System Partition (FAT32)"
   echo "    $PART_ROOT  — remainder, ext4 (root)"
 else
-  info "Stopping swap and forcefully unmounting any active partitions..."
+  info "Stopping swap and forcefully unmounting ANY active partitions on $DISK..."
   swapoff -a 2>/dev/null || true
   
-  umount -f "$PART_EFI" 2>/dev/null || true
-  umount -f "$PART_ROOT" 2>/dev/null || true
+  # NEW: Unmount any existing partitions on this specific disk, not just the expected ones
+  for part in $(lsblk -ln -o NAME "$DISK" | tail -n +2); do
+    umount -f "/dev/$part" 2>/dev/null || true
+  done
   umount -R "$MOUNT" 2>/dev/null || true
 
   info "Acquiring exclusive disk lock and erasing existing layout..."
-  flock "$DISK" sgdisk --zap-all "$DISK" >/dev/null 2>&1
-  flock "$DISK" wipefs -a "$DISK" --force >/dev/null
+  # NEW: Removed >/dev/null 2>&1 so you can actually see if it fails due to "Device or resource busy"
+  flock "$DISK" sgdisk --zap-all "$DISK"
+  flock "$DISK" wipefs -a "$DISK" --force
+
+  info "Forcing kernel to drop old partition cache..."
+  blockdev --rereadpt "$DISK" 2>/dev/null || true
+  partprobe "$DISK" 2>/dev/null || true
+  udevadm settle
+
+  # NEW: Safety check to ensure disk is large enough to avoid start > end sector errors
+  DISK_SIZE_SECTORS=$(blockdev --getsz "$DISK")
+  if [[ "$DISK_SIZE_SECTORS" -lt 1050624 ]]; then # 513 MiB in 512-byte sectors
+    die "Disk $DISK is too small (less than 513 MiB). Cannot create partitions."
+  fi
 
   info "Creating GPT partition table and defining layouts..."
-  flock "$DISK" sgdisk \
-         --new=1:1MiB:513MiB --typecode=1:ef00 --change-name=1:EFI \
-         --new=2:513MiB:0    --typecode=2:8300 --change-name=2:nixos \
-         "$DISK" >/dev/null
+  # NEW: Split into separate commands for better error isolation and resilience
+  flock "$DISK" sgdisk --new=1:1MiB:513MiB --typecode=1:ef00 --change-name=1:EFI "$DISK"
+  flock "$DISK" sgdisk --new=2:513MiB:0 --typecode=2:8300 --change-name=2:nixos "$DISK"
 
   info "Forcing kernel storage layer to sync..."
   blockdev --rereadpt "$DISK" 2>/dev/null || true
+  partprobe "$DISK" 2>/dev/null || true
   udevadm settle
   sleep 3
 
-  [ -b "$PART_ROOT" ] || die "Partition $PART_ROOT did not appear after partitioning"
+  [ -b "$PART_ROOT" ] || die "Partition $PART_ROOT did not appear after partitioning. Check 'dmesg | tail' for kernel errors."
 
   info "Cleaning residual filesystem signatures from target partitions..."
   wipefs -a "$PART_EFI" --force >/dev/null 2>&1 || true
