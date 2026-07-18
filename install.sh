@@ -2,15 +2,10 @@
 # =============================================================================
 # NixOS Bootstrap Installer
 # =============================================================================
-# Automated installation script for fresh NixOS deployments.
-# Handles partitioning (UEFI + ext4), configuration cloning, and system
-# installation against the flake at https://github.com/Ssnibles/NixConfig.
-#
-# Usage:
-#   sudo bash install.sh --host <desktop|laptop> [--disk /dev/sdX] [--dry-run]
-# =============================================================================
 set -euo pipefail
+
 REPO_URL="https://github.com/Ssnibles/NixConfig.git"
+CONFIG_BRANCH="dendritic"
 MOUNT="/mnt"
 USERNAME="josh"
 
@@ -50,7 +45,6 @@ if [[ -z "$HOST" ]]; then
   die "Host required. Use --host desktop or --host laptop"
 fi
 
-# Validate host name matches a flake nixosConfiguration
 case "$HOST" in
   desktop|laptop) ;;
   *) die "Unknown host '$HOST'. Available: desktop, laptop" ;;
@@ -98,12 +92,10 @@ if [[ -z "$DISK" ]]; then
 fi
 [[ -b "$DISK" ]] || die "Disk '$DISK' not found."
 
-# NEW: Verify target is a whole disk, not a partition
 if [[ "$(lsblk -dno TYPE "$DISK")" != "disk" ]]; then
-  die "Target '$DISK' is not a whole disk (type: $(lsblk -dno TYPE "$DISK")). Please specify the base disk (e.g., /dev/sda, /dev/nvme0n1)."
+  die "Target '$DISK' is not a whole disk (type: $(lsblk -dno TYPE "$DISK")). Please specify the base disk (e.g., /dev/sda)."
 fi
 
-# Determine partition naming scheme (NVMe/loop/mmc uses p1/p2, SATA/SCSI uses 1/2)
 if [[ "$DISK" =~ [0-9]$ ]]; then
   PART_PREFIX="p"
 else
@@ -131,15 +123,13 @@ else
   info "Stopping swap and forcefully unmounting ANY active partitions on $DISK..."
   swapoff -a 2>/dev/null || true
   
-  # NEW: Unmount any existing partitions on this specific disk, not just the expected ones
   for part in $(lsblk -ln -o NAME "$DISK" | tail -n +2); do
     umount -f "/dev/$part" 2>/dev/null || true
   done
   umount -R "$MOUNT" 2>/dev/null || true
 
   info "Acquiring exclusive disk lock and erasing existing layout..."
-  # NEW: Removed >/dev/null 2>&1 so you can actually see if it fails due to "Device or resource busy"
-  flock "$DISK" sgdisk --zap-all "$DISK"
+  flock "$DISK" sgdisk --zap-all "$DISK" || die "sgdisk --zap-all failed. Is the disk busy?"
   flock "$DISK" wipefs -a "$DISK" --force
 
   info "Forcing kernel to drop old partition cache..."
@@ -147,24 +137,24 @@ else
   partprobe "$DISK" 2>/dev/null || true
   udevadm settle
 
-  # NEW: Safety check to ensure disk is large enough to avoid start > end sector errors
-  DISK_SIZE_SECTORS=$(blockdev --getsz "$DISK")
-  if [[ "$DISK_SIZE_SECTORS" -lt 1050624 ]]; then # 513 MiB in 512-byte sectors
-    die "Disk $DISK is too small (less than 513 MiB). Cannot create partitions."
-  fi
-
   info "Creating GPT partition table and defining layouts..."
-  # NEW: Split into separate commands for better error isolation and resilience
-  flock "$DISK" sgdisk --new=1:1MiB:513MiB --typecode=1:ef00 --change-name=1:EFI "$DISK"
-  flock "$DISK" sgdisk --new=2:513MiB:0 --typecode=2:8300 --change-name=2:nixos "$DISK"
+  # BULLETPROOF SYNTAX: 0:+512M means "start at first available, add 512M"
+  # 0:0 means "start at first available, go to end of disk"
+  info "  -> Creating EFI partition..."
+  flock "$DISK" sgdisk --new=1:0:+512M --typecode=1:ef00 --change-name=1:EFI "$DISK" \
+    || die "Failed to create EFI partition. Check dmesg for disk errors."
+    
+  info "  -> Creating Root partition..."
+  flock "$DISK" sgdisk --new=2:0:0 --typecode=2:8300 --change-name=2:nixos "$DISK" \
+    || die "Failed to create Root partition. Check dmesg for disk errors."
 
   info "Forcing kernel storage layer to sync..."
   blockdev --rereadpt "$DISK" 2>/dev/null || true
   partprobe "$DISK" 2>/dev/null || true
   udevadm settle
-  sleep 3
+  sleep 2
 
-  [ -b "$PART_ROOT" ] || die "Partition $PART_ROOT did not appear after partitioning. Check 'dmesg | tail' for kernel errors."
+  [ -b "$PART_ROOT" ] || die "Partition $PART_ROOT did not appear after partitioning."
 
   info "Cleaning residual filesystem signatures from target partitions..."
   wipefs -a "$PART_EFI" --force >/dev/null 2>&1 || true
@@ -198,8 +188,8 @@ heading "[ 5 / 7 ]  Cloning NixOS config"
 TARGET="$MOUNT/etc/nixos"
 if [[ "$DRY_RUN" == false ]]; then
   mkdir -p "$TARGET"
-  info "Cloning $REPO_URL → $TARGET"
-  git clone "$REPO_URL" "$TARGET"
+  info "Cloning $REPO_URL (branch: $CONFIG_BRANCH) → $TARGET"
+  git clone -b "$CONFIG_BRANCH" "$REPO_URL" "$TARGET"
   success "Config cloned"
 fi
 
@@ -243,7 +233,7 @@ if [[ "$DRY_RUN" == false ]]; then
 
   info "Cloning config into /home/${USERNAME}/NixConfig..."
   nixos-enter --root "$MOUNT" -- \
-    su - "$USERNAME" -c "git clone $REPO_URL /home/$USERNAME/NixConfig" || \
+    su - "$USERNAME" -c "git clone -b $CONFIG_BRANCH $REPO_URL /home/$USERNAME/NixConfig" || \
     warn "Clone into home failed; config is still at /etc/nixos."
 
   echo
