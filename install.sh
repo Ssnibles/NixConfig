@@ -69,7 +69,7 @@ cleanup() {
 trap cleanup EXIT
 
 # ── Preflight ─────────────────────────────────────────────────────────────
-heading "NixOS Bootstrap Installer - $HOST"
+heading "NixOS Bootstrap Installer -- $HOST"
 [[ $EUID -ne 0 ]]   && die "Run as root: sudo bash install.sh"
 [[ -d /nix/store ]] || die "This doesn't look like a NixOS live environment."
 [[ "$DRY_RUN" == true ]] && warn "DRY-RUN — no disk changes will be made."
