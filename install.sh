@@ -144,6 +144,14 @@ else
   parted -s "$DISK" set 1 esp on
   parted -s "$DISK" set 1 boot on
 
+  info "Waiting for kernel to re-read partition table..."
+  udevadm settle
+  sleep 1
+
+  info "Wiping leftover filesystem signatures on partitions..."
+  wipefs -a "$PART_EFI"  --force >/dev/null 2>&1 || true
+  wipefs -a "$PART_ROOT" --force >/dev/null 2>&1 || true
+
   info "Formatting partitions..."
   mkfs.fat -F 32 -n EFI    "$PART_EFI"
   mkfs.ext4 -F -L nixos    "$PART_ROOT"
