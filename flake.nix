@@ -19,6 +19,8 @@
 
     bun2nix.url = "github:nix-community/bun2nix";
     bun2nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-26.05";
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
