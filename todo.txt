@@ -1,8 +1,0 @@
-x 2026-06-26 2026-06-25 Switch from grim to grimblast +scripts
-2026-06-25 Fix notification window animation sliding in from top left +quickshell
-2026-06-27 Fix keyring
-x 2026-07-06 2026-07-02 Fix quickshell icon loader +quickshell
-2026-07-02 Fix bar media timer not syncing with playback position +quickshell
-2026-07-06 Dont move cursorline when opening a split below or above +neovim
-2026-07-06 Fix screen not turning on again after it turn off
-2026-07-09 Make neovim terminal persistant unless explicity closed +neovim
