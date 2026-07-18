@@ -14,13 +14,11 @@
           git
           zed-editor
           opencode
-          opencode-desktop
           direnv
           nix-direnv
           htop
           dbeaver-bin
           zellij
-          self.packages.${pkgs.stdenv.hostPlatform.system}.ralph
           self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
         ];
         programs.zoxide = {
