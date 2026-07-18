@@ -142,20 +142,19 @@ else
   wipefs -a "$DISK" --force >/dev/null
 
   info "Creating GPT partition table..."
-  sgdisk -n 1:1MiB:513MiB -t 1:ef00 -c 1:EFI   "$DISK" >/dev/null
+  sgdisk -n 1:1MiB:513MiB -t 1:ef00 -c 1:EFI    "$DISK" >/dev/null
   sgdisk -n 2:513MiB:0    -t 2:8300 -c 2:nixos "$DISK" >/dev/null
 
-  info "Waiting for partition devices to appear..."
-  for i in {1..10}; do
-    [ -b "$PART_ROOT" ] && break
-    udevadm settle
-    sleep 1
-  done
+  info "Forcing kernel to re-read partition table..."
+  partprobe "$DISK"
+  udevadm settle
+  sleep 2
+
   [ -b "$PART_ROOT" ] || die "Partition $PART_ROOT did not appear after partitioning"
 
-  info "Zeroing start of partitions to destroy any residual filesystem signatures..."
-  dd if=/dev/zero of="$PART_EFI"  bs=1M count=4 status=none 2>/dev/null || true
-  dd if=/dev/zero of="$PART_ROOT" bs=1M count=4 status=none 2>/dev/null || true
+  info "Cleaning residual filesystem signatures from new partitions..."
+  wipefs -a "$PART_EFI" --force >/dev/null 2>&1 || true
+  wipefs -a "$PART_ROOT" --force >/dev/null 2>&1 || true
 
   info "Formatting partitions..."
   mkfs.fat -F 32 -n EFI    "$PART_EFI"
