@@ -8,16 +8,6 @@
 #
 # Usage:
 #   sudo bash install.sh --host <desktop|laptop> [--disk /dev/sdX] [--dry-run]
-#
-# Prerequisites:
-#   - Booted from NixOS Minimal ISO (UEFI mode recommended)
-#   - Internet connection established
-#   - Target disk identified
-#
-# Safety Features:
-#   - Dry-run mode to test without changes
-#   - Confirmation prompt before disk wipe
-#   - Cleanup trap on failure
 # =============================================================================
 set -euo pipefail
 REPO_URL="https://github.com/Ssnibles/NixConfig.git"
@@ -137,11 +127,11 @@ else
   umount -R "$DISK"?* 2>/dev/null || true
   swapoff "$DISK"?*    2>/dev/null || true
 
-  info "Wiping $DISK..."
-  sgdisk --zap-all "$DISK" >/dev/null 2>&1
+  info "Wiping old signatures from $DISK..."
   wipefs -a "$DISK" --force >/dev/null
 
   info "Creating GPT partition table..."
+  sgdisk --zap-all "$DISK" >/dev/null 2>&1
   sgdisk -n 1:1MiB:513MiB -t 1:ef00 -c 1:EFI    "$DISK" >/dev/null
   sgdisk -n 2:513MiB:0    -t 2:8300 -c 2:nixos "$DISK" >/dev/null
 
@@ -152,7 +142,7 @@ else
 
   [ -b "$PART_ROOT" ] || die "Partition $PART_ROOT did not appear after partitioning"
 
-  info "Cleaning residual filesystem signatures from new partitions..."
+  info "Cleaning residual filesystem signatures from target partitions..."
   wipefs -a "$PART_EFI" --force >/dev/null 2>&1 || true
   wipefs -a "$PART_ROOT" --force >/dev/null 2>&1 || true
 
@@ -166,7 +156,7 @@ fi
 # =============================================================================
 # 4 · MOUNT
 # =============================================================================
-heading "[ 4 / 7 ]  Mounting"
+heading Rein [ 4 / 7 ]  Mounting
 if [[ "$DRY_RUN" == false ]]; then
   mount -t ext4 "$PART_ROOT" "$MOUNT"
   mkdir -p "$MOUNT/boot"
@@ -175,18 +165,14 @@ if [[ "$DRY_RUN" == false ]]; then
 fi
 
 # =============================================================================
-# 5 · CLONE CONFIG
+# 5 · CLONE CONFIG (Happens after mounting)
 # =============================================================================
 heading "[ 5 / 7 ]  Cloning NixOS config"
 TARGET="$MOUNT/etc/nixos"
 if [[ "$DRY_RUN" == false ]]; then
-  if [[ -d "$TARGET/.git" ]]; then
-    warn "Repo already present — pulling latest..."
-    git -C "$TARGET" pull
-  else
-    info "Cloning $REPO_URL → $TARGET"
-    git clone "$REPO_URL" "$TARGET"
-  fi
+  mkdir -p "$TARGET"
+  info "Cloning $REPO_URL → $TARGET"
+  git clone "$REPO_URL" "$TARGET"
   success "Config cloned"
 fi
 
@@ -200,6 +186,10 @@ if [[ "$DRY_RUN" == true ]]; then
 else
   info "Generating hardware config (fileSystems, swap) for host '$HOST'..."
   HW_FILE="$TARGET/modules/hosts/$HOST/_hardware-generated.nix"
+  
+  # Ensure the subdirectories exist before moving the hardware configuration
+  mkdir -p "$(dirname "$HW_FILE")"
+  
   nixos-generate-config --dir "$TARGET/__gen_tmp"
   mv "$TARGET/__gen_tmp/hardware-configuration.nix" "$HW_FILE"
   rm -rf "$TARGET/__gen_tmp"
