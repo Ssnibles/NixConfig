@@ -133,24 +133,29 @@ if [[ "$DRY_RUN" == true ]]; then
   echo "    $PART_EFI   — 512 MiB EFI System Partition (FAT32)"
   echo "    $PART_ROOT  — remainder, ext4 (root)"
 else
+  info "Unmounting any existing mounts on $DISK..."
+  umount -R "$DISK"?* 2>/dev/null || true
+  swapoff "$DISK"?*    2>/dev/null || true
+
   info "Wiping $DISK..."
+  sgdisk --zap-all "$DISK" >/dev/null 2>&1
   wipefs -a "$DISK" --force >/dev/null
-  sgdisk --zap-all "$DISK" >/dev/null 2>&1 || true
 
   info "Creating GPT partition table..."
-  parted -s "$DISK" mklabel gpt
-  parted -s "$DISK" mkpart "EFI"       fat32 1MiB 513MiB
-  parted -s "$DISK" mkpart "root"      ext4  513MiB 100%
-  parted -s "$DISK" set 1 esp on
-  parted -s "$DISK" set 1 boot on
+  sgdisk -n 1:1MiB:513MiB -t 1:ef00 -c 1:EFI   "$DISK" >/dev/null
+  sgdisk -n 2:513MiB:0    -t 2:8300 -c 2:nixos "$DISK" >/dev/null
 
-  info "Waiting for kernel to re-read partition table..."
-  udevadm settle
-  sleep 1
+  info "Waiting for partition devices to appear..."
+  for i in {1..10}; do
+    [ -b "$PART_ROOT" ] && break
+    udevadm settle
+    sleep 1
+  done
+  [ -b "$PART_ROOT" ] || die "Partition $PART_ROOT did not appear after partitioning"
 
-  info "Wiping leftover filesystem signatures on partitions..."
-  wipefs -a "$PART_EFI"  --force >/dev/null 2>&1 || true
-  wipefs -a "$PART_ROOT" --force >/dev/null 2>&1 || true
+  info "Zeroing start of partitions to destroy any residual filesystem signatures..."
+  dd if=/dev/zero of="$PART_EFI"  bs=1M count=4 status=none 2>/dev/null || true
+  dd if=/dev/zero of="$PART_ROOT" bs=1M count=4 status=none 2>/dev/null || true
 
   info "Formatting partitions..."
   mkfs.fat -F 32 -n EFI    "$PART_EFI"
@@ -164,7 +169,7 @@ fi
 # =============================================================================
 heading "[ 4 / 7 ]  Mounting"
 if [[ "$DRY_RUN" == false ]]; then
-  mount "$PART_ROOT" "$MOUNT"
+  mount -t ext4 "$PART_ROOT" "$MOUNT"
   mkdir -p "$MOUNT/boot"
   mount "$PART_EFI" "$MOUNT/boot"
   success "Mounted root ($PART_ROOT) and EFI ($PART_EFI)"
