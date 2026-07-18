@@ -123,24 +123,27 @@ if [[ "$DRY_RUN" == true ]]; then
   echo "    $PART_EFI   — 512 MiB EFI System Partition (FAT32)"
   echo "    $PART_ROOT  — remainder, ext4 (root)"
 else
-  info "Unmounting any existing mounts on $DISK..."
-  umount -R "$DISK"?* 2>/dev/null || true
-  swapoff "$DISK"?*    2>/dev/null || true
+  info "Stopping swap and forcefully unmounting any active partitions..."
+  swapoff -a 2>/dev/null || true
+  
+  umount -f "$PART_EFI" 2>/dev/null || true
+  umount -f "$PART_ROOT" 2>/dev/null || true
+  umount -R "$MOUNT" 2>/dev/null || true
 
-  info "Wiping old signatures from $DISK..."
-  wipefs -a "$DISK" --force >/dev/null
+  info "Acquiring exclusive disk lock and erasing existing layout..."
+  flock "$DISK" sgdisk --zap-all "$DISK" >/dev/null 2>&1
+  flock "$DISK" wipefs -a "$DISK" --force >/dev/null
 
-  info "Creating GPT partition table and defining partitions atomically..."
-  # Combining everything into one command avoids kernel race conditions/locks
-  sgdisk --zap-all \
+  info "Creating GPT partition table and defining layouts..."
+  flock "$DISK" sgdisk \
          --new=1:1MiB:513MiB --typecode=1:ef00 --change-name=1:EFI \
          --new=2:513MiB:0    --typecode=2:8300 --change-name=2:nixos \
          "$DISK" >/dev/null
 
-  info "Forcing kernel to re-read partition table..."
-  partprobe "$DISK"
+  info "Forcing kernel storage layer to sync..."
+  blockdev --rereadpt "$DISK" 2>/dev/null || true
   udevadm settle
-  sleep 2
+  sleep 3
 
   [ -b "$PART_ROOT" ] || die "Partition $PART_ROOT did not appear after partitioning"
 
@@ -152,14 +155,17 @@ else
   mkfs.fat -F 32 -n EFI    "$PART_EFI"
   mkfs.ext4 -F -L nixos    "$PART_ROOT"
 
-  success "Disk partitioned and formatted"
+  success "Disk partitioned and formatted successfully"
 fi
 
 # =============================================================================
 # 4 · MOUNT
 # =============================================================================
-heading Rein [ 4 / 7 ]  Mounting
+heading "[ 4 / 7 ]  Mounting"
 if [[ "$DRY_RUN" == false ]]; then
+  umount -R "$MOUNT" 2>/dev/null || true
+  rm -rf "$MOUNT"/* 2>/dev/null || true
+  
   mount -t ext4 "$PART_ROOT" "$MOUNT"
   mkdir -p "$MOUNT/boot"
   mount "$PART_EFI" "$MOUNT/boot"
@@ -167,7 +173,7 @@ if [[ "$DRY_RUN" == false ]]; then
 fi
 
 # =============================================================================
-# 5 · CLONE CONFIG (Happens after mounting)
+# 5 · CLONE CONFIG
 # =============================================================================
 heading "[ 5 / 7 ]  Cloning NixOS config"
 TARGET="$MOUNT/etc/nixos"
@@ -189,7 +195,6 @@ else
   info "Generating hardware config (fileSystems, swap) for host '$HOST'..."
   HW_FILE="$TARGET/modules/hosts/$HOST/_hardware-generated.nix"
   
-  # Ensure the subdirectories exist before moving the hardware configuration
   mkdir -p "$(dirname "$HW_FILE")"
   
   nixos-generate-config --dir "$TARGET/__gen_tmp"
