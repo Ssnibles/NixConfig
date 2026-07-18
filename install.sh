@@ -63,7 +63,7 @@ cleanup() {
 trap cleanup EXIT
 
 # ── Preflight ─────────────────────────────────────────────────────────────
-heading "NixOS Bootstrap Installer -- $HOST"
+heading "NixOS Bootstrap Installer - $HOST"
 [[ $EUID -ne 0 ]]   && die "Run as root: sudo bash install.sh"
 [[ -d /nix/store ]] || die "This doesn't look like a NixOS live environment."
 [[ "$DRY_RUN" == true ]] && warn "DRY-RUN — no disk changes will be made."
@@ -93,7 +93,7 @@ fi
 [[ -b "$DISK" ]] || die "Disk '$DISK' not found."
 
 if [[ "$(lsblk -dno TYPE "$DISK")" != "disk" ]]; then
-  die "Target '$DISK' is not a whole disk (type: $(lsblk -dno TYPE "$DISK")). Please specify the base disk (e.g., /dev/sda)."
+  die "Target '$DISK' is not a whole disk (type: $(lsblk -dno TYPE "$DISK")). Please specify the base disk."
 fi
 
 if [[ "$DISK" =~ [0-9]$ ]]; then
@@ -138,15 +138,13 @@ else
   udevadm settle
 
   info "Creating GPT partition table and defining layouts..."
-  # BULLETPROOF SYNTAX: 0:+512M means "start at first available, add 512M"
-  # 0:0 means "start at first available, go to end of disk"
   info "  -> Creating EFI partition..."
   flock "$DISK" sgdisk --new=1:0:+512M --typecode=1:ef00 --change-name=1:EFI "$DISK" \
-    || die "Failed to create EFI partition. Check dmesg for disk errors."
+    || die "Failed to create EFI partition."
     
   info "  -> Creating Root partition..."
   flock "$DISK" sgdisk --new=2:0:0 --typecode=2:8300 --change-name=2:nixos "$DISK" \
-    || die "Failed to create Root partition. Check dmesg for disk errors."
+    || die "Failed to create Root partition."
 
   info "Forcing kernel storage layer to sync..."
   blockdev --rereadpt "$DISK" 2>/dev/null || true
@@ -205,9 +203,19 @@ else
   HW_FILE="$TARGET/modules/hosts/$HOST/_hardware-generated.nix"
   
   mkdir -p "$(dirname "$HW_FILE")"
+  mkdir -p "$TARGET/__gen_tmp"
   
-  nixos-generate-config --dir "$TARGET/__gen_tmp"
-  mv "$TARGET/__gen_tmp/hardware-configuration.nix" "$HW_FILE"
+  # CRITICAL FIX: --root /mnt ensures it scans the TARGET disk, not the live USB
+  info "Running nixos-generate-config --root /mnt ..."
+  nixos-generate-config --root /mnt --dir "$TARGET/__gen_tmp" || die "nixos-generate-config failed to run."
+  
+  if [[ ! -f "$TARGET/__gen_tmp/hardware-configuration.nix" ]]; then
+    die "nixos-generate-config succeeded but did not create hardware-configuration.nix. Check /mnt mount."
+  fi
+
+  info "Moving generated config to $HW_FILE"
+  mv "$TARGET/__gen_tmp/hardware-configuration.nix" "$HW_FILE" || die "Failed to move hardware config to $HW_FILE."
+  
   rm -rf "$TARGET/__gen_tmp"
   success "Wrote $HW_FILE"
 
