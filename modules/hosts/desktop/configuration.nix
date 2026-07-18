@@ -15,6 +15,10 @@
         # self.nixosModules.hyprland-noctalia
         self.nixosModules.librewolf
         self.nixosModules.user
+        # Generated at install time by install.sh (nixos-generate-config).
+        # Provides fileSystems and swapDevices for the actual target disk.
+        # Leading underscore keeps import-tree from auto-importing it.
+        ./_hardware-generated.nix
       ];
 
       programs.firefox.enable = true;

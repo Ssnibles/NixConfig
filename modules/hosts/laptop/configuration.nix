@@ -14,6 +14,10 @@
         #self.nixosModules.hyprland
         self.nixosModules.niri
         self.nixosModules.user
+        # Generated at install time by install.sh (nixos-generate-config).
+        # Provides fileSystems and swapDevices for the actual target disk.
+        # Leading underscore keeps import-tree from auto-importing it.
+        ./_hardware-generated.nix
       ];
 
       # Bootloader.
@@ -150,6 +154,6 @@
       #   {
       #     device = "/dev/disk/by-label/swap"; # Or "/dev/sda2"
       #   }
-      ];
+      # ];
     };
 }
