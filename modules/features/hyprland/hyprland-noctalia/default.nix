@@ -35,6 +35,9 @@
           grim
           seahorse
           flameshot
+          libnotify
+          networkmanagerapplet
+          adwaita-icon-theme
           self.packages."${pkgs.stdenv.hostPlatform.system}".myNoctalia
         ];
 
@@ -57,10 +60,9 @@
         # Configure hjem for specified users
         hjem.users."${config.username}" = {
           enable = true;
-          files = let
-            confContents = pkgs.writeText "hyprland.conf" ("exec-once = noctalia-shell\n" + (builtins.readFile ./hyprland.conf));
-          in {
-            ".config/hypr/hyprland.conf".source = confContents;
+          files = {
+            ".config/hypr/hyprland.lua".source = ./hyprland.lua;
+            ".config/hypr/generated.lua".source = ./generated.lua;
           };
         };
       };
