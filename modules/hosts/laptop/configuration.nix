@@ -97,7 +97,7 @@
 
       virtualisation.docker.enable = true;
       # enable emulation for ARM (for cross-compiling for RaspberryPi)
-      boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+      # boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
       # List services that you want to enable:
       services.displayManager.ly = {
