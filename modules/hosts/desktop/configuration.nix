@@ -10,7 +10,7 @@
         self.nixosModules.gaming
         self.nixosModules.development
         self.nixosModules.contentCreation
-        # self.nixosModules.hyprland-noctalia
+        self.nixosModules.hyprland-noctalia
         self.nixosModules.librewolf
         self.nixosModules.user
         # Generated at install time by install.sh (nixos-generate-config).

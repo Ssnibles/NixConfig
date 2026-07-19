@@ -9,6 +9,7 @@
         self.nixosModules.fonts
         self.nixosModules.pipewire
         self.nixosModules.development
+        self.nixosModules.hyprland
         self.nixosModules.librewolf
         self.nixosModules.user
         # Generated at install time by install.sh (nixos-generate-config).
