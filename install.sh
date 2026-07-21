@@ -188,6 +188,7 @@ if [[ "$DRY_RUN" == false ]]; then
   mkdir -p "$TARGET"
   info "Cloning $REPO_URL (branch: $CONFIG_BRANCH) → $TARGET"
   git clone -b "$CONFIG_BRANCH" "$REPO_URL" "$TARGET"
+  chown -R "$USERNAME:users" "$TARGET"
   success "Config cloned"
 fi
 
@@ -217,6 +218,7 @@ else
   mv "$TARGET/__gen_tmp/hardware-configuration.nix" "$HW_FILE" || die "Failed to move hardware config to $HW_FILE."
   
   rm -rf "$TARGET/__gen_tmp"
+  chown "$USERNAME:users" "$HW_FILE"
   success "Wrote $HW_FILE"
 
   info "Running nixos-install (this will take a while)..."

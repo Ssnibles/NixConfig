@@ -11,22 +11,22 @@
         self.nixosModules.development
         self.nixosModules.hyprland
         self.nixosModules.librewolf
+        self.nixosModules.neovim
         self.nixosModules.user
-        # Generated at install time by install.sh (nixos-generate-config).
-        # Provides fileSystems and swapDevices for the actual target disk.
+
+        # Generated at install time by install.sh
         # Leading underscore keeps import-tree from auto-importing it.
         ./_hardware-generated.nix
       ];
 
-      # Bootloader.
+      # Bootloader
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
 
-      # Use latest kernel.
+      # Use latest kernel
       boot.kernelPackages = pkgs.linuxPackages_latest;
 
-      networking.hostName = "nixos"; # Define your hostname.
-      # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+      networking.hostName = "nixos";
 
       # Configure network proxy if necessary
       # networking.proxy.default = "http://user:password@proxy:port/";
@@ -69,6 +69,7 @@
       ] ++ (with pkgs.unstable; [
         fastfetch
         self.packages.${pkgs.stdenv.hostPlatform.system}.kitty
+        self.packages.${pkgs.stdenv.hostPlatform.system}.foot
         wofi
         waybar
         wl-clipboard

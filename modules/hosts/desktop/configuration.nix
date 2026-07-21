@@ -12,6 +12,7 @@
         self.nixosModules.contentCreation
         self.nixosModules.hyprland-noctalia
         self.nixosModules.librewolf
+        self.nixosModules.neovim
         self.nixosModules.user
         # Generated at install time by install.sh (nixos-generate-config).
         # Provides fileSystems and swapDevices for the actual target disk.

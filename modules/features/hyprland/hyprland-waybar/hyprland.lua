@@ -121,7 +121,7 @@ hl.config({
 		disable_hyprland_logo = true,
 		vrr = 2,
 		enable_swallow = true,
-		swallow_regex = "^(kitty|Alacritty)$",
+		swallow_regex = "^(foot|itty|Alacritty)$",
 	},
 })
 
@@ -211,9 +211,9 @@ hl.layer_rule({
 local screenshotFull = "mkdir -p " .. screenshotDir .. "; grimblast save output - | wl-copy"
 local screenshotRegion = "mkdir -p " .. screenshotDir .. "; grimblast save area - | wl-copy"
 
-hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("kitty"))
+hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("foot"))
 hl.bind(mod .. " + Q", hl.dsp.window.close())
-hl.bind(mod .. " + E", hl.dsp.exec_cmd("kitty yazi"))
+hl.bind(mod .. " + E", hl.dsp.exec_cmd("foot yazi"))
 hl.bind(mod .. " + V", hl.dsp.exec_cmd("toggle-float"))
 hl.bind(mod .. " + G", hl.dsp.exec_cmd("toggle-focus-mode"))
 hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd("wofi --show drun"))
