@@ -185,10 +185,9 @@
         };
       };
 
-      systemd.tmpfiles.settings."10-nvf" = {
-        "/home/josh/.config/nvf".L = {
-          argument = "${nvimSrc}";
-        };
-      };
+      system.activationScripts.nvf-config = ''
+        mkdir -p /home/josh/.config
+        ln -sfn ${nvimSrc} /home/josh/.config/nvf
+      '';
     };
 }
