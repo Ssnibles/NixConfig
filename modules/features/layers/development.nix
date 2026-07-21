@@ -6,7 +6,12 @@
 }:
 {
   flake.nixosModules.development =
-    { pkgs, lib, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       config = {
         environment.systemPackages = with pkgs; [
@@ -14,6 +19,7 @@
           vim
           git
           opencode
+          nodejs
           lazygit
           direnv
           nix-direnv
