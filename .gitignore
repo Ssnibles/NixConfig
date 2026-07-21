@@ -1,10 +1,4 @@
 *.age
-*.qsb
-modules/home/desktop/hyprland/generated.lua
-modules/home/desktop/hyprland/waybar/generated-style.css
-modules/home/desktop/hyprland/waybar/generated-config.jsonc
-modules/home/apps/nvim/nvim-src/lua/generated/colors.lua
-modules/home/desktop/quickshell/Colors.qml
 secrets/
 .direnv/
 result

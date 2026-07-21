@@ -10,15 +10,18 @@
     {
       config = {
         environment.systemPackages = with pkgs; [
+          neovim
           vim
           git
-          zed-editor
           opencode
+          lazygit
           direnv
           nix-direnv
-          htop
+          ripgrep
+          btop
           dbeaver-bin
-          zellij
+          yazi
+          fzf
           self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
         ];
         programs.zoxide = {
@@ -31,6 +34,15 @@
           rootless = {
             enable = true;
             setSocketVariable = true;
+          };
+        };
+        programs.git = {
+          enable = true;
+          config = {
+            user = {
+              name = "Ssnibles";
+              email = "joshua.breite@gmail.com";
+            };
           };
         };
         # make ZSH shut up about zshrc
@@ -57,32 +69,31 @@
           # HISTORY
           histSize = 10000;
 
-          # Extra config (this is appended at the end of .zshrc)
-          promptInit = ''
-            # Aliases
-            alias ll="ls -alF"
-
-            # Load nix-direnv if available
-            if command -v direnv >/dev/null; then
-              eval "$(direnv hook zsh)"
-            fi
-
-            # Better Ctrl-R incremental search
-            bindkey '^R' history-incremental-search-backward
-
-            # Improve cd: automatically pushd to track dirs
-            setopt auto_pushd
-            setopt pushd_ignore_dups
-
-            # Enable command correction
-            setopt correct
-          '';
+          # # Extra config (this is appended at the end of .zshrc)
+          # promptInit = ''
+          #   # Aliases
+          #   alias ll="ls -alF"
+          #
+          #   # Load nix-direnv if available
+          #   if command -v direnv >/dev/null; then
+          #     eval "$(direnv hook zsh)"
+          #   fi
+          #
+          #   # Better Ctrl-R incremental search
+          #   bindkey '^R' history-incremental-search-backward
+          #
+          #   # Improve cd: automatically pushd to track dirs
+          #   setopt auto_pushd
+          #   setopt pushd_ignore_dups
+          #
+          #   # Enable command correction
+          #   setopt correct
+          # '';
         };
 
         # Configure starship prompt
         programs.starship = {
           enable = true;
-          # enableZshIntegration = true;
           settings = {
             add_newline = false;
             character = {

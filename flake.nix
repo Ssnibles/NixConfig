@@ -12,6 +12,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nvf.url = "github:NotAShelf/nvf";
+    nvf.inputs.nixpkgs.follows = "nixpkgs";
+
     wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
 
     millennium = {

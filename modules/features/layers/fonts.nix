@@ -11,7 +11,6 @@
         nerd-fonts.martian-mono
         dina-font
         proggyfonts
-        ripgrep
       ];
     };
 }
