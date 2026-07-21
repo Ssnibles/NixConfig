@@ -5,7 +5,9 @@
     {
       imports = [
         inputs.hjem.nixosModules.default
-        ../../options.nix
+        self.nixosModules.theme
+        self.nixosModules.theme-palette
+        ../../_options.nix
       ];
 
       config = {
