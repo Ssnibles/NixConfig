@@ -6,7 +6,7 @@
 }:
 {
   flake.nixosModules.librewolf =
-    { pkgs, lib, ... }:
+    { pkgs, lib, config, ... }:
     {
       programs.firefox = {
         enable = true;
