@@ -1,11 +1,11 @@
 { self, inputs, ... }:
 {
-  flake.nixosModules.communications =
+  flake.nixosModules.media =
     { pkgs, lib, ... }:
     {
       config = {
         environment.systemPackages = with pkgs; [
-          vesktop
+          spotify
         ];
       };
 

@@ -13,6 +13,8 @@
         self.nixosModules.librewolf
         self.nixosModules.neovim
         self.nixosModules.user
+        self.nixosModules.gaming
+        self.nixosModules.media
 
         # Generated at install time by install.sh
         # Leading underscore keeps import-tree from auto-importing it.
@@ -42,7 +44,7 @@
       };
 
       # Allow unfree packages
-      nixpkgs.config = { 
+      nixpkgs.config = {
         allowUnfree = true;
         allowInsecure = true;
         permittedInsecurePackages = [
@@ -53,38 +55,41 @@
 
       # List packages installed in system profile. To search, run:
       # $ nix search wget
-      environment.systemPackages = with pkgs; [
-        vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-        wget
-        git
-        ripgrep
-        zip
-        unzip
-        gnome-keyring
-        usbutils
-        dfu-util
-        libsecret
-        seahorse
-        gnupg
-      ] ++ (with pkgs.unstable; [
-        fastfetch
-        self.packages.${pkgs.stdenv.hostPlatform.system}.kitty
-        self.packages.${pkgs.stdenv.hostPlatform.system}.foot
-        wofi
-        waybar
-        wl-clipboard
-        emacs-pgtk
-        zsh
-        zellij
-        gowall
-        gimp3
-        chatterino7
-        mumble
-        vesktop
-        (element-desktop.override {
-          commandLineArgs = "--password-store=gnome-libsecret";
-        })
-      ]);
+      environment.systemPackages =
+        with pkgs;
+        [
+          vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+          wget
+          git
+          ripgrep
+          zip
+          unzip
+          gnome-keyring
+          usbutils
+          dfu-util
+          libsecret
+          seahorse
+          gnupg
+        ]
+        ++ (with pkgs.unstable; [
+          fastfetch
+          self.packages.${pkgs.stdenv.hostPlatform.system}.kitty
+          self.packages.${pkgs.stdenv.hostPlatform.system}.foot
+          wofi
+          waybar
+          wl-clipboard
+          emacs-pgtk
+          zsh
+          zellij
+          gowall
+          gimp3
+          chatterino7
+          mumble
+          vesktop
+          (element-desktop.override {
+            commandLineArgs = "--password-store=gnome-libsecret";
+          })
+        ]);
 
       programs.zsh.enable = true;
 

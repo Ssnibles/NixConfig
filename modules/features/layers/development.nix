@@ -20,6 +20,7 @@
           git
           opencode
           nodejs
+          android-studio
           lazygit
           direnv
           nix-direnv

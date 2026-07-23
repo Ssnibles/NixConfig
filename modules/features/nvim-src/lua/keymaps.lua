@@ -1,7 +1,7 @@
 local map = vim.keymap.set
 
 map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
-map("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear search highlights" })
+-- NOTE: Intentionally NOT mapping <Esc> in normal mode — it breaks cmdline <Esc> cancellation in terminal Neovim
 map("n", "U", "<C-r>", { desc = "Redo" })
 map("n", "Q", "<Nop>", { desc = "Disable Ex mode" })
 map("n", "<C-z>", "<Nop>", { desc = "Disable suspend" })
