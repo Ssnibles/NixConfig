@@ -6,6 +6,7 @@
       environment.systemPackages = with pkgs; [
         pulseaudio # Provides pactl
         wireplumber
+        pavucontrol
       ];
       # Enable sound with pipewire.
       services.pulseaudio.enable = false;

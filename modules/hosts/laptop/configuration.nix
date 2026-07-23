@@ -1,10 +1,11 @@
 { self, inputs, ... }:
 {
   flake.nixosModules.laptopConfiguration =
-    { pkgs, lib, ... }:
+    { pkgs, lib, config, ... }:
     {
       imports = [
         self.nixosModules.base
+        self.nixosModules.cli
         self.nixosModules.communications
         self.nixosModules.fonts
         self.nixosModules.pipewire
@@ -30,93 +31,27 @@
 
       networking.hostName = "nixos";
 
-      # Configure network proxy if necessary
-      # networking.proxy.default = "http://user:password@proxy:port/";
-      # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-      # Enable networking
-      networking.networkmanager.enable = true;
-
-      # Configure keymap in X11
-      services.xserver.xkb = {
-        layout = "us";
-        variant = "";
-      };
-
-      # Allow unfree packages
-      nixpkgs.config = {
-        allowUnfree = true;
-        allowInsecure = true;
-        permittedInsecurePackages = [
-          "pnpm-10.29.2"
-          "electron-40.10.5"
-        ];
-      };
-
-      # List packages installed in system profile. To search, run:
-      # $ nix search wget
       environment.systemPackages =
         with pkgs;
         [
-          vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-          wget
-          git
-          ripgrep
-          zip
-          unzip
-          gnome-keyring
           usbutils
           dfu-util
           libsecret
-          seahorse
           gnupg
-        ]
-        ++ (with pkgs.unstable; [
-          fastfetch
           self.packages.${pkgs.stdenv.hostPlatform.system}.kitty
           self.packages.${pkgs.stdenv.hostPlatform.system}.foot
-          wofi
-          waybar
-          wl-clipboard
+        ]
+        ++ (with pkgs.unstable; [
           emacs-pgtk
-          zsh
           zellij
           gowall
           gimp3
           chatterino7
           mumble
-          vesktop
-          (element-desktop.override {
-            commandLineArgs = "--password-store=gnome-libsecret";
-          })
         ]);
 
-      programs.zsh.enable = true;
-
-      # Some programs need SUID wrappers, can be configured further or are
-      # started in user sessions.
-      # programs.mtr.enable = true;
-      # programs.gnupg.agent = {
-      #   enable = true;
-      #   enableSSHSupport = true;
-      # };
-
-      virtualisation.docker.enable = true;
-      # enable emulation for ARM (for cross-compiling for RaspberryPi)
-      # boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
-
-      # List services that you want to enable:
       services.displayManager.ly = {
         enable = true;
-      };
-      programs.seahorse.enable = true;
-      services.gnome.gnome-keyring.enable = true;
-      services.dbus = {
-        enable = true;
-        packages = [
-          pkgs.gnome-keyring
-          pkgs.gcr
-        ];
       };
       # Define udev rules for DFU devices
       services.udev.extraRules = ''
@@ -137,10 +72,6 @@
       security.pam.services.ly.enableGnomeKeyring = true;
 
       nix.settings = {
-        experimental-features = [
-          "nix-command"
-          "flakes"
-        ];
         substituters = [
           "https://cache.nixos.org/"
           "https://cache.garnix.io"

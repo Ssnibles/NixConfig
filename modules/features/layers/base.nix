@@ -1,7 +1,7 @@
 { self, inputs, ... }:
 {
   flake.nixosModules.base =
-    { pkgs, lib, ... }:
+    { pkgs, lib, config, ... }:
     {
       imports = [
         inputs.hjem.nixosModules.default
@@ -12,22 +12,39 @@
 
       config = {
         username = "josh";
-        nixpkgs.overlays = [
-          inputs.millennium.overlays.default
-          (final: prev: {
-            unstable = import inputs.nixpkgs-unstable {
-              inherit (prev.stdenv.hostPlatform) system;
-              config = {
-                allowUnfree = true;
-                allowInsecure = true;
-                permittedInsecurePackages = [
-                  "pnpm-10.29.2"
-                  "electron-40.10.5"
-                ];
+
+        nixpkgs = {
+          config = {
+            allowUnfree = true;
+            allowInsecure = true;
+            permittedInsecurePackages = [
+              "pnpm-10.29.2"
+              "electron-40.10.5"
+            ];
+          };
+          overlays = [
+            inputs.millennium.overlays.default
+            (final: prev: {
+              unstable = import inputs.nixpkgs-unstable {
+                inherit (prev.stdenv.hostPlatform) system;
+                config = {
+                  allowUnfree = true;
+                  allowInsecure = true;
+                  permittedInsecurePackages = [
+                    "pnpm-10.29.2"
+                    "electron-40.10.5"
+                  ];
+                };
               };
-            };
-          })
+            })
+          ];
+        };
+
+        nix.settings.experimental-features = [
+          "nix-command"
+          "flakes"
         ];
+
         # Set your time zone.
         time.timeZone = "Pacific/Auckland";
 
@@ -45,6 +62,9 @@
           LC_TELEPHONE = "en_US.UTF-8";
           LC_TIME = "en_US.UTF-8";
         };
+
+        # Enable networking
+        networking.networkmanager.enable = true;
 
         # Enable the X11 windowing system.
         services.xserver.enable = true;
