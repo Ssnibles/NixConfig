@@ -29,7 +29,7 @@
           })
         ];
         # Set your time zone.
-        time.timeZone = "America/Chicago";
+        time.timeZone = "Pacific/Auckland";
 
         # Select internationalisation properties.
         i18n.defaultLocale = "en_US.UTF-8";
@@ -56,7 +56,12 @@
         };
 
         # Enable CUPS to print documents.
-        services.printing.enable = true;
+        services.printing.enable = false;
+
+        programs.nh = {
+          enable = true;
+          clean.enable = true;
+        };
 
         # Enable touchpad support (enabled default in most desktopManager).
         # services.xserver.libinput.enable = true;
