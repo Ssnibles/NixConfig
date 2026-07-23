@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  config.theme.active = "catppuccin-mocha";
+  config.theme.active = "vague";
   options.username = lib.mkOption {
     type = lib.types.str;
     description = "Global username used across the evaluation.";
