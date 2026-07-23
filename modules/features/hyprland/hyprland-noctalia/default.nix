@@ -10,6 +10,7 @@
     {
       imports = [
         self.nixosModules.cursors
+        self.nixosModules.vicinae
         self.nixosModules.waybar
         self.nixosModules.wallpapers
       ];
@@ -23,7 +24,6 @@
           waybar
           hyprpaper
           hyprshot
-          wofi
           kitty
           firefox
           wl-clipboard

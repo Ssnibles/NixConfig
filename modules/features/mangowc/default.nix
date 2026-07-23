@@ -17,6 +17,7 @@
       imports = [
         inputs.mangowc.nixosModules.mango
         self.nixosModules.cursors
+        self.nixosModules.vicinae
         self.nixosModules.waybar
         self.nixosModules.wallpapers
       ];
@@ -27,7 +28,6 @@
         programs.mango.enable = true;
 
         environment.systemPackages = with pkgs; [
-          wofi
           swaybg
           wl-clipboard
           brightnessctl
@@ -85,7 +85,7 @@
               touchpad_natural_scroll = 1
 
               # Launcher
-              bind = SUPER,Space,spawn,wofi --show drun
+              bind = SUPER,Space,spawn,vicinae
 
               # Terminal
               bind = SUPER,Return,spawn,foot
