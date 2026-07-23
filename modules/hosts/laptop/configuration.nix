@@ -10,7 +10,7 @@
         self.nixosModules.fonts
         self.nixosModules.pipewire
         self.nixosModules.development
-        self.nixosModules.hyprland
+        self.nixosModules.mangowc
         self.nixosModules.librewolf
         self.nixosModules.neovim
         self.nixosModules.user
