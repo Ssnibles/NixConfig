@@ -5,6 +5,7 @@
     {
       imports = [
         self.nixosModules.base
+        self.nixosModules.startup
         self.nixosModules.cli
         self.nixosModules.communications
         self.nixosModules.fonts
