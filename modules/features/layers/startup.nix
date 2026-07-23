@@ -7,6 +7,7 @@
         description = "Vicinae application launcher server";
         wantedBy = [ "graphical-session.target" ];
         partOf = [ "graphical-session.target" ];
+        path = [ config.system.path ];
         serviceConfig = {
           Type = "simple";
           ExecStart = "${pkgs.vicinae}/bin/vicinae server";
