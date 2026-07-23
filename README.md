@@ -40,7 +40,7 @@ modules/
 │   │   ├── pipewire.nix
 │   │   └── ...
 │   ├── hyprland/        ← Hyprland variants
-│   ├── waybar/
+│   ├── quickshell/
 │   └── librewolf.nix
 └── packages/            ← custom packages
     ├── boilerplate/
@@ -55,7 +55,7 @@ modules/
 - **Layers** (`modules/features/layers/`) are broad, reusable concern areas
   (base system, development tools, fonts, gaming). Mix and match per host.
 - **Features** (`modules/features/`) are individual components (Hyprland,
-  Waybar, LibreWolf) with their own configuration.
+  Quickshell, LibreWolf) with their own configuration.
 - **Hosts** (`modules/hosts/`) assemble layers and features into a complete
   system configuration.
 
