@@ -18,7 +18,7 @@
         inputs.mangowc.nixosModules.mango
         self.nixosModules.cursors
         self.nixosModules.vicinae
-        self.nixosModules.waybar
+        self.nixosModules.quickshell
         self.nixosModules.wallpapers
       ];
 
@@ -85,7 +85,7 @@
               touchpad_natural_scroll = 1
 
               # Launcher
-              bind = SUPER,Space,spawn,vicinae
+              bind = SUPER,Space,spawn,vicinae toggle
 
               # Terminal
               bind = SUPER,Return,spawn,foot
@@ -94,7 +94,7 @@
               bind = SUPER,q,killclient
               bind = SUPER,f,togglefullscreen
               bind = SUPER,v,togglefloating
-              bind = SUPER,Shift,r,reload_config
+              bind = SUPER+Shift,r,reload_config
 
               # Focus
               bind = SUPER,h,focusdir,left
@@ -103,10 +103,10 @@
               bind = SUPER,j,focusdir,down
 
               # Move windows
-              bind = SUPER,Shift,h,exchange_client,left
-              bind = SUPER,Shift,l,exchange_client,right
-              bind = SUPER,Shift,k,exchange_client,up
-              bind = SUPER,Shift,j,exchange_client,down
+              bind = SUPER+Shift,h,exchange_client,left
+              bind = SUPER+Shift,l,exchange_client,right
+              bind = SUPER+Shift,k,exchange_client,up
+              bind = SUPER+Shift,j,exchange_client,down
 
               # Tags 1-9
               bind = SUPER,1,view,1
@@ -121,23 +121,23 @@
               bind = SUPER,0,view,10
 
               # Move to tag
-              bind = SUPER,Shift,1,tag,1,0
-              bind = SUPER,Shift,2,tag,2,0
-              bind = SUPER,Shift,3,tag,3,0
-              bind = SUPER,Shift,4,tag,4,0
-              bind = SUPER,Shift,5,tag,5,0
-              bind = SUPER,Shift,6,tag,6,0
-              bind = SUPER,Shift,7,tag,7,0
-              bind = SUPER,Shift,8,tag,8,0
-              bind = SUPER,Shift,9,tag,9,0
-              bind = SUPER,Shift,0,tag,10,0
+              bind = SUPER+Shift,1,tag,1,0
+              bind = SUPER+Shift,2,tag,2,0
+              bind = SUPER+Shift,3,tag,3,0
+              bind = SUPER+Shift,4,tag,4,0
+              bind = SUPER+Shift,5,tag,5,0
+              bind = SUPER+Shift,6,tag,6,0
+              bind = SUPER+Shift,7,tag,7,0
+              bind = SUPER+Shift,8,tag,8,0
+              bind = SUPER+Shift,9,tag,9,0
+              bind = SUPER+Shift,0,tag,10,0
 
               # Previous tag
               bind = SUPER,Tab,view,-1
 
               # Screenshots
               bind = SUPER,s,spawn,grimblast save output - | wl-copy
-              bind = SUPER,Shift,s,spawn,grimblast save area - | wl-copy
+              bind = SUPER+Shift,s,spawn,grimblast save area - | wl-copy
 
               # File manager
               bind = SUPER,e,spawn,foot yazi
@@ -159,7 +159,7 @@
               bind = ,XF86MonBrightnessDown,spawn,brightnessctl set 5%-
 
               # Autostart
-              exec-once = waybar
+              exec-once = quickshell
               exec-once = swaybg -i ~/Pictures/wallpapers/default.png -m fill
               exec-once = nm-applet --indicator
               exec-once = flameshot

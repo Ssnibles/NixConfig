@@ -27,7 +27,7 @@ hl.config({ cursor = { hide_on_key_press = true } })
 
 hl.on("hyprland.start", function()
 	hl.exec_cmd("bash -lc 'systemctl --user start hyprland-session.target'")
-	hl.exec_cmd("waybar &")
+	hl.exec_cmd("quickshell &")
 	hl.exec_cmd("hyprpaper &")
 	hl.exec_cmd("flameshot &")
 	hl.exec_cmd("nm-applet --indicator &")

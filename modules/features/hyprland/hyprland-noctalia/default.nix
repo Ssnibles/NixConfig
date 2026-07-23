@@ -11,7 +11,7 @@
       imports = [
         self.nixosModules.cursors
         self.nixosModules.vicinae
-        self.nixosModules.waybar
+        self.nixosModules.quickshell
         self.nixosModules.wallpapers
       ];
 
@@ -21,7 +21,6 @@
         programs.hyprland.enable = true;
 
         environment.systemPackages = with pkgs; [
-          waybar
           hyprpaper
           hyprshot
           kitty
