@@ -12,7 +12,7 @@
         self.nixosModules.pipewire
         self.nixosModules.development
         self.nixosModules.mangowc
-        self.nixosModules.librewolf
+        self.nixosModules.zen-browser
         self.nixosModules.neovim
         self.nixosModules.user
         self.nixosModules.gaming

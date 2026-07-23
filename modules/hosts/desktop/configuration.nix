@@ -14,7 +14,7 @@
         self.nixosModules.communications
         self.nixosModules.contentCreation
         self.nixosModules.hyprland-noctalia
-        self.nixosModules.librewolf
+        self.nixosModules.zen-browser
         self.nixosModules.neovim
         self.nixosModules.user
         # Generated at install time by install.sh (nixos-generate-config).
