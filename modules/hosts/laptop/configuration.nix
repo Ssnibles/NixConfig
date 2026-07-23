@@ -16,6 +16,8 @@
         self.nixosModules.user
         self.nixosModules.gaming
         self.nixosModules.media
+        self.nixosModules.foot
+        self.nixosModules.kitty
 
         # Generated at install time by install.sh
         # Leading underscore keeps import-tree from auto-importing it.
@@ -38,8 +40,6 @@
           dfu-util
           libsecret
           gnupg
-          self.packages.${pkgs.stdenv.hostPlatform.system}.kitty
-          self.packages.${pkgs.stdenv.hostPlatform.system}.foot
         ]
         ++ (with pkgs.unstable; [
           emacs-pgtk

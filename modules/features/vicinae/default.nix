@@ -3,7 +3,8 @@
   flake.nixosModules.vicinae =
     { pkgs, lib, config, ... }:
     let
-      inherit (config.theme.colors) bg fg accent red;
+      inherit (config.theme.colors) bg bgRaised bgSubtle border fg fgMid fgDim
+        accent teal purple green yellow red orange;
     in
     {
       environment.systemPackages = with pkgs; [ vicinae ];
@@ -21,21 +22,20 @@
             [colors.core]
             background = "#${bg}"
             foreground = "#${fg}"
-            secondary_background = "#${bg}"
-            border = "#${fg}"
+            secondary_background = "#${bgRaised}"
+            border = "#${border}"
             accent = "#${accent}"
 
             [colors.accents]
             blue = "#${accent}"
-            green = "#${accent}"
-            magenta = "#${accent}"
-            orange = "#${accent}"
-            purple = "#${accent}"
+            green = "#${green}"
+            magenta = "#${purple}"
+            orange = "#${orange}"
+            purple = "#${purple}"
             red = "#${red}"
-            yellow = "#${accent}"
-            cyan = "#${accent}"
+            yellow = "#${yellow}"
+            cyan = "#${teal}"
           '';
-
           ".config/vicinae/settings.json".text = ''
             {
               "theme": {
