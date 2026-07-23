@@ -1,7 +1,12 @@
 { self, inputs, ... }:
 {
   flake.nixosModules.laptopConfiguration =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       imports = [
         self.nixosModules.base
@@ -51,15 +56,27 @@
           mumble
         ]);
 
-      services.displayManager.ly = {
-        enable = true;
-      };
       # Define udev rules for DFU devices
       services.udev.extraRules = ''
         # Generic DFU rule (for meshtastic thingy)
         SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0666", GROUP="dialout"
         SUBSYSTEM=="usb", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", MODE="0666", GROUP="dialout"
       '';
+
+      services.displayManager.ly = {
+        enable = true;
+      };
+
+      services.keyd = {
+        enable = true;
+        keyboards.default = {
+          ids = [ "*" ]; # Apply to all keyboards
+          settings.main = {
+            capslock = "esc";
+            esc = "capslock";
+          };
+        };
+      };
 
       # Enable the OpenSSH daemon.
       # services.openssh.enable = true;
