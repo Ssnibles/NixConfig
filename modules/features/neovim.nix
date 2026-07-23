@@ -187,7 +187,7 @@
 
       system.activationScripts.nvf-config = ''
         mkdir -p /home/josh/.config
-        ln -sfn ${nvimSrc} /home/josh/.config/nvf
+        ln -sfn ${nvimSrc} /home/josh/.config/nvim
       '';
     };
 }

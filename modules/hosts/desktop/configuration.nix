@@ -32,17 +32,20 @@
 
       # List packages installed in system profile. To search, run:
       # $ nix search wget
-      environment.systemPackages = with pkgs; [
-        pavucontrol
-      ] ++ (with pkgs.unstable; [
-        vesktop
-        keepassxc
-        amberol
-        chromium
-        (element-desktop.override {
-          commandLineArgs = "--password-store=gnome-libsecret";
-        })
-      ]);
+      environment.systemPackages =
+        with pkgs;
+        [
+          pavucontrol
+        ]
+        ++ (with pkgs.unstable; [
+          vesktop
+          keepassxc
+          amberol
+          chromium
+          (element-desktop.override {
+            commandLineArgs = "--password-store=gnome-libsecret";
+          })
+        ]);
 
       nix.settings.experimental-features = [
         "nix-command"
@@ -77,8 +80,8 @@
       # services.openssh.enable = true;
 
       # Open ports in the firewall.
-      # networking.firewall.allowedTCPPorts = [ ... ];
-      # networking.firewall.allowedUDPPorts = [ ... ];
+      networking.firewall.allowedTCPPorts = [ 5353 ];
+      networking.firewall.allowedUDPPorts = [ 5353 ];
       # Or disable the firewall altogether.
       # networking.firewall.enable = false;
 
