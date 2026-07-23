@@ -184,12 +184,16 @@ fi
 # =============================================================================
 heading "[ 5 / 7 ]  Cloning NixOS config"
 TARGET="$MOUNT/etc/nixos"
+HOME_TARGET="$MOUNT/home/$USERNAME/NixConfig"
 if [[ "$DRY_RUN" == false ]]; then
-  mkdir -p "$TARGET"
-  info "Cloning $REPO_URL (branch: $CONFIG_BRANCH) → $TARGET"
-  git clone -b "$CONFIG_BRANCH" "$REPO_URL" "$TARGET"
-  chown -R "$USERNAME:users" "$TARGET"
-  success "Config cloned"
+  info "Cloning $REPO_URL (branch: $CONFIG_BRANCH) → $HOME_TARGET"
+  mkdir -p "$MOUNT/home/$USERNAME"
+  git clone -b "$CONFIG_BRANCH" "$REPO_URL" "$HOME_TARGET"
+
+  info "Creating symlink /etc/nixos → /home/$USERNAME/NixConfig"
+  ln -sf "/home/$USERNAME/NixConfig" "$TARGET"
+
+  success "Config cloned and symlinked"
 fi
 
 # =============================================================================
@@ -241,10 +245,9 @@ if [[ "$DRY_RUN" == false ]]; then
   until nixos-enter --root "$MOUNT" -- passwd "$USERNAME"; do warn "Try again."; done
   success "Password set for ${USERNAME}"
 
-  info "Cloning config into /home/${USERNAME}/NixConfig..."
-  nixos-enter --root "$MOUNT" -- \
-    su - "$USERNAME" -c "git clone -b $CONFIG_BRANCH $REPO_URL /home/$USERNAME/NixConfig" || \
-    warn "Clone into home failed; config is still at /etc/nixos."
+  info "Fixing ownership of /home/${USERNAME}/NixConfig..."
+  nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME/NixConfig" || \
+    warn "Could not fix ownership. After reboot run: sudo chown -R $USERNAME:users /home/$USERNAME/NixConfig"
 
   echo
   read -rp "  Import SSH keys from GitHub? Enter username (or Enter to skip): " GH_USER
