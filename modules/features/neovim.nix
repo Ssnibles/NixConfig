@@ -1,10 +1,7 @@
 { self, inputs, ... }:
 {
   flake.nixosModules.neovim =
-    { pkgs, lib, ... }:
-    let
-      nvimSrc = ./nvim-src;
-    in
+    { pkgs, lib, config, ... }:
     {
       imports = [
         inputs.nvf.nixosModules.default
@@ -186,8 +183,8 @@
       };
 
       system.activationScripts.nvf-config = ''
-        mkdir -p /home/josh/.config
-        ln -sfn ${nvimSrc} /home/josh/.config/nvim
+        mkdir -p /home/${config.username}/.config
+        ln -sfn /home/${config.username}/NixConfig/modules/features/nvim-src /home/${config.username}/.config/nvim
       '';
     };
 }
