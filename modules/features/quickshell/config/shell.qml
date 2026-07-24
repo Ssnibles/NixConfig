@@ -2,8 +2,6 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
 import QtQuick
-import QtQuick.Layouts
-
 Scope {
   id: root
 
@@ -84,26 +82,29 @@ Scope {
 
       property int visibleTagCount: Math.max(root.minWorkspaces, highestUsedTag)
 
-      RowLayout {
-        anchors.fill: parent
+      Item {
+        id: barContent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
         anchors.leftMargin: 12
         anchors.rightMargin: 12
-        spacing: 8
+        height: panel.implicitHeight
 
         Text {
+          id: clockText
+          anchors.left: parent.left
+          anchors.verticalCenter: parent.verticalCenter
           text: root.currentTime
           color: "#cdcdcd"
           font.pixelSize: 13
           font.family: "Inter"
-          verticalAlignment: Text.AlignVCenter
-          Layout.alignment: Qt.AlignVCenter
         }
 
-        Item { Layout.fillWidth: true }
-
         Row {
+          id: tagRow
+          anchors.centerIn: parent
           spacing: 6
-          Layout.alignment: Qt.AlignCenter
 
           Repeater {
             model: panel.visibleTagCount
@@ -134,8 +135,6 @@ Scope {
             }
           }
         }
-
-        Item { Layout.fillWidth: true }
       }
     }
   }
