@@ -8,10 +8,12 @@
           quickshell
         ];
 
-        system.activationScripts.quickshell-config = ''
-          mkdir -p /home/${config.username}/.config/quickshell
-          ln -sfn /home/${config.username}/NixConfig/modules/features/quickshell/config/shell.qml /home/${config.username}/.config/quickshell/shell.qml
-        '';
+        hjem.users."${config.username}" = {
+          enable = true;
+          files = {
+            ".config/quickshell/shell.qml".source = ./config/shell.qml;
+          };
+        };
       };
     };
 }
