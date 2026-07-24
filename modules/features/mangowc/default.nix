@@ -7,6 +7,24 @@
       config,
       ...
     }:
+    let
+      inherit (config.theme.colors)
+        bg
+        bgRaised
+        bgSubtle
+        border
+        fg
+        fgMid
+        fgDim
+        accent
+        teal
+        purple
+        green
+        yellow
+        red
+        orange
+        ;
+    in
     {
       imports = [
         inputs.mangowc.nixosModules.mango
@@ -47,6 +65,16 @@
           mkdir -p /home/${config.username}/.config
           ln -sfn /home/${config.username}/NixConfig/modules/features/mangowc/config.conf /home/${config.username}/.config/mango
         '';
+
+        hjem.users."${config.username}" = {
+          enable = true;
+          files = {
+            ".config/mango/colours.conf".text = ''
+              focuscolor = ${accent}
+              bordercolor = ${border}
+            '';
+          };
+        };
       };
     };
 }
