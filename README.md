@@ -25,7 +25,7 @@ flake.nix                ← entry point: flake-parts + import-tree
 install.sh               ← bootstrap installer
 modules/
 ├── parts.nix            ← supported systems
-├── options.nix          ← global options (e.g., username)
+├── _options.nix         ← global options (e.g., username)
 ├── shell.nix            ← devShell
 ├── templates.nix        ← flake template exports
 ├── hosts/               ← per-machine configs
@@ -34,18 +34,29 @@ modules/
 ├── features/
 │   ├── layers/          ← composable system layers
 │   │   ├── base.nix
+│   │   ├── cli.nix
+│   │   ├── communications.nix
+│   │   ├── content-creation.nix
+│   │   ├── cursors.nix
 │   │   ├── development.nix
 │   │   ├── fonts.nix
 │   │   ├── gaming.nix
+│   │   ├── media.nix
 │   │   ├── pipewire.nix
-│   │   └── ...
+│   │   ├── startup.nix
+│   │   ├── user.nix
+│   │   └── wallpapers.nix
 │   ├── hyprland/        ← Hyprland variants
+│   ├── mangowc/
+│   ├── neovim.nix
 │   ├── quickshell/
-│   └── librewolf.nix
+│   ├── vicinae/
+│   ├── waybar/
+│   └── zen-browser.nix
 └── packages/            ← custom packages
     ├── boilerplate/
-    ├── kitty/
     ├── foot/
+    ├── kitty/
     ├── noctalia/
     └── plsfail/
 ```
@@ -53,9 +64,11 @@ modules/
 ### Layers vs Features
 
 - **Layers** (`modules/features/layers/`) are broad, reusable concern areas
-  (base system, development tools, fonts, gaming). Mix and match per host.
+  (base, CLI, communications, content creation, cursors, development, fonts,
+  gaming, media, pipewire, startup, user, wallpapers). Mix and match per host.
 - **Features** (`modules/features/`) are individual components (Hyprland,
-  Quickshell, LibreWolf) with their own configuration.
+  Mangowc, Neovim, Quickshell, Vicinae, Waybar, Zen Browser) with their own
+  configuration.
 - **Hosts** (`modules/hosts/`) assemble layers and features into a complete
   system configuration.
 
@@ -77,12 +90,6 @@ sudo nixos-install --flake .#my-new-host
 
 ## Adding a New Package
 
-```bash
-boilerplate package my-tool
-# Creates modules/packages/my-tool.nix
-```
-
-Or with multiple files:
 ```bash
 boilerplate package my-tool --multifile
 # Creates modules/packages/my-tool/default.nix
@@ -113,8 +120,9 @@ nix develop
 # or via nix-direnv: direnv allow
 ```
 
-Includes `nixfmt`, `nil` (Nix language server), `alejandra`, and the
-`boilerplate` scaffolding tool.
+Includes Rust tooling (rustc, cargo, rust-analyzer, clippy, rustfmt, bacon),
+`sea-orm-cli`, `nixfmt`, `nil` (Nix LSP), `alejandra`, and the `boilerplate`
+scaffolding tool.
 
 ## Rebuilding
 
