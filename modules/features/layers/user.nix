@@ -6,7 +6,12 @@
 }:
 {
   flake.nixosModules.user =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       # Define a user account. Don't forget to set a password with ‘passwd’.
       users.users."${config.username}" = {
@@ -17,6 +22,7 @@
           "wheel"
           "docker"
           "dialout"
+          "keyd"
         ];
         shell = pkgs.zsh;
       };
