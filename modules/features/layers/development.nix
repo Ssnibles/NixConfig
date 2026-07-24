@@ -28,6 +28,7 @@
             btop
             dbeaver-bin
             yazi
+            lazygit
             fzf
             self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
           ]
