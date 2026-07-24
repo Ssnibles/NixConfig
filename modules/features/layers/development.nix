@@ -30,6 +30,9 @@
             yazi
             lazygit
             fzf
+            sshfs
+            fuse
+            sshpass
             self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
           ]
           ++ (with pkgs.unstable; [
