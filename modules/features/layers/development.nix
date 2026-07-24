@@ -14,23 +14,26 @@
     }:
     {
       config = {
-        environment.systemPackages = with pkgs; [
-          neovim
-          vim
-          git
-          opencode
-          nodejs
-          android-studio
-          lazygit
-          direnv
-          nix-direnv
-          ripgrep
-          btop
-          dbeaver-bin
-          yazi
-          fzf
-          self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
-        ];
+        environment.systemPackages =
+          with pkgs;
+          [
+            neovim
+            vim
+            git
+            opencode
+            nodejs
+            direnv
+            nix-direnv
+            ripgrep
+            btop
+            dbeaver-bin
+            yazi
+            fzf
+            self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
+          ]
+          ++ (with pkgs.unstable; [
+            android-studio
+          ]);
         programs.zoxide = {
           enable = true;
           enableZshIntegration = true;
