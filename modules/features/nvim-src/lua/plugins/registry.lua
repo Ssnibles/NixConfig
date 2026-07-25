@@ -13,6 +13,8 @@ M.core = {
 	"plugins.lint",
 	"plugins.rust",
 	"plugins.sshinator",
+	"plugins.java-snippets",
+	"plugins.typst-snippets",
 }
 
 M.deferred = {
