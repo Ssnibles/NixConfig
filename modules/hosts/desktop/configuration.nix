@@ -14,6 +14,7 @@
         self.nixosModules.communications
         self.nixosModules.contentCreation
         self.nixosModules.hyprland-noctalia
+        self.nixosModules.qutebrowser
         self.nixosModules.zen-browser
         self.nixosModules.neovim
         self.nixosModules.user

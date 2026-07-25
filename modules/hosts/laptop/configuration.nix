@@ -18,6 +18,7 @@
         self.nixosModules.development
         self.nixosModules.mangowc
         self.nixosModules.niri
+        self.nixosModules.qutebrowser
         self.nixosModules.zen-browser
         self.nixosModules.neovim
         self.nixosModules.user
