@@ -20,7 +20,6 @@
         extraGroups = [
           "networkmanager"
           "wheel"
-          "docker"
           "dialout"
           "keyd"
         ];

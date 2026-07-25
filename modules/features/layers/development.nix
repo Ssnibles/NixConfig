@@ -42,14 +42,6 @@
           enable = true;
           enableZshIntegration = true;
         };
-        # enable Docker
-        virtualisation.docker = {
-          enable = true;
-          rootless = {
-            enable = true;
-            setSocketVariable = true;
-          };
-        };
         programs.git = {
           enable = true;
           config = {

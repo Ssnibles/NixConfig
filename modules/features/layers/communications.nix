@@ -6,9 +6,9 @@
       config = {
         environment.systemPackages = with pkgs.unstable; [
           vesktop
-          (element-desktop.override {
-            commandLineArgs = "--password-store=gnome-libsecret";
-          })
+          # (element-desktop.override {
+          #   commandLineArgs = "--password-store=gnome-libsecret";
+          # })
         ];
       };
 

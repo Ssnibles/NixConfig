@@ -36,7 +36,12 @@
 
       # Use latest kernel
       boot.kernelPackages = pkgs.linuxPackages_latest;
-      boot.kernelParams = [ "ideapad_laptop.allow_v4_dytc=Y" ];
+      boot.kernelParams = [
+        "ideapad_laptop.allow_v4_dytc=Y"
+        "8250.nr_uarts=0" # disable legacy serial ports (save ~2.8s of device timeouts)
+      ];
+      # Load TPM driver early so it's ready before userspace starts
+      boot.initrd.kernelModules = [ "tpm_crb" ];
 
       networking.hostName = "nixos";
 
@@ -123,5 +128,10 @@
       # Speed up boot
       boot.initrd.systemd.enable = true;
       systemd.services.NetworkManager-wait-online.enable = false;
+
+      # Don't let random-seed refresh block sysinit.target — run it async
+      systemd.services.systemd-boot-random-seed = {
+        unitConfig.Before = lib.mkForce [ ];
+      };
     };
 }
