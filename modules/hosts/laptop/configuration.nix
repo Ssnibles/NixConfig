@@ -98,20 +98,6 @@
 
       security.pam.services.ly.enableGnomeKeyring = true;
 
-      nix.settings = {
-        substituters = [
-          "https://cache.nixos.org/"
-          "https://cache.garnix.io"
-        ];
-        trusted-public-keys = [
-          # Default NixOS cache key
-          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-          # Garnix cache key
-          "cache.garnix.io:Lf0liRJ2oT5zekG0arzGcHtrIfuVjGrAG1MxRCBuFlA="
-        ];
-        download-buffer-size = 524288000;
-      };
-
       # This value determines the NixOS release from which the default
       # settings for stateful data, like file locations and database versions
       # on your system were taken. It‘s perfectly fine and recommended to leave
