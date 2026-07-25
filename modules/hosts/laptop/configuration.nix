@@ -41,7 +41,18 @@
       boot.kernelParams = [
         "ideapad_laptop.allow_v4_dytc=Y"
         "8250.nr_uarts=0" # disable legacy serial ports (save ~2.8s of device timeouts)
+        "noatime" # disable access time updates on reads (reduces writes)
       ];
+      boot.kernel.sysctl = {
+        # Keep RAM in RAM — don't bother swapping until memory is really tight
+        "vm.swappiness" = 10;
+        # Reclaim dentry/inode caches more aggressively under memory pressure
+        "vm.vfs_cache_pressure" = 200;
+      };
+      # Limit journal size to 100M
+      services.journald.extraConfig = ''
+        SystemMaxUse=100M
+      '';
       # Load TPM driver early so it's ready before userspace starts
       boot.initrd.kernelModules = [ "tpm_crb" ];
 
@@ -78,16 +89,17 @@
         enable = true;
       };
 
-      services.keyd = {
-        enable = true;
-        keyboards.default = {
-          ids = [ "*" ]; # Apply to all keyboards
-          settings.main = {
-            capslock = "esc";
-            esc = "capslock";
-          };
-        };
-      };
+      # Swap Caps Lock and Escape via udev hwdb (kernel-level, no daemon needed)
+      services.udev.extraHwdb = ''
+        # AT keyboard scancode set
+        evdev:atkbd:dmi:bvn*:bvr*:bd*:svn*:pn*:pvr*
+         KEYBOARD_KEY_3a=esc
+         KEYBOARD_KEY_01=capslock
+        # All other evdev keyboards
+        evdev:input:b*v*
+         KEYBOARD_KEY_70039=esc
+         KEYBOARD_KEY_70029=capslock
+      '';
 
       # Enable the OpenSSH daemon.
       # services.openssh.enable = true;
@@ -107,6 +119,11 @@
       # Before changing this value read the documentation for this option
       # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
       system.stateVersion = "25.05"; # Did you read the comment?
+
+      # Add noatime to root filesystem (reduces writes, improves perf)
+      fileSystems."/" = {
+        options = [ "noatime" ];
+      };
 
       swapDevices = [
         {

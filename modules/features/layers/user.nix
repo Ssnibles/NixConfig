@@ -21,7 +21,6 @@
           "networkmanager"
           "wheel"
           "dialout"
-          "keyd"
         ];
         shell = pkgs.zsh;
       };
