@@ -36,6 +36,7 @@
 
       # Use latest kernel
       boot.kernelPackages = pkgs.linuxPackages_latest;
+      boot.kernelParams = [ "ideapad_laptop.allow_v4_dytc=Y" ];
 
       networking.hostName = "nixos";
 
@@ -46,6 +47,7 @@
           dfu-util
           libsecret
           gnupg
+          nftables
         ]
         ++ (with pkgs.unstable; [
           emacs-pgtk
@@ -62,6 +64,8 @@
         SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0666", GROUP="dialout"
         SUBSYSTEM=="usb", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", MODE="0666", GROUP="dialout"
       '';
+
+      services.upower.enable = true;
 
       services.displayManager.ly = {
         enable = true;
@@ -111,10 +115,13 @@
       # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
       system.stateVersion = "25.05"; # Did you read the comment?
 
-      # swapDevices = [
-      #   {
-      #     device = "/dev/disk/by-label/swap"; # Or "/dev/sda2"
-      #   }
-      # ];
+      swapDevices = [ {
+        device = "/swapfile";
+        size = 8192;
+      } ];
+
+      # Speed up boot
+      boot.initrd.systemd.enable = true;
+      systemd.services.NetworkManager-wait-online.enable = false;
     };
 }

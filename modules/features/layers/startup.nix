@@ -8,9 +8,7 @@
         wantedBy = [ "graphical-session.target" ];
         partOf = [ "graphical-session.target" ];
         path = [ config.system.path ];
-        environment = {
-          QT_QPA_PLATFORM = "wayland";
-        };
+        environment = { };
         serviceConfig = {
           Type = "simple";
           ExecStart = "${pkgs.vicinae}/bin/vicinae server";

@@ -81,9 +81,6 @@
         # Enable redistributable firmware (required for AMD GPU firmware)
         hardware.enableRedistributableFirmware = true;
 
-        # Ensure keyd group exists
-        # users.groups.keyd = {};
-
         # Enable the X11 windowing system.
         services.xserver.enable = true;
 
