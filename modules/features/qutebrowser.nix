@@ -89,7 +89,7 @@
             # Colors
 
             c.colors.webpage.darkmode.enabled = True
-            c.colors.webpage.darkmode.policy.page = "smart"
+            c.colors.webpage.darkmode.policy.page = "always"
             c.colors.webpage.darkmode.policy.images = "never"
 
             c.colors.completion.category.bg = "#${bgRaised}"
@@ -158,8 +158,8 @@
             c.colors.tabs.selected.odd.fg = "#${fg}"
 
             # Key bindings
-            config.bind("J", "tab-prev")
-            config.bind("K", "tab-next")
+            config.bind("h", "tab-prev")
+            config.bind("l", "tab-next")
             config.bind("1", "tab-focus 1")
             config.bind("2", "tab-focus 2")
             config.bind("3", "tab-focus 3")

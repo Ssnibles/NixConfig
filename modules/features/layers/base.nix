@@ -30,7 +30,7 @@
           overlays = [
             inputs.millennium.overlays.default
             (final: prev: {
-              unstable = import inputs.nixpkgs-unstable {
+              unstable = (import inputs.nixpkgs-unstable {
                 inherit (prev.stdenv.hostPlatform) system;
                 config = {
                   allowUnfree = true;
@@ -40,7 +40,13 @@
                     "electron-40.10.5"
                   ];
                 };
-              };
+              }).extend (final': prev': {
+                qutebrowser = prev'.qutebrowser.overrideAttrs (old: {
+                  patches = (old.patches or []) ++ [
+                    ../qutebrowser-profile-scripts.patch
+                  ];
+                });
+              });
             })
           ];
         };
