@@ -68,9 +68,12 @@ window-rule {
     clip-to-geometry true
 }
 
+// Window rules
 window-rule {
   match app-id="org.qutebrowser.qutebrowser"
   open-maximized false
+  open-fullscreen false
+  default-column-width { proportion 1.0; }
 }
 
 // Core Keyboard Shortcuts
