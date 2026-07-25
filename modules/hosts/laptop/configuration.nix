@@ -17,6 +17,7 @@
         self.nixosModules.pipewire
         self.nixosModules.development
         self.nixosModules.mangowc
+        self.nixosModules.niri
         self.nixosModules.zen-browser
         self.nixosModules.neovim
         self.nixosModules.user
@@ -106,10 +107,12 @@
       # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
       system.stateVersion = "25.05"; # Did you read the comment?
 
-      swapDevices = [ {
-        device = "/swapfile";
-        size = 8192;
-      } ];
+      swapDevices = [
+        {
+          device = "/swapfile";
+          size = 8192;
+        }
+      ];
 
       # Speed up boot
       boot.initrd.systemd.enable = true;

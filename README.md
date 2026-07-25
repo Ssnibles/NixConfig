@@ -131,3 +131,23 @@ sudo nixos-rebuild switch --flake ~/NixConfig#desktop
 # or
 sudo nixos-rebuild switch --flake ~/NixConfig#laptop
 ```
+_Or use `nh`:_
+
+```bash
+nh os boot -H desktop
+nh os boot -H laptop
+```
+
+## GitHub API Rate Limiting
+
+Updating flake inputs hits GitHub's unauthenticated API (60 req/hr).
+To avoid 403 errors, set the `GITHUB_TOKEN` environment variable in
+your shell profile (e.g., `~/.zshenv`):
+
+```bash
+export GITHUB_TOKEN=ghp_xxxxx
+```
+
+Replace `ghp_xxxxx` with a [classic PAT](https://github.com/settings/tokens)
+(no scopes needed for public repos). Nix's flake fetcher reads this
+env var automatically — no config changes needed.
