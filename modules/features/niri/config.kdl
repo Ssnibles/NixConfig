@@ -68,6 +68,11 @@ window-rule {
     clip-to-geometry true
 }
 
+window-rule {
+  match app-id="org.qutebrowser.qutebrowser"
+  open-maximized false
+}
+
 // Core Keyboard Shortcuts
 binds {
     // Application Launchers
