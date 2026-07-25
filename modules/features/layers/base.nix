@@ -1,7 +1,12 @@
 { self, inputs, ... }:
 {
   flake.nixosModules.base =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       imports = [
         inputs.hjem.nixosModules.default
@@ -65,6 +70,19 @@
 
         # Enable networking
         networking.networkmanager.enable = true;
+        networking.nftables.enable = true;
+
+        # DNS resolution via systemd-resolved
+        services.resolved.enable = true;
+
+        # Ensure IP forwarding (avoids conflict between Docker and NetworkManager)
+        boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+
+        # Enable redistributable firmware (required for AMD GPU firmware)
+        hardware.enableRedistributableFirmware = true;
+
+        # Ensure keyd group exists
+        # users.groups.keyd = {};
 
         # Enable the X11 windowing system.
         services.xserver.enable = true;
