@@ -3,7 +3,7 @@ prefer-no-csd
 screenshot-path "~/Pictures/Screenshots/Screenshot-%Y%m%d-%H%M%S.png"
 
 // Startup Applications
-spawn-at-startup "qs" "-n"
+spawn-sh-at-startup "quickshell -p ~/.config/quickshell/niri-bar.qml"
 spawn-at-startup "mako"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpapers/default.png -m fill"
 
@@ -76,6 +76,7 @@ binds {
     Mod+M { maximize-column; }
     Mod+F { fullscreen-window; }
     Mod+C { center-column; }
+    Mod+O { toggle-overview; }
 
     // Focus Navigation (Horizontal plane)
     Mod+Left  { focus-column-left; }
