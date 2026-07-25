@@ -35,7 +35,7 @@ fzf.setup({
 		},
 	},
 	files = { cmd = "fd --type f --hidden --exclude .git" },
-	oldfiles = { include_current_session = true, cwd_only = true, stat_file = false },
+	oldfiles = { include_current_session = false, cwd_only = true, stat_file = false },
 	grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },
 	keymap = {
 		fzf = {
@@ -71,21 +71,51 @@ local function responsive()
 	}
 end
 
-local function files()     fzf.files(responsive()) end
-local function grep()      fzf.live_grep(responsive()) end
-local function oldfiles()  fzf.oldfiles(responsive()) end
-local function buffers()   fzf.buffers(responsive()) end
-local function blines()    fzf.blines(responsive()) end
-local function grep_cword()  fzf.grep_cword(responsive()) end
-local function grep_cWORD()  fzf.grep_cWORD(responsive()) end
-local function lsp_syms()    fzf.lsp_document_symbols(responsive()) end
-local function lsp_wsyms()   fzf.lsp_workspace_symbols(responsive()) end
-local function lsp_diag()    fzf.diagnostics_document(responsive()) end
-local function help_tags()   fzf.help_tags(responsive()) end
-local function keymaps()     fzf.keymaps(responsive()) end
-local function resume()      fzf.resume() end
-local function git_commits() fzf.git_commits(responsive()) end
-local function git_status()  fzf.git_status(responsive()) end
+local function files()
+	fzf.files(responsive())
+end
+local function grep()
+	fzf.live_grep(responsive())
+end
+local function oldfiles()
+	fzf.oldfiles(responsive())
+end
+local function buffers()
+	fzf.buffers(responsive())
+end
+local function blines()
+	fzf.blines(responsive())
+end
+local function grep_cword()
+	fzf.grep_cword(responsive())
+end
+local function grep_cWORD()
+	fzf.grep_cWORD(responsive())
+end
+local function lsp_syms()
+	fzf.lsp_document_symbols(responsive())
+end
+local function lsp_wsyms()
+	fzf.lsp_workspace_symbols(responsive())
+end
+local function lsp_diag()
+	fzf.diagnostics_document(responsive())
+end
+local function help_tags()
+	fzf.help_tags(responsive())
+end
+local function keymaps()
+	fzf.keymaps(responsive())
+end
+local function resume()
+	fzf.resume()
+end
+local function git_commits()
+	fzf.git_commits(responsive())
+end
+local function git_status()
+	fzf.git_status(responsive())
+end
 
 local map = vim.keymap.set
 
