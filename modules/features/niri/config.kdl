@@ -17,6 +17,7 @@ environment {
 cursor {
     xcursor-theme "Bibata-Modern-Ice"
     xcursor-size 24
+    hide-when-typing
 }
 
 // Input Peripheral Options
@@ -32,6 +33,8 @@ input {
         tap
         natural-scroll
     }
+    focus-follows-mouse
+    warp-mouse-to-focus mode="center-xy"
 }
 
 // Layout and Aesthetic Options
@@ -49,7 +52,7 @@ layout {
     default-column-width { proportion 0.5; }
 
     focus-ring {
-        width 4
+        width 2
         active-color "#7aa2f7"
         inactive-color "#414868"
     }
@@ -61,7 +64,7 @@ layout {
 
 // Global Window Management Rules
 window-rule {
-    geometry-corner-radius 12
+    geometry-corner-radius 8
     clip-to-geometry true
 }
 
