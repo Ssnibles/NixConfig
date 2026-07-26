@@ -37,7 +37,7 @@
             c.content.autoplay = False
             c.content.blocking.method = "auto"
             c.content.cache.size = 52428800
-            c.content.cookies.accept = "no-3rdparty"
+            c.content.cookies.accept = "all"
             c.content.prefers_reduced_motion = True
 
             c.qt.args = ["enable-gpu-rasterization", "enable-accelerated-video-decode"]
