@@ -81,6 +81,7 @@ binds {
     // Application Launchers
     Mod+Return hotkey-overlay-title="Open foot" { spawn "foot"; }
     Mod+Space hotkey-overlay-title="Toggle vicinae" { spawn "vicinae" "toggle"; }
+    Mod+E hotkey-overlay-title="Open Yazi" { spawn "foot" "-e" "yazi"; }
 
     // Window Interacting
     Mod+Q { close-window; }
@@ -100,6 +101,10 @@ binds {
     Mod+Shift+Right { move-column-right; }
     Mod+Shift+H     { move-column-left; }
     Mod+Shift+L     { move-column-right; }
+
+    Mod+Equal { set-column-width "+50"; }
+    Mod+Minus { set-column-width "-50"; }
+    Mod+Shift+Equal { set-column-width "50%"; }
 
     Mod+Shift+1 { move-column-to-workspace 1; }
     Mod+Shift+2 { move-column-to-workspace 2; }
