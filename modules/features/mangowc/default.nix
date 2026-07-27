@@ -35,7 +35,7 @@
       ];
 
       config = {
-        wallpaper-destinations = [ "Pictures/wallpapers" ];
+        wallpaper-destinations = [ "Pictures/wallpaper" ];
 
         programs.mango.enable = true;
 

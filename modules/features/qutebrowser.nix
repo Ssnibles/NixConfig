@@ -182,6 +182,22 @@
             config.set("content.javascript.enabled", True, "qute://*/*")
           '';
         };
+        xdg.mime-apps.default-applications = {
+          "text/html" = [ "org.pwmt.zathura.desktop" ];
+          "application/xhtml+xml" = [ "org.pwmt.zathura.desktop" ];
+          "application/xml" = [ "org.pwmt.zathura.desktop" ];
+          "x-scheme-handler/http" = [ "org.pwmt.zathura.desktop" ];
+          "x-scheme-handler/https" = [ "org.pwmt.zathura.desktop" ];
+          "x-scheme-handler/ftp" = [ "org.pwmt.zathura.desktop" ];
+          "x-scheme-handler/chrome" = [ "org.pwmt.zathura.desktop" ];
+          "application/x-extension-htm" = [ "org.pwmt.zathura.desktop" ];
+          "application/x-extension-html" = [ "org.pwmt.zathura.desktop" ];
+          "application/x-extension-shtml" = [ "org.pwmt.zathura.desktop" ];
+          "application/x-extension-xhtml" = [ "org.pwmt.zathura.desktop" ];
+          "application/x-extension-xht" = [ "org.pwmt.zathura.desktop" ];
+          "application/pdf" = [ "org.pwmt.zathura.desktop" ];
+          "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
+        };
       };
     };
 }

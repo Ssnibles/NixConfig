@@ -2,8 +2,14 @@
 {
   options.wallpaper-destinations = lib.mkOption {
     type = lib.types.listOf lib.types.str;
-    default = [];
+    default = [ ];
     description = "Destination paths for wallpapers";
+  };
+
+  options.wallpaper = lib.mkOption {
+    type = lib.types.str;
+    default = "wp5458622-stardew-valley-desktop-wallpapers.png";
+    description = "Wallpaper filename from assets/wallpapers/";
   };
 
   config.theme.active = "vague";

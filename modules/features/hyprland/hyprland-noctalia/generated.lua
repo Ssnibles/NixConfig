@@ -19,7 +19,7 @@ M.border_hash = "#252530"
 M.isDesktop = true
 M.isLaptop = false
 M.hasNvidia = false
-M.wallpaper = "~/Pictures/Wallpapers/default.png"
+M.wallpaper = "~/Pictures/wallpaper"
 M.screenshot_dir = "~/Pictures/Screenshots"
 M.special_workspace = "special"
 

@@ -4,8 +4,9 @@
     { pkgs, lib, ... }:
     {
       config = {
-        environment.systemPackages = with pkgs; [
+        environment.systemPackages = with pkgs.unstable; [
           spotify
+          zathura
         ];
       };
 

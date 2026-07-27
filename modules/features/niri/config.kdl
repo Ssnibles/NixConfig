@@ -5,7 +5,7 @@ screenshot-path "~/Pictures/Screenshots/Screenshot-%Y%m%d-%H%M%S.png"
 // Startup Applications
 spawn-sh-at-startup "quickshell -p ~/.config/quickshell/niri-bar.qml"
 spawn-at-startup "mako"
-spawn-sh-at-startup "swaybg -i ~/Pictures/wallpapers/default.png -m fill"
+spawn-sh-at-startup "swaybg -i ~/Pictures/wallpaper -m fill"
 
 // Environment Variables
 environment {

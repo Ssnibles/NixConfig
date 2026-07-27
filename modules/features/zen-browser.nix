@@ -3,9 +3,15 @@
   inputs,
   config,
   ...
-}: {
+}:
+{
   flake.nixosModules.zen-browser =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       programs.firefox = {
         enable = true;
@@ -52,24 +58,24 @@
         };
       };
 
-      hjem.users."${config.username}" = {
-        xdg.mime-apps.default-applications = {
-          "text/html" = [ "zen.desktop" ];
-          "application/xhtml+xml" = [ "zen.desktop" ];
-          "application/xml" = [ "zen.desktop" ];
-          "x-scheme-handler/http" = [ "zen.desktop" ];
-          "x-scheme-handler/https" = [ "zen.desktop" ];
-          "x-scheme-handler/ftp" = [ "zen.desktop" ];
-          "x-scheme-handler/chrome" = [ "zen.desktop" ];
-          "application/x-extension-htm" = [ "zen.desktop" ];
-          "application/x-extension-html" = [ "zen.desktop" ];
-          "application/x-extension-shtml" = [ "zen.desktop" ];
-          "application/x-extension-xhtml" = [ "zen.desktop" ];
-          "application/x-extension-xht" = [ "zen.desktop" ];
-          "application/pdf" = [ "zen.desktop" ];
-          "application/x-pdf" = [ "zen.desktop" ];
-        };
-      };
+      # hjem.users."${config.username}" = {
+      #   xdg.mime-apps.default-applications = {
+      #     "text/html" = [ "zen.desktop" ];
+      #     "application/xhtml+xml" = [ "zen.desktop" ];
+      #     "application/xml" = [ "zen.desktop" ];
+      #     "x-scheme-handler/http" = [ "zen.desktop" ];
+      #     "x-scheme-handler/https" = [ "zen.desktop" ];
+      #     "x-scheme-handler/ftp" = [ "zen.desktop" ];
+      #     "x-scheme-handler/chrome" = [ "zen.desktop" ];
+      #     "application/x-extension-htm" = [ "zen.desktop" ];
+      #     "application/x-extension-html" = [ "zen.desktop" ];
+      #     "application/x-extension-shtml" = [ "zen.desktop" ];
+      #     "application/x-extension-xhtml" = [ "zen.desktop" ];
+      #     "application/x-extension-xht" = [ "zen.desktop" ];
+      #     "application/pdf" = [ "zen.desktop" ];
+      #     "application/x-pdf" = [ "zen.desktop" ];
+      #   };
+      # };
 
       environment.etc."firefox/policies/policies.json".target = "firefox/policies/policies.json";
     };

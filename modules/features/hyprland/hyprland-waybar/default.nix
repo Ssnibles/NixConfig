@@ -16,7 +16,7 @@
       ];
 
       config = {
-        wallpaper-destinations = [ "Pictures/wallpapers" ];
+        wallpaper-destinations = [ "Pictures/wallpaper" ];
         # System-level configuration
         programs.hyprland.enable = true;
 
