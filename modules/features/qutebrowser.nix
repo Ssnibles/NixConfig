@@ -51,7 +51,7 @@
 
             c.session.lazy_restore = True
 
-            c.statusbar.show = "in-mode"
+            c.statusbar.show = "always"
 
             c.tabs.favicons.show = "always"
             c.tabs.indicator.width = 1
