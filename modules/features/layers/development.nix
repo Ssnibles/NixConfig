@@ -22,6 +22,8 @@
             git
             opencode
             nodejs
+            cargo
+            gcc
             direnv
             nix-direnv
             ripgrep
@@ -112,8 +114,7 @@
           settings = {
             add_newline = false;
 
-            format =
-              "$username$directory$git_branch$git_status$fill$nix_shell$nodejs$rust$python$battery$cmd_duration\n$character";
+            format = "$username$directory$git_branch$git_status$fill$nix_shell$nodejs$rust$python$battery$cmd_duration\n$character";
 
             character = {
               success_symbol = "[╰──>>](bold green)";
@@ -154,21 +155,30 @@
             nodejs = {
               format = "[⬢ v$version]($style) ";
               style = "bold green";
-              detect_files = ["package.json" "node_modules"];
-              detect_folders = ["node_modules"];
+              detect_files = [
+                "package.json"
+                "node_modules"
+              ];
+              detect_folders = [ "node_modules" ];
             };
 
             rust = {
               format = "[🦀 v$version]($style) ";
               style = "bold red";
-              detect_files = ["Cargo.toml"];
-              detect_folders = ["target"];
+              detect_files = [ "Cargo.toml" ];
+              detect_folders = [ "target" ];
             };
 
             python = {
               format = "[🐍 v$version]($style) ";
               style = "bold yellow";
-              detect_files = ["pyproject.toml" "requirements.txt" ".python-version" "setup.py" "Pipfile"];
+              detect_files = [
+                "pyproject.toml"
+                "requirements.txt"
+                ".python-version"
+                "setup.py"
+                "Pipfile"
+              ];
             };
 
             nix_shell = {
@@ -180,16 +190,18 @@
               full_symbol = "●";
               charging_symbol = "↑";
               discharging_symbol = "↓";
-              display = [{
-                threshold = 20;
-                style = "bold red";
-              }];
+              display = [
+                {
+                  threshold = 20;
+                  style = "bold red";
+                }
+              ];
             };
           };
 
           transientPrompt = {
             enable = true;
-            left = "";
+            left = "echo -n '>> '";
             right = "";
           };
         };

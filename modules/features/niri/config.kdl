@@ -3,7 +3,7 @@ prefer-no-csd
 screenshot-path "~/Pictures/Screenshots/Screenshot-%Y%m%d-%H%M%S.png"
 
 // Startup Applications
-spawn-sh-at-startup "quickshell -p ~/.config/quickshell/niri-bar.qml"
+spawn-sh-at-startup "quickshell --path ~/NixConfig/modules/features/niri-quickshell/config/bar.qml"
 spawn-at-startup "mako"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpaper -m fill"
 

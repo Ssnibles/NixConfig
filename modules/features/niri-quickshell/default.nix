@@ -10,7 +10,7 @@
 
         hjem.users."${config.username}" = {
           enable = true;
-          files.".config/quickshell/niri-bar.qml".source = ./config/bar.qml;
+          files.".config/niri-quickshell/shell.qml".source = ./config/bar.qml;
         };
       };
     };

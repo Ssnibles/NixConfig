@@ -8,6 +8,8 @@ Scope {
 
   property string currentTime: ""
   property var allWorkspaces: []
+  property int batteryPercent: 0
+  property bool batteryCharging: false
 
   Process {
     id: niriEvents
@@ -22,6 +24,22 @@ Scope {
           var event = JSON.parse(cleanLine)
           handleEvent(event)
         } catch (e) {}
+      }
+    }
+  }
+
+  Process {
+    id: batProc
+    command: ["sh", "-c", "while true; do c=$(cat /sys/class/power_supply/BAT0/capacity 2>/dev/null || echo 0); s=$(cat /sys/class/power_supply/BAT0/status 2>/dev/null || echo Unknown); echo \"$c $s\"; sleep 10; done"]
+    running: true
+
+    stdout: SplitParser {
+      onRead: line => {
+        var parts = line.trim().split(" ")
+        if (parts.length >= 2) {
+          batteryPercent = parseInt(parts[0])
+          batteryCharging = parts[1] === "Charging"
+        }
       }
     }
   }
@@ -95,7 +113,9 @@ Scope {
         anchors.margins: 6
 
         Column {
-          anchors.fill: parent
+          anchors.top: parent.top
+          anchors.left: parent.left
+          anchors.right: parent.right
           spacing: 6
 
           Text {
@@ -139,6 +159,16 @@ Scope {
               }
             }
           }
+        }
+
+        Text {
+          anchors.horizontalCenter: parent.horizontalCenter
+          anchors.bottom: parent.bottom
+          anchors.bottomMargin: 2
+          text: batteryPercent + "%"
+          color: batteryCharging ? "#98c379" : (batteryPercent < 20 ? "#e06c75" : "#cdcdcd")
+          font.pixelSize: 11
+          font.family: "Inter"
         }
       }
     }
