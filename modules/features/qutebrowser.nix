@@ -112,9 +112,9 @@
             c.colors.downloads.stop.bg = "#${green}"
             c.colors.downloads.stop.fg = "#${bg}"
 
-            c.colors.hints.bg = "#${yellow}"
-            c.colors.hints.fg = "#${bg}"
-            c.colors.hints.match.fg = "#${red}"
+            c.colors.hints.bg = "#${bg}"
+            c.colors.hints.fg = "#${fg}"
+            c.colors.hints.match.fg = "#${accent}"
 
             c.colors.statusbar.caret.bg = "#${bgRaised}"
             c.colors.statusbar.caret.fg = "#${orange}"

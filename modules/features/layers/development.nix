@@ -102,21 +102,31 @@
           enable = true;
           interactiveShellInit = ''
             set -gx EDITOR nvim
-            enable_transience
+            function starship_transient_prompt_func
+              starship module character
+            end
             starship init fish | source
           '';
         };
 
-        # Configure minimal starship prompt
+        # Configure starship prompt
         programs.starship = {
           enable = true;
           settings = {
             add_newline = false;
+            format = ''
+              $username in $directory
+              $character
+            '';
             character = {
-              success_symbol = "[❯](bold green)";
-              error_symbol = "[❯](bold red)";
+              success_symbol = "[╰──>>](bold green)";
+              error_symbol = "[╰──>>](bold red)";
             };
             directory.truncation_length = 3;
+            username = {
+              show_always = true;
+              format = "[$user](bold blue)";
+            };
           };
         };
       };
