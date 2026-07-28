@@ -102,16 +102,13 @@
           enable = true;
           interactiveShellInit = ''
             set -gx EDITOR nvim
-            function starship_transient_prompt_func
-              starship module character
-            end
-            starship init fish | source
           '';
         };
 
         # Configure starship prompt
         programs.starship = {
           enable = true;
+          package = pkgs.unstable.starship;
           settings = {
             add_newline = false;
             format = ''
@@ -127,6 +124,10 @@
               show_always = true;
               format = "[$user](bold blue)";
             };
+          };
+          transientPrompt = {
+            enable = true;
+            left = "echo -n '>> '";
           };
         };
       };
