@@ -135,4 +135,19 @@ binds {
     // System Utilities
     Mod+Shift+E { quit; }
     Print { screenshot; }
+
+    // Brightness Control
+    XF86MonBrightnessDown { spawn "brightnessctl" "set" "5%-"; }
+    XF86MonBrightnessUp   { spawn "brightnessctl" "set" "5%+"; }
+
+    // Media Playback
+    XF86AudioPlay  { spawn "playerctl" "play-pause"; }
+    XF86AudioNext  { spawn "playerctl" "next"; }
+    XF86AudioPrev  { spawn "playerctl" "previous"; }
+    XF86AudioStop  { spawn "playerctl" "stop"; }
+
+    // Volume Control
+    XF86AudioRaiseVolume { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"; }
+    XF86AudioLowerVolume { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-"; }
+    XF86AudioMute        { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
 }
