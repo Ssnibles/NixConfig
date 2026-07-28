@@ -22,7 +22,7 @@
           "wheel"
           "dialout"
         ];
-        shell = pkgs.zsh;
+        shell = pkgs.fish;
       };
       hjem.users."${config.username}".enable = true;
     };

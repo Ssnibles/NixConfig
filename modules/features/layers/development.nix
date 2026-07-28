@@ -41,6 +41,7 @@
         programs.zoxide = {
           enable = true;
           enableZshIntegration = true;
+          enableFishIntegration = true;
         };
         programs.git = {
           enable = true;
@@ -97,22 +98,25 @@
           # '';
         };
 
-        # Configure starship prompt
+        programs.fish = {
+          enable = true;
+          interactiveShellInit = ''
+            set -gx EDITOR nvim
+            enable_transience
+            starship init fish | source
+          '';
+        };
+
+        # Configure minimal starship prompt
         programs.starship = {
           enable = true;
           settings = {
             add_newline = false;
             character = {
-              success_symbol = "[➜](bold green)";
-              error_symbol = "[✗](bold red)";
+              success_symbol = "[❯](bold green)";
+              error_symbol = "[❯](bold red)";
             };
-            directory.truncate_to_repo = false;
-            nix_shell = {
-              disabled = false;
-              symbol = "❄️ ";
-              format = "[$symbol$name]($style) ";
-            };
-            git_branch.symbol = "🌿 ";
+            directory.truncation_length = 3;
           };
         };
       };
