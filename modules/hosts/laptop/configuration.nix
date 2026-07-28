@@ -26,6 +26,7 @@
         self.nixosModules.media
         self.nixosModules.foot
         self.nixosModules.kitty
+        self.nixosModules.podman-vm
 
         # Generated at install time by install.sh
         # Leading underscore keeps import-tree from auto-importing it.
