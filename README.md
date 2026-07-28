@@ -1,6 +1,6 @@
 # NixConfig
 
-A [dendritic](https://github.com/vic/import-tree) NixOS configuration using
+A [dendritic](https://github.com/mightyiam/dendritic) NixOS configuration using
 `flake-parts` and `import-tree`. The filesystem tree *is* the module tree —
 every `.nix` file under `modules/` is automatically discovered and imported.
 
