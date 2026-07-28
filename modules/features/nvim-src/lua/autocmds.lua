@@ -197,6 +197,20 @@ autocmd("FileType", {
 		vim.keymap.set("n", "<leader>tp", function()
 			vim.cmd("TypstPreviewToggle")
 		end, { buffer = true, desc = "Toggle Typst preview" })
+
+		vim.keymap.set("n", "<leader>zo", function()
+			local buf_path = vim.fn.expand("%:p")
+			local pdf_path = buf_path:gsub("%.typ$", ".pdf")
+			if vim.fn.filereadable(pdf_path) == 1 then
+				vim.fn.system({
+					"zathura",
+					"--synctex-forward=" .. vim.fn.line(".") .. ":0:" .. buf_path,
+					pdf_path,
+				})
+			else
+				vim.notify("PDF not found: " .. pdf_path, vim.log.levels.WARN)
+			end
+		end, { buffer = true, desc = "Open PDF in Zathura" })
 	end,
 })
 

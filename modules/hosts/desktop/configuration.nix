@@ -10,6 +10,7 @@
         self.nixosModules.pipewire
         self.nixosModules.fonts
         self.nixosModules.gaming
+        self.nixosModules.media
         self.nixosModules.development
         self.nixosModules.communications
         self.nixosModules.contentCreation

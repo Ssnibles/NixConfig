@@ -172,6 +172,7 @@
             config.bind("<Ctrl-h>", "back")
             config.bind("<Ctrl-l>", "forward")
             config.bind(",r", "config-source")
+            config.bind(",d", "config-cycle colors.webpage.darkmode.enabled")
 
             config.bind("<Ctrl-j>", "completion-item-focus --history next", mode="command")
             config.bind("<Ctrl-k>", "completion-item-focus --history prev", mode="command")
@@ -183,18 +184,18 @@
           '';
         };
         xdg.mime-apps.default-applications = {
-          "text/html" = [ "org.pwmt.zathura.desktop" ];
-          "application/xhtml+xml" = [ "org.pwmt.zathura.desktop" ];
-          "application/xml" = [ "org.pwmt.zathura.desktop" ];
-          "x-scheme-handler/http" = [ "org.pwmt.zathura.desktop" ];
-          "x-scheme-handler/https" = [ "org.pwmt.zathura.desktop" ];
-          "x-scheme-handler/ftp" = [ "org.pwmt.zathura.desktop" ];
-          "x-scheme-handler/chrome" = [ "org.pwmt.zathura.desktop" ];
-          "application/x-extension-htm" = [ "org.pwmt.zathura.desktop" ];
-          "application/x-extension-html" = [ "org.pwmt.zathura.desktop" ];
-          "application/x-extension-shtml" = [ "org.pwmt.zathura.desktop" ];
-          "application/x-extension-xhtml" = [ "org.pwmt.zathura.desktop" ];
-          "application/x-extension-xht" = [ "org.pwmt.zathura.desktop" ];
+          "text/html" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "application/xhtml+xml" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "application/xml" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "x-scheme-handler/http" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "x-scheme-handler/https" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "x-scheme-handler/ftp" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "x-scheme-handler/chrome" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "application/x-extension-htm" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "application/x-extension-html" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "application/x-extension-shtml" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "application/x-extension-xhtml" = [ "org.qutebrowser.qutebrowser.desktop" ];
+          "application/x-extension-xht" = [ "org.qutebrowser.qutebrowser.desktop" ];
           "application/pdf" = [ "org.pwmt.zathura.desktop" ];
           "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
         };

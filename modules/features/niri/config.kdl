@@ -1,6 +1,5 @@
 // Core Integrations & Tweaks
 prefer-no-csd
-screenshot-path "~/Pictures/Screenshots/Screenshot-%Y%m%d-%H%M%S.png"
 
 // Startup Applications
 spawn-sh-at-startup "quickshell --path ~/NixConfig/modules/features/niri-quickshell/config/bar.qml"
@@ -134,7 +133,8 @@ binds {
 
     // System Utilities
     Mod+Shift+E { quit; }
-    Print { screenshot; }
+    Mod+S { spawn "sh" "-c" "grim -g \"$(slurp)\" - | tee \"$HOME/Pictures/Screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png\" | wl-copy"; }
+
 
     // Brightness Control
     XF86MonBrightnessDown { spawn "brightnessctl" "set" "5%-"; }
