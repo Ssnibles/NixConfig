@@ -111,23 +111,86 @@
           package = pkgs.unstable.starship;
           settings = {
             add_newline = false;
-            format = ''
-              $username in $directory
-              $character
-            '';
+
+            format =
+              "$username$directory$git_branch$git_status$fill$nix_shell$nodejs$rust$python$battery$cmd_duration\n$character";
+
             character = {
               success_symbol = "[╰──>>](bold green)";
               error_symbol = "[╰──>>](bold red)";
             };
+
             directory.truncation_length = 3;
+
             username = {
               show_always = true;
-              format = "[$user](bold blue)";
+              format = "[$user](bold blue) ";
+            };
+
+            git_branch.format = "[$symbol$branch]($style) ";
+            git_branch.style = "bold purple";
+
+            git_status = {
+              format = "[($all_status$ahead_behind)]($style) ";
+              style = "bold yellow";
+              conflicted = "×";
+              up_to_date = "";
+              untracked = "…";
+              ahead = "⇡\${count}";
+              behind = "⇣\${count}";
+              stashed = "\$";
+              modified = "!";
+              staged = "+";
+              renamed = "~";
+              deleted = "-";
+            };
+
+            cmd_duration = {
+              min_time = 2000;
+              format = "[⏱ $duration]($style) ";
+              style = "bold yellow";
+            };
+
+            nodejs = {
+              format = "[⬢ v$version]($style) ";
+              style = "bold green";
+              detect_files = ["package.json" "node_modules"];
+              detect_folders = ["node_modules"];
+            };
+
+            rust = {
+              format = "[🦀 v$version]($style) ";
+              style = "bold red";
+              detect_files = ["Cargo.toml"];
+              detect_folders = ["target"];
+            };
+
+            python = {
+              format = "[🐍 v$version]($style) ";
+              style = "bold yellow";
+              detect_files = ["pyproject.toml" "requirements.txt" ".python-version" "setup.py" "Pipfile"];
+            };
+
+            nix_shell = {
+              format = "[❄️ $state( \($name\))]($style) ";
+              style = "bold blue";
+            };
+
+            battery = {
+              full_symbol = "●";
+              charging_symbol = "↑";
+              discharging_symbol = "↓";
+              display = [{
+                threshold = 20;
+                style = "bold red";
+              }];
             };
           };
+
           transientPrompt = {
             enable = true;
-            left = "echo -n '>> '";
+            left = "";
+            right = "";
           };
         };
       };
