@@ -58,9 +58,15 @@
         hjem.users."${config.username}" = {
           enable = true;
           files = {
-            ".config/hypr/hyprland.lua".source = ./hyprland.lua;
-            ".config/hypr/generated.lua".source = ./generated.lua;
-            ".config/hypr/hyprpaper.conf".source = ./hyprpaper.conf;
+            ".config/hypr/hyprland.lua" = {
+              source = ./hyprland.lua;
+            };
+            ".config/hypr/generated.lua" = {
+              source = ./generated.lua;
+            };
+            ".config/hypr/hyprpaper.conf" = {
+              source = ./hyprpaper.conf;
+            };
           };
         };
       };
