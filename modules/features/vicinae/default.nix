@@ -42,6 +42,11 @@
                 "dark": {
                   "name": "nixconfig"
                 }
+              },
+              "launcher_window": {
+                "layer_shell": {
+                  "layer": "overlay"
+                }
               }
             }
           '';
