@@ -70,10 +70,12 @@
         hjem.users."${config.username}" = {
           enable = true;
           files = {
-            ".config/mango/colours.conf".text = ''
-              focuscolor = ${accent}
-              bordercolor = ${border}
-            '';
+            ".config/mango/colours.conf" = {
+              text = ''
+                focuscolor = ${accent}
+                bordercolor = ${border}
+              '';
+            };
           };
         };
       };
