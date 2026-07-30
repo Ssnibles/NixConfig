@@ -8,8 +8,9 @@
       ...
     }:
     let
-      pomodoroPkg = lib.optional (inputs ? pomodoro)
-        inputs.pomodoro.packages.${pkgs.stdenv.hostPlatform.system}.default;
+      pomodoroPkg = lib.optional (
+        inputs ? pomodoro
+      ) inputs.pomodoro.packages.${pkgs.stdenv.hostPlatform.system}.default;
     in
     {
       config = {
