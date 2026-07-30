@@ -88,6 +88,7 @@ vim.api.nvim_create_autocmd("TermOpen", {
 		vim.opt_local.relativenumber = false
 		vim.opt_local.signcolumn = "no"
 		vim.wo.cursorline = false
+		vim.wo.statuscolumn = ""
 		vim.cmd("startinsert")
 	end,
 })
