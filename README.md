@@ -52,8 +52,7 @@ modules/
 │   │   └── hyprland-waybar/    laptop variant
 │   ├── mangowc/       ← MangoWC compositor (laptop)
 │   ├── niri/          ← Niri compositor (laptop)
-│   │   └── niri-quickshell/    QML bar for Niri
-│   ├── quickshell/    ← QML shell (standalone, for MangoWC)
+│   ├── quickshell/    ← Unified QML shell (shared bars + notifications for all compositors)
 │   ├── vicinae/       ← app launcher (all compositors)
 │   ├── neovim.nix     ← nvf-based Neovim with LSP/DAP/debuggers
 │   ├── nvim-src/      ← custom Lua config (lazy-loaded plugins)

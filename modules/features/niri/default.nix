@@ -29,7 +29,7 @@
       imports = [
         self.nixosModules.cursors
         self.nixosModules.vicinae
-        self.nixosModules.niri-quickshell
+        self.nixosModules.quickshell
         self.nixosModules.wallpapers
       ];
 

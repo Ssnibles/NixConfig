@@ -1,150 +1,28 @@
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
+import Quickshell.Services.Notifications
 import QtQuick
+
 Scope {
   id: root
 
-  property string currentTime: ""
-  property var allMonitorsTags: [] // Store raw monitor data from JSON
-  property int minWorkspaces: 5    // Always show at least 5
+  Loader {
+    id: barLoader
+  }
 
-  // Continuous listener for MangoWC JSON stream
+  NotificationOverlay { position: "top-right" }
+
   Process {
-    id: statusWatcher
-    command: ["mmsg", "watch", "all-tags"]
+    id: barCheck
+    command: ["sh", "-c", "echo -n ${QS_BAR:-mangowc}"]
     running: true
 
     stdout: SplitParser {
-      onRead: line => {
-        var cleanLine = line.trim();
-        if (!cleanLine.startsWith("{")) return;
-
-        try {
-          var data = JSON.parse(cleanLine);
-          if (data.all_tags) {
-            root.allMonitorsTags = data.all_tags;
-          }
-        } catch (e) {
-          // Ignore partial or malformed lines
-        }
+      onRead: function (line) {
+        var bar = line.trim()
+        barLoader.source = bar === "niri" ? "niri-bar.qml" : "mangowc-bar.qml"
       }
     }
   }
-
-  // Switch workspace tag
-  function viewTag(tagNum) {
-    Quickshell.execDetached(["mmsg", "tag", tagNum.toString()]);
-  }
-
-  Variants {
-    model: Quickshell.screens
-
-    PanelWindow {
-      id: panel
-      required property var modelData
-
-      // Binds each panel strictly to its own screen so windows don't overlap
-      screen: panel.modelData
-
-      anchors.top: true
-      anchors.left: true
-      anchors.right: true
-
-      implicitHeight: 32
-      color: "#141415"
-
-      // Find the tag list matching this specific monitor (e.g. "eDP-1")
-      property var monitorData: {
-        if (!root.allMonitorsTags || root.allMonitorsTags.length === 0) return null;
-        for (var i = 0; i < root.allMonitorsTags.length; i++) {
-          if (root.allMonitorsTags[i].monitor === panel.modelData.name) {
-            return root.allMonitorsTags[i];
-          }
-        }
-        // Fallback to the first monitor if name matching fails
-        return root.allMonitorsTags[0];
-      }
-
-      property var tagsList: monitorData ? (monitorData.tags || []) : []
-
-      // Calculate highest workspace in use for this monitor
-      property int highestUsedTag: {
-        var maxIndex = 1;
-        for (var i = 0; i < tagsList.length; i++) {
-          var tag = tagsList[i];
-          if (tag.is_active || tag.client_count > 0) {
-            maxIndex = Math.max(maxIndex, tag.index);
-          }
-        }
-        return maxIndex;
-      }
-
-      property int visibleTagCount: Math.max(root.minWorkspaces, highestUsedTag)
-
-      Item {
-        id: barContent
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.leftMargin: 12
-        anchors.rightMargin: 12
-        height: panel.implicitHeight
-
-        Text {
-          id: clockText
-          anchors.left: parent.left
-          anchors.verticalCenter: parent.verticalCenter
-          text: root.currentTime
-          color: "#cdcdcd"
-          font.pixelSize: 13
-          font.family: "Inter"
-        }
-
-        Row {
-          id: tagRow
-          anchors.centerIn: parent
-          spacing: 6
-
-          Repeater {
-            model: panel.visibleTagCount
-
-            Rectangle {
-              width: 28
-              height: 24
-              radius: 6
-
-              property var tagData: (panel.tagsList && index < panel.tagsList.length) ? panel.tagsList[index] : null
-              property bool isActive: tagData ? tagData.is_active : (index === 0)
-              property bool isOccupied: tagData ? (tagData.client_count > 0) : false
-
-              color: isActive ? "#6e94b2" : (isOccupied ? "#606079" : "#252530")
-
-              Text {
-                anchors.centerIn: parent
-                text: index + 1
-                color: "#cdcdcd"
-                font.pixelSize: 11
-                font.family: "Inter"
-              }
-
-              MouseArea {
-                anchors.fill: parent
-                onClicked: root.viewTag(index + 1)
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  Timer {
-    interval: 1000
-    running: true
-    repeat: true
-    onTriggered: root.currentTime = Qt.formatDateTime(new Date(), "HH:mm:ss")
-  }
-
-  Component.onCompleted: root.currentTime = Qt.formatDateTime(new Date(), "HH:mm:ss")
 }

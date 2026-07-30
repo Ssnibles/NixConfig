@@ -2,8 +2,7 @@
 prefer-no-csd
 
 // Startup Applications
-spawn-sh-at-startup "quickshell --path ~/NixConfig/modules/features/niri-quickshell/config/bar.qml"
-spawn-at-startup "mako"
+spawn-sh-at-startup "QS_BAR=niri exec quickshell"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpaper -m fill"
 
 // Environment Variables
@@ -17,6 +16,11 @@ cursor {
     xcursor-theme "Bibata-Modern-Ice"
     xcursor-size 24
     hide-when-typing
+}
+
+overview {
+  zoom 0.5
+  backdrop-color "#100F16"
 }
 
 // Input Peripheral Options
