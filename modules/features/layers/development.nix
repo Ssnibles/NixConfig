@@ -27,7 +27,7 @@
             dbeaver-bin
             yazi
             lazygit
-            sshfs
+            rclone
             fuse
             sshpass
             zellij

@@ -59,7 +59,6 @@
               --height=60%
               --layout=reverse
               --border=rounded
-              --border-label=\"\"
               --info=inline
               --prompt=\"❯ \"
               --pointer=\"▶\"
@@ -76,7 +75,6 @@
               --bind=ctrl-y:accept
               --cycle
               --no-mouse
-              --reverse
               --color=fg:#${c.fg},bg:#${c.bg},hl:#${c.accent}
               --color=fg+:#${c.fg},bg+:#${c.bgSubtle},hl+:#${c.accent}
               --color=info:#${c.purple},prompt:#${c.accent},pointer:#${c.accent}
@@ -172,6 +170,7 @@
           interactiveShellInit = ''
             set -gx EDITOR nvim
             set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
+            fzf --fish | source
           '';
         };
 

@@ -1,7 +1,7 @@
 { self, ... }:
 {
   flake.nixosModules.desktopConfiguration =
-    { pkgs, lib, ... }:
+    { pkgs, lib, config, ... }:
     {
       imports = [
         self.nixosModules.base
@@ -15,6 +15,11 @@
         self.nixosModules.communications
         self.nixosModules.contentCreation
         self.nixosModules.hyprland-noctalia
+        self.nixosModules.mangowc
+        self.nixosModules.niri
+        self.nixosModules.foot
+        self.nixosModules.kitty
+        self.nixosModules.podman-vm
         self.nixosModules.qutebrowser
         self.nixosModules.zen-browser
         self.nixosModules.neovim
@@ -25,16 +30,51 @@
         ./_hardware-generated.nix
       ];
 
-      # Enable the X11 windowing system (needed by GDM)
-      services.xserver.enable = true;
-      services.xserver.xkb = {
-        layout = "us";
-        variant = "";
+      # Bootloader
+      boot.loader.limine.enable = true;
+      boot.loader.efi.canTouchEfiVariables = true;
+
+      # Use latest kernel.
+      boot.kernelPackages = pkgs.linuxPackages_latest;
+
+      boot.initrd.systemd.enable = true;
+      boot.initrd.compressor = "zstd";
+      boot.initrd.compressorArgs = [ "-1" ];
+
+      boot.kernelParams = [
+        "mitigations=off"
+        "8250.nr_uarts=0"
+        "noatime"
+      ];
+      boot.kernel.sysctl = {
+        "vm.swappiness" = 10;
+        "vm.vfs_cache_pressure" = 200;
       };
 
-      # Enable Gnome and GDM for login management and some decent default apps
-      services.displayManager.gdm.enable = true;
-      services.desktopManager.gnome.enable = true;
+      # Limit journal size to 100M
+      services.journald.extraConfig = ''
+        SystemMaxUse=100M
+      '';
+
+      # Don't block boot on network online
+      systemd.services.NetworkManager-wait-online.enable = false;
+
+      # Don't let random-seed refresh block sysinit.target — run it async
+      systemd.services.systemd-boot-random-seed = {
+        unitConfig.Before = lib.mkForce [ ];
+      };
+
+      # Reduce writes with noatime
+      fileSystems."/" = {
+        options = [ "noatime" ];
+      };
+
+      swapDevices = [
+        {
+          device = "/swapfile";
+          size = 8192;
+        }
+      ];
 
       environment.systemPackages = with pkgs.unstable; [
         keepassxc
@@ -42,19 +82,26 @@
         chromium
       ];
 
-      services.xserver.videoDrivers = [ "amdgpu" ];
-
       hardware.graphics = {
         enable = true;
         enable32Bit = true;
       };
 
-      # Bootloader.
-      boot.loader.systemd-boot.enable = true;
-      boot.loader.efi.canTouchEfiVariables = true;
+      # Enable ly for login management
+      services.displayManager.ly.enable = true;
+      security.pam.services.ly.enableGnomeKeyring = true;
 
-      # Use latest kernel.
-      boot.kernelPackages = pkgs.linuxPackages_latest;
+      services.upower.enable = true;
+
+      # Swap Caps Lock and Escape via udev hwdb (kernel-level, no daemon needed)
+      services.udev.extraHwdb = ''
+        evdev:atkbd:dmi:bvn*:bvr*:bd*:svn*:pn*:pvr*
+         KEYBOARD_KEY_3a=esc
+         KEYBOARD_KEY_01=capslock
+        evdev:input:b*v*
+         KEYBOARD_KEY_70039=esc
+         KEYBOARD_KEY_70029=capslock
+      '';
 
       networking.hostName = "nixos";
 
