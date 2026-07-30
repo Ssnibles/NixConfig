@@ -10,6 +10,7 @@
     {
       imports = [
         self.nixosModules.base
+        self.nixosModules.bluetooth
         self.nixosModules.startup
         self.nixosModules.cli
         self.nixosModules.communications
