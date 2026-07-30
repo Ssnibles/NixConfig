@@ -4,6 +4,12 @@
     { pkgs, self', ... }:
     let
       fishInit = pkgs.writeText "fish-init" ''
+        # Source the system-wide NixOS fish config so we get full completions, prompts, etc.
+        source /etc/fish/config.fish 2>/dev/null; or true
+
+        # Source the user's personal fish config so plugins and fzf integration load
+        source ~/.config/fish/config.fish 2>/dev/null; or true
+
         if status is-interactive
           # Syntax highlighting theme
           type -q fish_config; and fish_config theme choose "Rosepine" 2>/dev/null; or true
