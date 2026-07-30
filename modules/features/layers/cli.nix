@@ -34,6 +34,17 @@
               email = "joshua.breite@gmail.com";
             };
           };
+          includes = [
+            {
+              condition = "gitdir:~/AndroidStudioProjects/";
+              contents = {
+                user = {
+                  name = "jb878";
+                  email = "jb878@students.waikato.ac.nz";
+                };
+              };
+            }
+          ];
         };
         # make ZSH shut up about zshrc
         hjem.users.${config.username}.files.".zshrc".text = "";
