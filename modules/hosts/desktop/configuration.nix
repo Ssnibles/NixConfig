@@ -5,6 +5,7 @@
     {
       imports = [
         self.nixosModules.base
+        self.nixosModules.bluetooth
         self.nixosModules.startup
         self.nixosModules.cli
         self.nixosModules.pipewire
@@ -41,6 +42,8 @@
       boot.initrd.compressor = "zstd";
       boot.initrd.compressorArgs = [ "-1" ];
 
+      boot.kernelModules = [ "btusb" ];
+
       boot.kernelParams = [
         "mitigations=off"
         "8250.nr_uarts=0"
@@ -55,6 +58,21 @@
       services.journald.extraConfig = ''
         SystemMaxUse=100M
       '';
+
+      # Unblock Bluetooth at boot — asus_wmi soft-blocks the adapter
+      systemd.services.unblock-bluetooth = {
+        description = "Unblock Bluetooth rfkill";
+        after = [ "sysinit.target" ];
+        before = [ "bluetooth.service" ];
+        wantedBy = [ "multi-user.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+          TimeoutStartSec = 5;
+        };
+        script = "${pkgs.util-linux}/bin/rfkill unblock bluetooth";
+      };
+
+      hardware.logitech.wireless.enable = true;
 
       # Don't block boot on network online
       systemd.services.NetworkManager-wait-online.enable = false;
