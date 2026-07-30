@@ -85,14 +85,31 @@
           LC_TIME = "en_US.UTF-8";
         };
 
-        # Enable networking
-        networking.networkmanager.enable = true;
-        networking.nftables.enable = true;
+        networking = {
+          networkmanager = {
+            enable = true;
+            wifi.backend = "iwd";
+            wifi.powersave = false;
+            wifi.macAddress = "stable";
+            dns = "systemd-resolved";
+          };
+          wireless.iwd.settings.General.Country = "NZ";
+          nftables.enable = true;
+        };
 
-        # DNS resolution via systemd-resolved
-        services.resolved.enable = true;
+        services.resolved = {
+          enable = true;
+          settings = {
+            Resolve = {
+              DNS = "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111";
+              FallbackDNS = "8.8.8.8#dns.google 8.8.4.4#dns.google";
+              DNSSEC = "allow-downgrade";
+              DNSOverTLS = "opportunistic";
+              Domains = [ "~." ];
+            };
+          };
+        };
 
-        # Ensure IP forwarding (avoids conflict between Docker and NetworkManager)
         boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
         environment.systemPackages = with pkgs; [ nftables ];
