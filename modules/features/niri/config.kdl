@@ -12,7 +12,7 @@ environment {
     ELECTRON_OZONE_PLATFORM_HINT "wayland"
 }
 
-// 4. Cursor
+//  Cursor
 cursor {
     xcursor-theme "Bibata-Modern-Ice"
     xcursor-size 24
@@ -59,6 +59,10 @@ layout {
     border {
         off
     }
+}
+
+output "eDP-1" {
+  mode "1920x1080@60.056"
 }
 
 // Global Window Management Rules
