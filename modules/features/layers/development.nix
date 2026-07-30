@@ -148,12 +148,12 @@
 
             cmd_duration = {
               min_time = 2000;
-              format = "[⏱ $duration]($style) ";
+              format = "[ $duration]($style) ";
               style = "bold yellow";
             };
 
             nodejs = {
-              format = "[⬢ v$version]($style) ";
+              format = "[ v$version]($style) ";
               style = "bold green";
               detect_files = [
                 "package.json"
@@ -163,14 +163,14 @@
             };
 
             rust = {
-              format = "[🦀 v$version]($style) ";
+              format = "[ v$version]($style) ";
               style = "bold red";
               detect_files = [ "Cargo.toml" ];
               detect_folders = [ "target" ];
             };
 
             python = {
-              format = "[🐍 v$version]($style) ";
+              format = "[ v$version]($style) ";
               style = "bold yellow";
               detect_files = [
                 "pyproject.toml"
@@ -182,7 +182,7 @@
             };
 
             nix_shell = {
-              format = "[❄️ $state( \($name\))]($style) ";
+              format = "❄ [$state($name)]($style) ";
               style = "bold blue";
             };
 
