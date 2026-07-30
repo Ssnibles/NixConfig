@@ -25,6 +25,13 @@
         ./_hardware-generated.nix
       ];
 
+      # Enable the X11 windowing system (needed by GDM)
+      services.xserver.enable = true;
+      services.xserver.xkb = {
+        layout = "us";
+        variant = "";
+      };
+
       # Enable Gnome and GDM for login management and some decent default apps
       services.displayManager.gdm.enable = true;
       services.desktopManager.gnome.enable = true;

@@ -97,17 +97,10 @@
         # Ensure IP forwarding (avoids conflict between Docker and NetworkManager)
         boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
+        environment.systemPackages = with pkgs; [ nftables ];
+
         # Enable redistributable firmware (required for AMD GPU firmware)
         hardware.enableRedistributableFirmware = true;
-
-        # Enable the X11 windowing system.
-        services.xserver.enable = true;
-
-        # Configure keymap in X11
-        services.xserver.xkb = {
-          layout = "us";
-          variant = "";
-        };
 
         # Enable CUPS to print documents.
         services.printing.enable = false;
