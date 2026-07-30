@@ -64,16 +64,6 @@
           mkdir -p /home/${config.username}/.config/niri
           ln -sfn /home/${config.username}/NixConfig/modules/features/niri/config.kdl /home/${config.username}/.config/niri/config.kdl
         '';
-
-        # hjem.users."${config.username}" = {
-        #   enable = true;
-        #   files = {
-        #     ".config/mango/colours.conf".text = ''
-        #       focuscolor = ${accent}
-        #       bordercolor = ${border}
-        #     '';
-        #   };
-        # };
       };
     };
 }

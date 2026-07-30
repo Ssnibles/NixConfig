@@ -1,4 +1,4 @@
-{ self, inputs, ... }:
+{ self, ... }:
 {
   flake.nixosModules.laptopConfiguration =
     {
@@ -91,15 +91,6 @@
          KEYBOARD_KEY_70039=esc
          KEYBOARD_KEY_70029=capslock
       '';
-
-      # Enable the OpenSSH daemon.
-      # services.openssh.enable = true;
-
-      # Open ports in the firewall.
-      # networking.firewall.allowedTCPPorts = [ ... ];
-      # networking.firewall.allowedUDPPorts = [ ... ];
-      # Or disable the firewall altogether.
-      # networking.firewall.enable = false;
 
       security.pam.services.ly.enableGnomeKeyring = true;
 
