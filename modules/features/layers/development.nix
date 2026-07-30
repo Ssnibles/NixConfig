@@ -102,8 +102,30 @@
 
         programs.fish = {
           enable = true;
+          shellAliases = {
+            ll = "ls -l";
+            la = "ls -la";
+            lt = "ls -ltr";
+            g = "git";
+            ga = "git add";
+            gc = "git commit";
+            gp = "git push";
+            gl = "git log --oneline --graph";
+            n = "nvim";
+            cat = "bat";
+          };
+
+          shellAbbrs = {
+            lg = "lazygit";
+            y = "yazi";
+            nixup = "sudo nixos-rebuild switch --flake .";
+            nixclean = "sudo nix-collect-garbage --delete-older-than 30d";
+          };
+
           interactiveShellInit = ''
             set -gx EDITOR nvim
+            # Better man page colors
+            set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
           '';
         };
 

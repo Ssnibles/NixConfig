@@ -30,16 +30,14 @@
 
       hjem.users."${config.username}" = {
         files = {
-        ".config/foot/foot.ini".text = ''
-          include=/home/${config.username}/.config/foot/colors.ini
-          font=JetBrainsMono Nerd Font:size=12
-          pad=10x10
+          ".config/foot/foot.ini".text = ''
+            include=/home/${config.username}/.config/foot/colors.ini
+            font=JetBrainsMono Nerd Font:size=12
+            pad=10x10
 
-          [cursor]
-          style=block
-        '';
-
-
+            [cursor]
+            style=block
+          '';
           ".config/foot/colors.ini".text = ''
             [colors-dark]
             background=${bg}
