@@ -1,6 +1,5 @@
 {
   "nodes": {
-
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -17,7 +16,7 @@
         "url": "https://git.lix.systems/lix-project/flake-compat.git"
       }
     },
-    "flake-parts_2": {
+    "flake-parts": {
       "inputs": {
         "nixpkgs-lib": "nixpkgs-lib"
       },
@@ -35,7 +34,7 @@
         "type": "github"
       }
     },
-    "flake-parts_3": {
+    "flake-parts_2": {
       "inputs": {
         "nixpkgs-lib": "nixpkgs-lib_2"
       },
@@ -112,7 +111,7 @@
     },
     "mangowc": {
       "inputs": {
-        "flake-parts": "flake-parts_3",
+        "flake-parts": "flake-parts_2",
         "nixpkgs": [
           "nixpkgs"
         ],
@@ -287,10 +286,29 @@
         "type": "github"
       }
     },
+    "pomodoro": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781568411,
+        "narHash": "sha256-cx58TzqAlcQVnkGs3eO4GrU7/LSv+p9cGtDpufnBSTk=",
+        "owner": "Ssnibles",
+        "repo": "pomodoro",
+        "rev": "a17d129740df6dd51b769624705bbcf7b193cd71",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Ssnibles",
+        "repo": "pomodoro",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
-
-        "flake-parts": "flake-parts_2",
+        "flake-parts": "flake-parts",
         "hjem": "hjem",
         "import-tree": "import-tree",
         "mangowc": "mangowc",
@@ -298,6 +316,7 @@
         "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nvf": "nvf",
+        "pomodoro": "pomodoro",
         "wrapper-modules": "wrapper-modules",
         "zen-browser": "zen-browser"
       }
@@ -309,7 +328,7 @@
           "mangowc",
           "nixpkgs"
         ],
-        "systems": "systems_2"
+        "systems": "systems"
       },
       "locked": {
         "lastModified": 1782624992,
@@ -325,7 +344,7 @@
         "type": "github"
       }
     },
-    "systems_2": {
+    "systems": {
       "locked": {
         "lastModified": 1689347949,
         "narHash": "sha256-12tWmuL2zgBgZkdoB6qXZsgJEH9LR3oUgpaQq2RbI80=",
