@@ -59,6 +59,7 @@
               --height=60%
               --layout=reverse
               --border=rounded
+              --border-label=\"\"
               --info=inline
               --prompt=\"❯ \"
               --pointer=\"▶\"
@@ -168,6 +169,7 @@
           };
 
           interactiveShellInit = ''
+            set -g fish_greeting
             set -gx EDITOR nvim
             set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
             fzf --fish | source
