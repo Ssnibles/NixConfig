@@ -29,7 +29,8 @@
 
       hjem.users."${config.username}" = {
         files = {
-          ".config/qutebrowser/config.py".text = ''
+          ".config/qutebrowser/config.py" = {
+            text = ''
             config.load_autoconfig(False)
 
             c.auto_save.session = True
@@ -182,6 +183,7 @@
             config.set("content.javascript.enabled", True, "chrome://*/*")
             config.set("content.javascript.enabled", True, "qute://*/*")
           '';
+          };
         };
         xdg.mime-apps.default-applications = {
           "text/html" = [ "org.qutebrowser.qutebrowser.desktop" ];
