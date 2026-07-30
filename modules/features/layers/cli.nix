@@ -28,26 +28,27 @@
         };
         programs.git = {
           enable = true;
-          config = {
-            user = {
-              name = "Ssnibles";
-              email = "joshua.breite@gmail.com";
-            };
-          };
-          includes = [
+          config = [
             {
-              condition = "gitdir:~/AndroidStudioProjects/";
-              contents = {
-                user = {
-                  name = "jb878";
-                  email = "jb878@students.waikato.ac.nz";
-                };
+              includeIf."gitdir:~/AndroidStudioProjects/".path = "~/.config/git/config-uni";
+            }
+            {
+              user = {
+                name = "Ssnibles";
+                email = "joshua.breite@gmail.com";
               };
             }
           ];
         };
         # make ZSH shut up about zshrc
-        hjem.users.${config.username}.files.".zshrc".text = "";
+        hjem.users.${config.username}.files = {
+          ".zshrc".text = "";
+          ".config/git/config-uni".text = ''
+            [user]
+              name = jb878
+              email = jb878@students.waikato.ac.nz
+          '';
+        };
         programs.zsh = {
           enable = true;
 
