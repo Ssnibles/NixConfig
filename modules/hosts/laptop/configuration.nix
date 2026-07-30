@@ -24,6 +24,7 @@
         self.nixosModules.user
         self.nixosModules.gaming
         self.nixosModules.media
+        self.nixosModules.contentCreation
         self.nixosModules.foot
         self.nixosModules.kitty
         self.nixosModules.podman-vm
@@ -60,22 +61,11 @@
       networking.hostName = "nixos";
 
       environment.systemPackages =
-        with pkgs;
-        [
-          usbutils
+        with pkgs.unstable; [
           dfu-util
-          libsecret
-          gnupg
-          nftables
-        ]
-        ++ (with pkgs.unstable; [
           emacs-pgtk
-          zellij
           gowall
-          gimp3
-          chatterino7
-          mumble
-        ]);
+        ];
 
       # Define udev rules for DFU devices
       services.udev.extraRules = ''
