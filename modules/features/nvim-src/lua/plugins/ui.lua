@@ -1,120 +1,177 @@
-local function mode_str()
-	local mode = vim.api.nvim_get_mode().mode
-	-- Ctrl-V (block visual) is 0x16, Ctrl-S (block select) is 0x13
-	if mode == "\x16" then mode = "V" elseif mode == "\x13" then mode = "S" end
-	local mode_map = {
-		n = "N", i = "I", v = "V", V = "V",
-		c = "C", s = "S", S = "S",
-		t = "T", R = "R", r = "R",
-		["!"] = "!", rm = "R",
-	}
-	return " " .. (mode_map[mode] or "?") .. " "
+local function normalize_mode(mode)
+	if mode == "\x16" then return "V" end
+	if mode == "\x13" then return "S" end
+	return mode
 end
 
-local function git_info()
-	local head = vim.b.gitsigns_head
-	if not head then
-		return ""
-	end
-	local status = vim.b.gitsigns_status
-	if status and status ~= "" then
-		return " " .. head .. status
-	end
-	return " " .. head
+local mode_map = {
+	n = "N", i = "I", v = "V", V = "V",
+	c = "C", s = "S", S = "S",
+	t = "T", R = "R", r = "R",
+	["!"] = "!", rm = "R",
+}
+
+local hl_map = {
+	n = "StlModeN", i = "StlModeI", v = "StlModeV", V = "StlModeV",
+	c = "StlModeC", s = "StlModeS", S = "StlModeS",
+	t = "StlModeT", R = "StlModeR", r = "StlModeR",
+	["!"] = "StlModeC", rm = "StlModeR",
+}
+
+local current_mode = vim.api.nvim_get_mode().mode
+
+local function update_mode()
+	current_mode = vim.api.nvim_get_mode().mode
 end
 
-local function diagnostic_count()
-	local count = vim.diagnostic.count(0)
-	local parts = {}
-	if count[vim.diagnostic.severity.ERROR] and count[vim.diagnostic.severity.ERROR] > 0 then
-		table.insert(parts, "×" .. count[vim.diagnostic.severity.ERROR])
-	end
-	if count[vim.diagnostic.severity.WARN] and count[vim.diagnostic.severity.WARN] > 0 then
-		table.insert(parts, "▲" .. count[vim.diagnostic.severity.WARN])
-	end
-	if #parts == 0 then
-		return ""
-	end
-	return " " .. table.concat(parts, " ")
+local update_group = vim.api.nvim_create_augroup("StatuslineMode", { clear = true })
+vim.api.nvim_create_autocmd("ModeChanged", {
+	group = update_group,
+	pattern = "*:*",
+	callback = update_mode,
+})
+vim.api.nvim_create_autocmd("VimEnter", {
+	group = update_group,
+	callback = function()
+		update_mode()
+		vim.o.statusline = "%!v:lua.require('plugins.ui').statusline()"
+	end,
+})
+
+local function component(render_fn, hl_fn)
+	return { render = render_fn, hl = hl_fn }
 end
 
-local function filename(avail_width)
-	local name = vim.fn.expand("%:f")
-	if name == "" then
-		return " [No Name] "
-	end
-	local modified = vim.bo.modified and " +" or ""
-	local readonly = vim.bo.readonly and " =" or ""
-	local rel = vim.fn.expand("%:p:.")
-	local file_width = vim.fn.strwidth(rel) + vim.fn.strwidth(modified) + vim.fn.strwidth(readonly)
-	if file_width <= avail_width then
-		return " " .. rel .. modified .. readonly .. " "
-	end
-	local parts = vim.split(rel, "/")
-	local result = ""
-	for i = #parts, 1, -1 do
-		local candidate = parts[i] .. (result ~= "" and "/" or "") .. result
-		local w = vim.fn.strwidth(" …/" .. candidate .. modified .. readonly)
-		if w <= avail_width then
-			result = candidate
-		else
-			break
+local mode = component(
+	function()
+		return " " .. (mode_map[normalize_mode(current_mode)] or "?") .. " "
+	end,
+	function() return hl_map[normalize_mode(current_mode)] or "StlModeN" end
+)
+
+local git = component(
+	function()
+		local head = vim.b.gitsigns_head
+		if not head then return nil end
+		local status = vim.b.gitsigns_status
+		return " " .. head .. (status or "")
+	end,
+	function() return "StlGit" end
+)
+
+local diagnostics = component(
+	function()
+		local count = vim.diagnostic.count(0)
+		local parts = {}
+		if count[vim.diagnostic.severity.ERROR] and count[vim.diagnostic.severity.ERROR] > 0 then
+			table.insert(parts, "×" .. count[vim.diagnostic.severity.ERROR])
 		end
-	end
-	return " …/" .. result .. modified .. readonly .. " "
-end
+		if count[vim.diagnostic.severity.WARN] and count[vim.diagnostic.severity.WARN] > 0 then
+			table.insert(parts, "▲" .. count[vim.diagnostic.severity.WARN])
+		end
+		if #parts == 0 then return nil end
+		return " " .. table.concat(parts, " ")
+	end,
+	function() return "StlDiag" end
+)
 
-local function lsp_clients()
-	local clients = vim.lsp.get_clients({ bufnr = 0 })
-	if #clients == 0 then
-		return ""
-	end
-	local names = {}
-	for _, client in ipairs(clients) do
-		table.insert(names, client.name)
-	end
-	return " " .. table.concat(names, ",") .. " "
-end
+local filename = component(
+	function(opts)
+		local avail = opts.avail
+		local margin = opts.margin_right or 0
+		local target = math.max(10, avail - margin)
 
-local function filetype()
-	local ft = vim.bo.filetype
-	if ft == "" then
-		return ""
-	end
-	return " " .. ft .. " "
-end
+		local name = vim.fn.expand("%:f")
+		if name == "" then return " [No Name] " end
+		local modified = vim.bo.modified and " +" or ""
+		local readonly = vim.bo.readonly and " =" or ""
+		local rel = vim.fn.expand("%:p:.")
+		local suf = modified .. readonly
+		if vim.fn.strwidth(rel) + vim.fn.strwidth(suf) <= target then
+			return " " .. rel .. suf .. " "
+		end
+		local parts = vim.split(rel, "/")
+		local result = ""
+		for i = #parts, 1, -1 do
+			local candidate = parts[i] .. (result ~= "" and "/" or "") .. result
+			if vim.fn.strwidth(" …/" .. candidate .. suf) <= target then
+				result = candidate
+			else
+				break
+			end
+		end
+		return " …/" .. result .. suf .. " "
+	end,
+	function() return "StlFile" end
+)
 
-local function line_info()
-	return " " .. vim.fn.line(".") .. "/" .. vim.fn.line("$") .. " "
-end
+local lsp = component(
+	function()
+		local clients = vim.lsp.get_clients({ bufnr = 0 })
+		if #clients == 0 then return nil end
+		local names = {}
+		for _, client in ipairs(clients) do
+			table.insert(names, client.name)
+		end
+		return " " .. table.concat(names, ",") .. " "
+	end,
+	function() return "StlLSP" end
+)
+
+local filetype = component(
+	function()
+		local ft = vim.bo.filetype
+		if ft == "" then return nil end
+		return " " .. ft .. " "
+	end,
+	function() return "StlFT" end
+)
+
+local position = component(
+	function()
+		return " " .. vim.fn.line(".") .. "/" .. vim.fn.line("$") .. " "
+	end,
+	function() return "StlPos" end
+)
+
+local left_bar = { mode, git, diagnostics }
+local right_bar = { lsp, filetype, position }
+
+local filename_opts = { margin_right = 6 }
 
 local function statusline()
-	local mode_text = mode_str()
-	local git_text = git_info()
-	local diag_text = diagnostic_count()
-	local lsp_text = lsp_clients()
-	local ft_text = filetype()
-	local pos_text = line_info()
+	local function collect(section)
+		local items = {}
+		local width = 0
+		for _, c in ipairs(section) do
+			local text = c.render()
+			if text then
+				table.insert(items, { text = text, hl = c.hl() })
+				width = width + vim.fn.strwidth(text)
+			end
+		end
+		return items, width
+	end
 
-	local right_str = lsp_text .. ft_text .. pos_text
-	local right_width = vim.fn.strwidth(right_str)
-	local left_fixed = mode_text .. git_text .. diag_text
-	local left_fixed_width = vim.fn.strwidth(left_fixed)
-	local avail = vim.fn.winwidth(0) - right_width - left_fixed_width - 1
+	local left_items, left_width = collect(left_bar)
+	local right_items, right_width = collect(right_bar)
 
-	local file_text = filename(avail)
+	local non_filename = left_width + right_width
+	local avail = math.max(10, math.floor((vim.fn.winwidth(0) - non_filename - 1) / 5) * 5)
 
-	local left = "%#StlMode#" .. mode_text .. "%*"
-		.. "%#StlGit#" .. git_text .. "%*"
-		.. "%#StlDiag#" .. diag_text .. "%*"
-		.. "%#StlFile#" .. file_text .. "%*"
-	local right = "%#StlLSP#" .. lsp_text .. "%*"
-		.. "%#StlFT#" .. ft_text .. "%*"
-		.. "%#StlPos#" .. pos_text .. "%*"
-	return left .. "%=" .. right
+	local file_opts = vim.tbl_extend("keep", { avail = avail }, filename_opts)
+	local file_text = "%#StlFile#" .. filename.render(file_opts) .. "%*"
+
+	local function format(items)
+		local parts = {}
+		for _, item in ipairs(items) do
+			table.insert(parts, "%#" .. item.hl .. "#" .. item.text .. "%*")
+		end
+		return table.concat(parts)
+	end
+
+	return format(left_items) .. "%<" .. file_text .. "%=" .. format(right_items)
 end
-
-vim.o.statusline = "%!v:lua.require('plugins.ui').statusline()"
 
 local function statuscolumn()
 	local foldcol = ""
