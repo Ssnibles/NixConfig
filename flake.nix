@@ -22,9 +22,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    bun2nix.url = "github:nix-community/bun2nix";
-    bun2nix.inputs.nixpkgs.follows = "nixpkgs";
-
     mangowc = {
       url = "github:mangowm/mango";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -34,6 +31,9 @@
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    pomodoro.url = "path:/home/josh/pomodoro";
+    pomodoro.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
