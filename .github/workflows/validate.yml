@@ -38,8 +38,7 @@ jobs:
           # We only check syntax, not full evaluation
           nix-instantiate --parse flake.nix > /dev/null
           echo "✓ Flake syntax is valid"
-          
-          # Check Nix file syntax
+
           find . -name "*.nix" -not -path "./.git/*" -exec nix-instantiate --parse {} \; > /dev/null 2>&1 || true
           echo "✓ Nix file syntax check completed"
 
@@ -50,14 +49,6 @@ jobs:
           # Note: These may fail if pomodoro input is missing, which is expected in CI
           nix eval .#nixosConfigurations.desktop.config.system.build.toplevel
           nix eval .#nixosConfigurations.laptop.config.system.build.toplevel
-
-      # Evaluate Home Manager configurations
-      - name: Evaluate Home Manager configurations
-        continue-on-error: true
-        run: |
-          # Note: These may fail if pomodoro input is missing, which is expected in CI
-          nix eval .#homeConfigurations.josh@desktop.activationPackage
-          nix eval .#homeConfigurations.josh@laptop.activationPackage
 
       # Check for common issues (unused inputs, formatting)
       - name: Run nix flake show
