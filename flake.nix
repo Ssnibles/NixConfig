@@ -32,8 +32,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    pomodoro.url = "path:/home/josh/pomodoro";
+    pomodoro.url = "github:Ssnibles/pomodoro";
     pomodoro.inputs.nixpkgs.follows = "nixpkgs";
+    # For local development without pushing every change, swap in:
+    # pomodoro.url = "path:/home/josh/pomodoro";
+    # pomodoro.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
