@@ -131,6 +131,7 @@
 
             blink-cmp
             blink-cmp-spell
+            blink-cmp-copilot
             luasnip
             friendly-snippets
             copilot-lua

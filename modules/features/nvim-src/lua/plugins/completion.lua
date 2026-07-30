@@ -6,35 +6,6 @@ require("luasnip").setup({
 
 require("luasnip.loaders.from_vscode").lazy_load()
 
-local copilot_ok, copilot = pcall(require, "copilot")
-local copilot_suggestion_ok, copilot_suggestion
-if copilot_ok then
-	copilot_suggestion_ok, copilot_suggestion = pcall(require, "copilot.suggestion")
-end
-
-local function accept_copilot_if_visible()
-	if copilot_suggestion_ok and copilot_suggestion.is_visible() and not vim.b.copilot_suggestion_hidden then
-		copilot_suggestion.accept()
-		return true
-	end
-	return false
-end
-
-local function copilot_suggestion_action(action)
-	return function()
-		if not copilot_suggestion_ok then
-			return
-		end
-		if action == "next" then
-			copilot_suggestion.next()
-		elseif action == "prev" then
-			copilot_suggestion.prev()
-		elseif action == "dismiss" then
-			copilot_suggestion.dismiss()
-		end
-	end
-end
-
 require("blink.cmp").setup({
 	signature = {
 		enabled = true,
@@ -50,7 +21,7 @@ require("blink.cmp").setup({
 		},
 		["<C-c>"] = { "cancel", "fallback" },
 		["<C-e>"] = { "cancel", "fallback" },
-		["<Tab>"] = { accept_copilot_if_visible, "select_and_accept", "snippet_forward", "fallback" },
+		["<Tab>"] = { "select_and_accept", "snippet_forward", "fallback" },
 		["<S-Tab>"] = { "snippet_backward", "fallback" },
 		["<Up>"] = { "select_prev", "fallback" },
 		["<Down>"] = { "select_next", "fallback" },
@@ -60,8 +31,6 @@ require("blink.cmp").setup({
 		["<C-j>"] = { "select_next", "fallback" },
 		["<C-b>"] = { "scroll_documentation_up", "fallback" },
 		["<C-f>"] = { "scroll_documentation_down", "fallback" },
-		["<M-]>"] = { copilot_suggestion_action("next") },
-		["<M-[>"] = { copilot_suggestion_action("prev") },
 	},
 	appearance = {
 		nerd_font_variant = "mono",
@@ -76,19 +45,37 @@ require("blink.cmp").setup({
 		},
 	},
 	sources = {
-		default = { "lsp", "snippets", "buffer", "path" },
+		default = { "lsp", "copilot", "snippets", "buffer", "path" },
 		per_filetype = {
-			markdown = { "lsp", "snippets", "buffer", "path", "spell" },
-			text = { "lsp", "snippets", "buffer", "path", "spell" },
-			gitcommit = { "lsp", "snippets", "buffer", "path", "spell" },
+			markdown = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
+			text = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
+			gitcommit = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
 		},
 		providers = {
+			copilot = {
+				name = "copilot",
+				module = "blink-cmp-copilot",
+				score_offset = 100,
+				async = true,
+			},
 			spell = {
 				name = "Spell", module = "blink-cmp-spell",
 				enabled = function() return vim.wo.spell end,
 				opts = { max_entries = 8 },
 			},
-			buffer = { max_items = 8, min_keyword_length = 3 },
+			buffer = {
+				max_items = 8,
+				min_keyword_length = 3,
+				score_offset = -3,
+			},
+			snippets = {
+				min_keyword_length = 2,
+				score_offset = -1,
+			},
+			path = {
+				min_keyword_length = 2,
+				score_offset = -2,
+			},
 		},
 	},
 	completion = {
@@ -106,7 +93,7 @@ require("blink.cmp").setup({
 			auto_show = true, auto_show_delay_ms = 150,
 			window = { border = "rounded", max_width = 80, max_height = 30 },
 		},
-		ghost_text = { enabled = false },
+		ghost_text = { enabled = true },
 	},
 	cmdline = {
 		keymap = {
@@ -122,7 +109,7 @@ require("blink.cmp").setup({
 		},
 		completion = {
 			menu = { auto_show = true },
-			ghost_text = { enabled = false },
+			ghost_text = { enabled = true },
 		},
 	},
 })
@@ -136,26 +123,13 @@ if ok_text_edits then
 	end
 end
 
+local copilot_ok, copilot = pcall(require, "copilot")
 if copilot_ok then
 	copilot.setup({
-		suggestion = {
-			enabled = true, auto_trigger = true, debounce = 150,
-			hide_during_completion = true,
-			keymap = { accept = false, next = false, prev = false, dismiss = false },
-		},
+		suggestion = { enabled = false },
 		panel = { enabled = true },
 	})
 end
-
-vim.api.nvim_create_autocmd("User", {
-	pattern = "BlinkCmpMenuOpen",
-	callback = function() vim.b.copilot_suggestion_hidden = true end,
-})
-
-vim.api.nvim_create_autocmd("User", {
-	pattern = "BlinkCmpMenuClose",
-	callback = function() vim.b.copilot_suggestion_hidden = false end,
-})
 
 vim.keymap.set("n", "<leader>ac", function()
 	if not copilot_ok then return end
@@ -167,7 +141,3 @@ end, { desc = "Toggle copilot" })
 vim.keymap.set("n", "<leader>ap", function()
 	if copilot_ok then copilot.panel.toggle() end
 end, { desc = "Toggle copilot panel" })
-
-vim.keymap.set("i", "<M-\\>", function()
-	if copilot_suggestion_ok then copilot_suggestion.next() end
-end, { desc = "Trigger copilot suggestion" })

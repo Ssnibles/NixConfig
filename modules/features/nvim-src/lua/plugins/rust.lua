@@ -46,16 +46,22 @@ vim.g.rustaceanvim = {
 	},
 }
 
-vim.keymap.set("n", "<leader>rr", function() vim.cmd.RustLsp("runnables") end, { desc = "Rust runnables" })
-vim.keymap.set("n", "<leader>rt", function() vim.cmd.RustLsp({ "testables", { background = true } }) end, { desc = "Rust testables" })
-vim.keymap.set("n", "<leader>rm", function() vim.cmd.RustLsp("expandMacro") end, { desc = "Rust expand macro" })
-vim.keymap.set("n", "<leader>ro", function() vim.cmd.RustLsp("openDocs") end, { desc = "Rust open docs" })
-vim.keymap.set("n", "<leader>rp", function() vim.cmd.RustLsp("parentModule") end, { desc = "Rust parent module" })
-vim.keymap.set("n", "<leader>rH", function() vim.cmd.RustLsp("reloadWorkspace") end, { desc = "Rust reload workspace" })
-vim.keymap.set("n", "<leader>re", function() vim.cmd.RustLsp("rebuildMacros") end, { desc = "Rust rebuild macros" })
-vim.keymap.set({ "n", "v" }, "<leader>ra", function() vim.cmd.RustLsp("codeAction") end, { desc = "Rust code action" })
+local function rustlsp(...)
+	if vim.fn.exists(":RustLsp") == 2 then
+		vim.cmd.RustLsp(...)
+	end
+end
+
+vim.keymap.set("n", "<leader>rr", function() rustlsp("runnables") end, { desc = "Rust runnables" })
+vim.keymap.set("n", "<leader>rt", function() rustlsp({ "testables", { background = true } }) end, { desc = "Rust testables" })
+vim.keymap.set("n", "<leader>rm", function() rustlsp("expandMacro") end, { desc = "Rust expand macro" })
+vim.keymap.set("n", "<leader>ro", function() rustlsp("openDocs") end, { desc = "Rust open docs" })
+vim.keymap.set("n", "<leader>rp", function() rustlsp("parentModule") end, { desc = "Rust parent module" })
+vim.keymap.set("n", "<leader>rH", function() rustlsp("reloadWorkspace") end, { desc = "Rust reload workspace" })
+vim.keymap.set("n", "<leader>re", function() rustlsp("rebuildMacros") end, { desc = "Rust rebuild macros" })
+vim.keymap.set({ "n", "v" }, "<leader>ra", function() rustlsp("codeAction") end, { desc = "Rust code action" })
 vim.keymap.set("n", "<leader>rs", function()
 	local ok, clients = pcall(vim.lsp.get_clients, { name = "rust-analyzer", bufnr = 0 })
 	if ok and #clients > 0 then vim.lsp.stop_client(clients) end
-	vim.cmd.RustLsp("reloadWorkspace")
+	rustlsp("reloadWorkspace")
 end, { desc = "Rust restart server" })
