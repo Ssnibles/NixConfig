@@ -1,9 +1,4 @@
-{
-  self,
-  inputs,
-  config,
-  ...
-}:
+{ self, ... }:
 {
   flake.nixosModules.development =
     {
