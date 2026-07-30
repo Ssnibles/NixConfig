@@ -51,7 +51,6 @@ modules/
 │   ├── neovim.nix
 │   ├── quickshell/
 │   ├── vicinae/
-│   ├── waybar/
 │   └── zen-browser.nix
 └── packages/            ← custom packages
     ├── boilerplate/
