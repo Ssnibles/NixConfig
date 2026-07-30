@@ -11,7 +11,6 @@
       config = {
         environment.systemPackages = with pkgs; [ bibata-cursors ];
         hjem.users."${config.username}" =  {
-          enable = true;
           files = {
             # GTK cursor settings
             ".config/gtk-3.0/settings.ini".text = ''

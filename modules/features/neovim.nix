@@ -122,10 +122,6 @@
             vscode-js-debug
 
             tree-sitter
-            ripgrep
-            fd
-            sshfs
-            fuse
           ];
 
           startPlugins = with pkgs.vimPlugins; [
