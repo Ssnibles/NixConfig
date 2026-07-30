@@ -1,4 +1,4 @@
-{ self, ... }:
+{ self, inputs, ... }:
 {
   flake.nixosModules.development =
     {
@@ -7,6 +7,10 @@
       config,
       ...
     }:
+    let
+      pomodoroPkg = lib.optional (inputs ? pomodoro)
+        inputs.pomodoro.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    in
     {
       config = {
         environment.systemPackages =
@@ -28,10 +32,10 @@
             zellij
             self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
           ]
+          ++ pomodoroPkg
           ++ (with pkgs.unstable; [
             android-studio
           ]);
       };
-
     };
 }
