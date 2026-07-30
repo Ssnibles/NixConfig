@@ -134,7 +134,6 @@
             luasnip
             friendly-snippets
             copilot-lua
-            fidget-nvim
             nvim-lint
             roslyn-nvim
 
@@ -149,14 +148,10 @@
             flash-nvim
             smart-splits-nvim
 
-            lualine-nvim
             nui-nvim
 
             gitsigns-nvim
             neogit
-
-            conform-nvim
-            dial-nvim
 
             grug-far-nvim
 
@@ -164,10 +159,6 @@
             plenary-nvim
             typst-preview-nvim
             rustaceanvim
-
-            trouble-nvim
-
-            snacks-nvim
 
             tiny-inline-diagnostic-nvim
           ];

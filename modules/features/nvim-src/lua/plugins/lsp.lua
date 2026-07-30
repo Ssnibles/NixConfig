@@ -137,29 +137,6 @@ end
 
 vim.api.nvim_create_user_command("SmartRename", smart_rename_replace, { desc = "Context-aware rename and replace" })
 
-local original_notify = vim.notify
-
-require("fidget").setup({
-	progress = { suppress_on_insert = true, display = { done_icon = "✓", done_ttl = 2 } },
-	notification = {
-		override_vim_notify = true, filter = vim.log.levels.INFO,
-		window = { winblend = 0, border = "none" },
-	},
-})
-
-local fidget_notify = vim.notify
-local save_patterns = { "^%d+ lines written", "^\"[^\"]*\" %d+L" }
-vim.notify = function(msg, level, opts)
-	if type(msg) == "string" then
-		for _, pattern in ipairs(save_patterns) do
-			if msg:match(pattern) then return end
-		end
-	end
-	original_notify(msg, level, opts)
-	return fidget_notify(msg, level, opts)
-end
-
-
 local capabilities = (function()
 	local ok, blink = pcall(require, "blink.cmp")
 	return ok and blink.get_lsp_capabilities() or lsp.protocol.make_client_capabilities()

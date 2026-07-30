@@ -1,17 +1,4 @@
-local trouble = require("trouble")
-trouble.setup({
-	focus = true,
-	auto_open = false,
-	auto_close = true,
-	auto_preview = false,
-	preview = { type = "main", scratch = true },
-	win = { border = "rounded" },
-})
-
-local map = vim.keymap.set
-map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Trouble diagnostics" })
-map("n", "<leader>xw", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>", { desc = "Trouble buffer diagnostics" })
-map("n", "<leader>xq", "<cmd>Trouble qflist toggle<CR>", { desc = "Trouble quickfix" })
-map("n", "<leader>xl", "<cmd>Trouble loclist toggle<CR>", { desc = "Trouble loclist" })
-map("n", "<leader>xs", "<cmd>Trouble symbols toggle focus=false<CR>", { desc = "Trouble symbols" })
-map("n", "<leader>xr", "<cmd>Trouble lsp_references toggle<CR>", { desc = "Trouble LSP references" })
+vim.keymap.set("n", "<leader>xx", "<cmd>clist<CR>", { desc = "Quickfix list" })
+vim.keymap.set("n", "<leader>xw", "<cmd>lopen<CR>", { desc = "Location list" })
+vim.keymap.set("n", "<leader>xq", "<cmd>copen<CR>", { desc = "Quickfix open" })
+vim.keymap.set("n", "<leader>xl", "<cmd>lopen<CR>", { desc = "Loclist open" })

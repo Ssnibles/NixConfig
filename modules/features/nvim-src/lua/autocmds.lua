@@ -78,9 +78,19 @@ autocmd("BufWritePre", {
 		if skip[vim.bo.filetype] then
 			return
 		end
-		local ts = require("mini.trailspace")
-		ts.trim()
-		ts.trim_last_lines()
+		local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+		for i, line in ipairs(lines) do
+			lines[i] = line:gsub("%s+$", "")
+		end
+		vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+		-- trim trailing blank lines at end
+		local last = #lines
+		while last > 1 and lines[last]:match("^%s*$") do
+			last = last - 1
+		end
+		if last < #lines then
+			vim.api.nvim_buf_set_lines(0, last, -1, false, {})
+		end
 	end,
 })
 
@@ -233,29 +243,6 @@ autocmd({ "BufReadPre", "BufNewFile" }, {
 			vim.bo.syntax = ""
 		end
 	end,
-})
-
-local function disable_trailspace(ev)
-	local ignore_filetypes = { "help", "lazy", "mason", "trouble", "oil" }
-	local ignore_buftypes = { "nofile", "quickfix", "terminal", "prompt" }
-
-	local buf = ev and ev.buf or 0
-	local ft = vim.bo[buf].filetype
-	local bt = vim.bo[buf].buftype
-	local name = vim.api.nvim_buf_get_name(buf)
-
-	if vim.tbl_contains(ignore_filetypes, ft) or vim.tbl_contains(ignore_buftypes, bt) then
-		vim.b[buf].minitrailspace_disable = true
-		if buf == vim.api.nvim_get_current_buf() then
-			pcall(vim.fn.clearmatches)
-		end
-	end
-end
-
-autocmd({ "BufNewFile", "BufReadPre", "BufWinEnter", "FileType", "BufEnter" }, {
-	group = augroup,
-	pattern = "*",
-	callback = disable_trailspace,
 })
 
 vim.on_key(function(key, typed)

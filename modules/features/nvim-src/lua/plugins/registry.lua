@@ -15,10 +15,10 @@ M.core = {
 	"plugins.sshinator",
 	"plugins.java-snippets",
 	"plugins.typst-snippets",
+	"plugins.trouble",
 }
 
 M.deferred = {
-	"plugins.trouble",
 	"plugins.neogit",
 	"plugins.dap",
 }

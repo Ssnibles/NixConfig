@@ -17,7 +17,6 @@ M.colors = {
 	magenta = "#c48282",
 	selection = "#333738",
 	search = "#2a3a4a",
-	trailspace = "#3a1c28",
 }
 
 local function blend(fg, bg, alpha)
@@ -272,7 +271,6 @@ function M.setup()
 	hl("MiniHipatternsNote", { fg = c.bg, bg = c.blue, bold = true })
 	hl("MiniHipatternsHack", { fg = c.bg, bg = c.purple, bold = true })
 	hl("MiniIndentscopeSymbol", { fg = indent })
-	hl("MiniTrailspace", { bg = c.trailspace })
 	hl("MiniCursorword", { bg = c.selection })
 	hl("MiniCursorwordCurrent", { bg = c.selection })
 	hl("MiniPickNormal", { link = "Normal" })
@@ -310,34 +308,13 @@ function M.setup()
 	hl("NeogitNotificationError", { fg = c.red })
 	hl("NeogitCommitViewHeader", { fg = c.blue, bold = true })
 
-	local lualine_base = {
-		b = { fg = c.fg, bg = c.bg },
-		c = { fg = c.comment, bg = c.bg },
-	}
-
-	M.lualine = {
-		normal = vim.tbl_deep_extend("force", {
-			a = { fg = c.bg, bg = c.blue, gui = "bold" },
-		}, lualine_base),
-		insert = vim.tbl_deep_extend("force", {
-			a = { fg = c.bg, bg = c.green, gui = "bold" },
-		}, lualine_base),
-		visual = vim.tbl_deep_extend("force", {
-			a = { fg = c.bg, bg = c.purple, gui = "bold" },
-		}, lualine_base),
-		replace = vim.tbl_deep_extend("force", {
-			a = { fg = c.bg, bg = c.red, gui = "bold" },
-		}, lualine_base),
-		command = vim.tbl_deep_extend("force", {
-			a = { fg = c.bg, bg = c.cyan, gui = "bold" },
-		}, lualine_base),
-		terminal = vim.tbl_deep_extend("force", {
-			a = { fg = c.bg, bg = c.orange, gui = "bold" },
-		}, lualine_base),
-		inactive = vim.tbl_deep_extend("force", {
-			a = { fg = c.comment, bg = c.bg },
-		}, lualine_base),
-	}
+	hl("StlMode", { fg = c.bg, bg = c.blue, bold = true })
+	hl("StlGit", { fg = c.comment })
+	hl("StlDiag", { fg = c.comment })
+	hl("StlFile", { fg = c.fg })
+	hl("StlLSP", { fg = c.comment })
+	hl("StlFT", { fg = c.comment })
+	hl("StlPos", { fg = c.comment })
 end
 
 return M

@@ -43,27 +43,55 @@ require("gitsigns").setup({
 vim.g.disable_autoformat = vim.g.disable_autoformat or false
 vim.g.disable_autoformat_ft = vim.g.disable_autoformat_ft or { c = true, cpp = true }
 
-require("conform").setup({
-	formatters_by_ft = {
-		lua = { "stylua" }, python = { "isort", "black" },
-		javascript = { "prettier" }, javascriptreact = { "prettier" },
-		typescript = { "prettier" }, typescriptreact = { "prettier" },
-		css = { "prettier" }, json = { "prettier" }, yaml = { "prettier" },
-		markdown = { "prettier" }, nix = { "nixfmt" }, sh = { "shfmt" },
-		kotlin = { "ktlint" }, java = { "google-java-format" },
-		cs = { "csharpier" }, rust = { "rustfmt" }, typst = { "typstyle" },
-	},
-	format_on_save = function(bufnr)
-		if vim.g.disable_autoformat then return nil end
-		local ft = vim.bo[bufnr].filetype
-		if vim.g.disable_autoformat_ft[ft] then return nil end
-		return { timeout_ms = 1000, lsp_format = "fallback" }
+local formatters_by_ft = {
+	lua = { "stylua" }, python = { "isort", "black" },
+	javascript = { "prettierd" }, javascriptreact = { "prettierd" },
+	typescript = { "prettierd" }, typescriptreact = { "prettierd" },
+	css = { "prettierd" }, json = { "prettierd" }, yaml = { "prettierd" },
+	markdown = { "prettierd" }, nix = { "nixfmt" }, sh = { "shfmt" },
+	kotlin = { "ktlint" }, java = { "google-java-format" },
+	cs = { "csharpier" }, rust = { "rustfmt" }, typst = { "typstyle" },
+}
+
+local function format_buffer()
+	local bufnr = vim.api.nvim_get_current_buf()
+	local ft = vim.bo[bufnr].filetype
+	local clients = vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/formatting" })
+	if #clients > 0 then
+		vim.lsp.buf.format({ bufnr = bufnr, timeout_ms = 1000 })
+		return
+	end
+	local formatters = formatters_by_ft[ft]
+	if not formatters then
+		vim.notify("No formatter configured for " .. ft, vim.log.levels.WARN)
+		return
+	end
+	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+	local text = table.concat(lines, "\n")
+	for _, fmt in ipairs(formatters) do
+		local result = vim.fn.systemlist({ fmt, "--stdin-filepath", vim.api.nvim_buf_get_name(bufnr) }, text)
+		if vim.v.shell_error == 0 and #result > 0 then
+			pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, result)
+			return
+		end
+	end
+	vim.notify("Formatter failed for " .. ft, vim.log.levels.WARN)
+end
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+	callback = function()
+		if vim.g.disable_autoformat then return end
+		local ft = vim.bo.filetype
+		if vim.g.disable_autoformat_ft[ft] then return end
+		local bufnr = vim.api.nvim_get_current_buf()
+		local clients = vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/formatting" })
+		if #clients > 0 then
+			pcall(vim.lsp.buf.format, { bufnr = bufnr, timeout_ms = 1000 })
+		end
 	end,
 })
 
-vim.keymap.set({ "n", "v" }, "<leader>cf", function()
-	require("conform").format({ async = true, lsp_format = "fallback" })
-end, { desc = "Format buffer" })
+vim.keymap.set({ "n", "v" }, "<leader>cf", format_buffer, { desc = "Format buffer" })
 
 vim.keymap.set("n", "<leader>tF", function()
 	vim.g.disable_autoformat = not vim.g.disable_autoformat
@@ -78,22 +106,3 @@ vim.keymap.set("n", "<leader>tA", function()
 	local msg = vim.g.disable_autoformat_ft[ft] and "disabled" or "enabled"
 	vim.notify(("Autoformat for %s %s"):format(ft, msg), vim.log.levels.INFO)
 end, { desc = "Toggle autoformat for filetype" })
-
-local augend = require("dial.augend")
-require("dial.config").augends:register_group({
-	default = {
-		augend.integer.alias.decimal, augend.integer.alias.hex,
-		augend.date.alias["%Y/%m/%d"], augend.date.alias["%Y-%m-%d"],
-		augend.constant.alias.bool, augend.constant.alias.alpha, augend.constant.alias.Alpha,
-	},
-})
-
-local dial_map = require("dial.map")
-vim.keymap.set("n", "<C-a>", dial_map.inc_normal(), { desc = "Increment" })
-vim.keymap.set("n", "<C-x>", dial_map.dec_normal(), { desc = "Decrement" })
-vim.keymap.set("v", "<C-a>", dial_map.inc_visual(), { desc = "Increment selection" })
-vim.keymap.set("v", "<C-x>", dial_map.dec_visual(), { desc = "Decrement selection" })
-vim.keymap.set("n", "g<C-a>", dial_map.inc_gnormal(), { desc = "Increment (g)" })
-vim.keymap.set("n", "g<C-x>", dial_map.dec_gnormal(), { desc = "Decrement (g)" })
-vim.keymap.set("v", "g<C-a>", dial_map.inc_gvisual(), { desc = "Increment selection (g)" })
-vim.keymap.set("v", "g<C-x>", dial_map.dec_gvisual(), { desc = "Decrement selection (g)" })

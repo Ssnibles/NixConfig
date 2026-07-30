@@ -38,7 +38,6 @@ clue.setup({
 		{ mode = "n", keys = "<Leader>b", desc = "+buffers" },
 		{ mode = "n", keys = "<Leader>c", desc = "+code" },
 		{ mode = "n", keys = "<Leader>d", desc = "+diagnostics" },
-		{ mode = "n", keys = "<Leader>x", desc = "+trouble" },
 		{ mode = "n", keys = "<Leader>f", desc = "+find" },
 		{ mode = "n", keys = "<Leader>g", desc = "+git" },
 		{ mode = "n", keys = "<Leader>l", desc = "+lsp" },
@@ -48,6 +47,7 @@ clue.setup({
 		{ mode = "n", keys = "<Leader>T", desc = "+tabs" },
 		{ mode = "n", keys = "<Leader>w", desc = "+window" },
 		{ mode = "n", keys = "<Leader>a", desc = "+copilot" },
+		{ mode = "n", keys = "<Leader>x", desc = "+lists" },
 		{ mode = "n", keys = "<Leader>v", desc = "+select" },
 	},
 	triggers = {
@@ -81,7 +81,7 @@ require("mini.indentscope").setup({
 		delay = 100,
 		animation = require("mini.indentscope").gen_animation.none(),
 		predicate = function()
-			local ignore_filetypes = { "help", "lazy", "mason", "trouble", "oil" }
+			local ignore_filetypes = { "help", "lazy", "mason", "oil" }
 			local ignore_buftypes = { "nofile", "quickfix", "terminal", "prompt" }
 			local ft = vim.bo.filetype
 			local bt = vim.bo.buftype
@@ -96,10 +96,29 @@ require("mini.align").setup()
 require("mini.move").setup()
 require("mini.operators").setup()
 require("mini.splitjoin").setup()
-require("mini.pairs").setup()
-require("mini.trailspace").setup({})
-require("mini.bufremove").setup()
+
+-- Auto-close pairs (native replacement for mini.pairs)
+local pairs_map = {
+	{ "(", ")" }, { "[", "]" }, { "{", "}" }, { '"', '"' }, { "'", "'" },
+}
+for _, pair in ipairs(pairs_map) do
+	local open = pair[1]
+	local close = pair[2]
+	vim.keymap.set("i", open, open .. close .. "<Left>", { desc = "Auto-close " .. open .. close })
+	if open ~= close then
+		vim.keymap.set("i", close, function()
+			local line = vim.api.nvim_get_current_line()
+			local col = vim.api.nvim_win_get_cursor(0)[2]
+			if line:sub(col + 1, col + 1) == close then
+				vim.api.nvim_win_set_cursor(0, { vim.fn.line("."), col + 1 })
+			else
+				vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(close, true, false, true), "i", true)
+			end
+		end, { desc = "Smart close " .. close })
+	end
+end
 
 vim.keymap.set("n", "<leader>bd", function()
-	require("mini.bufremove").delete()
+	local buf = vim.api.nvim_get_current_buf()
+	vim.api.nvim_buf_delete(buf, { force = false })
 end, { desc = "Delete buffer" })
