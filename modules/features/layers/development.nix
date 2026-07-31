@@ -24,7 +24,6 @@
             gcc
             direnv
             nix-direnv
-            dbeaver-bin
             yazi
             lazygit
             rclone
