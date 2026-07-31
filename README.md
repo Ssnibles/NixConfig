@@ -220,6 +220,10 @@ curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh 
 # Reinstall without wiping the disk
 curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | \
   sudo bash -s -- --host desktop --skip-format --no-reboot
+
+# Overwrite an existing NixConfig directory without prompting
+curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | \
+  sudo bash -s -- --host desktop --disk /dev/nvme0n1 --overwrite
 ```
 
 > **Note:** `curl` always downloads the version of `install.sh` that is currently on
@@ -247,7 +251,9 @@ Run `sudo bash install.sh --help` for the full list of flags.
    - `nixos` -- remainder of the disk formatted as ext4
 4. Mounts the partitions under `/mnt`.
 5. Clones this repo to `/mnt/home/<user>/NixConfig` and symlinks
-   `/mnt/etc/nixos -> /home/<user>/NixConfig`.
+   `/mnt/etc/nixos -> /home/<user>/NixConfig`. If the directory already
+   exists, the installer asks whether to overwrite it; use `--overwrite` to
+   skip the prompt.
 6. Runs `nixos-generate-config --root /mnt` and writes the generated hardware
    config to `modules/hosts/<host>/_hardware-generated.nix`.
 7. Writes `modules/hosts/<host>/_installer-options.nix` with the chosen
