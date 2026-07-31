@@ -202,6 +202,9 @@ ping -c3 1.1.1.1
 ### 2. Download and run the installer
 
 ```bash
+# Interactive mode (no flags required)
+sudo bash <(curl -L https://raw.githubusercontent.com/Ssnibles/NixConfig/dendritic/install.sh)
+
 # Desktop (will wipe /dev/nvme0n1)
 sudo bash <(curl -L https://raw.githubusercontent.com/Ssnibles/NixConfig/dendritic/install.sh) \
   --host desktop --disk /dev/nvme0n1
@@ -224,7 +227,7 @@ You can also clone the repo and run `install.sh` locally:
 ```bash
 git clone -b dendritic https://github.com/Ssnibles/NixConfig.git
 cd NixConfig
-sudo bash install.sh --host desktop --disk /dev/nvme0n1
+sudo bash install.sh
 ```
 
 Run `sudo bash install.sh --help` for the full list of flags.
@@ -234,7 +237,7 @@ Run `sudo bash install.sh --help` for the full list of flags.
 `install.sh` does the following:
 
 1. Checks for a NixOS live environment and internet access.
-2. Lets you pick the target disk if `--disk` is omitted.
+2. Lets you pick the host, username, hostname, and target disk if any of those flags are omitted.
 3. Wipes the disk, creates a GPT partition table, and makes:
    - `EFI` -- 512 MiB FAT32 EFI System Partition
    - `nixos` -- remainder of the disk formatted as ext4
