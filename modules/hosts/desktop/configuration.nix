@@ -30,7 +30,9 @@
         # Provides fileSystems and swapDevices for the actual target disk.
         # Leading underscore keeps import-tree from auto-importing it.
         ./_hardware-generated.nix
-      ];
+        # Generated at install time by install.sh. Lets the installer pass
+        # values like username and hostname into the config.
+      ] ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
       # Bootloader
       boot.loader.limine.enable = true;

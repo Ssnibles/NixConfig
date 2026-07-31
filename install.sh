@@ -7,7 +7,7 @@ set -euo pipefail
 REPO_URL="https://github.com/Ssnibles/NixConfig.git"
 CONFIG_BRANCH="dendritic"
 MOUNT="/mnt"
-USERNAME="josh"
+DEFAULT_USERNAME="josh"
 
 # ── Colours ───────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -18,24 +18,62 @@ BOLD='\033[1m'
 DIM='\033[2m'
 NC='\033[0m'
 
-info()    { echo -e "${BLUE}  →${NC} $*"; }
-success() { echo -e "${GREEN}  ✓${NC} $*"; }
+info()    { echo -e "${BLUE}  ->${NC} $*"; }
+success() { echo -e "${GREEN}  OK${NC} $*"; }
 warn()    { echo -e "${YELLOW}  !${NC} $*"; }
-die()     { echo -e "${RED}  ✗ ERROR:${NC} $*" >&2; exit 1; }
-heading() { echo -e "\n${BOLD}━━━  $*  ━━━${NC}"; }
+die()     { echo -e "${RED}  ERROR:${NC} $*" >&2; exit 1; }
+heading() { echo -e "\n${BOLD}---  $*  ---${NC}"; }
 
 # ── Argument parsing ──────────────────────────────────────────────────────
 DISK=""
 DRY_RUN=false
 HOST=""
+USERNAME="$DEFAULT_USERNAME"
+HOSTNAME=""
+NO_REBOOT=false
+SKIP_FORMAT=false
+UPDATE=false
+SSH_KEY_GITHUB=""
+COPY_SSH_KEY=""
+LOG_FILE="/tmp/nixos-install.log"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --host)    HOST="$2";    shift 2 ;;
-    --disk)    DISK="$2";    shift 2 ;;
-    --dry-run) DRY_RUN=true; shift   ;;
+    --host)               HOST="$2";                shift 2 ;;
+    --disk)               DISK="$2";                shift 2 ;;
+    --user)               USERNAME="$2";            shift 2 ;;
+    --hostname)           HOSTNAME="$2";            shift 2 ;;
+    --no-reboot)          NO_REBOOT=true;           shift   ;;
+    --skip-format)        SKIP_FORMAT=true;         shift   ;;
+    --update)             UPDATE=true;              shift   ;;
+    --ssh-key-from-github) SSH_KEY_GITHUB="$2";     shift 2 ;;
+    --copy-ssh-key)       COPY_SSH_KEY="$2";        shift 2 ;;
+    --log)                LOG_FILE="$2";            shift 2 ;;
+    --dry-run)            DRY_RUN=true;             shift   ;;
     -h|--help)
-      echo "Usage: sudo bash install.sh --host <desktop|laptop> [--disk /dev/sdX] [--dry-run]"
+      cat <<EOF
+Usage: sudo bash install.sh --host <desktop|laptop> [options]
+
+Required:
+  --host <desktop|laptop>      Host configuration to install
+
+Optional:
+  --disk /dev/sdX              Target disk (will be wiped unless --skip-format)
+  --user <username>            Username to create (default: $DEFAULT_USERNAME)
+  --hostname <hostname>        Hostname (default: the host name)
+  --no-reboot                  Don't reboot after installation
+  --skip-format                Skip disk wipe/format; use existing partitions
+  --update                     Run nix flake update after cloning
+  --ssh-key-from-github <user> Import SSH keys from GitHub
+  --copy-ssh-key <path>        Copy local authorized_keys file to new install
+  --log <file>                 Log file path (default: $LOG_FILE)
+  --dry-run                    Preview what would be done; no disk changes
+
+Examples:
+  sudo bash install.sh --host desktop --disk /dev/nvme0n1
+  sudo bash install.sh --host laptop --disk /dev/sda --user alice --hostname t480
+  sudo bash install.sh --host desktop --skip-format --no-reboot
+EOF
       exit 0 ;;
     *) warn "Unknown argument: $1"; shift ;;
   esac
@@ -50,14 +88,23 @@ case "$HOST" in
   *) die "Unknown host '$HOST'. Available: desktop, laptop" ;;
 esac
 
+if [[ -z "$HOSTNAME" ]]; then
+  HOSTNAME="$HOST"
+fi
+
+# ── Logging ───────────────────────────────────────────────────────────────
+mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
+touch "$LOG_FILE" || die "Could not create log file: $LOG_FILE"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
 # ── Cleanup trap ──────────────────────────────────────────────────────────
 cleanup() {
   local code=$?
   if [[ $code -ne 0 && "$DRY_RUN" == false ]]; then
-    warn "Install failed (exit $code) — cleaning up mounts..."
+    warn "Install failed (exit $code) -- cleaning up mounts..."
     umount -R "$MOUNT" 2>/dev/null || true
     swapoff -a 2>/dev/null || true
-    echo -e "${RED}  ✗ Aborted. Disk unmounted.${NC}"
+    echo -e "${RED}  Aborted. Disk unmounted.${NC}"
   fi
 }
 trap cleanup EXIT
@@ -66,63 +113,80 @@ trap cleanup EXIT
 heading "NixOS Bootstrap Installer - $HOST"
 [[ $EUID -ne 0 ]]   && die "Run as root: sudo bash install.sh"
 [[ -d /nix/store ]] || die "This doesn't look like a NixOS live environment."
-[[ "$DRY_RUN" == true ]] && warn "DRY-RUN — no disk changes will be made."
+[[ "$DRY_RUN" == true ]] && warn "DRY-RUN -- no disk changes will be made."
+
+info "Username: $USERNAME"
+info "Hostname: $HOSTNAME"
+info "Log file: $LOG_FILE"
 
 # =============================================================================
-# 1 · NETWORK
+# 1 / 8 · NETWORK
 # =============================================================================
-heading "[ 1 / 7 ]  Network"
+heading "[ 1 / 8 ]  Network"
 ping -c1 -W3 1.1.1.1 &>/dev/null || {
   warn "No internet connection. Connect first, then re-run."
-  echo "  nmtui   — text UI (easiest)"
+  echo "  nmtui   -- text UI (easiest)"
   exit 1
 }
 success "Network OK"
 
 # =============================================================================
-# 2 · DISK SELECTION
+# 2 / 8 · DISK SELECTION
 # =============================================================================
-heading "[ 2 / 7 ]  Disk"
-if [[ -z "$DISK" ]]; then
-  echo "  Available block devices:"
-  lsblk -d -o NAME,SIZE,MODEL --noheadings | grep -v loop \
-    | awk '{printf "    /dev/%-12s %6s  %s\n", $1, $2, $3}'
+heading "[ 2 / 8 ]  Disk"
+
+if [[ "$SKIP_FORMAT" == true ]]; then
+  info "--skip-format set: existing partitions will be mounted by label."
+  if [[ -n "$DISK" ]]; then
+    warn "Disk argument ignored in skip-format mode (labels are used)."
+    DISK=""
+  fi
+else
+  if [[ -z "$DISK" ]]; then
+    echo "  Available block devices:"
+    lsblk -d -o NAME,SIZE,MODEL --noheadings | grep -v loop \
+      | awk '{printf "    /dev/%-12s %6s  %s\n", $1, $2, $3}'
+    echo
+    read -rp "  Enter disk (e.g., /dev/sda or /dev/nvme0n1): " DISK
+  fi
+  [[ -b "$DISK" ]] || die "Disk '$DISK' not found."
+
+  if [[ "$(lsblk -dno TYPE "$DISK")" != "disk" ]]; then
+    die "Target '$DISK' is not a whole disk (type: $(lsblk -dno TYPE "$DISK")). Please specify the base disk."
+  fi
+
+  if [[ "$DISK" =~ [0-9]$ ]]; then
+    PART_PREFIX="p"
+  else
+    PART_PREFIX=""
+  fi
+  PART_EFI="${DISK}${PART_PREFIX}1"
+  PART_ROOT="${DISK}${PART_PREFIX}2"
+
   echo
-  read -rp "  Enter disk (e.g., /dev/sda or /dev/nvme0n1): " DISK
-fi
-[[ -b "$DISK" ]] || die "Disk '$DISK' not found."
-
-if [[ "$(lsblk -dno TYPE "$DISK")" != "disk" ]]; then
-  die "Target '$DISK' is not a whole disk (type: $(lsblk -dno TYPE "$DISK")). Please specify the base disk."
-fi
-
-if [[ "$DISK" =~ [0-9]$ ]]; then
-  PART_PREFIX="p"
-else
-  PART_PREFIX=""
-fi
-PART_EFI="${DISK}${PART_PREFIX}1"
-PART_ROOT="${DISK}${PART_PREFIX}2"
-
-echo
-warn "This will ERASE all data on ${DISK}!"
-if [[ "$DRY_RUN" == false ]]; then
-  read -rp "  Type 'yes' to continue: " CONFIRM
-  [[ "$CONFIRM" == "yes" ]] || { info "Aborted."; exit 0; }
+  warn "This will ERASE all data on ${DISK}!"
+  echo "    $PART_EFI   -- 512 MiB EFI System Partition (FAT32)"
+  echo "    $PART_ROOT  -- remainder, ext4 (root)"
+  if [[ "$DRY_RUN" == false ]]; then
+    read -rp "  Type 'yes' to continue: " CONFIRM
+    [[ "$CONFIRM" == "yes" ]] || { info "Aborted."; exit 0; }
+  fi
 fi
 
 # =============================================================================
-# 3 · PARTITIONING (UEFI + ext4)
+# 3 / 8 · PARTITIONING (UEFI + ext4)
 # =============================================================================
-heading "[ 3 / 7 ]  Partitioning"
-if [[ "$DRY_RUN" == true ]]; then
+heading "[ 3 / 8 ]  Partitioning"
+if [[ "$SKIP_FORMAT" == true ]]; then
+  info "Skipping partitioning (using existing labels)."
+elif [[ "$DRY_RUN" == true ]]; then
   info "Dry-run: would wipe $DISK and create:"
-  echo "    $PART_EFI   — 512 MiB EFI System Partition (FAT32)"
-  echo "    $PART_ROOT  — remainder, ext4 (root)"
+  echo "    $PART_EFI   -- 512 MiB EFI System Partition (FAT32)"
+  echo "    $PART_ROOT  -- remainder, ext4 (root)"
 else
-  info "Stopping swap and forcefully unmounting ANY active partitions on $DISK..."
+  info "Stopping swap and forcefully unmounting any active partitions on $DISK..."
   swapoff -a 2>/dev/null || true
-  
+
   for part in $(lsblk -ln -o NAME "$DISK" | tail -n +2); do
     umount -f "/dev/$part" 2>/dev/null || true
   done
@@ -141,7 +205,7 @@ else
   info "  -> Creating EFI partition..."
   flock "$DISK" sgdisk --new=1:0:+512M --typecode=1:ef00 --change-name=1:EFI "$DISK" \
     || die "Failed to create EFI partition."
-    
+
   info "  -> Creating Root partition..."
   flock "$DISK" sgdisk --new=2:0:0 --typecode=2:8300 --change-name=2:nixos "$DISK" \
     || die "Failed to create Root partition."
@@ -166,64 +230,96 @@ else
 fi
 
 # =============================================================================
-# 4 · MOUNT
+# 4 / 8 · MOUNT
 # =============================================================================
-heading "[ 4 / 7 ]  Mounting"
+heading "[ 4 / 8 ]  Mounting"
 if [[ "$DRY_RUN" == false ]]; then
   umount -R "$MOUNT" 2>/dev/null || true
   rm -rf "$MOUNT"/* 2>/dev/null || true
-  
-  mount -t ext4 "$PART_ROOT" "$MOUNT"
+
+  info "Mounting root partition (label: nixos)..."
+  mount /dev/disk/by-label/nixos "$MOUNT"
   mkdir -p "$MOUNT/boot"
-  mount "$PART_EFI" "$MOUNT/boot"
-  success "Mounted root ($PART_ROOT) and EFI ($PART_EFI)"
+  info "Mounting EFI partition (label: EFI)..."
+  mount /dev/disk/by-label/EFI "$MOUNT/boot"
+  success "Mounted root and EFI"
 fi
 
 # =============================================================================
-# 5 · CLONE CONFIG
+# 5 / 8 · CLONE CONFIG
 # =============================================================================
-heading "[ 5 / 7 ]  Cloning NixOS config"
+heading "[ 5 / 8 ]  Cloning NixOS config"
 TARGET="$MOUNT/etc/nixos"
 HOME_TARGET="$MOUNT/home/$USERNAME/NixConfig"
 if [[ "$DRY_RUN" == false ]]; then
-  info "Cloning $REPO_URL (branch: $CONFIG_BRANCH) → $HOME_TARGET"
+  info "Cloning $REPO_URL (branch: $CONFIG_BRANCH) -> $HOME_TARGET"
   mkdir -p "$MOUNT/home/$USERNAME"
   git clone -b "$CONFIG_BRANCH" "$REPO_URL" "$HOME_TARGET"
 
-  info "Creating symlink /etc/nixos → /home/$USERNAME/NixConfig"
+  info "Creating symlink /etc/nixos -> /home/$USERNAME/NixConfig"
   ln -sf "/home/$USERNAME/NixConfig" "$TARGET"
 
   success "Config cloned and symlinked"
 fi
 
 # =============================================================================
-# 6 · GENERATE HARDWARE CONFIG & INSTALL
+# 6 / 8 · GENERATE HARDWARE CONFIG & INSTALLER OVERRIDES
 # =============================================================================
-heading "[ 6 / 7 ]  Installing NixOS"
+heading "[ 6 / 8 ]  Hardware config and installer options"
 if [[ "$DRY_RUN" == true ]]; then
   info "Dry-run: would run nixos-generate-config and save to $TARGET/modules/hosts/$HOST/_hardware-generated.nix"
-  info "Dry-run: would run nixos-install --flake ${TARGET}#${HOST}"
+  info "Dry-run: would write installer options to $TARGET/modules/hosts/$HOST/_installer-options.nix"
 else
   info "Generating hardware config (fileSystems, swap) for host '$HOST'..."
   HW_FILE="$TARGET/modules/hosts/$HOST/_hardware-generated.nix"
-  
+  INSTALLER_OPTIONS_FILE="$TARGET/modules/hosts/$HOST/_installer-options.nix"
+
   mkdir -p "$(dirname "$HW_FILE")"
   mkdir -p "$TARGET/__gen_tmp"
-  
+
   # CRITICAL FIX: --root /mnt ensures it scans the TARGET disk, not the live USB
   info "Running nixos-generate-config --root /mnt ..."
   nixos-generate-config --root /mnt --dir "$TARGET/__gen_tmp" || die "nixos-generate-config failed to run."
-  
+
   if [[ ! -f "$TARGET/__gen_tmp/hardware-configuration.nix" ]]; then
     die "nixos-generate-config succeeded but did not create hardware-configuration.nix. Check /mnt mount."
   fi
 
   info "Moving generated config to $HW_FILE"
   mv "$TARGET/__gen_tmp/hardware-configuration.nix" "$HW_FILE" || die "Failed to move hardware config to $HW_FILE."
-  
+
   rm -rf "$TARGET/__gen_tmp"
   chown "$USERNAME:users" "$HW_FILE"
   success "Wrote $HW_FILE"
+
+  info "Writing installer options (username, hostname) to $INSTALLER_OPTIONS_FILE"
+  cat > "$INSTALLER_OPTIONS_FILE" <<EOF
+{ lib, ... }:
+{
+  username = lib.mkForce "$USERNAME";
+  networking.hostName = lib.mkForce "$HOSTNAME";
+}
+EOF
+  chown "$USERNAME:users" "$INSTALLER_OPTIONS_FILE"
+  success "Wrote $INSTALLER_OPTIONS_FILE"
+fi
+
+# =============================================================================
+# 7 / 8 · FLAKE VALIDATION & INSTALL
+# =============================================================================
+heading "[ 7 / 8 ]  Installing NixOS"
+if [[ "$DRY_RUN" == true ]]; then
+  info "Dry-run: would validate flake with 'nix flake metadata $TARGET'"
+  info "Dry-run: would run nixos-install --flake ${TARGET}#${HOST}"
+else
+  info "Validating flake..."
+  nix flake metadata "$TARGET" || die "Flake validation failed. Check the output above."
+  success "Flake OK"
+
+  if [[ "$UPDATE" == true ]]; then
+    info "Updating flake inputs..."
+    nix flake update "$TARGET" || die "nix flake update failed."
+  fi
 
   info "Running nixos-install (this will take a while)..."
   nixos-install --flake "${TARGET}#${HOST}" --no-root-passwd
@@ -231,9 +327,9 @@ else
 fi
 
 # =============================================================================
-# 7 · POST-INSTALL
+# 8 / 8 · POST-INSTALL
 # =============================================================================
-heading "[ 7 / 7 ]  Post-install setup"
+heading "[ 8 / 8 ]  Post-install setup"
 if [[ "$DRY_RUN" == false ]]; then
   echo
   info "Set a password for root:"
@@ -249,9 +345,27 @@ if [[ "$DRY_RUN" == false ]]; then
   nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME/NixConfig" || \
     warn "Could not fix ownership. After reboot run: sudo chown -R $USERNAME:users /home/$USERNAME/NixConfig"
 
-  echo
-  read -rp "  Import SSH keys from GitHub? Enter username (or Enter to skip): " GH_USER
-  if [[ -n "$GH_USER" ]]; then
+  # SSH key from local file
+  if [[ -n "$COPY_SSH_KEY" ]]; then
+    if [[ -f "$COPY_SSH_KEY" ]]; then
+      SSH_DIR="$MOUNT/home/$USERNAME/.ssh"
+      mkdir -p "$SSH_DIR"
+      cp "$COPY_SSH_KEY" "$SSH_DIR/authorized_keys"
+      chmod 700 "$SSH_DIR"
+      chmod 600 "$SSH_DIR/authorized_keys"
+      nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME/.ssh"
+      success "Copied SSH key from $COPY_SSH_KEY"
+    else
+      warn "SSH key file not found: $COPY_SSH_KEY -- skipping."
+    fi
+  fi
+
+  # SSH key from GitHub
+  GH_USER="$SSH_KEY_GITHUB"
+  if [[ -z "$GH_USER" && -z "$COPY_SSH_KEY" ]]; then
+    read -rp "  Import SSH keys from GitHub? Enter username (or Enter to skip): " GH_USER
+  fi
+  if [[ -n "$GH_USER" && -z "$COPY_SSH_KEY" ]]; then
     SSH_DIR="$MOUNT/home/$USERNAME/.ssh"
     mkdir -p "$SSH_DIR"
     if curl -fsSL "https://github.com/${GH_USER}.keys" -o "$SSH_DIR/authorized_keys"; then
@@ -259,9 +373,14 @@ if [[ "$DRY_RUN" == false ]]; then
       nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME/.ssh"
       success "SSH keys imported from github.com/${GH_USER}"
     else
-      warn "Could not fetch keys — skipping."
+      warn "Could not fetch keys -- skipping."
     fi
   fi
+
+  info "Copying install log to target..."
+  mkdir -p "$MOUNT/var/log"
+  cp "$LOG_FILE" "$MOUNT/var/log/nixos-install.log" 2>/dev/null || \
+    warn "Could not copy install log to /var/log"
 fi
 
 # =============================================================================
@@ -269,14 +388,28 @@ fi
 # =============================================================================
 heading "Summary"
 echo -e "  ${GREEN}${BOLD}Installation complete!${NC}"
-[[ "$DRY_RUN" == false ]] && lsblk -o NAME,SIZE,FSTYPE,LABEL,MOUNTPOINT "$DISK" | sed 's/^/    /'
+if [[ "$DRY_RUN" == false && -n "$DISK" ]]; then
+  lsblk -o NAME,SIZE,FSTYPE,LABEL,MOUNTPOINT "$DISK" 2>/dev/null | sed 's/^/    /' || true
+fi
+echo
+info "Username:    $USERNAME"
+info "Hostname:    $HOSTNAME"
+info "Log file:    $LOG_FILE"
+[[ "$DRY_RUN" == false ]] && info "Target log:  /var/log/nixos-install.log"
 echo
 echo -e "  ${BOLD}After reboot:${NC}"
 echo -e "  ${DIM}1. Log in as ${USERNAME}${NC}"
 echo -e "  ${DIM}2. Config is at ~/NixConfig (and /etc/nixos)${NC}"
 echo -e "  ${DIM}3. Rebuild:  sudo nixos-rebuild switch --flake ~/NixConfig#${HOST}${NC}"
 echo
-[[ "$DRY_RUN" == true ]] && { warn "Dry-run complete — nothing was changed."; exit 0; }
+[[ "$DRY_RUN" == true ]] && { warn "Dry-run complete -- nothing was changed."; exit 0; }
+
+if [[ "$NO_REBOOT" == true ]]; then
+  info "--no-reboot set; not rebooting."
+  info "You can inspect the mounted system at $MOUNT"
+  exit 0
+fi
+
 echo -e "${GREEN}${BOLD}  Rebooting in 5 seconds...${NC}  (Ctrl-C to cancel)"
 sleep 5
 reboot

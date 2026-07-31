@@ -4,3 +4,4 @@ secrets/
 result
 nohup.out
 *.bin
+_installer-options.nix
