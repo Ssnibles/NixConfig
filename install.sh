@@ -309,7 +309,11 @@ fi
 heading "[ 4 / 8 ]  Mounting"
 if [[ "$DRY_RUN" == false ]]; then
   umount -R "$MOUNT" 2>/dev/null || true
-  rm -rf "$MOUNT"/* 2>/dev/null || true
+  # Only scrub the mountpoint when we formatted the disk; in --skip-format mode
+  # the user expects existing data to be preserved.
+  if [[ "$SKIP_FORMAT" == false ]]; then
+    rm -rf "$MOUNT"/* 2>/dev/null || true
+  fi
 
   info "Mounting root partition (label: nixos)..."
   mount /dev/disk/by-label/nixos "$MOUNT"
