@@ -5,7 +5,7 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/Ssnibles/NixConfig.git"
-CONFIG_BRANCH="dendritic"
+CONFIG_BRANCH="main"
 MOUNT="/mnt"
 DEFAULT_USERNAME="josh"
 
@@ -73,9 +73,9 @@ Options:
 
 Examples:
   sudo bash install.sh
-  sudo bash install.sh --host desktop --disk /dev/nvme0n1
-  sudo bash install.sh --host laptop --disk /dev/sda --user alice --hostname t480
-  sudo bash install.sh --host desktop --skip-format --no-reboot
+  curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | sudo bash -s -- --host desktop --disk /dev/nvme0n1
+  curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | sudo bash -s -- --host laptop --disk /dev/sda --user alice --hostname t480
+  curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | sudo bash -s -- --host desktop --skip-format --no-reboot
 EOF
       exit 0 ;;
     *) warn "Unknown argument: $1"; shift ;;
