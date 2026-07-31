@@ -203,29 +203,33 @@ ping -c3 1.1.1.1
 
 ```bash
 # Interactive mode (no flags required)
-sudo bash <(curl -L https://raw.githubusercontent.com/Ssnibles/NixConfig/dendritic/install.sh)
+curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | sudo bash
 
 # Desktop (will wipe /dev/nvme0n1)
-sudo bash <(curl -L https://raw.githubusercontent.com/Ssnibles/NixConfig/dendritic/install.sh) \
-  --host desktop --disk /dev/nvme0n1
+curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | \
+  sudo bash -s -- --host desktop --disk /dev/nvme0n1
 
 # Laptop (will wipe /dev/nvme0n1)
-sudo bash <(curl -L https://raw.githubusercontent.com/Ssnibles/NixConfig/dendritic/install.sh) \
-  --host laptop --disk /dev/nvme0n1
+curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | \
+  sudo bash -s -- --host laptop --disk /dev/nvme0n1
 
 # Custom username and hostname
-sudo bash <(curl -L https://raw.githubusercontent.com/Ssnibles/NixConfig/dendritic/install.sh) \
-  --host desktop --disk /dev/nvme0n1 --user alice --hostname battleship
+curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | \
+  sudo bash -s -- --host desktop --disk /dev/nvme0n1 --user alice --hostname battleship
 
 # Reinstall without wiping the disk
-sudo bash <(curl -L https://raw.githubusercontent.com/Ssnibles/NixConfig/dendritic/install.sh) \
-  --host desktop --skip-format --no-reboot
+curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | \
+  sudo bash -s -- --host desktop --skip-format --no-reboot
 ```
+
+> **Note:** `curl` always downloads the version of `install.sh` that is currently on
+> GitHub. If you have edited `install.sh` locally, push your changes first or use
+> the local clone method below.
 
 You can also clone the repo and run `install.sh` locally:
 
 ```bash
-git clone -b dendritic https://github.com/Ssnibles/NixConfig.git
+git clone https://github.com/Ssnibles/NixConfig.git
 cd NixConfig
 sudo bash install.sh
 ```
@@ -273,7 +277,7 @@ mount /dev/disk/by-label/EFI /mnt/boot
 
 # 3. Clone the config
 mkdir -p /mnt/home/<user>
-git clone -b dendritic https://github.com/Ssnibles/NixConfig.git /mnt/home/<user>/NixConfig
+git clone https://github.com/Ssnibles/NixConfig.git /mnt/home/<user>/NixConfig
 ln -sf /home/<user>/NixConfig /mnt/etc/nixos
 
 # 4. Generate hardware config
