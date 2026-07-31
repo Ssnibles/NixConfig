@@ -29,7 +29,9 @@ DISK=""
 DRY_RUN=false
 HOST=""
 USERNAME="$DEFAULT_USERNAME"
+USERNAME_SET=false
 HOSTNAME=""
+HOSTNAME_SET=false
 NO_REBOOT=false
 SKIP_FORMAT=false
 UPDATE=false
@@ -41,8 +43,8 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     --host)               HOST="$2";                shift 2 ;;
     --disk)               DISK="$2";                shift 2 ;;
-    --user)               USERNAME="$2";            shift 2 ;;
-    --hostname)           HOSTNAME="$2";            shift 2 ;;
+    --user)               USERNAME="$2"; USERNAME_SET=true; shift 2 ;;
+    --hostname)           HOSTNAME="$2"; HOSTNAME_SET=true; shift 2 ;;
     --no-reboot)          NO_REBOOT=true;           shift   ;;
     --skip-format)        SKIP_FORMAT=true;         shift   ;;
     --update)             UPDATE=true;              shift   ;;
@@ -52,13 +54,13 @@ while [[ $# -gt 0 ]]; do
     --dry-run)            DRY_RUN=true;             shift   ;;
     -h|--help)
       cat <<EOF
-Usage: sudo bash install.sh --host <desktop|laptop> [options]
+Usage: sudo bash install.sh [options]
 
-Required:
-  --host <desktop|laptop>      Host configuration to install
+  Without flags the installer is interactive. With flags it runs automatically.
 
-Optional:
-  --disk /dev/sdX              Target disk (will be wiped unless --skip-format)
+Options:
+  --host <desktop|laptop>      Host configuration to install (prompt if omitted)
+  --disk /dev/sdX              Target disk (will be wiped unless --skip-format; prompt if omitted)
   --user <username>            Username to create (default: $DEFAULT_USERNAME)
   --hostname <hostname>        Hostname (default: the host name)
   --no-reboot                  Don't reboot after installation
@@ -70,6 +72,7 @@ Optional:
   --dry-run                    Preview what would be done; no disk changes
 
 Examples:
+  sudo bash install.sh
   sudo bash install.sh --host desktop --disk /dev/nvme0n1
   sudo bash install.sh --host laptop --disk /dev/sda --user alice --hostname t480
   sudo bash install.sh --host desktop --skip-format --no-reboot
@@ -80,7 +83,11 @@ EOF
 done
 
 if [[ -z "$HOST" ]]; then
-  die "Host required. Use --host desktop or --host laptop"
+  echo "  Available host configurations:"
+  echo "    desktop"
+  echo "    laptop"
+  read -rp "  Select host (desktop/laptop): " HOST
+  echo
 fi
 
 case "$HOST" in
@@ -90,6 +97,18 @@ esac
 
 if [[ -z "$HOSTNAME" ]]; then
   HOSTNAME="$HOST"
+fi
+
+if [[ "$USERNAME_SET" == false ]]; then
+  read -rp "  Enter username (default: $DEFAULT_USERNAME): " input_username
+  [[ -n "$input_username" ]] && USERNAME="$input_username"
+  echo
+fi
+
+if [[ "$HOSTNAME_SET" == false ]]; then
+  read -rp "  Enter hostname (default: $HOSTNAME): " input_hostname
+  [[ -n "$input_hostname" ]] && HOSTNAME="$input_hostname"
+  echo
 fi
 
 # ── Logging ───────────────────────────────────────────────────────────────
