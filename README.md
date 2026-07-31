@@ -1,139 +1,485 @@
 # NixConfig
 
-A [dendritic](https://github.com/mightyiam/dendritic) NixOS configuration using
-`flake-parts` and `import-tree`. The filesystem tree *is* the module tree —
-every `.nix` file under `modules/` is auto-discovered.
+A [dendritic](https://github.com/mightyiam/dendritic) NixOS flake for my
+`desktop` and `laptop` machines. It uses `flake-parts` + `import-tree`, so the
+directory tree under `modules/` is the module tree -- every `.nix` file is
+auto-discovered and exported as a flake output.
 
-Pins `nixos-26.05` (stable) alongside `nixos-unstable` for select packages.
+The config pins `nixos-26.05` (stable) for the system base and brings in
+`nixos-unstable` as an overlay for select bleeding-edge packages.
 
-## Quick Install
+## Table of Contents
 
-```bash
-# Desktop
-sudo bash install.sh --host desktop --disk /dev/sda
+- [Features](#features)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Hosts](#hosts)
+- [Installation](#installation)
+- [Post-Install](#post-install)
+- [Daily Workflow](#daily-workflow)
+- [Development Shell](#development-shell)
+- [Scaffolding](#scaffolding)
+- [Flake Template](#flake-template)
+- [Customization](#customization)
+- [Troubleshooting](#troubleshooting)
+- [GitHub API Rate Limiting](#github-api-rate-limiting)
 
-# Laptop
-sudo bash install.sh --host laptop --disk /dev/nvme0n1
+## Features
+
+### System
+
+- Dendritic NixOS flake using `flake-parts` + `import-tree`; the filesystem is the module tree.
+- Dual-channel nixpkgs: stable `nixos-26.05` base with `nixos-unstable` overlay.
+- Declarative user environment via [hjem](https://github.com/feel-co/hjem) instead of Home Manager.
+- [Limine](https://limine-bootloader.org/) bootloader on both hosts.
+- [Ly](https://github.com/fairyglade/ly) display manager on both hosts.
+- Wayland-first compositors: Hyprland (noctalia shell), Niri, and MangoWC.
+- Unified QML shell via Quickshell -- shared bars, notifications, and widgets across compositors.
+- Vicinae application launcher as a systemd user service.
+- PipeWire + WirePlumber low-latency audio.
+- DNS-over-TLS with systemd-resolved, NetworkManager + iwd.
+- NH for fast rebuilds and automatic garbage collection.
+
+### Desktop / Apps
+
+- Themed desktop with [noctalia-shell](https://github.com/Ssnibles/noctalia) on the Hyprland desktop host.
+- Zen Browser, Qutebrowser, Firefox.
+- Spotify + Zathura for media/reading.
+- Vesktop, Mumble.
+- GIMP, Audacity, ffmpeg.
+- Steam + Millennium, gamescope, mangohud.
+
+### Development
+
+- Neovim built with [nvf](https://github.com/NotAShelf/nvf) and a custom Lua config under `modules/features/nvim-src/`.
+- ZSH, Fish, Starship, zoxide, direnv, nix-direnv.
+- Rust toolchain, Node.js, Android Studio, `yazi`, `zellij`, `lazygit`.
+- `opencode`, `boilerplate` scaffolding tool, `plsfail` utility.
+
+## Architecture
+
+```
++----------------------------------------------+
+|                 flake.nix                    |
+|  inputs: nixpkgs 26.05, flake-parts, hjem,   |
+|          nvf, millennium, mangowc, ...       |
++-----------------------+----------------------+
+                        | import-tree ./modules
+                        v
+          +---------------------------+
+          |      modules/*.nix        |
+          |    (auto-discovered)      |
+          +------------+--------------+
+                       |
+     +-----------------+-----------------+
+     v                 v                 v
++---------+     +---------+     +----------------+
+| desktop |     | laptop  |     | devShells /    |
+|         |     |         |     | templates /    |
+| nixos   |     | nixos   |     | packages       |
+| config  |     | config  |     |                |
++----+----+     +----+----+     +----------------+
+     |               |
+     v               v
++----------------------------------------+
+|         Layered feature modules        |
+|  base, cli, gaming, media, fonts,      |
+|  development, pipewire, user, ...      |
++--------------------+-------------------+
+                     |
+                     v
++----------------------------------------+
+|     Compositor + shell features        |
+|  hyprland-noctalia, niri, mangowc,     |
+|  quickshell, vicinae                 |
++----------------------------------------+
 ```
 
-The installer partitions the disk (UEFI GPT), clones this repo, generates
-hardware config, and runs `nixos-install`. Use `--dry-run` to preview.
+**Key ideas**
+
+- Each host's `configuration.nix` imports only the layers it needs.
+- Shared concerns live in `modules/features/layers/`.
+- Compositor-specific user files are deployed with `hjem`.
+- Theme colors and fonts are centralized in `modules/themes/`.
 
 ## Project Structure
 
 ```
-flake.nix              ← entry point: flake-parts + import-tree
-install.sh             ← bootstrap installer
+flake.nix              | entry point: flake-parts + import-tree
+install.sh             | bootstrap installer (fresh NixOS install)
 modules/
-├── parts.nix          ← supported systems
-├── _options.nix       ← global options (username, wallpaper)
-├── shell.nix          ← devShell (Rust, Nix tooling, boilerplate)
-├── templates.nix      ← flake template exports
-├── hosts/             ← per-machine configs
-│   ├── desktop/       ← GDM + Hyprland-noctalia, systemd-boot
-│   └── laptop/        ← Ly + MangoWC/Niri, Limine, swapfile
+├── parts.nix          | supported systems
+├── _options.nix       | global options (username, wallpaper, theme)
+├── shell.nix          | devShell
+├── templates.nix      | flake template exports
+├── hosts/
+│   ├── desktop/
+│   │   ├── configuration.nix        | desktop host module
+│   │   ├── default.nix              | nixosConfiguration.desktop
+│   │   └── _hardware-generated.nix  | generated by install.sh
+│   └── laptop/
+│       ├── configuration.nix        | laptop host module
+│       ├── default.nix              | nixosConfiguration.laptop
+│       └── _hardware-generated.nix  | generated by install.sh
 ├── features/
-│   ├── layers/        ← composable concern areas
-│   │   ├── base.nix           nix settings, timezone, locale, networking
-│   │   ├── cli.nix            ZSH, Fish, Starship, zoxide, git
-│   │   ├── communications.nix Vesktop, Mumble
-│   │   ├── content-creation.nix Audacity, GIMP, ffmpeg
-│   │   ├── cursors.nix       Bibata cursors
-│   │   ├── development.nix   Neovim, opencode, nodejs, cargo, direnv, yazi, zellij
-│   │   ├── fonts.nix         JetBrainsMono, MartianMono, Noto, etc.
-│   │   ├── gaming.nix        Steam + Millennium, gamescope, mangohud
-│   │   ├── media.nix         Spotify, Zathura
-│   │   ├── pipewire.nix      PipeWire + wireplumber
-│   │   ├── startup.nix       vicinae-server user service
-│   │   ├── user.nix          user account + hjem
-│   │   └── wallpapers.nix    wallpaper symlinks via hjem
-│   ├── hyprland/      ← Hyprland compositor variants
-│   │   ├── hyprland-noctalia/  desktop (noctalia shell)
-│   │   └── hyprland-waybar/    laptop variant
-│   ├── mangowc/       ← MangoWC compositor (laptop)
-│   ├── niri/          ← Niri compositor (laptop)
-│   ├── quickshell/    ← Unified QML shell (shared bars + notifications for all compositors)
-│   ├── vicinae/       ← app launcher (all compositors)
-│   ├── neovim.nix     ← nvf-based Neovim with LSP/DAP/debuggers
-│   ├── nvim-src/      ← custom Lua config (lazy-loaded plugins)
+│   ├── layers/        | composable system concern modules
+│   │   ├── base.nix           | nix settings, timezone, locale, network
+│   │   ├── bluetooth.nix      | bluetooth support
+│   │   ├── cli.nix            | ZSH, Fish, Starship, zoxide, git
+│   │   ├── communications.nix | Vesktop, Mumble
+│   │   ├── content-creation.nix | Audacity, GIMP, ffmpeg
+│   │   ├── cursors.nix       | Bibata cursors
+│   │   ├── development.nix   | Neovim, opencode, nodejs, cargo, yazi, zellij
+│   │   ├── fonts.nix         | JetBrainsMono, MartianMono, Noto, etc.
+│   │   ├── gaming.nix        | Steam + Millennium, gamescope, mangohud
+│   │   ├── media.nix         | Spotify, Zathura
+│   │   ├── nvidia.nix        | NVIDIA proprietary driver settings
+│   │   ├── pipewire.nix      | PipeWire + wireplumber
+│   │   ├── startup.nix       | vicinae-server user service
+│   │   ├── user.nix          | user account + hjem
+│   │   └── wallpapers.nix    | wallpaper symlinks via hjem
+│   ├── hyprland/
+│   │   ├── hyprland-noctalia/  | desktop compositor
+│   │   └── hyprland-waybar/    | alternate Hyprland variant
+│   ├── mangowc/       | MangoWC compositor
+│   ├── niri/          | Niri scrollable-tiling compositor
+│   ├── quickshell/    | unified QML shell
+│   ├── vicinae/       | app launcher theme + settings
+│   ├── neovim.nix     | nvf-based Neovim with LSP/DAP/debuggers
+│   ├── nvim-src/      | custom Lua config
 │   ├── zen-browser.nix
 │   ├── qutebrowser.nix
-│   └── podman-vm.nix  ← distrobox, Vivado VM
-├── packages/          ← custom packages
-│   ├── boilerplate/   ← scaffolding tool
-│   ├── foot/          ← foot terminal + NixOS module
-│   ├── kitty/         ← kitty terminal + NixOS module
-│   ├── noctalia/      ← noctalia-shell wrapper
-│   └── plsfail/       ← "run until failure" utility
-└── themes/            ← theme system
-    ├── default.nix    ← theme options (colors, fonts)
-    └── palette.nix    ← available schemes (catppuccin, gruvbox, rose-pine, vague, ...)
+│   └── podman-vm.nix  | distrobox, Vivado VM tooling
+├── packages/          | custom packages
+│   ├── boilerplate/   | scaffolding tool
+│   ├── foot/          | foot terminal + NixOS module
+│   ├── kitty/         | kitty terminal + NixOS module
+│   ├── noctalia/      | noctalia-shell wrapper
+│   └── plsfail/       | "run until failure" utility
+└── themes/
+    ├── default.nix    | theme options (colors, fonts)
+    └── palette.nix    | available schemes (catppuccin, gruvbox, rose-pine, vague, ...)
 ```
 
 ## Hosts
 
-| Host    | Compositor(s)     | Display Manager | Bootloader | GPU     |
-| ------- | ----------------- | --------------- | ---------- | ------- |
-| desktop | Hyprland-noctalia | GDM             | systemd-boot | AMD |
-| laptop  | MangoWC + Niri    | Ly              | Limine     | AMD |
+| Host    | Compositor(s)                | Display Manager | Bootloader | GPU      |
+| ------- | ---------------------------- | --------------- | ---------- | -------- |
+| desktop | Hyprland-noctalia            | Ly              | Limine     | NVIDIA   |
+| laptop  | MangoWC + Niri               | Ly              | Limine     | AMD iGPU |
 
-Both use the same layered modules — each host imports a subset of layers
-and features via its `configuration.nix`.
+Both hosts share the same layered modules; each host's `configuration.nix`
+imports the subset of layers and features it needs. Desktop additionally pulls
+in the `nvidia` layer.
+
+## Installation
+
+The installer is designed to be run from the NixOS minimal ISO.
+
+### 1. Boot the NixOS ISO and connect to the internet
+
+If you need Wi-Fi:
+
+```bash
+nmtui
+```
+
+or manually:
+
+```bash
+sudo systemctl start wpa_supplicant
+wpa_cli
+```
+
+Verify connectivity:
+
+```bash
+ping -c3 1.1.1.1
+```
+
+### 2. Download and run the installer
+
+```bash
+# Desktop (will wipe /dev/nvme0n1)
+sudo bash <(curl -L https://raw.githubusercontent.com/Ssnibles/NixConfig/dendritic/install.sh) \
+  --host desktop --disk /dev/nvme0n1
+
+# Laptop (will wipe /dev/nvme0n1)
+sudo bash <(curl -L https://raw.githubusercontent.com/Ssnibles/NixConfig/dendritic/install.sh) \
+  --host laptop --disk /dev/nvme0n1
+```
+
+You can also clone the repo and run `install.sh` locally:
+
+```bash
+git clone -b dendritic https://github.com/Ssnibles/NixConfig.git
+cd NixConfig
+sudo bash install.sh --host desktop --disk /dev/nvme0n1
+```
+
+### 3. Installer steps
+
+`install.sh` does the following:
+
+1. Checks for a NixOS live environment and internet access.
+2. Lets you pick the target disk if `--disk` is omitted.
+3. Wipes the disk, creates a GPT partition table, and makes:
+   - `EFI` -- 512 MiB FAT32 EFI System Partition
+   - `nixos` -- remainder of the disk formatted as ext4
+4. Mounts the partitions under `/mnt`.
+5. Clones this repo to `/mnt/home/josh/NixConfig` and symlinks
+   `/mnt/etc/nixos -> /home/josh/NixConfig`.
+6. Runs `nixos-generate-config --root /mnt` and writes the generated hardware
+   config to `modules/hosts/<host>/_hardware-generated.nix`.
+7. Runs `nixos-install --flake .#<host>`.
+8. Prompts for `root` and `josh` passwords.
+9. Optionally imports SSH public keys from GitHub.
+10. Reboots.
+
+> Warning: the installer erases the selected disk. If you want a dry-run to see
+> what it would do without making changes, add `--dry-run`.
+
+```bash
+sudo bash install.sh --host desktop --disk /dev/nvme0n1 --dry-run
+```
+
+### Manual install (if you prefer not to use the script)
+
+```bash
+# 1. Partition and format the disk yourself, e.g. with disko, gdisk, parted...
+# 2. Mount root under /mnt and EFI under /mnt/boot
+mount /dev/disk/by-label/nixos /mnt
+mkdir -p /mnt/boot
+mount /dev/disk/by-label/EFI /mnt/boot
+
+# 3. Clone the config
+git clone -b dendritic https://github.com/Ssnibles/NixConfig.git /mnt/home/josh/NixConfig
+ln -sf /home/josh/NixConfig /mnt/etc/nixos
+
+# 4. Generate hardware config
+mkdir -p /mnt/etc/nixos/__gen_tmp
+nixos-generate-config --root /mnt --dir /mnt/etc/nixos/__gen_tmp
+mv /mnt/etc/nixos/__gen_tmp/hardware-configuration.nix \
+   /mnt/etc/nixos/modules/hosts/<host>/_hardware-generated.nix
+rm -rf /mnt/etc/nixos/__gen_tmp
+
+# 5. Install
+nixos-install --flake /mnt/etc/nixos#<host> --no-root-passwd
+
+# 6. Set passwords and reboot
+nixos-enter --root /mnt -- passwd root
+nixos-enter --root /mnt -- passwd josh
+reboot
+```
+
+## Post-Install
+
+After the first boot:
+
+1. Log in as `josh`.
+2. The config is at `~/NixConfig` (and `/etc/nixos`).
+3. First rebuild to make sure ownership is correct:
+
+```bash
+sudo chown -R josh:users ~/NixConfig
+sudo nixos-rebuild switch --flake ~/NixConfig#desktop
+```
+
+## Daily Workflow
+
+```bash
+cd ~/NixConfig
+
+# Rebuild the system
+sudo nixos-rebuild switch --flake .#desktop
+
+# Or with nh (faster, handles gc roots)
+nh os switch -H desktop
+
+# Update flake inputs
+nix flake update
+
+# Garbage collect old generations
+nh clean all
+```
+
+Fish abbreviations (defined in `modules/features/layers/cli.nix`):
+
+| Abbr | Expands to |
+| ---- | ---------- |
+| `rebuild` | `sudo nixos-rebuild switch --flake ~/NixConfig#<hostname>` |
+| `update`  | `sudo nixos-rebuild switch --flake ~/NixConfig#<hostname> --upgrade` |
+| `clean`   | `nh clean all` |
+
+`nh` is enabled in the base layer. If you prefer `nixos-rebuild` directly, that still works.
 
 ## Development Shell
 
 ```bash
 nix develop
-# or with nix-direnv: direnv allow
+# or, if using nix-direnv:
+direnv allow
 ```
 
-Includes Rust tooling (rustc, cargo, rust-analyzer, clippy, rustfmt, bacon),
-`sea-orm-cli`, `nixfmt`, `nil` (Nix LSP), `alejandra`, `fish`, and the
+Includes Rust tooling (`rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt`,
+`bacon`), `sea-orm-cli`, `nixfmt`, `nil` (Nix LSP), `alejandra`, `fish`, and the
 `boilerplate` scaffolding tool.
-
-## Common Tasks
-
-```bash
-# Rebuild desktop
-sudo nixos-rebuild switch --flake ~/NixConfig#desktop
-
-# Rebuild laptop
-sudo nixos-rebuild switch --flake ~/NixConfig#laptop
-
-# Or using nh
-nh os boot -H desktop
-nh os boot -H laptop
-
-# Update flake inputs
-nix flake update
-```
 
 ## Scaffolding
 
+The `boilerplate` tool ships with this flake. Use it to create new hosts,
+layers, features, and packages with the right file layout:
+
 ```bash
-boilerplate host my-new-host     # new machine
-boilerplate layer my-layer       # new layer (modules/features/layers/)
-boilerplate feature my-thing     # new feature (modules/features/)
-boilerplate package my-tool      # new package (modules/packages/)
+boilerplate host my-new-host     # new machine under modules/hosts/
+boilerplate layer my-layer       # new layer under modules/features/layers/
+boilerplate feature my-thing     # new feature under modules/features/
+boilerplate package my-tool      # new package under modules/packages/
 ```
 
-## Template
+## Flake Template
 
 ```bash
 nix flake init -t github:Ssnibles/NixConfig#generic
 ```
 
-Scaffolds a minimal dendritic flake with `flake-parts`, `import-tree`,
-and `nixpkgs` pinned to `nixos-26.05`.
+Scaffolds a minimal dendritic flake with `flake-parts`, `import-tree`, and
+`nixpkgs` pinned to `nixos-26.05`.
+
+## Customization
+
+### Change the active theme or wallpaper
+
+Edit `modules/_options.nix`:
+
+```nix
+config.theme.active = "vague";   # or catppuccin, gruvbox, rose-pine, ...
+```
+
+Wallpapers live in `assets/wallpapers/`. Set the default wallpaper with:
+
+```nix
+options.wallpaper.default = "my-wallpaper.png";
+```
+
+Wallpaper destinations are configured per-compositor, e.g. in
+`modules/features/hyprland/hyprland-noctalia/default.nix`:
+
+```nix
+wallpaper-destinations = [ "Pictures/wallpaper" ];
+```
+
+### Add a new host
+
+1. Scaffold it:
+
+```bash
+boilerplate host myhost
+```
+
+2. Edit `modules/hosts/myhost/configuration.nix` and import the layers you want.
+3. Add hardware config at `modules/hosts/myhost/_hardware-generated.nix`
+   (generate with `nixos-generate-config` or copy from an existing host and edit).
+4. Make sure the host's `default.nix` exports a `nixosConfiguration` with
+   `system = "x86_64-linux"`.
+5. Rebuild with:
+
+```bash
+sudo nixos-rebuild switch --flake .#myhost
+```
+
+### Add a new layer
+
+```bash
+boilerplate layer my-layer
+```
+
+This creates `modules/features/layers/my-layer.nix` exporting
+`flake.nixosModules.my-layer`. Import it from a host `configuration.nix` with
+`self.nixosModules.my-layer`.
+
+### Add a new package
+
+```bash
+boilerplate package my-tool
+```
+
+Build it with:
+
+```bash
+nix build .#my-tool
+```
+
+## Troubleshooting
+
+### Install fails or reboot loops
+
+1. Boot to a previous generation from Limine if the system already worked.
+2. Check the installer output for errors. Common causes:
+   - Disk is busy (unmount it first).
+   - No internet during install.
+   - `nixos-generate-config` failed because partitions weren't mounted correctly.
+
+### `nixos-rebuild switch` fails after edits
+
+1. Run a syntax check first:
+
+```bash
+nix flake check
+```
+
+2. If you broke a generation, roll back:
+
+```bash
+sudo nixos-rebuild switch --rollback
+```
+
+or pick an older Limine entry at boot.
+
+### NVIDIA issues (desktop)
+
+The desktop pins `linuxPackages` (not `linuxPackages_latest`) so the NVIDIA
+module stays in sync with the kernel. If you change the kernel package, make
+sure the NVIDIA driver is compatible.
+
+To force a known-good driver, edit `modules/features/layers/nvidia.nix`:
+
+```nix
+hardware.nvidia.package = pkgs.linuxPackages.nvidiaPackages.stable;
+```
+
+### Quickshell / Vicinae not starting
+
+- Both are started as part of the graphical session target.
+- Check their logs with `journalctl --user -u vicinae-server`.
+- Make sure the compositor you launched has the correct autostart or systemd
+  integration.
+
+### Slow rebuilds
+
+1. Prefer `nh os switch` over `nixos-rebuild switch`.
+2. The base layer already configures several binary caches
+   (`cache.nixos.org`, `cache.garnix.io`, `nix-community.cachix.org`).
+3. Run garbage collection:
+
+```bash
+nh clean all
+```
+
+### Bluetooth does not work on desktop
+
+The desktop enables a systemd service that unblocks the Bluetooth rfkill at
+boot. If it still fails, check `rfkill list` and `dmesg | grep -i bluetooth`.
 
 ## GitHub API Rate Limiting
 
-Updating flake inputs hits GitHub's unauthenticated API (60 req/hr).
-To avoid 403 errors, set `GITHUB_TOKEN` in your shell profile:
+Updating flake inputs or fetching GitHub-based inputs can hit GitHub's
+unauthenticated API rate limit (60 requests/hour). To avoid 403 errors, set a
+`GITHUB_TOKEN` in your shell profile:
 
 ```bash
 export GITHUB_TOKEN=ghp_xxxxx
 ```
 
-Generate a [classic PAT](https://github.com/settings/tokens) — no scopes
+Generate a [classic PAT](https://github.com/settings/tokens) -- no scopes are
 needed for public repos. Nix's flake fetcher reads this automatically.
