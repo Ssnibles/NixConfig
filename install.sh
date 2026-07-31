@@ -412,9 +412,9 @@ if [[ "$DRY_RUN" == false ]]; then
   until nixos-enter --root "$MOUNT" -- passwd "$USERNAME"; do warn "Try again."; done
   success "Password set for ${USERNAME}"
 
-  info "Fixing ownership of /home/${USERNAME}/NixConfig..."
-  nixos-enter --root "$MOUNT" -- chown -R "$USERNAME" "/home/$USERNAME/NixConfig" || \
-    warn "Could not fix ownership. After reboot run: sudo chown -R $USERNAME /home/$USERNAME/NixConfig"
+  info "Fixing ownership of /home/${USERNAME}..."
+  nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME" || \
+    warn "Could not fix ownership. After reboot run: sudo chown -R $USERNAME:users /home/$USERNAME"
 
   # SSH key from local file
   if [[ -n "$COPY_SSH_KEY" ]]; then
@@ -424,7 +424,7 @@ if [[ "$DRY_RUN" == false ]]; then
       cp "$COPY_SSH_KEY" "$SSH_DIR/authorized_keys"
       chmod 700 "$SSH_DIR"
       chmod 600 "$SSH_DIR/authorized_keys"
-      nixos-enter --root "$MOUNT" -- chown -R "$USERNAME" "/home/$USERNAME/.ssh"
+      nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME/.ssh"
       success "Copied SSH key from $COPY_SSH_KEY"
     else
       warn "SSH key file not found: $COPY_SSH_KEY -- skipping."
@@ -441,7 +441,7 @@ if [[ "$DRY_RUN" == false ]]; then
     mkdir -p "$SSH_DIR"
     if curl -fsSL "https://github.com/${GH_USER}.keys" -o "$SSH_DIR/authorized_keys"; then
       chmod 700 "$SSH_DIR"; chmod 600 "$SSH_DIR/authorized_keys"
-      nixos-enter --root "$MOUNT" -- chown -R "$USERNAME" "/home/$USERNAME/.ssh"
+      nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME/.ssh"
       success "SSH keys imported from github.com/${GH_USER}"
     else
       warn "Could not fetch keys -- skipping."
