@@ -28,6 +28,22 @@ warn()    { echo -e "${YELLOW}  !${NC} $*"; }
 die()     { echo -e "${RED}  ERROR:${NC} $*" >&2; exit 1; }
 heading() { echo -e "\n${BOLD}---  $*  ---${NC}"; }
 
+# Run git, falling back to `nix run` if the binary is missing (common on the
+# NixOS minimal ISO).
+run_git() {
+  if command -v git >/dev/null 2>&1; then
+    git "$@"
+  else
+    nix run nixpkgs#git -- "$@"
+  fi
+}
+
+# Abort if a required command is missing.
+require_cmd() {
+  local cmd="$1"
+  command -v "$cmd" >/dev/null 2>&1 || die "Required command '$cmd' not found in PATH."
+}
+
 # Read interactive input from the controlling terminal so the script can be
 # piped (e.g. curl ... | bash) and still prompt for missing values.
 ask() {
@@ -158,6 +174,20 @@ heading "NixOS Bootstrap Installer - $HOST"
 [[ $EUID -ne 0 ]]   && die "Run as root: sudo bash install.sh"
 [[ -d /nix/store ]] || die "This doesn't look like a NixOS live environment."
 [[ "$DRY_RUN" == true ]] && warn "DRY-RUN -- no disk changes will be made."
+
+# Core tools that must be present. Formatting tools are only required when
+# we are actually partitioning the disk.
+require_cmd nix
+require_cmd nixos-generate-config
+require_cmd mount
+require_cmd umount
+if [[ "$SKIP_FORMAT" == false && "$DRY_RUN" == false ]]; then
+  require_cmd sgdisk
+  require_cmd wipefs
+  require_cmd mkfs.fat
+  require_cmd mkfs.ext4
+  require_cmd partprobe
+fi
 
 info "Username: $USERNAME"
 info "Hostname: $HOSTNAME"
@@ -315,7 +345,7 @@ if [[ "$DRY_RUN" == false ]]; then
   fi
 
   info "Cloning $REPO_URL (branch: $CONFIG_BRANCH) -> $HOME_TARGET"
-  git clone -b "$CONFIG_BRANCH" "$REPO_URL" "$HOME_TARGET"
+  run_git clone -b "$CONFIG_BRANCH" "$REPO_URL" "$HOME_TARGET"
 
   info "Creating symlink /etc/nixos -> /home/$USERNAME/NixConfig"
   mkdir -p "$MOUNT/etc"
@@ -373,9 +403,9 @@ EOF
   # the flake actually sees them during installation. _installer-options.nix is
   # gitignored, so it has to be force-added.
   info "Staging generated files for flake evaluation..."
-  git -C "$HOME_TARGET" add "modules/hosts/$HOST/_hardware-generated.nix" || \
+  run_git -C "$HOME_TARGET" add "modules/hosts/$HOST/_hardware-generated.nix" || \
     warn "Could not stage hardware config; the flake may not see it."
-  git -C "$HOME_TARGET" add -f "modules/hosts/$HOST/_installer-options.nix" || \
+  run_git -C "$HOME_TARGET" add -f "modules/hosts/$HOST/_installer-options.nix" || \
     warn "Could not stage installer options; the flake may not see them."
 fi
 
