@@ -298,7 +298,7 @@ HOME_TARGET="$MOUNT/home/$USERNAME/NixConfig"
 if [[ "$DRY_RUN" == false ]]; then
   mkdir -p "$MOUNT/home/$USERNAME"
 
-  if [[ -e "$HOME_TARGET" ]]; then
+  if [[ -e "$HOME_TARGET" || -L "$HOME_TARGET" ]]; then
     if [[ "$OVERWRITE" == true ]]; then
       info "--overwrite set: removing existing $HOME_TARGET..."
       rm -rf "$HOME_TARGET"
@@ -319,6 +319,10 @@ if [[ "$DRY_RUN" == false ]]; then
 
   info "Creating symlink /etc/nixos -> /home/$USERNAME/NixConfig"
   mkdir -p "$MOUNT/etc"
+  if [[ -e "$TARGET" || -L "$TARGET" ]]; then
+    warn "Backing up existing $TARGET to $TARGET.bak..."
+    mv "$TARGET" "$TARGET.bak.$(date +%s)"
+  fi
   # Use a relative symlink so it resolves to /mnt/home/... during install and
   # /home/... after the target system boots.
   ln -sfn "../home/$USERNAME/NixConfig" "$TARGET"
