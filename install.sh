@@ -24,6 +24,22 @@ warn()    { echo -e "${YELLOW}  !${NC} $*"; }
 die()     { echo -e "${RED}  ERROR:${NC} $*" >&2; exit 1; }
 heading() { echo -e "\n${BOLD}---  $*  ---${NC}"; }
 
+# Read interactive input from the controlling terminal so the script can be
+# piped (e.g. curl ... | bash) and still prompt for missing values.
+ask() {
+  local var="$1"
+  local prompt="$2"
+  local default="${3:-}"
+  local input
+  if [[ -n "$default" ]]; then
+    read -rp "$prompt [$default]: " input < /dev/tty
+    printf -v "$var" '%s' "${input:-$default}"
+  else
+    read -rp "$prompt: " input < /dev/tty
+    printf -v "$var" '%s' "$input"
+  fi
+}
+
 # ── Argument parsing ──────────────────────────────────────────────────────
 DISK=""
 DRY_RUN=false
@@ -56,7 +72,9 @@ while [[ $# -gt 0 ]]; do
       cat <<EOF
 Usage: sudo bash install.sh [options]
 
-  Without flags the installer is interactive. With flags it runs automatically.
+  Without flags the installer is interactive and reads from /dev/tty.
+  With flags it runs automatically. This means the script can be piped from
+  curl and still prompt for missing values.
 
 Options:
   --host <desktop|laptop>      Host configuration to install (prompt if omitted)
@@ -86,7 +104,7 @@ if [[ -z "$HOST" ]]; then
   echo "  Available host configurations:"
   echo "    desktop"
   echo "    laptop"
-  read -rp "  Select host (desktop/laptop): " HOST
+  ask HOST "  Select host (desktop/laptop)"
   echo
 fi
 
@@ -100,13 +118,13 @@ if [[ -z "$HOSTNAME" ]]; then
 fi
 
 if [[ "$USERNAME_SET" == false ]]; then
-  read -rp "  Enter username (default: $DEFAULT_USERNAME): " input_username
+  ask input_username "  Enter username" "$DEFAULT_USERNAME"
   [[ -n "$input_username" ]] && USERNAME="$input_username"
   echo
 fi
 
 if [[ "$HOSTNAME_SET" == false ]]; then
-  read -rp "  Enter hostname (default: $HOSTNAME): " input_hostname
+  ask input_hostname "  Enter hostname" "$HOSTNAME"
   [[ -n "$input_hostname" ]] && HOSTNAME="$input_hostname"
   echo
 fi
@@ -166,7 +184,7 @@ else
     lsblk -d -o NAME,SIZE,MODEL --noheadings | grep -v loop \
       | awk '{printf "    /dev/%-12s %6s  %s\n", $1, $2, $3}'
     echo
-    read -rp "  Enter disk (e.g., /dev/sda or /dev/nvme0n1): " DISK
+    ask DISK "  Enter disk (e.g., /dev/sda or /dev/nvme0n1)"
   fi
   [[ -b "$DISK" ]] || die "Disk '$DISK' not found."
 
@@ -187,7 +205,7 @@ else
   echo "    $PART_EFI   -- 512 MiB EFI System Partition (FAT32)"
   echo "    $PART_ROOT  -- remainder, ext4 (root)"
   if [[ "$DRY_RUN" == false ]]; then
-    read -rp "  Type 'yes' to continue: " CONFIRM
+    ask CONFIRM "  Type 'yes' to continue"
     [[ "$CONFIRM" == "yes" ]] || { info "Aborted."; exit 0; }
   fi
 fi
@@ -382,7 +400,7 @@ if [[ "$DRY_RUN" == false ]]; then
   # SSH key from GitHub
   GH_USER="$SSH_KEY_GITHUB"
   if [[ -z "$GH_USER" && -z "$COPY_SSH_KEY" ]]; then
-    read -rp "  Import SSH keys from GitHub? Enter username (or Enter to skip): " GH_USER
+    ask GH_USER "  Import SSH keys from GitHub? Enter username (or Enter to skip)"
   fi
   if [[ -n "$GH_USER" && -z "$COPY_SSH_KEY" ]]; then
     SSH_DIR="$MOUNT/home/$USERNAME/.ssh"
