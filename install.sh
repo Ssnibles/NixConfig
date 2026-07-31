@@ -187,6 +187,7 @@ if [[ "$SKIP_FORMAT" == false && "$DRY_RUN" == false ]]; then
   require_cmd mkfs.fat
   require_cmd mkfs.ext4
   require_cmd partprobe
+  require_cmd flock
 fi
 
 info "Username: $USERNAME"
