@@ -346,7 +346,6 @@ else
   mv "$TARGET/__gen_tmp/hardware-configuration.nix" "$HW_FILE" || die "Failed to move hardware config to $HW_FILE."
 
   rm -rf "$TARGET/__gen_tmp"
-  chown "$USERNAME:users" "$HW_FILE"
   success "Wrote $HW_FILE"
 
   info "Writing installer options (username, hostname) to $INSTALLER_OPTIONS_FILE"
@@ -357,7 +356,6 @@ else
   networking.hostName = lib.mkForce "$HOSTNAME";
 }
 EOF
-  chown "$USERNAME:users" "$INSTALLER_OPTIONS_FILE"
   success "Wrote $INSTALLER_OPTIONS_FILE"
 fi
 
@@ -399,8 +397,8 @@ if [[ "$DRY_RUN" == false ]]; then
   success "Password set for ${USERNAME}"
 
   info "Fixing ownership of /home/${USERNAME}/NixConfig..."
-  nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME/NixConfig" || \
-    warn "Could not fix ownership. After reboot run: sudo chown -R $USERNAME:users /home/$USERNAME/NixConfig"
+  nixos-enter --root "$MOUNT" -- chown -R "$USERNAME" "/home/$USERNAME/NixConfig" || \
+    warn "Could not fix ownership. After reboot run: sudo chown -R $USERNAME /home/$USERNAME/NixConfig"
 
   # SSH key from local file
   if [[ -n "$COPY_SSH_KEY" ]]; then
@@ -410,7 +408,7 @@ if [[ "$DRY_RUN" == false ]]; then
       cp "$COPY_SSH_KEY" "$SSH_DIR/authorized_keys"
       chmod 700 "$SSH_DIR"
       chmod 600 "$SSH_DIR/authorized_keys"
-      nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME/.ssh"
+      nixos-enter --root "$MOUNT" -- chown -R "$USERNAME" "/home/$USERNAME/.ssh"
       success "Copied SSH key from $COPY_SSH_KEY"
     else
       warn "SSH key file not found: $COPY_SSH_KEY -- skipping."
@@ -427,7 +425,7 @@ if [[ "$DRY_RUN" == false ]]; then
     mkdir -p "$SSH_DIR"
     if curl -fsSL "https://github.com/${GH_USER}.keys" -o "$SSH_DIR/authorized_keys"; then
       chmod 700 "$SSH_DIR"; chmod 600 "$SSH_DIR/authorized_keys"
-      nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME/.ssh"
+      nixos-enter --root "$MOUNT" -- chown -R "$USERNAME" "/home/$USERNAME/.ssh"
       success "SSH keys imported from github.com/${GH_USER}"
     else
       warn "Could not fetch keys -- skipping."
