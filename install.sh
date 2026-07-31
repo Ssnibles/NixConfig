@@ -318,9 +318,10 @@ if [[ "$DRY_RUN" == false ]]; then
   git clone -b "$CONFIG_BRANCH" "$REPO_URL" "$HOME_TARGET"
 
   info "Creating symlink /etc/nixos -> /home/$USERNAME/NixConfig"
+  mkdir -p "$MOUNT/etc"
   # Use a relative symlink so it resolves to /mnt/home/... during install and
   # /home/... after the target system boots.
-  ln -sf "../home/$USERNAME/NixConfig" "$TARGET"
+  ln -sfn "../home/$USERNAME/NixConfig" "$TARGET"
 
   success "Config cloned and symlinked"
 fi
