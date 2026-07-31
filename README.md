@@ -284,7 +284,8 @@ mount /dev/disk/by-label/EFI /mnt/boot
 # 3. Clone the config
 mkdir -p /mnt/home/<user>
 git clone https://github.com/Ssnibles/NixConfig.git /mnt/home/<user>/NixConfig
-ln -sf /home/<user>/NixConfig /mnt/etc/nixos
+mkdir -p /mnt/etc
+ln -sfn ../home/<user>/NixConfig /mnt/etc/nixos
 
 # 4. Generate hardware config
 mkdir -p /mnt/etc/nixos/__gen_tmp
