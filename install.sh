@@ -361,6 +361,15 @@ else
 }
 EOF
   success "Wrote $INSTALLER_OPTIONS_FILE"
+
+  # Nix flakes only include files tracked by git. Stage the generated files so
+  # the flake actually sees them during installation. _installer-options.nix is
+  # gitignored, so it has to be force-added.
+  info "Staging generated files for flake evaluation..."
+  git -C "$HOME_TARGET" add "modules/hosts/$HOST/_hardware-generated.nix" || \
+    warn "Could not stage hardware config; the flake may not see it."
+  git -C "$HOME_TARGET" add -f "modules/hosts/$HOST/_installer-options.nix" || \
+    warn "Could not stage installer options; the flake may not see them."
 fi
 
 # =============================================================================
