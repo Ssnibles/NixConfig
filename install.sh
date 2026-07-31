@@ -51,6 +51,7 @@ HOSTNAME_SET=false
 NO_REBOOT=false
 SKIP_FORMAT=false
 UPDATE=false
+OVERWRITE=false
 SSH_KEY_GITHUB=""
 COPY_SSH_KEY=""
 LOG_FILE="/tmp/nixos-install.log"
@@ -64,6 +65,7 @@ while [[ $# -gt 0 ]]; do
     --no-reboot)          NO_REBOOT=true;           shift   ;;
     --skip-format)        SKIP_FORMAT=true;         shift   ;;
     --update)             UPDATE=true;              shift   ;;
+    --overwrite)          OVERWRITE=true;           shift   ;;
     --ssh-key-from-github) SSH_KEY_GITHUB="$2";     shift 2 ;;
     --copy-ssh-key)       COPY_SSH_KEY="$2";        shift 2 ;;
     --log)                LOG_FILE="$2";            shift 2 ;;
@@ -84,6 +86,7 @@ Options:
   --no-reboot                  Don't reboot after installation
   --skip-format                Skip disk wipe/format; use existing partitions
   --update                     Run nix flake update after cloning
+  --overwrite                  Remove an existing ~/NixConfig directory without prompting
   --ssh-key-from-github <user> Import SSH keys from GitHub
   --copy-ssh-key <path>        Copy local authorized_keys file to new install
   --log <file>                 Log file path (default: $LOG_FILE)
@@ -292,13 +295,18 @@ if [[ "$DRY_RUN" == false ]]; then
   mkdir -p "$MOUNT/home/$USERNAME"
 
   if [[ -e "$HOME_TARGET" ]]; then
-    warn "Directory already exists: $HOME_TARGET"
-    ask OVERWRITE "  Remove and re-clone" "N"
-    if [[ "$OVERWRITE" =~ ^[Yy]([Ee][Ss])?$ ]]; then
-      info "Removing existing $HOME_TARGET..."
+    if [[ "$OVERWRITE" == true ]]; then
+      info "--overwrite set: removing existing $HOME_TARGET..."
       rm -rf "$HOME_TARGET"
     else
-      die "Aborted: existing $HOME_TARGET kept."
+      warn "Directory already exists: $HOME_TARGET"
+      ask OVERWRITE_ANSWER "  Remove and re-clone" "N"
+      if [[ "$OVERWRITE_ANSWER" =~ ^[Yy]([Ee][Ss])?$ ]]; then
+        info "Removing existing $HOME_TARGET..."
+        rm -rf "$HOME_TARGET"
+      else
+        die "Aborted: existing $HOME_TARGET kept."
+      fi
     fi
   fi
 
