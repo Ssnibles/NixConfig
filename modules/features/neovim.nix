@@ -125,7 +125,36 @@
           ];
 
           startPlugins = with pkgs.vimPlugins; [
-            nvim-treesitter.withAllGrammars
+            # Only install the grammars you actually use. Add more here if you
+            # open a filetype and tree-sitter highlighting fails to attach.
+            (nvim-treesitter.withPlugins (p: [
+              p.nix
+              p.lua
+              p.python
+              p.bash
+              p.typescript
+              p.javascript
+              p.kotlin
+              p.java
+              p.markdown
+              p.markdown_inline
+              p.latex
+              p.bibtex
+              p.html
+              p.css
+              p.typst
+              p.c
+              p.cpp
+              p.c_sharp
+              p.go
+              p.json
+              p.yaml
+              p.toml
+              p.regex
+              p.vim
+              p.vimdoc
+              p.query
+            ]))
             nvim-treesitter-context
             nvim-treesitter-textobjects
 
