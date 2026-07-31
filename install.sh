@@ -289,8 +289,20 @@ heading "[ 5 / 8 ]  Cloning NixOS config"
 TARGET="$MOUNT/etc/nixos"
 HOME_TARGET="$MOUNT/home/$USERNAME/NixConfig"
 if [[ "$DRY_RUN" == false ]]; then
-  info "Cloning $REPO_URL (branch: $CONFIG_BRANCH) -> $HOME_TARGET"
   mkdir -p "$MOUNT/home/$USERNAME"
+
+  if [[ -e "$HOME_TARGET" ]]; then
+    warn "Directory already exists: $HOME_TARGET"
+    ask OVERWRITE "  Remove and re-clone" "N"
+    if [[ "$OVERWRITE" =~ ^[Yy]([Ee][Ss])?$ ]]; then
+      info "Removing existing $HOME_TARGET..."
+      rm -rf "$HOME_TARGET"
+    else
+      die "Aborted: existing $HOME_TARGET kept."
+    fi
+  fi
+
+  info "Cloning $REPO_URL (branch: $CONFIG_BRANCH) -> $HOME_TARGET"
   git clone -b "$CONFIG_BRANCH" "$REPO_URL" "$HOME_TARGET"
 
   info "Creating symlink /etc/nixos -> /home/$USERNAME/NixConfig"
