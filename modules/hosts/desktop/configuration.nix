@@ -11,6 +11,7 @@
         self.nixosModules.pipewire
         self.nixosModules.fonts
         self.nixosModules.gaming
+        self.nixosModules.nvidia
         self.nixosModules.media
         self.nixosModules.development
         self.nixosModules.communications
