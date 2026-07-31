@@ -9,6 +9,10 @@ CONFIG_BRANCH="main"
 MOUNT="/mnt"
 DEFAULT_USERNAME="josh"
 
+# Enable nix command and flakes for the installer session (needed on minimal ISOs
+# where these experimental features are not configured by default).
+export NIX_CONFIG="extra-experimental-features = nix-command flakes"
+
 # ── Colours ───────────────────────────────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'
