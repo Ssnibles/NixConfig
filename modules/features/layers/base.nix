@@ -93,7 +93,10 @@
             wifi.macAddress = "stable";
             dns = "systemd-resolved";
           };
-          wireless.iwd.settings.General.Country = "NZ";
+          wireless.iwd = {
+            enable = true;
+            settings.General.Country = "NZ";
+          };
           nftables.enable = true;
         };
 
