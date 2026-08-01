@@ -4,6 +4,7 @@ prefer-no-csd
 // Startup Applications
 spawn-sh-at-startup "QS_BAR=niri exec quickshell"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpaper -m fill"
+spawn-at-startup "niri-float-sticky"
 
 // Environment Variables
 environment {
@@ -110,6 +111,7 @@ binds {
     Mod+Shift+F { set-column-width "100%"; }
     Mod+C { center-column; }
     Mod+O { toggle-overview; }
+    Mod+G { spawn "niri-float-sticky" "-ipc" "toggle_sticky"; }
 
     // Focus Navigation (Horizontal plane)
     Mod+Left  { focus-column-left; }
