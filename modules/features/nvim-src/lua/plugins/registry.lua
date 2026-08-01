@@ -5,6 +5,7 @@ M.core = {
 	"plugins.completion",
 	"plugins.lsp",
 	"plugins.editor",
+	"plugins.format",
 	"plugins.mini",
 	"plugins.fzf",
 	"plugins.navigation",
