@@ -17,14 +17,7 @@ local function find_terminal_win(buf)
 end
 
 local function open_terminal(position, existing_buf)
-	local cmd = "botright"
-	if position == "right" then
-		cmd = "botright vertical"
-	elseif position == "float" then
-		cmd = "float"
-	end
-
-	if cmd == "float" then
+	if position == "float" then
 		local buf = existing_buf or vim.api.nvim_create_buf(false, true)
 		local width = math.floor(vim.o.columns * 0.8)
 		local height = math.floor(vim.o.lines * 0.8)
@@ -46,13 +39,21 @@ local function open_terminal(position, existing_buf)
 			vim.cmd("buffer " .. buf)
 			vim.cmd("startinsert")
 		end
+		return
+	end
+
+	local cmd = "botright split"
+	if position == "bottom" then
+		cmd = "botright " .. math.floor(vim.o.lines * 0.30) .. "split"
+	elseif position == "right" then
+		cmd = "botright vertical " .. math.floor(vim.o.columns * 0.30) .. "split"
+	end
+
+	if existing_buf then
+		vim.cmd(cmd .. " | buffer " .. existing_buf)
+		vim.cmd("startinsert")
 	else
-		if existing_buf then
-			vim.cmd(cmd .. " split | buffer " .. existing_buf)
-			vim.cmd("startinsert")
-		else
-			vim.cmd(cmd .. " split | terminal")
-		end
+		vim.cmd(cmd .. " | terminal")
 	end
 end
 

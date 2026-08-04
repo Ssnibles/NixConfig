@@ -14,16 +14,17 @@ autocmd("BufWriteCmd", {
 		local buf = ev.buf
 		local bo = vim.bo[buf]
 		local name = vim.api.nvim_buf_get_name(buf)
+		local force = vim.v.cmdbang == 1 and "!" or ""
 
 		if bo.buftype ~= "" or name == "" then
-			pcall(vim.cmd, "noautocmd write")
+			pcall(vim.cmd, "noautocmd write" .. force)
 			writing = false
 			return
 		end
 
 		vim.api.nvim_exec_autocmds("BufWritePre", { buffer = buf, modeline = false })
 
-		local ok, err = pcall(vim.cmd, "silent noautocmd write")
+		local ok, err = pcall(vim.cmd, "silent noautocmd write" .. force)
 
 		vim.api.nvim_exec_autocmds("BufWritePost", { buffer = buf, modeline = false })
 
