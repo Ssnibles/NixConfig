@@ -112,11 +112,42 @@ for _, pair in ipairs(pairs_map) do
 			if line:sub(col + 1, col + 1) == close then
 				vim.api.nvim_win_set_cursor(0, { vim.fn.line("."), col + 1 })
 			else
-				vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(close, true, false, true), "i", true)
+				vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(close, true, false, true), "in", false)
 			end
 		end, { desc = "Smart close " .. close })
 	end
 end
+
+local pairs_lookup = {}
+for _, pair in ipairs(pairs_map) do
+	pairs_lookup[pair[1]] = pair[2]
+end
+
+vim.keymap.set("i", "<CR>", function()
+	local line = vim.api.nvim_get_current_line()
+	local col = vim.api.nvim_win_get_cursor(0)[2]
+	local before = line:sub(col, col)
+	local after = line:sub(col + 1, col + 1)
+	local close = pairs_lookup[before]
+	if close and after == close then
+		local indent_str = line:match("^(%s*)") or ""
+		local inner_indent
+		if vim.bo.expandtab then
+			inner_indent = indent_str .. string.rep(" ", vim.bo.shiftwidth)
+		else
+			inner_indent = indent_str .. "\t"
+		end
+		local before_open = line:sub(1, col)
+		local after_close = line:sub(col + 2)
+		local buf = vim.api.nvim_get_current_buf()
+		local lnum = vim.fn.line(".") - 1
+		vim.api.nvim_buf_set_lines(buf, lnum, lnum + 1, true, { before_open })
+		vim.api.nvim_buf_set_lines(buf, lnum + 1, lnum + 1, true, { inner_indent, indent_str .. close .. after_close })
+		vim.api.nvim_win_set_cursor(0, { lnum + 2, #inner_indent })
+		return
+	end
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<CR>", true, false, true), "in", false)
+end, { desc = "Smart CR" })
 
 vim.keymap.set("n", "<leader>bd", function()
 	local buf = vim.api.nvim_get_current_buf()

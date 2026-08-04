@@ -16,6 +16,8 @@ map("n", "<leader>qa", "<cmd>qa<CR>", { desc = "Quit all" })
 map("i", "<C-BS>", "<C-w>", { desc = "Delete previous word" })
 map("i", "<M-BS>", "<C-w>", { desc = "Delete previous word" })
 map("i", "<C-h>", "<Left>", { desc = "Move caret left" })
+map("i", "<C-j>", "<Down>", { desc = "Move caret down" })
+map("i", "<C-k>", "<Up>", { desc = "Move caret up" })
 map("i", "<C-l>", "<Right>", { desc = "Move caret right" })
 
 map("v", "<", "<gv", { desc = "Indent left (keep selection)" })
