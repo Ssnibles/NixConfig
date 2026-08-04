@@ -173,6 +173,7 @@
             gl = "git log --oneline --graph";
             n = "nvim";
             cat = "bat";
+            build = "$HOME/NixConfig/build.sh";
           };
 
           shellAbbrs = {
