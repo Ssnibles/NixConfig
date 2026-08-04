@@ -2,12 +2,13 @@
 prefer-no-csd
 
 // Startup Applications
-spawn-sh-at-startup "QS_BAR=niri exec quickshell"
+spawn-sh-at-startup "quickshell"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpaper -m fill"
 spawn-at-startup "niri-float-sticky"
 
 // Environment Variables
 environment {
+    QS_BAR "niri"
     QT_QPA_PLATFORM "wayland"
     ELECTRON_OZONE_PLATFORM_HINT "wayland"
 }
