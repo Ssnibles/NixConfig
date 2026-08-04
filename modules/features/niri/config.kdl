@@ -2,7 +2,7 @@
 prefer-no-csd
 
 // Startup Applications
-spawn-sh-at-startup "quickshell"
+spawn-sh-at-startup "QS_BAR=niri quickshell"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpaper -m fill"
 spawn-at-startup "niri-float-sticky"
 
