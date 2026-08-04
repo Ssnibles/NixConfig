@@ -67,9 +67,11 @@ usage() {
   cat <<EOF
 Usage: ${BASH_SOURCE[0]##*/} <host> [command] [options]
 
-  host        NixOS host to build (${HOSTS[*]})
+  host        NixOS host to build (${HOSTS[*]}). Required unless
+              --no-build is used, in which case it defaults to the
+              current hostname.
   command     nixos-rebuild action: switch | boot | test | build
-              (default: ${DEFAULT_COMMAND})
+              (default: ${DEFAULT_COMMAND}; with --no-build: none)
 
 Options:
   -m, --message <text>   Description of the change. If omitted, a default
@@ -89,6 +91,7 @@ Examples:
   ${BASH_SOURCE[0]##*/} desktop boot -t feat -m "pin kernel for nvidia"
   ${BASH_SOURCE[0]##*/} desktop test
   ${BASH_SOURCE[0]##*/} laptop switch -t feat -s niri -m "add sticky rules"
+  ${BASH_SOURCE[0]##*/} --no-build -m "refactor(build): remove fzf picker"
   ${BASH_SOURCE[0]##*/} desktop --no-build
   ${BASH_SOURCE[0]##*/} desktop --no-build -m "document new host"
 EOF
@@ -120,16 +123,16 @@ get_build_timestamp() {
 # diff when the user has manually staged changes, otherwise falls back to the
 # unstaged diff.
 get_flake_lock_summary() {
-  local diff_cmd=""
-  if ! git diff --cached --quiet -- flake.lock 2>/dev/null; then
-    diff_cmd="git diff --cached"
-  elif ! git diff --quiet -- flake.lock 2>/dev/null; then
-    diff_cmd="git diff"
+  local diff_output=""
+  if ! git -C "$REPO_ROOT" diff --cached --quiet -- flake.lock 2>/dev/null; then
+    diff_output="$(git -C "$REPO_ROOT" diff --cached -- flake.lock 2>/dev/null)"
+  elif ! git -C "$REPO_ROOT" diff --quiet -- flake.lock 2>/dev/null; then
+    diff_output="$(git -C "$REPO_ROOT" diff -- flake.lock 2>/dev/null)"
   else
     echo "none"
     return
   fi
-  $diff_cmd -- flake.lock 2>/dev/null | awk '
+  printf '%s' "$diff_output" | awk '
     /^--- a\/flake.lock/ { next }
     /^\+\+\+ b\/flake.lock/ { next }
     /^@@/ { next }
@@ -328,11 +331,29 @@ main() {
     esac
   done
 
-  [[ -z "$HOST" ]] && { usage; exit 1; }
-  [[ -z "$COMMAND" ]] && COMMAND="$DEFAULT_COMMAND"
+  # ── Defaults and validation ─────────────────────────────────────────────────
+  if [[ -z "$HOST" ]]; then
+    if [[ "$NO_BUILD" == true ]]; then
+      HOST="$(hostname)"
+      info "No host specified with --no-build; using current hostname: $HOST"
+    else
+      usage; exit 1
+    fi
+  fi
 
-  validate_host "$HOST"
-  validate_command "$COMMAND"
+  if [[ -z "$COMMAND" ]]; then
+    if [[ "$NO_BUILD" == true ]]; then
+      COMMAND="none"
+    else
+      COMMAND="$DEFAULT_COMMAND"
+    fi
+  fi
+
+  # Host and command are only validated for actual rebuilds.
+  if [[ "$NO_BUILD" != true ]]; then
+    validate_host "$HOST"
+    validate_command "$COMMAND"
+  fi
   if [[ -n "$TYPE" ]]; then
     validate_type "$TYPE"
   fi
@@ -342,7 +363,7 @@ main() {
   if [[ ! -d "$REPO_ROOT/.git" ]]; then
     die "This does not look like a git repository: $REPO_ROOT"
   fi
-  if ! command -v nixos-rebuild >/dev/null 2>&1; then
+  if [[ "$NO_BUILD" != true ]] && ! command -v nixos-rebuild >/dev/null 2>&1; then
     die "Command 'nixos-rebuild' not found. Are you on NixOS?"
   fi
   if [[ "$NO_BUILD" == true && "$NO_COMMIT" == true ]]; then
