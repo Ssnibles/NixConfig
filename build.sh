@@ -10,7 +10,7 @@
 #   ./build.sh <host> [switch|boot|test|build] [options]
 #   ./build.sh desktop
 #   ./build.sh laptop switch
-#   ./build.sh desktop switch -m "add steam and gamescope"
+#   ./build.sh desktop switch -t feat -m "add steam and gamescope"
 #   ./build.sh desktop switch --no-commit
 # =============================================================================
 set -euo pipefail
@@ -29,8 +29,7 @@ if [[ -d "$REPO_ROOT/modules/hosts" ]]; then
 fi
 [[ ${#HOSTS[@]} -eq 0 ]] && HOSTS=(desktop laptop)
 
-# Conventional commit types. Includes the spec-standard ones plus a few
-# commonly used extensions.
+# Conventional commit types.
 CONVENTIONAL_TYPES=(
   feat
   fix
@@ -55,14 +54,13 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 BOLD='\033[1m'
-DIM='\033[2m'
 NC='\033[0m'
 
 info()    { echo -e "${BLUE}  ->${NC} $*"; }
 success() { echo -e "${GREEN}  OK${NC} $*"; }
 warn()    { echo -e "${YELLOW}  !${NC} $*"; }
 die()     { echo -e "${RED}  ERROR:${NC} $*" >&2; exit 1; }
-heading() { echo -e "\n${BOLD}---  $*  ---${NC}"; }
+heading() { echo -e "\n${BOLD}---  $*  ---${NC}" >&2; }
 
 # ── Usage ───────────────────────────────────────────────────────────────────
 usage() {
@@ -74,10 +72,10 @@ Usage: ${BASH_SOURCE[0]##*/} <host> [command] [options]
               (default: ${DEFAULT_COMMAND})
 
 Options:
-  -m, --message <text>   Description of the change. If omitted, you will be
-                         prompted. Combine with -t/-s to build a full
-                         conventional commit subject.
+  -m, --message <text>   Description of the change. If omitted, a default
+                         description is used.
   -t, --type <type>      Conventional commit type (e.g. feat, fix, chore).
+                         If omitted, defaults to "build".
   -s, --scope <scope>    Conventional commit scope (e.g. niri, desktop).
   -c, --command <cmd>    nixos-rebuild action (same as the positional command).
   -b, --no-build         Skip the nixos-rebuild step and only commit the
@@ -88,7 +86,7 @@ Options:
 Examples:
   ${BASH_SOURCE[0]##*/} desktop
   ${BASH_SOURCE[0]##*/} laptop switch
-  ${BASH_SOURCE[0]##*/} desktop boot -m "pin kernel for nvidia"
+  ${BASH_SOURCE[0]##*/} desktop boot -t feat -m "pin kernel for nvidia"
   ${BASH_SOURCE[0]##*/} desktop test
   ${BASH_SOURCE[0]##*/} laptop switch -t feat -s niri -m "add sticky rules"
   ${BASH_SOURCE[0]##*/} desktop --no-build
@@ -97,21 +95,6 @@ EOF
 }
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
-
-# Ask for input from the controlling terminal so the script can be piped.
-ask() {
-  local var="$1"
-  local prompt="$2"
-  local default="${3:-}"
-  local input
-  if [[ -n "$default" ]]; then
-    read -rp "$prompt [$default]: " input < /dev/tty
-    printf -v "$var" '%s' "${input:-$default}"
-  else
-    read -rp "$prompt: " input < /dev/tty
-    printf -v "$var" '%s' "$input"
-  fi
-}
 
 # Return the current (latest) NixOS generation number.
 get_current_generation() {
@@ -148,105 +131,13 @@ get_flake_lock_summary() {
   fi
   $diff_cmd -- flake.lock 2>/dev/null | awk '
     /^--- a\/flake.lock/ { next }
-    /^+++ b\/flake.lock/ { next }
+    /^\+\+\+ b\/flake.lock/ { next }
     /^@@/ { next }
     /^[-+].*"lastModified"/ {
       gsub(/^[-+]  /, "")
       print
     }
   ' | head -n 40 || echo "(diff too large)"
-}
-
-# Build a list of conventional commit scopes from the repository structure.
-# Hosts, feature modules, and layer modules are included as suggestions.
-derive_scopes() {
-  local scopes=()
-  # hosts
-  if [[ -d "$REPO_ROOT/modules/hosts" ]]; then
-    for host_dir in "$REPO_ROOT/modules/hosts"/*/; do
-      [[ -d "$host_dir" ]] || continue
-      scopes+=("$(basename "$host_dir")")
-    done
-  fi
-  # feature modules and layers
-  if [[ -d "$REPO_ROOT/modules/features" ]]; then
-    for feature_dir in "$REPO_ROOT/modules/features"/*/; do
-      [[ -d "$feature_dir" ]] || continue
-      local name
-      name="$(basename "$feature_dir")"
-      # skip nested layers parent, we collect those separately
-      [[ "$name" == "layers" ]] && continue
-      scopes+=("$name")
-    done
-  fi
-  if [[ -d "$REPO_ROOT/modules/features/layers" ]]; then
-    for layer_file in "$REPO_ROOT/modules/features/layers"/*.nix; do
-      [[ -f "$layer_file" ]] || continue
-      local name
-      name="$(basename "$layer_file" .nix)"
-      scopes+=("$name")
-    done
-  fi
-  # core / repo-level scopes
-  scopes+=(flake root)
-  # sort and dedupe
-  printf '%s\n' "${scopes[@]}" | sort -u
-}
-
-# Present a list of items and return the selected item.
-# If fzf is available, use it; otherwise use a simple numbered menu.
-pick_item() {
-  local prompt="$1"
-  local allow_custom="${2:-false}"
-  shift 2
-  local items=("$@")
-
-  if command -v fzf >/dev/null 2>&1; then
-    # Unset FZF_DEFAULT_COMMAND so fzf uses the piped items instead of falling
-    # back to a command that lists files (e.g. the default file picker).
-    if [[ "$allow_custom" == true ]]; then
-      # --print-query lets the user type a custom item not in the list.
-      printf '%s\n' "${items[@]}" | FZF_DEFAULT_COMMAND= fzf \
-        --prompt="$prompt" \
-        --print-query \
-        --height="~40%" \
-        --border | tail -n 1 || true
-    else
-      printf '%s\n' "${items[@]}" | FZF_DEFAULT_COMMAND= fzf \
-        --prompt="$prompt" \
-        --height="~40%" \
-        --border || true
-    fi
-    return 0
-  fi
-
-  # Fallback: simple numbered menu.
-  echo "$prompt" >&2
-  local i
-  for i in "${!items[@]}"; do
-    echo "  $((i+1)). ${items[$i]}" >&2
-  done
-  if [[ "$allow_custom" == true ]]; then
-    echo "  (type a custom name and press Enter)" >&2
-  fi
-  local choice_prompt="  Select number"
-  [[ "$allow_custom" == true ]] && choice_prompt="  Select number or type a custom name"
-  local choice
-  read -rp "$choice_prompt: " choice </dev/tty
-  if [[ "$choice" =~ ^[0-9]+$ && "$choice" -ge 1 && "$choice" -le ${#items[@]} ]]; then
-    echo "${items[$((choice-1))]}"
-  elif [[ "$allow_custom" == true && -n "$choice" ]]; then
-    echo "$choice"
-  else
-    echo ""
-  fi
-}
-
-# Ask the user for a one-line description of the change.
-ask_description() {
-  local description
-  ask description "  Enter a short description of the changes" ""
-  printf '%s' "$description"
 }
 
 # Assemble a conventional commit subject with the generation at the end.
@@ -260,7 +151,7 @@ assemble_subject() {
   local gen="$4"
 
   local prefix
-  if [[ -n "$scope" && "$scope" != "<none>" ]]; then
+  if [[ -n "$scope" ]]; then
     prefix="${type}(${scope}):"
   else
     prefix="${type}:"
@@ -308,24 +199,23 @@ run_build() {
   success "Build completed"
 }
 
-# Build a commit subject using a conventional commit picker.
-# If the user passed a full conventional commit subject via -m (e.g.
-# "feat(niri): make some change"), it is reused and (gen N) is appended.
-# If the user passed a plain description via -m, it is combined with any
-# passed type (-t) and scope (-s); missing parts are picked interactively.
+# Build a commit subject. The user can pass a full conventional commit subject
+# via -m (e.g. "feat(niri): make some change"), which is reused and (gen N)
+# is appended. Otherwise, type, scope and description are assembled from the
+# provided options, with sensible defaults for missing values.
 build_commit_subject() {
   local host="$1"
   local cmd="$2"
   local gen="$3"
-  local type="$4"
+  local type="${4:-build}"
   local scope="$5"
-  local description="$6"
+  local description="${6:-${host} ${cmd}}"
 
   # If a full conventional commit subject was passed, append the generation
-  # and skip the picker.
+  # and skip the rest.
   local subject_re='^([a-z]+)(\([^)]*\))?:[[:space:]]+(.+)$'
   local gen_re='\(gen[[:space:]]+[0-9]+\)$'
-  if [[ -n "$description" && "$description" =~ $subject_re ]]; then
+  if [[ "$description" =~ $subject_re ]]; then
     local prefix_type="${BASH_REMATCH[1]}"
     local valid=false
     for t in "${CONVENTIONAL_TYPES[@]}"; do
@@ -344,34 +234,7 @@ build_commit_subject() {
     fi
   fi
 
-  local picked_type="$type"
-  local picked_scope="$scope"
-  local picked_description="$description"
-
-  if [[ -z "$picked_type" ]]; then
-    heading "Select conventional commit type"
-    picked_type="$(pick_item "type: " false "${CONVENTIONAL_TYPES[@]}")"
-    [[ -z "$picked_type" ]] && die "No commit type selected"
-  fi
-
-  if [[ -z "$picked_scope" ]]; then
-    heading "Select scope (optional)"
-    local scopes
-    scopes=("<none>" $(derive_scopes))
-    picked_scope="$(pick_item "scope: " true "${scopes[@]}")"
-    [[ -z "$picked_scope" ]] && picked_scope="<none>"
-  fi
-
-  if [[ -z "$picked_description" ]]; then
-    heading "Describe the change"
-    picked_description="$(ask_description)"
-    if [[ -z "$picked_description" ]]; then
-      warn "No description provided; using default"
-      picked_description="${host} ${cmd}"
-    fi
-  fi
-
-  assemble_subject "$picked_type" "$picked_scope" "$picked_description" "$gen"
+  assemble_subject "$type" "$scope" "$description" "$gen"
 }
 
 # Create a git commit with the given subject and an auto-generated body.
@@ -384,7 +247,7 @@ commit_changes() {
   local subject="$4"
   local staged_only="$5"
   local previous_revision
-  previous_revision="$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+  previous_revision="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")"
 
   heading "Creating commit"
   info "Subject: ${subject}"
