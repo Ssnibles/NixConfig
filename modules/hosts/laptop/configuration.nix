@@ -69,6 +69,53 @@
 
       networking.hostName = "nixos";
 
+      boot.extraModprobeConfig = ''
+        options rtw89_pci disable_aspm_l1=y disable_aspm_l1ss=y
+        options rtw89_core disable_ps_mode=y
+      '';
+
+      networking.networkmanager = {
+        wifi = {
+          scanRandMacAddress = false; # avoid scan-triggered disconnects on rtw89
+          powersave = false;
+        };
+        dispatcherScripts = [
+          {
+            source = pkgs.writeShellScript "wifi-powersave-off" ''
+              if [ "$2" = "up" ] && ${pkgs.iw}/bin/iw dev "$1" info >/dev/null 2>&1; then
+                ${pkgs.iw}/bin/iw dev "$1" set power_save off
+              fi
+            '';
+            type = "basic";
+          }
+        ];
+      };
+
+      # rtw89-specific quirks for the laptop's Realtek Wi-Fi.
+      networking.wireless.iwd.settings = {
+        General.DisableANQP = true; # firmware stumbles on ANQP queries
+        DriverQuirks.PowerSaveDisable = "rtw89*"; # disable Wi-Fi power save
+      };
+
+      services.tlp = {
+        enable = true;
+        settings = {
+          CPU_BOOST_ON_AC = 1;
+          CPU_BOOST_ON_BAT = 0;
+          CPU_SCALING_GOVERNOR_ON_AC = "performance";
+          CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+          WIFI_PWR_ON_AC = "off";
+          WIFI_PWR_ON_BAT = "off";
+          USB_AUTOSUSPEND = 1;
+          AHCI_RUNTIME_PM_ON_BAT = "auto";
+          RUNTIME_PM_ON_BAT = "auto";
+          RUNTIME_PM_ON_AC = "auto";
+          PCIE_ASPM_ON_AC = "performance";
+          PCIE_ASPM_ON_BAT = "powersave";
+          LAPTOP_MODE = 5;
+        };
+      };
+
       environment.systemPackages =
         with pkgs.unstable; [
           dfu-util

@@ -93,11 +93,19 @@
             wifi.macAddress = "stable";
             dns = "systemd-resolved";
           };
-          wireless.iwd = {
-            enable = true;
-            settings.General.Country = "NZ";
+          wireless.iwd.settings.General = {
+            Country = "NZ";
+            EnableNetworkConfiguration = false;
+            # Opportunistic Wireless Encryption (Enhanced Open). iwd randomizes
+            # the MAC address itself when connecting to OWE networks.
+            EnableOWE = true;
           };
-          nftables.enable = true;
+
+          firewall = {
+            enable = true;
+            allowedTCPPorts = [ 53317 ];
+            allowedUDPPorts = [ 53317 ];
+          };
         };
 
         services.resolved = {
@@ -115,7 +123,7 @@
 
         boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
-        environment.systemPackages = with pkgs; [ nftables ];
+        environment.systemPackages = with pkgs; [ iwd ];
 
         # Enable redistributable firmware (required for AMD GPU firmware)
         hardware.enableRedistributableFirmware = true;
