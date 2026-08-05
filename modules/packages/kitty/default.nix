@@ -1,10 +1,10 @@
-{ self, inputs, ... }:
+{ ... }:
 {
   perSystem = { pkgs, ... }: {
     packages.kitty = pkgs.kitty;
   };
 
-  flake.nixosModules.kitty = { pkgs, lib, config, ... }: let
+  nixos.modules.shared = { pkgs, lib, config, ... }: let
     inherit (config.theme.colors) bg bgRaised fg accent teal purple green yellow red orange;
   in {
     environment.systemPackages = [ pkgs.kitty ];

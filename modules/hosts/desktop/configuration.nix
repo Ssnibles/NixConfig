@@ -1,12 +1,9 @@
-{ self, ... }:
+{ ... }:
 {
-  flake.nixosModules.desktopConfiguration =
+  nixos.modules.desktop =
     { pkgs, lib, config, ... }:
     {
       imports = [
-        self.nixosModules.sharedConfiguration
-        self.nixosModules.nvidia
-        self.nixosModules.hyprland-noctalia
         ./_hardware-generated.nix
       ] ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 

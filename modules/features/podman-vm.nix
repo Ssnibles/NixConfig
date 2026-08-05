@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.podman-vm =
+  nixos.modules.shared =
     {
       pkgs,
       lib,

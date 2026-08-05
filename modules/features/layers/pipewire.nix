@@ -1,7 +1,7 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.pipewire =
-    { pkgs, lib, ... }:
+  nixos.modules.shared =
+    { pkgs, ... }:
     {
       environment.systemPackages = with pkgs; [
         pulseaudio # Provides pactl

@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.qutebrowser =
+  nixos.modules.shared =
     {
       pkgs,
       lib,

@@ -1,7 +1,7 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.bluetooth =
-    { pkgs, lib, ... }:
+  nixos.modules.shared =
+    { pkgs, ... }:
     {
       environment.systemPackages = with pkgs; [
         blueman

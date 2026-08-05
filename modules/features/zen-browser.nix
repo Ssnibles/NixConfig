@@ -1,11 +1,9 @@
 {
-  self,
   inputs,
-  config,
   ...
 }:
 {
-  flake.nixosModules.zen-browser =
+  nixos.modules.shared =
     {
       pkgs,
       lib,

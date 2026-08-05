@@ -1,7 +1,7 @@
 { ... }:
 {
-  flake.nixosModules.communications =
-    { pkgs, lib, ... }:
+  nixos.modules.shared =
+    { pkgs, ... }:
     {
       config = {
         environment.systemPackages = with pkgs.unstable; [

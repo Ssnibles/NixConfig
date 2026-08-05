@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ inputs, ... }:
 {
-  flake.nixosModules.mangowc =
+  nixos.modules.shared =
     {
       pkgs,
       lib,
@@ -28,10 +28,6 @@
     {
       imports = [
         inputs.mangowc.nixosModules.mango
-        self.nixosModules.cursors
-        self.nixosModules.vicinae
-        self.nixosModules.quickshell
-        self.nixosModules.wallpapers
       ];
 
       config = {

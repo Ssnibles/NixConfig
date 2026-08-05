@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ inputs, ... }:
 {
-  flake.nixosModules.niri =
+  nixos.modules.shared =
     {
       pkgs,
       lib,
@@ -26,13 +26,6 @@
         ;
     in
     {
-      imports = [
-        self.nixosModules.cursors
-        self.nixosModules.vicinae
-        self.nixosModules.quickshell
-        self.nixosModules.wallpapers
-      ];
-
       config = {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
         programs.niri.enable = true;

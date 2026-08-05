@@ -1,6 +1,6 @@
-{ lib, ... }:
+{ ... }:
 {
-  flake.nixosModules.theme-palette = { config, lib, ... }: let
+  nixos.modules.shared = { config, lib, ... }: let
     schemes = {
       catppuccin-mocha = {
         bg        = "1e1e2e";

@@ -1,7 +1,7 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.media =
-    { pkgs, lib, config, ... }:
+  nixos.modules.shared =
+    { pkgs, config, ... }:
     {
       config = {
         environment.systemPackages = with pkgs.unstable; [

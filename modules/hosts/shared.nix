@@ -1,31 +1,8 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.sharedConfiguration =
-    { pkgs, lib, config, ... }:
+  nixos.modules.shared =
+    { pkgs, lib, ... }:
     {
-      imports = [
-        self.nixosModules.base
-        self.nixosModules.bluetooth
-        self.nixosModules.startup
-        self.nixosModules.cli
-        self.nixosModules.pipewire
-        self.nixosModules.fonts
-        self.nixosModules.gaming
-        self.nixosModules.media
-        self.nixosModules.development
-        self.nixosModules.communications
-        self.nixosModules.contentCreation
-        self.nixosModules.mangowc
-        self.nixosModules.niri
-        self.nixosModules.foot
-        self.nixosModules.kitty
-        self.nixosModules.podman-vm
-        self.nixosModules.qutebrowser
-        self.nixosModules.zen-browser
-        self.nixosModules.neovim
-        self.nixosModules.user
-      ];
-
       # Bootloader
       boot.loader.limine.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;

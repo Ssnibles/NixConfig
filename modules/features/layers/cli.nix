@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ inputs, ... }:
 {
-  flake.nixosModules.cli =
+  nixos.modules.shared =
     {
       pkgs,
       lib,

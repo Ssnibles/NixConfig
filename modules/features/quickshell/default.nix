@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.quickshell =
+  nixos.modules.shared =
     { pkgs, config, ... }:
     {
       config = {

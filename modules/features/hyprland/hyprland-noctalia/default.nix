@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ self, ... }:
 {
-  flake.nixosModules.hyprland-noctalia =
+  nixos.modules.desktop =
     {
       pkgs,
       lib,
@@ -8,13 +8,6 @@
       ...
     }:
     {
-      imports = [
-        self.nixosModules.cursors
-        self.nixosModules.vicinae
-        self.nixosModules.quickshell
-        self.nixosModules.wallpapers
-      ];
-
       config = {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
         # System-level configuration

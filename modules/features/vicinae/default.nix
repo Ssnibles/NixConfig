@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.vicinae =
+  nixos.modules.shared =
     { pkgs, lib, config, ... }:
     let
       inherit (config.theme.colors) bg bgRaised bgSubtle border fg fgMid fgDim

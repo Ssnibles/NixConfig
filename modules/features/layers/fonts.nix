@@ -1,7 +1,7 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.fonts =
-    { pkgs, lib, ... }:
+  nixos.modules.shared =
+    { pkgs, ... }:
     {
       fonts.packages = with pkgs; [
         noto-fonts

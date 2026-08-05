@@ -1,6 +1,6 @@
 { self, inputs, ... }:
 {
-  flake.nixosModules.base =
+  nixos.modules.shared =
     {
       pkgs,
       lib,
@@ -10,9 +10,6 @@
     {
       imports = [
         inputs.hjem.nixosModules.default
-        self.nixosModules.theme
-        self.nixosModules.theme-palette
-        ../../_options.nix
       ];
 
       config = {

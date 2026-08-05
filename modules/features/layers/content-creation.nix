@@ -1,7 +1,7 @@
 { ... }:
 {
-  flake.nixosModules.contentCreation =
-    { pkgs, lib, ... }:
+  nixos.modules.shared =
+    { pkgs, ... }:
     {
       config = {
         environment.systemPackages =

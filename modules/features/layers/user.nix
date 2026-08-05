@@ -1,19 +1,13 @@
+{ ... }:
 {
-  self,
-  inputs,
-  config,
-  ...
-}:
-{
-  flake.nixosModules.user =
+  nixos.modules.shared =
     {
       pkgs,
-      lib,
       config,
       ...
     }:
     {
-      # Define a user account. Don't forget to set a password with ‘passwd’.
+      # Define a user account. Don't forget to set a password with 'passwd'.
       users.users."${config.username}" = {
         isNormalUser = true;
         description = "${config.username} user account";

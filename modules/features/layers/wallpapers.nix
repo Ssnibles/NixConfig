@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.wallpapers =
+  nixos.modules.shared =
     {
       lib,
       config,

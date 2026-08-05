@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.startup =
+  nixos.modules.shared =
     { pkgs, lib, config, ... }:
     let
       clipboard-history-script = pkgs.writeShellScript "vicinae-clipboard-history" ''

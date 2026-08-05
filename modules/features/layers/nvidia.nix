@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.nvidia =
+  nixos.modules.desktop =
     { pkgs, lib, config, ... }:
     {
       boot.kernelPackages = lib.mkForce pkgs.linuxPackages;

@@ -1,74 +1,8 @@
-{ self, inputs, ... }:
+# This module is an alternative Hyprland configuration with Waybar.
+# It is not currently active — hyprland-noctalia is used instead.
+# To activate, swap the module group assignments between this file
+# and hyprland-noctalia/default.nix.
+{ ... }:
 {
-  flake.nixosModules.hyprland =
-    {
-      pkgs,
-      lib,
-      config,
-      ...
-    }:
-    {
-      imports = [
-        self.nixosModules.cursors
-        self.nixosModules.vicinae
-        self.nixosModules.quickshell
-        self.nixosModules.wallpapers
-      ];
-
-      config = {
-        wallpaper-destinations = [ "Pictures/wallpaper" ];
-        # System-level configuration
-        programs.hyprland.enable = true;
-
-        environment.systemPackages = with pkgs; [
-          hyprpaper
-          kitty
-          firefox
-          wl-clipboard
-          brightnessctl
-          playerctl
-          grim
-          xdg-desktop-portal-hyprland
-          xdg-desktop-portal-gtk
-          gnome-keyring
-          seahorse
-          flameshot
-          libnotify
-          networkmanagerapplet
-          adwaita-icon-theme
-        ];
-
-        services.gnome.gnome-keyring.enable = true;
-        services.dbus.packages = [
-          pkgs.gnome-keyring
-          pkgs.gcr
-        ];
-        programs.seahorse.enable = true;
-
-        xdg.portal = {
-          enable = true;
-          extraPortals = [
-            pkgs.xdg-desktop-portal-gtk
-            pkgs.xdg-desktop-portal-hyprland
-          ];
-          configPackages = [ pkgs.xdg-desktop-portal-gnome ];
-        };
-
-        # Configure hjem for specified users
-        hjem.users."${config.username}" = {
-          enable = true;
-          files = {
-            ".config/hypr/hyprland.lua" = {
-              source = ./hyprland.lua;
-            };
-            ".config/hypr/generated.lua" = {
-              source = ./generated.lua;
-            };
-            ".config/hypr/hyprpaper.conf" = {
-              source = ./hyprpaper.conf;
-            };
-          };
-        };
-      };
-    };
+  # Intentionally empty — see hyprland-noctalia for the active desktop config.
 }

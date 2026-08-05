@@ -1,10 +1,10 @@
-{ self, inputs, ... }:
+{ ... }:
 {
   perSystem = { pkgs, ... }: {
     packages.foot = pkgs.foot;
   };
 
-  flake.nixosModules.foot =
+  nixos.modules.shared =
     {
       pkgs,
       lib,

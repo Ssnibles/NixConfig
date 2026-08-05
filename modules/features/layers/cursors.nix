@@ -1,16 +1,15 @@
-{ self, inputs, ... }:
+{ ... }:
 {
-  flake.nixosModules.cursors =
+  nixos.modules.shared =
     {
       pkgs,
-      lib,
       config,
       ...
     }:
     {
       config = {
         environment.systemPackages = with pkgs; [ bibata-cursors ];
-        hjem.users."${config.username}" =  {
+        hjem.users."${config.username}" = {
           files = {
             ".config/gtk-3.0/settings.ini" = {
               text = ''

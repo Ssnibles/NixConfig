@@ -1,6 +1,6 @@
-{ self, ... }:
+{ ... }:
 {
-  flake.nixosModules.laptopConfiguration =
+  nixos.modules.laptop =
     {
       pkgs,
       lib,
@@ -9,7 +9,6 @@
     }:
     {
       imports = [
-        self.nixosModules.sharedConfiguration
         ./_hardware-generated.nix
       ] ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 

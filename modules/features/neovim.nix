@@ -1,6 +1,6 @@
-{ self, inputs, ... }:
+{ inputs, ... }:
 {
-  flake.nixosModules.neovim =
+  nixos.modules.shared =
     { pkgs, lib, config, ... }:
     {
       imports = [
