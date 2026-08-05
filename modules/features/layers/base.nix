@@ -29,22 +29,26 @@
           overlays = [
             inputs.millennium.overlays.default
             (final: prev: {
-              unstable = (import inputs.nixpkgs-unstable {
-                inherit (prev.stdenv.hostPlatform) system;
-                config = {
-                  allowUnfree = true;
-                  permittedInsecurePackages = [
-                    "pnpm-10.29.2"
-                    "electron-40.10.5"
-                  ];
-                };
-              }).extend (final': prev': {
-                qutebrowser = prev'.qutebrowser.overrideAttrs (old: {
-                  patches = (old.patches or []) ++ [
-                    ../qutebrowser-profile-scripts.patch
-                  ];
-                });
-              });
+              unstable =
+                (import inputs.nixpkgs-unstable {
+                  inherit (prev.stdenv.hostPlatform) system;
+                  config = {
+                    allowUnfree = true;
+                    permittedInsecurePackages = [
+                      "pnpm-10.29.2"
+                      "electron-40.10.5"
+                    ];
+                  };
+                }).extend
+                  (
+                    final': prev': {
+                      qutebrowser = prev'.qutebrowser.overrideAttrs (old: {
+                        patches = (old.patches or [ ]) ++ [
+                          ../qutebrowser-profile-scripts.patch
+                        ];
+                      });
+                    }
+                  );
             })
           ];
         };
@@ -123,13 +127,35 @@
 
         boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
-        environment.systemPackages = with pkgs; [ iwd ];
+        environment.systemPackages = with pkgs; [
+          iwd
+          dualsensectl # DualSense utility: firmware updates, LED and rumble settings.
+        ];
 
         # Enable redistributable firmware (required for AMD GPU firmware)
         hardware.enableRedistributableFirmware = true;
 
         # Enable CUPS to print documents.
         services.printing.enable = false;
+
+        # ------------------------------------------------------------------
+        # Sony PlayStation 5 (DualSense) controller support
+        # ------------------------------------------------------------------
+        # The mainline hid-playstation kernel driver (>= 5.12) provides
+        # native support for the DualSense and DualSense Edge over USB and
+        # Bluetooth: haptic feedback, adaptive triggers, touchpad, gyro and
+        # microphone. Load it explicitly so it is available even before the
+        # controller is plugged in.
+        boot.kernelModules = [ "hid-playstation" ];
+
+        # Valve's steam-devices udev rules grant the logged-in user uaccess
+        # to the DualSense hidraw nodes (USB 054c:0ce6 and Bluetooth
+        # *054C:0CE6*), which is required for haptics/trigger settings and
+        # for games (Steam, RPCS3, ...) to fully control the controller.
+        # It also loads the uinput module for virtual gamepad support.
+        hardware.steam-hardware.enable = true;
+
+        # ------------------------------------------------------------------
 
         programs.nh = {
           enable = true;
