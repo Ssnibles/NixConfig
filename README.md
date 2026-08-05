@@ -45,7 +45,7 @@ The config pins `nixos-26.05` (stable) for the system base and brings in
 - Themed desktop with [noctalia-shell](https://github.com/Ssnibles/noctalia) on the Hyprland desktop host.
 - Zen Browser, Qutebrowser, Firefox.
 - Spotify + Zathura for media/reading.
-- Vesktop, Mumble.
+- Vesktop.
 - GIMP, Audacity, ffmpeg.
 - Steam + Millennium, gamescope, mangohud.
 
@@ -131,7 +131,7 @@ modules/
 │   │   ├── base.nix           | nix settings, timezone, locale, network
 │   │   ├── bluetooth.nix      | bluetooth support
 │   │   ├── cli.nix            | ZSH, Fish, Starship, zoxide, git
-│   │   ├── communications.nix | Vesktop, Mumble
+│   │   ├── communications.nix | Vesktop
 │   │   ├── content-creation.nix | Audacity, GIMP, ffmpeg
 │   │   ├── cursors.nix       | Bibata cursors
 │   │   ├── development.nix   | Neovim, opencode, nodejs, cargo, yazi, zellij
@@ -168,10 +168,10 @@ modules/
 
 ## Hosts
 
-| Host    | Compositor(s)                | Display Manager | Bootloader | GPU      |
-| ------- | ---------------------------- | --------------- | ---------- | -------- |
-| desktop | Hyprland-noctalia            | Ly              | Limine     | NVIDIA   |
-| laptop  | MangoWC + Niri               | Ly              | Limine     | AMD iGPU |
+| Host    | Compositor(s)     | Display Manager | Bootloader | GPU      |
+| ------- | ----------------- | --------------- | ---------- | -------- |
+| desktop | Hyprland-noctalia | Ly              | Limine     | NVIDIA   |
+| laptop  | MangoWC + Niri    | Ly              | Limine     | AMD iGPU |
 
 Both hosts share the same layered modules; each host's `configuration.nix`
 imports the subset of layers and features it needs. Desktop additionally pulls
@@ -348,11 +348,11 @@ nh clean all
 
 Fish abbreviations (defined in `modules/features/layers/cli.nix`):
 
-| Abbr | Expands to |
-| ---- | ---------- |
-| `rebuild` | `sudo nixos-rebuild switch --flake ~/NixConfig#<hostname>` |
+| Abbr      | Expands to                                                           |
+| --------- | -------------------------------------------------------------------- |
+| `rebuild` | `sudo nixos-rebuild switch --flake ~/NixConfig#<hostname>`           |
 | `update`  | `sudo nixos-rebuild switch --flake ~/NixConfig#<hostname> --upgrade` |
-| `clean`   | `nh clean all` |
+| `clean`   | `nh clean all`                                                       |
 
 `nh` is enabled in the base layer. If you prefer `nixos-rebuild` directly, that still works.
 

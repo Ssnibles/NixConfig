@@ -6,7 +6,6 @@
       config = {
         environment.systemPackages = with pkgs.unstable; [
           vesktop
-          mumble
         ];
       };
 
