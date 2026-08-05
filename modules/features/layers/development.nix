@@ -22,8 +22,6 @@
             nodejs
             cargo
             gcc
-            direnv
-            nix-direnv
             yazi
             lazygit
             rclone

@@ -8,6 +8,13 @@
       ...
     }:
     {
+      # Weekly-updated nix-index database + nix-index wrapper. Makes fish
+      # (and bash/zsh) suggest the nix package that provides a missing
+      # command, and installs `nix-locate`.
+      imports = [
+        inputs.nix-index-database.nixosModules.default
+      ];
+
       config = {
         environment.systemPackages = with pkgs; [
           bat
@@ -17,6 +24,7 @@
           fzf
           git
           gnupg
+          libnotify # notify-send, used by the fish "done" plugin
           libsecret
           ripgrep
           usbutils
@@ -24,6 +32,11 @@
           wget
           zip
           unzip
+          # fish plugins (auto-sourced via fish vendor dirs)
+          fishPlugins.fzf-fish # fzf keybindings + fuzzy search (C-r history, C-Alt-f files, ...)
+          fishPlugins.autopair # auto-close quotes / brackets as you type
+          fishPlugins.done    # notify when long-running commands finish
+          fishPlugins.bass    # "bass" helper to source bash configs from fish
         ];
 
         programs.zoxide = {
@@ -95,6 +108,32 @@
                 "
               '';
             };
+            ".config/fish/functions/mkcd.fish" = {
+              text = ''
+                function mkcd --description "Create a directory and cd into it"
+                    if test (count $argv) -ne 1
+                        echo "usage: mkcd <dir>" >&2
+                        return 1
+                    end
+                    command mkdir -p $argv[1]
+                    cd $argv[1]
+                end
+              '';
+            };
+            ".config/fish/functions/nixconf.fish" = {
+              text = ''
+                function nixconf --description "Jump to NixConfig and show repo status"
+                    set -l repo "$HOME/NixConfig"
+                    if test -d "$repo"
+                        cd "$repo"
+                        git status --short --branch
+                    else
+                        echo "NixConfig not found at $repo" >&2
+                        return 1
+                    end
+                end
+              '';
+            };
           };
         programs.zsh = {
           enable = true;
@@ -118,6 +157,11 @@
 
         programs.fish = {
           enable = true;
+
+          # Generate completions from man pages for every package in
+          # environment.systemPackages (enabled by default, explicit for clarity).
+          generateCompletions = true;
+
           shellAliases = {
             ll = "ls -l";
             la = "ls -la";
@@ -143,8 +187,30 @@
             set -g fish_greeting
             set -gx EDITOR nvim
             set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
-            fzf --fish | source
+
+            # fish plugins:
+            #   fzf.fish keybindings: C-r history, C-Alt-f files, C-Alt-l git log,
+            #     C-Alt-s git status, C-Alt-p processes, C-v variables
+            #   autopair: auto-close quotes/brackets
+            #   done: desktop notification when a command takes >= 10s
+            #   bass:  `bass <bash-script>` to source bash configs
+
+            # done tweaks
+            set -g __done_min_cmd_duration 10000
+            set -g __done_notification_urgency_level normal
           '';
+        };
+
+        # nix-index-database ships both a full and a bin-only index. The small
+        # db is enough for command-not-found suggestions and is a fraction of
+        # the size. Replace the module default (full db).
+        programs.nix-index.package =
+          inputs.nix-index-database.packages.${pkgs.stdenv.hostPlatform.system}.nix-index-with-small-db;
+
+        # direnv + nix-direnv with fish integration (direnv hook fish).
+        programs.direnv = {
+          enable = true;
+          nix-direnv.enable = true;
         };
 
         programs.starship = {
