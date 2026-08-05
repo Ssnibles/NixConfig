@@ -1,11 +1,17 @@
 { ... }:
 {
   nixos.modules.desktop =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       imports = [
         ./_hardware-generated.nix
-      ] ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
+      ]
+      ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
       # Desktop-specific kernel modules
       boot.kernelModules = [ "btusb" ];
@@ -26,7 +32,6 @@
       hardware.logitech.wireless.enable = true;
 
       environment.systemPackages = with pkgs.unstable; [
-        keepassxc
         amberol
         chromium
       ];
