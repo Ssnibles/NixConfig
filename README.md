@@ -97,11 +97,11 @@ The config pins `nixos-26.05` (stable) for the system base and brings in
 
 **Key ideas**
 
-- Shared system bootstrap & hardware settings live in `modules/hosts/shared.nix`.
-- Each host's `configuration.nix` imports `sharedConfiguration` plus host-specific overrides and overlays.
-- Composable system concerns live under `modules/features/layers/`.
-- Compositor-specific user files are deployed with `hjem`.
-- Theme colors and fonts are centralized in `modules/themes/`.
+- Top-level module declarations are dynamically auto-imported via `import-tree`.
+- Hosts compose their configurations by loading the `nixos.modules.shared` and host-specific option groups (`nixos.modules.laptop`/`desktop`).
+- Feature modules and layers self-register by merging their configuration into these module groups.
+- No manual import lists or cross-level module imports are needed.
+- Theme colors and fonts register dynamically in `modules/themes/`.
 
 ## Project Structure
 
@@ -109,8 +109,9 @@ The config pins `nixos-26.05` (stable) for the system base and brings in
 flake.nix              | entry point: flake-parts + import-tree
 install.sh             | bootstrap installer (fresh NixOS install)
 modules/
+├── module-groups.nix  | options defining host/shared module groups
+├── options.nix        | global options (username, wallpaper, theme)
 ├── parts.nix          | supported systems
-├── _options.nix       | global options (username, wallpaper, theme)
 ├── shell.nix          | devShell
 ├── templates.nix      | flake template exports
 ├── hosts/
@@ -392,7 +393,7 @@ Scaffolds a minimal dendritic flake with `flake-parts`, `import-tree`, and
 
 ### Change the active theme or wallpaper
 
-Edit `modules/_options.nix`:
+Edit `modules/options.nix`:
 
 ```nix
 config.theme.active = "vague";   # or catppuccin, gruvbox, rose-pine, ...
@@ -401,7 +402,9 @@ config.theme.active = "vague";   # or catppuccin, gruvbox, rose-pine, ...
 Wallpapers live in `assets/wallpapers/`. Set the default wallpaper with:
 
 ```nix
-options.wallpaper.default = "my-wallpaper.png";
+options.wallpaper = lib.mkOption {
+  default = "my-wallpaper.png";
+};
 ```
 
 Wallpaper destinations are configured per-compositor, e.g. in
@@ -419,12 +422,11 @@ wallpaper-destinations = [ "Pictures/wallpaper" ];
 boilerplate host myhost
 ```
 
-2. Edit `modules/hosts/myhost/configuration.nix` to import `self.nixosModules.sharedConfiguration` plus any host-specific layers.
-3. Add hardware config at `modules/hosts/myhost/_hardware-generated.nix`
-   (generate with `nixos-generate-config` or copy from an existing host and edit).
-4. Make sure the host's `default.nix` exports a `nixosConfiguration` with
-   `system = "x86_64-linux"`.
-5. Rebuild with:
+2. Declare option `options.nixos.modules.myhost` in `modules/module-groups.nix`.
+3. Configure the host in `modules/hosts/myhost/configuration.nix` under `nixos.modules.myhost`.
+4. Add hardware config at `modules/hosts/myhost/_hardware-generated.nix`.
+5. Compose configuration in `modules/hosts/myhost/default.nix` by merging `shared` and `myhost` module groups.
+6. Rebuild with:
 
 ```bash
 sudo nixos-rebuild switch --flake .#myhost
@@ -436,9 +438,7 @@ sudo nixos-rebuild switch --flake .#myhost
 boilerplate layer my-layer
 ```
 
-This creates `modules/features/layers/my-layer.nix` exporting
-`flake.nixosModules.my-layer`. Import it from a host `configuration.nix` with
-`self.nixosModules.my-layer`.
+This creates `modules/features/layers/my-layer.nix` registering itself into `nixos.modules.shared`. Feature layers are dynamically auto-imported and composed without manual import lists.
 
 ### Add a new package
 
