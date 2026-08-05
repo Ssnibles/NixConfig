@@ -30,13 +30,7 @@ vim.api.nvim_create_autocmd("ModeChanged", {
 	pattern = "*:*",
 	callback = update_mode,
 })
-vim.api.nvim_create_autocmd("VimEnter", {
-	group = update_group,
-	callback = function()
-		update_mode()
-		vim.o.statusline = "%!v:lua.require('plugins.ui').statusline()"
-	end,
-})
+vim.o.statusline = "%!v:lua.require('plugins.ui').statusline()"
 
 local function component(render_fn, hl_fn)
 	return { render = render_fn, hl = hl_fn }
@@ -173,44 +167,9 @@ local function statusline()
 	return format(left_items) .. "%<" .. file_text .. "%=" .. format(right_items)
 end
 
-local function statuscolumn()
-	local foldcol = ""
-	local signcol = "%s"
-	local numcol = ""
-
-	local foldcolumn = tonumber(vim.wo.foldcolumn) or 0
-	if foldcolumn > 0 then
-		local lnum = vim.v.lnum
-		local foldclosed = vim.fn.foldclosed(lnum)
-		local foldlevel = vim.fn.foldlevel(lnum)
-
-		if foldclosed > 0 then
-			foldcol = "▸"
-		elseif foldlevel > 0 then
-			foldcol = "▾"
-		else
-			foldcol = " "
-		end
-		foldcol = foldcol .. " "
-	end
-
-	local lnum = vim.v.lnum
-	local lastlnum = tonumber(vim.fn.line("$")) or 1
-	local width = #tostring(lastlnum)
-
-	if vim.v.relnum == 0 then
-		numcol = string.format("%" .. width .. "d ", lnum)
-	else
-		numcol = string.format("%" .. width .. "d ", vim.v.relnum)
-	end
-
-	return foldcol .. signcol .. numcol
-end
-
-vim.o.statuscolumn = "%!v:lua.require('plugins.ui').statuscolumn()"
+vim.o.statuscolumn = "%C%s%=%{v:relnum?v:relnum:v:lnum} "
 
 local M = {}
-M.statuscolumn = statuscolumn
 M.statusline = statusline
 
 return M

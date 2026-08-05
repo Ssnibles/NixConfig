@@ -1,33 +1,3 @@
-if vim.fn.has("nvim-0.12") == 1 then
-	if not vim.g.__treesitter_safe_get_node_text then
-		vim.g.__treesitter_safe_get_node_text = true
-		local original_get_node_text = vim.treesitter.get_node_text
-		vim.treesitter.get_node_text = function(node, source, opts)
-			local ok, result = pcall(original_get_node_text, node, source, opts)
-			if ok then return result end
-			local msg = tostring(result)
-			if msg:find("Index out of bounds", 1, true) or msg:find("attempt to call method 'range' (a nil value)", 1, true) then
-				return ""
-			end
-			error(result)
-		end
-	end
-
-	if not vim.g.__treesitter_safe_start then
-		vim.g.__treesitter_safe_start = true
-		local original_start = vim.treesitter.start
-		vim.treesitter.start = function(bufnr, lang)
-			local ok, result = pcall(original_start, bufnr, lang)
-			if ok then return result end
-			local msg = tostring(result)
-			if msg:find("Parser could not be created", 1, true) or msg:find("Parser not found", 1, true) then
-				return false
-			end
-			error(result)
-		end
-	end
-end
-
 require("nvim-treesitter-textobjects").setup({
 	select = { lookahead = true },
 	move = { set_jumps = true },
@@ -61,18 +31,3 @@ require("treesitter-context").setup({
 	end,
 })
 
-if vim.fn.has("nvim-0.12") == 1 then
-	local ok, render = pcall(require, "treesitter-context.render")
-	if ok and type(render.open) == "function" then
-		local original_open = render.open
-		render.open = function(...)
-			local ok_open, result = pcall(original_open, ...)
-			if not ok_open then
-				local msg = tostring(result)
-				if msg:find("Invalid 'end_col': out of range", 1, true) then return end
-				error(result)
-			end
-			return result
-		end
-	end
-end

@@ -1,4 +1,5 @@
 local fzf = require("fzf-lua")
+
 fzf.setup({
 	winopts = {
 		height = 0.85,
@@ -8,8 +9,12 @@ fzf.setup({
 		border = "rounded",
 		backdrop = 100,
 		preview = {
-			layout = "vertical",
+			layout = "flex",
+			flex = {
+				flip_columns = 110,
+			},
 			vertical = "right:50%",
+			horizontal = "down:35%",
 			border = "rounded",
 			title = false,
 		},
@@ -45,108 +50,28 @@ fzf.setup({
 	},
 })
 
-local function responsive()
-	local width = vim.api.nvim_win_get_width(0)
-	if width < 110 then
-		return {
-			winopts = {
-				preview = {
-					layout = "horizontal",
-					horizontal = "down:35%",
-					border = "rounded",
-					title = false,
-				},
-			},
-		}
-	end
-	return {
-		winopts = {
-			preview = {
-				layout = "vertical",
-				vertical = "right:50%",
-				border = "rounded",
-				title = false,
-			},
-		},
-	}
-end
-
-local function files()
-	fzf.files(responsive())
-end
-local function grep()
-	fzf.live_grep(responsive())
-end
-local function oldfiles()
-	fzf.oldfiles(responsive())
-end
-local function buffers()
-	fzf.buffers(responsive())
-end
-local function blines()
-	fzf.blines(responsive())
-end
-local function grep_cword()
-	fzf.grep_cword(responsive())
-end
-local function grep_cWORD()
-	fzf.grep_cWORD(responsive())
-end
-local function lsp_syms()
-	fzf.lsp_document_symbols(responsive())
-end
-local function lsp_wsyms()
-	fzf.lsp_workspace_symbols(responsive())
-end
-local function lsp_diag()
-	fzf.diagnostics_document(responsive())
-end
-local function help_tags()
-	fzf.help_tags(responsive())
-end
-local function keymaps()
-	fzf.keymaps(responsive())
-end
-local function resume()
-	fzf.resume()
-end
-local function git_commits()
-	fzf.git_commits(responsive())
-end
-local function git_status()
-	fzf.git_status(responsive())
-end
-
 local map = vim.keymap.set
 
-map("n", "<leader>ff", files, { desc = "Find files" })
-map("n", "<leader>fo", oldfiles, { desc = "Recent files" })
-map("n", "<leader>fb", buffers, { desc = "Buffers" })
-map("n", "<leader>fg", grep, { desc = "Live grep" })
-map("n", "<leader>fw", grep_cword, { desc = "Grep word" })
-map("n", "<leader>fW", grep_cWORD, { desc = "Grep WORD" })
-map("n", "<leader>f/", blines, { desc = "Search buffer" })
-map("n", "<leader>fs", lsp_syms, { desc = "Document symbols" })
-map("n", "<leader>fS", lsp_wsyms, { desc = "Workspace symbols" })
-map("n", "<leader>fd", lsp_diag, { desc = "Diagnostics" })
-map("n", "<leader>fh", help_tags, { desc = "Help" })
-map("n", "<leader>fk", keymaps, { desc = "Keymaps" })
-map("n", "<leader>f.", resume, { desc = "Resume last picker" })
+map("n", "<leader>ff", fzf.files, { desc = "Find files" })
+map("n", "<leader>fo", fzf.oldfiles, { desc = "Recent files" })
+map("n", "<leader>fb", fzf.buffers, { desc = "Buffers" })
+map("n", "<leader>fg", fzf.live_grep, { desc = "Live grep" })
+map("n", "<leader>fw", fzf.grep_cword, { desc = "Grep word" })
+map("n", "<leader>fW", fzf.grep_cWORD, { desc = "Grep WORD" })
+map("n", "<leader>f/", fzf.blines, { desc = "Search buffer" })
+map("n", "<leader>fs", fzf.lsp_document_symbols, { desc = "Document symbols" })
+map("n", "<leader>fS", fzf.lsp_workspace_symbols, { desc = "Workspace symbols" })
+map("n", "<leader>fd", fzf.diagnostics_document, { desc = "Diagnostics" })
+map("n", "<leader>fh", fzf.help_tags, { desc = "Help" })
+map("n", "<leader>fk", fzf.keymaps, { desc = "Keymaps" })
+map("n", "<leader>f.", fzf.resume, { desc = "Resume last picker" })
 
 map("n", "<leader>gg", function()
 	require("neogit").open()
 end, { desc = "Neogit status" })
-map("n", "<leader>gc", git_commits, { desc = "Git commits" })
-map("n", "<leader>gS", git_status, { desc = "Git status (picker)" })
-map("n", "<leader>gl", function()
-	fzf.git_log({ winopts = responsive().winopts })
-end, { desc = "Git log" })
-map("n", "<leader>gL", function()
-	fzf.git_log_line({ winopts = responsive().winopts })
-end, { desc = "Git log (current line)" })
-map("n", "<leader>gB", function()
-	fzf.git_branches({ winopts = responsive().winopts })
-end, { desc = "Git branches" })
-map("n", "<leader>gF", function()
-	fzf.git_stash({ winopts = responsive().winopts })
-end, { desc = "Git stash" })
+map("n", "<leader>gc", fzf.git_commits, { desc = "Git commits" })
+map("n", "<leader>gS", fzf.git_status, { desc = "Git status (picker)" })
+map("n", "<leader>gl", fzf.git_commits, { desc = "Git log" })
+map("n", "<leader>gL", fzf.git_bcommits, { desc = "Git log (current file)" })
+map("n", "<leader>gB", fzf.git_branches, { desc = "Git branches" })
+map("n", "<leader>gF", fzf.git_stash, { desc = "Git stash" })

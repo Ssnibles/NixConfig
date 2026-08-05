@@ -26,13 +26,22 @@ local function format_with_shell(bufnr, fmt)
 	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 	local text = table.concat(lines, "\n")
 
-	local result = vim.fn.systemlist({ fmt, "--stdin-filepath", name }, text)
-	if vim.v.shell_error ~= 0 then
+	local args = { fmt }
+	if name ~= "" then
+		table.insert(args, "--stdin-filepath")
+		table.insert(args, name)
+	end
+
+	local obj = vim.system(args, { stdin = text }):wait()
+	if obj.code ~= 0 then
 		return false
 	end
-	if #result == 0 then
-		return true
+
+	local result = vim.split(obj.stdout or "", "\n")
+	if result[#result] == "" then
+		table.remove(result)
 	end
+
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, result)
 	return true
 end

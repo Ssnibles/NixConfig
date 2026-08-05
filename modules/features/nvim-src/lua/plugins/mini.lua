@@ -99,8 +99,8 @@ require("mini.operators").setup()
 require("mini.splitjoin").setup()
 
 require("mini.pairs").setup()
+require("mini.bufremove").setup({})
 
 vim.keymap.set("n", "<leader>bd", function()
-  local buf = vim.api.nvim_get_current_buf()
-  vim.api.nvim_buf_delete(buf, { force = false })
+  require("mini.bufremove").delete(0, false)
 end, { desc = "Delete buffer" })

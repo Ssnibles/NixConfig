@@ -245,12 +245,3 @@ autocmd({ "BufReadPre", "BufNewFile" }, {
 		end
 	end,
 })
-
-vim.on_key(function(key, typed)
-	local mode = vim.api.nvim_get_mode().mode
-	local key_hex = string.format("%02x", string.byte(key))
-	-- Log to a file so it doesn't interfere with the cmdline
-	local f = io.open("/tmp/nvim_keys.log", "a")
-	f:write(string.format("mode=%s key=%s hex=%s typed=%s\n", mode, key, key_hex, vim.inspect(typed)))
-	f:close()
-end)
