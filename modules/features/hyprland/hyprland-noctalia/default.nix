@@ -26,7 +26,6 @@
           gnome-keyring
           grim
           seahorse
-          flameshot
           libnotify
           networkmanagerapplet
           adwaita-icon-theme
