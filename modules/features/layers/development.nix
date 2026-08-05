@@ -19,6 +19,7 @@
           [
             neovim
             opencode
+            antigravity
             nodejs
             cargo
             gcc
