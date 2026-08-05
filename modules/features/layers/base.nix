@@ -130,6 +130,7 @@
         environment.systemPackages = with pkgs; [
           iwd
           dualsensectl # DualSense utility: firmware updates, LED and rumble settings.
+          self.packages.${pkgs.stdenv.hostPlatform.system}.dualsense-pair
         ];
 
         # Enable redistributable firmware (required for AMD GPU firmware)
