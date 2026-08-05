@@ -64,10 +64,6 @@
             ".config/fish/config.fish" = {
               clobber = true;
               text = ''
-                if type -q fd
-                  set -gx FZF_DEFAULT_COMMAND "fd --type f --hidden --follow --exclude .git"
-                  set -gx FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
-                end
                 set -gx FZF_DEFAULT_OPTS "
                   --height=60%
                   --layout=reverse
@@ -97,46 +93,6 @@
                   --color=selected-bg:#${c.bgSubtle},selected-fg:#${c.fg}
                   --color=gutter:#${c.bg}
                 "
-
-                set -gx FZF_CTRL_R_OPTS "--preview='echo {}' --preview-window=up,3,wrap --header='Search history'"
-                set -gx FZF_CTRL_T_OPTS "--preview='bat --style=numbers --color=always --line-range :200 {} 2>/dev/null || tree -C -L 2 {} 2>/dev/null || echo {}' --preview-window=right,50%"
-                set -gx FZF_ALT_C_OPTS "--preview='eza --icons=auto --group-directories-first --git --color=always {} 2>/dev/null || ls -la {}' --preview-window=right,60%"
-
-                function cdf --description "cd into a directory selected with fzf"
-                  if not type -q fd
-                    echo "cdf: fd is not installed" >&2
-                    return 1
-                  end
-                  if not type -q fzf
-                    echo "cdf: fzf is not installed" >&2
-                    return 1
-                  end
-
-                  set -l search_root "."
-                  if test (count $argv) -gt 0
-                    set search_root "$argv[1]"
-                  end
-
-                  if not test -d "$search_root"
-                    echo "cdf: not a directory: $search_root" >&2
-                    return 1
-                  end
-
-                  set -l preview_cmd "ls -la {}"
-                  if type -q eza
-                    set preview_cmd "eza --icons=auto --group-directories-first --git --color=always {}"
-                  end
-
-                  set -l target (
-                    printf '%s\n' "." \
-                    (fd --type d --hidden --follow --exclude .git . "$search_root" 2>/dev/null) \
-                    | fzf --prompt="cd ❯ " --preview="$preview_cmd" --preview-window=right,60%,border-left --header="Select directory"
-                  )
-
-                  if test -n "$target"
-                    cd "$target"
-                  end
-                end
               '';
             };
           };
