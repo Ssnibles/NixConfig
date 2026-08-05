@@ -1,12 +1,13 @@
 vim.loader.enable()
 
 vim.opt.runtimepath:append("/home/josh/sshinator.nvim")
+vim.opt.runtimepath:append("/home/josh/indentinator.nvim")
 
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
 if not vim.env.NVIM_LISTEN_ADDRESS then
-	vim.env.NVIM_LISTEN_ADDRESS = "/tmp/nvim.socket"
+  vim.env.NVIM_LISTEN_ADDRESS = "/tmp/nvim.socket"
 end
 
 vim.opt.clipboard = "unnamedplus"
