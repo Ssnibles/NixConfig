@@ -201,8 +201,10 @@
 
       system.activationScripts.nvf-config = ''
         mkdir -p /home/${config.username}/.config
+        chown -R ${config.username}:users /home/${config.username}/.config
         ln -sfn /home/${config.username}/NixConfig/modules/features/nvim-src /home/${config.username}/.config/nvim
         ln -sfn /home/${config.username}/NixConfig/modules/features/nvim-src /home/${config.username}/.config/nvf
+        chown -h ${config.username}:users /home/${config.username}/.config/nvim /home/${config.username}/.config/nvf
       '';
     };
 }

@@ -63,7 +63,9 @@
 
         system.activationScripts.niri-config = ''
           mkdir -p /home/${config.username}/.config/niri
+          chown -R ${config.username}:users /home/${config.username}/.config/niri
           ln -sfn /home/${config.username}/NixConfig/modules/features/niri/config.kdl /home/${config.username}/.config/niri/config.kdl
+          chown -h ${config.username}:users /home/${config.username}/.config/niri/config.kdl
         '';
       };
     };

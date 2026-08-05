@@ -63,8 +63,10 @@
 
         system.activationScripts.mango-config = ''
           mkdir -p /home/${config.username}/.config/mango
+          chown -R ${config.username}:users /home/${config.username}/.config/mango
           ln -sfn /home/${config.username}/NixConfig/modules/features/mangowc/config.conf /home/${config.username}/.config/mango/config.conf
           ln -sfn /home/${config.username}/NixConfig/modules/features/mangowc/binds.conf /home/${config.username}/.config/mango/binds.conf
+          chown -h ${config.username}:users /home/${config.username}/.config/mango/config.conf /home/${config.username}/.config/mango/binds.conf
         '';
 
         hjem.users."${config.username}" = {

@@ -57,7 +57,5 @@
           };
         };
       };
-
-      environment.etc."firefox/policies/policies.json".target = "firefox/policies/policies.json";
     };
 }

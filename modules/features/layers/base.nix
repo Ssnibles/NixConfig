@@ -161,18 +161,14 @@
         programs.nh = {
           enable = true;
           clean.enable = true;
+          clean.extraArgs = "--keep-since 30d --keep 3";
         };
 
         # List services that you want to enable:
 
-        # Optimizations and garbage collection
+        # Optimizations
         nix.optimise.automatic = true;
         nix.optimise.dates = [ "03:45" ];
-        nix.gc = {
-          automatic = true;
-          dates = "weekly";
-          options = "--delete-older-than 30d";
-        };
       };
 
     };

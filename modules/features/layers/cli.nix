@@ -139,10 +139,10 @@
           enable = true;
 
           enableCompletion = true;
-          enableAutosuggestions = true;
+          autosuggestions.enable = true;
           syntaxHighlighting.enable = true;
 
-          oh-my-zsh = {
+          ohMyZsh = {
             enable = true;
             plugins = [
               "git"
