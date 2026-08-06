@@ -23,14 +23,7 @@ Pill {
     return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null
   }
 
-  readonly property bool batPresent: {
-    var count = UPower.devices.count
-    for (var i = 0; i < count; i++) {
-      var d = UPower.devices.get(i)
-      if (d.isLaptopBattery && d.ready) return true
-    }
-    return false
-  }
+  readonly property bool batPresent: batDevice !== null && batDevice.isLaptopBattery
 
   readonly property int batPct: root.batDevice ? Math.round(root.batDevice.percentage * 100) : 0
   readonly property bool batCharging: root.batDevice && root.batDevice.state === UPowerDeviceState.Charging

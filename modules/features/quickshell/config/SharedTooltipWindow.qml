@@ -16,6 +16,8 @@ PanelWindow {
   property real cardOpacity: 0
   property int _repositionTick: 0
 
+  readonly property bool hovered: tipLoader.item !== null && cardHover.hovered
+
   on_ActiveChanged: {
     if (_active !== null) {
       cachedActive = _active
@@ -25,9 +27,25 @@ PanelWindow {
       cardOpacity = 1
       repositionTimer.restart()
     } else {
-      recentTimer.restart()
-      fadeTimer.restart()
-      cardOpacity = 0
+      if (!root.hovered) {
+        recentTimer.restart()
+        fadeTimer.restart()
+        cardOpacity = 0
+      }
+    }
+  }
+
+  onHoveredChanged: {
+    if (hovered) {
+      recentTimer.stop()
+      fadeTimer.stop()
+      cardOpacity = 1
+    } else {
+      if (root._active === null) {
+        recentTimer.restart()
+        fadeTimer.restart()
+        cardOpacity = 0
+      }
     }
   }
 
@@ -75,6 +93,10 @@ PanelWindow {
     width: parent.width
     opacity: root.cardOpacity
 
+    HoverHandler {
+      id: cardHover
+    }
+
     // The Tooltip instance currently active (null while fading out).
     readonly property var src: root.cachedActive
 
@@ -104,7 +126,7 @@ PanelWindow {
         width: parent ? parent.width : 0
         height: content.implicitHeight + Config.popupContentMargins * 2
         radius: Config.popupRadius
-        color: Colors.bgRaised
+        color: Colors.bg
         antialiasing: true
         border.width: 1
         border.color: Colors.border
@@ -131,7 +153,7 @@ PanelWindow {
             Text {
               text: _src ? _src.title : ""
               color: Colors.fg
-              font.family: Config.monoFont
+              font.family: Config.sansFont
               font.pixelSize: 12
               font.bold: true
               anchors.verticalCenter: parent.verticalCenter
@@ -151,7 +173,7 @@ PanelWindow {
               required property var modelData
               text: modelData
               color: Colors.fgMid
-              font.family: Config.monoFont
+              font.family: Config.sansFont
               font.pixelSize: 11
             }
           }

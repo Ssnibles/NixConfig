@@ -15,8 +15,7 @@ Item {
   implicitHeight: 36
   implicitWidth: 120
 
-  readonly property real _thumbSize: mouse.dragging ? 24 : (mouse.containsMouse ? 20 : 16)
-  readonly property real _trackHeight: 6
+  readonly property real _trackHeight: 12
 
   // Internal drag state: _dragValue is live during drag, _pendingValue
   // holds the last dragged value until the bound 'value' property catches up.
@@ -34,13 +33,13 @@ Item {
   Item {
     anchors.verticalCenter: parent.verticalCenter
     width: parent.width
-    height: root._thumbSize + 8
+    height: 32
 
     Rectangle {
       anchors.verticalCenter: parent.verticalCenter
       width: parent.width
       height: root._trackHeight
-      radius: root._trackHeight / 2
+      radius: 4
       color: Colors.bgSubtle
     }
 
@@ -51,24 +50,9 @@ Item {
       anchors.bottom: parent.verticalCenter
       anchors.bottomMargin: -root._trackHeight / 2
       width: parent.width * root._visualValue
-      radius: root._trackHeight / 2
+      radius: 4
       color: root.fillColor
       Behavior on color { ColorAnimation { duration: 150 } }
-    }
-
-    Rectangle {
-      id: thumb
-      x: (parent.width - root._thumbSize) * root._visualValue
-      y: (parent.height - root._thumbSize) / 2
-      width: root._thumbSize
-      height: root._thumbSize
-      radius: root._thumbSize / 2
-      color: root.fillColor
-      border.width: root._visualValue > 0 || mouse.containsMouse ? 0 : 2
-      border.color: root.fillColor
-
-      Behavior on width { NumberAnimation { duration: 80 } }
-      Behavior on height { NumberAnimation { duration: 80 } }
     }
 
     MouseArea {

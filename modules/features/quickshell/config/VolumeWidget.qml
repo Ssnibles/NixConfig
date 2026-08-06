@@ -41,54 +41,6 @@ Item {
     Behavior on color { ColorAnimation { duration: 100 } }
   }
 
-  Column {
-    id: volLayout
-    anchors.top: parent.top
-    anchors.topMargin: 4
-    anchors.horizontalCenter: parent.horizontalCenter
-    spacing: 4
-
-    Item {
-      width: 8
-      height: 32
-      anchors.horizontalCenter: parent.horizontalCenter
-
-      Rectangle {
-        anchors.fill: parent
-        radius: 4
-        color: Colors.bgSubtle
-
-        Rectangle {
-          anchors.bottom: parent.bottom
-          anchors.left: parent.left
-          anchors.right: parent.right
-          height: parent.height * Math.min(1.0, root.volPct)
-          radius: 4
-          color: root.volMuted ? Colors.red : Colors.accent
-          Behavior on height { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
-          Behavior on color { ColorAnimation { duration: 150 } }
-        }
-      }
-    }
-
-    Text {
-      anchors.horizontalCenter: parent.horizontalCenter
-      text: Utils.volumeIcon(root.volPct, root.volMuted)
-      color: root.volMuted ? Colors.red : Colors.fg
-      font.family: root.uiFont
-      font.pixelSize: 12
-    }
-
-    Text {
-      anchors.horizontalCenter: parent.horizontalCenter
-      text: Math.round(root.volPct * 100) + "%"
-      color: root.volMuted ? Colors.red : Colors.fg
-      font.family: root.uiFont
-      font.pixelSize: 10
-      font.bold: true
-    }
-  }
-
   MouseArea {
     id: volMouse
     anchors.fill: parent
@@ -106,6 +58,79 @@ Item {
       var step = 0.05
       var dir = wheel.angleDelta.y > 0 ? 1 : -1
       Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(1.5, root.volPct + dir * step))
+    }
+  }
+
+  Column {
+    id: volLayout
+    anchors.top: parent.top
+    anchors.topMargin: 4
+    anchors.horizontalCenter: parent.horizontalCenter
+    spacing: 4
+
+    Item {
+      id: volTrackContainer
+      width: 12
+      height: 36
+      anchors.horizontalCenter: parent.horizontalCenter
+
+      Rectangle {
+        anchors.fill: parent
+        radius: 4
+        color: Colors.bgSubtle
+        border.color: trackMouse.containsMouse ? Colors.accent : "transparent"
+        border.width: 1
+
+        Rectangle {
+          anchors.bottom: parent.bottom
+          anchors.left: parent.left
+          anchors.right: parent.right
+          height: parent.height * Math.min(1.0, root.volPct)
+          radius: 4
+          color: root.volMuted ? Colors.red : Colors.accent
+          Behavior on height { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+          Behavior on color { ColorAnimation { duration: 150 } }
+        }
+      }
+
+      MouseArea {
+        id: trackMouse
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        
+        function updateVolume(mouseY) {
+          var pct = Math.max(0, Math.min(1.5, (parent.height - mouseY) / parent.height))
+          if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+            Pipewire.defaultAudioSink.audio.volume = pct
+          }
+        }
+
+        onPressed: function(mouse) {
+          updateVolume(mouse.y)
+        }
+        onPositionChanged: function(mouse) {
+          if (pressed) {
+            updateVolume(mouse.y)
+          }
+        }
+      }
+    }
+
+    Text {
+      anchors.horizontalCenter: parent.horizontalCenter
+      text: Utils.volumeIcon(root.volPct, root.volMuted)
+      color: root.volMuted ? Colors.red : Colors.fg
+      font.family: root.uiFont
+      font.pixelSize: 12
+    }
+
+    Text {
+      anchors.horizontalCenter: parent.horizontalCenter
+      text: Math.round(root.volPct * 100) + "%"
+      color: root.volMuted ? Colors.red : Colors.fgMid
+      font.family: root.uiFont
+      font.pixelSize: 8
     }
   }
 }

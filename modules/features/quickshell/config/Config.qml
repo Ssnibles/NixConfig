@@ -33,7 +33,7 @@ Singleton {
   // --- Popup / tooltip ---------------------------------------------------
   readonly property int popupGap: 46 // distance from the bar to a popup
   readonly property int popupMaxWidth: 280
-  readonly property int popupRadius: 8
+  readonly property int popupRadius: 12
   readonly property int popupContentMargins: 12
   readonly property int popupContentSpacing: 6
   readonly property int popupShowDelay: 150 // ms before a tooltip appears

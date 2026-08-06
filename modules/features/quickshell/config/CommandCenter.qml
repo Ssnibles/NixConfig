@@ -8,6 +8,7 @@ import Quickshell.Services.Pipewire
 import Quickshell.Services.Mpris
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Effects
 import "Utils.js" as Utils
 
 Variants {
@@ -24,9 +25,10 @@ Variants {
     
     // We want the window to be tall enough to support the slide-in trajectory
     implicitWidth: 420
-    implicitHeight: mainCard.height + 40
+    implicitHeight: contentLoader.item ? contentLoader.item.height + 24 : 0
     
     color: "transparent"
+    visible: false
     
     // Make sure it sits above windows and does not disrupt layout
     aboveWindows: true
@@ -158,10 +160,23 @@ Variants {
       }
     }
 
-    // Main Card container (drawn relative to transition slide and opacity)
-    Rectangle {
-      id: mainCard
-      width: parent.width
+    Loader {
+      id: contentLoader
+      anchors.top: parent.top
+      anchors.horizontalCenter: parent.horizontalCenter
+      width: 420
+      height: item ? item.height : 0
+      active: panel.visible || panel._closeRequested
+      sourceComponent: ccContentComponent
+    }
+
+    Component {
+      id: ccContentComponent
+
+      // Main Card container (drawn relative to transition slide and opacity)
+      Rectangle {
+        id: mainCard
+      width: 420
       height: mainCol.implicitHeight + 32
       y: panel.panelSlide
       opacity: panel.panelOpacity
@@ -352,7 +367,7 @@ Variants {
         // --- SYSTEM CONTROLS CARD (VOLUME & BRIGHTNESS) ---
         Rectangle {
           width: parent.width
-          implicitHeight: sliderCol.implicitHeight + 20
+          height: sliderCol.implicitHeight + 20
           color: Colors.bg
           border.color: Colors.border
           border.width: 1
@@ -484,7 +499,7 @@ Variants {
         Rectangle {
           id: mediaCard
           width: parent.width
-          implicitHeight: mediaRow.implicitHeight + 20
+          height: mediaInnerCol.implicitHeight + 24
           color: Colors.bg
           border.color: Colors.border
           border.width: 1
@@ -500,173 +515,253 @@ Variants {
             })
           }
 
-          RowLayout {
-            id: mediaRow
+          MediaProgress {
+            id: mediaTracker
+            player: mediaCard.activePlayer
+          }
+
+          Timer {
+            id: seekTimer
+            interval: 200
+            repeat: false
+            property real targetProgress: 0
+            onTriggered: {
+              if (mediaCard.activePlayer && mediaCard.activePlayer.canSeek) {
+                var targetPos = targetProgress * mediaTracker.lastLength
+                var currentPos = mediaTracker.estimatedPosition
+                var offsetMicro = (targetPos - currentPos) * 1000000
+                mediaCard.activePlayer.seek(offsetMicro)
+              }
+            }
+          }
+
+          Column {
+            id: mediaInnerCol
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.margins: 12 // Increased margins
-            spacing: 12
+            anchors.margins: 12
+            spacing: 8
 
-            // Album Cover Art (rounded slightly)
-            Rectangle {
-              width: 48 // Increased cover art size
-              height: 48
-              radius: 8 // Rounded slightly
-              color: Colors.bgSubtle
-              clip: true
-              border.color: Colors.border
-              border.width: 1
+            RowLayout {
+              id: mediaRow
+              width: parent.width
+              spacing: 12
 
-              // Music Icon fallback
-              Text {
-                visible: !coverArt.visible
-                text: "󰎆"
-                color: Colors.fgDim
-                font.family: Config.monoFont
-                font.pixelSize: 18
-                anchors.centerIn: parent
-              }
-
-              IconImage {
-                id: coverArt
-                anchors.fill: parent
-                visible: source !== ""
-                source: {
-                  if (!mediaCard.activePlayer) return ""
-                  var url = mediaCard.activePlayer.trackArtUrl
-                  if (url) {
-                    url = String(url).trim()
-                    if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"') url = url.slice(1, -1)
-                    return url
-                  }
-                  return ""
-                }
-              }
-            }
-
-            // Track Details
-            Column {
-              Layout.fillWidth: true
-              spacing: 2
-
-              Text {
-                width: parent.width
-                text: mediaCard.activePlayer ? mediaCard.activePlayer.trackTitle : ""
-                color: Colors.fg
-                font.bold: true
-                font.pixelSize: 12 // Increased size
-                font.family: Config.sansFont
-                elide: Text.ElideRight
-              }
-
-              Text {
-                width: parent.width
-                text: mediaCard.activePlayer ? (mediaCard.activePlayer.trackArtist || "Unknown Artist") : ""
-                color: Colors.fgMid
-                font.pixelSize: 10 // Increased size
-                font.family: Config.sansFont
-                elide: Text.ElideRight
-              }
-            }
-
-            // Playback buttons
-            Row {
-              spacing: 6
-
-              // Prev button
+              // Album Cover Art (rounded slightly)
               Rectangle {
-                width: 28
-                height: 28
-                radius: 14
-                color: prevHover.containsMouse ? Colors.bgSubtle : "transparent"
-                Behavior on scale { NumberAnimation { duration: 100 } }
-
-                Text {
-                  text: "󰒮"
-                  color: (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) ? (prevHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
-                  font.family: Config.monoFont
-                  font.pixelSize: 13
-                  anchors.centerIn: parent
-                }
-
-                MouseArea {
-                  id: prevHover
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) ? Qt.PointingHandCursor : Qt.ArrowCursor
-                  onEntered: parent.scale = 0.90
-                  onExited: parent.scale = 1.0
-                  onClicked: {
-                    if (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) {
-                      mediaCard.activePlayer.previous()
-                    }
-                  }
-                }
-              }
-
-              // Play/Pause button
-              Rectangle {
-                width: 32
-                height: 32
-                radius: 16
-                color: playHover.containsMouse ? Colors.accent : Colors.bgSubtle
+                width: 48 // Increased cover art size
+                height: 48
+                radius: 8 // Rounded slightly
+                color: Colors.bgSubtle
                 border.color: Colors.border
                 border.width: 1
-                Behavior on scale { NumberAnimation { duration: 100 } }
 
+                // Music Icon fallback
                 Text {
-                  text: (mediaCard.activePlayer && mediaCard.activePlayer.isPlaying) ? "󰏤" : "󰐊"
-                  color: playHover.containsMouse ? Colors.bg : Colors.fg
+                  visible: !coverArt.visible
+                  text: "󰎆"
+                  color: Colors.fgDim
                   font.family: Config.monoFont
-                  font.pixelSize: 15
+                  font.pixelSize: 18
                   anchors.centerIn: parent
                 }
 
-                MouseArea {
-                  id: playHover
+                // Mask for rounded corners
+                Item {
+                  id: coverArtMask
+                  width: parent.width
+                  height: parent.height
+                  visible: false
+                  layer.enabled: true
+                  Rectangle {
+                    width: parent.width
+                    height: parent.height
+                    radius: 8
+                    color: "black"
+                  }
+                }
+
+                IconImage {
+                  id: coverArt
                   anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onEntered: parent.scale = 0.90
-                  onExited: parent.scale = 1.0
-                  onClicked: {
-                    if (mediaCard.activePlayer) {
-                      mediaCard.activePlayer.isPlaying = !mediaCard.activePlayer.isPlaying
+                  visible: source !== ""
+                  source: {
+                    if (!mediaCard.activePlayer) return ""
+                    var url = mediaCard.activePlayer.trackArtUrl
+                    if (url) {
+                      url = String(url).trim()
+                      if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"') url = url.slice(1, -1)
+                      return url
                     }
+                    return ""
+                  }
+
+                  layer.enabled: true
+                  layer.effect: MultiEffect {
+                    maskEnabled: true
+                    maskSource: coverArtMask
                   }
                 }
               }
 
-              // Next button
-              Rectangle {
-                width: 28
-                height: 28
-                radius: 14
-                color: nextHover.containsMouse ? Colors.bgSubtle : "transparent"
-                Behavior on scale { NumberAnimation { duration: 100 } }
+              // Track Details
+              Column {
+                Layout.fillWidth: true
+                spacing: 2
 
                 Text {
-                  text: "󰒭"
-                  color: (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) ? (nextHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
-                  font.family: Config.monoFont
-                  font.pixelSize: 13
-                  anchors.centerIn: parent
+                  width: parent.width
+                  text: mediaCard.activePlayer ? mediaCard.activePlayer.trackTitle : ""
+                  color: Colors.fg
+                  font.bold: true
+                  font.pixelSize: 12 // Increased size
+                  font.family: Config.sansFont
+                  elide: Text.ElideRight
                 }
 
-                MouseArea {
-                  id: nextHover
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) ? Qt.PointingHandCursor : Qt.ArrowCursor
-                  onEntered: parent.scale = 0.90
-                  onExited: parent.scale = 1.0
-                  onClicked: {
-                    if (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) {
-                      mediaCard.activePlayer.next()
+                Text {
+                  width: parent.width
+                  text: mediaCard.activePlayer ? (mediaCard.activePlayer.trackArtist || "Unknown Artist") : ""
+                  color: Colors.fgMid
+                  font.pixelSize: 10 // Increased size
+                  font.family: Config.sansFont
+                  elide: Text.ElideRight
+                }
+              }
+
+              // Playback buttons
+              Row {
+                spacing: 6
+
+                // Prev button
+                Rectangle {
+                  width: 28
+                  height: 28
+                  radius: 14
+                  color: prevHover.containsMouse ? Colors.bgSubtle : "transparent"
+                  Behavior on scale { NumberAnimation { duration: 100 } }
+
+                  Text {
+                    text: "󰒮"
+                    color: (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) ? (prevHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
+                    font.family: Config.monoFont
+                    font.pixelSize: 13
+                    anchors.centerIn: parent
+                  }
+
+                  MouseArea {
+                    id: prevHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onEntered: parent.scale = 0.90
+                    onExited: parent.scale = 1.0
+                    onClicked: {
+                      if (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) {
+                        mediaCard.activePlayer.previous()
+                      }
                     }
                   }
                 }
+
+                // Play/Pause button
+                Rectangle {
+                  width: 32
+                  height: 32
+                  radius: 16
+                  color: playHover.containsMouse ? Colors.accent : Colors.bgSubtle
+                  border.color: Colors.border
+                  border.width: 1
+                  Behavior on scale { NumberAnimation { duration: 100 } }
+
+                  Text {
+                    text: (mediaCard.activePlayer && mediaCard.activePlayer.isPlaying) ? "󰏤" : "󰐊"
+                    color: playHover.containsMouse ? Colors.bg : Colors.fg
+                    font.family: Config.monoFont
+                    font.pixelSize: 15
+                    anchors.centerIn: parent
+                  }
+
+                  MouseArea {
+                    id: playHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onEntered: parent.scale = 0.90
+                    onExited: parent.scale = 1.0
+                    onClicked: {
+                      if (mediaCard.activePlayer) {
+                        mediaCard.activePlayer.isPlaying = !mediaCard.activePlayer.isPlaying
+                      }
+                    }
+                  }
+                }
+
+                // Next button
+                Rectangle {
+                  width: 28
+                  height: 28
+                  radius: 14
+                  color: nextHover.containsMouse ? Colors.bgSubtle : "transparent"
+                  Behavior on scale { NumberAnimation { duration: 100 } }
+
+                  Text {
+                    text: "󰒭"
+                    color: (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) ? (nextHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
+                    font.family: Config.monoFont
+                    font.pixelSize: 13
+                    anchors.centerIn: parent
+                  }
+
+                  MouseArea {
+                    id: nextHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onEntered: parent.scale = 0.90
+                    onExited: parent.scale = 1.0
+                    onClicked: {
+                      if (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) {
+                        mediaCard.activePlayer.next()
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            // Media Progress Slider Row
+            RowLayout {
+              width: parent.width
+              spacing: 8
+              visible: mediaCard.activePlayer && mediaTracker.lastLength > 0
+
+              Text {
+                text: Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
+                color: Colors.fgDim
+                font.family: Config.sansFont
+                font.pixelSize: 9
+                Layout.preferredWidth: 32
+                horizontalAlignment: Text.AlignRight
+              }
+
+              SliderControl {
+                Layout.fillWidth: true
+                value: mediaTracker.progress
+                fillColor: Colors.accent
+                onMoved: function(v) {
+                  seekTimer.targetProgress = v
+                  seekTimer.restart()
+                }
+              }
+
+              Text {
+                text: Utils.formatTime(Math.round(mediaTracker.lastLength))
+                color: Colors.fgDim
+                font.family: Config.sansFont
+                font.pixelSize: 9
+                Layout.preferredWidth: 32
               }
             }
           }
@@ -734,6 +829,7 @@ Variants {
           }
         }
       }
+    }
     }
   }
 }

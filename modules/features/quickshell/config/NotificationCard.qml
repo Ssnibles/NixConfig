@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Widgets
 
@@ -36,10 +37,10 @@ Rectangle {
   height: Math.max(contentCol.implicitHeight, hasIcon ? (isMedia ? 48 : 40) : 0) + Config.notifCardMargins * 2
   radius: Config.notifRadius
   
-  color: hoverArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised
+  color: hoverArea.containsMouse ? Colors.bgRaised : Colors.bg
   border.color: hoverArea.containsMouse
     ? (isMedia ? Colors.teal : (urgency === 2 ? Colors.red : Colors.accent))
-    : (isMedia ? Colors.teal : (urgency === 2 ? Colors.red : Colors.border))
+    : (urgency === 2 ? Colors.red : Colors.border)
   border.width: 1
 
   scale: hoverArea.containsMouse ? (hoverArea.pressed ? 0.98 : 1.02) : 1.0
@@ -63,49 +64,39 @@ Rectangle {
     }
   }
 
-  // Left Urgency Indicator Accent Strip
-  Rectangle {
-    id: urgencyStrip
-    anchors.left: parent.left
-    anchors.leftMargin: 1
-    anchors.top: parent.top
-    anchors.topMargin: 1
-    anchors.bottom: parent.bottom
-    anchors.bottomMargin: 1
-    width: 4
-    
-    // Smooth corners on the left edge to match the card
-    topLeftRadius: root.radius - 1
-    bottomLeftRadius: root.radius - 1
-    
-    color: {
-      if (root.isMedia) return Colors.teal
-      if (root.urgency === 2) return Colors.red
-      if (root.urgency === 0) return Colors.fgDim
-      return Colors.accent
-    }
-  }
-
   // Left-side Icon/Image Container
   Item {
     id: iconContainer
     visible: root.hasIcon
     anchors.left: parent.left
-    anchors.leftMargin: Config.notifCardMargins + 4 // Shift right to avoid urgency strip
+    anchors.leftMargin: Config.notifCardMargins
     anchors.verticalCenter: parent.verticalCenter
     width: root.isMedia ? 48 : 40
     height: root.isMedia ? 48 : 40
 
-    // Rounded clipping wrapper for the icon
-    Rectangle {
-      anchors.fill: parent
-      radius: 6
-      color: Colors.bgSubtle
-      clip: true
+    // Mask for rounded corners
+    Item {
+      id: iconMask
+      width: parent.width
+      height: parent.height
+      visible: false
+      layer.enabled: true
+      Rectangle {
+        width: parent.width
+        height: parent.height
+        radius: 8
+        color: "black"
+      }
+    }
 
-      IconImage {
-        anchors.fill: parent
-        source: root.iconSource
+    IconImage {
+      anchors.fill: parent
+      source: root.iconSource
+
+      layer.enabled: true
+      layer.effect: MultiEffect {
+        maskEnabled: true
+        maskSource: iconMask
       }
     }
   }
@@ -114,7 +105,7 @@ Rectangle {
   Column {
     id: contentCol
     anchors.left: root.hasIcon ? iconContainer.right : parent.left
-    anchors.leftMargin: root.hasIcon ? 10 : (Config.notifCardMargins + 8) // Shift right to avoid urgency strip
+    anchors.leftMargin: root.hasIcon ? 10 : Config.notifCardMargins
     anchors.right: parent.right
     anchors.rightMargin: Config.notifCardMargins
     anchors.verticalCenter: parent.verticalCenter
@@ -123,7 +114,7 @@ Rectangle {
     Text {
       width: parent.width
       text: root.isMedia ? "Now Playing" : root.summary
-      color: root.isMedia ? Colors.teal : Colors.fg
+      color: root.isMedia ? Colors.teal : (root.urgency === 2 ? Colors.red : Colors.accent)
       font.bold: true
       font.pixelSize: root.isMedia ? 10 : 12
       font.family: Config.sansFont

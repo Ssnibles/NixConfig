@@ -1,17 +1,19 @@
 local map = vim.keymap.set
 
--- NOTE: Intentionally NOT mapping <Esc> in normal mode — it breaks cmdline <Esc> cancellation in terminal Neovim
+-- General / Safety
 map("n", "U", "<C-r>", { desc = "Redo" })
 map("n", "Q", "<Nop>", { desc = "Disable Ex mode" })
 map("n", "<C-z>", "<Nop>", { desc = "Disable suspend" })
 map("n", "<C-w>q", "<Nop>", { desc = "Disable window close" })
 
+-- Saving & Quitting
 map("i", "<C-s>", "<C-o><cmd>update<CR>", { desc = "Save buffer" })
 map({ "n", "v" }, "<C-s>", "<cmd>update<CR>", { desc = "Save buffer" })
 map("n", "<leader>qq", "<cmd>confirm q<CR>", { desc = "Quit window" })
 map("n", "<leader>qw", "<cmd>wq<CR>", { desc = "Save and quit" })
 map("n", "<leader>qa", "<cmd>qa<CR>", { desc = "Quit all" })
 
+-- Insert Mode Editing & Caret
 map("i", "<C-BS>", "<C-w>", { desc = "Delete previous word" })
 map("i", "<M-BS>", "<C-w>", { desc = "Delete previous word" })
 map("i", "<C-h>", "<Left>", { desc = "Move caret left" })
@@ -19,9 +21,11 @@ map("i", "<C-j>", "<Down>", { desc = "Move caret down" })
 map("i", "<C-k>", "<Up>", { desc = "Move caret up" })
 map("i", "<C-l>", "<Right>", { desc = "Move caret right" })
 
+-- Visual Indentation
 map("v", "<", "<gv", { desc = "Indent left (keep selection)" })
 map("v", ">", ">gv", { desc = "Indent right (keep selection)" })
 
+-- Count-aware Open Lines
 local function open_lines(key)
   return function()
     local count = vim.v.count1
@@ -37,19 +41,21 @@ end
 map("n", "o", open_lines("o"), { desc = "Open line(s) below" })
 map("n", "O", open_lines("O"), { desc = "Open line(s) above" })
 
+-- Clipboard & Registers
 map("x", "<leader>p", '"_dP', { desc = "Paste without yanking" })
 map({ "n", "v" }, "<leader>D", '"_d', { desc = "Delete to void" })
 map("n", "x", '"_x', { desc = "Delete character to void" })
 
 map({ "n", "v" }, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
 map("n", "<leader>Y", '"+Y', { desc = "Yank line to system clipboard" })
-map({ "n", "v" }, "<leader>P", '"+p', { desc = "Paste from system clipboard" })
+map("n", "<leader>P", '"+P', { desc = "Paste before from system clipboard" }) -- Fixed lowercase 'p' to upper 'P'
 
+-- Selection & Movement
 map("n", "<leader>va", "ggVG", { desc = "Select all" })
-
 map("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Smart line down" })
 map("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Smart line up" })
 
+-- Search Enhancements
 map("n", "n", "nzzzv", { desc = "Next search result (centered)" })
 map("n", "N", "Nzzzv", { desc = "Prev search result (centered)" })
 map("n", "*", "*zz", { desc = "Search word forward (centered)" })
@@ -58,6 +64,7 @@ map("n", "#", "#zz", { desc = "Search word backward (centered)" })
 map("x", "*", [["zy/\V<C-r>=escape(@z, '/\')<CR><CR>]], { desc = "Search visual selection forward", silent = true })
 map("x", "#", [["zy?\V<C-r>=escape(@z, '?\')<CR><CR>]], { desc = "Search visual selection backward", silent = true })
 
+-- Window Management
 map("n", "<leader>wv", "<C-w>v", { desc = "Split vertical" })
 map("n", "<leader>ws", "<C-w>s", { desc = "Split horizontal" })
 map("n", "<leader>wq", "<C-w>c", { desc = "Close window" })
@@ -68,7 +75,16 @@ map("n", "<leader>wl", "<C-w>L", { desc = "Move window right" })
 map("n", "<leader>wj", "<C-w>J", { desc = "Move window down" })
 map("n", "<leader>wk", "<C-w>K", { desc = "Move window up" })
 
-map("n", "<leader>bo", "<cmd>%bd|e#|bd#<CR>", { desc = "Close other buffers" })
+-- Buffer & Tab Navigation
+map("n", "<leader>bo", function()
+  local current = vim.api.nvim_get_current_buf()
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if buf ~= current and vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buflisted then
+      vim.api.nvim_buf_delete(buf, { unload = false })
+    end
+  end
+end, { desc = "Close other buffers" }) -- Safer Lua buffer cleanup
+
 map("n", "<leader>`", "<cmd>b#<CR>", { desc = "Alternate buffer" })
 map("n", "<C-Tab>", "<cmd>bnext<CR>", { desc = "Next buffer" })
 map("n", "<C-S-Tab>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
@@ -78,6 +94,7 @@ map("n", "[t", "<cmd>tabprevious<CR>", { desc = "Previous tab" })
 map("n", "<leader>Tn", "<cmd>tabnew<CR>", { desc = "New tab" })
 map("n", "<leader>Tc", "<cmd>tabclose<CR>", { desc = "Close tab" })
 
+-- Quickfix & Location List
 map("n", "]q", "<cmd>cnext<CR>", { desc = "Next quickfix" })
 map("n", "[q", "<cmd>cprevious<CR>", { desc = "Previous quickfix" })
 map("n", "<leader>qo", "<cmd>copen<CR>", { desc = "Open quickfix" })
@@ -88,6 +105,7 @@ map("n", "<leader>qL", "<cmd>lclose<CR>", { desc = "Close location list" })
 map("n", "]l", "<cmd>lnext<CR>", { desc = "Next location" })
 map("n", "[l", "<cmd>lprevious<CR>", { desc = "Previous location" })
 
+-- Diagnostics
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
 
@@ -105,6 +123,7 @@ map("n", "[e", function()
   vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })
 end, { desc = "Previous error" })
 
+-- Toggles
 map("n", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "Toggle wrap" })
 map("n", "<leader>ts", "<cmd>set spell!<CR>", { desc = "Toggle spell" })
 map("n", "<leader>tn", "<cmd>set relativenumber!<CR>", { desc = "Toggle relative numbers" })
@@ -126,6 +145,7 @@ map("n", "<leader>tc", function()
   end
 end, { desc = "Toggle cursor word" })
 
+-- LSP & Pickers
 map("n", "<leader>li", "<cmd>LspInfo<CR>", { desc = "LSP info" })
 map("n", "<leader>lr", "<cmd>LspRestart<CR>", { desc = "Restart LSP" })
 map("n", "<leader>lf", "<cmd>FzfLua lsp_finder<CR>", { desc = "LSP finder" })
@@ -135,6 +155,6 @@ map("n", "<leader>lR", "<cmd>SmartRename<CR>", { desc = "Smart rename/replace" }
 map("n", "<C-p>", "<cmd>FzfLua files<CR>", { desc = "File picker" })
 map("n", "<leader>/", "<cmd>FzfLua live_grep<CR>", { desc = "Search project" })
 
+-- Miscellaneous
 map("n", "<leader>cd", "<cmd>cd %:p:h<CR>", { desc = "Change to file directory" })
-
 map("n", "zz", "za", { desc = "Toggle Folds" })

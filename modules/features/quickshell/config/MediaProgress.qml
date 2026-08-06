@@ -12,16 +12,16 @@ Scope {
 
   property real lastPosition: 0
   property real lastLength: 0
-  property int tick: 0
-  property int resetToken: 0
   property real wallClock: 0
+
+  property real estimatedPosition: 0
+  property real progress: 0
 
   function reset(pos, len) {
     root.lastPosition = Math.max(0, pos || 0)
     root.lastLength = Math.max(0, len || 0)
     root.wallClock = Date.now() / 1000
-    root.tick = 0
-    root.resetToken++
+    root.updateEstimatedPosition()
   }
 
   function updatePosition(pos, len) {
@@ -34,21 +34,22 @@ Scope {
     root.lastPosition = p
     root.lastLength = l
     root.wallClock = Date.now() / 1000
+    root.updateEstimatedPosition()
   }
 
-  property real estimatedPosition: {
-    var _ = root.tick
-    var __ = root.resetToken
-    if (!root.player) return root.lastPosition
+  function updateEstimatedPosition() {
+    if (!root.player) {
+      root.estimatedPosition = root.lastPosition
+      root.progress = 0
+      return
+    }
     var elapsed = Date.now() / 1000 - root.wallClock
-    return root.lastPosition + (root.player.isPlaying ? elapsed : 0)
-  }
-
-  property real progress: {
-    var _ = root.tick
-    var __ = root.resetToken
-    if (!root.player || root.lastLength <= 0) return 0
-    return Math.min(1, Math.max(0, root.estimatedPosition / root.lastLength))
+    root.estimatedPosition = root.lastPosition + (root.player.isPlaying ? elapsed : 0)
+    if (root.lastLength > 0) {
+      root.progress = Math.min(1, Math.max(0, root.estimatedPosition / root.lastLength))
+    } else {
+      root.progress = 0
+    }
   }
 
   onPlayerChanged: {
@@ -69,10 +70,15 @@ Scope {
     function onLengthChanged() {
       if (!root.player) return
       root.lastLength = Math.max(0, root.player.length || 0)
+      root.updateEstimatedPosition()
     }
     function onTrackChanged() {
       if (!root.player) return
       root.reset(root.player.position, root.player.length)
+    }
+    function onIsPlayingChanged() {
+      if (!root.player) return
+      root.updatePosition(root.player.position, root.player.length)
     }
   }
 
@@ -84,8 +90,9 @@ Scope {
     onTriggered: {
       if (root.player) {
         root.updatePosition(root.player.position, root.player.length)
+      } else {
+        root.updateEstimatedPosition()
       }
-      root.tick++
     }
   }
 }

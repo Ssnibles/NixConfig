@@ -83,7 +83,7 @@
             cmdheight = 0;
             showcmdloc = "statusline";
             grepformat = "%f:%l:%c:%m";
-            shortmess = "sIcWF";
+            shortmess = "sIcWFoO";
           };
 
           extraPackages = with pkgs; [
