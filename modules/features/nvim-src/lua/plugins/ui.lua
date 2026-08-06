@@ -48,7 +48,7 @@ local git = component(
 		local head = vim.b.gitsigns_head
 		if not head then return nil end
 		local status = vim.b.gitsigns_status
-		return " " .. head .. (status or "")
+		return "  " .. head .. (status or "")
 	end,
 	function() return "StlGit" end
 )
@@ -167,7 +167,7 @@ local function statusline()
 	return format(left_items) .. "%<" .. file_text .. "%=" .. format(right_items)
 end
 
-vim.o.statuscolumn = "%C%s%=%{&relativenumber?(v:relnum?v:relnum:v:lnum):v:lnum} "
+vim.o.statuscolumn = "%C%s%=%{&relativenumber?(v:relnum?v:relnum:v:lnum):v:lnum} %#WinSeparator#▏%*"
 
 local M = {}
 M.statusline = statusline

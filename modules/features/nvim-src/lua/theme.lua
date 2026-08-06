@@ -5,8 +5,9 @@ M.colors = {
 	fg = "#cdcdcd",
 	comment = "#606079",
 	bgSubtle = "#252530",
+	bgFloat = "#1a1a22",
 	gutter = "#252530",
-	border = "#252530",
+	border = "#2e2e3c",
 	blue = "#6e94b2",
 	purple = "#bb9dbd",
 	green = "#7fa563",
@@ -15,8 +16,8 @@ M.colors = {
 	cyan = "#b4d4cf",
 	orange = "#e8b589",
 	magenta = "#c48282",
-	selection = "#333738",
-	search = "#2a3a4a",
+	selection = "#2d2d3f",
+	search = "#1e2e40",
 }
 
 local function blend(fg, bg, alpha)
@@ -58,7 +59,7 @@ function M.setup()
 		},
 	})
 
-	local separator = blend(c.fg, c.bg, 0.06)
+	local separator = blend(c.fg, c.bg, 0.12)
 	local indent = blend(c.comment, c.bg, 0.35)
 
 	local hl = function(name, opts)
@@ -67,24 +68,35 @@ function M.setup()
 
 	hl("Normal", { fg = c.fg, bg = c.bg })
 
+	-- Flat editor-bg groups
 	local flat_groups = {
-		"NormalNC", "NormalFloat", "SignColumn", "FoldColumn",
+		"NormalNC", "SignColumn", "FoldColumn",
 		"StatusLine", "StatusLineNC", "WinBar", "WinBarNC",
-		"MsgArea", "MsgSeparator", "Pmenu", "PmenuSbar", "PmenuThumb",
-		"BlinkCmpMenu", "BlinkCmpDoc", "BlinkCmpSignatureHelp",
-		"FzfLuaNormal", "FzfLuaPreviewNormal", "FzfLuaPromptNormal", "FzfLuaCursor",
-		"FzfLuaHelpNormal", "FzfLuaHelpBorder",
-		"MiniClueNormal", "MiniAnimateNormalFloat",
+		"MsgArea", "MsgSeparator", "PmenuSbar", "PmenuThumb",
+		"MiniAnimateNormalFloat",
 		"TreesitterContext", "TreesitterContextLineNumber",
-		"DAPUINormal", "DAPUIFloatNormal",
 		"TabLine", "TabLineFill", "OilNormal",
 	}
 	for _, g in ipairs(flat_groups) do
 		hl(g, { link = "Normal" })
 	end
 
+	-- Float groups: flat — same bg as editor
+	hl("NormalFloat", { link = "Normal" })
+	local float_groups = {
+		"Pmenu",
+		"BlinkCmpMenu", "BlinkCmpDoc", "BlinkCmpSignatureHelp",
+		"FzfLuaNormal", "FzfLuaPreviewNormal", "FzfLuaPromptNormal",
+		"FzfLuaHelpNormal",
+		"MiniClueNormal",
+		"DAPUINormal", "DAPUIFloatNormal",
+	}
+	for _, g in ipairs(float_groups) do
+		hl(g, { link = "NormalFloat" })
+	end
+
 	hl("CursorLine", { bg = c.bgSubtle })
-	hl("CursorLineNr", { fg = c.blue, bg = c.bgSubtle, bold = true })
+	hl("CursorLineNr", { fg = blend(c.blue, c.fg, 0.7), bold = true })
 	hl("CursorColumn", { bg = c.bgSubtle })
 	hl("CursorLineSign", { link = "CursorLine" })
 	hl("CursorLineFold", { link = "CursorLine" })
@@ -115,12 +127,13 @@ function M.setup()
 	hl("FloatTitle", { fg = c.blue, bold = true })
 	hl("FloatFooter", { fg = c.comment })
 
-	hl("LspInfoBorder", { link = "GlobalBorder" })
+	hl("LspInfoBorder", { fg = c.border })
 	hl("LspInfoTitle", { fg = c.blue, bold = true })
 
-	hl("FzfLuaBorder", { link = "GlobalBorder" })
-	hl("FzfLuaPreviewBorder", { link = "GlobalBorder" })
-	hl("FzfLuaPromptBorder", { link = "GlobalBorder" })
+	hl("FzfLuaBorder", { fg = c.border })
+	hl("FzfLuaPreviewBorder", { fg = c.border })
+	hl("FzfLuaPromptBorder", { fg = c.border })
+	hl("FzfLuaHelpBorder", { fg = c.border })
 	hl("FzfLuaTitle", { fg = c.blue, bold = true })
 	hl("FzfLuaScrollFloatEmpty", { fg = c.comment })
 	hl("FzfLuaScrollFloatFull", { fg = c.blue })
@@ -130,16 +143,16 @@ function M.setup()
 	hl("FzfLuaDirPart", { fg = c.blue })
 	hl("FzfLuaFilePart", { fg = c.fg })
 
-	hl("MiniClueBorder", { link = "GlobalBorder" })
+	hl("MiniClueBorder", { fg = c.border })
 	hl("MiniClueTitle", { fg = c.blue, bold = true })
 	hl("MiniClueDescGroup", { fg = c.comment })
 	hl("MiniClueNextKey", { fg = c.blue, bold = true })
 	hl("MiniClueNextKeyWithPostkeys", { fg = c.blue, bold = true })
 	hl("MiniClueSeparator", { fg = c.border })
 
-	hl("BlinkCmpMenuBorder", { link = "GlobalBorder" })
-	hl("BlinkCmpDocBorder", { link = "GlobalBorder" })
-	hl("BlinkCmpSignatureHelpBorder", { link = "GlobalBorder" })
+	hl("BlinkCmpMenuBorder", { fg = c.border })
+	hl("BlinkCmpDocBorder", { fg = c.border })
+	hl("BlinkCmpSignatureHelpBorder", { fg = c.border })
 
 	hl("BlinkCmpMenuSelection", { fg = c.fg, bg = c.selection, bold = true })
 	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
@@ -200,7 +213,7 @@ function M.setup()
 	hl("DiagnosticFloatingHint", { fg = c.cyan })
 	hl("DiagnosticFloatingInfo", { fg = c.blue })
 
-	hl("LspInlayHint", { fg = c.comment, bg = blend(c.fg, c.bg, 0.03), italic = true })
+	hl("LspInlayHint", { fg = c.comment, bg = blend(c.fg, c.bg, 0.05), italic = true })
 	hl("LspReferenceText", { bg = c.selection })
 	hl("LspReferenceRead", { bg = c.selection })
 	hl("LspReferenceWrite", { bg = c.selection })
@@ -242,7 +255,7 @@ function M.setup()
 	hl("SpellRare", { undercurl = true, sp = c.cyan })
 	hl("SpellLocal", { undercurl = true, sp = c.blue })
 
-	hl("Folded", { fg = c.comment, bg = c.bgSubtle })
+	hl("Folded", { fg = blend(c.blue, c.comment, 0.4), bg = blend(c.blue, c.bg, 0.07) })
 	hl("FoldColumn", { fg = c.comment })
 
 	vim.opt.foldtext = [[
@@ -259,8 +272,8 @@ function M.setup()
 		return text .. string.rep("─", math.max(width - #text - #folded, 1)) .. folded
 	end
 
-	hl("TreesitterContextSeparator", { fg = c.border })
-	hl("TreesitterContextBottom", { link = "TreesitterContext" })
+	hl("TreesitterContextSeparator", { fg = separator })
+	hl("TreesitterContextBottom", { underline = true, sp = separator })
 
 	hl("CopilotSuggestion", { fg = c.purple, italic = true })
 	hl("CopilotPanelLabel", { fg = c.blue, bold = true })
@@ -315,12 +328,17 @@ function M.setup()
 	hl("StlModeR", { fg = c.bg, bg = c.red, bold = true })
 	hl("StlModeT", { fg = c.bg, bg = c.cyan, bold = true })
 	hl("StlModeS", { fg = c.bg, bg = c.orange, bold = true })
-	hl("StlGit", { fg = c.comment })
+	hl("StlGit", { fg = blend(c.blue, c.comment, 0.5) })
 	hl("StlDiag", { fg = c.comment })
 	hl("StlFile", { fg = c.fg })
-	hl("StlLSP", { fg = c.comment })
+	hl("StlLSP", { fg = blend(c.comment, c.bg, 0.7) })
 	hl("StlFT", { fg = c.comment })
-	hl("StlPos", { fg = c.comment })
+	hl("StlPos", { fg = blend(c.comment, c.bg, 0.6) })
+
+	-- Indentinator highlight groups
+	hl("IndentinatorBar", { fg = indent })
+	hl("IndentinatorScopeBar", { fg = blend(c.blue, c.comment, 0.3) })
+	hl("IndentinatorScopeUnderline", { sp = blend(c.blue, c.comment, 0.45), underline = true })
 end
 
 return M

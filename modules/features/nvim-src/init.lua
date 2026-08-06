@@ -29,7 +29,7 @@ vim.opt.scrolloff = 999
 vim.opt.sidescrolloff = 8
 vim.opt.list = false
 vim.opt.joinspaces = false
-vim.opt.fillchars = { eob = " ", foldopen = "▾", foldclose = "▸", foldsep = "│" }
+vim.opt.fillchars = { eob = " ", foldopen = "▾", foldclose = "▸", foldsep = "│", diff = "╱", lastline = "…" }
 vim.opt.grepprg = "rg --vimgrep --smart-case --hidden"
 vim.opt.grepformat = "%f:%l:%c:%m"
 vim.opt.smoothscroll = true

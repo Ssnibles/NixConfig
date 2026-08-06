@@ -7,7 +7,7 @@ fzf.setup({
     row = 0.50,
     col = 0.50,
     border = "rounded",
-    backdrop = 100,
+    backdrop = 60,
     preview = {
       layout = "flex",
       flip_columns = 100,
