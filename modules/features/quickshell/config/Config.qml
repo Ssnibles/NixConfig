@@ -41,9 +41,9 @@ Singleton {
   readonly property int popupGraceMs: 500 // instant swap window between tooltips
 
   // --- Notifications ------------------------------------------------------
-  readonly property string notifPosition: "top-right"
+  readonly property string notifPosition: "top-left"
   readonly property int notifTimeoutMs: 5000
-  readonly property int notifMaxVisible: 3
+  readonly property int notifMaxVisible: 5
   readonly property int notifWidth: 300
   readonly property int notifRadius: 12
   readonly property int notifCardMargins: 12

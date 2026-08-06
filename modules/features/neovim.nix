@@ -193,8 +193,6 @@
             flash-nvim
             smart-splits-nvim
 
-            nui-nvim
-
             gitsigns-nvim
             neogit
 
@@ -206,6 +204,7 @@
             rustaceanvim
 
             tiny-inline-diagnostic-nvim
+            conform-nvim
           ];
 
           luaConfigRC.user-config = ''

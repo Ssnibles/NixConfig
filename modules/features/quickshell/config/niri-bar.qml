@@ -58,13 +58,13 @@ ShellRoot {
           anchors.right: parent.right
           spacing: Config.barSpacing
 
-          CommandCenterButton {
-            id: commandCenterButton
-          }
-
           ClockWidget {
             id: clockWidget
             sharedWindow: sharedTipWindow
+          }
+
+          CommandCenterButton {
+            id: commandCenterButton
           }
 
           WindowTitleWidget {

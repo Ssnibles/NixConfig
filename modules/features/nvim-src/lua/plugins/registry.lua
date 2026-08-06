@@ -17,6 +17,7 @@ M.core = {
   "plugins.indentinator",
   "plugins.java-snippets",
   "plugins.typst-snippets",
+  "plugins.nix-snippets",
 }
 
 M.deferred = {

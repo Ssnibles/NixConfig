@@ -52,10 +52,12 @@ map("n", "<leader>P", '"+P', { desc = "Paste before from system clipboard" }) --
 
 -- Selection & Movement
 map("n", "<leader>va", "ggVG", { desc = "Select all" })
-map("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Smart line down" })
-map("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Smart line up" })
+map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Smart line down" })
+map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Smart line up" })
 
 -- Search Enhancements
+map("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear search highlight" })
+map("n", "<leader>h", "<cmd>nohlsearch<CR>", { desc = "Clear search highlight" })
 map("n", "n", "nzzzv", { desc = "Next search result (centered)" })
 map("n", "N", "Nzzzv", { desc = "Prev search result (centered)" })
 map("n", "*", "*zz", { desc = "Search word forward (centered)" })
@@ -76,6 +78,15 @@ map("n", "<leader>wj", "<C-w>J", { desc = "Move window down" })
 map("n", "<leader>wk", "<C-w>K", { desc = "Move window up" })
 
 -- Buffer & Tab Navigation
+map("n", "<leader>bd", function()
+  local ok, mini_bufremove = pcall(require, "mini.bufremove")
+  if ok then
+    mini_bufremove.delete(0, false)
+  else
+    vim.cmd("bdelete")
+  end
+end, { desc = "Delete buffer" })
+
 map("n", "<leader>bo", function()
   local current = vim.api.nvim_get_current_buf()
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
@@ -83,7 +94,7 @@ map("n", "<leader>bo", function()
       vim.api.nvim_buf_delete(buf, { unload = false })
     end
   end
-end, { desc = "Close other buffers" }) -- Safer Lua buffer cleanup
+end, { desc = "Close other buffers" })
 
 map("n", "<leader>`", "<cmd>b#<CR>", { desc = "Alternate buffer" })
 map("n", "<C-Tab>", "<cmd>bnext<CR>", { desc = "Next buffer" })
@@ -99,6 +110,20 @@ map("n", "]q", "<cmd>cnext<CR>", { desc = "Next quickfix" })
 map("n", "[q", "<cmd>cprevious<CR>", { desc = "Previous quickfix" })
 map("n", "<leader>qo", "<cmd>copen<CR>", { desc = "Open quickfix" })
 map("n", "<leader>qc", "<cmd>cclose<CR>", { desc = "Close quickfix" })
+map("n", "<leader>qf", function()
+  local qf_exists = false
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.bo[vim.api.nvim_win_get_buf(win)].buftype == "quickfix" then
+      qf_exists = true
+      break
+    end
+  end
+  if qf_exists then
+    vim.cmd("cclose")
+  else
+    vim.cmd("copen")
+  end
+end, { desc = "Toggle quickfix list" })
 map("n", "<leader>ql", "<cmd>lopen<CR>", { desc = "Open location list" })
 map("n", "<leader>qL", "<cmd>lclose<CR>", { desc = "Close location list" })
 

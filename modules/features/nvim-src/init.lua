@@ -1,7 +1,10 @@
 vim.loader.enable()
 
-vim.opt.runtimepath:append("/home/josh/sshinator.nvim")
-vim.opt.runtimepath:append("/home/josh/indentinator.nvim")
+for _, dev_plugin in ipairs({ "/home/josh/sshinator.nvim", "/home/josh/indentinator.nvim" }) do
+  if vim.uv.fs_stat(dev_plugin) then
+    vim.opt.runtimepath:append(dev_plugin)
+  end
+end
 
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1

@@ -21,8 +21,36 @@ require("blink.cmp").setup({
 		},
 		["<C-c>"] = { "cancel", "fallback" },
 		["<C-e>"] = { "cancel", "fallback" },
-		["<Tab>"] = { "select_and_accept", "snippet_forward", "fallback" },
-		["<S-Tab>"] = { "snippet_backward", "fallback" },
+		["<CR>"] = {
+			function(cmp)
+				if cmp.is_visible() then
+					if cmp.get_selected_item_idx() ~= nil then
+						return cmp.accept()
+					end
+				end
+			end,
+			"fallback",
+		},
+		["<Tab>"] = {
+			function(cmp)
+				if cmp.snippet_active() then
+					return cmp.snippet_forward()
+				elseif cmp.is_visible() then
+					return cmp.select_next()
+				end
+			end,
+			"fallback",
+		},
+		["<S-Tab>"] = {
+			function(cmp)
+				if cmp.snippet_active() then
+					return cmp.snippet_backward()
+				elseif cmp.is_visible() then
+					return cmp.select_prev()
+				end
+			end,
+			"fallback",
+		},
 		["<Up>"] = { "select_prev", "fallback" },
 		["<Down>"] = { "select_next", "fallback" },
 		["<C-p>"] = { "select_prev", "fallback" },
@@ -47,6 +75,7 @@ require("blink.cmp").setup({
 	sources = {
 		default = { "lsp", "copilot", "snippets", "buffer", "path" },
 		per_filetype = {
+			typst = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
 			markdown = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
 			text = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
 			gitcommit = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
@@ -59,7 +88,8 @@ require("blink.cmp").setup({
 				async = true,
 			},
 			spell = {
-				name = "Spell", module = "blink-cmp-spell",
+				name = "Spell",
+				module = "blink-cmp-spell",
 				enabled = function() return vim.wo.spell end,
 				opts = { max_entries = 8 },
 			},
@@ -69,8 +99,8 @@ require("blink.cmp").setup({
 				score_offset = -3,
 			},
 			snippets = {
-				min_keyword_length = 2,
-				score_offset = -1,
+				min_keyword_length = 1,
+				score_offset = 10,
 			},
 			path = {
 				min_keyword_length = 2,
@@ -79,10 +109,10 @@ require("blink.cmp").setup({
 		},
 	},
 	completion = {
-		list = { selection = { preselect = true, auto_insert = true } },
+		list = { selection = { preselect = true, auto_insert = false } },
 		menu = {
 			auto_show = true, direction_priority = { "s", "n" },
-			border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+			border = "rounded",
 			scrollbar = true,
 			draw = {
 				padding = { 1, 1 },
@@ -90,7 +120,7 @@ require("blink.cmp").setup({
 			},
 		},
 		documentation = {
-			auto_show = true, auto_show_delay_ms = 150,
+			auto_show = true, auto_show_delay_ms = 50,
 			window = { border = "rounded", max_width = 80, max_height = 30 },
 		},
 		ghost_text = { enabled = true },

@@ -102,8 +102,13 @@ end
 
 -- Returns true if any active LSP server in the buffer supports textDocument/rename
 local function supports_lsp_rename(bufnr)
-  local clients = lsp.get_clients({ bufnr = bufnr, method = "textDocument/rename" })
-  return #clients > 0
+  local clients = lsp.get_clients({ bufnr = bufnr })
+  for _, client in ipairs(clients) do
+    if client:supports_method("textDocument/rename", bufnr) then
+      return true
+    end
+  end
+  return false
 end
 
 -- Opens input prompt prefilled with current word to execute LSP symbol rename

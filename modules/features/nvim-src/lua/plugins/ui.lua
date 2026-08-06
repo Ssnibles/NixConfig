@@ -167,7 +167,7 @@ local function statusline()
 	return format(left_items) .. "%<" .. file_text .. "%=" .. format(right_items)
 end
 
-vim.o.statuscolumn = "%C%s%=%{v:relnum?v:relnum:v:lnum} "
+vim.o.statuscolumn = "%C%s%=%{&relativenumber?(v:relnum?v:relnum:v:lnum):v:lnum} "
 
 local M = {}
 M.statusline = statusline
