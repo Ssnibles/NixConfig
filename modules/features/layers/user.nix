@@ -18,6 +18,9 @@
         ];
         shell = pkgs.fish;
       };
-      hjem.users."${config.username}".enable = true;
+      hjem.users."${config.username}" = {
+        enable = true;
+        clobberFiles = true;
+      };
     };
 }
