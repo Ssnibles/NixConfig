@@ -55,5 +55,24 @@
           };
         };
       };
+
+      hjem.users."${config.username}" = {
+        xdg.mime-apps.default-applications = {
+          "text/html" = [ "zen.desktop" ];
+          "application/xhtml+xml" = [ "zen.desktop" ];
+          "application/xml" = [ "zen.desktop" ];
+          "x-scheme-handler/http" = [ "zen.desktop" ];
+          "x-scheme-handler/https" = [ "zen.desktop" ];
+          "x-scheme-handler/ftp" = [ "zen.desktop" ];
+          "x-scheme-handler/chrome" = [ "zen.desktop" ];
+          "application/x-extension-htm" = [ "zen.desktop" ];
+          "application/x-extension-html" = [ "zen.desktop" ];
+          "application/x-extension-shtml" = [ "zen.desktop" ];
+          "application/x-extension-xhtml" = [ "zen.desktop" ];
+          "application/x-extension-xht" = [ "zen.desktop" ];
+          "application/pdf" = [ "org.pwmt.zathura.desktop" ];
+          "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
+        };
+      };
     };
 }

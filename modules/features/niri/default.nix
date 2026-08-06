@@ -43,6 +43,12 @@
           adwaita-icon-theme
           xwayland-satellite
           inputs.niri-float-sticky.packages.${pkgs.stdenv.hostPlatform.system}.niri-float-sticky
+          (rustPlatform.buildRustPackage {
+            pname = "niri-aspect-lock";
+            version = "0.1.0";
+            src = ./aspect-lock;
+            cargoLock.lockFile = ./aspect-lock/Cargo.lock;
+          })
         ];
 
         xdg.portal = {
