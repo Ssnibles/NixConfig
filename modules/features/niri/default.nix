@@ -38,6 +38,7 @@
           grim
           grimblast
           slurp
+          tesseract
           libnotify
           networkmanagerapplet
           adwaita-icon-theme
