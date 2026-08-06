@@ -32,11 +32,12 @@
           wget
           zip
           unzip
+          croc
           # fish plugins (auto-sourced via fish vendor dirs)
           fishPlugins.fzf-fish # fzf keybindings + fuzzy search (C-r history, C-Alt-f files, ...)
           fishPlugins.autopair # auto-close quotes / brackets as you type
-          fishPlugins.done    # notify when long-running commands finish
-          fishPlugins.bass    # "bass" helper to source bash configs from fish
+          fishPlugins.done # notify when long-running commands finish
+          fishPlugins.bass # "bass" helper to source bash configs from fish
         ];
 
         programs.zoxide = {
