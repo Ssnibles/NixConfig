@@ -18,7 +18,7 @@ Item {
   readonly property bool hovered: _hoverHandler.hovered
   readonly property bool tipVisible: _hoverHandler.hovered && _ready
 
-  anchors.fill: target
+  anchors.fill: parent
 
   HoverHandler { id: _hoverHandler }
 

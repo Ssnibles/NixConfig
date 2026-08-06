@@ -737,12 +737,20 @@ ShellRoot {
         property var _active: null
         property bool recentlyActive: false
 
+        // Cache the active tooltip to keep details visible during fade-out
+        property var cachedActive: null
+
         on_ActiveChanged: {
           if (_active !== null) {
+            cachedActive = _active
             recentlyActive = true
             recentTimer.stop()
+            fadeTimer.stop()
+            cardOpacity = 1
           } else {
             recentTimer.restart()
+            fadeTimer.restart()
+            cardOpacity = 0
           }
         }
 
@@ -752,7 +760,18 @@ ShellRoot {
           onTriggered: sharedTipWindow.recentlyActive = false
         }
 
-        visible: _active !== null
+        Timer {
+          id: fadeTimer
+          interval: 120
+          onTriggered: {
+            sharedTipWindow.cachedActive = null
+          }
+        }
+
+        property real cardOpacity: 0
+        Behavior on cardOpacity { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
+
+        visible: cachedActive !== null
         focusable: false
         aboveWindows: true
         exclusionMode: ExclusionMode.Ignore
@@ -760,7 +779,7 @@ ShellRoot {
 
         anchors { top: true; bottom: true; left: true }
         margins { left: 46 }
-        implicitWidth: _active ? _active.maxWidth : 280
+        implicitWidth: cachedActive ? cachedActive.maxWidth : 280
 
         mask: Region {
           item: tipLoader
@@ -768,13 +787,13 @@ ShellRoot {
 
         Loader {
           id: tipLoader
-          active: sharedTipWindow._active !== null
+          active: sharedTipWindow.visible
 
-          property var _src: sharedTipWindow._active
+          property var _src: sharedTipWindow.cachedActive
           property real _tgtCenterY: _src && _src.target ? _src.target.mapToItem(null, 0, _src.target.height / 2).y : 0
 
           x: 0
-          y: _active ? Math.round(Math.max(6, Math.min(_tgtCenterY - height / 2, sharedTipWindow.height - height - 6))) : 0
+          y: _src ? Math.round(Math.max(6, Math.min(_tgtCenterY - height / 2, sharedTipWindow.height - height - 6))) : 0
           width: item ? item.width : 0
           height: item ? item.height : 0
 
@@ -793,8 +812,7 @@ ShellRoot {
               antialiasing: true
               border.width: 1
               border.color: Colors.border
-              opacity: _src && _src.tipVisible ? 1 : 0
-              Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
+              opacity: sharedTipWindow.cardOpacity
 
               Column {
                 id: content
