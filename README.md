@@ -501,7 +501,7 @@ hardware.nvidia.package = pkgs.linuxPackages.nvidiaPackages.stable;
 
 1. Prefer `nh os switch` over `nixos-rebuild switch`.
 2. The base layer already configures several binary caches
-   (`cache.nixos.org`, `cache.garnix.io`, `nix-community.cachix.org`).
+   (`cache.nixos.org`, `nix-community.cachix.org`).
 3. Run garbage collection:
 
 ```bash
