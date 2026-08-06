@@ -174,11 +174,11 @@ binds {
     Mod+Shift+K         { move-column-to-workspace-up; }
 
     // System Utilities
-    // Normal screenshot
-    Mod+S { spawn "sh" "-c" "grim -g \"$(slurp)\" - | tee \"$HOME/Pictures/Screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png\" | wl-copy"; }
+// Normal screenshot: Freezes screen, saves PNG file, copies image to clipboard
+    Mod+S { spawn "sh" "-c" "wayfreeze & PID=$!; grim -g \"$(slurp)\" - | tee \"$HOME/Pictures/Screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png\" | wl-copy -t image/png; kill $PID"; }
 
-    // OCR screenshot
-    Mod+Shift+S { spawn "sh" "-c" "grim -g \"$(slurp)\" - | tesseract stdin stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'"; }
+    // OCR screenshot: Freezes screen, runs Tesseract, copies text to clipboard
+    Mod+Shift+S { spawn "sh" "-c" "wayfreeze & PID=$!; grim -g \"$(slurp)\" - | tesseract stdin stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'; kill $PID"; }
 
     // Brightness Control
     XF86MonBrightnessDown { spawn "brightnessctl" "set" "5%-"; }
