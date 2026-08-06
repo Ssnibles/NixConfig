@@ -70,12 +70,23 @@ function M.setup()
 
 	-- Flat editor-bg groups
 	local flat_groups = {
-		"NormalNC", "SignColumn", "FoldColumn",
-		"StatusLine", "StatusLineNC", "WinBar", "WinBarNC",
-		"MsgArea", "MsgSeparator", "PmenuSbar", "PmenuThumb",
+		"NormalNC",
+		"SignColumn",
+		"FoldColumn",
+		"StatusLine",
+		"StatusLineNC",
+		"WinBar",
+		"WinBarNC",
+		"MsgArea",
+		"MsgSeparator",
+		"PmenuSbar",
+		"PmenuThumb",
 		"MiniAnimateNormalFloat",
-		"TreesitterContext", "TreesitterContextLineNumber",
-		"TabLine", "TabLineFill", "OilNormal",
+		"TreesitterContext",
+		"TreesitterContextLineNumber",
+		"TabLine",
+		"TabLineFill",
+		"OilNormal",
 	}
 	for _, g in ipairs(flat_groups) do
 		hl(g, { link = "Normal" })
@@ -85,11 +96,16 @@ function M.setup()
 	hl("NormalFloat", { link = "Normal" })
 	local float_groups = {
 		"Pmenu",
-		"BlinkCmpMenu", "BlinkCmpDoc", "BlinkCmpSignatureHelp",
-		"FzfLuaNormal", "FzfLuaPreviewNormal", "FzfLuaPromptNormal",
+		"BlinkCmpMenu",
+		"BlinkCmpDoc",
+		"BlinkCmpSignatureHelp",
+		"FzfLuaNormal",
+		"FzfLuaPreviewNormal",
+		"FzfLuaPromptNormal",
 		"FzfLuaHelpNormal",
 		"MiniClueNormal",
-		"DAPUINormal", "DAPUIFloatNormal",
+		"DAPUINormal",
+		"DAPUIFloatNormal",
 	}
 	for _, g in ipairs(float_groups) do
 		hl(g, { link = "NormalFloat" })
@@ -163,14 +179,30 @@ function M.setup()
 	hl("BlinkCmpGhostText", { fg = c.comment })
 
 	local kindHls = {
-		Field = c.purple, Variable = c.fg, Function = c.blue,
-		Method = c.blue, Class = c.orange, Interface = c.green,
-		Keyword = c.purple, Snippet = c.cyan, Text = c.comment,
-		Struct = c.orange, TypeParameter = c.cyan, Enum = c.green,
-		EnumMember = c.yellow, Property = c.fg, Constant = c.orange,
-		Module = c.purple, Unit = c.orange, Value = c.fg,
-		Reference = c.cyan, Color = c.green, File = c.blue,
-		Folder = c.blue, Event = c.orange, Constr = c.orange,
+		Field = c.purple,
+		Variable = c.fg,
+		Function = c.blue,
+		Method = c.blue,
+		Class = c.orange,
+		Interface = c.green,
+		Keyword = c.purple,
+		Snippet = c.cyan,
+		Text = c.comment,
+		Struct = c.orange,
+		TypeParameter = c.cyan,
+		Enum = c.green,
+		EnumMember = c.yellow,
+		Property = c.fg,
+		Constant = c.orange,
+		Module = c.purple,
+		Unit = c.orange,
+		Value = c.fg,
+		Reference = c.cyan,
+		Color = c.green,
+		File = c.blue,
+		Folder = c.blue,
+		Event = c.orange,
+		Constr = c.orange,
 	}
 	for kind, color in pairs(kindHls) do
 		hl("BlinkCmpKind" .. kind, { fg = color })
@@ -273,7 +305,7 @@ function M.setup()
 	end
 
 	hl("TreesitterContextSeparator", { fg = separator })
-	hl("TreesitterContextBottom", { underline = true, sp = separator })
+	-- hl("TreesitterContextBottom", { underline = true, sp = separator })
 
 	hl("CopilotSuggestion", { fg = c.purple, italic = true })
 	hl("CopilotPanelLabel", { fg = c.blue, bold = true })

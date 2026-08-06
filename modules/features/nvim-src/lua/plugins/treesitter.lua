@@ -17,19 +17,31 @@ local select_keymaps = {
 	["ia"] = { query = "@parameter.inner", desc = "Inside parameter" },
 }
 for key, spec in pairs(select_keymaps) do
-	vim.keymap.set({ "o", "x" }, key, function() ts_select.select_textobject(spec.query) end, { silent = true, desc = spec.desc })
+	vim.keymap.set({ "o", "x" }, key, function()
+		ts_select.select_textobject(spec.query)
+	end, { silent = true, desc = spec.desc })
 end
 
-vim.keymap.set({ "n", "o", "x" }, "]f", function() ts_move.goto_next_start("@function.outer") end, { silent = true, desc = "Next function" })
-vim.keymap.set({ "n", "o", "x" }, "[f", function() ts_move.goto_previous_start("@function.outer") end, { silent = true, desc = "Previous function" })
-vim.keymap.set({ "n", "o", "x" }, "]c", function() ts_move.goto_next_start("@class.outer") end, { silent = true, desc = "Next class" })
-vim.keymap.set({ "n", "o", "x" }, "[c", function() ts_move.goto_previous_start("@class.outer") end, { silent = true, desc = "Previous class" })
+vim.keymap.set({ "n", "o", "x" }, "]f", function()
+	ts_move.goto_next_start("@function.outer")
+end, { silent = true, desc = "Next function" })
+vim.keymap.set({ "n", "o", "x" }, "[f", function()
+	ts_move.goto_previous_start("@function.outer")
+end, { silent = true, desc = "Previous function" })
+vim.keymap.set({ "n", "o", "x" }, "]c", function()
+	ts_move.goto_next_start("@class.outer")
+end, { silent = true, desc = "Next class" })
+vim.keymap.set({ "n", "o", "x" }, "[c", function()
+	ts_move.goto_previous_start("@class.outer")
+end, { silent = true, desc = "Previous class" })
 
 require("treesitter-context").setup({
-	enable = true, max_lines = 4, min_window_height = 20, separator = "─",
+	enable = true,
+	max_lines = 4,
+	min_window_height = 20,
+	separator = "─",
 	on_attach = function(buf)
 		local ft = vim.bo[buf].filetype
 		return ft ~= "markdown" and ft ~= "markdown.mdx"
 	end,
 })
-
