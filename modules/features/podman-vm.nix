@@ -22,7 +22,6 @@
         with pkgs;
         [
           podman-compose
-          podman-desktop
           distrobox
           boxbuddy
         ]
@@ -36,7 +35,10 @@
             comment = "AMD Vivado Design Suite";
             exec = "vivado %F";
             icon = "/home/josh/Xilinx/Vivado/2019.2/doc/images/vivado_logo.png";
-            categories = [ "Development" "Electronics" ];
+            categories = [
+              "Development"
+              "Electronics"
+            ];
             mimeTypes = [ "application/x-vivado-project" ];
           })
         ];
