@@ -7,7 +7,7 @@ Item {
   id: root
 
   property PanelWindow sharedWindow: null
-  property string uiFont: "JetBrainsMono Nerd Font"
+  property string uiFont: Config.monoFont
 
   // Pipewire Audio Binding
   property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []

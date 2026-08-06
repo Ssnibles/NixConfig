@@ -51,8 +51,8 @@ Scope {
       anchors.left: true
       anchors.right: true
 
-      implicitHeight: 32
-      color: "#141415"
+      implicitHeight: Config.barHeight
+      color: Colors.bg
 
       // Find the tag list matching this specific monitor (e.g. "eDP-1")
       property var monitorData: {
@@ -96,9 +96,9 @@ Scope {
           anchors.left: parent.left
           anchors.verticalCenter: parent.verticalCenter
           text: root.currentTime
-          color: "#cdcdcd"
+          color: Colors.fg
           font.pixelSize: 13
-          font.family: "Inter"
+          font.family: Config.sansFont
         }
 
         Row {
@@ -118,14 +118,14 @@ Scope {
               property bool isActive: tagData ? tagData.is_active : (index === 0)
               property bool isOccupied: tagData ? (tagData.client_count > 0) : false
 
-              color: isActive ? "#6e94b2" : (isOccupied ? "#606079" : "#252530")
+              color: isActive ? Colors.accent : (isOccupied ? Colors.fgDim : Colors.bgSubtle)
 
               Text {
                 anchors.centerIn: parent
                 text: index + 1
-                color: "#cdcdcd"
+                color: Colors.fg
                 font.pixelSize: 11
-                font.family: "Inter"
+                font.family: Config.sansFont
               }
 
               MouseArea {

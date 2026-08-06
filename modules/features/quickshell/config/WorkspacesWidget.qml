@@ -6,8 +6,16 @@ Column {
   property var workspaces: []
   signal focusRequested(int workspaceId)
 
+  property int dotSize: 10
+  property int dotSizeFocused: 26
+  property int dotSpacing: 6
+  property color dotColorFocused: Colors.accent
+  property color dotColorActive: Colors.fgMid
+  property color dotColorUrgent: Colors.red
+  property color dotColorEmpty: Colors.fgDim
+
   anchors.centerIn: parent ? parent : undefined
-  spacing: 6
+  spacing: root.dotSpacing
 
   Repeater {
     model: root.workspaces
@@ -18,10 +26,10 @@ Column {
       property bool isActive: modelData && modelData.is_active
       property bool isUrgent: modelData && modelData.is_urgent
 
-      width: 10
-      height: isFocused ? 26 : 10
+      width: root.dotSize
+      height: isFocused ? root.dotSizeFocused : root.dotSize
       radius: width / 2
-      color: isFocused ? Colors.accent : (isUrgent ? Colors.red : (isActive ? Colors.fgMid : Colors.fgDim))
+      color: isFocused ? root.dotColorFocused : (isUrgent ? root.dotColorUrgent : (isActive ? root.dotColorActive : root.dotColorEmpty))
 
       Behavior on height {
         SpringAnimation { spring: 10; damping: 0.3 }

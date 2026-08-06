@@ -97,6 +97,13 @@ window-rule {
     default-floating-position x=32 y=32 relative-to="bottom-left"
 }
 
+// Disable hot-corners
+gestures {
+  hot-corners {
+    off
+  }
+}
+
 // Core Keyboard Shortcuts
 binds {
     // Application Launchers
@@ -181,7 +188,7 @@ binds {
     XF86AudioStop  { spawn "playerctl" "stop"; }
 
     // Volume Control
-    XF86AudioRaiseVolume { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"; }
+    XF86AudioRaiseVolume { spawn "wpctl" "set-volume" "-l" "1.0" "@DEFAULT_AUDIO_SINK@" "5%+"; }
     XF86AudioLowerVolume { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-"; }
     XF86AudioMute        { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
 }

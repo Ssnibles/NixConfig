@@ -342,6 +342,11 @@ if ok_typst_preview then
 	})
 end
 
+lsp.config("qmlls", {
+	filetypes = { "qml" },
+	root_markers = { ".qmlls.ini", "shell.qml", "qmldir", ".git" },
+})
+
 local ok_roslyn, roslyn = pcall(require, "roslyn")
 if ok_roslyn then
 	roslyn.setup({ filewatching = "roslyn" })
@@ -392,6 +397,7 @@ local managed_servers = {
 	{ name = "marksman", cmd = "marksman" },
 	{ name = "ltex_plus", cmd = "ltex-ls-plus" },
 	{ name = "tinymist", cmd = "tinymist" },
+	{ name = "qmlls", cmd = "qmlls" },
 }
 
 for _, server in ipairs(managed_servers) do

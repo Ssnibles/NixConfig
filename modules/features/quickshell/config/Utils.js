@@ -60,6 +60,30 @@ function prettifyAppName(className) {
   return base.replace(/\b\w/g, function(c) { return c.toUpperCase() })
 }
 
+var _titleSuffixMap = {
+  " — Zen Browser": "Zen",
+  " — Mozilla Firefox": "Firefox",
+  " - nvim": "Neovim",
+  " - foot": null // keep app name, just drop the suffix
+}
+
+function formatActiveTitle(title, appId) {
+  var appName = prettifyAppName(appId)
+  title = title || ""
+
+  for (var suffix in _titleSuffixMap) {
+    if (title.endsWith(suffix)) {
+      title = title.slice(0, title.length - suffix.length)
+      if (_titleSuffixMap[suffix]) appName = _titleSuffixMap[suffix]
+      break
+    }
+  }
+
+  title = String(title).trim()
+  if (appName && title && title !== appName) return appName + ": " + title
+  return appName || title
+}
+
 function volumeIcon(volPct, muted) {
   if (muted || volPct <= 0) return "\u{F075F}"
   if (volPct < 0.33) return "\u{F057F}"

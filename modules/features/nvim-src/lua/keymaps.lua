@@ -1,6 +1,5 @@
 local map = vim.keymap.set
 
-map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 -- NOTE: Intentionally NOT mapping <Esc> in normal mode — it breaks cmdline <Esc> cancellation in terminal Neovim
 map("n", "U", "<C-r>", { desc = "Redo" })
 map("n", "Q", "<Nop>", { desc = "Disable Ex mode" })

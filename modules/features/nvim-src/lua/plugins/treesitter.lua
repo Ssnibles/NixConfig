@@ -1,3 +1,5 @@
+vim.filetype.add({ extension = { qml = "qml" } })
+
 require("nvim-treesitter-textobjects").setup({
 	select = { lookahead = true },
 	move = { set_jumps = true },

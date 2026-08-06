@@ -69,27 +69,7 @@ QtObject {
   }
 
   function formatActiveTitle(title, appId) {
-    var appName = Utils.prettifyAppName(appId)
-    title = title || ""
-
-    if (title.endsWith(" — Zen Browser")) {
-      title = title.slice(0, title.length - " — Zen Browser".length)
-      appName = "Zen"
-    } else if (title.endsWith(" — Mozilla Firefox")) {
-      title = title.slice(0, title.length - " — Mozilla Firefox".length)
-      appName = "Firefox"
-    }
-
-    if (title.endsWith(" - nvim")) {
-      title = title.slice(0, title.length - " - nvim".length)
-      appName = "Neovim"
-    } else if (title.endsWith(" - foot")) {
-      title = title.slice(0, title.length - " - foot".length)
-    }
-
-    title = String(title).trim()
-    if (appName && title && title !== appName) return appName + ": " + title
-    return appName || title
+    return Utils.formatActiveTitle(title, appId)
   }
 
   function focusWorkspace(id) {

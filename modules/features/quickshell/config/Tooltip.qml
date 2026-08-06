@@ -10,8 +10,10 @@ Item {
   property string title: ""
   property var details: []
   property color iconColor: Colors.fg
-  property int showDelay: 150
-  property int maxWidth: 280
+  property int showDelay: Config.popupShowDelay
+  property int maxWidth: Config.popupMaxWidth
+  property int contentWidth: 0
+  property Component contentComponent: null
   property real topOffset: 0
   property PanelWindow sharedWindow: null
 

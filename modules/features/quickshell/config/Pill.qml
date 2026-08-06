@@ -5,10 +5,12 @@ Rectangle {
   id: root
 
   property int padding: 8
+  property int pillHeight: 22
+  property color pillColor: Colors.bgRaised
 
-  height: 22
+  height: root.pillHeight
   radius: height / 2
-  color: Colors.bgRaised
+  color: root.pillColor
   antialiasing: true
 
   default property alias data: contentItem.data

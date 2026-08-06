@@ -97,6 +97,15 @@
             ltex-ls-plus
             roslyn-ls
 
+            # qmlls from qt6.qtdeclarative, wrapped so it can resolve both
+            # the QtQuick modules and the Quickshell QML types (`import Quickshell`)
+            (writeShellScriptBin "qmlls" ''
+              exec "${pkgs.unstable.qt6.qtdeclarative}/bin/qmlls" \
+                -I "${pkgs.unstable.qt6.qtdeclarative}/lib/qt-6/qml" \
+                -I "${pkgs.unstable.quickshell}/lib/qt-6/qml" \
+                "$@"
+            '')
+
             nixfmt
             stylua
             black
@@ -159,6 +168,7 @@
               p.vim
               p.vimdoc
               p.query
+              p.qmljs
             ]))
             nvim-treesitter-context
             nvim-treesitter-textobjects

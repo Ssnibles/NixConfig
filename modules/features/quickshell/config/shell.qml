@@ -13,5 +13,5 @@ Scope {
     }
   }
 
-  NotificationOverlay { position: "top-right" }
+  NotificationOverlay { }
 }

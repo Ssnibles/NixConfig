@@ -7,7 +7,7 @@ Pill {
   id: root
 
   property PanelWindow sharedWindow: null
-  property string uiFont: "JetBrainsMono Nerd Font"
+  property string uiFont: Config.monoFont
 
   padding: 4
   anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined

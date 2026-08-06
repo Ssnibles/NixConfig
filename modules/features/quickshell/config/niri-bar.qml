@@ -21,16 +21,22 @@ ShellRoot {
       focusable: false
       aboveWindows: true
 
-      anchors { left: true; top: true; bottom: true }
-      implicitWidth: 38
+      anchors {
+        left: Config.barSide !== "right"
+        right: Config.barSide === "right"
+        top: true
+        bottom: true
+      }
+      implicitWidth: Config.barWidth
       exclusionMode: ExclusionMode.Auto
       color: Colors.bg
 
-      // Thin right border to separate the bar from workspace windows
+      // Thin border on the inner edge to separate the bar from workspace windows
       Rectangle {
-        anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
+        anchors.left: Config.barSide === "right" ? parent.left : undefined
+        anchors.right: Config.barSide === "right" ? undefined : parent.right
         width: 1
         color: Colors.border
       }
@@ -39,10 +45,10 @@ ShellRoot {
       Item {
         id: barContent
         anchors.fill: parent
-        anchors.topMargin: 8
-        anchors.bottomMargin: 8
-        anchors.leftMargin: 4
-        anchors.rightMargin: 4
+        anchors.topMargin: Config.barMarginTop
+        anchors.bottomMargin: Config.barMarginBottom
+        anchors.leftMargin: Config.barMarginLeft
+        anchors.rightMargin: Config.barMarginRight
 
         // Top Section: Clock & Rotated Active Window Title
         Column {
@@ -50,10 +56,11 @@ ShellRoot {
           anchors.top: parent.top
           anchors.left: parent.left
           anchors.right: parent.right
-          spacing: 12
+          spacing: Config.barSpacing
 
           ClockWidget {
             id: clockWidget
+            sharedWindow: sharedTipWindow
           }
 
           WindowTitleWidget {
@@ -77,7 +84,7 @@ ShellRoot {
           anchors.bottom: parent.bottom
           anchors.left: parent.left
           anchors.right: parent.right
-          spacing: 12
+          spacing: Config.barSpacing
 
           MediaWidget {
             id: mediaWidget
@@ -101,10 +108,11 @@ ShellRoot {
         }
       }
 
-      // Shared Side Tooltip Window Layer
+      // Shared Tooltip Window Layer (sits on the opposite side of the bar)
       SharedTooltipWindow {
         id: sharedTipWindow
         screenTarget: barPanel.modelData
+        barSide: Config.barSide
       }
     }
   }

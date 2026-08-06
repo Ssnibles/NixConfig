@@ -7,7 +7,7 @@ Pill {
   id: root
 
   property PanelWindow sharedWindow: null
-  property string uiFont: "JetBrainsMono Nerd Font"
+  property string uiFont: Config.monoFont
 
   visible: root.hasMedia
   padding: 4
@@ -31,84 +31,10 @@ Pill {
     : ""
   property bool hasMedia: root.mediaText !== ""
 
-  // --- Position & Progress Estimation ---
-  property int mediaTick: 0
-  property real mediaLastPosition: 0
-  property real mediaLastLength: 0
-  property int mediaResetToken: 0
-  property real mediaWallClock: 0
-
-  function resetMediaTiming(pos, len) {
-    root.mediaLastPosition = Math.max(0, pos || 0)
-    root.mediaLastLength = Math.max(0, len || 0)
-    root.mediaWallClock = Date.now() / 1000
-    root.mediaTick = 0
-    root.mediaResetToken++
-  }
-
-  function updateMediaPosition(pos, len) {
-    var p = Math.max(0, pos || 0)
-    var l = Math.max(0, len || 0)
-    if (p + 0.5 < root.mediaLastPosition) {
-      root.resetMediaTiming(p, l)
-      return
-    }
-    root.mediaLastPosition = p
-    root.mediaLastLength = l
-    root.mediaWallClock = Date.now() / 1000
-  }
-
-  property real mediaEstimatedPosition: {
-    var _ = root.mediaTick
-    var __ = root.mediaResetToken
-    if (!root.mediaPlayer) return root.mediaLastPosition
-    var elapsed = Date.now() / 1000 - root.mediaWallClock
-    return root.mediaLastPosition + (root.mediaPlayer.isPlaying ? elapsed : 0)
-  }
-
-  property real mediaProgress: {
-    var _ = root.mediaTick
-    var __ = root.mediaResetToken
-    if (!root.mediaPlayer || root.mediaLastLength <= 0) return 0
-    return Math.min(1, Math.max(0, root.mediaEstimatedPosition / root.mediaLastLength))
-  }
-
-  onMediaPlayerChanged: {
-    if (!root.mediaPlayer) {
-      root.resetMediaTiming(0, 0)
-      return
-    }
-    root.resetMediaTiming(root.mediaPlayer.position, root.mediaPlayer.length)
-  }
-
-  Connections {
-    target: root.mediaPlayer
-    ignoreUnknownSignals: true
-    function onPositionChanged() {
-      if (!root.mediaPlayer) return
-      root.updateMediaPosition(root.mediaPlayer.position, root.mediaPlayer.length)
-    }
-    function onLengthChanged() {
-      if (!root.mediaPlayer) return
-      root.mediaLastLength = Math.max(0, root.mediaPlayer.length || 0)
-    }
-    function onTrackChanged() {
-      if (!root.mediaPlayer) return
-      root.resetMediaTiming(root.mediaPlayer.position, root.mediaPlayer.length)
-    }
-  }
-
-  Timer {
-    id: tickTimer
-    interval: 300
-    running: root.mediaPlayer && root.mediaPlayer.isPlaying
-    repeat: true
-    onTriggered: {
-      if (root.mediaPlayer) {
-        root.updateMediaPosition(root.mediaPlayer.position, root.mediaPlayer.length)
-      }
-      root.mediaTick++
-    }
+  // --- Position & Progress Estimation (reusable helper) ---
+  MediaProgress {
+    id: mediaTracker
+    player: root.mediaPlayer
   }
 
   function focusMediaPlayer() {
@@ -169,7 +95,7 @@ Pill {
           anchors.bottom: parent.bottom
           anchors.left: parent.left
           anchors.right: parent.right
-          height: parent.height * root.mediaProgress
+          height: parent.height * mediaTracker.progress
           radius: 3
           color: Colors.accent
         }
@@ -210,8 +136,8 @@ Pill {
       var d = []
       if (root.mediaPlayer) {
         d.push(root.mediaText)
-        var p = Math.round(root.mediaEstimatedPosition)
-        var l = Math.round(root.mediaLastLength)
+        var p = Math.round(mediaTracker.estimatedPosition)
+        var l = Math.round(mediaTracker.lastLength)
         if (l > 0) {
           d.push(Utils.formatTime(p) + " / " + Utils.formatTime(l))
         }

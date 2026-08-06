@@ -8,10 +8,13 @@ PanelWindow {
   property var screenTarget: null
   screen: screenTarget
 
+  property string barSide: "left" // which side the bar is on; popup hugs the other side
+
   property var _active: null
   property bool recentlyActive: false
   property var cachedActive: null
   property real cardOpacity: 0
+  property int _repositionTick: 0
 
   on_ActiveChanged: {
     if (_active !== null) {
@@ -20,6 +23,7 @@ PanelWindow {
       recentTimer.stop()
       fadeTimer.stop()
       cardOpacity = 1
+      repositionTimer.restart()
     } else {
       recentTimer.restart()
       fadeTimer.restart()
@@ -29,19 +33,25 @@ PanelWindow {
 
   Timer {
     id: recentTimer
-    interval: 500
+    interval: Config.popupGraceMs
     onTriggered: root.recentlyActive = false
   }
 
   Timer {
     id: fadeTimer
-    interval: 120
+    interval: Config.popupFadeMs
     onTriggered: {
       root.cachedActive = null
     }
   }
 
-  Behavior on cardOpacity { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
+  Timer {
+    id: repositionTimer
+    interval: 60
+    onTriggered: root._repositionTick++
+  }
+
+  Behavior on cardOpacity { NumberAnimation { duration: Config.popupFadeMs; easing.type: Easing.OutQuad } }
 
   visible: cachedActive !== null
   focusable: false
@@ -49,64 +59,79 @@ PanelWindow {
   exclusionMode: ExclusionMode.Ignore
   color: "transparent"
 
-  anchors { top: true; bottom: true; left: true }
-  margins { left: 46 }
-  implicitWidth: cachedActive ? cachedActive.maxWidth : 280
+  anchors { top: true; bottom: true }
+  anchors.left: barSide === "left"
+  anchors.right: barSide === "right"
+  margins { left: barSide === "left" ? Config.popupGap : 0; right: barSide === "left" ? 0 : Config.popupGap }
+  implicitWidth: cachedActive
+    ? (cachedActive.contentWidth > 0 ? cachedActive.contentWidth : cachedActive.maxWidth)
+    : Config.popupMaxWidth
 
-  mask: Region {
-    item: tipLoader
-  }
-
+  // Loads either the default rendered card or a fully custom per-Tooltip
+  // component (Tooltip.contentComponent). The Loader owns all shared
+  // behaviour: fade opacity, and vertical clamping next to the target widget.
   Loader {
     id: tipLoader
-    active: root.visible
+    width: parent.width
+    opacity: root.cardOpacity
 
-    property var _src: root.cachedActive
-    property real _tgtCenterY: _src && _src.target ? _src.target.mapToItem(null, 0, _src.target.height / 2).y : 0
+    // The Tooltip instance currently active (null while fading out).
+    readonly property var src: root.cachedActive
 
-    x: 0
-    y: _src ? Math.round(Math.max(6, Math.min(_tgtCenterY - height / 2, root.height - height - 6))) : 0
-    width: item ? item.width : 0
-    height: item ? item.height : 0
+    // Vertical centre of the widget that opened the popup, in window coords.
+    readonly property real targetCenterY: {
+      var _ = root._repositionTick
+      if (!src || !src.target) return 0
+      var p = src.target.mapToItem(null, 0, src.target.height / 2)
+      return p ? p.y : 0
+    }
 
-    sourceComponent: Component {
+    y: {
+      var _ = root._repositionTick
+      if (!src) return 0
+      var h = item ? item.height : 0
+      return Math.round(Math.max(6, Math.min(targetCenterY - h / 2, root.height - h - 6)))
+    }
+
+    sourceComponent: src ? (src.contentComponent ? src.contentComponent : defaultCard) : null
+
+    // The stock card: icon + title row, divider and plain-text detail lines.
+    // Fully custom popups replace this entirely via Tooltip.contentComponent.
+    Component {
+      id: defaultCard
       Rectangle {
         id: card
-        property var _src: tipLoader._src
-
-        x: 0
-        y: 0
-        width: _src ? _src.maxWidth : 280
-        implicitHeight: content.implicitHeight + 24
-        height: implicitHeight
-        radius: 8
+        width: parent ? parent.width : 0
+        height: content.implicitHeight + Config.popupContentMargins * 2
+        radius: Config.popupRadius
         color: Colors.bgRaised
         antialiasing: true
         border.width: 1
         border.color: Colors.border
-        opacity: root.cardOpacity
+
+        property var _src: root.cachedActive
 
         Column {
           id: content
           anchors.left: parent.left
           anchors.right: parent.right
           anchors.top: parent.top
-          anchors.margins: 12
-          spacing: 6
+          anchors.margins: Config.popupContentMargins
+          spacing: Config.popupContentSpacing
 
           Row {
             spacing: 8
             Text {
               text: _src ? _src.icon : ""
               color: _src ? _src.iconColor : Colors.fg
-              font.family: "JetBrainsMono Nerd Font"
+              font.family: Config.monoFont
               font.pixelSize: 16
               anchors.verticalCenter: parent.verticalCenter
             }
             Text {
               text: _src ? _src.title : ""
               color: Colors.fg
-              font.family: "JetBrainsMono Nerd Font"
+              font.family: Config.monoFont
               font.pixelSize: 12
               font.bold: true
               anchors.verticalCenter: parent.verticalCenter
@@ -126,7 +151,7 @@ PanelWindow {
               required property var modelData
               text: modelData
               color: Colors.fgMid
-              font.family: "JetBrainsMono Nerd Font"
+              font.family: Config.monoFont
               font.pixelSize: 11
             }
           }

@@ -6,9 +6,9 @@ import QtQuick
 Scope {
   id: root
 
-  property string position: "top-right"
-  property int timeoutMs: 5000
-  property int maxVisible: 3
+  property string position: Config.notifPosition
+  property int timeoutMs: Config.notifTimeoutMs
+  property int maxVisible: Config.notifMaxVisible
 
   property var queue: []
 
@@ -23,6 +23,12 @@ Scope {
       root.queue = q
       dismissTimer.restart()
     }
+  }
+
+  function dismissAt(i) {
+    var q = root.queue.slice()
+    q.splice(i, 1)
+    root.queue = q
   }
 
   Timer {
@@ -52,15 +58,15 @@ Scope {
       anchors.left: onLeft
       anchors.right: onLeft ? false : true
 
-      implicitWidth: 300
-      implicitHeight: notifColumn.implicitHeight + 16
+      implicitWidth: Config.notifWidth + Config.notifCardMargins * 2
+      implicitHeight: notifColumn.implicitHeight + Config.notifCardMargins * 2
       color: "transparent"
 
       Column {
         id: notifColumn
-        width: parent.width - 16
-        spacing: 4
-        anchors.margins: 8
+        width: parent.width - Config.notifCardMargins * 2
+        spacing: Config.notifSpacing
+        anchors.margins: Config.notifCardMargins
         anchors.top: panel.onTop ? parent.top : undefined
         anchors.bottom: panel.onTop ? undefined : parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
@@ -68,42 +74,10 @@ Scope {
         Repeater {
           model: root.queue
 
-          delegate: Rectangle {
-            width: 284
-            height: notifContent.height + 16
-            radius: 8
-            color: Colors.bgRaised
-            border.color: Colors.border
-            border.width: 1
-
-            Column {
-              id: notifContent
-              anchors.left: parent.left
-              anchors.right: parent.right
-              anchors.verticalCenter: parent.verticalCenter
-              anchors.margins: 8
-              spacing: 2
-
-              Text {
-                text: modelData ? (modelData.summary || "") : ""
-                color: Colors.fg
-                font.bold: true
-                font.pixelSize: 12
-                font.family: "Inter"
-                elide: Text.ElideRight
-                width: 268
-              }
-
-              Text {
-                text: modelData ? (modelData.body || "") : ""
-                color: Colors.fgMid
-                font.pixelSize: 11
-                font.family: "Inter"
-                elide: Text.ElideRight
-                width: 268
-                visible: text !== ""
-              }
-            }
+          delegate: NotificationCard {
+            summary: modelData ? modelData.summary : ""
+            body: modelData ? modelData.body : ""
+            onDismissed: root.dismissAt(index)
           }
         }
       }
