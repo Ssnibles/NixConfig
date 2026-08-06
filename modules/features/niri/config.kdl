@@ -174,12 +174,11 @@ binds {
     Mod+Shift+K         { move-column-to-workspace-up; }
 
     // System Utilities
-    // Normal screenshot (freezes screen, saves to file, copies to clipboard)
-    Mod+S { spawn "sh" "-c" "grim -g \"$(grim - | slurp -p)\" - | tee \"$HOME/Pictures/Screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png\" | wl-copy"; }
+    // Normal screenshot
+    Mod+S { spawn "sh" "-c" "grim -g \"$(slurp)\" - | tee \"$HOME/Pictures/Screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png\" | wl-copy"; }
 
-    // OCR screenshot (freezes screen, runs Tesseract, copies text to clipboard)
-    Mod+Shift+S { spawn "sh" "-c" "grim -g \"$(grim - | slurp -p)\" - | tesseract stdin stdout -l eng 2>/dev/null | wl-copy"; }
-
+    // OCR screenshot
+    Mod+Shift+S { spawn "sh" "-c" "grim -g \"$(slurp)\" - | tesseract stdin stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'"; }
 
     // Brightness Control
     XF86MonBrightnessDown { spawn "brightnessctl" "set" "5%-"; }
