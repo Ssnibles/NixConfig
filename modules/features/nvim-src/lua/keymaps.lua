@@ -24,15 +24,15 @@ map("v", "<", "<gv", { desc = "Indent left (keep selection)" })
 map("v", ">", ">gv", { desc = "Indent right (keep selection)" })
 
 local function open_lines(key)
-	return function()
-		local count = vim.v.count1
-		if count == 1 then
-			vim.api.nvim_feedkeys(key, "n", false)
-			return
-		end
-		local keys = key .. string.rep("<CR>", count - 1) .. "<Esc>" .. (count - 1) .. "kA"
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "n", false)
-	end
+  return function()
+    local count = vim.v.count1
+    if count == 1 then
+      vim.api.nvim_feedkeys(key, "n", false)
+      return
+    end
+    local keys = key .. string.rep("<CR>", count - 1) .. "<Esc>" .. (count - 1) .. "kA"
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "n", false)
+  end
 end
 
 map("n", "o", open_lines("o"), { desc = "Open line(s) below" })
@@ -61,7 +61,7 @@ map("x", "#", [["zy?\V<C-r>=escape(@z, '?\')<CR><CR>]], { desc = "Search visual 
 
 map("n", "<leader>wv", "<C-w>v", { desc = "Split vertical" })
 map("n", "<leader>ws", "<C-w>s", { desc = "Split horizontal" })
-map("n", "<leader>wc", "<C-w>c", { desc = "Close window" })
+map("n", "<leader>wq", "<C-w>c", { desc = "Close window" })
 map("n", "<leader>wo", "<C-w>o", { desc = "Only window" })
 map("n", "<leader>w=", "<C-w>=", { desc = "Equalize windows" })
 map("n", "<leader>wh", "<C-w>H", { desc = "Move window left" })
@@ -93,38 +93,38 @@ map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
 
 map("n", "]d", function()
-	vim.diagnostic.jump({ count = 1, float = true })
+  vim.diagnostic.jump({ count = 1, float = true })
 end, { desc = "Next diagnostic" })
 map("n", "[d", function()
-	vim.diagnostic.jump({ count = -1, float = true })
+  vim.diagnostic.jump({ count = -1, float = true })
 end, { desc = "Previous diagnostic" })
 
 map("n", "]e", function()
-	vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = true })
+  vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = true })
 end, { desc = "Next error" })
 map("n", "[e", function()
-	vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })
+  vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })
 end, { desc = "Previous error" })
 
 map("n", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "Toggle wrap" })
 map("n", "<leader>ts", "<cmd>set spell!<CR>", { desc = "Toggle spell" })
 map("n", "<leader>tn", "<cmd>set relativenumber!<CR>", { desc = "Toggle relative numbers" })
 map("n", "<leader>td", function()
-	vim.diagnostic.enable(not vim.diagnostic.is_enabled())
+  vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end, { desc = "Toggle diagnostics" })
 map("n", "<leader>ti", function()
-	local bufnr = vim.api.nvim_get_current_buf()
-	local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
-	vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })
+  local bufnr = vim.api.nvim_get_current_buf()
+  local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
+  vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })
 end, { desc = "Toggle inlay hints" })
 map("n", "<leader>tc", function()
-	if vim.g.user_cursorword_enabled == nil then
-		vim.g.user_cursorword_enabled = true
-	end
-	vim.g.user_cursorword_enabled = not vim.g.user_cursorword_enabled
-	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-		vim.b[buf].minicursorword_disable = not vim.g.user_cursorword_enabled
-	end
+  if vim.g.user_cursorword_enabled == nil then
+    vim.g.user_cursorword_enabled = true
+  end
+  vim.g.user_cursorword_enabled = not vim.g.user_cursorword_enabled
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    vim.b[buf].minicursorword_disable = not vim.g.user_cursorword_enabled
+  end
 end, { desc = "Toggle cursor word" })
 
 map("n", "<leader>li", "<cmd>LspInfo<CR>", { desc = "LSP info" })
