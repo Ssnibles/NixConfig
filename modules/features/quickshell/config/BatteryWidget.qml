@@ -10,7 +10,7 @@ Pill {
   property string uiFont: Config.monoFont
 
   visible: root.batPresent
-  pillHeight: 40
+  pillHeight: 30
   padding: 0
   anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
@@ -98,15 +98,6 @@ Pill {
       color: root.batColor
       font.family: root.uiFont
       font.pixelSize: 15
-    }
-
-    Text {
-      anchors.horizontalCenter: parent.horizontalCenter
-      text: Math.round(root.batPct) + "%"
-      color: root.batColor
-      font.family: Config.sansFont
-      font.pixelSize: 9
-      font.bold: true
     }
   }
 }
