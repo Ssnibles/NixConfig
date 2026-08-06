@@ -1,53 +1,51 @@
 local fzf = require("fzf-lua")
 
 fzf.setup({
-	winopts = {
-		height = 0.85,
-		width = 0.80,
-		row = 0.50,
-		col = 0.50,
-		border = "rounded",
-		backdrop = 100,
-		preview = {
-			layout = "flex",
-			flex = {
-				flip_columns = 110,
-			},
-			vertical = "right:50%",
-			horizontal = "down:35%",
-			border = "rounded",
-			title = false,
-		},
-	},
-	hl = {
-		normal = "FzfLuaNormal",
-		border = "FzfLuaBorder",
-		preview_normal = "FzfLuaPreviewNormal",
-		preview_border = "FzfLuaPreviewBorder",
-		help_normal = "FzfLuaNormal",
-		help_border = "FzfLuaBorder",
-		cursor = "FzfLuaCursor",
-		cursorline = "CursorLine",
-	},
-	previewers = {
-		builtin = {
-			render_markdown = false,
-			treesitter = {
-				enabled = true,
-				disabled = { "markdown", "markdown_inline" },
-				context = false,
-			},
-		},
-	},
-	files = { cmd = "fd --type f --hidden --exclude .git" },
-	oldfiles = { include_current_session = false, cwd_only = true, stat_file = false },
-	grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },
-	keymap = {
-		fzf = {
-			["ctrl-q"] = "select-all+accept",
-			["ctrl-/"] = "toggle-preview",
-		},
-	},
+  winopts = {
+    height = 0.85,
+    width = 0.85,
+    row = 0.50,
+    col = 0.50,
+    border = "rounded",
+    backdrop = 100,
+    preview = {
+      layout = "flex",
+      flip_columns = 100,
+      vertical = "down:50%",
+      horizontal = "right:50%",
+      border = "rounded",
+      title = false,
+    },
+  },
+  hl = {
+    normal = "FzfLuaNormal",
+    border = "FzfLuaBorder",
+    preview_normal = "FzfLuaPreviewNormal",
+    preview_border = "FzfLuaPreviewBorder",
+    help_normal = "FzfLuaNormal",
+    help_border = "FzfLuaBorder",
+    cursor = "FzfLuaCursor",
+    cursorline = "CursorLine",
+  },
+  previewers = {
+    builtin = {
+      render_markdown = false,
+      treesitter = {
+        enabled = true,
+        disabled = { "markdown", "markdown_inline" },
+        context = false,
+      },
+    },
+  },
+  files = { cmd = "fd --type f --hidden --exclude .git" },
+  oldfiles = { include_current_session = false, cwd_only = true, stat_file = false },
+  grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },
+  keymap = {
+    fzf = {
+      ["ctrl-q"] = "select-all+accept",
+      ["ctrl-/"] = "toggle-preview",
+    },
+  },
 })
 
 local map = vim.keymap.set
@@ -67,7 +65,7 @@ map("n", "<leader>fk", fzf.keymaps, { desc = "Keymaps" })
 map("n", "<leader>f.", fzf.resume, { desc = "Resume last picker" })
 
 map("n", "<leader>gg", function()
-	require("neogit").open()
+  require("neogit").open()
 end, { desc = "Neogit status" })
 map("n", "<leader>gc", fzf.git_commits, { desc = "Git commits" })
 map("n", "<leader>gS", fzf.git_status, { desc = "Git status (picker)" })
