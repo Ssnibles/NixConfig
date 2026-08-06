@@ -36,6 +36,9 @@
                 import QtQuick
 
                 Singleton {
+                  readonly property string monoFont: "${config.theme.fonts.monospace}"
+                  readonly property string sansFont: "${config.theme.fonts.sans}"
+
                   readonly property color bg:       "#${bg}"
                   readonly property color bgRaised: "#${bgRaised}"
                   readonly property color bgSubtle: "#${bgSubtle}"

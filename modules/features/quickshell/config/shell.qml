@@ -14,4 +14,6 @@ Scope {
   }
 
   NotificationOverlay { }
+
+  CommandCenter { }
 }

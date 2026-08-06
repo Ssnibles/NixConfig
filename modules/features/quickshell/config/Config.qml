@@ -9,8 +9,11 @@ import QtQuick
 // widget's own file.
 Singleton {
   // --- Fonts ------------------------------------------------------------
-  readonly property string monoFont: "JetBrainsMono Nerd Font"
-  readonly property string sansFont: "Inter"
+  readonly property string monoFont: Colors.monoFont !== undefined ? Colors.monoFont : "JetBrainsMono Nerd Font"
+  readonly property string sansFont: Colors.sansFont !== undefined ? Colors.sansFont : "Inter"
+
+  // --- Command Center State ----------------------------------------------
+  property bool commandCenterVisible: false
 
   // --- Clock --------------------------------------------------------------
   readonly property string timeFormat: "hh:mm"
@@ -42,7 +45,7 @@ Singleton {
   readonly property int notifTimeoutMs: 5000
   readonly property int notifMaxVisible: 3
   readonly property int notifWidth: 300
-  readonly property int notifRadius: 8
-  readonly property int notifCardMargins: 8
-  readonly property int notifSpacing: 4
+  readonly property int notifRadius: 12
+  readonly property int notifCardMargins: 12
+  readonly property int notifSpacing: 8
 }

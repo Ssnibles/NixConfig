@@ -2,7 +2,7 @@
 prefer-no-csd
 
 // Startup Applications
-spawn-sh-at-startup "QS_BAR=niri quickshell"
+spawn-sh-at-startup "quickshell"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpaper -m fill"
 spawn-at-startup "niri-float-sticky"
 
@@ -109,6 +109,7 @@ binds {
     // Application Launchers
     Mod+Return hotkey-overlay-title="Open foot" { spawn "foot"; }
     Mod+Space hotkey-overlay-title="Toggle vicinae" { spawn "vicinae" "toggle"; }
+    Mod+D hotkey-overlay-title="Toggle Command Center" { spawn "quickshell" "ipc" "call" "command-center" "toggle"; }
     Mod+E hotkey-overlay-title="Open Yazi" { spawn "foot" "-e" "yazi"; }
 
     // Window Interacting
