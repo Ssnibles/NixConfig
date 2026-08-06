@@ -181,7 +181,7 @@ Variants {
       y: panel.panelSlide
       opacity: panel.panelOpacity
       
-      color: Colors.bgRaised
+      color: Colors.bg
       border.color: Colors.border
       border.width: 1
       radius: 16 // Make corner rounding more premium/large
@@ -368,7 +368,7 @@ Variants {
         Rectangle {
           width: parent.width
           height: sliderCol.implicitHeight + 20
-          color: Colors.bg
+          color: Colors.bgRaised
           border.color: Colors.border
           border.width: 1
           radius: 12
@@ -500,7 +500,7 @@ Variants {
           id: mediaCard
           width: parent.width
           height: mediaInnerCol.implicitHeight + 24
-          color: Colors.bg
+          color: Colors.bgRaised
           border.color: Colors.border
           border.width: 1
           radius: 12
@@ -631,13 +631,15 @@ Variants {
               }
 
               // Playback buttons
-              Row {
+              RowLayout {
                 spacing: 6
+                Layout.alignment: Qt.AlignVCenter
 
                 // Prev button
                 Rectangle {
-                  width: 28
-                  height: 28
+                  Layout.preferredWidth: 28
+                  Layout.preferredHeight: 28
+                  Layout.alignment: Qt.AlignVCenter
                   radius: 14
                   color: prevHover.containsMouse ? Colors.bgSubtle : "transparent"
                   Behavior on scale { NumberAnimation { duration: 100 } }
@@ -667,8 +669,9 @@ Variants {
 
                 // Play/Pause button
                 Rectangle {
-                  width: 32
-                  height: 32
+                  Layout.preferredWidth: 32
+                  Layout.preferredHeight: 32
+                  Layout.alignment: Qt.AlignVCenter
                   radius: 16
                   color: playHover.containsMouse ? Colors.accent : Colors.bgSubtle
                   border.color: Colors.border
@@ -700,8 +703,9 @@ Variants {
 
                 // Next button
                 Rectangle {
-                  width: 28
-                  height: 28
+                  Layout.preferredWidth: 28
+                  Layout.preferredHeight: 28
+                  Layout.alignment: Qt.AlignVCenter
                   radius: 14
                   color: nextHover.containsMouse ? Colors.bgSubtle : "transparent"
                   Behavior on scale { NumberAnimation { duration: 100 } }
@@ -786,7 +790,7 @@ Variants {
               width: (sysControlsRow.width - (3 * sysControlsRow.spacing)) / 4
               height: 48 // Increased button height/width
               radius: 10 // Rounded corners
-              color: hoverArea.containsMouse ? Colors.bgSubtle : Colors.bg
+              color: hoverArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised
               border.color: hoverArea.containsMouse ? modelData.hoverCol : Colors.border
               border.width: 1
               Behavior on scale { NumberAnimation { duration: 100 } }

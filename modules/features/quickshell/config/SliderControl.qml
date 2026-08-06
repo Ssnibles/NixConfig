@@ -41,6 +41,9 @@ Item {
       height: root._trackHeight
       radius: 4
       color: Colors.bgSubtle
+      border.width: 1
+      border.color: mouse.containsMouse ? Colors.accent : "transparent"
+      Behavior on border.color { ColorAnimation { duration: 120 } }
     }
 
     Rectangle {

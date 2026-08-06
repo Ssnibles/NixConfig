@@ -48,6 +48,21 @@ Item {
     player: root.mediaPlayer
   }
 
+  // Debounced seek — mirrors CommandCenter's seekTimer
+  Timer {
+    id: popoverSeekTimer
+    interval: 200
+    repeat: false
+    property real targetProgress: 0
+    onTriggered: {
+      if (root.mediaPlayer && root.mediaPlayer.canSeek) {
+        var targetPos  = targetProgress * mediaTracker.lastLength
+        var currentPos = mediaTracker.estimatedPosition
+        root.mediaPlayer.seek((targetPos - currentPos) * 1000000)
+      }
+    }
+  }
+
   function focusMediaPlayer() {
     if (!root.mediaPlayer) return
     var entry = root.mediaPlayer.desktopEntry || root.mediaPlayer.name || ""
@@ -116,6 +131,9 @@ Item {
         anchors.fill: parent
         radius: 4
         color: Colors.bgSubtle
+        border.width: 1
+        border.color: mediaTooltip.hovered ? Colors.accent : "transparent"
+        Behavior on border.color { ColorAnimation { duration: 120 } }
 
         Rectangle {
           anchors.bottom: parent.bottom
@@ -176,7 +194,7 @@ Item {
 
     Rectangle {
       id: popoverCard
-      width: 220
+      width: 260
       height: popoverContent.implicitHeight + 24
       radius: Config.popupRadius
       color: Colors.bg
@@ -189,18 +207,18 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 12
-        spacing: 12
+        spacing: 8
 
-        // Top section: Album Art & Track Info
+        // Top row: Album Art + Track Details + Playback Buttons (matches CommandCenter)
         RowLayout {
           width: parent.width
           spacing: 12
 
           // Album Art
           Rectangle {
-            width: 40
-            height: 40
-            radius: 6
+            width: 48
+            height: 48
+            radius: 8
             color: Colors.bgSubtle
             border.color: Colors.border
             border.width: 1
@@ -210,11 +228,10 @@ Item {
               text: "󰎆"
               color: Colors.fgDim
               font.family: root.uiFont
-              font.pixelSize: 16
+              font.pixelSize: 18
               anchors.centerIn: parent
             }
 
-            // Mask for rounded corners
             Item {
               id: popoverCoverMask
               width: parent.width
@@ -224,7 +241,7 @@ Item {
               Rectangle {
                 width: parent.width
                 height: parent.height
-                radius: 6
+                radius: 8
                 color: "black"
               }
             }
@@ -243,7 +260,6 @@ Item {
                 }
                 return ""
               }
-
               layer.enabled: true
               layer.effect: MultiEffect {
                 maskEnabled: true
@@ -276,156 +292,135 @@ Item {
               elide: Text.ElideRight
             }
           }
-        }
 
-        // Progress Bar
-        Column {
-          width: parent.width
-          spacing: 4
+          // Playback Buttons (inline, same as CommandCenter)
+          RowLayout {
+            spacing: 6
+            Layout.alignment: Qt.AlignVCenter
 
-          Item {
-            width: parent.width
-            height: 12
-
+            // Prev
             Rectangle {
-              anchors.fill: parent
-              radius: 4
-              color: Colors.bgSubtle
+              Layout.preferredWidth: 28
+              Layout.preferredHeight: 28
+              Layout.alignment: Qt.AlignVCenter
+              radius: 14
+              color: prevHover.containsMouse ? Colors.bgSubtle : "transparent"
+              Behavior on scale { NumberAnimation { duration: 100 } }
 
-              Rectangle {
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                width: parent.width * mediaTracker.progress
-                radius: 4
-                color: Colors.accent
+              Text {
+                text: "󰒮"
+                color: (root.mediaPlayer && root.mediaPlayer.canGoPrevious) ? (prevHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
+                font.family: root.uiFont
+                font.pixelSize: 13
+                anchors.centerIn: parent
+              }
+
+              MouseArea {
+                id: prevHover
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: (root.mediaPlayer && root.mediaPlayer.canGoPrevious) ? Qt.PointingHandCursor : Qt.ArrowCursor
+                onEntered: parent.scale = 0.90
+                onExited:  parent.scale = 1.0
+                onClicked: { if (root.mediaPlayer && root.mediaPlayer.canGoPrevious) root.mediaPlayer.previous() }
+              }
+            }
+
+            // Play/Pause
+            Rectangle {
+              Layout.preferredWidth: 32
+              Layout.preferredHeight: 32
+              Layout.alignment: Qt.AlignVCenter
+              radius: 16
+              color: playHover.containsMouse ? Colors.accent : Colors.bgSubtle
+              border.color: Colors.border
+              border.width: 1
+              Behavior on scale { NumberAnimation { duration: 100 } }
+
+              Text {
+                text: (root.mediaPlayer && root.mediaPlayer.isPlaying) ? "󰏤" : "󰐊"
+                color: playHover.containsMouse ? Colors.bg : Colors.fg
+                font.family: root.uiFont
+                font.pixelSize: 15
+                anchors.centerIn: parent
+              }
+
+              MouseArea {
+                id: playHover
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onEntered: parent.scale = 0.90
+                onExited:  parent.scale = 1.0
+                onClicked: { if (root.mediaPlayer) root.mediaPlayer.isPlaying = !root.mediaPlayer.isPlaying }
+              }
+            }
+
+            // Next
+            Rectangle {
+              Layout.preferredWidth: 28
+              Layout.preferredHeight: 28
+              Layout.alignment: Qt.AlignVCenter
+              radius: 14
+              color: nextHover.containsMouse ? Colors.bgSubtle : "transparent"
+              Behavior on scale { NumberAnimation { duration: 100 } }
+
+              Text {
+                text: "󰒭"
+                color: (root.mediaPlayer && root.mediaPlayer.canGoNext) ? (nextHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
+                font.family: root.uiFont
+                font.pixelSize: 13
+                anchors.centerIn: parent
+              }
+
+              MouseArea {
+                id: nextHover
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: (root.mediaPlayer && root.mediaPlayer.canGoNext) ? Qt.PointingHandCursor : Qt.ArrowCursor
+                onEntered: parent.scale = 0.90
+                onExited:  parent.scale = 1.0
+                onClicked: { if (root.mediaPlayer && root.mediaPlayer.canGoNext) root.mediaPlayer.next()
+                }
               }
             }
           }
 
-          Item {
-            width: parent.width
-            height: elapsedLabel2.implicitHeight
-            
-            Text {
-              id: elapsedLabel2
-              anchors.left: parent.left
-              text: Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
-              color: Colors.fgMid
-              font.family: root.uiFont
-              font.pixelSize: 9
-            }
-
-            Text {
-              anchors.right: parent.right
-              text: Utils.formatTime(Math.round(mediaTracker.lastLength))
-              color: Colors.fgDim
-              font.family: root.uiFont
-              font.pixelSize: 9
-            }
-          }
+          Item { Layout.fillWidth: true }
         }
 
-        // Divider
-        Rectangle {
-          width: parent.width
-          height: 1
-          color: Colors.border
-        }
-
-        // Playback Buttons
+        // Seekable progress row (matches CommandCenter)
         RowLayout {
           width: parent.width
-          
-          Item { Layout.fillWidth: true }
+          spacing: 8
+          visible: root.mediaPlayer && mediaTracker.lastLength > 0
 
-          // Prev Button
-          Rectangle {
-            width: 28
-            height: 28
-            radius: 14
-            color: prevHover.containsMouse ? Colors.bgSubtle : "transparent"
+          Text {
+            text: Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
+            color: Colors.fgDim
+            font.family: Config.sansFont
+            font.pixelSize: 9
+            Layout.preferredWidth: 32
+            horizontalAlignment: Text.AlignRight
+          }
 
-            Text {
-              text: "󰒮"
-              color: (root.mediaPlayer && root.mediaPlayer.canGoPrevious) ? (prevHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
-              font.family: root.uiFont
-              font.pixelSize: 12
-              anchors.centerIn: parent
-            }
-
-            MouseArea {
-              id: prevHover
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: (root.mediaPlayer && root.mediaPlayer.canGoPrevious) ? Qt.PointingHandCursor : Qt.ArrowCursor
-              onClicked: {
-                if (root.mediaPlayer && root.mediaPlayer.canGoPrevious) {
-                  root.mediaPlayer.previous()
-                }
-              }
+          SliderControl {
+            Layout.fillWidth: true
+            value: mediaTracker.progress
+            fillColor: Colors.accent
+            onMoved: function(v) {
+              popoverSeekTimer.targetProgress = v
+              popoverSeekTimer.restart()
             }
           }
 
-          // Play/Pause Button
-          Rectangle {
-            width: 32
-            height: 32
-            radius: 16
-            color: playHover.containsMouse ? Colors.accent : Colors.bgSubtle
-            border.color: Colors.border
-            border.width: 1
-
-            Text {
-              text: root.mediaPlayer && root.mediaPlayer.isPlaying ? "󰏤" : "󰐊"
-              color: playHover.containsMouse ? Colors.bg : Colors.fg
-              font.family: root.uiFont
-              font.pixelSize: 14
-              anchors.centerIn: parent
-            }
-
-            MouseArea {
-              id: playHover
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: {
-                if (root.mediaPlayer) {
-                  root.mediaPlayer.isPlaying = !root.mediaPlayer.isPlaying
-                }
-              }
-            }
+          Text {
+            text: Utils.formatTime(Math.round(mediaTracker.lastLength))
+            color: Colors.fgDim
+            font.family: Config.sansFont
+            font.pixelSize: 9
+            Layout.preferredWidth: 32
           }
-
-          // Next Button
-          Rectangle {
-            width: 28
-            height: 28
-            radius: 14
-            color: nextHover.containsMouse ? Colors.bgSubtle : "transparent"
-
-            Text {
-              text: "󰒭"
-              color: (root.mediaPlayer && root.mediaPlayer.canGoNext) ? (nextHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
-              font.family: root.uiFont
-              font.pixelSize: 12
-              anchors.centerIn: parent
-            }
-
-            MouseArea {
-              id: nextHover
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: (root.mediaPlayer && root.mediaPlayer.canGoNext) ? Qt.PointingHandCursor : Qt.ArrowCursor
-              onClicked: {
-                if (root.mediaPlayer && root.mediaPlayer.canGoNext) {
-                  root.mediaPlayer.next()
-                }
-              }
-            }
-          }
-
-          Item { Layout.fillWidth: true }
         }
       }
     }

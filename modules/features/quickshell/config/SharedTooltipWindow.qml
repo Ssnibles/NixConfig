@@ -28,23 +28,39 @@ PanelWindow {
       repositionTimer.restart()
     } else {
       if (!root.hovered) {
+        // Keep the tooltip fully visible during the grace window so the cursor
+        // can cross the gap between the bar and the tooltip without flickering.
+        // The fade only begins once the grace period expires.
         recentTimer.restart()
-        fadeTimer.restart()
+        fadeTimer.stop()
+        // cardOpacity stays at 1 — graceFadeTimer will drop it after the delay
+        graceFadeTimer.restart()
+      }
+    }
+  }
+
+  // Fires after the grace window: if nothing is active and the tip isn’t
+  // being hovered, begin the opacity fade.
+  Timer {
+    id: graceFadeTimer
+    interval: Config.popupGraceMs
+    onTriggered: {
+      if (root._active === null && !root.hovered) {
         cardOpacity = 0
+        fadeTimer.restart()
       }
     }
   }
 
   onHoveredChanged: {
     if (hovered) {
-      recentTimer.stop()
+      // Cursor entered the tooltip window — cancel any pending fade
+      graceFadeTimer.stop()
       fadeTimer.stop()
       cardOpacity = 1
     } else {
       if (root._active === null) {
-        recentTimer.restart()
-        fadeTimer.restart()
-        cardOpacity = 0
+        graceFadeTimer.restart()
       }
     }
   }

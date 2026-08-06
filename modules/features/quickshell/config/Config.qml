@@ -38,7 +38,7 @@ Singleton {
   readonly property int popupContentSpacing: 6
   readonly property int popupShowDelay: 150 // ms before a tooltip appears
   readonly property int popupFadeMs: 120
-  readonly property int popupGraceMs: 500 // instant swap window between tooltips
+  readonly property int popupGraceMs: 700 // generous window so cursor can cross the gap without flicker
 
   // --- Notifications ------------------------------------------------------
   readonly property string notifPosition: "top-left"

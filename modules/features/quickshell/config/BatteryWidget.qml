@@ -10,8 +10,19 @@ Pill {
   property string uiFont: Config.monoFont
 
   visible: root.batPresent
-  padding: 4
+  pillHeight: 40
+  padding: 0
   anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+
+  pillColor: Colors.bgRaised
+  border.width: 1
+  border.color: {
+    if (!root.batPresent)                    return Colors.border
+    if (root.batCharging || root.batPlugged) return Qt.rgba(Colors.green.r,  Colors.green.g,  Colors.green.b,  0.5)
+    if (root.batPct <= 15)                   return Qt.rgba(Colors.red.r,    Colors.red.g,    Colors.red.b,    0.7)
+    if (root.batPct <= 30)                   return Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.5)
+    return Colors.border
+  }
 
   // UPower State
   property var batDevice: {
@@ -23,19 +34,18 @@ Pill {
     return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null
   }
 
-  readonly property bool batPresent: batDevice !== null && batDevice.isLaptopBattery
-
-  readonly property int batPct: root.batDevice ? Math.round(root.batDevice.percentage * 100) : 0
+  readonly property bool batPresent:  batDevice !== null && batDevice.isLaptopBattery
+  readonly property int  batPct:      root.batDevice ? Math.round(root.batDevice.percentage * 100) : 0
   readonly property bool batCharging: root.batDevice && root.batDevice.state === UPowerDeviceState.Charging
-  readonly property bool batPlugged: root.batDevice && root.batDevice.state === UPowerDeviceState.FullyCharged
-  readonly property int batState: root.batDevice ? root.batDevice.state : UPowerDeviceState.Unknown
+  readonly property bool batPlugged:  root.batDevice && root.batDevice.state === UPowerDeviceState.FullyCharged
+  readonly property int  batState:    root.batDevice ? root.batDevice.state : UPowerDeviceState.Unknown
 
   property string batIcon: Utils.batteryIcon(root.batPct, root.batCharging, root.batPlugged, root.batPresent)
-  property color batColor: {
-    if (!root.batPresent) return Colors.fg
+  property color  batColor: {
+    if (!root.batPresent)                    return Colors.fg
     if (root.batCharging || root.batPlugged) return Colors.green
-    if (root.batPct <= 15) return Colors.red
-    if (root.batPct <= 30) return Colors.yellow
+    if (root.batPct <= 15)                   return Colors.red
+    if (root.batPct <= 30)                   return Colors.yellow
     return Colors.fg
   }
 
@@ -48,12 +58,12 @@ Pill {
       var pct = Math.round(root.batPct)
       var state
       switch (root.batState) {
-        case UPowerDeviceState.Charging:        state = "Charging"; break
-        case UPowerDeviceState.FullyCharged:    state = "Plugged in"; break
-        case UPowerDeviceState.PendingCharge:   state = "Pending charge"; break
-        case UPowerDeviceState.PendingDischarge:state = "Pending discharge"; break
-        case UPowerDeviceState.Empty:           state = "Empty"; break
-        default:                                state = "Discharging"; break
+        case UPowerDeviceState.Charging:         state = "Charging"; break
+        case UPowerDeviceState.FullyCharged:     state = "Plugged in"; break
+        case UPowerDeviceState.PendingCharge:    state = "Pending charge"; break
+        case UPowerDeviceState.PendingDischarge: state = "Pending discharge"; break
+        case UPowerDeviceState.Empty:            state = "Empty"; break
+        default:                                 state = "Discharging"; break
       }
       return pct + "% · " + state
     }
@@ -77,23 +87,26 @@ Pill {
   }
 
   Column {
-    anchors.centerIn: parent
-    spacing: 2
+    // Absolute centering — padding:0 means contentItem left-anchors otherwise
+    x: (root.width  - implicitWidth)  / 2
+    y: (root.height - implicitHeight) / 2
+    spacing: 3
 
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
       text: root.batIcon
       color: root.batColor
       font.family: root.uiFont
-      font.pixelSize: 12
+      font.pixelSize: 15
     }
 
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
       text: Math.round(root.batPct) + "%"
       color: root.batColor
-      font.family: root.uiFont
-      font.pixelSize: 8
+      font.family: Config.sansFont
+      font.pixelSize: 9
+      font.bold: true
     }
   }
 }
