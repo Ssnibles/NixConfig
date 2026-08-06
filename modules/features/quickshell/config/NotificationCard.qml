@@ -4,7 +4,7 @@ import Quickshell
 import Quickshell.Widgets
 
 // Single notification card. Rendered by NotificationOverlay for each queued
-// notification. Click the card to dismiss it.
+// notification and by CommandCenter for history items.
 Rectangle {
   id: root
 
