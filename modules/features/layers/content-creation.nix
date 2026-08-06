@@ -8,7 +8,6 @@
           with pkgs;
           [
             audacity
-            spek
             ffmpeg
             flac
           ]
