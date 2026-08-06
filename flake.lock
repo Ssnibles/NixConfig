@@ -1,22 +1,5 @@
 {
   "nodes": {
-    "aspect-lock": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1785980201,
-        "narHash": "sha256-Dyj3t5leS9mRbZZfkr3yMV7w7dCYKub9VGbSbR0x2Vw=",
-        "path": "/home/josh/aspect-lock",
-        "type": "path"
-      },
-      "original": {
-        "path": "/home/josh/aspect-lock",
-        "type": "path"
-      }
-    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -384,7 +367,6 @@
     },
     "root": {
       "inputs": {
-        "aspect-lock": "aspect-lock",
         "flake-parts": "flake-parts",
         "hjem": "hjem",
         "import-tree": "import-tree",
