@@ -1,7 +1,12 @@
 { inputs, ... }:
 {
   nixos.modules.shared =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       imports = [
         inputs.nvf.nixosModules.default
