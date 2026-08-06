@@ -11,6 +11,7 @@ Scope {
   property string position: Config.notifPosition
   property int timeoutMs: Config.notifTimeoutMs
   property int maxVisible: Config.notifMaxVisible
+  property int hoveredIndex: -1
 
   ListModel {
     id: notifModel
@@ -82,8 +83,8 @@ Scope {
         body: isSpotify ? "" : notification.body,
         trackTitle: isSpotify ? notification.summary : "",
         trackArtist: isSpotify ? notification.body : "",
-        appIcon: notification.appIcon,
-        image: notification.image,
+        appIcon: notification.appIcon || "",
+        image: notification.image || "",
         urgency: notification.urgency,
         isMedia: isSpotify,
         appName: notification.appName || "",
@@ -104,6 +105,11 @@ Scope {
       }
     }
     notifModel.remove(i)
+    if (root.hoveredIndex === i) {
+      root.hoveredIndex = -1
+    } else if (root.hoveredIndex > i) {
+      root.hoveredIndex--
+    }
   }
 
   Timer {
@@ -111,7 +117,10 @@ Scope {
     interval: root.timeoutMs
     onTriggered: {
       var indexToDismiss = -1
-      for (var i = 0; i < notifModel.count; i++) {
+      // If a card is hovered, only auto-dismiss items *after* the hovered index (i > root.hoveredIndex).
+      // Dismissing items before the hovered index would shift the hovered card's Y position in the list.
+      var startIndex = (root.hoveredIndex !== -1) ? root.hoveredIndex + 1 : 0
+      for (var i = startIndex; i < notifModel.count; i++) {
         var item = notifModel.get(i)
         if (item && item.urgency !== 2) { // 2 = Critical
           indexToDismiss = i
@@ -120,8 +129,8 @@ Scope {
       }
       if (indexToDismiss !== -1) {
         root.dismissAt(indexToDismiss, true)
-        if (notifModel.count > 0) restart()
       }
+      if (notifModel.count > 0) restart()
     }
   }
 
@@ -228,6 +237,7 @@ Scope {
         }
 
         delegate: NotificationCard {
+          id: card
           notification: model.notification
           appName: model.appName || ""
           desktopEntry: model.desktopEntry || ""
@@ -239,6 +249,14 @@ Scope {
           trackTitle: model.trackTitle || ""
           trackArtist: model.trackArtist || ""
           isMedia: model.isMedia !== undefined ? model.isMedia : false
+
+          onIsHoveredChanged: {
+            if (card.isHovered) {
+              root.hoveredIndex = index
+            } else if (root.hoveredIndex === index) {
+              root.hoveredIndex = -1
+            }
+          }
 
           onDismissed: root.dismissAt(index, false)
           onActionTriggered: {

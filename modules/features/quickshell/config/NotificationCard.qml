@@ -20,6 +20,7 @@ Rectangle {
   property string trackTitle: ""
   property string trackArtist: ""
   property bool isMedia: false
+  readonly property bool isHovered: hoverArea.containsMouse
   signal dismissed()
   signal actionTriggered()
 
@@ -29,9 +30,78 @@ Rectangle {
     locked: root.notification !== null
   }
 
-  // Determine icon source and visibility
-  property string iconSource: image !== "" ? image : appIcon
-  property bool hasIcon: iconSource !== ""
+  // Generate candidate list for icon resolution (fallback hierarchy)
+  property var candidateIcons: {
+    var list = []
+    
+    function addCandidate(s) {
+      if (!s) return
+      var str = String(s).trim()
+      if (str.charAt(0) === '"' && str.charAt(str.length - 1) === '"') {
+        str = str.slice(1, -1)
+      }
+      if (str !== "" && list.indexOf(str) === -1) {
+        list.push(str)
+      }
+    }
+
+    // 1. Explicit notification image / art
+    addCandidate(root.image)
+
+    // 2. Explicit app icon string provided by notification
+    addCandidate(root.appIcon)
+
+    // 3. Desktop entry variations
+    if (root.desktopEntry) {
+      var de = String(root.desktopEntry).trim()
+      if (de.endsWith(".desktop")) {
+        de = de.substring(0, de.length - 8)
+      }
+      addCandidate(de)
+      var deParts = de.split(".")
+      if (deParts.length > 1) {
+        addCandidate(deParts[deParts.length - 1])
+      }
+    }
+
+    // 4. App name variations
+    if (root.appName) {
+      var an = String(root.appName).trim().toLowerCase()
+      addCandidate(an)
+      addCandidate(an.replace(/\s+/g, "-"))
+    }
+
+    // 5. Media fallback
+    if (root.isMedia) {
+      addCandidate("multimedia-player")
+      addCandidate("audio-x-generic")
+    }
+
+    // 6. Universal default fallback icons
+    addCandidate("dialog-information")
+    addCandidate("preferences-system-notifications")
+    addCandidate("notification-symbolic")
+
+    return list
+  }
+
+  function resolveIconSource(candidates) {
+    if (!candidates || candidates.length === 0) return ""
+    for (var i = 0; i < candidates.length; i++) {
+      var src = String(candidates[i]).trim()
+      if (src === "") continue
+      if (src.startsWith("/") || src.startsWith("file://") || src.startsWith("http://") || src.startsWith("https://") || src.startsWith("image://")) {
+        return src
+      }
+      if (Quickshell.hasThemeIcon(src)) {
+        return "image://icon/" + src
+      }
+    }
+    return ""
+  }
+
+  property string iconSource: resolveIconSource(candidateIcons)
+  property bool hasIcon: true
 
   width: parent ? parent.width : Config.notifWidth
   height: Math.max(contentCol.implicitHeight, hasIcon ? (isMedia ? 48 : 40) : 0) + Config.notifCardMargins * 2
@@ -64,6 +134,54 @@ Rectangle {
     }
   }
 
+  // Correlated fallback icon glyph based on appName / desktopEntry / summary
+  property string fallbackGlyph: {
+    var app = (appName || desktopEntry || "").toLowerCase().trim()
+    var sum = (summary || "").toLowerCase().trim()
+
+    if (isMedia) return "󰎈"
+
+    // App/Service specific matching
+    if (app.indexOf("spotify") !== -1) return "󰓇"
+    if (app.indexOf("firefox") !== -1 || app.indexOf("zen") !== -1 || app.indexOf("librewolf") !== -1 || app.indexOf("chrome") !== -1 || app.indexOf("chromium") !== -1 || app.indexOf("brave") !== -1 || app.indexOf("vivaldi") !== -1 || app.indexOf("browser") !== -1) return "󰈹"
+    if (app.indexOf("discord") !== -1 || app.indexOf("vesktop") !== -1 || app.indexOf("webcord") !== -1) return "󰙯"
+    if (app.indexOf("telegram") !== -1) return "󰔁"
+    if (app.indexOf("slack") !== -1) return "󰒱"
+    if (app.indexOf("signal") !== -1) return "󰍡"
+    if (app.indexOf("terminal") !== -1 || app.indexOf("kitty") !== -1 || app.indexOf("foot") !== -1 || app.indexOf("alacritty") !== -1 || app.indexOf("ghostty") !== -1 || app.indexOf("wezterm") !== -1) return "󰅍"
+    if (app.indexOf("code") !== -1 || app.indexOf("vscodium") !== -1 || app.indexOf("nvim") !== -1 || app.indexOf("neovim") !== -1 || app.indexOf("vim") !== -1 || app.indexOf("emacs") !== -1) return "󰨞"
+    if (app.indexOf("steam") !== -1) return "󰓓"
+    if (app.indexOf("mail") !== -1 || app.indexOf("thunderbird") !== -1 || app.indexOf("gearman") !== -1) return "󰇮"
+    if (app.indexOf("volume") !== -1 || app.indexOf("audio") !== -1 || app.indexOf("pipewire") !== -1 || app.indexOf("wireplumber") !== -1) return "󰕾"
+    if (app.indexOf("net") !== -1 || app.indexOf("wifi") !== -1 || app.indexOf("network") !== -1) return "󰤨"
+    if (app.indexOf("bat") !== -1 || app.indexOf("power") !== -1 || app.indexOf("upower") !== -1) return "󰂄"
+    if (app.indexOf("brightness") !== -1 || app.indexOf("backlight") !== -1) return "󰃠"
+    if (app.indexOf("bluetooth") !== -1) return "󰂯"
+    if (app.indexOf("obs") !== -1 || app.indexOf("screen") !== -1 || app.indexOf("shot") !== -1 || app.indexOf("grim") !== -1 || app.indexOf("slurp") !== -1) return "󰄄"
+    if (app.indexOf("niri") !== -1 || app.indexOf("hyprland") !== -1 || app.indexOf("sway") !== -1 || app.indexOf("wayland") !== -1) return "󰍹"
+    if (app.indexOf("package") !== -1 || app.indexOf("update") !== -1 || app.indexOf("nix") !== -1) return "󰏗"
+
+    // Summary keyword matching fallbacks
+    if (sum.indexOf("volume") !== -1 || sum.indexOf("muted") !== -1) return "󰕾"
+    if (sum.indexOf("wifi") !== -1 || sum.indexOf("network") !== -1 || sum.indexOf("connected") !== -1) return "󰤨"
+    if (sum.indexOf("battery") !== -1 || sum.indexOf("charging") !== -1) return "󰂄"
+    if (sum.indexOf("brightness") !== -1) return "󰃠"
+    if (sum.indexOf("bluetooth") !== -1) return "󰂯"
+    if (sum.indexOf("screenshot") !== -1) return "󰄄"
+
+    // Urgency level fallbacks
+    if (urgency === 2) return "󰀦"
+
+    // First letter fallback if program name / desktop entry is available
+    var cleanApp = (appName || desktopEntry || "").trim()
+    if (cleanApp.length > 0) {
+      var match = cleanApp.match(/[a-zA-Z0-9]/)
+      if (match) return match[0].toUpperCase()
+    }
+
+    return "󰂚"
+  }
+
   // Left-side Icon/Image Container
   Item {
     id: iconContainer
@@ -74,29 +192,50 @@ Rectangle {
     width: root.isMedia ? 48 : 40
     height: root.isMedia ? 48 : 40
 
-    // Mask for rounded corners
-    Item {
-      id: iconMask
-      width: parent.width
-      height: parent.height
-      visible: false
-      layer.enabled: true
-      Rectangle {
+    Rectangle {
+      anchors.fill: parent
+      radius: 8
+      color: Colors.bgSubtle
+      border.color: Colors.border
+      border.width: 1
+
+      // Fallback Nerd Font icon glyph or first letter
+      Text {
+        anchors.centerIn: parent
+        text: root.fallbackGlyph
+        color: root.isMedia ? Colors.teal : (root.urgency === 2 ? Colors.red : Colors.accent)
+        font.pixelSize: (root.fallbackGlyph.length === 1) ? (root.isMedia ? 22 : 18) : (root.isMedia ? 22 : 18)
+        font.bold: root.fallbackGlyph.length === 1
+        font.family: (root.fallbackGlyph.length === 1) ? Config.sansFont : Config.monoFont
+        visible: !img.visible
+      }
+
+      // Mask for rounded corners
+      Item {
+        id: iconMask
         width: parent.width
         height: parent.height
-        radius: 8
-        color: "black"
+        visible: false
+        layer.enabled: true
+        Rectangle {
+          width: parent.width
+          height: parent.height
+          radius: 8
+          color: "black"
+        }
       }
-    }
 
-    IconImage {
-      anchors.fill: parent
-      source: root.iconSource
+      IconImage {
+        id: img
+        anchors.fill: parent
+        source: root.iconSource
+        visible: source !== "" && status === Image.Ready
 
-      layer.enabled: true
-      layer.effect: MultiEffect {
-        maskEnabled: true
-        maskSource: iconMask
+        layer.enabled: true
+        layer.effect: MultiEffect {
+          maskEnabled: true
+          maskSource: iconMask
+        }
       }
     }
   }
