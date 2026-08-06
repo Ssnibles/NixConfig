@@ -9,6 +9,7 @@ Rectangle {
   height: 22
   radius: height / 2
   color: Colors.bgRaised
+  antialiasing: true
 
   default property alias data: contentItem.data
   implicitWidth: Math.max(contentItem.childrenRect.width + padding * 2, height)

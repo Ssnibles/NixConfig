@@ -1,7 +1,24 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, config, ... }:
+    { pkgs, config, ... }: let
+      inherit (config.theme.colors)
+        bg
+        bgRaised
+        bgSubtle
+        border
+        fg
+        fgMid
+        fgDim
+        accent
+        teal
+        purple
+        green
+        yellow
+        red
+        orange
+        ;
+    in
     {
       config = {
         environment.systemPackages = with pkgs.unstable; [
@@ -11,52 +28,40 @@
         hjem.users."${config.username}" = {
           enable = true;
           files = {
-            ".config/quickshell/shell.qml" = {
-              source = ./config/shell.qml;
-            };
-            ".config/quickshell/mangowc-bar.qml" = {
-              source = ./config/mangowc-bar.qml;
-            };
-            ".config/quickshell/niri-bar.qml" = {
-              source = ./config/niri-bar.qml;
-            };
-            ".config/quickshell/NotificationOverlay.qml" = {
-              source = ./config/NotificationOverlay.qml;
-            };
-            ".config/quickshell/Utils.js" = {
-              source = ./config/Utils.js;
-            };
-            ".config/quickshell/Pill.qml" = {
-              source = ./config/Pill.qml;
-            };
-            ".config/quickshell/Tooltip.qml" = {
-              source = ./config/Tooltip.qml;
-            };
             ".config/quickshell/Colors.qml" = {
               text = ''
                 pragma Singleton
+
+                import Quickshell
                 import QtQuick
 
-                QtObject {
-                  readonly property color bg: "#${config.theme.colors.bg}"
-                  readonly property color bgRaised: "#${config.theme.colors.bgRaised}"
-                  readonly property color bgSubtle: "#${config.theme.colors.bgSubtle}"
-                  readonly property color border: "#${config.theme.colors.border}"
-                  readonly property color fg: "#${config.theme.colors.fg}"
-                  readonly property color fgMid: "#${config.theme.colors.fgMid}"
-                  readonly property color fgDim: "#${config.theme.colors.fgDim}"
-                  readonly property color accent: "#${config.theme.colors.accent}"
-                  readonly property color teal: "#${config.theme.colors.teal}"
-                  readonly property color purple: "#${config.theme.colors.purple}"
-                  readonly property color green: "#${config.theme.colors.green}"
-                  readonly property color yellow: "#${config.theme.colors.yellow}"
-                  readonly property color red: "#${config.theme.colors.red}"
-                  readonly property color orange: "#${config.theme.colors.orange}"
+                Singleton {
+                  readonly property color bg:       "#${bg}"
+                  readonly property color bgRaised: "#${bgRaised}"
+                  readonly property color bgSubtle: "#${bgSubtle}"
+                  readonly property color border:   "#${border}"
+                  readonly property color fg:       "#${fg}"
+                  readonly property color fgMid:    "#${fgMid}"
+                  readonly property color fgDim:    "#${fgDim}"
+                  readonly property color accent:   "#${accent}"
+                  readonly property color teal:     "#${teal}"
+                  readonly property color purple:   "#${purple}"
+                  readonly property color green:    "#${green}"
+                  readonly property color yellow:   "#${yellow}"
+                  readonly property color red:      "#${red}"
+                  readonly property color orange:   "#${orange}"
                 }
               '';
             };
           };
         };
+
+        system.activationScripts.quickshell-config = ''
+          mkdir -p /home/${config.username}/.config/quickshell
+          chown -R ${config.username}:users /home/${config.username}/.config/quickshell
+          ln -sfn /home/${config.username}/NixConfig/modules/features/quickshell/config/* /home/${config.username}/.config/quickshell/
+          chown -h ${config.username}:users /home/${config.username}/.config/quickshell/
+        '';
       };
     };
 }

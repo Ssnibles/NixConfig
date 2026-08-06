@@ -72,8 +72,8 @@ Scope {
             width: 284
             height: notifContent.height + 16
             radius: 8
-            color: "#e01e1e2e"
-            border.color: "#45475a"
+            color: Colors.bgRaised
+            border.color: Colors.border
             border.width: 1
 
             Column {
@@ -86,7 +86,7 @@ Scope {
 
               Text {
                 text: modelData ? (modelData.summary || "") : ""
-                color: "#cdd6f4"
+                color: Colors.fg
                 font.bold: true
                 font.pixelSize: 12
                 font.family: "Inter"
@@ -96,7 +96,7 @@ Scope {
 
               Text {
                 text: modelData ? (modelData.body || "") : ""
-                color: "#a6adc8"
+                color: Colors.fgMid
                 font.pixelSize: 11
                 font.family: "Inter"
                 elide: Text.ElideRight
