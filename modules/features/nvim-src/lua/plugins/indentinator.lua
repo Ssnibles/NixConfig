@@ -1,3 +1,8 @@
 require("indentinator").setup({
-  show_current_indent = true,
+	scope = {
+		enabled = true,
+		underline = true,
+		text_highlight = true,
+		range = "block",
+	},
 })
