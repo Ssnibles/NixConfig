@@ -43,7 +43,6 @@
           adwaita-icon-theme
           xwayland-satellite
           inputs.niri-float-sticky.packages.${pkgs.stdenv.hostPlatform.system}.niri-float-sticky
-          inputs.aspect-lock.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
 
         xdg.portal = {

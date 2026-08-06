@@ -47,15 +47,7 @@
 
     niri-float-sticky.url = "github:probeldev/niri-float-sticky";
     niri-float-sticky.inputs.nixpkgs.follows = "nixpkgs";
-
-    # Local aspect-ratio lock daemon for niri floating windows.
-    # Live at ~/aspect-lock; path inputs are always taken from the filesystem,
-    # so iterate there and re-lock with:
-    #   nix flake lock --update-input aspect-lock
-    aspect-lock.url = "path:/home/josh/aspect-lock";
-    aspect-lock.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 }
-

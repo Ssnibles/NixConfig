@@ -5,7 +5,6 @@ prefer-no-csd
 spawn-sh-at-startup "QS_BAR=niri quickshell"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpaper -m fill"
 spawn-at-startup "niri-float-sticky"
-spawn-at-startup "niri-aspect-lock"
 
 // Environment Variables
 environment {
