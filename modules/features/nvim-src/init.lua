@@ -22,7 +22,7 @@ vim.opt.diffopt:append("linematch:60")
 vim.opt.display = "lastline"
 vim.opt.whichwrap:append("<,>,[,],h,l")
 vim.opt.sessionoptions:append("globals")
-vim.opt.scrolloff = 4
+vim.opt.scrolloff = 999
 vim.opt.sidescrolloff = 8
 vim.opt.list = false
 vim.opt.joinspaces = false
