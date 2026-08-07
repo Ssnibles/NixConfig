@@ -1,6 +1,7 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Io
 import Quickshell.Services.Notifications
 import Quickshell.Services.Mpris

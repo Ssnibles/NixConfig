@@ -3,6 +3,7 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Widgets
 import Quickshell.Services.Mpris
 import "Utils.js" as Utils

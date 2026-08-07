@@ -137,7 +137,7 @@ function wifiIcon(signalStrength, connected) {
 }
 
 function focusWindow(patterns, quickshellObj) {
-  if (!patterns) return
+  if (!patterns) return false
   var targets = Array.isArray(patterns) ? patterns : [patterns]
   var cleanTargets = []
   for (var i = 0; i < targets.length; i++) {
@@ -146,33 +146,59 @@ function focusWindow(patterns, quickshellObj) {
       cleanTargets.push(p)
     }
   }
-  if (cleanTargets.length === 0) return
+  if (cleanTargets.length === 0) return false
 
+  // 1. Try native Wayland ToplevelManager first
+  var manager = null
+  if (typeof ToplevelManager !== "undefined") {
+    manager = ToplevelManager
+  } else if (quickshellObj && typeof quickshellObj.ToplevelManager !== "undefined") {
+    manager = quickshellObj.ToplevelManager
+  }
+
+  if (manager && manager.toplevels) {
+    var list = manager.toplevels.values || manager.toplevels
+    var count = list.length !== undefined ? list.length : (list.count !== undefined ? list.count : 0)
+
+    for (var j = 0; j < cleanTargets.length; j++) {
+      var pat = cleanTargets[j]
+      for (var k = 0; k < count; k++) {
+        var win = list[k] || (list.get ? list.get(k) : null)
+        if (!win) continue
+
+        var appId = win.appId ? String(win.appId).toLowerCase() : ""
+        var title = win.title ? String(win.title).toLowerCase() : ""
+
+        if ((appId && appId.indexOf(pat) !== -1) || (title && title.indexOf(pat) !== -1)) {
+          if (typeof win.activate === "function") {
+            win.activate()
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Niri IPC focus-window action (for Niri compositor where zwlr activate is restricted)
   var qs = quickshellObj
   if (!qs && typeof Quickshell !== "undefined") qs = Quickshell
-  if (!qs || typeof qs.execDetached !== "function") return
+  if (qs && typeof qs.execDetached === "function") {
+    var script = 'wins=$(niri msg --json windows 2>/dev/null); ' +
+                 'if [ -z "$wins" ]; then exit 0; fi; ' +
+                 'id=$(echo "$wins" | node -e \'' +
+                 '  const fs = require("fs"); ' +
+                 '  const wins = JSON.parse(fs.readFileSync(0, "utf-8")); ' +
+                 '  const pats = process.argv.slice(2).map(p => p.toLowerCase()); ' +
+                 '  for (const p of pats) { ' +
+                 '    const found = wins.find(w => (w.app_id && w.app_id.toLowerCase().includes(p)) || (w.title && w.title.toLowerCase().includes(p))); ' +
+                 '    if (found) { console.log(found.id); break; } ' +
+                 '  }\' node "$@"); ' +
+                 'if [ -n "$id" ] && [ "$id" != "null" ]; then niri msg action focus-window --id "$id"; fi'
 
-  var script = 'wins=$(niri msg --json windows 2>/dev/null); ' +
-               'if [ -z "$wins" ]; then exit 0; fi; ' +
-               'id=""; ' +
-               'if command -v node >/dev/null 2>&1; then ' +
-               '  id=$(echo "$wins" | node -e \'' +
-               '    const fs = require("fs"); ' +
-               '    const wins = JSON.parse(fs.readFileSync(0, "utf-8")); ' +
-               '    const pats = process.argv.slice(1).map(p => p.toLowerCase()); ' +
-               '    for (const p of pats) { ' +
-               '      const found = wins.find(w => (w.app_id && w.app_id.toLowerCase().includes(p)) || (w.title && w.title.toLowerCase().includes(p))); ' +
-               '      if (found) { console.log(found.id); break; } ' +
-               '    }\' "$@"); ' +
-               'elif command -v jq >/dev/null 2>&1; then ' +
-               '  for p in "$@"; do ' +
-               '    id=$(echo "$wins" | jq -r --arg pat "$p" \'.[] | select((.app_id // "" | ascii_downcase | contains($pat)) or (.title // "" | ascii_downcase | contains($pat))) | .id\' 2>/dev/null | head -n1); ' +
-               '    if [ -n "$id" ] && [ "$id" != "null" ]; then break; fi; ' +
-               '  done; ' +
-               'fi; ' +
-               'if [ -n "$id" ] && [ "$id" != "null" ]; then niri msg action focus-window --id "$id"; fi'
+    qs.execDetached(["sh", "-c", script, "sh"].concat(cleanTargets))
+    return true
+  }
 
-  qs.execDetached(["sh", "-c", script, "sh"].concat(cleanTargets))
+  return false
 }
 
 function goToSource(source, quickshellObj) {

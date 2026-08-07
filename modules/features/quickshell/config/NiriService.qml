@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Io
 import QtQuick
 import "Utils.js" as Utils
