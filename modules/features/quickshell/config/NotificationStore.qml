@@ -428,40 +428,6 @@ Singleton {
     if (desktopEntry) patterns.push(desktopEntry)
     if (iconName) patterns.push(iconName)
 
-    var uniquePatterns = []
-    for (var i = 0; i < patterns.length; i++) {
-      var p = patterns[i].trim()
-      if (p && uniquePatterns.indexOf(p) === -1) {
-        uniquePatterns.push(p)
-      }
-    }
-
-    if (uniquePatterns.length === 0) return
-
-    var escPatterns = []
-    for (var j = 0; j < uniquePatterns.length; j++) {
-      escPatterns.push("'" + uniquePatterns[j].replace(/'/g, "\\'") + "'")
-    }
-
-    var nodeCode =
-      "const { execSync } = require('child_process'); " +
-      "const patterns = [" + escPatterns.join(", ") + "].map(p => p.toLowerCase()); " +
-      "try { " +
-      "  const stdout = execSync('niri msg --json windows', { encoding: 'utf8' }); " +
-      "  const windows = JSON.parse(stdout); " +
-      "  for (const win of windows) { " +
-      "    const appId = (win.app_id || '').toLowerCase(); " +
-      "    const title = (win.title || '').toLowerCase(); " +
-      "    if (patterns.some(p => appId.includes(p) || title.includes(p))) { " +
-      "      execSync('niri msg action focus-window --id ' + win.id); " +
-      "      process.exit(0); " +
-      "    } " +
-      "  } " +
-      "} catch (e) {}"
-
-    var cmd = [
-      "node", "-e", nodeCode
-    ]
-    Quickshell.execDetached(cmd)
+    Utils.focusWindow(patterns)
   }
 }

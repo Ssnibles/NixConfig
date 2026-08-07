@@ -255,12 +255,21 @@ Scope {
             font.pixelSize: 64
             font.italic: true
 
-            Timer {
-              interval: 1000
-              running: lockRoot.locked
-              repeat: true
-              onTriggered: clockText.text = Qt.formatDateTime(new Date(), Config.lockClockFormat)
+            function updateTime() {
+              var d = new Date()
+              clockText.text = Qt.formatDateTime(d, Config.lockClockFormat)
+              clockTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
+              clockTimer.restart()
             }
+
+            Timer {
+              id: clockTimer
+              running: lockRoot.locked
+              repeat: false
+              onTriggered: clockText.updateTime()
+            }
+
+            Component.onCompleted: updateTime()
           }
 
           Text {

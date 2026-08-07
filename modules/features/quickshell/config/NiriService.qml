@@ -76,6 +76,25 @@ QtObject {
     Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", id.toString()])
   }
 
+  function focusWindow(patterns) {
+    if (!patterns) return
+    var targets = Array.isArray(patterns) ? patterns : [patterns]
+    var cleanTargets = []
+    for (var i = 0; i < targets.length; i++) {
+      var p = String(targets[i]).trim().toLowerCase()
+      if (p) cleanTargets.push(p)
+    }
+    if (cleanTargets.length === 0) return
+
+    var script = 'wins=$(niri msg --json windows 2>/dev/null); ' +
+                 'for p in "$@"; do ' +
+                 '  id=$(echo "$wins" | jq -r --arg pat "$p" \'.[] | select((.app_id // "" | ascii_downcase | contains($pat)) or (.title // "" | ascii_downcase | contains($pat))) | .id\' 2>/dev/null | head -n1); ' +
+                 '  if [ -n "$id" ] && [ "$id" != "null" ]; then niri msg action focus-window --id "$id"; break; fi; ' +
+                 'done'
+
+    Quickshell.execDetached(["sh", "-c", script, "sh"].concat(cleanTargets))
+  }
+
   function workspacesForOutput(outputName) {
     var result = []
     var wsList = root.allWorkspaces

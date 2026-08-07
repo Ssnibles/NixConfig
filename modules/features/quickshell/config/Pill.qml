@@ -14,19 +14,7 @@ Rectangle {
   antialiasing: true
 
   default property alias data: contentItem.data
-  implicitWidth: {
-    var maxW = 0
-    var children = contentItem.children
-    for (var i = 0; i < children.length; i++) {
-      var child = children[i]
-      if (!child || !child.visible) continue
-      var iw = child.implicitWidth
-      if (iw !== undefined && iw > 0) {
-        if (iw > maxW) maxW = iw
-      }
-    }
-    return Math.max(maxW + padding * 2, height)
-  }
+  implicitWidth: Math.max(contentItem.childrenRect.width + padding * 2, height)
 
   Item {
     id: contentItem

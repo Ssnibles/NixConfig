@@ -33,6 +33,7 @@
           zip
           unzip
           croc
+          tuxedo-rs
           # fish plugins (auto-sourced via fish vendor dirs)
           fishPlugins.fzf-fish # fzf keybindings + fuzzy search (C-r history, C-Alt-f files, ...)
           fishPlugins.autopair # auto-close quotes / brackets as you type

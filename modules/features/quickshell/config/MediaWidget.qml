@@ -70,25 +70,7 @@ Item {
   function focusMediaPlayer() {
     if (!root.mediaPlayer) return
     var entry = root.mediaPlayer.desktopEntry || root.mediaPlayer.name || ""
-    if (!entry) return
-    
-    var nodeCode =
-      "const { execSync } = require('child_process'); " +
-      "const pattern = '" + entry.replace(/'/g, "\\'") + "'.toLowerCase(); " +
-      "try { " +
-      "  const stdout = execSync('niri msg --json windows', { encoding: 'utf8' }); " +
-      "  const windows = JSON.parse(stdout); " +
-      "  for (const win of windows) { " +
-      "    const appId = (win.app_id || '').toLowerCase(); " +
-      "    const title = (win.title || '').toLowerCase(); " +
-      "    if (appId.includes(pattern) || title.includes(pattern)) { " +
-      "      execSync('niri msg action focus-window --id ' + win.id); " +
-      "      process.exit(0); " +
-      "    } " +
-      "  } " +
-      "} catch (e) {}"
-
-    Quickshell.execDetached(["node", "-e", nodeCode])
+    if (entry) Utils.focusWindow(entry)
   }
 
   // --- UI Layout ---

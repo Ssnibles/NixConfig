@@ -14,7 +14,6 @@ PanelWindow {
   property bool recentlyActive: false
   property var cachedActive: null
   property real cardOpacity: 0
-  property int _repositionTick: 0
 
   readonly property bool hovered: tipLoader.item !== null && cardHover.hovered
 
@@ -25,7 +24,6 @@ PanelWindow {
       recentTimer.stop()
       fadeTimer.stop()
       cardOpacity = 1
-      repositionTimer.restart()
     } else {
       if (!root.hovered) {
         // Keep the tooltip fully visible during the grace window so the cursor
@@ -79,12 +77,6 @@ PanelWindow {
     }
   }
 
-  Timer {
-    id: repositionTimer
-    interval: 60
-    onTriggered: root._repositionTick++
-  }
-
   Behavior on cardOpacity { NumberAnimation { duration: Config.popupFadeMs; easing.type: Easing.OutQuad } }
 
   visible: cachedActive !== null
@@ -118,14 +110,12 @@ PanelWindow {
 
     // Vertical centre of the widget that opened the popup, in window coords.
     readonly property real targetCenterY: {
-      var _ = root._repositionTick
       if (!src || !src.target) return 0
       var p = src.target.mapToItem(null, 0, src.target.height / 2)
       return p ? p.y : 0
     }
 
     y: {
-      var _ = root._repositionTick
       if (!src) return 0
       var h = item ? item.height : 0
       return Math.round(Math.max(6, Math.min(targetCenterY - h / 2, root.height - h - 6)))

@@ -37,14 +37,20 @@ function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
-var _stripCache = ({})
+var _stripCache = {}
+var _stripCacheCount = 0
 
 function stripMarkup(text) {
   if (!text || text.length === 0) return ""
   var cached = _stripCache[text]
   if (cached !== undefined) return cached
   var result = text.replace(/<[^>]*>/g, "")
-  if (Object.keys(_stripCache).length < 100) _stripCache[text] = result
+  if (_stripCacheCount > 100) {
+    _stripCache = {}
+    _stripCacheCount = 0
+  }
+  _stripCache[text] = result
+  _stripCacheCount++
   return result
 }
 
@@ -101,20 +107,25 @@ function volumeIcon(volPct, muted) {
   return "\u{F057E}"
 }
 
+var _batteryGlyphs = [
+  "\u{F007A}", // <= 10%
+  "\u{F007B}", // <= 20%
+  "\u{F007C}", // <= 30%
+  "\u{F007D}", // <= 40%
+  "\u{F007E}", // <= 50%
+  "\u{F007F}", // <= 60%
+  "\u{F0080}", // <= 70%
+  "\u{F0042}", // <= 80%
+  "\u{F0082}", // <= 90%
+  "\u{F0079}"  // > 90%
+]
+
 function batteryIcon(pct, charging, plugged, present) {
   if (!present) return ""
   if (charging) return "\u{F0084}"
   if (plugged) return "\u{F06A5}"
-  if (pct <= 10) return "\u{F007A}"
-  if (pct <= 20) return "\u{F007B}"
-  if (pct <= 30) return "\u{F007C}"
-  if (pct <= 40) return "\u{F007D}"
-  if (pct <= 50) return "\u{F007E}"
-  if (pct <= 60) return "\u{F007F}"
-  if (pct <= 70) return "\u{F0080}"
-  if (pct <= 80) return "\u{F0042}"
-  if (pct <= 90) return "\u{F0082}"
-  return "\u{F0079}"
+  var idx = Math.min(9, Math.max(0, Math.ceil(pct / 10) - 1))
+  return _batteryGlyphs[idx]
 }
 
 function wifiIcon(signalStrength, connected) {
@@ -123,4 +134,25 @@ function wifiIcon(signalStrength, connected) {
   if (signalStrength < 0.4) return "\u{F0922}"
   if (signalStrength < 0.6) return "\u{F0925}"
   return "\u{F0928}"
+}
+
+function focusWindow(patterns) {
+  if (!patterns) return
+  var targets = Array.isArray(patterns) ? patterns : [patterns]
+  var cleanTargets = []
+  for (var i = 0; i < targets.length; i++) {
+    var p = String(targets[i]).trim().toLowerCase()
+    if (p && cleanTargets.indexOf(p) === -1) {
+      cleanTargets.push(p)
+    }
+  }
+  if (cleanTargets.length === 0) return
+
+  var script = 'wins=$(niri msg --json windows 2>/dev/null); ' +
+               'for p in "$@"; do ' +
+               '  id=$(echo "$wins" | jq -r --arg pat "$p" \'.[] | select((.app_id // "" | ascii_downcase | contains($pat)) or (.title // "" | ascii_downcase | contains($pat))) | .id\' 2>/dev/null | head -n1); ' +
+               '  if [ -n "$id" ] && [ "$id" != "null" ]; then niri msg action focus-window --id "$id"; break; fi; ' +
+               'done'
+
+  Quickshell.execDetached(["sh", "-c", script, "sh"].concat(cleanTargets))
 }

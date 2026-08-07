@@ -186,7 +186,7 @@ Scope {
       // Main Card container
       Rectangle {
         id: mainCard
-        width: 396
+        width: 500
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.right: parent.right
@@ -233,12 +233,21 @@ Scope {
                 font.bold: true
                 font.italic: true
 
-                Timer {
-                  interval: 1000
-                  running: panel.panelOpacity > 0
-                  repeat: true
-                  onTriggered: headerTime.text = Qt.formatDateTime(new Date(), "hh:mm")
+                function updateTime() {
+                  var d = new Date()
+                  headerTime.text = Qt.formatDateTime(d, "hh:mm")
+                  headerTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
+                  headerTimer.restart()
                 }
+
+                Timer {
+                  id: headerTimer
+                  running: panel.panelOpacity > 0
+                  repeat: false
+                  onTriggered: headerTime.updateTime()
+                }
+
+                Component.onCompleted: updateTime()
               }
 
               Text {
@@ -330,6 +339,7 @@ Scope {
 
               // Battery Pill
               Rectangle {
+                id: ccBatPill
                 property var batDevice: {
                   var count = UPower.devices.count
                   for (var i = 0; i < count; i++) {
@@ -338,14 +348,7 @@ Scope {
                   }
                   return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null
                 }
-                property bool batPresent: {
-                  var count = UPower.devices.count
-                  for (var i = 0; i < count; i++) {
-                    var d = UPower.devices.get(i)
-                    if (d.isLaptopBattery && d.ready) return true
-                  }
-                  return false
-                }
+                property bool batPresent: batDevice !== null && batDevice.isLaptopBattery
                 property int batPct: batDevice ? Math.round(batDevice.percentage * 100) : 0
                 property bool batCharging: batDevice && batDevice.state === UPowerDeviceState.Charging
                 property bool batPlugged: batDevice && batDevice.state === UPowerDeviceState.FullyCharged
@@ -364,14 +367,14 @@ Scope {
                   anchors.centerIn: parent
                   spacing: 4
                   Text {
-                    text: Utils.batteryIcon(parent.parent.batPct, parent.parent.batCharging, parent.parent.batPlugged, parent.parent.batPresent)
-                    color: parent.parent.batCharging ? Colors.green : Colors.accent
+                    text: Utils.batteryIcon(ccBatPill.batPct, ccBatPill.batCharging, ccBatPill.batPlugged, ccBatPill.batPresent)
+                    color: ccBatPill.batCharging ? Colors.green : Colors.accent
                     font.family: Config.monoFont
                     font.pixelSize: 12
                     anchors.verticalCenter: parent.verticalCenter
                   }
                   Text {
-                    text: parent.parent.batPct + "%"
+                    text: ccBatPill.batPct + "%"
                     color: Colors.fg
                     font.family: Config.sansFont
                     font.pixelSize: 12
@@ -586,7 +589,7 @@ Scope {
 
                   Text {
                     visible: !coverArt.visible
-                    text: "󰎆"
+                    text: "󰎇"
                     color: Colors.fgDim
                     font.family: Config.monoFont
                     font.pixelSize: 22
