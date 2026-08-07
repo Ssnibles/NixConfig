@@ -52,8 +52,6 @@ Pill {
   // Process to check bluetooth status via bluetoothctl
   Process {
     id: showProc
-    command: ["bluetoothctl", "show"]
-    running: true
     stdout: StdioCollector {
       onDataChanged: {
         var text = this.text
@@ -97,11 +95,22 @@ Pill {
     }
   }
 
-  Timer {
-    id: pollTimer
-    interval: 4000
+  // Persistent monitor process to receive bluetoothctl event output without polling
+  Process {
+    id: monitorProc
+    command: ["bluetoothctl"]
     running: true
-    repeat: true
+    stdout: StdioCollector {
+      onDataChanged: {
+        refreshTimer.restart()
+      }
+    }
+  }
+
+  Timer {
+    id: refreshTimer
+    interval: 150
+    repeat: false
     onTriggered: {
       showProc.exec(["bluetoothctl", "show"])
     }
@@ -114,6 +123,10 @@ Pill {
     onTriggered: {
       showProc.exec(["bluetoothctl", "show"])
     }
+  }
+
+  Component.onCompleted: {
+    showProc.exec(["bluetoothctl", "show"])
   }
 
   // Bar mode content (centered icon, pixelSize 15)

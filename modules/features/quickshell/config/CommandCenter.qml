@@ -11,163 +11,159 @@ import QtQuick.Layouts
 import QtQuick.Effects
 import "Utils.js" as Utils
 
-Variants {
-  id: root
-  model: Quickshell.screens
+Scope {
+  id: ccScope
 
-  delegate: PanelWindow {
-    id: panel
-    required property var modelData
-    screen: modelData
+  property bool closing: false
+  property bool active: Config.commandCenterVisible || ccScope.closing
 
-    // Right side top-to-bottom placement
-    anchors.top: true
-    anchors.bottom: true
-    anchors.right: true
+  IpcHandler {
+    target: "command-center"
+    function toggle(): void {
+      Config.commandCenterVisible = !Config.commandCenterVisible
+    }
+  }
 
-    implicitWidth: 404
-    color: "transparent"
-    visible: false
+  Connections {
+    target: Config
+    function onCommandCenterVisibleChanged() {
+      if (Config.commandCenterVisible) {
+        ccScope.closing = false
+      } else if (ccScope.active) {
+        ccScope.closing = true
+      }
+    }
+  }
 
-    // Make sure it sits above windows and does not disrupt layout
-    aboveWindows: true
-    focusable: false
-    exclusionMode: ExclusionMode.Ignore
+  Variants {
+    id: root
+    model: ccScope.active ? Quickshell.screens : []
 
-    // State for transition animation
-    property real panelOpacity: 0
-    property real panelSlide: 60
-    property bool _closeRequested: false
+    delegate: PanelWindow {
+      id: panel
+      required property var modelData
+      screen: modelData
 
-    // Brightness state
-    property real brightnessPct: 0.5
-    property bool brightnessAvailable: false
+      // Right side top-to-bottom placement
+      anchors.top: true
+      anchors.bottom: true
+      anchors.right: true
 
-    Process {
-      id: brightnessGetProc
-      command: ["brightnessctl", "-m"]
-      stdout: StdioCollector {
-        onDataChanged: {
-          var lines = this.text.trim().split("\n")
-          for (var i = 0; i < lines.length; i++) {
-            var parts = lines[i].split(",")
-            if (parts.length >= 4) {
-              var deviceClass = parts[1]
-              if (deviceClass === "backlight") {
-                var pctStr = parts[3].replace("%", "")
-                var pct = parseInt(pctStr) / 100.0
-                if (!isNaN(pct)) {
-                  panel.brightnessPct = pct
-                  panel.brightnessAvailable = true
-                  return
+      implicitWidth: 404
+      color: "transparent"
+      visible: true
+
+      // Make sure it sits above windows and does not disrupt layout
+      aboveWindows: true
+      focusable: false
+      exclusionMode: ExclusionMode.Ignore
+
+      // State for transition animation
+      property real panelOpacity: 0
+      property real panelSlide: 60
+
+      // Brightness state
+      property real brightnessPct: 0.5
+      property bool brightnessAvailable: false
+
+      Process {
+        id: brightnessGetProc
+        command: ["brightnessctl", "-m"]
+        stdout: StdioCollector {
+          onDataChanged: {
+            var lines = this.text.trim().split("\n")
+            for (var i = 0; i < lines.length; i++) {
+              var parts = lines[i].split(",")
+              if (parts.length >= 4) {
+                var deviceClass = parts[1]
+                if (deviceClass === "backlight") {
+                  var pctStr = parts[3].replace("%", "")
+                  var pct = parseInt(pctStr) / 100.0
+                  if (!isNaN(pct)) {
+                    panel.brightnessPct = pct
+                    panel.brightnessAvailable = true
+                    return
+                  }
                 }
               }
             }
+            panel.brightnessAvailable = false
           }
-          panel.brightnessAvailable = false
         }
       }
-    }
 
-    onVisibleChanged: {
-      if (visible) {
-        _closeRequested = false
-        fadeOutAnim.stop()
+      Component.onCompleted: {
         panelOpacity = 0
         panelSlide = 60
         fadeInAnim.start()
         brightnessGetProc.exec(["brightnessctl", "-m"])
-      } else {
-        panelOpacity = 0
-        panelSlide = 60
-        _closeRequested = false
       }
-    }
 
-    Connections {
-      target: Config
-      function onCommandCenterVisibleChanged() {
-        if (Config.commandCenterVisible) {
-          panel.visible = true
-        } else {
-          if (panel.visible && !panel._closeRequested) {
-            panel._closeRequested = true
+      Connections {
+        target: ccScope
+        function onClosingChanged() {
+          if (ccScope.closing) {
+            fadeInAnim.stop()
             fadeOutAnim.start()
+          } else if (Config.commandCenterVisible) {
+            fadeOutAnim.stop()
+            fadeInAnim.start()
           }
         }
       }
-    }
 
-    SequentialAnimation {
-      id: fadeInAnim
-      PauseAnimation { duration: 1 }
-      ParallelAnimation {
-        NumberAnimation { target: panel; property: "panelOpacity"; to: 1; duration: 250; easing.type: Easing.OutCubic }
-        NumberAnimation { target: panel; property: "panelSlide"; to: 0; duration: 250; easing.type: Easing.OutCubic }
-      }
-    }
-
-    SequentialAnimation {
-      id: fadeOutAnim
-      ParallelAnimation {
-        NumberAnimation { target: panel; property: "panelOpacity"; to: 0; duration: 180; easing.type: Easing.OutCubic }
-        NumberAnimation { target: panel; property: "panelSlide"; to: 60; duration: 180; easing.type: Easing.OutCubic }
-      }
-      onFinished: {
-        if (panel._closeRequested) {
-          panel.visible = false
-          panel._closeRequested = false
+      SequentialAnimation {
+        id: fadeInAnim
+        PauseAnimation { duration: 1 }
+        ParallelAnimation {
+          NumberAnimation { target: panel; property: "panelOpacity"; to: 1; duration: 250; easing.type: Easing.OutCubic }
+          NumberAnimation { target: panel; property: "panelSlide"; to: 0; duration: 250; easing.type: Easing.OutCubic }
         }
       }
-    }
 
-    IpcHandler {
-      target: "command-center"
-      function toggle(): void {
-        Config.commandCenterVisible = !Config.commandCenterVisible
-      }
-    }
-
-    // Audio tracking
-    property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
-    PwObjectTracker { objects: panel.volNodes }
-    property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
-    property real volPct: volInfo ? volInfo.volume : 0
-    property bool volMuted: volInfo ? volInfo.muted : false
-
-    // Debounce audio volume setting to avoid spamming PipeWire
-    Timer {
-      id: volSetTimer
-      interval: 50
-      repeat: false
-      property real targetVal: 0
-      onTriggered: {
-        if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-          Pipewire.defaultAudioSink.audio.volume = targetVal
+      SequentialAnimation {
+        id: fadeOutAnim
+        ParallelAnimation {
+          NumberAnimation { target: panel; property: "panelOpacity"; to: 0; duration: 180; easing.type: Easing.OutCubic }
+          NumberAnimation { target: panel; property: "panelSlide"; to: 60; duration: 180; easing.type: Easing.OutCubic }
+        }
+        onFinished: {
+          if (ccScope.closing) {
+            ccScope.closing = false
+          }
         }
       }
-    }
 
-    // Debounce brightness setting
-    Timer {
-      id: brightnessSetTimer
-      interval: 50
-      repeat: false
-      property real targetVal: 0
-      onTriggered: {
-        Quickshell.execDetached(["brightnessctl", "set", Math.round(targetVal * 100) + "%"])
+      // Audio tracking
+      property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
+      PwObjectTracker { objects: panel.volNodes }
+      property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
+      property real volPct: volInfo ? volInfo.volume : 0
+      property bool volMuted: volInfo ? volInfo.muted : false
+
+      // Debounce audio volume setting to avoid spamming PipeWire
+      Timer {
+        id: volSetTimer
+        interval: 50
+        repeat: false
+        property real targetVal: 0
+        onTriggered: {
+          if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+            Pipewire.defaultAudioSink.audio.volume = targetVal
+          }
+        }
       }
-    }
 
-    Loader {
-      id: contentLoader
-      anchors.fill: parent
-      active: panel.visible || panel._closeRequested
-      sourceComponent: ccContentComponent
-    }
-
-    Component {
-      id: ccContentComponent
+      // Debounce brightness setting
+      Timer {
+        id: brightnessSetTimer
+        interval: 50
+        repeat: false
+        property real targetVal: 0
+        onTriggered: {
+          Quickshell.execDetached(["brightnessctl", "set", Math.round(targetVal * 100) + "%"])
+        }
+      }
 
       // Main Card container
       Rectangle {

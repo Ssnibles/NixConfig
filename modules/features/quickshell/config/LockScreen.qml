@@ -11,77 +11,107 @@ import "Utils.js" as Utils
 Scope {
   id: lockScope
 
+  property bool active: false
+
   // Expose lock/unlock via IPC at Scope level so target exists when unlocked
   IpcHandler {
     target: "lockscreen"
 
     function lock(): void {
-      lockRoot.locked = true
+      lockScope.active = true
     }
 
     function unlock(): void {
-      lockRoot.locked = false
+      lockScope.active = false
     }
 
     function toggle(): void {
-      lockRoot.locked = !lockRoot.locked
+      lockScope.active = !lockScope.active
     }
   }
 
-  WlSessionLock {
-    id: lockRoot
+  Loader {
+    id: lockLoader
+    active: lockScope.active
+    sourceComponent: lockComponent
+  }
 
-  WlSessionLockSurface {
-    id: surface
-    color: Colors.bg
+  Component {
+    id: lockComponent
 
-    // Core state properties for authentication
-    property bool authenticating: false
-    property string errorMessage: ""
-    property real shakeOffset: 0
-    property bool capsLockOn: false
+    WlSessionLock {
+      id: lockRoot
+      locked: true
 
-    // PAM Service Context
-    PamContext {
-      id: pam
-      config: "login"
-      user: Quickshell.env("USER") || ""
-
-      onCompleted: function(result) {
-        surface.authenticating = false
-        if (result === PamResult.Success) {
-          surface.errorMessage = ""
-          passInput.text = ""
-          lockRoot.locked = false
-        } else {
-          surface.errorMessage = "Authentication failed. Try again."
-          passInput.text = ""
-          shakeAnimation.start()
-          pam.start()
-          mainBg.forceActiveFocus()
+      Connections {
+        target: lockRoot
+        function onLockedChanged() {
+          if (!lockRoot.locked) {
+            lockScope.active = false
+          }
         }
       }
 
-      onError: function(err) {
-        surface.authenticating = false
-        surface.errorMessage = "PAM Error"
-        shakeAnimation.start()
-        mainBg.forceActiveFocus()
-      }
-    }
+      WlSessionLockSurface {
+        id: surface
+        color: Colors.bg
 
-    Connections {
-      target: lockRoot
-      function onLockedChanged() {
-        if (lockRoot.locked) {
+        // Core state properties for authentication
+        property bool authenticating: false
+        property string errorMessage: ""
+        property real shakeOffset: 0
+        property bool capsLockOn: false
+
+        Component.onCompleted: {
           surface.errorMessage = ""
-          passInput.text = ""
           surface.authenticating = false
           pam.start()
           mainBg.forceActiveFocus()
         }
-      }
-    }
+
+        // PAM Service Context
+        PamContext {
+          id: pam
+          config: "login"
+          user: Quickshell.env("USER") || ""
+
+          onCompleted: function(result) {
+            surface.authenticating = false
+            if (result === PamResult.Success) {
+              surface.errorMessage = ""
+              passInput.text = ""
+              lockRoot.locked = false
+            } else {
+              surface.errorMessage = "Authentication failed. Try again."
+              passInput.text = ""
+              shakeAnimation.start()
+              pam.start()
+              mainBg.forceActiveFocus()
+            }
+          }
+
+          onError: function(err) {
+            surface.authenticating = false
+            surface.errorMessage = "PAM Error"
+            shakeAnimation.start()
+            mainBg.forceActiveFocus()
+          }
+        }
+
+        Connections {
+          target: lockRoot
+          function onLockedChanged() {
+            if (lockRoot.locked) {
+              surface.errorMessage = ""
+              passInput.text = ""
+              surface.authenticating = false
+              pam.start()
+              mainBg.forceActiveFocus()
+            } else {
+              lockScope.active = false
+            }
+          }
+        }
 
     // Shake animation for error feedback
     SequentialAnimation {
