@@ -12,6 +12,10 @@ Scope {
   id: lockScope
 
   property bool active: false
+  property bool authenticating: false
+  property string errorMessage: ""
+  property int shakeTrigger: 0
+  property string pendingPassword: ""
 
   // Expose lock/unlock via IPC at Scope level so target exists when unlocked
   IpcHandler {
@@ -22,11 +26,73 @@ Scope {
     }
 
     function unlock(): void {
-      lockScope.active = false
+      lockScope.unlockSession()
     }
 
     function toggle(): void {
-      lockScope.active = !lockScope.active
+      if (lockScope.active) {
+        lockScope.unlockSession()
+      } else {
+        lockScope.active = true
+      }
+    }
+  }
+
+  function unlockSession(): void {
+    if (lockLoader.item && lockLoader.item.locked) {
+      lockLoader.item.locked = false
+    } else {
+      lockScope.active = false
+    }
+  }
+
+  // Single PAM Service Context for the lock session across all screens
+  PamContext {
+    id: pam
+    config: "login"
+    user: Quickshell.env("USER") || ""
+
+    onResponseRequiredChanged: {
+      if (responseRequired && lockScope.pendingPassword.length > 0) {
+        respond(lockScope.pendingPassword)
+        lockScope.pendingPassword = ""
+      }
+    }
+
+    onCompleted: function(result) {
+      lockScope.authenticating = false
+      lockScope.pendingPassword = ""
+      if (result === PamResult.Success) {
+        lockScope.errorMessage = ""
+        lockScope.unlockSession()
+      } else {
+        lockScope.errorMessage = "Authentication failed. Try again."
+        lockScope.shakeTrigger++
+        pam.start()
+      }
+    }
+
+    onError: function(err) {
+      lockScope.authenticating = false
+      lockScope.pendingPassword = ""
+      lockScope.errorMessage = "PAM Error"
+      lockScope.shakeTrigger++
+      pam.start()
+    }
+  }
+
+  function submitPassword(password) {
+    if (!password || lockScope.authenticating) return
+    lockScope.authenticating = true
+    lockScope.errorMessage = ""
+
+    if (pam.responseRequired) {
+      pam.respond(password)
+    } else {
+      lockScope.pendingPassword = password
+      if (!pam.active) {
+        pam.start()
+      }
     }
   }
 
@@ -34,6 +100,14 @@ Scope {
     id: lockLoader
     active: lockScope.active
     sourceComponent: lockComponent
+    onActiveChanged: {
+      if (lockLoader.active) {
+        lockScope.errorMessage = ""
+        lockScope.authenticating = false
+        lockScope.pendingPassword = ""
+        pam.start()
+      }
+    }
   }
 
   Component {
@@ -43,90 +117,21 @@ Scope {
       id: lockRoot
       locked: true
 
-      property bool authenticating: false
-      property string errorMessage: ""
-      property int shakeTrigger: 0
-      property string pendingPassword: ""
-
-      Connections {
-        target: lockRoot
-        function onLockedChanged() {
-          if (!lockRoot.locked) {
-            lockScope.active = false
-          }
-        }
-      }
-
-      // Single PAM Service Context for the lock session across all screens
-      PamContext {
-        id: pam
-        config: "login"
-        user: Quickshell.env("USER") || ""
-
-        onResponseRequiredChanged: {
-          if (responseRequired && lockRoot.pendingPassword.length > 0) {
-            respond(lockRoot.pendingPassword)
-            lockRoot.pendingPassword = ""
-          }
-        }
-
-        onCompleted: function(result) {
-          lockRoot.authenticating = false
-          lockRoot.pendingPassword = ""
-          if (result === PamResult.Success) {
-            lockRoot.errorMessage = ""
-            lockRoot.locked = false
-          } else {
-            lockRoot.errorMessage = "Authentication failed. Try again."
-            lockRoot.shakeTrigger++
-            pam.start()
-          }
-        }
-
-        onError: function(err) {
-          lockRoot.authenticating = false
-          lockRoot.pendingPassword = ""
-          lockRoot.errorMessage = "PAM Error"
-          lockRoot.shakeTrigger++
-          pam.start()
-        }
-      }
-
-      function submitPassword(password) {
-        if (!password || lockRoot.authenticating) return
-        lockRoot.authenticating = true
-        lockRoot.errorMessage = ""
-
-        if (pam.responseRequired) {
-          pam.respond(password)
-        } else {
-          lockRoot.pendingPassword = password
-          if (!pam.active) {
-            pam.start()
-          }
-        }
-      }
-
-      Component.onCompleted: {
-        lockRoot.errorMessage = ""
-        lockRoot.authenticating = false
-        lockRoot.pendingPassword = ""
-        pam.start()
-      }
-
       WlSessionLockSurface {
         id: surface
         color: Colors.bg
 
-        BackgroundEffect.blurRegion: Config.lockBlurPercentage > 0 ? blurRegion : null
-
-        Region {
-          id: blurRegion
-          item: mainBg
+        Connections {
+          target: lockRoot
+          function onLockedChanged() {
+            if (!lockRoot.locked) {
+              lockScope.active = false
+            }
+          }
         }
 
-        readonly property bool authenticating: lockRoot.authenticating
-        readonly property string errorMessage: lockRoot.errorMessage
+        readonly property bool authenticating: lockScope.authenticating
+        readonly property string errorMessage: lockScope.errorMessage
         property real shakeOffset: 0
         property bool capsLockOn: false
 
@@ -140,7 +145,7 @@ Scope {
         }
 
         Connections {
-          target: lockRoot
+          target: lockScope
           function onShakeTriggerChanged() {
             if (surface.isPrimaryScreen) {
               passInput.text = ""
@@ -430,7 +435,7 @@ Scope {
 
                   onAccepted: {
                     if (passInput.text.length > 0 && !surface.authenticating) {
-                      lockRoot.submitPassword(passInput.text)
+                      lockScope.submitPassword(passInput.text)
                       passInput.text = ""
                     }
                   }
@@ -616,3 +621,6 @@ Scope {
 }
 }
 }
+
+
+
