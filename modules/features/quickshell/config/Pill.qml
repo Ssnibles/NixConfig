@@ -14,7 +14,19 @@ Rectangle {
   antialiasing: true
 
   default property alias data: contentItem.data
-  implicitWidth: Math.max(contentItem.childrenRect.width + padding * 2, height)
+  implicitWidth: {
+    var maxW = 0
+    var children = contentItem.children
+    for (var i = 0; i < children.length; i++) {
+      var child = children[i]
+      if (!child.visible) continue
+      var str = child.toString()
+      if (str.indexOf("MouseArea") !== -1 || str.indexOf("Process") !== -1 || str.indexOf("Timer") !== -1) continue
+      var w = (child.implicitWidth !== undefined && child.implicitWidth > 0) ? child.implicitWidth : child.width
+      if (w > maxW) maxW = w
+    }
+    return Math.max(maxW + padding * 2, height)
+  }
 
   Item {
     id: contentItem

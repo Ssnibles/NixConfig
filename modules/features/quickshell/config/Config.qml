@@ -55,11 +55,13 @@ Singleton {
   readonly property int notifSpacing: 8
 
   // --- Lock Screen --------------------------------------------------------
-  readonly property string lockAvatarPath: Quickshell.configDir + "/assets/avatar.png"
+  readonly property string lockAvatarPath: Quickshell.shellDir + "/assets/avatar.png"
   readonly property string lockFallbackIcon: "󰀉"
   readonly property string lockWallpaperPath: "file://" + (Quickshell.env("HOME") || "/home/josh") + "/Pictures/wallpaper"
   readonly property string lockClockFormat: "hh:mm"
   readonly property string lockDateFormat: "dddd, MMMM d"
   readonly property int lockCardRadius: 12
   readonly property int lockInputRadius: 10
+  readonly property real lockBackgroundDimming: 0.8
+  readonly property real lockBlurPercentage: 0.5
 }

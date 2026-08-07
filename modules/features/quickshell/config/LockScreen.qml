@@ -43,6 +43,11 @@ Scope {
       id: lockRoot
       locked: true
 
+      property bool authenticating: false
+      property string errorMessage: ""
+      property int shakeTrigger: 0
+      property string pendingPassword: ""
+
       Connections {
         target: lockRoot
         function onLockedChanged() {
@@ -52,63 +57,95 @@ Scope {
         }
       }
 
+      // Single PAM Service Context for the lock session across all screens
+      PamContext {
+        id: pam
+        config: "login"
+        user: Quickshell.env("USER") || ""
+
+        onResponseRequiredChanged: {
+          if (responseRequired && lockRoot.pendingPassword.length > 0) {
+            respond(lockRoot.pendingPassword)
+            lockRoot.pendingPassword = ""
+          }
+        }
+
+        onCompleted: function(result) {
+          lockRoot.authenticating = false
+          lockRoot.pendingPassword = ""
+          if (result === PamResult.Success) {
+            lockRoot.errorMessage = ""
+            lockRoot.locked = false
+          } else {
+            lockRoot.errorMessage = "Authentication failed. Try again."
+            lockRoot.shakeTrigger++
+            pam.start()
+          }
+        }
+
+        onError: function(err) {
+          lockRoot.authenticating = false
+          lockRoot.pendingPassword = ""
+          lockRoot.errorMessage = "PAM Error"
+          lockRoot.shakeTrigger++
+          pam.start()
+        }
+      }
+
+      function submitPassword(password) {
+        if (!password || lockRoot.authenticating) return
+        lockRoot.authenticating = true
+        lockRoot.errorMessage = ""
+
+        if (pam.responseRequired) {
+          pam.respond(password)
+        } else {
+          lockRoot.pendingPassword = password
+          if (!pam.active) {
+            pam.start()
+          }
+        }
+      }
+
+      Component.onCompleted: {
+        lockRoot.errorMessage = ""
+        lockRoot.authenticating = false
+        lockRoot.pendingPassword = ""
+        pam.start()
+      }
+
       WlSessionLockSurface {
         id: surface
         color: Colors.bg
 
-        // Core state properties for authentication
-        property bool authenticating: false
-        property string errorMessage: ""
+        BackgroundEffect.blurRegion: Config.lockBlurPercentage > 0 ? blurRegion : null
+
+        Region {
+          id: blurRegion
+          item: mainBg
+        }
+
+        readonly property bool authenticating: lockRoot.authenticating
+        readonly property string errorMessage: lockRoot.errorMessage
         property real shakeOffset: 0
         property bool capsLockOn: false
 
+        // Check if this screen is the main interactive screen (first screen in list)
+        property bool isPrimaryScreen: surface.screen === undefined || surface.screen === Quickshell.screens[0]
+
         Component.onCompleted: {
-          surface.errorMessage = ""
-          surface.authenticating = false
-          pam.start()
-          mainBg.forceActiveFocus()
-        }
-
-        // PAM Service Context
-        PamContext {
-          id: pam
-          config: "login"
-          user: Quickshell.env("USER") || ""
-
-          onCompleted: function(result) {
-            surface.authenticating = false
-            if (result === PamResult.Success) {
-              surface.errorMessage = ""
-              passInput.text = ""
-              lockRoot.locked = false
-            } else {
-              surface.errorMessage = "Authentication failed. Try again."
-              passInput.text = ""
-              shakeAnimation.start()
-              pam.start()
-              mainBg.forceActiveFocus()
-            }
-          }
-
-          onError: function(err) {
-            surface.authenticating = false
-            surface.errorMessage = "PAM Error"
-            shakeAnimation.start()
+          if (surface.isPrimaryScreen) {
             mainBg.forceActiveFocus()
           }
         }
 
         Connections {
           target: lockRoot
-          function onLockedChanged() {
-            if (lockRoot.locked) {
-              surface.errorMessage = ""
+          function onShakeTriggerChanged() {
+            if (surface.isPrimaryScreen) {
               passInput.text = ""
-              surface.authenticating = false
-              pam.start()
+              shakeAnimation.start()
               mainBg.forceActiveFocus()
-            } else {
-              lockScope.active = false
             }
           }
         }
@@ -162,15 +199,24 @@ Scope {
 
       // Wallpaper background layer (configurable via Config.lockWallpaperPath)
       Image {
+        id: lockBgImage
         anchors.fill: parent
         source: Config.lockWallpaperPath
         fillMode: Image.PreserveAspectCrop
         smooth: true
 
-        // Translucent dark overlay to elevate UI contrast
+        layer.enabled: Config.lockBlurPercentage > 0
+        layer.effect: MultiEffect {
+          blurEnabled: Config.lockBlurPercentage > 0
+          blur: Config.lockBlurPercentage
+          blurMax: 64
+        }
+
+        // Translucent dark overlay to elevate UI contrast (configurable via Config.lockBackgroundDimming)
         Rectangle {
           anchors.fill: parent
-          color: "#CC000000"
+          color: "black"
+          opacity: Config.lockBackgroundDimming
         }
       }
 
@@ -384,21 +430,8 @@ Scope {
 
                   onAccepted: {
                     if (passInput.text.length > 0 && !surface.authenticating) {
-                      surface.authenticating = true
-                      surface.errorMessage = ""
-                      if (!pam.active) pam.start()
-                      if (pam.responseRequired) {
-                        pam.respond(passInput.text)
-                      }
-                    }
-                  }
-
-                  Connections {
-                    target: pam
-                    function onResponseRequiredChanged() {
-                      if (pam.responseRequired && surface.authenticating && passInput.text.length > 0) {
-                        pam.respond(passInput.text)
-                      }
+                      lockRoot.submitPassword(passInput.text)
+                      passInput.text = ""
                     }
                   }
                 }
@@ -580,5 +613,6 @@ Scope {
       }
     }
   }
+}
 }
 }
