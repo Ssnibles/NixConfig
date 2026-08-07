@@ -23,6 +23,7 @@
             nodejs
             cargo
             gcc
+            go
             yazi
             lazygit
             rclone

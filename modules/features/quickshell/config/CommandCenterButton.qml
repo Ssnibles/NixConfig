@@ -12,7 +12,7 @@ Pill {
     text: "󰘳" // Dashboard/Control Center icon
     color: (hoverArea.containsMouse || Config.commandCenterVisible) ? Colors.accent : Colors.fg
     font.family: Config.monoFont
-    font.pixelSize: 12
+    font.pixelSize: 16
     anchors.centerIn: parent
   }
 

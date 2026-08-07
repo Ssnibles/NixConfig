@@ -97,7 +97,7 @@ Pill {
       text: root.batIcon
       color: root.batColor
       font.family: root.uiFont
-      font.pixelSize: 15
+      font.pixelSize: 18
     }
   }
 }

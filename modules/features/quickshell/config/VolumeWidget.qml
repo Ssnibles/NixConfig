@@ -125,7 +125,7 @@ Item {
       text: Utils.volumeIcon(root.volPct, root.volMuted)
       color: root.volMuted ? Colors.red : Colors.fg
       font.family: root.uiFont
-      font.pixelSize: 12
+      font.pixelSize: 15
     }
 
     Text {
@@ -133,7 +133,7 @@ Item {
       text: Math.round(root.volPct * 100) + "%"
       color: root.volMuted ? Colors.red : Colors.fgMid
       font.family: root.uiFont
-      font.pixelSize: 8
+      font.pixelSize: 11
     }
   }
 }

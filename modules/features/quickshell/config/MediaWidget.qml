@@ -112,7 +112,8 @@ Item {
         verticalAlignment: Text.AlignVCenter
         text: root.mediaPlayer && root.mediaPlayer.isPlaying ? "󰎈" : "󰎆"
         color: root.mediaPlayer && root.mediaPlayer.isPlaying ? Colors.accent : Colors.fgDim
-        font.pixelSize: 12
+        font.pixelSize: 15
+        font.bold: true
         font.family: root.uiFont
       }
 
@@ -139,7 +140,7 @@ Item {
           : Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
         color: Colors.fgMid
         font.family: root.uiFont
-        font.pixelSize: 8
+        font.pixelSize: 11
         horizontalAlignment: Text.AlignHCenter
       }
 
@@ -150,7 +151,7 @@ Item {
         text: Utils.formatTime(Math.round(mediaTracker.lastLength))
         color: Colors.fgDim
         font.family: root.uiFont
-        font.pixelSize: 8
+        font.pixelSize: 11
         horizontalAlignment: Text.AlignHCenter
       }
     }
@@ -192,7 +193,7 @@ Item {
 
     Rectangle {
       id: popoverCard
-      width: 260
+      width: 280
       height: popoverContent.implicitHeight + 24
       radius: Config.popupRadius
       color: Colors.bg
@@ -226,7 +227,8 @@ Item {
               text: "󰎆"
               color: Colors.fgDim
               font.family: root.uiFont
-              font.pixelSize: 18
+              font.pixelSize: 22
+              font.bold: true
               anchors.centerIn: parent
             }
 
@@ -276,7 +278,7 @@ Item {
               text: root.mediaPlayer ? root.mediaPlayer.trackTitle : "No Media"
               color: Colors.fg
               font.bold: true
-              font.pixelSize: 12
+              font.pixelSize: 15
               font.family: Config.sansFont
               elide: Text.ElideRight
             }
@@ -285,7 +287,7 @@ Item {
               width: parent.width
               text: root.mediaPlayer ? (root.mediaPlayer.trackArtist || "Unknown Artist") : ""
               color: Colors.fgMid
-              font.pixelSize: 10
+              font.pixelSize: 13
               font.family: Config.sansFont
               elide: Text.ElideRight
             }
@@ -309,7 +311,7 @@ Item {
                 text: "󰒮"
                 color: (root.mediaPlayer && root.mediaPlayer.canGoPrevious) ? (prevHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
                 font.family: root.uiFont
-                font.pixelSize: 13
+                font.pixelSize: 16
                 anchors.centerIn: parent
               }
 
@@ -339,7 +341,7 @@ Item {
                 text: (root.mediaPlayer && root.mediaPlayer.isPlaying) ? "󰏤" : "󰐊"
                 color: playHover.containsMouse ? Colors.bg : Colors.fg
                 font.family: root.uiFont
-                font.pixelSize: 15
+                font.pixelSize: 18
                 anchors.centerIn: parent
               }
 
@@ -367,7 +369,7 @@ Item {
                 text: "󰒭"
                 color: (root.mediaPlayer && root.mediaPlayer.canGoNext) ? (nextHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
                 font.family: root.uiFont
-                font.pixelSize: 13
+                font.pixelSize: 16
                 anchors.centerIn: parent
               }
 
@@ -397,8 +399,8 @@ Item {
             text: Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
             color: Colors.fgDim
             font.family: Config.sansFont
-            font.pixelSize: 9
-            Layout.preferredWidth: 32
+            font.pixelSize: 12
+            Layout.preferredWidth: 38
             horizontalAlignment: Text.AlignRight
           }
 
@@ -416,8 +418,8 @@ Item {
             text: Utils.formatTime(Math.round(mediaTracker.lastLength))
             color: Colors.fgDim
             font.family: Config.sansFont
-            font.pixelSize: 9
-            Layout.preferredWidth: 32
+            font.pixelSize: 12
+            Layout.preferredWidth: 38
           }
         }
       }

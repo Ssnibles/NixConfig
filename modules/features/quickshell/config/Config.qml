@@ -9,8 +9,8 @@ import QtQuick
 Singleton {
   // --- Fonts ------------------------------------------------------------
   readonly property string monoFont: Colors.monoFont !== undefined ? Colors.monoFont : "JetBrainsMono Nerd Font"
-  readonly property string sansFont: Colors.sansFont !== undefined ? Colors.sansFont : "Inter"
-  readonly property string serifFont: Colors.sansFont !== undefined ? Colors.serifFont : "Instrument Serif"
+  readonly property string sansFont: "SF Pro Text"
+  readonly property string serifFont: Colors.serifFont !== undefined ? Colors.serifFont : "Instrument Serif"
 
   // --- Command Center State ----------------------------------------------
   property bool commandCenterVisible: false
@@ -24,7 +24,7 @@ Singleton {
   readonly property string timeFormat: "hh:mm"
 
   // --- Niri vertical bar (niri-bar.qml) ----------------------------------
-  readonly property int barWidth: 38
+  readonly property int barWidth: 42
   readonly property string barSide: "left" // "left" | "right"
   readonly property int barMarginTop: 8
   readonly property int barMarginBottom: 8
@@ -33,7 +33,7 @@ Singleton {
   readonly property int barSpacing: 8
 
   // --- MangoWC top bar (mangowc-bar.qml) --------------------------------
-  readonly property int barHeight: 32
+  readonly property int barHeight: 34
 
   // --- Popup / tooltip ---------------------------------------------------
   readonly property int popupGap: 46 // distance from the bar to a popup

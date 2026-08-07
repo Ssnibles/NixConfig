@@ -251,9 +251,9 @@ Scope {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Qt.formatDateTime(new Date(), Config.lockClockFormat)
             color: Colors.fg
-            font.family: Config.sansFont
+            font.family: Config.serifFont
             font.pixelSize: 64
-            font.bold: true
+            font.italic: true
 
             Timer {
               interval: 1000
@@ -268,7 +268,7 @@ Scope {
             text: Qt.formatDateTime(new Date(), Config.lockDateFormat)
             color: Colors.fgMid
             font.family: Config.sansFont
-            font.pixelSize: 15
+            font.pixelSize: 18
           }
         }
 
@@ -316,7 +316,7 @@ Scope {
                   text: Config.lockFallbackIcon
                   color: Colors.accent
                   font.family: Config.monoFont
-                  font.pixelSize: 32
+                  font.pixelSize: 36
                   visible: !avatarImage.visible || avatarImage.status === Image.Error
                 }
 
@@ -356,7 +356,7 @@ Scope {
                 text: Quickshell.env("USER") || "User"
                 color: Colors.fg
                 font.family: Config.sansFont
-                font.pixelSize: 18
+                font.pixelSize: 20
                 font.bold: true
               }
 
@@ -366,7 +366,7 @@ Scope {
                 text: surface.errorMessage !== "" ? surface.errorMessage : (surface.authenticating ? "Authenticating..." : "System Locked")
                 color: surface.errorMessage !== "" ? Colors.red : (surface.authenticating ? Colors.accent : Colors.fgDim)
                 font.family: Config.sansFont
-                font.pixelSize: 12
+                font.pixelSize: 14
               }
             }
 
@@ -374,7 +374,7 @@ Scope {
             Rectangle {
               id: inputCard
               Layout.fillWidth: true
-              height: 46
+              height: 48
               radius: Config.lockInputRadius
               color: Colors.bgSubtle
               border.color: passInput.activeFocus ? Colors.accent : Colors.border
@@ -393,7 +393,7 @@ Scope {
                   text: surface.authenticating ? "󱎟" : "󰌾"
                   color: passInput.activeFocus ? Colors.accent : Colors.fgDim
                   font.family: Config.monoFont
-                  font.pixelSize: 16
+                  font.pixelSize: 18
                   Layout.alignment: Qt.AlignVCenter
                 }
 
@@ -405,7 +405,7 @@ Scope {
                   echoMode: TextInput.Password
                   color: Colors.fg
                   font.family: Config.sansFont
-                  font.pixelSize: 14
+                  font.pixelSize: 16
                   clip: true
                   focus: false
                   enabled: !surface.authenticating
@@ -429,7 +429,7 @@ Scope {
                     text: "Enter password..."
                     color: Colors.fgDim
                     font.family: Config.sansFont
-                    font.pixelSize: 14
+                    font.pixelSize: 16
                     visible: passInput.text.length === 0 && !passInput.activeFocus
                   }
 
@@ -459,7 +459,7 @@ Scope {
                     text: "󰁔"
                     color: submitHover.containsMouse ? Colors.bg : Colors.fg
                     font.family: Config.monoFont
-                    font.pixelSize: 14
+                    font.pixelSize: 16
                   }
 
                   MouseArea {
@@ -496,7 +496,7 @@ Scope {
                 text: "󰌎"
                 color: Colors.yellow
                 font.family: Config.monoFont
-                font.pixelSize: 12
+                font.pixelSize: 14
                 anchors.verticalCenter: parent.verticalCenter
               }
 
@@ -504,7 +504,7 @@ Scope {
                 text: "Caps Lock is active"
                 color: Colors.yellow
                 font.family: Config.sansFont
-                font.pixelSize: 11
+                font.pixelSize: 13
                 anchors.verticalCenter: parent.verticalCenter
               }
             }
@@ -554,7 +554,7 @@ Scope {
                   text: modelData.icon
                   color: hoverArea.containsMouse ? modelData.hoverCol : Colors.fg
                   font.family: Config.monoFont
-                  font.pixelSize: 16
+                  font.pixelSize: 18
                   anchors.verticalCenter: parent.verticalCenter
                 }
 
@@ -562,8 +562,7 @@ Scope {
                   text: modelData.label
                   color: hoverArea.containsMouse ? Colors.fg : Colors.fgMid
                   font.family: Config.sansFont
-                  font.pixelSize: 11
-                  font.bold: true
+                  font.pixelSize: 13
                   anchors.verticalCenter: parent.verticalCenter
                 }
               }
@@ -592,7 +591,8 @@ Scope {
           text: Qt.formatDateTime(new Date(), "dddd, MMMM d")
           color: Colors.fgMid
           font.family: Config.sansFont
-          font.pixelSize: 16
+          font.pixelSize: 18
+          font.bold: true
         }
 
         Row {
@@ -603,7 +603,8 @@ Scope {
             text: "󰌾"
             color: Colors.accent
             font.family: Config.monoFont
-            font.pixelSize: 14
+            font.pixelSize: 16
+            font.bold: true
             anchors.verticalCenter: parent.verticalCenter
           }
 
@@ -611,7 +612,8 @@ Scope {
             text: "Locked"
             color: Colors.fgDim
             font.family: Config.sansFont
-            font.pixelSize: 14
+            font.pixelSize: 16
+            font.bold: true
             anchors.verticalCenter: parent.verticalCenter
           }
         }
@@ -621,6 +623,3 @@ Scope {
 }
   }
 }
-
-
-

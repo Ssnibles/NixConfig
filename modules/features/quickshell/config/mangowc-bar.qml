@@ -97,7 +97,8 @@ Scope {
           anchors.verticalCenter: parent.verticalCenter
           text: root.currentTime
           color: Colors.fg
-          font.pixelSize: 13
+          font.pixelSize: 16
+          font.bold: true
           font.family: Config.sansFont
         }
 
@@ -110,8 +111,8 @@ Scope {
             model: panel.visibleTagCount
 
             Rectangle {
-              width: 28
-              height: 24
+              width: 30
+              height: 26
               radius: 6
 
               property var tagData: (panel.tagsList && index < panel.tagsList.length) ? panel.tagsList[index] : null
@@ -124,7 +125,7 @@ Scope {
                 anchors.centerIn: parent
                 text: index + 1
                 color: Colors.fg
-                font.pixelSize: 11
+                font.pixelSize: 13
                 font.family: Config.sansFont
               }
 

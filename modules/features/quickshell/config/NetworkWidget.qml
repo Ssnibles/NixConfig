@@ -64,7 +64,7 @@ Pill {
     text: root.netIcon
     color: root.netColor
     font.family: root.uiFont
-    font.pixelSize: 15
+    font.pixelSize: 18
   }
 
   MouseArea {

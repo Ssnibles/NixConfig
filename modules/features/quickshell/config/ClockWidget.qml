@@ -39,7 +39,7 @@ Item {
       text: root.timeStr ? root.timeStr.split(":")[0] : ""
       color: Colors.accent
       font.family: root.uiFont
-      font.pixelSize: 13
+      font.pixelSize: 16
       font.bold: true
     }
 
@@ -48,7 +48,7 @@ Item {
       text: root.timeStr ? root.timeStr.split(":")[1] : ""
       color: Colors.fg
       font.family: root.uiFont
-      font.pixelSize: 13
+      font.pixelSize: 16
       font.bold: true
     }
   }

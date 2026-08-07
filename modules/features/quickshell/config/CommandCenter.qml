@@ -245,7 +245,7 @@ Scope {
                 text: Qt.formatDateTime(new Date(), "dddd, MMMM d")
                 color: Colors.fgDim
                 font.family: Config.sansFont
-                font.pixelSize: 11
+                font.pixelSize: 14
               }
             }
 
@@ -264,8 +264,8 @@ Scope {
                 property string wifiSsid: wifiNet ? wifiNet.name : ""
 
                 visible: isWifi
-                height: 22
-                radius: 11
+                height: 24
+                radius: 12
                 color: Colors.bgSubtle
                 border.color: Colors.border
                 border.width: 1
@@ -280,14 +280,14 @@ Scope {
                     text: "󰤨"
                     color: Colors.accent
                     font.family: Config.monoFont
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     anchors.verticalCenter: parent.verticalCenter
                   }
                   Text {
                     text: parent.parent.wifiSsid
                     color: Colors.fg
                     font.family: Config.sansFont
-                    font.pixelSize: 9
+                    font.pixelSize: 12
                     anchors.verticalCenter: parent.verticalCenter
                   }
                 }
@@ -299,8 +299,8 @@ Scope {
                 property bool isWired: wiredDev && wiredDev.connected
 
                 visible: isWired
-                height: 22
-                radius: 11
+                height: 24
+                radius: 12
                 color: Colors.bgSubtle
                 border.color: Colors.border
                 border.width: 1
@@ -315,14 +315,14 @@ Scope {
                     text: "󰈀"
                     color: Colors.accent
                     font.family: Config.monoFont
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     anchors.verticalCenter: parent.verticalCenter
                   }
                   Text {
                     text: "Ethernet"
                     color: Colors.fg
                     font.family: Config.sansFont
-                    font.pixelSize: 9
+                    font.pixelSize: 12
                     anchors.verticalCenter: parent.verticalCenter
                   }
                 }
@@ -351,8 +351,8 @@ Scope {
                 property bool batPlugged: batDevice && batDevice.state === UPowerDeviceState.FullyCharged
 
                 visible: batPresent
-                height: 22
-                radius: 11
+                height: 24
+                radius: 12
                 color: Colors.bgSubtle
                 border.color: Colors.border
                 border.width: 1
@@ -367,14 +367,14 @@ Scope {
                     text: Utils.batteryIcon(parent.parent.batPct, parent.parent.batCharging, parent.parent.batPlugged, parent.parent.batPresent)
                     color: parent.parent.batCharging ? Colors.green : Colors.accent
                     font.family: Config.monoFont
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     anchors.verticalCenter: parent.verticalCenter
                   }
                   Text {
                     text: parent.parent.batPct + "%"
                     color: Colors.fg
                     font.family: Config.sansFont
-                    font.pixelSize: 9
+                    font.pixelSize: 12
                     anchors.verticalCenter: parent.verticalCenter
                   }
                 }
@@ -424,7 +424,7 @@ Scope {
                     text: Utils.volumeIcon(panel.volPct, panel.volMuted)
                     color: panel.volMuted ? Colors.red : Colors.fg
                     font.family: Config.monoFont
-                    font.pixelSize: 13
+                    font.pixelSize: 16
                   }
 
                   MouseArea {
@@ -453,13 +453,12 @@ Scope {
                 }
 
                 Text {
-                  Layout.preferredWidth: 36
+                  Layout.preferredWidth: 42
                   horizontalAlignment: Text.AlignRight
                   text: Math.round(panel.volPct * 100) + "%"
                   color: panel.volMuted ? Colors.red : Colors.fg
                   font.family: Config.monoFont
-                  font.pixelSize: 11
-                  font.bold: true
+                  font.pixelSize: 14
                 }
               }
 
@@ -490,7 +489,7 @@ Scope {
                     text: "󰃠"
                     color: Colors.yellow
                     font.family: Config.monoFont
-                    font.pixelSize: 13
+                    font.pixelSize: 16
                   }
                 }
 
@@ -508,13 +507,12 @@ Scope {
                 }
 
                 Text {
-                  Layout.preferredWidth: 36
+                  Layout.preferredWidth: 42
                   horizontalAlignment: Text.AlignRight
                   text: Math.round(panel.brightnessPct * 100) + "%"
                   color: Colors.fg
                   font.family: Config.monoFont
-                  font.pixelSize: 11
-                  font.bold: true
+                  font.pixelSize: 14
                 }
               }
             }
@@ -591,7 +589,8 @@ Scope {
                     text: "󰎆"
                     color: Colors.fgDim
                     font.family: Config.monoFont
-                    font.pixelSize: 18
+                    font.pixelSize: 22
+                    font.bold: true
                     anchors.centerIn: parent
                   }
 
@@ -642,7 +641,7 @@ Scope {
                     text: mediaCard.hasPlayer ? mediaCard.activePlayer.trackTitle : "Nothing is playing"
                     color: mediaCard.hasPlayer ? Colors.fg : Colors.fgDim
                     font.bold: true
-                    font.pixelSize: 12
+                    font.pixelSize: 15
                     font.family: Config.sansFont
                     elide: Text.ElideRight
                   }
@@ -651,7 +650,7 @@ Scope {
                     width: parent.width
                     text: mediaCard.hasPlayer ? (mediaCard.activePlayer.trackArtist || "Unknown Artist") : "No artist"
                     color: Colors.fgMid
-                    font.pixelSize: 10
+                    font.pixelSize: 13
                     font.family: Config.sansFont
                     elide: Text.ElideRight
                   }
@@ -675,7 +674,7 @@ Scope {
                       text: "󰒮"
                       color: (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) ? (prevHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
                       font.family: Config.monoFont
-                      font.pixelSize: 13
+                      font.pixelSize: 16
                       anchors.centerIn: parent
                     }
 
@@ -709,7 +708,7 @@ Scope {
                       text: (mediaCard.activePlayer && mediaCard.activePlayer.isPlaying) ? "󰏤" : "󰐊"
                       color: playHover.containsMouse ? Colors.bg : Colors.fg
                       font.family: Config.monoFont
-                      font.pixelSize: 15
+                      font.pixelSize: 18
                       anchors.centerIn: parent
                     }
 
@@ -741,7 +740,7 @@ Scope {
                       text: "󰒭"
                       color: (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) ? (nextHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
                       font.family: Config.monoFont
-                      font.pixelSize: 13
+                      font.pixelSize: 16
                       anchors.centerIn: parent
                     }
 
@@ -772,8 +771,8 @@ Scope {
                   text: Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
                   color: Colors.fgDim
                   font.family: Config.sansFont
-                  font.pixelSize: 9
-                  Layout.preferredWidth: 32
+                  font.pixelSize: 12
+                  Layout.preferredWidth: 38
                   horizontalAlignment: Text.AlignRight
                 }
 
@@ -792,8 +791,8 @@ Scope {
                   text: Utils.formatTime(Math.round(mediaTracker.lastLength))
                   color: Colors.fgDim
                   font.family: Config.sansFont
-                  font.pixelSize: 9
-                  Layout.preferredWidth: 32
+                  font.pixelSize: 12
+                  Layout.preferredWidth: 38
                 }
               }
             }
@@ -828,7 +827,7 @@ Scope {
                     text: NotificationStore.dnd ? "󰂛" : "󰂚"
                     color: NotificationStore.dnd ? Colors.red : Colors.accent
                     font.family: Config.monoFont
-                    font.pixelSize: 14
+                    font.pixelSize: 17
                     anchors.verticalCenter: parent.verticalCenter
                   }
 
@@ -836,7 +835,7 @@ Scope {
                     text: "Notifications"
                     color: Colors.fg
                     font.family: Config.sansFont
-                    font.pixelSize: 12
+                    font.pixelSize: 15
                     font.bold: true
                     anchors.verticalCenter: parent.verticalCenter
                   }
@@ -844,8 +843,8 @@ Scope {
                   // Badge count pill
                   Rectangle {
                     visible: NotificationStore.historyModel.count > 0
-                    height: 16
-                    radius: 8
+                    height: 18
+                    radius: 9
                     color: Colors.bgSubtle
                     border.color: Colors.border
                     border.width: 1
@@ -858,8 +857,7 @@ Scope {
                       text: NotificationStore.historyModel.count
                       color: Colors.fgDim
                       font.family: Config.sansFont
-                      font.pixelSize: 9
-                      font.bold: true
+                      font.pixelSize: 11
                     }
                   }
                 }
@@ -873,8 +871,8 @@ Scope {
 
                   // Mute / DND Toggle Button
                   Rectangle {
-                    height: 24
-                    radius: 12
+                    height: 26
+                    radius: 13
                     color: NotificationStore.dnd ? Colors.red : (muteHover.containsMouse ? Colors.bgSubtle : "transparent")
                     border.color: NotificationStore.dnd ? Colors.red : Colors.border
                     border.width: 1
@@ -889,7 +887,7 @@ Scope {
                         text: NotificationStore.dnd ? "󰂛" : "󰂚"
                         color: NotificationStore.dnd ? Colors.bg : (muteHover.containsMouse ? Colors.red : Colors.fgDim)
                         font.family: Config.monoFont
-                        font.pixelSize: 11
+                        font.pixelSize: 13
                         anchors.verticalCenter: parent.verticalCenter
                       }
 
@@ -897,8 +895,7 @@ Scope {
                         text: NotificationStore.dnd ? "Muted" : "Mute"
                         color: NotificationStore.dnd ? Colors.bg : (muteHover.containsMouse ? Colors.fg : Colors.fgMid)
                         font.family: Config.sansFont
-                        font.pixelSize: 10
-                        font.bold: true
+                        font.pixelSize: 12
                         anchors.verticalCenter: parent.verticalCenter
                       }
                     }
@@ -915,8 +912,8 @@ Scope {
                   // Clear Button
                   Rectangle {
                     visible: NotificationStore.historyModel.count > 0
-                    height: 24
-                    radius: 12
+                    height: 26
+                    radius: 13
                     color: clearHover.containsMouse ? Colors.bgSubtle : "transparent"
                     border.color: Colors.border
                     border.width: 1
@@ -931,7 +928,7 @@ Scope {
                         text: "󰎟"
                         color: clearHover.containsMouse ? Colors.red : Colors.fgDim
                         font.family: Config.monoFont
-                        font.pixelSize: 11
+                        font.pixelSize: 13
                         anchors.verticalCenter: parent.verticalCenter
                       }
 
@@ -939,8 +936,7 @@ Scope {
                         text: "Clear"
                         color: clearHover.containsMouse ? Colors.fg : Colors.fgMid
                         font.family: Config.sansFont
-                        font.pixelSize: 10
-                        font.bold: true
+                        font.pixelSize: 12
                         anchors.verticalCenter: parent.verticalCenter
                       }
                     }
@@ -977,7 +973,7 @@ Scope {
                     text: "󰂜"
                     color: Colors.fgDim
                     font.family: Config.monoFont
-                    font.pixelSize: 18
+                    font.pixelSize: 22
                     anchors.verticalCenter: parent.verticalCenter
                   }
 
@@ -985,7 +981,7 @@ Scope {
                     text: "No notifications"
                     color: Colors.fgDim
                     font.family: Config.sansFont
-                    font.pixelSize: 11
+                    font.pixelSize: 14
                     anchors.verticalCenter: parent.verticalCenter
                   }
                 }
@@ -1076,7 +1072,7 @@ Scope {
                     text: modelData.icon
                     color: hoverArea.containsMouse ? modelData.hoverCol : Colors.fg
                     font.family: Config.monoFont
-                    font.pixelSize: 16
+                    font.pixelSize: 18
                     anchors.verticalCenter: parent.verticalCenter
                   }
 
@@ -1084,8 +1080,7 @@ Scope {
                     text: modelData.label
                     color: hoverArea.containsMouse ? Colors.fg : Colors.fgMid
                     font.family: Config.sansFont
-                    font.pixelSize: 11
-                    font.bold: true
+                    font.pixelSize: 13
                     anchors.verticalCenter: parent.verticalCenter
                   }
                 }

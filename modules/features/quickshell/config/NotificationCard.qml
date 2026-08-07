@@ -255,7 +255,7 @@ Rectangle {
       text: root.isMedia ? "Now Playing" : root.summary
       color: root.isMedia ? Colors.teal : (root.urgency === 2 ? Colors.red : Colors.accent)
       font.bold: true
-      font.pixelSize: root.isMedia ? 10 : 12
+      font.pixelSize: root.isMedia ? 12 : 14
       font.family: Config.sansFont
       elide: Text.ElideRight
     }
@@ -264,8 +264,7 @@ Rectangle {
       width: parent.width
       text: root.isMedia ? root.trackTitle : root.body
       color: Colors.fg
-      font.bold: root.isMedia
-      font.pixelSize: 12
+      font.pixelSize: 14
       font.family: Config.sansFont
       elide: root.isMedia ? Text.ElideRight : Text.ElideNone
       wrapMode: root.isMedia ? Text.NoWrap : Text.Wrap
@@ -276,7 +275,7 @@ Rectangle {
       width: parent.width
       text: root.trackArtist
       color: Colors.fgMid
-      font.pixelSize: 11
+      font.pixelSize: 12
       font.family: Config.sansFont
       elide: Text.ElideRight
       visible: root.isMedia && text !== ""

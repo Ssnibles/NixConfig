@@ -6,12 +6,12 @@ Item {
   property string titleText: ""
   property string uiFont: Config.monoFont
   property color textColor: Colors.fgMid
-  property int fontSize: 11
+  property int fontSize: 14
   property real rotation: 270
   property int maxText: 120
   property bool italic: true
 
-  width: 22
+  width: 26
   height: Math.min(titleLabel.implicitWidth, root.maxText)
   anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
   visible: titleText !== ""
@@ -38,6 +38,6 @@ Item {
     ]
 
     width: titleLabel.implicitWidth
-    height: 22
+    height: 26
   }
 }

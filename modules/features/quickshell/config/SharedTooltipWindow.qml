@@ -163,15 +163,14 @@ PanelWindow {
               text: _src ? _src.icon : ""
               color: _src ? _src.iconColor : Colors.fg
               font.family: Config.monoFont
-              font.pixelSize: 16
+              font.pixelSize: 19
               anchors.verticalCenter: parent.verticalCenter
             }
             Text {
               text: _src ? _src.title : ""
               color: Colors.fg
               font.family: Config.sansFont
-              font.pixelSize: 12
-              font.bold: true
+              font.pixelSize: 15
               anchors.verticalCenter: parent.verticalCenter
             }
           }
@@ -190,7 +189,7 @@ PanelWindow {
               text: modelData
               color: Colors.fgMid
               font.family: Config.sansFont
-              font.pixelSize: 11
+              font.pixelSize: 13
             }
           }
         }

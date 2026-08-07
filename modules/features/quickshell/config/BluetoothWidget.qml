@@ -130,7 +130,7 @@ Pill {
     showProc.exec(["bluetoothctl", "show"])
   }
 
-  // Bar mode content (centered icon, pixelSize 15)
+  // Bar mode content (centered icon, pixelSize 18)
   Text {
     visible: !root.showLabel
     x: (root.width - implicitWidth) / 2
@@ -138,7 +138,7 @@ Pill {
     text: root.btIcon
     color: root.btColor
     font.family: root.uiFont
-    font.pixelSize: 15
+    font.pixelSize: 18
   }
 
   // Pill / CommandCenter mode content (icon + text row, matching Wi-Fi & Battery layout)
@@ -152,7 +152,7 @@ Pill {
       text: root.btIcon
       color: root.btColor
       font.family: root.uiFont
-      font.pixelSize: 10
+      font.pixelSize: 12
       anchors.verticalCenter: parent.verticalCenter
     }
 
@@ -160,7 +160,7 @@ Pill {
       text: root.statusText
       color: Colors.fg
       font.family: Config.sansFont
-      font.pixelSize: 9
+      font.pixelSize: 12
       anchors.verticalCenter: parent.verticalCenter
     }
   }

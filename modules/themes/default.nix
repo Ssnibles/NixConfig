@@ -18,7 +18,7 @@
         fonts = lib.mkOption {
           type = lib.types.attrsOf lib.types.str;
           default = {
-            sans = "Inter";
+            sans = "SF Pro Text";
             monospace = "JetBrainsMono Nerd Font";
             serif = "Instrument Serif";
           };
