@@ -20,6 +20,7 @@
           default = {
             sans = "Inter";
             monospace = "JetBrainsMono Nerd Font";
+            serif = "Instrument Serif";
           };
         };
       };
