@@ -220,16 +220,18 @@ Scope {
 
             // Clock & Date (Left)
             Column {
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignTop
               spacing: 2
 
               Text {
                 id: headerTime
                 text: Qt.formatDateTime(new Date(), "hh:mm")
                 color: Colors.fg
-                font.family: Config.sansFont
-                font.pixelSize: 26
+                font.family: Config.serifFont
+                font.letterSpacing: 2
+                font.pixelSize: 36
                 font.bold: true
+                font.italic: true
 
                 Timer {
                   interval: 1000
@@ -252,7 +254,7 @@ Scope {
             // Wi-Fi / Wired / Battery / Bluetooth Status Pills
             Row {
               spacing: 6
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignTop
 
               // Wi-Fi Pill
               Rectangle {
