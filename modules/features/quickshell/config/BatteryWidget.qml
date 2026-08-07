@@ -14,7 +14,7 @@ Pill {
   padding: 0
   anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
-  pillColor: mouseArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised
+  pillColor: batTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised
   border.width: 1
   border.color: {
     if (!root.batPresent)                    return Colors.border
@@ -46,6 +46,7 @@ Pill {
   }
 
   Tooltip {
+    id: batTooltip
     target: root
     sharedWindow: root.sharedWindow
     icon: root.batIcon
@@ -98,6 +99,5 @@ Pill {
   MouseArea {
     id: mouseArea
     anchors.fill: parent
-    hoverEnabled: true
   }
 }

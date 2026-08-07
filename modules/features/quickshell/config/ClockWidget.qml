@@ -60,10 +60,26 @@ Item {
     iconColor: Colors.accent
     title: {
       var d = new Date()
-      return Qt.formatDate(d, "dddd d MMMM yyyy")
+      return Qt.formatDate(d, getOrdinalDate(d))
     }
     details: [
-      Qt.formatTime(new Date(), "hh:mm:ss")
+      Qt.formatTime(new Date(), "hh:mm")
     ]
   }
+
+  function getOrdinalDate(date) {
+    var day = date.getDate();
+    var suffix = "th";
+
+    if (day < 11 || day > 13) {
+      switch (day % 10) {
+          case 1: suffix = "st"; break;
+          case 2: suffix = "nd"; break;
+          case 3: suffix = "rd"; break;
+        }
+    }
+    // Combines the day, suffix, and remaining formatted date
+    return day + suffix + " " + Qt.formatDate(date, "MMMM of yyyy");
+}
+
 }

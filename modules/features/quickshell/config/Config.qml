@@ -17,7 +17,7 @@ Singleton {
   readonly property int commandCenterWidth: 500
   readonly property int commandCenterRadius: 16
   readonly property int commandCenterCardRadius: 12
-  readonly property string commandCenterClockFormat: "hh:mm"
+  readonly property string commandCenterClockFormat: "HH:mm"
   readonly property string commandCenterDateFormat: "dddd, MMMM d"
 
   // --- Media --------------------------------------------------------------
@@ -28,7 +28,7 @@ Singleton {
   readonly property int mediaSeekDebounceMs: 200
 
   // --- Clock --------------------------------------------------------------
-  readonly property string timeFormat: "hh:mm"
+  readonly property string timeFormat: "HH:mm"
 
   // --- Niri vertical bar (niri-bar.qml) ----------------------------------
   readonly property int barWidth: 42
@@ -49,7 +49,7 @@ Singleton {
   // --- MangoWC top bar (mangowc-bar.qml) --------------------------------
   readonly property int barHeight: 34
   readonly property int mangowcMinWorkspaces: 5
-  readonly property string mangowcClockFormat: "HH:mm:ss"
+  readonly property string mangowcClockFormat: "HH:mm"
 
   // --- Popup / tooltip ---------------------------------------------------
   readonly property int popupGap: 46 // distance from the bar to a popup

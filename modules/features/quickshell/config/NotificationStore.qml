@@ -130,17 +130,16 @@ Singleton {
     var fullKey = _makeTrackKey(cleanT, cleanA)
     var titleKey = cleanT ? cleanT.toLowerCase().trim() : ""
 
-    if (cleanU !== "") {
-      var resolved = processAndCacheArt(fullKey, titleKey, cleanU)
-      if (resolved) return resolved
-    }
-
     if (fullKey && store.artCache[fullKey]) {
       return store.artCache[fullKey]
     }
 
     if (titleKey && store.artCache[titleKey]) {
       return store.artCache[titleKey]
+    }
+
+    if (cleanU !== "") {
+      return cleanU
     }
 
     if (store.latestMediaImage !== "") {
@@ -150,25 +149,33 @@ Singleton {
     return ""
   }
 
-  function processAndCacheArt(fullKey, titleKey, url) {
-    if (!url) return ""
+  function cacheCoverArt(title, artist, rawArtUrl) {
+    var cleanT = Utils.cleanTrackTitle(title || "")
+    var cleanA = (artist || "").trim()
+    if (cleanA === "Unknown Artist") cleanA = ""
+    var cleanU = Utils.cleanUrl(rawArtUrl || "")
 
-    store.latestMediaImage = url
+    var fullKey = _makeTrackKey(cleanT, cleanA)
+    var titleKey = cleanT ? cleanT.toLowerCase().trim() : ""
 
-    if (url.startsWith("file://") || url.startsWith("/")) {
-      var fileUrl = url.startsWith("/") ? ("file://" + url) : url
+    if (!cleanU) return ""
+
+    store.latestMediaImage = cleanU
+
+    if (cleanU.startsWith("file://") || cleanU.startsWith("/")) {
+      var fileUrl = cleanU.startsWith("/") ? ("file://" + cleanU) : cleanU
       if (fullKey) store.artCache[fullKey] = fileUrl
       if (titleKey) store.artCache[titleKey] = fileUrl
       return fileUrl
     }
 
-    if (url.startsWith("http://") || url.startsWith("https://")) {
+    if (cleanU.startsWith("http://") || cleanU.startsWith("https://")) {
       var ext = ".jpg"
-      var urlLower = url.toLowerCase()
+      var urlLower = cleanU.toLowerCase()
       if (urlLower.indexOf(".png") !== -1) ext = ".png"
       else if (urlLower.indexOf(".webp") !== -1) ext = ".webp"
 
-      var fileHash = _hashString(url)
+      var fileHash = _hashString(cleanU)
       var targetPath = store.cacheDir + "/" + fileHash + ext
       var targetFileUrl = "file://" + targetPath
 
@@ -176,20 +183,20 @@ Singleton {
         return targetFileUrl
       }
 
-      if (fullKey && !store.artCache[fullKey]) store.artCache[fullKey] = url
-      if (titleKey && !store.artCache[titleKey]) store.artCache[titleKey] = url
+      if (fullKey && !store.artCache[fullKey]) store.artCache[fullKey] = cleanU
+      if (titleKey && !store.artCache[titleKey]) store.artCache[titleKey] = cleanU
 
-      if (!store._pendingDownloads[url] && store.cacheDir !== "") {
-        store._pendingDownloads[url] = true
-        downloadCoverArt(url, targetPath, fullKey, titleKey)
+      if (!store._pendingDownloads[cleanU] && store.cacheDir !== "") {
+        store._pendingDownloads[cleanU] = true
+        downloadCoverArt(cleanU, targetPath, fullKey, titleKey)
       }
 
-      return store.artCache[fullKey] || url
+      return store.artCache[fullKey] || cleanU
     }
 
-    if (fullKey) store.artCache[fullKey] = url
-    if (titleKey) store.artCache[titleKey] = url
-    return url
+    if (fullKey) store.artCache[fullKey] = cleanU
+    if (titleKey) store.artCache[titleKey] = cleanU
+    return cleanU
   }
 
   function updateModelImages(fullKey, titleKey, resolvedUrl) {
@@ -245,7 +252,7 @@ Singleton {
     var artist = mediaPlayer ? (mediaPlayer.trackArtist || "") : ""
     var artUrl = mediaPlayer ? (mediaPlayer.trackArtUrl || "") : ""
 
-    var resolved = store.getCoverArt(title, artist, artUrl)
+    var resolved = store.cacheCoverArt(title, artist, artUrl)
     if (resolved) {
       store.latestMediaImage = resolved
       var fullKey = _makeTrackKey(title, artist)
@@ -266,13 +273,11 @@ Singleton {
   onCurrentTrackKeyChanged: {
     if (!store._startupFinished) return
     if (currentTrackKey !== "" && mediaPlayer && mediaPlayer.isPlaying) {
-      var artUrl = Utils.cleanUrl(mediaPlayer.trackArtUrl || "")
-      if (artUrl !== "") store.latestMediaImage = artUrl
-
-
       var rawTitle = mediaPlayer.trackTitle || ""
       var cleanT = Utils.cleanTrackTitle(rawTitle)
       var cleanA = mediaPlayer.trackArtist || "Unknown Artist"
+      var rawArt = Utils.cleanUrl(mediaPlayer.trackArtUrl || "")
+      var artUrl = store.cacheCoverArt(cleanT, cleanA, rawArt) || store.latestMediaImage
 
       var itemData = {
         notification: null,
@@ -389,13 +394,10 @@ Singleton {
       }
 
       if (isMediaNotification) {
-        if (notifImage && notifImage !== "") {
-          store.latestMediaImage = notifImage
-        }
-
         var cleanT = Utils.cleanTrackTitle(notification.summary || (store.mediaPlayer ? store.mediaPlayer.trackTitle : ""))
         var cleanA = notification.body || (store.mediaPlayer ? store.mediaPlayer.trackArtist : "Unknown Artist")
-        var mediaImage = notifImage || store.latestMediaImage || (store.mediaPlayer ? store.mediaPlayer.trackArtUrl || "" : "")
+        var rawImg = notifImage || (store.mediaPlayer ? store.mediaPlayer.trackArtUrl || "" : "")
+        var mediaImage = store.cacheCoverArt(cleanT, cleanA, rawImg) || store.latestMediaImage
 
         var mediaItemData = {
           notification: notification,
@@ -548,20 +550,8 @@ Singleton {
   }
 
   function invokeActionOrFocus(item, fromActiveIndex) {
-    var defaultAction = null
-    if (item && item.notification && item.notification.actions) {
-      for (var a = 0; a < item.notification.actions.length; a++) {
-        if (item.notification.actions[a].identifier === "default") {
-          defaultAction = item.notification.actions[a]
-          break
-        }
-      }
-    }
-
-    if (defaultAction) {
-      defaultAction.invoke()
-    } else if (item) {
-      focusSender(item.appName, item.desktopEntry, item.appIcon)
+    if (item) {
+      Utils.goToSource(item, Quickshell)
     }
 
     if (fromActiveIndex !== undefined && fromActiveIndex >= 0) {
@@ -570,23 +560,6 @@ Singleton {
   }
 
   function focusSender(appName, desktopEntry, appIcon) {
-    var iconName = appIcon || ""
-    if (iconName) {
-      var slashIdx = iconName.lastIndexOf("/")
-      if (slashIdx !== -1) {
-        iconName = iconName.substring(slashIdx + 1)
-      }
-      var dotIdx = iconName.lastIndexOf(".")
-      if (dotIdx !== -1) {
-        iconName = iconName.substring(0, dotIdx)
-      }
-    }
-
-    var patterns = []
-    if (appName) patterns.push(appName)
-    if (desktopEntry) patterns.push(desktopEntry)
-    if (iconName) patterns.push(iconName)
-
-    Utils.focusWindow(patterns)
+    Utils.goToSource({ appName: appName, desktopEntry: desktopEntry, appIcon: appIcon }, Quickshell)
   }
 }

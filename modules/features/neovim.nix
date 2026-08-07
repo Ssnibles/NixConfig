@@ -206,6 +206,7 @@
 
             tiny-inline-diagnostic-nvim
             conform-nvim
+            fidget-nvim
           ];
 
           luaConfigRC.user-config = ''

@@ -43,8 +43,8 @@ Pill {
   anchors.horizontalCenter: (parent && !showLabel) ? parent.horizontalCenter : undefined
 
   pillColor: showLabel
-               ? (mouseArea.containsMouse ? Colors.bgRaised : Colors.bgSubtle)
-               : (mouseArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised)
+               ? (btTooltip.hovered ? Colors.bgRaised : Colors.bgSubtle)
+               : (btTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised)
   border.width: 1
   border.color: Colors.border
 
@@ -166,24 +166,8 @@ Pill {
     }
   }
 
-  MouseArea {
-    id: mouseArea
-    anchors.fill: parent
-    hoverEnabled: true
-    cursorShape: Qt.PointingHandCursor
-    acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: function(mouse) {
-      if (mouse.button === Qt.LeftButton) {
-        root.isPowered = !root.isPowered
-        Quickshell.execDetached(["bluetoothctl", "power", root.isPowered ? "on" : "off"])
-        delayedRefreshTimer.restart()
-      } else {
-        Quickshell.execDetached(["blueman-manager"])
-      }
-    }
-  }
-
   Tooltip {
+    id: btTooltip
     visible: !root.showLabel
     target: root
     sharedWindow: root.sharedWindow
@@ -207,6 +191,22 @@ Pill {
       d.push("Left click · Toggle Power")
       d.push("Right click · Blueman Manager")
       return d
+    }
+  }
+
+  MouseArea {
+    id: mouseArea
+    anchors.fill: parent
+    cursorShape: Qt.PointingHandCursor
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    onClicked: function(mouse) {
+      if (mouse.button === Qt.LeftButton) {
+        root.isPowered = !root.isPowered
+        Quickshell.execDetached(["bluetoothctl", "power", root.isPowered ? "on" : "off"])
+        delayedRefreshTimer.restart()
+      } else {
+        Quickshell.execDetached(["blueman-manager"])
+      }
     }
   }
 }

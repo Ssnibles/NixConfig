@@ -136,7 +136,7 @@ function wifiIcon(signalStrength, connected) {
   return "\u{F0928}"
 }
 
-function focusWindow(patterns) {
+function focusWindow(patterns, quickshellObj) {
   if (!patterns) return
   var targets = Array.isArray(patterns) ? patterns : [patterns]
   var cleanTargets = []
@@ -148,13 +148,100 @@ function focusWindow(patterns) {
   }
   if (cleanTargets.length === 0) return
 
-  var script = 'wins=$(niri msg --json windows 2>/dev/null); ' +
-               'for p in "$@"; do ' +
-               '  id=$(echo "$wins" | jq -r --arg pat "$p" \'.[] | select((.app_id // "" | ascii_downcase | contains($pat)) or (.title // "" | ascii_downcase | contains($pat))) | .id\' 2>/dev/null | head -n1); ' +
-               '  if [ -n "$id" ] && [ "$id" != "null" ]; then niri msg action focus-window --id "$id"; break; fi; ' +
-               'done'
+  var qs = quickshellObj
+  if (!qs && typeof Quickshell !== "undefined") qs = Quickshell
+  if (!qs || typeof qs.execDetached !== "function") return
 
-  Quickshell.execDetached(["sh", "-c", script, "sh"].concat(cleanTargets))
+  var script = 'wins=$(niri msg --json windows 2>/dev/null); ' +
+               'if [ -z "$wins" ]; then exit 0; fi; ' +
+               'id=""; ' +
+               'if command -v node >/dev/null 2>&1; then ' +
+               '  id=$(echo "$wins" | node -e \'' +
+               '    const fs = require("fs"); ' +
+               '    const wins = JSON.parse(fs.readFileSync(0, "utf-8")); ' +
+               '    const pats = process.argv.slice(1).map(p => p.toLowerCase()); ' +
+               '    for (const p of pats) { ' +
+               '      const found = wins.find(w => (w.app_id && w.app_id.toLowerCase().includes(p)) || (w.title && w.title.toLowerCase().includes(p))); ' +
+               '      if (found) { console.log(found.id); break; } ' +
+               '    }\' "$@"); ' +
+               'elif command -v jq >/dev/null 2>&1; then ' +
+               '  for p in "$@"; do ' +
+               '    id=$(echo "$wins" | jq -r --arg pat "$p" \'.[] | select((.app_id // "" | ascii_downcase | contains($pat)) or (.title // "" | ascii_downcase | contains($pat))) | .id\' 2>/dev/null | head -n1); ' +
+               '    if [ -n "$id" ] && [ "$id" != "null" ]; then break; fi; ' +
+               '  done; ' +
+               'fi; ' +
+               'if [ -n "$id" ] && [ "$id" != "null" ]; then niri msg action focus-window --id "$id"; fi'
+
+  qs.execDetached(["sh", "-c", script, "sh"].concat(cleanTargets))
+}
+
+function goToSource(source, quickshellObj) {
+  if (!source) return
+  var qs = quickshellObj
+  if (!qs && typeof Quickshell !== "undefined") qs = Quickshell
+
+  if (source.notification && source.notification.actions) {
+    var defaultAction = null
+    for (var a = 0; a < source.notification.actions.length; a++) {
+      if (source.notification.actions[a].identifier === "default") {
+        defaultAction = source.notification.actions[a]
+        break
+      }
+    }
+    if (defaultAction) {
+      defaultAction.invoke()
+      return
+    }
+  }
+
+  var targets = []
+
+  function addTarget(str) {
+    if (!str) return
+    var s = String(str).trim()
+    if (!s) return
+
+    if (s.indexOf("/") !== -1) {
+      s = s.substring(s.lastIndexOf("/") + 1)
+    }
+    if (s.lastIndexOf(".") !== -1 && !s.endsWith(".desktop")) {
+      s = s.substring(0, s.lastIndexOf("."))
+    }
+
+    if (targets.indexOf(s) === -1) targets.push(s)
+
+    var sNoDesktop = s.replace(/\.desktop$/i, "")
+    if (sNoDesktop !== s && targets.indexOf(sNoDesktop) === -1) {
+      targets.push(sNoDesktop)
+    }
+
+    var sNoMpris = s.replace(/^org\.mpris\.MediaPlayer2\./i, "")
+    if (sNoMpris !== s && targets.indexOf(sNoMpris) === -1) {
+      targets.push(sNoMpris)
+    }
+
+    var parts = sNoDesktop.split(".")
+    var lastPart = parts[parts.length - 1]
+    if (lastPart && targets.indexOf(lastPart) === -1) {
+      targets.push(lastPart)
+    }
+  }
+
+  addTarget(source.desktopEntry)
+  addTarget(source.appName || source.name)
+  addTarget(source.identity)
+  addTarget(source.appIcon)
+  if (source.isMedia) {
+    addTarget(source.trackTitle)
+  }
+
+  if (targets.length === 0) return
+
+  focusWindow(targets, qs)
+}
+
+function focusPlayer(player, quickshellObj) {
+  goToSource(player, quickshellObj)
 }
 
 function cleanUrl(url) {
@@ -186,4 +273,3 @@ function findBatteryDevice(upowerDevices, displayDevice) {
   }
   return (displayDevice && displayDevice.ready) ? displayDevice : null
 }
-

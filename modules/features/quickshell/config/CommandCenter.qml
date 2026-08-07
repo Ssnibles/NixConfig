@@ -540,6 +540,17 @@ Scope {
             property var mediaPlayers: Mpris.players.values
             property var activePlayer: Utils.findActivePlayer(mediaCard.mediaPlayers, MprisPlaybackState.Paused)
 
+            MouseArea {
+              anchors.fill: parent
+              acceptedButtons: Qt.RightButton
+              cursorShape: mediaCard.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
+              onClicked: function(mouse) {
+                if (mouse.button === Qt.RightButton && mediaCard.activePlayer) {
+                  Utils.goToSource(mediaCard.activePlayer, Quickshell)
+                }
+              }
+            }
+
             MediaProgress {
               id: mediaTracker
               enabled: panel.panelOpacity > 0

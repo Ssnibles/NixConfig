@@ -65,8 +65,7 @@ Item {
 
   function focusMediaPlayer() {
     if (!root.mediaPlayer) return
-    var entry = root.mediaPlayer.desktopEntry || root.mediaPlayer.name || ""
-    if (entry) Utils.focusWindow(entry)
+    Utils.goToSource(root.mediaPlayer, Quickshell)
   }
 
   // --- UI Layout ---
@@ -178,6 +177,17 @@ Item {
       color: Colors.bg
       border.color: Colors.border
       border.width: 1
+
+      MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton
+        cursorShape: root.mediaPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
+        onClicked: function(mouse) {
+          if (mouse.button === Qt.RightButton) {
+            root.focusMediaPlayer()
+          }
+        }
+      }
 
       Column {
         id: popoverContent

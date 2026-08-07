@@ -1,298 +1,343 @@
-# Quickshell Bar — Module Reference
+# Quickshell — Module Reference & Development Guide
 
-This module contains the [quickshell](https://quickshell.outfoxxed.me/) config
-for the status bars (niri + mangowc), the notification overlay and the shared
-tooltip/popup system. All QML lives in `config/` and is symlinked into
-`~/.config/quickshell/` at activation time, so **QML edits apply on the next
-quickshell restart** — no Nix rebuild needed. Only `Colors.qml` is generated
-(see below) and requires a rebuild to change.
+This directory contains the [Quickshell](https://quickshell.outfoxxed.me/) configuration for status bars (`niri-bar.qml` and `mangowc-bar.qml`), the **Command Center** dashboard, the Wayland **Lock Screen**, the **Notification system**, and shared UI primitives (pills, tooltips, sliders).
 
-Global layout knobs (bar size/position, popup geometry, notification
-placement, fonts) live in one place: **`Config.qml`**. Everything
-widget-specific stays as a property on that widget's file, so you never touch
-the bars to tweak a single widget.
+All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by Nix activation scripts. **QML edits apply immediately on the next quickshell restart** — no Nix rebuild needed for standard QML modifications. Only `Colors.qml` is generated directly by Nix from system theme tokens and requires a rebuild to update.
 
 ---
 
-## 1. How the module is wired up (`default.nix`)
+## Table of Contents
 
-| Step | What happens |
+1. [How the Module is Wired Up (`default.nix`)](#1-how-the-module-is-wired-up-defaultnix)
+2. [Entry Point & Architecture (`shell.qml`)](#2-entry-point--architecture-shellqml)
+3. [Configuration Reference (`Config.qml`)](#3-configuration-reference--configqml)
+4. [Theme Colors (`Colors.qml`)](#4-theme-colors--colorsqml)
+5. [Module Catalog & Component Reference](#5-module-catalog--component-reference)
+   - [Bars](#51-bars)
+   - [Services & Infrastructure](#52-services--infrastructure)
+   - [Overlays & Standalone Screens](#53-overlays--standalone-screens)
+   - [Widgets & UI Components](#54-widgets--ui-components)
+6. [Tooltip & Popup System](#6-tooltip--popup-system)
+7. [How to Add New Modules / Widgets](#7-how-to-add-new-modules--widgets)
+8. [IPC Commands & Reloading](#8-ipc-commands--reloading)
+
+---
+
+## 1. How the Module is Wired Up (`default.nix`)
+
+| Step | Description |
 | --- | --- |
-| System packages | `quickshell` (unstable) is installed |
-| `Colors.qml` | Generated from the active theme into `~/.config/quickshell/Colors.qml` (real file, not a symlink) |
-| Config dir | Activation script symlinks every file in `config/` into `~/.config/quickshell/` |
-| Ownership | Both the dir and files are `chown`ed to your user |
+| **System Packages** | `quickshell` (unstable) is installed into the environment. |
+| **`Colors.qml`** | Generated from `config.theme.colors` into `~/.config/quickshell/Colors.qml` via Hjem. |
+| **Config Symlinks** | Activation script (`quickshell-config`) creates `~/.config/quickshell` and symlinks every file in `config/*`. |
+| **Permissions** | Symlinks and target directories are owned by the active user. |
 
-To run: `quickshell` (usually started by your session). Which bar loads is
-decided at startup by the `QS_BAR` environment variable — see `shell.qml`
-below. There is no NixOS option on this module; everything is customised by
-editing `Config.qml` and the QML files.
+---
 
-## 2. Configuration reference — `Config.qml`
+## 2. Entry Point & Architecture (`shell.qml`)
 
-A `pragma Singleton` exactly like `Colors.qml`, holding **all global/layout
-settings**. Edit this file to restyle or reposition things.
-
-| Section | Key | Default | Meaning |
-| --- | --- | --- | --- |
-| Fonts | `monoFont` | `JetBrainsMono Nerd Font` | Icons/numbers, most widgets |
-| | `sansFont` | `Inter` | Notifications & mangowc text |
-| Clock | `timeFormat` | `"hh:mm"` | Qt time format |
-| Niri bar | `barWidth` | `38` | Width of the vertical bar |
-| | `barSide` | `"left"` | `"left"` \| `"right"` — which screen edge the bar hugs |
-| | `barMarginTop/Bottom/Left/Right` | `8 / 8 / 4 / 4` | Inner padding of the bar |
-| | `barSpacing` | `12` | Vertical gap between widget groups |
-| MangoWC bar | `barHeight` | `32` | Height of the top bar |
-| Popup | `popupGap` | `46` | Distance from bar edge to a popup |
-| | `popupMaxWidth` | `280` | Default card width |
-| | `popupRadius` | `8` | Card corner radius |
-| | `popupContentMargins` | `12` | Padding inside the card |
-| | `popupContentSpacing` | `6` | Vertical gap between card lines |
-| | `popupShowDelay` | `150` | ms of hover before a popup appears |
-| | `popupFadeMs` | `120` | Popup fade in/out duration |
-| | `popupGraceMs` | `500` | Instant-swap window between popups |
-| Notifications | `notifPosition` | `"top-right"` | `top-`/`bottom-` + `left`/`right` |
-| | `notifTimeoutMs` | `5000` | Display time per notification |
-| | `notifMaxVisible` | `3` | Queue size (oldest dropped first) |
-| | `notifWidth` | `300` | Notification card width |
-| | `notifRadius` | `8` | Card corner radius |
-| | `notifCardMargins` | `8` | Padding + outer margins |
-| | `notifSpacing` | `4` | Gap between stacked notifications |
-
-## 3. Entry point — `shell.qml`
+`shell.qml` serves as the top-level application root (`Scope`), instantiating the active status bar, notification manager, command center, and lock screen:
 
 ```qml
-Loader {
-  source: Quickshell.env("QS_BAR") === "niri" ? "niri-bar.qml" : "mangowc-bar.qml"
+Scope {
+  Loader {
+    source: Quickshell.env("QS_BAR") === "niri" ? "niri-bar.qml" : "mangowc-bar.qml"
+  }
+  NotificationOverlay { }
+  CommandCenter { }
+  LockScreen { }
 }
-NotificationOverlay { }
 ```
 
-* Set `QS_BAR=niri` for the vertical niri bar, anything else (or unset) loads
-  `mangowc-bar.qml`.
-* The `NotificationOverlay` sits here on every screen, using defaults from
-  `Config.notif*` (you can still override them per instance).
+- **Status Bar Loading**: Set `QS_BAR=niri` for the vertical Niri bar; defaults to `mangowc-bar.qml`.
+- **Notification Overlay**: Global notification stack present on every display.
+- **Command Center**: Slide-out dashboard overlay controllable via IPC.
+- **Lock Screen**: Wayland session lock (`WlSessionLock`) with PAM authentication.
 
-## 4. Theme colours — `Colors` singleton
+---
 
-`default.nix` reads `config.theme.colors` (defined in `modules/themes/`,
-schemes in `modules/themes/palette.nix`, selectable via `theme.active`) and
-emits a `pragma Singleton` `Colors.qml`. Available tokens:
+## 3. Configuration Reference (`Config.qml`)
 
-| Token | Typical use |
+`Config.qml` is a `pragma Singleton` holding all global layout dimensions, fonts, timings, and component options.
+
+### 3.1 Fonts
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `monoFont` | `Colors.monoFont` \| `"JetBrainsMono Nerd Font"` | Icons, numbers, monospaced text |
+| `sansFont` | `"SF Pro Text"` | UI text, notifications, titles |
+| `serifFont` | `Colors.serifFont` \| `"Instrument Serif"` | Clocks, headers |
+
+### 3.2 Status Bars
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `barWidth` | `42` | Niri bar width (px) |
+| `barSide` | `"left"` | Niri bar screen edge (`"left"` \| `"right"`) |
+| `barMarginTop/Bottom/Left/Right` | `8 / 8 / 4 / 4` | Outer padding around Niri bar |
+| `barSpacing` | `8` | Vertical gap between widget groups |
+| `volBarHeight` | `64` | Volume bar widget height |
+| `wifiMaxTextLength` | `90` | Maximum network SSID display width |
+| `barHeight` | `34` | MangoWC top bar height (px) |
+| `mangowcMinWorkspaces` | `5` | Minimum workspace tag slots in MangoWC |
+
+### 3.3 Command Center (`CommandCenter.qml`)
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `commandCenterVisible` | `false` | Controls overlay visibility (toggleable via IPC) |
+| `commandCenterWidth` | `500` | Width of slide-out panel (px) |
+| `commandCenterRadius` | `16` | Panel corner rounding radius |
+| `commandCenterCardRadius` | `12` | Inner section card corner radius |
+| `commandCenterClockFormat` | `"HH:mm"` | Header clock format |
+| `commandCenterDateFormat` | `"dddd, MMMM d"` | Header date format |
+| `alwaysShowMediaCard` | `true` | Show media player card even when idle |
+| `mediaRotationDuration` | `4000` | Album art rotation duration (ms) |
+| `mediaSeekDebounceMs` | `200` | Seeking debounce delay (ms) |
+
+### 3.4 Lock Screen (`LockScreen.qml`)
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `lockAvatarPath` | `Quickshell.shellDir + "/assets/avatar.png"` | Path to user avatar image |
+| `lockFallbackIcon` | `"󰀉"` | Fallback glyph when avatar image is absent |
+| `lockWallpaperPath` | `"file://" + $HOME + "/Pictures/wallpaper"` | Lock screen wallpaper image |
+| `lockClockFormat` | `"hh:mm"` | Time display format |
+| `lockDateFormat` | `"dddd, MMMM d"` | Date display format |
+| `lockCardRadius` | `12` | Authentication card corner radius |
+| `lockInputRadius` | `10` | Password input box radius |
+| `lockBackgroundDimming` | `0.8` | Dark background overlay opacity (0.0–1.0) |
+| `lockBlurPercentage` | `0.5` | Wallpaper GPU blur amount (0.0–1.0) |
+
+### 3.5 Popups & Tooltips (`SharedTooltipWindow.qml`)
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `popupGap` | `46` | Distance from bar to popup card |
+| `popupMaxWidth` | `280` | Default card width |
+| `popupRadius` | `12` | Popup card corner radius |
+| `popupContentMargins` | `12` | Padding inside popups |
+| `popupShowDelay` | `150` | Hover delay before showing popup (ms) |
+| `popupFadeMs` | `120` | Fade transition duration (ms) |
+| `popupGraceMs` | `700` | Grace window for instant-swapping between adjacent popups |
+
+### 3.6 Notifications (`NotificationOverlay.qml` & `NotificationStore.qml`)
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `notifPosition` | `"top-left"` | Placement on screen |
+| `notifTimeoutMs` | `5000` | Display duration per popup (ms) |
+| `notifMaxVisible` | `5` | Maximum active popup count on screen |
+| `notifMaxHistory` | `24` | Maximum history items retained in `NotificationStore` |
+| `notifWidth` | `300` | Notification card width (px) |
+| `notifRadius` | `12` | Notification card corner radius |
+
+---
+
+## 4. Theme Colors (`Colors.qml`)
+
+`Colors.qml` is automatically generated by Nix based on the current theme (`config.theme.colors`). Available color tokens:
+
+| Token | Semantic Purpose |
 | --- | --- |
-| `Colors.bg` | Bar backgrounds |
-| `Colors.bgRaised` | Cards, pills, tooltip/notification backgrounds |
-| `Colors.bgSubtle` | Track/trough backgrounds |
-| `Colors.border` | Borders and dividers |
-| `Colors.fg` / `Colors.fgMid` / `Colors.fgDim` | Text tiers |
-| `Colors.accent` + `teal/purple/green/yellow/red/orange` | Status / active colours |
+| `Colors.bg` | Primary background surface |
+| `Colors.bgRaised` | Elevated card & modal container backgrounds |
+| `Colors.bgSubtle` | Subtle highlight / track backgrounds |
+| `Colors.border` | Border lines and dividers |
+| `Colors.fg` / `Colors.fgMid` / `Colors.fgDim` | Primary, secondary, and muted text |
+| `Colors.accent` | Active state accent color |
+| `Colors.teal` / `purple` / `green` / `yellow` / `red` / `orange` | Status and semantic accent colors |
 
-## 5. The bars
+---
 
-### 5.1 `niri-bar.qml` (vertical, edge bar)
+## 5. Module Catalog & Component Reference
 
-`ShellRoot` per screen, containing:
+### 5.1 Bars
 
+#### `niri-bar.qml`
+- **Role**: Vertical side bar for Niri window manager.
+- **Features**: `PanelWindow` hugging `Config.barSide`, displaying clock, active window title, workspace list, system control pills, and hosting `SharedTooltipWindow`.
+
+#### `mangowc-bar.qml`
+- **Role**: Horizontal top bar for MangoWC compositor.
+- **Features**: Uses `mmsg watch all-tags` process IPC to display workspace tags, status indicators, and clock.
+
+---
+
+### 5.2 Services & Infrastructure
+
+#### `NiriService.qml`
+- **Role**: IPC service bridging Niri window manager via `niri msg --json event-stream`.
+- **Exposes**: `allWorkspaces`, `currentTitle`, `workspacesForOutput(output)`, `focusWorkspace(id)`, `formatActiveTitle(title, appId)`.
+
+#### `NotificationStore.qml`
+- **Role**: Central notification daemon state & disk cache manager.
+- **Features**: Subscribes to `Quickshell.Services.Notifications`, manages active stack and history log up to `Config.notifMaxHistory`, auto-dismiss timers, and cover art disk caching (`~/.cache/quickshell/cover_art/`).
+
+#### `MediaProgress.qml`
+- **Role**: High-precision MPRIS position & playback progress estimator.
+- **Features**: Pure `QtObject` tracking wall-clock drift, handling pause/resume position synchronization, and outputting `estimatedPosition` (seconds) and `progress` (0.0 to 1.0).
+
+#### `Utils.js`
+- **Role**: Shared JavaScript utility library (`.pragma library`).
+- **Features**: `findFirst`, `findBatteryDevice`, `findActivePlayer`, `clamp`, `pad2`, `formatTime`, `escapeRegex`, `stripMarkup`, `cleanTrackTitle`, `prettifyAppName`, `formatActiveTitle`, and icon helpers (`volumeIcon`, `batteryIcon`, `wifiIcon`).
+
+---
+
+### 5.3 Overlays & Standalone Screens
+
+#### `CommandCenter.qml`
+- **Role**: Slide-out quick settings dashboard and system metrics panel.
+- **IPC Target**: `"command-center"` (functions: `toggle()`).
+- **Features**: Header clock & date, status pills (Wi-Fi, Ethernet, Battery, Bluetooth), system sliders (`SliderControl` for Pipewire volume & `brightnessctl` screen brightness), full MPRIS media player card with position seekbar, album art preview, and player selection, plus notification history list.
+
+#### `LockScreen.qml`
+- **Role**: Wayland session screen locker built on `WlSessionLock` and `WlSessionLockSurface`.
+- **IPC Target**: `"lockscreen"` (functions: `lock()`, `unlock()`, `toggle()`).
+- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt with Caps Lock warning & error shake animation, secondary screen display lock graphics, background wallpaper with customizable GPU blur (`MultiEffect`) and dimming, and system power actions (Suspend, Reboot, Power Off).
+
+#### `NotificationOverlay.qml` & `NotificationCard.qml`
+- **Role**: Screen overlay rendering active notification toasts.
+- **Features**: Stack layout driven by `NotificationStore`, animated entry/exit, action buttons, image/icon previews, and manual dismiss.
+
+---
+
+### 5.4 Widgets & UI Components
+
+#### `Pill.qml`
+- **Role**: Standardized container for bar widgets.
+- **Properties**: `padding`, `pillHeight`, `pillColor`, `orientation` (`"horizontal"` \| `"vertical"`). Includes hover/active state transitions and auto-sizing.
+
+#### `SliderControl.qml`
+- **Role**: Reusable interactive horizontal range slider.
+- **Properties**: `value` (0.0–1.0), `fillColor`, `snapPercent`, signal `moved(real value)`. Supports mouse drag and direct click positioning.
+
+#### `CommandCenterButton.qml`
+- **Role**: Quick toggle button component for dashboard cards.
+- **Properties**: `icon`, `title`, `subtitle`, `active`, `accentColor`, signal `clicked()`.
+
+#### Standard Bar Widgets
+- **`ClockWidget.qml`**: Time/date stack with click-to-popup details.
+- **`WindowTitleWidget.qml`**: Active window title displaying Niri state.
+- **`WorkspacesWidget.qml`**: Interactive workspace indicators connected to `NiriService`.
+- **`MediaWidget.qml`**: MPRIS playback bar button with progress indicator and play/pause controls.
+- **`VolumeWidget.qml`**: PipeWire volume control widget with mute toggle, scroll adjustments, and popup control.
+- **`NetworkWidget.qml`**: Network connection monitor displaying Wi-Fi SSID and signal strength. Right-click launches `nmtui`.
+- **`BluetoothWidget.qml`**: Bluetooth adapter status and device indicator. Right-click launches `blueman-manager`.
+- **`BatteryWidget.qml`**: Laptop battery charge state and status indicator powered by UPower. Auto-hides on desktop systems without batteries.
+
+---
+
+## 6. Tooltip System
+
+The popup system uses two cooperating components:
+
+### `Tooltip.qml`
+Nest an instance inside any widget to attach hover-triggered popups:
+```qml
+Tooltip {
+  sharedWindow: parent.sharedWindow
+  icon: "󰕾"
+  title: "Volume"
+  details: ["Sink: Default", "Muted: No"]
+}
 ```
-NiriService            ← niri IPC event stream (workspaces + window title)
-PanelWindow (Config.barWidth, full height, exclusionMode Auto)
-├── topCol        ClockWidget (has a date popup) + WindowTitleWidget
-├── WorkspacesWidget   (centered)
-├── bottomCol    MediaWidget · VolumeWidget · NetworkWidget · BatteryWidget
-└── SharedTooltipWindow  ← one shared popup layer for all tooltips
+- **Custom Popups**: Pass a custom `Component` to `contentComponent` to render arbitrary QML inside the popup layer instead of the default card.
+
+### `SharedTooltipWindow.qml`
+A single layer window per display hugging `Config.barSide`. Handles popup positioning, clamping to screen boundaries, smooth fade transitions, and instant-swapping between adjacent widgets.
+
+---
+
+## 7. How to Add New Modules / Widgets
+
+Follow these steps to create and register a new status bar widget or overlay component:
+
+### Step 1: Create the Component File
+Create a new QML file in `modules/features/quickshell/config/`, e.g., `CpuWidget.qml`:
+
+```qml
+import Quickshell
+import QtQuick
+import "Utils.js" as Utils
+
+Pill {
+  id: root
+  property var sharedWindow: null
+
+  pillColor: mouseArea.containsMouse ? Colors.bgRaised : Colors.bgSubtle
+  border.color: Colors.border
+  border.width: 1
+
+  Row {
+    spacing: 6
+    anchors.centerIn: parent
+
+    Text {
+      text: "󰍛"
+      color: Colors.accent
+      font.family: Config.monoFont
+      font.pixelSize: 14
+    }
+
+    Text {
+      text: "42%"
+      color: Colors.fg
+      font.family: Config.monoFont
+      font.pixelSize: 12
+    }
+  }
+
+  MouseArea {
+    id: mouseArea
+    anchors.fill: parent
+    hoverEnabled: true
+  }
+
+  Tooltip {
+    sharedWindow: root.sharedWindow
+    icon: "󰍛"
+    title: "CPU Usage"
+    details: ["Load: 42%", "Temp: 45°C"]
+  }
+}
 ```
 
-`Config.barSide` drives the anchors and which edge gets the 1px border, and it
-is forwarded to the popup layer so the popups open on the correct side.
-Each bottom widget receives `sharedWindow: sharedTipWindow`. To add a widget,
-insert it in `topCol`/`bottomCol` and give it a `sharedWindow` property.
+### Step 2: Add Config Settings (Optional)
+If your module requires configurable settings, add them to `Config.qml`:
 
-### 5.2 `mangowc-bar.qml` (horizontal, top edge)
+```qml
+// --- CPU Widget Settings ---
+readonly property int cpuPollIntervalMs: 2000
+```
 
-Standalone bar for mangoshell (uses the `mmsg watch all-tags` stream). Now
-themed via `Colors` and sized via `Config.barHeight`.
+### Step 3: Insert into the Status Bar
+Open `niri-bar.qml` (or `mangowc-bar.qml`) and instantiate your component inside `bottomCol` or `topCol`:
 
-| Cfg | Default | Meaning |
-| --- | --- | --- |
-| `minWorkspaces` | `5` | Minimum number of tag slots shown |
-| `currentTime` | — | Clock text (internal, updated every s) |
+```qml
+CpuWidget {
+  sharedWindow: sharedTipWindow
+}
+```
 
-Tag colour mappings: active = `Colors.accent`, occupied = `Colors.fgDim`,
-empty = `Colors.bgSubtle`, text = `Colors.fg`.
+### Step 4: Symlink & Test
+Because activation scripts symlink `config/*` into `~/.config/quickshell/`, newly created QML files must be symlinked before Quickshell can see them:
 
-## 6. Widget reference
+- Run `sudo nixos-rebuild switch` (or manually symlink the file: `ln -s ~/NixConfig/modules/features/quickshell/config/CpuWidget.qml ~/.config/quickshell/`).
+- Restart Quickshell to load the new widget!
 
-Every widget accepts a `uiFont` override (defaulting to `Config.monoFont`).
-Bottom-row widgets also take `sharedWindow` (the `SharedTooltipWindow` for
-their screen).
+---
 
-### 6.1 ClockWidget
+## 8. IPC Commands & Reloading
 
-* **Data**: local time via `Qt.formatTime(..., Config.timeFormat)`, re-syncs
-  per minute.
-* **Display**: hours (accent) + minutes (fg) two-line stack.
-* **Popup**: shows the current date + seconds (behind the `sharedWindow` it
-  now receives).
-* **Opts**: `uiFont`, `timeFormat`, `sharedWindow`.
+Quickshell includes built-in IPC mechanisms. You can trigger overlays or inspect state from the command line or desktop keybindings:
 
-### 6.2 WindowTitleWidget
+```bash
+# Toggle Command Center overlay
+quickshell ipc call command-center toggle
 
-| Opt | Default |
-| --- | --- |
-| `titleText` | `""` (bound to `niriService.currentTitle`) |
-| `textColor` | `Colors.fgMid` |
-| `fontSize` / `italic` | `11` / `true` |
-| `rotation` | `270` |
-| `maxText` | `120` (clip length) |
-| `uiFont` | `Config.monoFont` |
+# Lock screen
+quickshell ipc call lockscreen lock
 
-### 6.3 WorkspacesWidget
+# Unlock screen (if active)
+quickshell ipc call lockscreen unlock
+```
 
-| Opt | Default |
-| --- | --- |
-| `workspaces` | `[]` (from `niriService.workspacesForOutput(...)`) |
-| `dotSize` / `dotSizeFocused` | `10` / `26` |
-| `dotSpacing` | `6` |
-| `dotColorFocused/Active/Urgent/Empty` | accent / fgMid / red / fgDim |
-
-Signal `focusRequested(workspaceId)` is wired to
-`niriService.focusWorkspace()` in the bar. Each entry: `id, idx, name,
-output, is_active, is_focused, is_urgent`.
-
-### 6.4 MediaWidget
-
-* **Data**: MPRIS via `Quickshell.Services.Mpris` (first playing player, else
-  first paused).
-* **Progress**: delegates to the reusable **`MediaProgress`** helper
-  (`mediaTracker.estimatedPosition` / `.progress`), see §9.
-* **Interaction**: left = play/pause, right = focus app (`niri msg`),
-  scroll = next/prev.
-* **Opts**: `sharedWindow`, `uiFont`.
-
-### 6.5 VolumeWidget
-
-* **Data**: `Pipewire.defaultAudioSink` (audio node, `PwObjectTracker`).
-* **Interaction**: left = mute, right = `pavucontrol`, scroll = ±5% (0–150%).
-* **Popup**: state + action hints.
-* **Opts**: `sharedWindow`, `uiFont`.
-
-### 6.6 NetworkWidget
-
-* **Data**: `Quickshell.Networking` (first wifi device + connected network).
-* **Interaction**: right click = `kitty -e nmtui`.
-* **Opts**: `sharedWindow`, `uiFont`.
-
-### 6.7 BatteryWidget
-
-* **Data**: UPower (first ready laptop battery, falls back to display
-  device). Hidden when no battery.
-* **Popup**: percent + state, time-to-full/empty.
-* **Opts**: `sharedWindow`, `uiFont`. Colours yellow ≤30%, red ≤15%.
-
-### 6.8 Pill (shared container)
-
-| Opt | Default |
-| --- | --- |
-| `padding` | `8` |
-| `pillHeight` | `22` |
-| `pillColor` | `Colors.bgRaised` |
-
-`radius` is `height/2`. Children go in the default `data` property.
-
-## 7. Tooltip system
-
-Two cooperating files — see also the custom-popup escape hatch in `Tooltip`.
-
-### 7.1 `Tooltip.qml` (declarative hover controller)
-
-Nest an instance inside a widget. It owns hover detection + show delay and
-registers with the shared window when visible.
-
-| Opt | Default | Description |
-| --- | --- | --- |
-| `target` | `parent` | Widget the popup points at |
-| `sharedWindow` | `null` | `SharedTooltipWindow` to display in |
-| `icon` / `iconColor` | `""` / `Colors.fg` | Header glyph + colour |
-| `title` | `""` | Bold header |
-| `details` | `[]` | Muted detail lines under a divider |
-| `showDelay` | `Config.popupShowDelay` | Hover delay |
-| `maxWidth` | `Config.popupMaxWidth` | Popup width (default card) |
-| `contentWidth` | `0` | Width override for custom content (>0 wins) |
-| `contentComponent` | `null` | Fully custom popup, see §7.3 |
-| `hovered` / `tipVisible` (readonly) | — | Hover state helpers |
-
-### 7.2 `SharedTooltipWindow.qml` (the popup layer)
-
-One per screen, sitting on the edge opposite the bar (`barSide` mirrors
-`Config.barSide`). It owns fade, the 60ms reposition tick, the
-`recentlyActive` instant-swap grace, and vertical clamping. It renders the
-default card unless the active `Tooltip` provides `contentComponent`.
-
-### 7.3 Fully custom popups (`contentComponent`)
-
-Give your `Tooltip` a `Component`; it replaces the card entirely. Geometry
-(`width` = window width, `y`/opacity = handled) is managed by the loader,
-which also exposes helpers via `parent`:
-
-| Helper (on `parent`) | Description |
-| --- | --- |
-| `parent.src` | The active `Tooltip` instance (carry custom props) |
-| `parent.targetCenterY` | Vertical centre of the widget, window coords |
-| `parent.width` | Window width (`contentWidth`/`maxWidth`) |
-
-Example towards the clock: see the calendar popup in the previous version of
-this doc — it now also applies to `sharedWindow` on the Clock.
-
-## 8. `NiriService.qml`
-
-`QtObject` bridging niri via `niri msg --json event-stream`.
-
-| Member | Type | Description |
-| --- | --- | --- |
-| `allWorkspaces` | `var` | Sorted list of all workspace objects |
-| `currentTitle` | `string` | Focused window title (formatted) |
-| `workspacesForOutput(output)` | fn | Workspaces for one monitor |
-| `focusWorkspace(id)` | fn | `niri msg action focus-workspace <id>` |
-| `formatActiveTitle(title, appId)` | fn | Delegates to `Utils.formatActiveTitle` |
-
-## 9. `Utils.js` & helpers
-
-`.pragma library` pure helpers, all customisable in one file:
-`findFirst`, `clamp`, `pad2`, `formatTime`, `escapeRegex`, `stripMarkup`,
-`prettifyAppName`, `formatActiveTitle` (suffix-stripping map
-`_titleSuffixMap`), and icon mappers `volumeIcon`, `batteryIcon`,
-`wifiIcon`.
-
-## 10. `MediaProgress.qml`
-
-Reusable MPRIS progress estimator (`QtObject`): watch `player` and read
-`estimatedPosition` (s) + `progress` (0..1), with wall-clock drift while
-playing, rewind/reset detection, and a `tickInterval` polling timer.
-Built into `MediaWidget` as `mediaTracker`; reuse anywhere.
-
-## 11. `NotificationOverlay.qml` + `NotificationCard.qml`
-
-Per-screen pane stacking `NotificationCard` delegates. Options: `position`,
-`timeoutMs`, `maxVisible`, `width/radius/margins/spacing` (all defaults from
-`Config.notif*`). Click any card to dismiss it (`dismissAt(index)`).
-Notifications come from the Quickshell notification server.
-
-## 12. Common customisation tasks
-
-* **Bar size/position**: `Config.qml` (`barWidth`, `barSide`, margins, spacing)
-  — popup side follows automatically.
-* **Colours/fonts**: `Colours.qml` is generated; restyle via the theme
-  palette (`modules/themes/palette.nix`) or `Config.monoFont`/`sansFont`.
-* **Notifications**: `Config.notif*` for placement/dimensions, or restyle
-  `NotificationCard.qml`.
-* **Re-add a widget / reorder**: edit the `Col`s in `niri-bar.qml`.
-* **Popup**: `Tooltip` fields, or `contentComponent` for arbitrary QML.
-* **Reload**: restart quickshell (pure QML); rebuild only to change theme.
-
-## 13. Updating the live config
-
-Because `Config.qml`, `Utils.js` and every QML file are symlinked from the
-repo, a restart of quickshell picks them up. When you create a *new* QML
-file it also needs the symlink: rerun the activation script (or
-`sudo nixos-rebuild switch`).
+To reload Quickshell after editing existing QML files:
+```bash
+pkill quickshell; quickshell &
+```

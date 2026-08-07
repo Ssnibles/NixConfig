@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Services.Notifications
 import QtQuick
+import Quickshell.Wayland
 
 Scope {
   id: root
@@ -19,4 +20,3 @@ Scope {
 
   LockScreen { }
 }
-

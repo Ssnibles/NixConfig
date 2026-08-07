@@ -1,16 +1,16 @@
 vim.loader.enable()
 
 for _, dev_plugin in ipairs({ "/home/josh/sshinator.nvim", "/home/josh/indentinator.nvim" }) do
-  if vim.uv.fs_stat(dev_plugin) then
-    vim.opt.runtimepath:append(dev_plugin)
-  end
+	if vim.uv.fs_stat(dev_plugin) then
+		vim.opt.runtimepath:append(dev_plugin)
+	end
 end
 
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
 if not vim.env.NVIM_LISTEN_ADDRESS then
-  vim.env.NVIM_LISTEN_ADDRESS = "/tmp/nvim.socket"
+	vim.env.NVIM_LISTEN_ADDRESS = "/tmp/nvim.socket"
 end
 
 vim.opt.clipboard = "unnamedplus"

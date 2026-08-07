@@ -40,7 +40,7 @@ Pill {
   orientation: Qt.Vertical
   anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
-  pillColor: mouseArea.containsMouse ? Colors.bgRaised : Colors.bgSubtle
+  pillColor: netTooltip.hovered ? Colors.bgRaised : Colors.bgSubtle
   border.width: 1
   border.color: Colors.border
 
@@ -74,16 +74,8 @@ Pill {
     }
   }
 
-  MouseArea {
-    id: mouseArea
-    anchors.fill: parent
-    hoverEnabled: true
-    cursorShape: Qt.PointingHandCursor
-    acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: Quickshell.execDetached(["kitty", "-e", "nmtui"])
-  }
-
   Tooltip {
+    id: netTooltip
     target: root
     sharedWindow: root.sharedWindow
     icon: root.netIcon
@@ -100,5 +92,13 @@ Pill {
       d.push("Right click · nmtui")
       return d
     }
+  }
+
+  MouseArea {
+    id: mouseArea
+    anchors.fill: parent
+    cursorShape: Qt.PointingHandCursor
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    onClicked: Quickshell.execDetached(["kitty", "-e", "nmtui"])
   }
 }

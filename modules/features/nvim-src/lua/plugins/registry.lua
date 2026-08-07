@@ -10,6 +10,7 @@ M.core = {
   "plugins.fzf",
   "plugins.navigation",
   "plugins.ui",
+  "plugins.fidget",
   "plugins.terminal",
   "plugins.lint",
   "plugins.rust",
