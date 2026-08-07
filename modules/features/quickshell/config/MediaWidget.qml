@@ -56,9 +56,13 @@ Item {
     property real targetProgress: 0
     onTriggered: {
       if (root.mediaPlayer && root.mediaPlayer.canSeek) {
-        var targetPos  = targetProgress * mediaTracker.lastLength
-        var currentPos = mediaTracker.estimatedPosition
-        root.mediaPlayer.seek((targetPos - currentPos) * 1000000)
+        var targetPos = targetProgress * mediaTracker.lastLength
+        if (root.mediaPlayer.positionSupported) {
+          root.mediaPlayer.position = targetPos
+        } else {
+          var currentPos = mediaTracker.estimatedPosition
+          root.mediaPlayer.seek(targetPos - currentPos)
+        }
       }
     }
   }
@@ -121,40 +125,34 @@ Item {
       }
     }
 
-    // Vertical progress bar
-    Item {
-      width: 12
-      height: 36
+    // Position indicator (elapsed / total stacked vertically)
+    Column {
+      id: positionCol
       anchors.horizontalCenter: parent.horizontalCenter
+      spacing: 1
 
-      Rectangle {
-        anchors.fill: parent
-        radius: 4
-        color: Colors.bgSubtle
-        border.width: 1
-        border.color: mediaTooltip.hovered ? Colors.accent : "transparent"
-        Behavior on border.color { ColorAnimation { duration: 120 } }
-
-        Rectangle {
-          anchors.bottom: parent.bottom
-          anchors.left: parent.left
-          anchors.right: parent.right
-          height: parent.height * mediaTracker.progress
-          radius: 4
-          color: Colors.accent
-        }
+      Text {
+        id: elapsedLabel
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: root.mediaPlayer && mediaTracker.lastLength > 0
+          ? Utils.formatTime(Math.round(mediaTracker.estimatedPosition)) + " /"
+          : Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
+        color: Colors.fgMid
+        font.family: root.uiFont
+        font.pixelSize: 8
+        horizontalAlignment: Text.AlignHCenter
       }
-    }
 
-    // Compact elapsed time text
-    Text {
-      id: elapsedLabel
-      anchors.horizontalCenter: parent.horizontalCenter
-      text: Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
-      color: Colors.fgMid
-      font.family: root.uiFont
-      font.pixelSize: 8
-      horizontalAlignment: Text.AlignHCenter
+      Text {
+        id: totalLabel
+        visible: root.mediaPlayer && mediaTracker.lastLength > 0
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: Utils.formatTime(Math.round(mediaTracker.lastLength))
+        color: Colors.fgDim
+        font.family: root.uiFont
+        font.pixelSize: 8
+        horizontalAlignment: Text.AlignHCenter
+      }
     }
   }
 

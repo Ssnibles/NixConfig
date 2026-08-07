@@ -7,6 +7,7 @@ import QtQuick
 Scope {
   id: root
 
+  property bool enabled: true
   property var player: null
   property int tickInterval: 300
 
@@ -85,14 +86,10 @@ Scope {
   Timer {
     id: tickTimer
     interval: root.tickInterval
-    running: root.player && root.player.isPlaying
+    running: root.enabled && root.player && root.player.isPlaying
     repeat: true
     onTriggered: {
-      if (root.player) {
-        root.updatePosition(root.player.position, root.player.length)
-      } else {
-        root.updateEstimatedPosition()
-      }
+      root.updateEstimatedPosition()
     }
   }
 }

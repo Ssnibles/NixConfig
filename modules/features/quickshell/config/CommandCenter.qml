@@ -44,18 +44,18 @@ Scope {
       required property var modelData
       screen: modelData
 
-      // Right side top-to-bottom placement
+      // Full screen overlay for click-outside & escape dismiss
       anchors.top: true
       anchors.bottom: true
+      anchors.left: true
       anchors.right: true
 
-      implicitWidth: 404
       color: "transparent"
       visible: true
 
       // Make sure it sits above windows and does not disrupt layout
       aboveWindows: true
-      focusable: false
+      WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
       exclusionMode: ExclusionMode.Ignore
 
       // State for transition animation
@@ -95,6 +95,7 @@ Scope {
       Component.onCompleted: {
         panelOpacity = 0
         panelSlide = 60
+        outsideDismiss.forceActiveFocus()
         fadeInAnim.start()
         brightnessGetProc.exec(["brightnessctl", "-m"])
       }
@@ -108,6 +109,7 @@ Scope {
           } else if (Config.commandCenterVisible) {
             fadeOutAnim.stop()
             fadeInAnim.start()
+            outsideDismiss.forceActiveFocus()
           }
         }
       }
@@ -165,11 +167,36 @@ Scope {
         }
       }
 
+      // Full-screen backdrop mouse area to catch clicks outside the card
+      MouseArea {
+        id: outsideDismiss
+        anchors.fill: parent
+        focus: true
+        Keys.onPressed: function(event) {
+          if (event.key === Qt.Key_Escape) {
+            Config.commandCenterVisible = false
+            event.accepted = true
+          }
+        }
+        onClicked: {
+          Config.commandCenterVisible = false
+        }
+      }
+
       // Main Card container
       Rectangle {
         id: mainCard
-        anchors.fill: parent
+        width: 396
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
         anchors.margins: 12
+
+        // Prevent clicks inside mainCard from propagating to outsideDismiss
+        MouseArea {
+          anchors.fill: parent
+          onClicked: function(mouse) { mouse.accepted = true }
+        }
 
         transform: Translate {
           x: panel.panelSlide
@@ -513,6 +540,7 @@ Scope {
 
             MediaProgress {
               id: mediaTracker
+              enabled: panel.panelOpacity > 0
               player: mediaCard.activePlayer
             }
 
@@ -524,9 +552,12 @@ Scope {
               onTriggered: {
                 if (mediaCard.activePlayer && mediaCard.activePlayer.canSeek) {
                   var targetPos = targetProgress * mediaTracker.lastLength
-                  var currentPos = mediaTracker.estimatedPosition
-                  var offsetMicro = (targetPos - currentPos) * 1000000
-                  mediaCard.activePlayer.seek(offsetMicro)
+                  if (mediaCard.activePlayer.positionSupported) {
+                    mediaCard.activePlayer.position = targetPos
+                  } else {
+                    var currentPos = mediaTracker.estimatedPosition
+                    mediaCard.activePlayer.seek(targetPos - currentPos)
+                  }
                 }
               }
             }
