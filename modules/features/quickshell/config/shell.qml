@@ -16,4 +16,7 @@ Scope {
   NotificationOverlay { }
 
   CommandCenter { }
+
+  LockScreen { }
 }
+

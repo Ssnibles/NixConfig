@@ -57,7 +57,9 @@ Item {
       if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return
       var step = 0.05
       var dir = wheel.angleDelta.y > 0 ? 1 : -1
-      Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(1.5, root.volPct + dir * step))
+      var newVol = Math.max(0, Math.min(1.5, root.volPct + dir * step))
+      root.volPct = newVol
+      Pipewire.defaultAudioSink.audio.volume = newVol
     }
   }
 
@@ -78,7 +80,7 @@ Item {
         anchors.fill: parent
         radius: 4
         color: Colors.bgSubtle
-        border.color: trackMouse.containsMouse ? Colors.accent : "transparent"
+        border.color: trackMouse.containsMouse ? (root.volMuted ? Colors.red : Colors.accent) : "transparent"
         border.width: 1
 
         Rectangle {
@@ -101,6 +103,7 @@ Item {
         
         function updateVolume(mouseY) {
           var pct = Math.max(0, Math.min(1.5, (parent.height - mouseY) / parent.height))
+          root.volPct = pct
           if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
             Pipewire.defaultAudioSink.audio.volume = pct
           }

@@ -15,6 +15,11 @@ Singleton {
   // --- Command Center State ----------------------------------------------
   property bool commandCenterVisible: false
 
+  // --- Media --------------------------------------------------------------
+  // Whether the command center's media card always stays visible, showing
+  // "Nothing is playing" when no media is active.
+  readonly property bool alwaysShowMediaCard: true
+
   // --- Clock --------------------------------------------------------------
   readonly property string timeFormat: "hh:mm"
 
@@ -25,7 +30,7 @@ Singleton {
   readonly property int barMarginBottom: 8
   readonly property int barMarginLeft: 4
   readonly property int barMarginRight: 4
-  readonly property int barSpacing: 12
+  readonly property int barSpacing: 8
 
   // --- MangoWC top bar (mangowc-bar.qml) --------------------------------
   readonly property int barHeight: 32
@@ -48,4 +53,13 @@ Singleton {
   readonly property int notifRadius: 12
   readonly property int notifCardMargins: 12
   readonly property int notifSpacing: 8
+
+  // --- Lock Screen --------------------------------------------------------
+  readonly property string lockAvatarPath: Quickshell.configDir + "/assets/avatar.png"
+  readonly property string lockFallbackIcon: "󰀉"
+  readonly property string lockWallpaperPath: "file://" + (Quickshell.env("HOME") || "/home/josh") + "/Pictures/wallpaper"
+  readonly property string lockClockFormat: "hh:mm"
+  readonly property string lockDateFormat: "dddd, MMMM d"
+  readonly property int lockCardRadius: 12
+  readonly property int lockInputRadius: 10
 }

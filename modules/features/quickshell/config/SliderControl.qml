@@ -42,7 +42,7 @@ Item {
       radius: 4
       color: Colors.bgSubtle
       border.width: 1
-      border.color: mouse.containsMouse ? Colors.accent : "transparent"
+      border.color: mouse.containsMouse ? root.fillColor : "transparent"
       Behavior on border.color { ColorAnimation { duration: 120 } }
     }
 
@@ -62,7 +62,7 @@ Item {
       id: mouse
       anchors.fill: parent
       hoverEnabled: true
-      cursorShape: Qt.PointingHandCursor
+      cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
       property bool dragging: false
 
       // Snap slider to increments (e.g. 5% steps) when snapPercent > 0.
@@ -77,6 +77,7 @@ Item {
       }
 
       onPressed: function(mouse) {
+        if (!root.enabled) return
         if (!dragging) {
           dragging = true
           root.dragStarted()

@@ -68,6 +68,7 @@
             foldmethod = "expr";
             foldexpr = "v:lua.vim.treesitter.foldexpr()";
             foldlevelstart = 99;
+            foldcolumn = "0";
             ttimeoutlen = 10;
             swapfile = false;
             autoread = true;

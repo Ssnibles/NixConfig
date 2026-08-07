@@ -1,10 +1,11 @@
 require("indentinator").setup({
 	draw_gap_hl = false,
-	show_first_indent_level = true,
+	show_first_indent_level = false,
 	scope = {
 		enabled = true,
 		treesitter = true,
-		underline = false,
+		delimiters = true,
+		background = false,
 		text_highlight = false,
 		range = "block",
 	},

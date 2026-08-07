@@ -20,16 +20,15 @@ Variants {
     required property var modelData
     screen: modelData
 
-    // Center top placement
+    // Right side top-to-bottom placement
     anchors.top: true
-    
-    // We want the window to be wide enough for side-by-side system controls and notification panel
-    implicitWidth: 788
-    implicitHeight: contentLoader.item ? contentLoader.item.height + 24 : 0
-    
+    anchors.bottom: true
+    anchors.right: true
+
+    implicitWidth: 404
     color: "transparent"
     visible: false
-    
+
     // Make sure it sits above windows and does not disrupt layout
     aboveWindows: true
     focusable: false
@@ -37,7 +36,7 @@ Variants {
 
     // State for transition animation
     property real panelOpacity: 0
-    property real panelSlide: -50
+    property real panelSlide: 60
     property bool _closeRequested: false
 
     // Brightness state
@@ -75,12 +74,12 @@ Variants {
         _closeRequested = false
         fadeOutAnim.stop()
         panelOpacity = 0
-        panelSlide = -50
+        panelSlide = 60
         fadeInAnim.start()
         brightnessGetProc.exec(["brightnessctl", "-m"])
       } else {
         panelOpacity = 0
-        panelSlide = -50
+        panelSlide = 60
         _closeRequested = false
       }
     }
@@ -104,7 +103,7 @@ Variants {
       PauseAnimation { duration: 1 }
       ParallelAnimation {
         NumberAnimation { target: panel; property: "panelOpacity"; to: 1; duration: 250; easing.type: Easing.OutCubic }
-        NumberAnimation { target: panel; property: "panelSlide"; to: 12; duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { target: panel; property: "panelSlide"; to: 0; duration: 250; easing.type: Easing.OutCubic }
       }
     }
 
@@ -112,7 +111,7 @@ Variants {
       id: fadeOutAnim
       ParallelAnimation {
         NumberAnimation { target: panel; property: "panelOpacity"; to: 0; duration: 180; easing.type: Easing.OutCubic }
-        NumberAnimation { target: panel; property: "panelSlide"; to: -50; duration: 180; easing.type: Easing.OutCubic }
+        NumberAnimation { target: panel; property: "panelSlide"; to: 60; duration: 180; easing.type: Easing.OutCubic }
       }
       onFinished: {
         if (panel._closeRequested) {
@@ -162,10 +161,7 @@ Variants {
 
     Loader {
       id: contentLoader
-      anchors.top: parent.top
-      anchors.horizontalCenter: parent.horizontalCenter
-      width: 788
-      height: item ? item.height : 0
+      anchors.fill: parent
       active: panel.visible || panel._closeRequested
       sourceComponent: ccContentComponent
     }
@@ -176,680 +172,615 @@ Variants {
       // Main Card container
       Rectangle {
         id: mainCard
-        width: 788
-        height: leftCol.implicitHeight + 32
-        y: panel.panelSlide
+        anchors.fill: parent
+        anchors.margins: 12
+
+        transform: Translate {
+          x: panel.panelSlide
+        }
         opacity: panel.panelOpacity
-        
+
         color: Colors.bg
         border.color: Colors.border
         border.width: 1
         radius: 16
 
-        // Side-by-side Row
-        Row {
-          id: mainRow
+        ColumnLayout {
           anchors.fill: parent
           anchors.margins: 16
-          spacing: 16
+          spacing: 14
 
-          // --- LEFT COLUMN: SYSTEM CONTROLS ---
-          Column {
-            id: leftCol
-            width: 380
-            spacing: 16
+          // --- HEADER: CLOCK & STATUS PILLS ---
+          RowLayout {
+            Layout.fillWidth: true
+            spacing: 12
 
-            // --- TOP ROW: HEADER & POWER BUTTONS ---
-            RowLayout {
-              width: parent.width
-              spacing: 16
+            // Clock & Date (Left)
+            Column {
+              Layout.alignment: Qt.AlignVCenter
+              spacing: 2
 
-              // Clock & Date (Left)
-              Column {
-                Layout.alignment: Qt.AlignVCenter
-                spacing: 2
-                
-                Text {
-                  id: headerTime
-                  text: Qt.formatDateTime(new Date(), "hh:mm")
-                  color: Colors.fg
-                  font.family: Config.sansFont
-                  font.pixelSize: 28
-                  font.bold: true
+              Text {
+                id: headerTime
+                text: Qt.formatDateTime(new Date(), "hh:mm")
+                color: Colors.fg
+                font.family: Config.sansFont
+                font.pixelSize: 26
+                font.bold: true
 
-                  Timer {
-                    interval: 1000
-                    running: panel.visible
-                    repeat: true
-                    onTriggered: headerTime.text = Qt.formatDateTime(new Date(), "hh:mm")
-                  }
-                }
-
-                Text {
-                  text: Qt.formatDateTime(new Date(), "dddd, MMMM d")
-                  color: Colors.fgDim
-                  font.family: Config.sansFont
-                  font.pixelSize: 11
+                Timer {
+                  interval: 1000
+                  running: panel.visible
+                  repeat: true
+                  onTriggered: headerTime.text = Qt.formatDateTime(new Date(), "hh:mm")
                 }
               }
 
-              Item {
-                Layout.fillWidth: true
-              }
-
-              // Wi-Fi and Battery info pills
-              Row {
-                spacing: 6
-                Layout.alignment: Qt.AlignVCenter
-
-                // Wi-Fi Pill
-                Rectangle {
-                  property var wifiDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
-                  property bool isWifi: wifiDev && wifiDev.connected
-                  property var wifiNet: Utils.findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected })
-                  property string wifiSsid: wifiNet ? wifiNet.name : ""
-
-                  visible: isWifi
-                  height: 22
-                  radius: 11
-                  color: Colors.bgSubtle
-                  border.color: Colors.border
-                  border.width: 1
-                  anchors.verticalCenter: parent.verticalCenter
-                  implicitWidth: wifiLayout.width + 12
-
-                  Row {
-                    id: wifiLayout
-                    anchors.centerIn: parent
-                    spacing: 4
-                    Text {
-                      text: "󰤨"
-                      color: Colors.accent
-                      font.family: Config.monoFont
-                      font.pixelSize: 10
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-                    Text {
-                      text: parent.parent.wifiSsid
-                      color: Colors.fg
-                      font.family: Config.sansFont
-                      font.pixelSize: 9
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-                  }
-                }
-
-                // Wired Pill
-                Rectangle {
-                  property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
-                  property bool isWired: wiredDev && wiredDev.connected
-
-                  visible: isWired
-                  height: 22
-                  radius: 11
-                  color: Colors.bgSubtle
-                  border.color: Colors.border
-                  border.width: 1
-                  anchors.verticalCenter: parent.verticalCenter
-                  implicitWidth: wiredLayout.width + 12
-
-                  Row {
-                    id: wiredLayout
-                    anchors.centerIn: parent
-                    spacing: 4
-                    Text {
-                      text: "󰈀"
-                      color: Colors.accent
-                      font.family: Config.monoFont
-                      font.pixelSize: 10
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-                    Text {
-                      text: "Ethernet"
-                      color: Colors.fg
-                      font.family: Config.sansFont
-                      font.pixelSize: 9
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-                  }
-                }
-
-                // Battery Pill
-                Rectangle {
-                  property var batDevice: {
-                    var count = UPower.devices.count
-                    for (var i = 0; i < count; i++) {
-                      var d = UPower.devices.get(i)
-                      if (d.isLaptopBattery && d.ready) return d
-                    }
-                    return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null
-                  }
-                  property bool batPresent: {
-                    var count = UPower.devices.count
-                    for (var i = 0; i < count; i++) {
-                      var d = UPower.devices.get(i)
-                      if (d.isLaptopBattery && d.ready) return true
-                    }
-                    return false
-                  }
-                  property int batPct: batDevice ? Math.round(batDevice.percentage * 100) : 0
-                  property bool batCharging: batDevice && batDevice.state === UPowerDeviceState.Charging
-                  property bool batPlugged: batDevice && batDevice.state === UPowerDeviceState.FullyCharged
-
-                  visible: batPresent
-                  height: 22
-                  radius: 11
-                  color: Colors.bgSubtle
-                  border.color: Colors.border
-                  border.width: 1
-                  anchors.verticalCenter: parent.verticalCenter
-                  implicitWidth: batLayout.width + 12
-
-                  Row {
-                    id: batLayout
-                    anchors.centerIn: parent
-                    spacing: 4
-                    Text {
-                      text: Utils.batteryIcon(parent.parent.batPct, parent.parent.batCharging, parent.parent.batPlugged, parent.parent.batPresent)
-                      color: parent.parent.batCharging ? Colors.green : Colors.accent
-                      font.family: Config.monoFont
-                      font.pixelSize: 10
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-                    Text {
-                      text: parent.parent.batPct + "%"
-                      color: Colors.fg
-                      font.family: Config.sansFont
-                      font.pixelSize: 9
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-                  }
-                }
+              Text {
+                text: Qt.formatDateTime(new Date(), "dddd, MMMM d")
+                color: Colors.fgDim
+                font.family: Config.sansFont
+                font.pixelSize: 11
               }
             }
 
-            // --- SYSTEM CONTROLS CARD (VOLUME & BRIGHTNESS) ---
-            Rectangle {
-              width: parent.width
-              height: sliderCol.implicitHeight + 20
-              color: Colors.bgRaised
-              border.color: Colors.border
-              border.width: 1
-              radius: 12
+            Item { Layout.fillWidth: true }
 
-              Column {
-                id: sliderCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 12
-                spacing: 12
-
-                // Volume Row
-                RowLayout {
-                  width: parent.width
-                  spacing: 12
-
-                  Rectangle {
-                    id: volIconBox
-                    Layout.preferredWidth: 32
-                    Layout.preferredHeight: 32
-                    radius: 8
-                    color: Colors.bgSubtle
-                    border.width: 1
-                    border.color: panel.volMuted ? Colors.red : Colors.border
-
-                    Text {
-                      anchors.centerIn: parent
-                      text: Utils.volumeIcon(panel.volPct, panel.volMuted)
-                      color: panel.volMuted ? Colors.red : Colors.fg
-                      font.family: Config.monoFont
-                      font.pixelSize: 13
-                    }
-
-                    MouseArea {
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      cursorShape: Qt.PointingHandCursor
-                      onClicked: {
-                        if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-                          Pipewire.defaultAudioSink.audio.muted = !panel.volMuted
-                        }
-                      }
-                    }
-                  }
-
-                  SliderControl {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    value: panel.volPct
-                    fillColor: panel.volMuted ? Colors.red : Colors.accent
-                    snapPercent: 5
-                    onMoved: function(v) {
-                      volSetTimer.targetVal = v
-                      volSetTimer.restart()
-                    }
-                  }
-
-                  Text {
-                    Layout.preferredWidth: 36
-                    horizontalAlignment: Text.AlignRight
-                    text: Math.round(panel.volPct * 100) + "%"
-                    color: panel.volMuted ? Colors.red : Colors.fg
-                    font.family: Config.monoFont
-                    font.pixelSize: 11
-                    font.bold: true
-                  }
-                }
-
-                // Divider if brightness is available
-                Rectangle {
-                  visible: panel.brightnessAvailable
-                  width: parent.width
-                  height: 1
-                  color: Colors.border
-                }
-
-                // Brightness Row
-                RowLayout {
-                  visible: panel.brightnessAvailable
-                  width: parent.width
-                  spacing: 12
-
-                  Rectangle {
-                    Layout.preferredWidth: 32
-                    Layout.preferredHeight: 32
-                    radius: 8
-                    color: Colors.bgSubtle
-                    border.width: 1
-                    border.color: Colors.border
-
-                    Text {
-                      anchors.centerIn: parent
-                      text: "󰃠"
-                      color: Colors.yellow
-                      font.family: Config.monoFont
-                      font.pixelSize: 13
-                    }
-                  }
-
-                  SliderControl {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    value: panel.brightnessPct
-                    fillColor: Colors.yellow
-                    snapPercent: 5
-                    onMoved: function(v) {
-                      panel.brightnessPct = v
-                      brightnessSetTimer.targetVal = v
-                      brightnessSetTimer.restart()
-                    }
-                  }
-
-                  Text {
-                    Layout.preferredWidth: 36
-                    horizontalAlignment: Text.AlignRight
-                    text: Math.round(panel.brightnessPct * 100) + "%"
-                    color: Colors.fg
-                    font.family: Config.monoFont
-                    font.pixelSize: 11
-                    font.bold: true
-                  }
-                }
-              }
-            }
-
-            // --- MEDIA PLAYER CARD ---
-            Rectangle {
-              id: mediaCard
-              width: parent.width
-              height: mediaInnerCol.implicitHeight + 24
-              color: Colors.bgRaised
-              border.color: Colors.border
-              border.width: 1
-              radius: 12
-              visible: !!activePlayer
-
-              // Track active player
-              property var mediaPlayers: Mpris.players.values
-              property var activePlayer: {
-                var playing = Utils.findFirst(mediaPlayers, function(p) { return p.isPlaying })
-                return playing ? playing : Utils.findFirst(mediaCard.mediaPlayers, function(p) {
-                  return p.playbackState === MprisPlaybackState.Paused
-                })
-              }
-
-              MediaProgress {
-                id: mediaTracker
-                player: mediaCard.activePlayer
-              }
-
-              Timer {
-                id: seekTimer
-                interval: 200
-                repeat: false
-                property real targetProgress: 0
-                onTriggered: {
-                  if (mediaCard.activePlayer && mediaCard.activePlayer.canSeek) {
-                    var targetPos = targetProgress * mediaTracker.lastLength
-                    var currentPos = mediaTracker.estimatedPosition
-                    var offsetMicro = (targetPos - currentPos) * 1000000
-                    mediaCard.activePlayer.seek(offsetMicro)
-                  }
-                }
-              }
-
-              Column {
-                id: mediaInnerCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 12
-                spacing: 8
-
-                RowLayout {
-                  id: mediaRow
-                  width: parent.width
-                  spacing: 12
-
-                  // Album Cover Art
-                  Rectangle {
-                    width: 48
-                    height: 48
-                    radius: 8
-                    color: Colors.bgSubtle
-                    border.color: Colors.border
-                    border.width: 1
-
-                    // Music Icon fallback
-                    Text {
-                      visible: !coverArt.visible
-                      text: "󰎆"
-                      color: Colors.fgDim
-                      font.family: Config.monoFont
-                      font.pixelSize: 18
-                      anchors.centerIn: parent
-                    }
-
-                    // Mask for rounded corners
-                    Item {
-                      id: coverArtMask
-                      width: parent.width
-                      height: parent.height
-                      visible: false
-                      layer.enabled: true
-                      Rectangle {
-                        width: parent.width
-                        height: parent.height
-                        radius: 8
-                        color: "black"
-                      }
-                    }
-
-                    IconImage {
-                      id: coverArt
-                      anchors.fill: parent
-                      visible: source !== ""
-                      source: {
-                        if (!mediaCard.activePlayer) return ""
-                        var url = mediaCard.activePlayer.trackArtUrl
-                        if (url) {
-                          url = String(url).trim()
-                          if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"') url = url.slice(1, -1)
-                          return url
-                        }
-                        return ""
-                      }
-
-                      layer.enabled: true
-                      layer.effect: MultiEffect {
-                        maskEnabled: true
-                        maskSource: coverArtMask
-                      }
-                    }
-                  }
-
-                  // Track Details
-                  Column {
-                    Layout.fillWidth: true
-                    spacing: 2
-
-                    Text {
-                      width: parent.width
-                      text: mediaCard.activePlayer ? mediaCard.activePlayer.trackTitle : ""
-                      color: Colors.fg
-                      font.bold: true
-                      font.pixelSize: 12
-                      font.family: Config.sansFont
-                      elide: Text.ElideRight
-                    }
-
-                    Text {
-                      width: parent.width
-                      text: mediaCard.activePlayer ? (mediaCard.activePlayer.trackArtist || "Unknown Artist") : ""
-                      color: Colors.fgMid
-                      font.pixelSize: 10
-                      font.family: Config.sansFont
-                      elide: Text.ElideRight
-                    }
-                  }
-
-                  // Playback buttons
-                  RowLayout {
-                    spacing: 6
-                    Layout.alignment: Qt.AlignVCenter
-
-                    // Prev button
-                    Rectangle {
-                      Layout.preferredWidth: 28
-                      Layout.preferredHeight: 28
-                      Layout.alignment: Qt.AlignVCenter
-                      radius: 14
-                      color: prevHover.containsMouse ? Colors.bgSubtle : "transparent"
-                      Behavior on scale { NumberAnimation { duration: 100 } }
-
-                      Text {
-                        text: "󰒮"
-                        color: (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) ? (prevHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
-                        font.family: Config.monoFont
-                        font.pixelSize: 13
-                        anchors.centerIn: parent
-                      }
-
-                      MouseArea {
-                        id: prevHover
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        onEntered: parent.scale = 0.90
-                        onExited: parent.scale = 1.0
-                        onClicked: {
-                          if (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) {
-                            mediaCard.activePlayer.previous()
-                          }
-                        }
-                      }
-                    }
-
-                    // Play/Pause button
-                    Rectangle {
-                      Layout.preferredWidth: 32
-                      Layout.preferredHeight: 32
-                      Layout.alignment: Qt.AlignVCenter
-                      radius: 16
-                      color: playHover.containsMouse ? Colors.accent : Colors.bgSubtle
-                      border.color: Colors.border
-                      border.width: 1
-                      Behavior on scale { NumberAnimation { duration: 100 } }
-
-                      Text {
-                        text: (mediaCard.activePlayer && mediaCard.activePlayer.isPlaying) ? "󰏤" : "󰐊"
-                        color: playHover.containsMouse ? Colors.bg : Colors.fg
-                        font.family: Config.monoFont
-                        font.pixelSize: 15
-                        anchors.centerIn: parent
-                      }
-
-                      MouseArea {
-                        id: playHover
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onEntered: parent.scale = 0.90
-                        onExited: parent.scale = 1.0
-                        onClicked: {
-                          if (mediaCard.activePlayer) {
-                            mediaCard.activePlayer.isPlaying = !mediaCard.activePlayer.isPlaying
-                          }
-                        }
-                      }
-                    }
-
-                    // Next button
-                    Rectangle {
-                      Layout.preferredWidth: 28
-                      Layout.preferredHeight: 28
-                      Layout.alignment: Qt.AlignVCenter
-                      radius: 14
-                      color: nextHover.containsMouse ? Colors.bgSubtle : "transparent"
-                      Behavior on scale { NumberAnimation { duration: 100 } }
-
-                      Text {
-                        text: "󰒭"
-                        color: (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) ? (nextHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
-                        font.family: Config.monoFont
-                        font.pixelSize: 13
-                        anchors.centerIn: parent
-                      }
-
-                      MouseArea {
-                        id: nextHover
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        onEntered: parent.scale = 0.90
-                        onExited: parent.scale = 1.0
-                        onClicked: {
-                          if (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) {
-                            mediaCard.activePlayer.next()
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-
-                // Media Progress Slider Row
-                RowLayout {
-                  width: parent.width
-                  spacing: 8
-                  visible: mediaCard.activePlayer && mediaTracker.lastLength > 0
-
-                  Text {
-                    text: Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
-                    color: Colors.fgDim
-                    font.family: Config.sansFont
-                    font.pixelSize: 9
-                    Layout.preferredWidth: 32
-                    horizontalAlignment: Text.AlignRight
-                  }
-
-                  SliderControl {
-                    Layout.fillWidth: true
-                    value: mediaTracker.progress
-                    fillColor: Colors.accent
-                    onMoved: function(v) {
-                      seekTimer.targetProgress = v
-                      seekTimer.restart()
-                    }
-                  }
-
-                  Text {
-                    text: Utils.formatTime(Math.round(mediaTracker.lastLength))
-                    color: Colors.fgDim
-                    font.family: Config.sansFont
-                    font.pixelSize: 9
-                    Layout.preferredWidth: 32
-                  }
-                }
-              }
-            }
-
-            // --- SYSTEM POWER/CONTROLS ---
+            // Wi-Fi / Wired / Battery / Bluetooth Status Pills
             Row {
-              id: sysControlsRow
-              width: parent.width
-              spacing: 12
+              spacing: 6
+              Layout.alignment: Qt.AlignVCenter
 
-              property var buttonModel: [
-                { icon: "󰌾", label: "Lock", cmd: ["loginctl", "lock-session"], hoverCol: Colors.accent },
-                { icon: "󰤄", label: "Sleep", cmd: ["systemctl", "suspend"], hoverCol: Colors.accent },
-                { icon: "󰜉", label: "Reboot", cmd: ["systemctl", "reboot"], hoverCol: Colors.orange },
-                { icon: "󰐥", label: "Power", cmd: ["systemctl", "poweroff"], hoverCol: Colors.red }
-              ]
+              // Wi-Fi Pill
+              Rectangle {
+                property var wifiDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
+                property bool isWifi: wifiDev && wifiDev.connected
+                property var wifiNet: Utils.findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected })
+                property string wifiSsid: wifiNet ? wifiNet.name : ""
 
-              Repeater {
-                model: sysControlsRow.buttonModel
-                delegate: Rectangle {
-                  width: (sysControlsRow.width - (3 * sysControlsRow.spacing)) / 4
-                  height: 48
-                  radius: 10
-                  color: hoverArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised
-                  border.color: hoverArea.containsMouse ? modelData.hoverCol : Colors.border
-                  border.width: 1
-                  Behavior on scale { NumberAnimation { duration: 100 } }
+                visible: isWifi
+                height: 22
+                radius: 11
+                color: Colors.bgSubtle
+                border.color: Colors.border
+                border.width: 1
+                anchors.verticalCenter: parent.verticalCenter
+                implicitWidth: wifiLayout.width + 12
 
-                  MouseArea {
-                    id: hoverArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onEntered: parent.scale = 0.94
-                    onExited: parent.scale = 1.0
-                    onClicked: {
-                      Config.commandCenterVisible = false
-                      Quickshell.execDetached(modelData.cmd)
-                    }
+                Row {
+                  id: wifiLayout
+                  anchors.centerIn: parent
+                  spacing: 4
+                  Text {
+                    text: "󰤨"
+                    color: Colors.accent
+                    font.family: Config.monoFont
+                    font.pixelSize: 10
+                    anchors.verticalCenter: parent.verticalCenter
                   }
-
-                  Row {
-                    anchors.centerIn: parent
-                    spacing: 8
-                    
-                    Text {
-                      text: modelData.icon
-                      color: hoverArea.containsMouse ? modelData.hoverCol : Colors.fg
-                      font.family: Config.monoFont
-                      font.pixelSize: 18
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-                    
-                    Text {
-                      text: modelData.label
-                      color: hoverArea.containsMouse ? Colors.fg : Colors.fgMid
-                      font.family: Config.sansFont
-                      font.pixelSize: 11
-                      font.bold: true
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
+                  Text {
+                    text: parent.parent.wifiSsid
+                    color: Colors.fg
+                    font.family: Config.sansFont
+                    font.pixelSize: 9
+                    anchors.verticalCenter: parent.verticalCenter
                   }
                 }
+              }
+
+              // Wired Pill
+              Rectangle {
+                property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
+                property bool isWired: wiredDev && wiredDev.connected
+
+                visible: isWired
+                height: 22
+                radius: 11
+                color: Colors.bgSubtle
+                border.color: Colors.border
+                border.width: 1
+                anchors.verticalCenter: parent.verticalCenter
+                implicitWidth: wiredLayout.width + 12
+
+                Row {
+                  id: wiredLayout
+                  anchors.centerIn: parent
+                  spacing: 4
+                  Text {
+                    text: "󰈀"
+                    color: Colors.accent
+                    font.family: Config.monoFont
+                    font.pixelSize: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                  }
+                  Text {
+                    text: "Ethernet"
+                    color: Colors.fg
+                    font.family: Config.sansFont
+                    font.pixelSize: 9
+                    anchors.verticalCenter: parent.verticalCenter
+                  }
+                }
+              }
+
+              // Battery Pill
+              Rectangle {
+                property var batDevice: {
+                  var count = UPower.devices.count
+                  for (var i = 0; i < count; i++) {
+                    var d = UPower.devices.get(i)
+                    if (d.isLaptopBattery && d.ready) return d
+                  }
+                  return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null
+                }
+                property bool batPresent: {
+                  var count = UPower.devices.count
+                  for (var i = 0; i < count; i++) {
+                    var d = UPower.devices.get(i)
+                    if (d.isLaptopBattery && d.ready) return true
+                  }
+                  return false
+                }
+                property int batPct: batDevice ? Math.round(batDevice.percentage * 100) : 0
+                property bool batCharging: batDevice && batDevice.state === UPowerDeviceState.Charging
+                property bool batPlugged: batDevice && batDevice.state === UPowerDeviceState.FullyCharged
+
+                visible: batPresent
+                height: 22
+                radius: 11
+                color: Colors.bgSubtle
+                border.color: Colors.border
+                border.width: 1
+                anchors.verticalCenter: parent.verticalCenter
+                implicitWidth: batLayout.width + 12
+
+                Row {
+                  id: batLayout
+                  anchors.centerIn: parent
+                  spacing: 4
+                  Text {
+                    text: Utils.batteryIcon(parent.parent.batPct, parent.parent.batCharging, parent.parent.batPlugged, parent.parent.batPresent)
+                    color: parent.parent.batCharging ? Colors.green : Colors.accent
+                    font.family: Config.monoFont
+                    font.pixelSize: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                  }
+                  Text {
+                    text: parent.parent.batPct + "%"
+                    color: Colors.fg
+                    font.family: Config.sansFont
+                    font.pixelSize: 9
+                    anchors.verticalCenter: parent.verticalCenter
+                  }
+                }
+              }
+
+              // Bluetooth Pill
+              BluetoothWidget {
+                showLabel: true
+                anchors.verticalCenter: parent.verticalCenter
               }
             }
           }
 
-          // --- RIGHT COLUMN: NOTIFICATION HISTORY CARD ---
+          // --- SYSTEM CONTROLS CARD (VOLUME & BRIGHTNESS) ---
           Rectangle {
-            id: notifCard
-            width: 360
-            height: leftCol.implicitHeight
+            Layout.fillWidth: true
+            implicitHeight: sliderCol.implicitHeight + 20
             color: Colors.bgRaised
             border.color: Colors.border
             border.width: 1
             radius: 12
 
             Column {
-              id: notifCol
+              id: sliderCol
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.top: parent.top
+              anchors.margins: 12
+              spacing: 12
+
+              // Volume Row
+              RowLayout {
+                width: parent.width
+                spacing: 12
+
+                Rectangle {
+                  id: volIconBox
+                  Layout.preferredWidth: 32
+                  Layout.preferredHeight: 32
+                  radius: 8
+                  color: Colors.bgSubtle
+                  border.width: 1
+                  border.color: panel.volMuted ? Colors.red : Colors.border
+
+                  Text {
+                    anchors.centerIn: parent
+                    text: Utils.volumeIcon(panel.volPct, panel.volMuted)
+                    color: panel.volMuted ? Colors.red : Colors.fg
+                    font.family: Config.monoFont
+                    font.pixelSize: 13
+                  }
+
+                  MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                      if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
+                        Pipewire.defaultAudioSink.audio.muted = !panel.volMuted
+                      }
+                    }
+                  }
+                }
+
+                SliderControl {
+                  Layout.fillWidth: true
+                  Layout.alignment: Qt.AlignVCenter
+                  value: panel.volPct
+                  fillColor: panel.volMuted ? Colors.red : Colors.accent
+                  snapPercent: 5
+                  onMoved: function(v) {
+                    panel.volPct = v
+                    volSetTimer.targetVal = v
+                    volSetTimer.restart()
+                  }
+                }
+
+                Text {
+                  Layout.preferredWidth: 36
+                  horizontalAlignment: Text.AlignRight
+                  text: Math.round(panel.volPct * 100) + "%"
+                  color: panel.volMuted ? Colors.red : Colors.fg
+                  font.family: Config.monoFont
+                  font.pixelSize: 11
+                  font.bold: true
+                }
+              }
+
+              // Divider if brightness is available
+              Rectangle {
+                visible: panel.brightnessAvailable
+                width: parent.width
+                height: 1
+                color: Colors.border
+              }
+
+              // Brightness Row
+              RowLayout {
+                visible: panel.brightnessAvailable
+                width: parent.width
+                spacing: 12
+
+                Rectangle {
+                  Layout.preferredWidth: 32
+                  Layout.preferredHeight: 32
+                  radius: 8
+                  color: Colors.bgSubtle
+                  border.width: 1
+                  border.color: Colors.border
+
+                  Text {
+                    anchors.centerIn: parent
+                    text: "󰃠"
+                    color: Colors.yellow
+                    font.family: Config.monoFont
+                    font.pixelSize: 13
+                  }
+                }
+
+                SliderControl {
+                  Layout.fillWidth: true
+                  Layout.alignment: Qt.AlignVCenter
+                  value: panel.brightnessPct
+                  fillColor: Colors.yellow
+                  snapPercent: 5
+                  onMoved: function(v) {
+                    panel.brightnessPct = v
+                    brightnessSetTimer.targetVal = v
+                    brightnessSetTimer.restart()
+                  }
+                }
+
+                Text {
+                  Layout.preferredWidth: 36
+                  horizontalAlignment: Text.AlignRight
+                  text: Math.round(panel.brightnessPct * 100) + "%"
+                  color: Colors.fg
+                  font.family: Config.monoFont
+                  font.pixelSize: 11
+                  font.bold: true
+                }
+              }
+            }
+          }
+
+          // --- MEDIA PLAYER CARD ---
+          Rectangle {
+            id: mediaCard
+            Layout.fillWidth: true
+            implicitHeight: mediaInnerCol.implicitHeight + 24
+            color: Colors.bgRaised
+            border.color: Colors.border
+            border.width: 1
+            radius: 12
+            visible: Config.alwaysShowMediaCard || !!activePlayer
+
+            property bool hasPlayer: !!activePlayer
+            property var mediaPlayers: Mpris.players.values
+            property var activePlayer: {
+              var playing = Utils.findFirst(mediaPlayers, function(p) { return p.isPlaying })
+              return playing ? playing : Utils.findFirst(mediaCard.mediaPlayers, function(p) {
+                return p.playbackState === MprisPlaybackState.Paused
+              })
+            }
+
+            MediaProgress {
+              id: mediaTracker
+              player: mediaCard.activePlayer
+            }
+
+            Timer {
+              id: seekTimer
+              interval: 200
+              repeat: false
+              property real targetProgress: 0
+              onTriggered: {
+                if (mediaCard.activePlayer && mediaCard.activePlayer.canSeek) {
+                  var targetPos = targetProgress * mediaTracker.lastLength
+                  var currentPos = mediaTracker.estimatedPosition
+                  var offsetMicro = (targetPos - currentPos) * 1000000
+                  mediaCard.activePlayer.seek(offsetMicro)
+                }
+              }
+            }
+
+            Column {
+              id: mediaInnerCol
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.top: parent.top
+              anchors.margins: 12
+              spacing: 8
+
+              RowLayout {
+                id: mediaRow
+                width: parent.width
+                spacing: 12
+
+                // Album Cover Art
+                Rectangle {
+                  width: 48
+                  height: 48
+                  radius: 8
+                  color: Colors.bgSubtle
+                  border.color: Colors.border
+                  border.width: 1
+
+                  Text {
+                    visible: !coverArt.visible
+                    text: "󰎆"
+                    color: Colors.fgDim
+                    font.family: Config.monoFont
+                    font.pixelSize: 18
+                    anchors.centerIn: parent
+                  }
+
+                  Item {
+                    id: coverArtMask
+                    width: parent.width
+                    height: parent.height
+                    visible: false
+                    layer.enabled: true
+                    Rectangle {
+                      width: parent.width
+                      height: parent.height
+                      radius: 8
+                      color: "black"
+                    }
+                  }
+
+                  IconImage {
+                    id: coverArt
+                    anchors.fill: parent
+                    visible: source !== ""
+                    source: {
+                      if (!mediaCard.activePlayer) return ""
+                      var url = mediaCard.activePlayer.trackArtUrl
+                      if (url) {
+                        url = String(url).trim()
+                        if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"') url = url.slice(1, -1)
+                        return url
+                      }
+                      return ""
+                    }
+
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                      maskEnabled: true
+                      maskSource: coverArtMask
+                    }
+                  }
+                }
+
+                // Track Details
+                Column {
+                  Layout.fillWidth: true
+                  spacing: 2
+
+                  Text {
+                    width: parent.width
+                    text: mediaCard.hasPlayer ? mediaCard.activePlayer.trackTitle : "Nothing is playing"
+                    color: mediaCard.hasPlayer ? Colors.fg : Colors.fgDim
+                    font.bold: true
+                    font.pixelSize: 12
+                    font.family: Config.sansFont
+                    elide: Text.ElideRight
+                  }
+
+                  Text {
+                    width: parent.width
+                    text: mediaCard.hasPlayer ? (mediaCard.activePlayer.trackArtist || "Unknown Artist") : "No artist"
+                    color: Colors.fgMid
+                    font.pixelSize: 10
+                    font.family: Config.sansFont
+                    elide: Text.ElideRight
+                  }
+                }
+
+                // Playback buttons
+                RowLayout {
+                  spacing: 6
+                  Layout.alignment: Qt.AlignVCenter
+
+                  // Prev button
+                  Rectangle {
+                    Layout.preferredWidth: 28
+                    Layout.preferredHeight: 28
+                    Layout.alignment: Qt.AlignVCenter
+                    radius: 14
+                    color: prevHover.containsMouse ? Colors.bgSubtle : "transparent"
+                    Behavior on scale { NumberAnimation { duration: 100 } }
+
+                    Text {
+                      text: "󰒮"
+                      color: (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) ? (prevHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
+                      font.family: Config.monoFont
+                      font.pixelSize: 13
+                      anchors.centerIn: parent
+                    }
+
+                    MouseArea {
+                      id: prevHover
+                      anchors.fill: parent
+                      hoverEnabled: true
+                      cursorShape: (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) ? Qt.PointingHandCursor : Qt.ArrowCursor
+                      onEntered: parent.scale = 0.90
+                      onExited: parent.scale = 1.0
+                      onClicked: {
+                        if (mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious) {
+                          mediaCard.activePlayer.previous()
+                        }
+                      }
+                    }
+                  }
+
+                  // Play/Pause button
+                  Rectangle {
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+                    Layout.alignment: Qt.AlignVCenter
+                    radius: 16
+                    color: playHover.containsMouse ? Colors.accent : Colors.bgSubtle
+                    border.color: Colors.border
+                    border.width: 1
+                    Behavior on scale { NumberAnimation { duration: 100 } }
+
+                    Text {
+                      text: (mediaCard.activePlayer && mediaCard.activePlayer.isPlaying) ? "󰏤" : "󰐊"
+                      color: playHover.containsMouse ? Colors.bg : Colors.fg
+                      font.family: Config.monoFont
+                      font.pixelSize: 15
+                      anchors.centerIn: parent
+                    }
+
+                    MouseArea {
+                      id: playHover
+                      anchors.fill: parent
+                      hoverEnabled: true
+                      cursorShape: Qt.PointingHandCursor
+                      onEntered: parent.scale = 0.90
+                      onExited: parent.scale = 1.0
+                      onClicked: {
+                        if (mediaCard.activePlayer) {
+                          mediaCard.activePlayer.isPlaying = !mediaCard.activePlayer.isPlaying
+                        }
+                      }
+                    }
+                  }
+
+                  // Next button
+                  Rectangle {
+                    Layout.preferredWidth: 28
+                    Layout.preferredHeight: 28
+                    Layout.alignment: Qt.AlignVCenter
+                    radius: 14
+                    color: nextHover.containsMouse ? Colors.bgSubtle : "transparent"
+                    Behavior on scale { NumberAnimation { duration: 100 } }
+
+                    Text {
+                      text: "󰒭"
+                      color: (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) ? (nextHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
+                      font.family: Config.monoFont
+                      font.pixelSize: 13
+                      anchors.centerIn: parent
+                    }
+
+                    MouseArea {
+                      id: nextHover
+                      anchors.fill: parent
+                      hoverEnabled: true
+                      cursorShape: (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) ? Qt.PointingHandCursor : Qt.ArrowCursor
+                      onEntered: parent.scale = 0.90
+                      onExited: parent.scale = 1.0
+                      onClicked: {
+                        if (mediaCard.activePlayer && mediaCard.activePlayer.canGoNext) {
+                          mediaCard.activePlayer.next()
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+
+              // Progress row
+              RowLayout {
+                width: parent.width
+                spacing: 8
+                visible: mediaCard.hasPlayer ? mediaTracker.lastLength > 0 : Config.alwaysShowMediaCard
+
+                Text {
+                  text: Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
+                  color: Colors.fgDim
+                  font.family: Config.sansFont
+                  font.pixelSize: 9
+                  Layout.preferredWidth: 32
+                  horizontalAlignment: Text.AlignRight
+                }
+
+                SliderControl {
+                  Layout.fillWidth: true
+                  value: mediaTracker.progress
+                  fillColor: Colors.accent
+                  enabled: mediaCard.hasPlayer
+                  onMoved: function(v) {
+                    seekTimer.targetProgress = v
+                    seekTimer.restart()
+                  }
+                }
+
+                Text {
+                  text: Utils.formatTime(Math.round(mediaTracker.lastLength))
+                  color: Colors.fgDim
+                  font.family: Config.sansFont
+                  font.pixelSize: 9
+                  Layout.preferredWidth: 32
+                }
+              }
+            }
+          }
+
+          // --- NOTIFICATION HISTORY CARD ---
+          Rectangle {
+            id: notifCard
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            color: Colors.bgRaised
+            border.color: Colors.border
+            border.width: 1
+            radius: 12
+
+            ColumnLayout {
               anchors.fill: parent
               anchors.margins: 12
               spacing: 10
@@ -857,7 +788,7 @@ Variants {
               // Header Row
               RowLayout {
                 id: notifHeaderRow
-                width: parent.width
+                Layout.fillWidth: true
                 spacing: 8
 
                 Row {
@@ -904,9 +835,7 @@ Variants {
                   }
                 }
 
-                Item {
-                  Layout.fillWidth: true
-                }
+                Item { Layout.fillWidth: true }
 
                 // Controls: Mute toggle & Clear button
                 Row {
@@ -1000,17 +929,16 @@ Variants {
 
               // Divider line
               Rectangle {
-                id: notifDivider
-                width: parent.width
-                height: 1
+                Layout.fillWidth: true
+                implicitHeight: 1
                 color: Colors.border
               }
 
               // Empty State view
               Item {
                 visible: NotificationStore.historyModel.count === 0
-                width: parent.width
-                height: parent.height - notifHeaderRow.height - notifDivider.height - 30
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
                 Row {
                   anchors.centerIn: parent
@@ -1037,13 +965,17 @@ Variants {
               // Notification History ListView Container
               Item {
                 visible: NotificationStore.historyModel.count > 0
-                width: parent.width
-                height: parent.height - notifHeaderRow.height - notifDivider.height - 30
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 clip: true
 
                 ListView {
                   id: notifHistList
                   anchors.fill: parent
+                  anchors.leftMargin: 6
+                  anchors.rightMargin: 6
+                  anchors.topMargin: 2
+                  anchors.bottomMargin: 2
                   spacing: 6
                   model: NotificationStore.historyModel
 
@@ -1063,6 +995,69 @@ Variants {
 
                     onDismissed: NotificationStore.removeHistoryAt(index)
                     onActionTriggered: NotificationStore.invokeActionOrFocus(model)
+                  }
+                }
+              }
+            }
+          }
+
+          // --- SYSTEM POWER/CONTROLS ---
+          RowLayout {
+            id: sysControlsRow
+            Layout.fillWidth: true
+            spacing: 10
+
+            property var buttonModel: [
+              { icon: "󰌾", label: "Lock", cmd: ["loginctl", "lock-session"], hoverCol: Colors.accent },
+              { icon: "󰤄", label: "Sleep", cmd: ["systemctl", "suspend"], hoverCol: Colors.accent },
+              { icon: "󰜉", label: "Reboot", cmd: ["systemctl", "reboot"], hoverCol: Colors.orange },
+              { icon: "󰐥", label: "Power", cmd: ["systemctl", "poweroff"], hoverCol: Colors.red }
+            ]
+
+            Repeater {
+              model: sysControlsRow.buttonModel
+              delegate: Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                height: 48
+                radius: 10
+                color: hoverArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised
+                border.color: hoverArea.containsMouse ? modelData.hoverCol : Colors.border
+                border.width: 1
+                Behavior on scale { NumberAnimation { duration: 100 } }
+
+                MouseArea {
+                  id: hoverArea
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: parent.scale = 0.94
+                  onExited: parent.scale = 1.0
+                  onClicked: {
+                    Config.commandCenterVisible = false
+                    Quickshell.execDetached(modelData.cmd)
+                  }
+                }
+
+                Row {
+                  anchors.centerIn: parent
+                  spacing: 6
+
+                  Text {
+                    text: modelData.icon
+                    color: hoverArea.containsMouse ? modelData.hoverCol : Colors.fg
+                    font.family: Config.monoFont
+                    font.pixelSize: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                  }
+
+                  Text {
+                    text: modelData.label
+                    color: hoverArea.containsMouse ? Colors.fg : Colors.fgMid
+                    font.family: Config.sansFont
+                    font.pixelSize: 11
+                    font.bold: true
+                    anchors.verticalCenter: parent.verticalCenter
                   }
                 }
               }
