@@ -1,5 +1,4 @@
 pragma Singleton
-
 import Quickshell
 import QtQuick
 
@@ -11,6 +10,7 @@ Singleton {
   // --- Fonts ------------------------------------------------------------
   readonly property string monoFont: Colors.monoFont !== undefined ? Colors.monoFont : "JetBrainsMono Nerd Font"
   readonly property string sansFont: Colors.sansFont !== undefined ? Colors.sansFont : "Inter"
+  readonly property string serifFont: Colors.sansFont !== undefined ? Colors.serifFont : "Instrument Serif"
 
   // --- Command Center State ----------------------------------------------
   property bool commandCenterVisible: false

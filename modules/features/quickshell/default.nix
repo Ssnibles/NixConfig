@@ -1,7 +1,8 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, config, ... }: let
+    { pkgs, config, ... }:
+    let
       inherit (config.theme.colors)
         bg
         bgRaised
@@ -38,6 +39,7 @@
                 Singleton {
                   readonly property string monoFont: "${config.theme.fonts.monospace}"
                   readonly property string sansFont: "${config.theme.fonts.sans}"
+                  readonly property string serifFont: "${config.theme.fonts.serif}"
 
                   readonly property color bg:       "#${bg}"
                   readonly property color bgRaised: "#${bgRaised}"
