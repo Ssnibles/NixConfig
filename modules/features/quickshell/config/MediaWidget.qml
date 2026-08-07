@@ -29,16 +29,16 @@ Item {
   // --- MPRIS State ---
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: {
-    var playing = Utils.findFirst(root.mediaPlayers, function(p) { return p.isPlaying })
+    var playing = Utils.findFirst(root.mediaPlayers, function(p) { return p && p.isPlaying })
     return playing ? playing : Utils.findFirst(root.mediaPlayers, function(p) {
-      return p.playbackState === MprisPlaybackState.Paused
+      return p && p.playbackState === MprisPlaybackState.Paused
     })
   }
 
   property string mediaText: root.mediaPlayer
     ? (root.mediaPlayer.trackArtist
-      ? root.mediaPlayer.trackTitle + " — " + root.mediaPlayer.trackArtist
-      : root.mediaPlayer.trackTitle)
+      ? Utils.cleanTrackTitle(root.mediaPlayer.trackTitle) + " — " + root.mediaPlayer.trackArtist
+      : Utils.cleanTrackTitle(root.mediaPlayer.trackTitle))
     : ""
   property bool hasMedia: root.mediaText !== ""
 
@@ -246,13 +246,17 @@ Item {
               }
             }
 
-            IconImage {
+            Image {
               id: popoverCover
               anchors.fill: parent
-              visible: source !== ""
+              asynchronous: true
+              fillMode: Image.PreserveAspectCrop
+              visible: source !== "" && status === Image.Ready
               source: {
-                if (!root.mediaPlayer) return ""
-                var url = root.mediaPlayer.trackArtUrl
+                var url = root.mediaPlayer ? root.mediaPlayer.trackArtUrl : ""
+                if (!url && NotificationStore.latestMediaImage) {
+                  url = NotificationStore.latestMediaImage
+                }
                 if (url) {
                   url = String(url).trim()
                   if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"') url = url.slice(1, -1)

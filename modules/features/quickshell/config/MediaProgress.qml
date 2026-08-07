@@ -18,6 +18,27 @@ Scope {
   property real estimatedPosition: 0
   property real progress: 0
 
+  function safePos(p) {
+    if (!p) return 0
+    if (p.positionSupported !== undefined && !p.positionSupported) return 0
+    try {
+      var val = p.position
+      return (typeof val === "number" && !isNaN(val) && val >= 0) ? val : 0
+    } catch (e) {
+      return 0
+    }
+  }
+
+  function safeLen(p) {
+    if (!p) return 0
+    try {
+      var val = p.length
+      return (typeof val === "number" && !isNaN(val) && val >= 0) ? val : 0
+    } catch (e) {
+      return 0
+    }
+  }
+
   function reset(pos, len) {
     root.lastPosition = Math.max(0, pos || 0)
     root.lastLength = Math.max(0, len || 0)
@@ -44,8 +65,10 @@ Scope {
       root.progress = 0
       return
     }
+    var isPlaying = false
+    try { isPlaying = !!root.player.isPlaying } catch (e) {}
     var elapsed = Date.now() / 1000 - root.wallClock
-    root.estimatedPosition = root.lastPosition + (root.player.isPlaying ? elapsed : 0)
+    root.estimatedPosition = root.lastPosition + (isPlaying ? elapsed : 0)
     if (root.lastLength > 0) {
       root.progress = Math.min(1, Math.max(0, root.estimatedPosition / root.lastLength))
     } else {
@@ -58,7 +81,7 @@ Scope {
       root.reset(0, 0)
       return
     }
-    root.reset(root.player.position, root.player.length)
+    root.reset(root.safePos(root.player), root.safeLen(root.player))
   }
 
   Connections {
@@ -66,20 +89,20 @@ Scope {
     ignoreUnknownSignals: true
     function onPositionChanged() {
       if (!root.player) return
-      root.updatePosition(root.player.position, root.player.length)
+      root.updatePosition(root.safePos(root.player), root.safeLen(root.player))
     }
     function onLengthChanged() {
       if (!root.player) return
-      root.lastLength = Math.max(0, root.player.length || 0)
+      root.lastLength = Math.max(0, root.safeLen(root.player))
       root.updateEstimatedPosition()
     }
     function onTrackChanged() {
       if (!root.player) return
-      root.reset(root.player.position, root.player.length)
+      root.reset(root.safePos(root.player), root.safeLen(root.player))
     }
     function onIsPlayingChanged() {
       if (!root.player) return
-      root.updatePosition(root.player.position, root.player.length)
+      root.updatePosition(root.safePos(root.player), root.safeLen(root.player))
     }
   }
 

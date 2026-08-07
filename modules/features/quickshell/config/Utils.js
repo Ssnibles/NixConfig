@@ -7,6 +7,16 @@ function findFirst(list, predicate) {
   return null
 }
 
+function cleanTrackTitle(title) {
+  if (!title) return ""
+  var str = String(title).trim()
+  // Strip leading browser tab notification counts like (940) or (12)
+  str = str.replace(/^\(\d+\)\s*/, "")
+  // Strip trailing site suffixes like - YouTube or - SoundCloud
+  str = str.replace(/\s*-\s*(YouTube|SoundCloud|Spotify)$/i, "")
+  return str.trim()
+}
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
 }

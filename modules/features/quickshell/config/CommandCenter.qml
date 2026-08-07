@@ -532,9 +532,9 @@ Scope {
             property bool hasPlayer: !!activePlayer
             property var mediaPlayers: Mpris.players.values
             property var activePlayer: {
-              var playing = Utils.findFirst(mediaPlayers, function(p) { return p.isPlaying })
+              var playing = Utils.findFirst(mediaPlayers, function(p) { return p && p.isPlaying })
               return playing ? playing : Utils.findFirst(mediaCard.mediaPlayers, function(p) {
-                return p.playbackState === MprisPlaybackState.Paused
+                return p && p.playbackState === MprisPlaybackState.Paused
               })
             }
 
@@ -608,13 +608,17 @@ Scope {
                     }
                   }
 
-                  IconImage {
+                  Image {
                     id: coverArt
                     anchors.fill: parent
-                    visible: source !== ""
+                    asynchronous: true
+                    fillMode: Image.PreserveAspectCrop
+                    visible: source !== "" && status === Image.Ready
                     source: {
-                      if (!mediaCard.activePlayer) return ""
-                      var url = mediaCard.activePlayer.trackArtUrl
+                      var url = mediaCard.activePlayer ? mediaCard.activePlayer.trackArtUrl : ""
+                      if (!url && NotificationStore.latestMediaImage) {
+                        url = NotificationStore.latestMediaImage
+                      }
                       if (url) {
                         url = String(url).trim()
                         if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"') url = url.slice(1, -1)
@@ -638,7 +642,7 @@ Scope {
 
                   Text {
                     width: parent.width
-                    text: mediaCard.hasPlayer ? mediaCard.activePlayer.trackTitle : "Nothing is playing"
+                    text: mediaCard.hasPlayer ? Utils.cleanTrackTitle(mediaCard.activePlayer.trackTitle) : "Nothing is playing"
                     color: mediaCard.hasPlayer ? Colors.fg : Colors.fgDim
                     font.bold: true
                     font.pixelSize: 15

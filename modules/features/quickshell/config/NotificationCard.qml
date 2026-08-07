@@ -45,13 +45,24 @@ Rectangle {
       }
     }
 
-    // 1. Explicit notification image / art
+    // Explicit notification image / art
     addCandidate(root.image)
 
-    // 2. Explicit app icon string provided by notification
+    if (root.isMedia) {
+      // Fall back to active MPRIS player trackArtUrl or NotificationStore.latestMediaImage
+      if (NotificationStore.mediaPlayer && NotificationStore.mediaPlayer.trackArtUrl) {
+        addCandidate(NotificationStore.mediaPlayer.trackArtUrl)
+      }
+      if (NotificationStore.latestMediaImage) {
+        addCandidate(NotificationStore.latestMediaImage)
+      }
+      return list
+    }
+
+    // Explicit app icon string provided by notification
     addCandidate(root.appIcon)
 
-    // 3. Desktop entry variations
+    // Desktop entry variations
     if (root.desktopEntry) {
       var de = String(root.desktopEntry).trim()
       if (de.endsWith(".desktop")) {
@@ -64,20 +75,14 @@ Rectangle {
       }
     }
 
-    // 4. App name variations
+    // App name variations
     if (root.appName) {
       var an = String(root.appName).trim().toLowerCase()
       addCandidate(an)
       addCandidate(an.replace(/\s+/g, "-"))
     }
 
-    // 5. Media fallback
-    if (root.isMedia) {
-      addCandidate("multimedia-player")
-      addCandidate("audio-x-generic")
-    }
-
-    // 6. Universal default fallback icons
+    // Universal default fallback icons
     addCandidate("dialog-information")
     addCandidate("preferences-system-notifications")
     addCandidate("notification-symbolic")
@@ -203,7 +208,7 @@ Rectangle {
       Text {
         anchors.centerIn: parent
         text: root.fallbackGlyph
-        color: root.isMedia ? Colors.teal : (root.urgency === 2 ? Colors.red : Colors.accent)
+        color: root.isMedia ? Colors.fgDim : (root.urgency === 2 ? Colors.red : Colors.accent)
         font.pixelSize: (root.fallbackGlyph.length === 1) ? (root.isMedia ? 22 : 18) : (root.isMedia ? 22 : 18)
         font.bold: root.fallbackGlyph.length === 1
         font.family: (root.fallbackGlyph.length === 1) ? Config.sansFont : Config.monoFont
@@ -225,9 +230,11 @@ Rectangle {
         }
       }
 
-      IconImage {
+      Image {
         id: img
         anchors.fill: parent
+        asynchronous: true
+        fillMode: Image.PreserveAspectCrop
         source: root.iconSource
         visible: source !== "" && status === Image.Ready
 
