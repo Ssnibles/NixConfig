@@ -627,11 +627,11 @@ Scope {
                     asynchronous: true
                     fillMode: Image.PreserveAspectCrop
                     visible: source !== "" && status === Image.Ready
-                    source: NotificationStore.getCoverArt(
-                      mediaCard.activePlayer ? mediaCard.activePlayer.trackTitle : "",
-                      mediaCard.activePlayer ? mediaCard.activePlayer.trackArtist : "",
-                      mediaCard.activePlayer ? mediaCard.activePlayer.trackArtUrl : ""
-                    )
+                    source: (mediaCard.hasPlayer && mediaCard.activePlayer && (mediaCard.activePlayer.trackTitle || mediaCard.activePlayer.trackArtUrl)) ? NotificationStore.getCoverArt(
+                      mediaCard.activePlayer.trackTitle || "",
+                      mediaCard.activePlayer.trackArtist || "",
+                      mediaCard.activePlayer.trackArtUrl || ""
+                    ) : ""
 
                     layer.enabled: true
                     layer.effect: MultiEffect {

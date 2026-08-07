@@ -142,8 +142,10 @@ Singleton {
       return cleanU
     }
 
-    if (store.latestMediaImage !== "") {
-      return store.latestMediaImage
+    if (cleanT !== "" || cleanA !== "" || cleanU !== "") {
+      if (store.latestMediaImage !== "") {
+        return store.latestMediaImage
+      }
     }
 
     return ""
