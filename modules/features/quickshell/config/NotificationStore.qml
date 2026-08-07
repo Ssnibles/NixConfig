@@ -12,7 +12,7 @@ Singleton {
   property bool dnd: false
   property int maxVisible: Config.notifMaxVisible
   property int timeoutMs: Config.notifTimeoutMs
-  property int maxHistory: 50
+  property int maxHistory: Config.notifMaxHistory
   property int hoveredIndex: -1
 
   ListModel {
@@ -30,12 +30,8 @@ Singleton {
 
   // --- MPRIS Track Change Listener ---
   property var mediaPlayers: Mpris.players.values
-  property var mediaPlayer: {
-    var playing = Utils.findFirst(store.mediaPlayers, function(p) { return p && p.isPlaying })
-    return playing ? playing : Utils.findFirst(store.mediaPlayers, function(p) {
-      return p && p.playbackState === MprisPlaybackState.Paused
-    })
-  }
+  property var mediaPlayer: Utils.findActivePlayer(store.mediaPlayers, MprisPlaybackState.Paused)
+
 
   property string currentTrackKey: ""
   property string latestMediaImage: ""
@@ -102,14 +98,9 @@ Singleton {
   onCurrentTrackKeyChanged: {
     if (!store._startupFinished) return
     if (currentTrackKey !== "" && mediaPlayer && mediaPlayer.isPlaying) {
-      var artUrl = mediaPlayer.trackArtUrl || ""
-      if (artUrl) {
-        artUrl = String(artUrl).trim()
-        if (artUrl.charAt(0) === '"' && artUrl.charAt(artUrl.length - 1) === '"') {
-          artUrl = artUrl.slice(1, -1)
-        }
-        if (artUrl !== "") store.latestMediaImage = artUrl
-      }
+      var artUrl = Utils.cleanUrl(mediaPlayer.trackArtUrl || "")
+      if (artUrl !== "") store.latestMediaImage = artUrl
+
 
       var rawTitle = mediaPlayer.trackTitle || ""
       var cleanT = Utils.cleanTrackTitle(rawTitle)

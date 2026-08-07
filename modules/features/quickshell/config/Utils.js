@@ -156,3 +156,34 @@ function focusWindow(patterns) {
 
   Quickshell.execDetached(["sh", "-c", script, "sh"].concat(cleanTargets))
 }
+
+function cleanUrl(url) {
+  if (!url) return ""
+  var str = String(url).trim()
+  if (str.charAt(0) === '"' && str.charAt(str.length - 1) === '"') {
+    str = str.slice(1, -1)
+  }
+  return str
+}
+
+function findActivePlayer(players, pausedEnum) {
+  if (!players || players.length === 0) return null
+  var playing = findFirst(players, function(p) { return p && p.isPlaying })
+  if (playing) return playing
+  return findFirst(players, function(p) {
+    if (!p) return false
+    if (pausedEnum !== undefined) return p.playbackState === pausedEnum
+    return p.playbackState === 1 || String(p.playbackState).toLowerCase().indexOf("paused") !== -1
+  })
+}
+
+function findBatteryDevice(upowerDevices, displayDevice) {
+  if (upowerDevices && upowerDevices.count > 0) {
+    for (var i = 0; i < upowerDevices.count; i++) {
+      var d = upowerDevices.get(i)
+      if (d && d.isLaptopBattery && d.ready) return d
+    }
+  }
+  return (displayDevice && displayDevice.ready) ? displayDevice : null
+}
+

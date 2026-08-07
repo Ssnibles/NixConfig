@@ -109,11 +109,6 @@ ShellRoot {
             id: batteryWidget
             sharedWindow: sharedTipWindow
           }
-
-          BluetoothWidget {
-            id: bluetoothWidget
-            sharedWindow: sharedTipWindow
-          }
         }
       }
 

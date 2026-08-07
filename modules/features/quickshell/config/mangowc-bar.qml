@@ -6,8 +6,8 @@ Scope {
   id: root
 
   property string currentTime: ""
-  property var allMonitorsTags: [] // Store raw monitor data from JSON
-  property int minWorkspaces: 5    // Always show at least 5
+  property int minWorkspaces: Config.mangowcMinWorkspaces
+
 
   // Continuous listener for MangoWC JSON stream
   Process {
@@ -144,8 +144,9 @@ Scope {
     interval: 1000
     running: true
     repeat: true
-    onTriggered: root.currentTime = Qt.formatDateTime(new Date(), "HH:mm:ss")
+    onTriggered: root.currentTime = Qt.formatDateTime(new Date(), Config.mangowcClockFormat)
   }
 
-  Component.onCompleted: root.currentTime = Qt.formatDateTime(new Date(), "HH:mm:ss")
+  Component.onCompleted: root.currentTime = Qt.formatDateTime(new Date(), Config.mangowcClockFormat)
+
 }

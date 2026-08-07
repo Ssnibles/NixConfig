@@ -231,12 +231,10 @@ Scope {
         onClicked: mainBg.forceActiveFocus()
       }
 
-      // Check if this screen is the main interactive screen (first screen in list)
-      property bool isPrimaryScreen: surface.screen === undefined || surface.screen === Quickshell.screens[0]
-
       // Primary Interactive Screen Content
       ColumnLayout {
-        visible: parent.isPrimaryScreen
+        visible: surface.isPrimaryScreen
+
         anchors.centerIn: parent
         width: Math.min(parent.width - 40, 440)
         spacing: 28
@@ -582,7 +580,8 @@ Scope {
 
       // Secondary Display Screen Content (Non-interactive display for multi-monitors)
       Column {
-        visible: !parent.isPrimaryScreen
+        visible: !surface.isPrimaryScreen
+
         anchors.centerIn: parent
         spacing: 16
 

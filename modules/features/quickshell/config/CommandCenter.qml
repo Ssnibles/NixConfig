@@ -186,7 +186,7 @@ Scope {
       // Main Card container
       Rectangle {
         id: mainCard
-        width: 500
+        width: Config.commandCenterWidth
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.right: parent.right
@@ -206,7 +206,7 @@ Scope {
         color: Colors.bg
         border.color: Colors.border
         border.width: 1
-        radius: 16
+        radius: Config.commandCenterRadius
 
         ColumnLayout {
           anchors.fill: parent
@@ -225,7 +225,7 @@ Scope {
 
               Text {
                 id: headerTime
-                text: Qt.formatDateTime(new Date(), "hh:mm")
+                text: Qt.formatDateTime(new Date(), Config.commandCenterClockFormat)
                 color: Colors.fg
                 font.family: Config.serifFont
                 font.letterSpacing: 2
@@ -235,7 +235,7 @@ Scope {
 
                 function updateTime() {
                   var d = new Date()
-                  headerTime.text = Qt.formatDateTime(d, "hh:mm")
+                  headerTime.text = Qt.formatDateTime(d, Config.commandCenterClockFormat)
                   headerTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
                   headerTimer.restart()
                 }
@@ -251,7 +251,7 @@ Scope {
               }
 
               Text {
-                text: Qt.formatDateTime(new Date(), "dddd, MMMM d")
+                text: Qt.formatDateTime(new Date(), Config.commandCenterDateFormat)
                 color: Colors.fgDim
                 font.family: Config.sansFont
                 font.pixelSize: 14
@@ -266,24 +266,22 @@ Scope {
               Layout.alignment: Qt.AlignTop
 
               // Wi-Fi Pill
-              Rectangle {
+              Pill {
+                id: ccWifiPill
                 property var wifiDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
                 property bool isWifi: wifiDev && wifiDev.connected
                 property var wifiNet: Utils.findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected })
                 property string wifiSsid: wifiNet ? wifiNet.name : ""
 
                 visible: isWifi
-                height: 24
-                radius: 12
-                color: Colors.bgSubtle
+                pillHeight: 24
+                padding: 6
+                pillColor: wifiMouse.containsMouse ? Colors.bgRaised : Colors.bgSubtle
                 border.color: Colors.border
                 border.width: 1
                 anchors.verticalCenter: parent.verticalCenter
-                implicitWidth: wifiLayout.width + 12
 
                 Row {
-                  id: wifiLayout
-                  anchors.centerIn: parent
                   spacing: 4
                   Text {
                     text: "󰤨"
@@ -293,32 +291,39 @@ Scope {
                     anchors.verticalCenter: parent.verticalCenter
                   }
                   Text {
-                    text: parent.parent.wifiSsid
+                    text: ccWifiPill.wifiSsid
                     color: Colors.fg
                     font.family: Config.sansFont
                     font.pixelSize: 12
                     anchors.verticalCenter: parent.verticalCenter
                   }
                 }
+
+                MouseArea {
+                  id: wifiMouse
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  acceptedButtons: Qt.LeftButton | Qt.RightButton
+                  onClicked: Quickshell.execDetached(["kitty", "-e", "nmtui"])
+                }
               }
 
               // Wired Pill
-              Rectangle {
+              Pill {
+                id: ccWiredPill
                 property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
                 property bool isWired: wiredDev && wiredDev.connected
 
                 visible: isWired
-                height: 24
-                radius: 12
-                color: Colors.bgSubtle
+                pillHeight: 24
+                padding: 6
+                pillColor: wiredMouse.containsMouse ? Colors.bgRaised : Colors.bgSubtle
                 border.color: Colors.border
                 border.width: 1
                 anchors.verticalCenter: parent.verticalCenter
-                implicitWidth: wiredLayout.width + 12
 
                 Row {
-                  id: wiredLayout
-                  anchors.centerIn: parent
                   spacing: 4
                   Text {
                     text: "󰈀"
@@ -335,36 +340,35 @@ Scope {
                     anchors.verticalCenter: parent.verticalCenter
                   }
                 }
+
+                MouseArea {
+                  id: wiredMouse
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  acceptedButtons: Qt.LeftButton | Qt.RightButton
+                  onClicked: Quickshell.execDetached(["kitty", "-e", "nmtui"])
+                }
               }
 
               // Battery Pill
-              Rectangle {
+              Pill {
                 id: ccBatPill
-                property var batDevice: {
-                  var count = UPower.devices.count
-                  for (var i = 0; i < count; i++) {
-                    var d = UPower.devices.get(i)
-                    if (d.isLaptopBattery && d.ready) return d
-                  }
-                  return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null
-                }
+                property var batDevice: Utils.findBatteryDevice(UPower.devices, UPower.displayDevice)
                 property bool batPresent: batDevice !== null && batDevice.isLaptopBattery
                 property int batPct: batDevice ? Math.round(batDevice.percentage * 100) : 0
                 property bool batCharging: batDevice && batDevice.state === UPowerDeviceState.Charging
                 property bool batPlugged: batDevice && batDevice.state === UPowerDeviceState.FullyCharged
 
                 visible: batPresent
-                height: 24
-                radius: 12
-                color: Colors.bgSubtle
+                pillHeight: 24
+                padding: 6
+                pillColor: Colors.bgSubtle
                 border.color: Colors.border
                 border.width: 1
                 anchors.verticalCenter: parent.verticalCenter
-                implicitWidth: batLayout.width + 12
 
                 Row {
-                  id: batLayout
-                  anchors.centerIn: parent
                   spacing: 4
                   Text {
                     text: Utils.batteryIcon(ccBatPill.batPct, ccBatPill.batCharging, ccBatPill.batPlugged, ccBatPill.batPresent)
@@ -398,7 +402,7 @@ Scope {
             color: Colors.bgRaised
             border.color: Colors.border
             border.width: 1
-            radius: 12
+            radius: Config.commandCenterCardRadius
 
             Column {
               id: sliderCol
@@ -529,17 +533,12 @@ Scope {
             color: Colors.bgRaised
             border.color: Colors.border
             border.width: 1
-            radius: 12
+            radius: Config.commandCenterCardRadius
             visible: Config.alwaysShowMediaCard || !!activePlayer
 
             property bool hasPlayer: !!activePlayer
             property var mediaPlayers: Mpris.players.values
-            property var activePlayer: {
-              var playing = Utils.findFirst(mediaPlayers, function(p) { return p && p.isPlaying })
-              return playing ? playing : Utils.findFirst(mediaCard.mediaPlayers, function(p) {
-                return p && p.playbackState === MprisPlaybackState.Paused
-              })
-            }
+            property var activePlayer: Utils.findActivePlayer(mediaCard.mediaPlayers, MprisPlaybackState.Paused)
 
             MediaProgress {
               id: mediaTracker
@@ -549,7 +548,7 @@ Scope {
 
             Timer {
               id: seekTimer
-              interval: 200
+              interval: Config.mediaSeekDebounceMs
               repeat: false
               property real targetProgress: 0
               onTriggered: {
@@ -622,12 +621,7 @@ Scope {
                       if (!url && NotificationStore.latestMediaImage) {
                         url = NotificationStore.latestMediaImage
                       }
-                      if (url) {
-                        url = String(url).trim()
-                        if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"') url = url.slice(1, -1)
-                        return url
-                      }
-                      return ""
+                      return Utils.cleanUrl(url)
                     }
 
                     layer.enabled: true
@@ -813,7 +807,7 @@ Scope {
             color: Colors.bgRaised
             border.color: Colors.border
             border.width: 1
-            radius: 12
+            radius: Config.commandCenterCardRadius
 
             ColumnLayout {
               anchors.fill: parent

@@ -38,11 +38,13 @@ Pill {
     return "Off"
   }
 
-  pillHeight: showLabel ? 22 : 30
+  pillHeight: showLabel ? 25 : 30
   padding: showLabel ? 6 : 0
   anchors.horizontalCenter: (parent && !showLabel) ? parent.horizontalCenter : undefined
 
-  pillColor: showLabel ? Colors.bgSubtle : (mouseArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised)
+  pillColor: showLabel
+               ? (mouseArea.containsMouse ? Colors.bgRaised : Colors.bgSubtle)
+               : (mouseArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised)
   border.width: 1
   border.color: Colors.border
 
@@ -133,8 +135,7 @@ Pill {
   // Bar mode content (centered icon, pixelSize 18)
   Text {
     visible: !root.showLabel
-    x: (root.width - implicitWidth) / 2
-    y: (root.height - implicitHeight) / 2
+    anchors.verticalCenter: parent.verticalCenter
     text: root.btIcon
     color: root.btColor
     font.family: root.uiFont
@@ -145,7 +146,7 @@ Pill {
   Row {
     id: labelRow
     visible: root.showLabel
-    anchors.centerIn: parent
+    anchors.verticalCenter: parent.verticalCenter
     spacing: 4
 
     Text {

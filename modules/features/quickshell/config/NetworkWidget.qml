@@ -8,17 +8,7 @@ Pill {
 
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
-
-  // Bar is 38px wide — keep icon-only so nothing overflows.
-  pillHeight: 30
-  padding: 0
-  anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
-
-  pillColor: Colors.bgRaised
-  border.width: 1
-  border.color: (root.isWired || root.isWifi)
-                  ? Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.5)
-                  : Colors.border
+  property int maxTextWidth: Config.wifiMaxTextWidth
 
   // Networking state
   property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
@@ -32,11 +22,66 @@ Pill {
 
   property string netIcon: {
     if (root.isWired) return "󰈀"
-    if (root.isWifi)  return Utils.wifiIcon(root.wifiNet ? root.wifiNet.signalStrength : 0, true)
+    if (root.isWifi)  return "󰤨"
     return "󰤮"
   }
 
+  property string netText: {
+    if (root.isWired) return "Ethernet"
+    if (root.isWifi)  return root.wifiSsid !== "" ? root.wifiSsid : "Wi-Fi"
+    return "Offline"
+  }
+
   property color netColor: (root.isWired || root.isWifi) ? Colors.accent : Colors.fgDim
+
+  // Match Command Center Wi-Fi Pill styling
+  pillHeight: 30
+  padding: 6
+  orientation: Qt.Vertical
+  anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+
+  pillColor: mouseArea.containsMouse ? Colors.bgRaised : Colors.bgSubtle
+  border.width: 1
+  border.color: Colors.border
+
+  Behavior on pillColor { ColorAnimation { duration: 120 } }
+  Behavior on border.color { ColorAnimation { duration: 120 } }
+
+  Row {
+    id: labelRow
+    anchors.centerIn: parent
+    spacing: 4
+    rotation: 270
+    transformOrigin: Item.Center
+
+    Text {
+      text: root.netIcon
+      color: root.netColor
+      font.family: Config.monoFont
+      font.pixelSize: 12
+      anchors.verticalCenter: parent.verticalCenter
+    }
+
+    Text {
+      text: root.netText
+      color: Colors.fg
+      font.family: Config.sansFont
+      font.pixelSize: 12
+      elide: Text.ElideRight
+      maximumLineCount: 1
+      width: Math.min(implicitWidth, root.maxTextWidth)
+      anchors.verticalCenter: parent.verticalCenter
+    }
+  }
+
+  MouseArea {
+    id: mouseArea
+    anchors.fill: parent
+    hoverEnabled: true
+    cursorShape: Qt.PointingHandCursor
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    onClicked: Quickshell.execDetached(["kitty", "-e", "nmtui"])
+  }
 
   Tooltip {
     target: root
@@ -55,22 +100,5 @@ Pill {
       d.push("Right click · nmtui")
       return d
     }
-  }
-
-  Text {
-    // Use absolute centering rather than relying on the contentItem anchor layout
-    x: (root.width  - implicitWidth)  / 2
-    y: (root.height - implicitHeight) / 2
-    text: root.netIcon
-    color: root.netColor
-    font.family: root.uiFont
-    font.pixelSize: 18
-  }
-
-  MouseArea {
-    anchors.fill: parent
-    cursorShape: Qt.PointingHandCursor
-    acceptedButtons: Qt.RightButton
-    onClicked: Quickshell.execDetached(["kitty", "-e", "nmtui"])
   }
 }

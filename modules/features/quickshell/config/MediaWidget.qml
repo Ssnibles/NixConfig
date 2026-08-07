@@ -28,12 +28,7 @@ Item {
 
   // --- MPRIS State ---
   property var mediaPlayers: Mpris.players.values
-  property var mediaPlayer: {
-    var playing = Utils.findFirst(root.mediaPlayers, function(p) { return p && p.isPlaying })
-    return playing ? playing : Utils.findFirst(root.mediaPlayers, function(p) {
-      return p && p.playbackState === MprisPlaybackState.Paused
-    })
-  }
+  property var mediaPlayer: Utils.findActivePlayer(root.mediaPlayers, MprisPlaybackState.Paused)
 
   property string mediaText: root.mediaPlayer
     ? (root.mediaPlayer.trackArtist
@@ -51,7 +46,7 @@ Item {
   // Debounced seek — mirrors CommandCenter's seekTimer
   Timer {
     id: popoverSeekTimer
-    interval: 200
+    interval: Config.mediaSeekDebounceMs
     repeat: false
     property real targetProgress: 0
     onTriggered: {
@@ -66,6 +61,7 @@ Item {
       }
     }
   }
+
 
   function focusMediaPlayer() {
     if (!root.mediaPlayer) return
@@ -103,9 +99,10 @@ Item {
         loops: Animation.Infinite
         from: 0
         to: 360
-        duration: 4000
+        duration: Config.mediaRotationDuration
         running: root.mediaPlayer && root.mediaPlayer.isPlaying
       }
+
     }
 
     // Position indicator (elapsed / total stacked vertically)
@@ -118,7 +115,7 @@ Item {
         id: elapsedLabel
         anchors.horizontalCenter: parent.horizontalCenter
         text: root.mediaPlayer && mediaTracker.lastLength > 0
-          ? Utils.formatTime(Math.round(mediaTracker.estimatedPosition)) + " /"
+          ? Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
           : Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
         color: Colors.fgMid
         font.family: root.uiFont
@@ -239,12 +236,7 @@ Item {
                 if (!url && NotificationStore.latestMediaImage) {
                   url = NotificationStore.latestMediaImage
                 }
-                if (url) {
-                  url = String(url).trim()
-                  if (url.charAt(0) === '"' && url.charAt(url.length - 1) === '"') url = url.slice(1, -1)
-                  return url
-                }
-                return ""
+                return Utils.cleanUrl(url)
               }
               layer.enabled: true
               layer.effect: MultiEffect {

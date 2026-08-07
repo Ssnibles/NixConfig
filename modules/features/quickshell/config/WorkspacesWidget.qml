@@ -6,9 +6,10 @@ Column {
   property var workspaces: []
   signal focusRequested(int workspaceId)
 
-  property int dotSize: 12
-  property int dotSizeFocused: 28
-  property int dotSpacing: 6
+  property int dotSize: Config.workspaceDotSize
+  property int dotSizeFocused: Config.workspaceDotSizeFocused
+  property int dotSpacing: Config.workspaceDotSpacing
+
   property color dotColorFocused: Colors.accent
   property color dotColorActive: Colors.fgMid
   property color dotColorUrgent: Colors.red

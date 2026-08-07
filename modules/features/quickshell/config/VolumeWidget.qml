@@ -73,7 +73,7 @@ Item {
     Item {
       id: volTrackContainer
       width: 12
-      height: 36
+      height: Config.volBarHeight
       anchors.horizontalCenter: parent.horizontalCenter
 
       Rectangle {
@@ -100,7 +100,7 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        
+
         function updateVolume(mouseY) {
           var pct = Math.max(0, Math.min(1.5, (parent.height - mouseY) / parent.height))
           root.volPct = pct

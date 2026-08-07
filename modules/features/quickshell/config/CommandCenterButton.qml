@@ -13,7 +13,7 @@ Pill {
     color: (hoverArea.containsMouse || Config.commandCenterVisible) ? Colors.accent : Colors.fg
     font.family: Config.monoFont
     font.pixelSize: 16
-    anchors.centerIn: parent
+    anchors.verticalCenter: parent.verticalCenter
   }
 
   MouseArea {

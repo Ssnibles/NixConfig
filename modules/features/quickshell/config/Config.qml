@@ -12,13 +12,20 @@ Singleton {
   readonly property string sansFont: "SF Pro Text"
   readonly property string serifFont: Colors.serifFont !== undefined ? Colors.serifFont : "Instrument Serif"
 
-  // --- Command Center State ----------------------------------------------
+  // --- Command Center State & Geometry ----------------------------------
   property bool commandCenterVisible: false
+  readonly property int commandCenterWidth: 500
+  readonly property int commandCenterRadius: 16
+  readonly property int commandCenterCardRadius: 12
+  readonly property string commandCenterClockFormat: "hh:mm"
+  readonly property string commandCenterDateFormat: "dddd, MMMM d"
 
   // --- Media --------------------------------------------------------------
   // Whether the command center's media card always stays visible, showing
   // "Nothing is playing" when no media is active.
   readonly property bool alwaysShowMediaCard: true
+  readonly property int mediaRotationDuration: 4000
+  readonly property int mediaSeekDebounceMs: 200
 
   // --- Clock --------------------------------------------------------------
   readonly property string timeFormat: "hh:mm"
@@ -31,9 +38,18 @@ Singleton {
   readonly property int barMarginLeft: 4
   readonly property int barMarginRight: 4
   readonly property int barSpacing: 8
+  readonly property int volBarHeight: 64
+  readonly property int wifiMaxTextWidth: 90
+
+  // --- Workspaces (WorkspacesWidget.qml) --------------------------------
+  readonly property int workspaceDotSize: 12
+  readonly property int workspaceDotSizeFocused: 34
+  readonly property int workspaceDotSpacing: 6
 
   // --- MangoWC top bar (mangowc-bar.qml) --------------------------------
   readonly property int barHeight: 34
+  readonly property int mangowcMinWorkspaces: 5
+  readonly property string mangowcClockFormat: "HH:mm:ss"
 
   // --- Popup / tooltip ---------------------------------------------------
   readonly property int popupGap: 46 // distance from the bar to a popup
@@ -49,6 +65,7 @@ Singleton {
   readonly property string notifPosition: "top-left"
   readonly property int notifTimeoutMs: 5000
   readonly property int notifMaxVisible: 5
+  readonly property int notifMaxHistory: 24
   readonly property int notifWidth: 300
   readonly property int notifRadius: 12
   readonly property int notifCardMargins: 12

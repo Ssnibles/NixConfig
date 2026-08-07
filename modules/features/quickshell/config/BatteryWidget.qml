@@ -14,7 +14,7 @@ Pill {
   padding: 0
   anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
-  pillColor: Colors.bgRaised
+  pillColor: mouseArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised
   border.width: 1
   border.color: {
     if (!root.batPresent)                    return Colors.border
@@ -24,15 +24,11 @@ Pill {
     return Colors.border
   }
 
+  Behavior on pillColor { ColorAnimation { duration: 120 } }
+
   // UPower State
-  property var batDevice: {
-    var count = UPower.devices.count
-    for (var i = 0; i < count; i++) {
-      var d = UPower.devices.get(i)
-      if (d.isLaptopBattery && d.ready) return d
-    }
-    return UPower.displayDevice && UPower.displayDevice.ready ? UPower.displayDevice : null
-  }
+  property var batDevice: Utils.findBatteryDevice(UPower.devices, UPower.displayDevice)
+
 
   readonly property bool batPresent:  batDevice !== null && batDevice.isLaptopBattery
   readonly property int  batPct:      root.batDevice ? Math.round(root.batDevice.percentage * 100) : 0
@@ -87,9 +83,7 @@ Pill {
   }
 
   Column {
-    // Absolute centering — padding:0 means contentItem left-anchors otherwise
-    x: (root.width  - implicitWidth)  / 2
-    y: (root.height - implicitHeight) / 2
+    anchors.verticalCenter: parent.verticalCenter
     spacing: 3
 
     Text {
@@ -99,5 +93,11 @@ Pill {
       font.family: root.uiFont
       font.pixelSize: 18
     }
+  }
+
+  MouseArea {
+    id: mouseArea
+    anchors.fill: parent
+    hoverEnabled: true
   }
 }
