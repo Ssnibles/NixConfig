@@ -39,7 +39,7 @@ Singleton {
   readonly property int barMarginRight: 4
   readonly property int barSpacing: 8
   readonly property int volBarHeight: 64
-  readonly property int wifiMaxTextWidth: 90
+  readonly property int wifiMaxTextLength: 90
 
   // --- Workspaces (WorkspacesWidget.qml) --------------------------------
   readonly property int workspaceDotSize: 12
