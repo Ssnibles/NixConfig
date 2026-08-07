@@ -1,6 +1,7 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Notifications
 import Quickshell.Services.Mpris
 import QtQuick
@@ -32,9 +33,188 @@ Singleton {
   property var mediaPlayers: Mpris.players.values
   property var mediaPlayer: Utils.findActivePlayer(store.mediaPlayers, MprisPlaybackState.Paused)
 
-
   property string currentTrackKey: ""
   property string latestMediaImage: ""
+
+  // --- Cover Art Cache System ---
+  property int cacheVersion: 0
+  property var artCache: ({})
+  property var _pendingDownloads: ({})
+  property var _downloadQueue: []
+  property var _currentDownloadItem: null
+  property string cacheDir: ""
+
+  Component.onCompleted: {
+    var home = Quickshell.env("HOME") || "/home/" + Quickshell.env("USER")
+    var xdgCache = Quickshell.env("XDG_CACHE_HOME")
+    if (xdgCache && xdgCache !== "") {
+      store.cacheDir = xdgCache + "/quickshell/coverart"
+    } else if (home && home !== "") {
+      store.cacheDir = home + "/.cache/quickshell/coverart"
+    } else {
+      store.cacheDir = "/tmp/quickshell-coverart"
+    }
+    Quickshell.execDetached(["mkdir", "-p", store.cacheDir])
+  }
+
+  Process {
+    id: downloadProc
+    stdout: StdioCollector {}
+    onExited: function(exitCode, exitStatus) {
+      if (store._currentDownloadItem) {
+        var item = store._currentDownloadItem
+        if (exitCode === 0) {
+          var fileUrl = item.targetFileUrl
+          if (item.fullKey) store.artCache[item.fullKey] = fileUrl
+          if (item.titleKey) store.artCache[item.titleKey] = fileUrl
+          if (store.latestMediaImage === item.url || !store.latestMediaImage.startsWith("file://")) {
+            store.latestMediaImage = fileUrl
+          }
+          store.updateModelImages(item.fullKey, item.titleKey, fileUrl)
+          store.cacheVersion++
+        }
+        delete store._pendingDownloads[item.url]
+        store._currentDownloadItem = null
+      }
+      store.processNextDownload()
+    }
+  }
+
+  function downloadCoverArt(url, targetPath, fullKey, titleKey) {
+    store._downloadQueue.push({
+      url: url,
+      targetPath: targetPath,
+      targetFileUrl: "file://" + targetPath,
+      fullKey: fullKey,
+      titleKey: titleKey
+    })
+    processNextDownload()
+  }
+
+  function processNextDownload() {
+    if (downloadProc.running || store._downloadQueue.length === 0) return
+    store._currentDownloadItem = store._downloadQueue.shift()
+    var item = store._currentDownloadItem
+    var script = 'if [ -f "$2" ]; then exit 0; fi; mkdir -p "$1" && curl -s -L -f "$3" -o "$2"'
+    downloadProc.command = ["sh", "-c", script, "sh", store.cacheDir, item.targetPath, item.url]
+    downloadProc.running = true
+  }
+
+  function _hashString(str) {
+    if (!str) return "0"
+    var hash = 0
+    for (var i = 0; i < str.length; i++) {
+      var c = str.charCodeAt(i)
+      hash = ((hash << 5) - hash) + c
+      hash |= 0
+    }
+    return Math.abs(hash).toString(16)
+  }
+
+  function _makeTrackKey(title, artist) {
+    var cleanT = Utils.cleanTrackTitle(title || "").toLowerCase().trim()
+    var cleanA = (artist || "").toLowerCase().trim()
+    if (cleanA === "unknown artist") cleanA = ""
+    if (cleanT && cleanA) return cleanT + " — " + cleanA
+    return cleanT
+  }
+
+  function getCoverArt(title, artist, rawArtUrl) {
+    var _v = store.cacheVersion
+
+    var cleanT = Utils.cleanTrackTitle(title || "")
+    var cleanA = (artist || "").trim()
+    if (cleanA === "Unknown Artist") cleanA = ""
+    var cleanU = Utils.cleanUrl(rawArtUrl || "")
+
+    var fullKey = _makeTrackKey(cleanT, cleanA)
+    var titleKey = cleanT ? cleanT.toLowerCase().trim() : ""
+
+    if (cleanU !== "") {
+      var resolved = processAndCacheArt(fullKey, titleKey, cleanU)
+      if (resolved) return resolved
+    }
+
+    if (fullKey && store.artCache[fullKey]) {
+      return store.artCache[fullKey]
+    }
+
+    if (titleKey && store.artCache[titleKey]) {
+      return store.artCache[titleKey]
+    }
+
+    if (store.latestMediaImage !== "") {
+      return store.latestMediaImage
+    }
+
+    return ""
+  }
+
+  function processAndCacheArt(fullKey, titleKey, url) {
+    if (!url) return ""
+
+    store.latestMediaImage = url
+
+    if (url.startsWith("file://") || url.startsWith("/")) {
+      var fileUrl = url.startsWith("/") ? ("file://" + url) : url
+      if (fullKey) store.artCache[fullKey] = fileUrl
+      if (titleKey) store.artCache[titleKey] = fileUrl
+      return fileUrl
+    }
+
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      var ext = ".jpg"
+      var urlLower = url.toLowerCase()
+      if (urlLower.indexOf(".png") !== -1) ext = ".png"
+      else if (urlLower.indexOf(".webp") !== -1) ext = ".webp"
+
+      var fileHash = _hashString(url)
+      var targetPath = store.cacheDir + "/" + fileHash + ext
+      var targetFileUrl = "file://" + targetPath
+
+      if (store.artCache[fullKey] === targetFileUrl || store.artCache[titleKey] === targetFileUrl) {
+        return targetFileUrl
+      }
+
+      if (fullKey && !store.artCache[fullKey]) store.artCache[fullKey] = url
+      if (titleKey && !store.artCache[titleKey]) store.artCache[titleKey] = url
+
+      if (!store._pendingDownloads[url] && store.cacheDir !== "") {
+        store._pendingDownloads[url] = true
+        downloadCoverArt(url, targetPath, fullKey, titleKey)
+      }
+
+      return store.artCache[fullKey] || url
+    }
+
+    if (fullKey) store.artCache[fullKey] = url
+    if (titleKey) store.artCache[titleKey] = url
+    return url
+  }
+
+  function updateModelImages(fullKey, titleKey, resolvedUrl) {
+    if (!resolvedUrl) return
+    for (var i = 0; i < activeModel.count; i++) {
+      var item = activeModel.get(i)
+      if (item && item.isMedia) {
+        var k = _makeTrackKey(item.trackTitle, item.trackArtist)
+        var tk = Utils.cleanTrackTitle(item.trackTitle || "").toLowerCase().trim()
+        if (k === fullKey || tk === titleKey || !item.image) {
+          activeModel.setProperty(i, "image", resolvedUrl)
+        }
+      }
+    }
+    for (var j = 0; j < historyModel.count; j++) {
+      var hItem = historyModel.get(j)
+      if (hItem && hItem.isMedia) {
+        var hk = _makeTrackKey(hItem.trackTitle, hItem.trackArtist)
+        var htk = Utils.cleanTrackTitle(hItem.trackTitle || "").toLowerCase().trim()
+        if (hk === fullKey || htk === titleKey || !hItem.image) {
+          historyModel.setProperty(j, "image", resolvedUrl)
+        }
+      }
+    }
+  }
 
   Connections {
     target: store.mediaPlayer
@@ -61,28 +241,16 @@ Singleton {
   }
 
   function updateTrackArtUrl() {
+    var title = mediaPlayer ? (mediaPlayer.trackTitle || "") : ""
+    var artist = mediaPlayer ? (mediaPlayer.trackArtist || "") : ""
     var artUrl = mediaPlayer ? (mediaPlayer.trackArtUrl || "") : ""
-    if (artUrl) {
-      var strUrl = String(artUrl).trim()
-      if (strUrl.charAt(0) === '"' && strUrl.charAt(strUrl.length - 1) === '"') {
-        strUrl = strUrl.slice(1, -1)
-      }
-      if (strUrl !== "") store.latestMediaImage = strUrl
-    }
-    if (!store.latestMediaImage) return
 
-    for (var i = 0; i < activeModel.count; i++) {
-      var item = activeModel.get(i)
-      if (item && item.isMedia && (!item.image || item.image === "")) {
-        activeModel.setProperty(i, "image", store.latestMediaImage)
-      }
-    }
-
-    for (var j = 0; j < historyModel.count; j++) {
-      var hItem = historyModel.get(j)
-      if (hItem && hItem.isMedia && (!hItem.image || hItem.image === "")) {
-        historyModel.setProperty(j, "image", store.latestMediaImage)
-      }
+    var resolved = store.getCoverArt(title, artist, artUrl)
+    if (resolved) {
+      store.latestMediaImage = resolved
+      var fullKey = _makeTrackKey(title, artist)
+      var titleKey = Utils.cleanTrackTitle(title || "").toLowerCase().trim()
+      updateModelImages(fullKey, titleKey, resolved)
     }
   }
 

@@ -231,13 +231,11 @@ Item {
               asynchronous: true
               fillMode: Image.PreserveAspectCrop
               visible: source !== "" && status === Image.Ready
-              source: {
-                var url = root.mediaPlayer ? root.mediaPlayer.trackArtUrl : ""
-                if (!url && NotificationStore.latestMediaImage) {
-                  url = NotificationStore.latestMediaImage
-                }
-                return Utils.cleanUrl(url)
-              }
+              source: NotificationStore.getCoverArt(
+                root.mediaPlayer ? root.mediaPlayer.trackTitle : "",
+                root.mediaPlayer ? root.mediaPlayer.trackArtist : "",
+                root.mediaPlayer ? root.mediaPlayer.trackArtUrl : ""
+              )
               layer.enabled: true
               layer.effect: MultiEffect {
                 maskEnabled: true

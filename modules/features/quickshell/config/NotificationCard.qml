@@ -49,7 +49,14 @@ Rectangle {
     addCandidate(root.image)
 
     if (root.isMedia) {
-      // Fall back to active MPRIS player trackArtUrl or NotificationStore.latestMediaImage
+      // Look up cached cover art from NotificationStore
+      var cachedArt = NotificationStore.getCoverArt(
+        root.trackTitle || (NotificationStore.mediaPlayer ? NotificationStore.mediaPlayer.trackTitle : ""),
+        root.trackArtist || (NotificationStore.mediaPlayer ? NotificationStore.mediaPlayer.trackArtist : ""),
+        root.image || (NotificationStore.mediaPlayer ? NotificationStore.mediaPlayer.trackArtUrl : "")
+      )
+      addCandidate(cachedArt)
+      addCandidate(root.image)
       if (NotificationStore.mediaPlayer && NotificationStore.mediaPlayer.trackArtUrl) {
         addCandidate(NotificationStore.mediaPlayer.trackArtUrl)
       }

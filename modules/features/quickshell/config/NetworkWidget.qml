@@ -8,7 +8,7 @@ Pill {
 
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
-  property int maxTextWidth: Config.wifiMaxTextWidth
+  property int maxTextWidth: Config.wifiMaxTextLength
 
   // Networking state
   property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
