@@ -37,9 +37,23 @@ Singleton {
     })
   }
 
-  property string currentTrackKey: {
-    if (!mediaPlayer) return ""
-    return mediaPlayer.trackTitle + " — " + mediaPlayer.trackArtist
+  property string currentTrackKey: ""
+
+  Connections {
+    target: store.mediaPlayer
+    function onTrackTitleChanged() { store.updateTrackKey() }
+    function onTrackArtistChanged() { store.updateTrackKey() }
+    function onIsPlayingChanged() { store.updateTrackKey() }
+  }
+
+  onMediaPlayerChanged: updateTrackKey()
+
+  function updateTrackKey() {
+    if (!mediaPlayer) {
+      currentTrackKey = ""
+    } else {
+      currentTrackKey = (mediaPlayer.trackTitle || "") + " — " + (mediaPlayer.trackArtist || "")
+    }
   }
 
   property bool _startupFinished: false

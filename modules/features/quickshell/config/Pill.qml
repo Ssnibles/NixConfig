@@ -19,11 +19,11 @@ Rectangle {
     var children = contentItem.children
     for (var i = 0; i < children.length; i++) {
       var child = children[i]
-      if (!child.visible) continue
-      var str = child.toString()
-      if (str.indexOf("MouseArea") !== -1 || str.indexOf("Process") !== -1 || str.indexOf("Timer") !== -1) continue
-      var w = (child.implicitWidth !== undefined && child.implicitWidth > 0) ? child.implicitWidth : child.width
-      if (w > maxW) maxW = w
+      if (!child || !child.visible) continue
+      var iw = child.implicitWidth
+      if (iw !== undefined && iw > 0) {
+        if (iw > maxW) maxW = iw
+      }
     }
     return Math.max(maxW + padding * 2, height)
   }

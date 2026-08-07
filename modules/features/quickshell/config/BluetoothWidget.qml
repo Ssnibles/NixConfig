@@ -54,7 +54,7 @@ Pill {
     id: showProc
     stdout: StdioCollector {
       onDataChanged: {
-        var text = this.text
+        var text = this.text || ""
         root.isPowered = text.indexOf("Powered: yes") !== -1
         if (root.isPowered) {
           connProc.exec(["bluetoothctl", "devices", "Connected"])
@@ -71,7 +71,8 @@ Pill {
     id: connProc
     stdout: StdioCollector {
       onDataChanged: {
-        var lines = this.text.trim().split("\n")
+        var text = this.text || ""
+        var lines = text.trim().split("\n")
         var devices = []
         for (var i = 0; i < lines.length; i++) {
           var line = lines[i].trim()

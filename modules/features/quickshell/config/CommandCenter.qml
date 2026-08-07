@@ -206,7 +206,7 @@ Scope {
 
                 Timer {
                   interval: 1000
-                  running: panel.visible
+                  running: panel.panelOpacity > 0
                   repeat: true
                   onTriggered: headerTime.text = Qt.formatDateTime(new Date(), "hh:mm")
                 }
