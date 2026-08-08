@@ -13,17 +13,18 @@ M.core = {
   "plugins.fidget",
   "plugins.terminal",
   "plugins.lint",
-  "plugins.rust",
   "plugins.sshinator",
   "plugins.indentinator",
-  "plugins.java-snippets",
-  "plugins.typst-snippets",
   "plugins.nix-snippets",
+  "plugins.inc-rename",
 }
 
 M.deferred = {
   "plugins.neogit",
+  "plugins.typst-snippets",
+  "plugins.java-snippets",
   "plugins.dap",
+  "plugins.rust",
 }
 
 return M

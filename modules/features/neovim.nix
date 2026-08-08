@@ -209,12 +209,13 @@
             tiny-inline-diagnostic-nvim
             conform-nvim
             fidget-nvim
+            inc-rename-nvim
           ];
 
           utility.images.image-nvim = {
             enable = true;
             setupOpts = {
-              backend = "kitty";
+              backend = "sixel";
               processor = "magick_rock";
             };
           };
