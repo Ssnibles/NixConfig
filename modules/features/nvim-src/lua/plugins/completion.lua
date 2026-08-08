@@ -8,7 +8,38 @@ require("luasnip.loaders.from_vscode").lazy_load()
 
 local cmp = require("blink.cmp")
 
-local common_keymap = {
+local keymap = {
+	preset = "none",
+	["<C-space>"] = { "show_documentation", "hide_documentation" },
+	["<Esc>"] = { "cancel", "fallback" },
+	["<CR>"] = {
+		function(cmp)
+			if cmp.is_visible() then
+				return cmp.accept()
+			end
+		end,
+		"fallback",
+	},
+	["<Tab>"] = {
+		function(cmp)
+			if cmp.snippet_active() then
+				return cmp.snippet_forward()
+			elseif cmp.is_visible() then
+				return cmp.accept()
+			end
+		end,
+		"fallback",
+	},
+	["<S-Tab>"] = {
+		function(cmp)
+			if cmp.snippet_active() then
+				return cmp.snippet_backward()
+			elseif cmp.is_visible() then
+				return cmp.select_prev()
+			end
+		end,
+		"fallback",
+	},
 	["<C-c>"] = { "cancel", "fallback" },
 	["<C-e>"] = { "cancel", "fallback" },
 	["<Up>"] = { "select_prev", "fallback" },
@@ -27,44 +58,7 @@ cmp.setup({
 		window = { border = "rounded", show_documentation = true },
 	},
 	snippets = { preset = "luasnip" },
-	keymap = vim.tbl_extend("keep", {
-		preset = "none",
-		["<C-space>"] = { "show_documentation", "hide_documentation" },
-		["<Esc>"] = {
-			function() cmp.cancel() end,
-			"fallback",
-		},
-		["<CR>"] = {
-			function(cmp)
-				if cmp.is_visible() then
-					if cmp.get_selected_item_idx() ~= nil then
-						return cmp.accept()
-					end
-				end
-			end,
-			"fallback",
-		},
-		["<Tab>"] = {
-			function(cmp)
-				if cmp.snippet_active() then
-					return cmp.snippet_forward()
-				elseif cmp.is_visible() then
-					return cmp.select_next()
-				end
-			end,
-			"fallback",
-		},
-		["<S-Tab>"] = {
-			function(cmp)
-				if cmp.snippet_active() then
-					return cmp.snippet_backward()
-				elseif cmp.is_visible() then
-					return cmp.select_prev()
-				end
-			end,
-			"fallback",
-		},
-	}, common_keymap),
+	keymap = keymap,
 	appearance = {
 		nerd_font_variant = "mono",
 		kind_icons = {
@@ -77,6 +71,7 @@ cmp.setup({
 			TypeParameter = "󰊄",
 		},
 	},
+
 	sources = {
 		default = { "lsp", "copilot", "snippets", "buffer", "path" },
 		per_filetype = {
@@ -114,7 +109,12 @@ cmp.setup({
 		},
 	},
 	completion = {
-		list = { selection = { preselect = true, auto_insert = false } },
+		list = { 
+			selection = { 
+				preselect = function(ctx) return ctx.mode ~= 'cmdline' end,
+				auto_insert = false 
+			} 
+		},
 		menu = {
 			auto_show = true, direction_priority = { "s", "n" },
 			border = "rounded",
@@ -128,13 +128,14 @@ cmp.setup({
 			auto_show = true, auto_show_delay_ms = 50,
 			window = { border = "rounded", max_width = 80, max_height = 30 },
 		},
-		ghost_text = { enabled = true },
+		ghost_text = { 
+			enabled = true,
+			show_with_selection = true, -- Only show ghost text when an item is actively selected/highlighted
+			show_without_selection = false, -- Do not show ghost text immediately upon menu popup
+		},
 	},
 	cmdline = {
-		keymap = vim.tbl_extend("keep", {
-			["<Tab>"] = { "accept", "fallback" },
-			["<S-Tab>"] = { "fallback" },
-		}, common_keymap),
+		keymap = keymap,
 		completion = {
 			menu = { auto_show = true },
 			ghost_text = { enabled = true },
@@ -169,3 +170,4 @@ end, { desc = "Toggle copilot" })
 vim.keymap.set("n", "<leader>ap", function()
 	if copilot_ok then copilot.panel.toggle() end
 end, { desc = "Toggle copilot panel" })
+
