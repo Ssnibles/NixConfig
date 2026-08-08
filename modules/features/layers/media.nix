@@ -29,6 +29,7 @@
                 set zoom-max 400
                 set font "monospace 10"
                 set window-title-home-tilde true
+                set selection-clipboard clipboard
               '';
             };
           };
