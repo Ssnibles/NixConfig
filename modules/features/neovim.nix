@@ -211,6 +211,14 @@
             fidget-nvim
           ];
 
+          utility.images.image-nvim = {
+            enable = true;
+            setupOpts = {
+              backend = "kitty";
+              processor = "magick_rock";
+            };
+          };
+
           luaConfigRC.user-config = ''
             dofile(vim.fn.stdpath("config") .. "/init.lua")
           '';
