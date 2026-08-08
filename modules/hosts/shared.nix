@@ -66,5 +66,11 @@
       systemd.services.systemd-boot-random-seed = {
         unitConfig.Before = lib.mkForce [ ];
       };
+
+      # Prevent dbus/dbus-broker from restarting during rebuilds and killing GUI apps
+      systemd.services.dbus-broker.restartIfChanged = false;
+      systemd.user.services.dbus-broker.restartIfChanged = false;
+      systemd.services.dbus.restartIfChanged = false;
+      systemd.user.services.dbus.restartIfChanged = false;
     };
 }
