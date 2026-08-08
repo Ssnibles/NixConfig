@@ -2,8 +2,7 @@ local ls = require("luasnip")
 local s = ls.snippet
 local t = ls.text_node
 local i = ls.insert_node
-local c = ls.choice_node
-local sn = ls.snippet_node
+
 
 local function wrap(trig, open, close, desc)
 	return s({ trig = trig, desc = desc }, {

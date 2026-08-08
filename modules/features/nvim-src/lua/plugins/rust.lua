@@ -29,7 +29,7 @@ vim.g.rustaceanvim = {
 		end,
 	},
 	dap = {
-		adapter = function(_, config)
+		adapter = function(_, _)
 			local codelldb = first_executable({ "codelldb", "lldb-dap", "lldb-vscode" })
 			if not codelldb then return false end
 			if codelldb:match("codelldb$") then
@@ -53,7 +53,12 @@ local function rustlsp(...)
 end
 
 vim.keymap.set("n", "<leader>rr", function() rustlsp("runnables") end, { desc = "Rust runnables" })
-vim.keymap.set("n", "<leader>rt", function() rustlsp({ "testables", { background = true } }) end, { desc = "Rust testables" })
+vim.keymap.set(
+	"n",
+	"<leader>rt",
+	function() rustlsp({ "testables", { background = true } }) end,
+	{ desc = "Rust testables" }
+)
 vim.keymap.set("n", "<leader>rm", function() rustlsp("expandMacro") end, { desc = "Rust expand macro" })
 vim.keymap.set("n", "<leader>ro", function() rustlsp("openDocs") end, { desc = "Rust open docs" })
 vim.keymap.set("n", "<leader>rp", function() rustlsp("parentModule") end, { desc = "Rust parent module" })

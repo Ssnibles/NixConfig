@@ -86,7 +86,9 @@ ls.add_snippets("typst", {
 		t({ "  " }),
 		i(
 			1,
-			"ENTITY_ONE {\n    int id PK\n    string name\n  }\n\n  ENTITY_TWO {\n    int id PK\n    int entity_one_id FK\n  }\n\n  ENTITY_ONE ||--o{ ENTITY_TWO : HAS"
+			"ENTITY_ONE {\n    int id PK\n    string name\n  }\n\n"
+				.. "  ENTITY_TWO {\n    int id PK\n    int entity_one_id FK\n  }\n\n"
+				.. "  ENTITY_ONE ||--o{ ENTITY_TWO : HAS"
 		),
 		t({ '\n"', "" }),
 		t({ ")" }),
