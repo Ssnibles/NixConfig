@@ -79,7 +79,7 @@ Item {
         }
     }
     // Combines the day, suffix, and remaining formatted date
-    return day + suffix + " " + Qt.formatDate(date, "MMMM of yyyy");
+    return day + suffix + " " + Qt.formatDate(date, "of MMMM yyyy");
 }
 
 }
