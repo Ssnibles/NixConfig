@@ -91,6 +91,7 @@
             nixd
             lua-language-server
             pyright
+            emmet-ls
             vscode-langservers-extracted
             kotlin-language-server
             jdt-language-server

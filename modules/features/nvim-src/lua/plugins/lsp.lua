@@ -301,6 +301,32 @@ local SERVERS = {
 		},
 	},
 
+	-- Emmet (abbreviation expansion for web dev)
+	emmet_ls = {
+		cmd = { "emmet-ls", "--stdio" },
+		filetypes = {
+			"html",
+			"css",
+			"scss",
+			"less",
+			"javascriptreact",
+			"typescriptreact",
+			"vue",
+			"svelte",
+			"astro",
+			"templ",
+		},
+		root_markers = { "package.json", ".git" },
+		init_options = {
+			html = {
+				options = {
+					["bem.enabled"] = true,
+					["output.indent"] = "  ",
+				},
+			},
+		},
+	},
+
 	-- ESLint
 	eslint = {
 		cmd = { "vscode-eslint-language-server", "--stdio" },
@@ -364,7 +390,14 @@ local SERVERS = {
 	jdtls = {
 		cmd = { "jdtls" },
 		filetypes = { "java" },
-		root_markers = { "pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", ".git" },
+		root_markers = {
+			"pom.xml",
+			"build.gradle",
+			"build.gradle.kts",
+			"settings.gradle",
+			"settings.gradle.kts",
+			".git",
+		},
 		settings = {
 			java = {
 				signatureHelp = { enabled = true },
@@ -419,7 +452,7 @@ local SERVERS = {
 	-- LaTeX / Text
 	ltex_plus = {
 		cmd = { "ltex-ls-plus" },
-		filetypes = { "tex", "latex", "bib", "markdown", "html", "org" },
+		filetypes = { "tex", "latex", "bib", "markdown", "org" },
 		root_markers = { ".git" },
 	},
 
@@ -451,6 +484,7 @@ local SERVERS = {
 
 	-- C# (Roslyn)
 	roslyn = {
+		exe = "Microsoft.CodeAnalysis.LanguageServer",
 		settings = {
 			["csharp|background_analysis"] = {
 				dotnet_analyzer_diagnostics_scope = "openFiles",
