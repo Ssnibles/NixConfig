@@ -15,22 +15,16 @@ local CONFIG = {
 		{ name = "nixd", cmd = "nixd" },
 		{ name = "lua_ls", cmd = "lua-language-server" },
 		{ name = "pyright", cmd = "pyright-langserver" },
-		{ name = "vtsls", cmd = "vtsls" },
+		{ name = "html", cmd = "vscode-html-language-server" },
+		{ name = "cssls", cmd = "vscode-css-language-server" },
+		{ name = "eslint", cmd = "vscode-eslint-language-server" },
+		{ name = "jsonls", cmd = "vscode-json-language-server" },
 		{ name = "kotlin_language_server", cmd = "kotlin-language-server" },
 		{ name = "jdtls", cmd = "jdtls" },
 		{ name = "marksman", cmd = "marksman" },
 		{ name = "ltex_plus", cmd = "ltex-ls-plus" },
 		{ name = "tinymist", cmd = "tinymist" },
 		{ name = "qmlls", cmd = "qmlls" },
-	},
-
-	ts_js_inlay_hints = {
-		parameterNames = { enabled = "literals" },
-		parameterTypes = { enabled = true },
-		variableTypes = { enabled = true },
-		propertyDeclarationTypes = { enabled = true },
-		functionLikeReturnTypes = { enabled = true },
-		enumMemberValues = { enabled = true },
 	},
 }
 
@@ -348,21 +342,75 @@ lsp.config("pyright", {
 	},
 })
 
--- TypeScript / JavaScript
-local ts_js_settings = {
-	suggest = { completeFunctionCalls = true },
-	updateImportsOnFileMove = { enabled = "always" },
-	inlayHints = CONFIG.ts_js_inlay_hints,
-}
+-- HTML
+lsp.config("html", {
+	cmd = { "vscode-html-language-server", "--stdio" },
+	filetypes = { "html", "templ" },
+	root_markers = { "package.json", ".git" },
+})
 
-lsp.config("vtsls", {
-	filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
-	root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+-- CSS
+lsp.config("cssls", {
+	cmd = { "vscode-css-language-server", "--stdio" },
+	filetypes = { "css", "scss", "less" },
+	root_markers = { "package.json", ".git" },
 	settings = {
-		vtsls = { autoUseWorkspaceTsdk = true, enableMoveToFileCodeAction = true },
-		typescript = vim.deepcopy(ts_js_settings),
-		javascript = vim.deepcopy(ts_js_settings),
+		css = { validate = true },
+		scss = { validate = true },
+		less = { validate = true },
 	},
+})
+
+-- ESLint
+lsp.config("eslint", {
+	cmd = { "vscode-eslint-language-server", "--stdio" },
+	filetypes = {
+		"javascript",
+		"javascriptreact",
+		"javascript.jsx",
+		"typescript",
+		"typescriptreact",
+		"typescript.tsx",
+		"vue",
+		"svelte",
+		"astro",
+	},
+	root_markers = {
+		".eslintrc",
+		".eslintrc.js",
+		".eslintrc.cjs",
+		".eslintrc.json",
+		".eslintrc.yml",
+		".eslintrc.yaml",
+		"eslint.config.js",
+		"eslint.config.mjs",
+		"eslint.config.cjs",
+		"eslint.config.ts",
+		"package.json",
+		".git",
+	},
+	settings = {
+		validate = "on",
+		packageManager = "npm",
+		useESLintClass = false,
+		experimental = { useFlatConfig = false },
+		codeActionOnSave = { enable = false, mode = "all" },
+		format = true,
+		quiet = false,
+		onIgnoredFiles = "off",
+		rulesCustomizations = {},
+		run = "onType",
+		problems = { shortenToSingleLine = false },
+		nodePath = "",
+		workingDirectory = { mode = "location" },
+	},
+})
+
+-- JSON
+lsp.config("jsonls", {
+	cmd = { "vscode-json-language-server", "--stdio" },
+	filetypes = { "json", "jsonc" },
+	root_markers = { "package.json", ".git" },
 })
 
 -- Kotlin

@@ -91,7 +91,7 @@
             nixd
             lua-language-server
             pyright
-            vtsls
+            vscode-langservers-extracted
             kotlin-language-server
             jdt-language-server
             marksman
