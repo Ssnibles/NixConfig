@@ -1,10 +1,15 @@
 local function find_terminal_buf()
+	local best, best_used = nil, -1
 	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
 		if vim.bo[buf].buftype == "terminal" and vim.api.nvim_buf_is_valid(buf) then
-			return buf
+			local info = vim.fn.getbufinfo(buf)[1]
+			if info.listed == 1 and (info.lastused or 0) > best_used then
+				best_used = info.lastused or 0
+				best = buf
+			end
 		end
 	end
-	return nil
+	return best
 end
 
 local function find_terminal_win(buf)
