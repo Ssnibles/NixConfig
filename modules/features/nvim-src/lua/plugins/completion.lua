@@ -6,21 +6,34 @@ require("luasnip").setup({
 
 require("luasnip.loaders.from_vscode").lazy_load()
 
-require("blink.cmp").setup({
+local cmp = require("blink.cmp")
+
+local common_keymap = {
+	["<C-c>"] = { "cancel", "fallback" },
+	["<C-e>"] = { "cancel", "fallback" },
+	["<Up>"] = { "select_prev", "fallback" },
+	["<Down>"] = { "select_next", "fallback" },
+	["<C-p>"] = { "select_prev", "fallback" },
+	["<C-n>"] = { "select_next", "fallback" },
+	["<C-k>"] = { "select_prev", "fallback" },
+	["<C-j>"] = { "select_next", "fallback" },
+	["<C-b>"] = { "scroll_documentation_up", "fallback" },
+	["<C-f>"] = { "scroll_documentation_down", "fallback" },
+}
+
+cmp.setup({
 	signature = {
 		enabled = true,
 		window = { border = "rounded", show_documentation = true },
 	},
 	snippets = { preset = "luasnip" },
-	keymap = {
+	keymap = vim.tbl_extend("keep", {
 		preset = "none",
 		["<C-space>"] = { "show_documentation", "hide_documentation" },
 		["<Esc>"] = {
-			function() require("blink.cmp").cancel() end,
+			function() cmp.cancel() end,
 			"fallback",
 		},
-		["<C-c>"] = { "cancel", "fallback" },
-		["<C-e>"] = { "cancel", "fallback" },
 		["<CR>"] = {
 			function(cmp)
 				if cmp.is_visible() then
@@ -51,15 +64,7 @@ require("blink.cmp").setup({
 			end,
 			"fallback",
 		},
-		["<Up>"] = { "select_prev", "fallback" },
-		["<Down>"] = { "select_next", "fallback" },
-		["<C-p>"] = { "select_prev", "fallback" },
-		["<C-n>"] = { "select_next", "fallback" },
-		["<C-k>"] = { "select_prev", "fallback" },
-		["<C-j>"] = { "select_next", "fallback" },
-		["<C-b>"] = { "scroll_documentation_up", "fallback" },
-		["<C-f>"] = { "scroll_documentation_down", "fallback" },
-	},
+	}, common_keymap),
 	appearance = {
 		nerd_font_variant = "mono",
 		kind_icons = {
@@ -126,17 +131,10 @@ require("blink.cmp").setup({
 		ghost_text = { enabled = true },
 	},
 	cmdline = {
-		keymap = {
-			["<C-c>"] = { "cancel", "fallback" },
+		keymap = vim.tbl_extend("keep", {
 			["<Tab>"] = { "accept", "fallback" },
 			["<S-Tab>"] = { "fallback" },
-			["<Up>"] = { "select_prev", "fallback" },
-			["<Down>"] = { "select_next", "fallback" },
-			["<C-k>"] = { "select_prev", "fallback" },
-			["<C-j>"] = { "select_next", "fallback" },
-			["<C-p>"] = { "select_prev", "fallback" },
-			["<C-n>"] = { "select_next", "fallback" },
-		},
+		}, common_keymap),
 		completion = {
 			menu = { auto_show = true },
 			ghost_text = { enabled = true },
