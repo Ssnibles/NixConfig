@@ -88,13 +88,21 @@ vim.keymap.set("n", "<leader>tf", function()
 	toggle_terminal("float")
 end, { desc = "Toggle terminal (float)" })
 
-vim.api.nvim_create_autocmd("TermOpen", {
+vim.api.nvim_create_autocmd({ "TermOpen", "BufWinEnter" }, {
 	callback = function()
+		if vim.bo.buftype ~= "terminal" then
+			return
+		end
 		vim.opt_local.number = false
 		vim.opt_local.relativenumber = false
 		vim.opt_local.signcolumn = "no"
 		vim.wo.cursorline = false
 		vim.wo.statuscolumn = ""
+	end,
+})
+
+vim.api.nvim_create_autocmd("TermOpen", {
+	callback = function()
 		vim.cmd("startinsert")
 	end,
 })
