@@ -72,5 +72,10 @@
       systemd.user.services.dbus-broker.restartIfChanged = false;
       systemd.services.dbus.restartIfChanged = false;
       systemd.user.services.dbus.restartIfChanged = false;
+
+      systemd.services.dbus-broker.restartTriggers = lib.mkForce [ ];
+      systemd.user.services.dbus-broker.restartTriggers = lib.mkForce [ ];
+      systemd.services.dbus.restartTriggers = lib.mkForce [ ];
+      systemd.user.services.dbus.restartTriggers = lib.mkForce [ ];
     };
 }
