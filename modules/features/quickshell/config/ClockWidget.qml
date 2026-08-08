@@ -62,9 +62,9 @@ Item {
       var d = new Date()
       return Qt.formatDate(d, getOrdinalDate(d))
     }
-    details: [
-      Qt.formatTime(new Date(), "hh:mm")
-    ]
+    // details: [
+    //   Qt.formatTime(new Date(), "hh:mm")
+    // ]
   }
 
   function getOrdinalDate(date) {
