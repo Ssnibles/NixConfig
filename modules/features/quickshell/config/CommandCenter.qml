@@ -55,6 +55,7 @@ Scope {
 
       // Make sure it sits above windows and does not disrupt layout
       aboveWindows: true
+      WlrLayershell.layer: WlrLayer.Overlay
       WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
       exclusionMode: ExclusionMode.Ignore
 

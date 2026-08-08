@@ -1,5 +1,32 @@
 local fzf = require("fzf-lua")
 
+local function is_valid_file_extension(name)
+	if not name or name == "" then
+		return false
+	end
+	if name:match("^%w+://") or name:match("^%[.*%]$") then
+		return false
+	end
+	local tail = vim.fn.fnamemodify(name, ":t")
+	if not tail or tail == "" then
+		return false
+	end
+	local ext = tail:match("%.([a-zA-Z0-9_-]+)$")
+	if ext and ext ~= "" then
+		return true
+	end
+	local valid_no_ext = {
+		["Makefile"] = true,
+		["Dockerfile"] = true,
+		["Containerfile"] = true,
+		["LICENSE"] = true,
+		["LICENCE"] = true,
+		["Justfile"] = true,
+		["Rakefile"] = true,
+	}
+	return valid_no_ext[tail] == true
+end
+
 fzf.setup({
 	winopts = {
 		height = 0.85,
@@ -37,8 +64,77 @@ fzf.setup({
 			},
 		},
 	},
+	file_ignore_patterns = {
+		"^oil$",
+		"^oil://",
+		"oil://",
+		"^grug%-far",
+		"grug%-far",
+		"^fugitive$",
+		"^fugitive://",
+		"fugitive://",
+		"^term$",
+		"^term://",
+		"term://",
+		"^NvimTree_",
+		"^neo%-tree",
+		"^Trouble",
+		"^%[.*%]$",
+		"^[^/%%.]+$",
+		"/[^/%%.]+$",
+	},
 	files = { cmd = "fd --type f --hidden --exclude .git" },
 	oldfiles = { include_current_session = false, cwd_only = true, stat_file = false },
+	buffers = {
+		file_ignore_patterns = {
+			"^oil$",
+			"^oil://",
+			"oil://",
+			"^grug%-far",
+			"grug%-far",
+			"^fugitive$",
+			"^fugitive://",
+			"fugitive://",
+			"^NvimTree_",
+			"^neo%-tree",
+			"^Trouble",
+			"^%[.*%]$",
+			"^[^/%%.]+$",
+			"/[^/%%.]+$",
+		},
+		filter = function(bufnr)
+			local buftype = vim.bo[bufnr].buftype
+			local filetype = vim.bo[bufnr].filetype
+			local name = vim.api.nvim_buf_get_name(bufnr)
+
+			-- Allow neovim terminal buffers in buffer picker
+			if buftype == "terminal" or name:match("^term://") or filetype == "terminal" then
+				return true
+			end
+
+			-- Exclude non-file buftypes (nofile, quickfix, help, prompt, nowrite, etc.)
+			if buftype ~= "" then
+				return false
+			end
+
+			-- Exclude specific plugin filetypes
+			if
+				filetype == "oil"
+				or filetype:find("^grug%-far")
+				or filetype == "fugitive"
+				or filetype == "qf"
+				or filetype == "help"
+				or filetype == "NvimTree"
+				or filetype == "neo-tree"
+				or filetype == "fzf"
+			then
+				return false
+			end
+
+			-- Require proper file extension (or valid project filename)
+			return is_valid_file_extension(name)
+		end,
+	},
 	grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },
 	keymap = {
 		fzf = {

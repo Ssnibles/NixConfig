@@ -113,6 +113,7 @@
             black
             isort
             prettierd
+            prettier
             shfmt
             ktlint
             google-java-format

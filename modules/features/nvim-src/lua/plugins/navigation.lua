@@ -1,7 +1,56 @@
 local flash = require("flash")
-flash.setup({})
-vim.keymap.set({ "n", "x", "o" }, "<leader><leader>", flash.jump, { desc = "Flash jump" })
-vim.keymap.set({ "n", "x", "o" }, "S", flash.treesitter, { desc = "Flash treesitter" })
+
+-- Only allow flash in "main editor" buffers: regular file buffers in a
+-- non-floating window. Disables it in fzf-lua pickers, terminals, oil, etc.
+local excluded_filetypes = {
+	fzf = true,
+	oil = true,
+	fugitive = true,
+	["grug-far"] = true,
+	qf = true,
+	help = true,
+	NvimTree = true,
+	["neo-tree"] = true,
+	neogit = true,
+	terminal = true,
+	Trouble = true,
+}
+
+local function is_main_editor(win)
+	local w = win or vim.api.nvim_get_current_win()
+	local buf = vim.api.nvim_win_get_buf(w)
+	if vim.bo[buf].buftype ~= "" then
+		return false
+	end
+	if excluded_filetypes[vim.bo[buf].filetype] then
+		return false
+	end
+	return vim.api.nvim_win_get_config(w).relative == ""
+end
+
+flash.setup({
+	search = {
+		multi_window = true,
+		exclude = {
+			function(win)
+				return not is_main_editor(win)
+			end,
+		},
+	},
+})
+
+local function flash_jump()
+	if not is_main_editor() then return end
+	flash.jump()
+end
+
+local function flash_treesitter()
+	if not is_main_editor() then return end
+	flash.treesitter()
+end
+
+vim.keymap.set({ "n", "x", "o" }, "<leader><leader>", flash_jump, { desc = "Flash jump" })
+vim.keymap.set({ "n", "x", "o" }, "S", flash_treesitter, { desc = "Flash treesitter" })
 
 require("grug-far").setup()
 vim.keymap.set("n", "<leader>fR", "<cmd>GrugFar<CR>", { desc = "Find and replace (project)" })

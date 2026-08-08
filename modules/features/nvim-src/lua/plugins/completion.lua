@@ -10,10 +10,15 @@ local cmp = require("blink.cmp")
 
 local keymap = {
 	preset = "none",
-	["<C-space>"] = { "show_documentation", "hide_documentation" },
+	["<C-space>"] = {
+		function()
+			cmp.show({providers = { "lsp", "copilot", "snippets", "buffer", "path" } })
+		end,
+	},
+
 	["<Esc>"] = { "cancel", "fallback" },
 	["<CR>"] = {
-		function(cmp)
+		function()
 			if cmp.is_visible() then
 				return cmp.accept()
 			end
@@ -21,7 +26,7 @@ local keymap = {
 		"fallback",
 	},
 	["<Tab>"] = {
-		function(cmp)
+		function()
 			if cmp.snippet_active() then
 				return cmp.snippet_forward()
 			elseif cmp.is_visible() then
@@ -31,7 +36,7 @@ local keymap = {
 		"fallback",
 	},
 	["<S-Tab>"] = {
-		function(cmp)
+		function()
 			if cmp.snippet_active() then
 				return cmp.snippet_backward()
 			elseif cmp.is_visible() then
@@ -62,12 +67,30 @@ cmp.setup({
 	appearance = {
 		nerd_font_variant = "mono",
 		kind_icons = {
-			Text = "󰉿", Method = "󰆧", Function = "󰊕", Constructor = "",
-			Field = "󰜢", Variable = "󰀫", Class = "󰠱", Interface = "",
-			Module = "", Property = "󰜢", Unit = "󰑭", Value = "󰎠",
-			Enum = "", Keyword = "󰌋", Snippet = "", Color = "󰏘",
-			File = "󰈙", Folder = "󰉋", Reference = "󰈇", EnumMember = "",
-			Constant = "󰏿", Struct = "󰙅", Event = "", Operator = "󰆕",
+			Text = "󰉿",
+			Method = "󰆧",
+			Function = "󰊕",
+			Constructor = "",
+			Field = "󰜢",
+			Variable = "󰀫",
+			Class = "󰠱",
+			Interface = "",
+			Module = "",
+			Property = "󰜢",
+			Unit = "󰑭",
+			Value = "󰎠",
+			Enum = "",
+			Keyword = "󰌋",
+			Snippet = "",
+			Color = "󰏘",
+			File = "󰈙",
+			Folder = "󰉋",
+			Reference = "󰈇",
+			EnumMember = "",
+			Constant = "󰏿",
+			Struct = "󰙅",
+			Event = "",
+			Operator = "󰆕",
 			TypeParameter = "󰊄",
 		},
 	},
@@ -90,7 +113,9 @@ cmp.setup({
 			spell = {
 				name = "Spell",
 				module = "blink-cmp-spell",
-				enabled = function() return vim.wo.spell end,
+				enabled = function()
+					return vim.wo.spell
+				end,
 				opts = { max_entries = 8 },
 			},
 			buffer = {
@@ -109,14 +134,17 @@ cmp.setup({
 		},
 	},
 	completion = {
-		list = { 
-			selection = { 
-				preselect = function(ctx) return ctx.mode ~= 'cmdline' end,
-				auto_insert = false 
-			} 
+		list = {
+			selection = {
+				preselect = function(ctx)
+					return ctx.mode ~= "cmdline"
+				end,
+				auto_insert = false,
+			},
 		},
 		menu = {
-			auto_show = true, direction_priority = { "s", "n" },
+			auto_show = true,
+			direction_priority = { "s", "n" },
 			border = "rounded",
 			scrollbar = true,
 			draw = {
@@ -125,10 +153,11 @@ cmp.setup({
 			},
 		},
 		documentation = {
-			auto_show = true, auto_show_delay_ms = 50,
+			auto_show = true,
+			auto_show_delay_ms = 50,
 			window = { border = "rounded", max_width = 80, max_height = 30 },
 		},
-		ghost_text = { 
+		ghost_text = {
 			enabled = true,
 			show_with_selection = true, -- Only show ghost text when an item is actively selected/highlighted
 			show_without_selection = false, -- Do not show ghost text immediately upon menu popup
@@ -147,7 +176,9 @@ local ok_text_edits, text_edits = pcall(require, "blink.cmp.lib.text_edits")
 if ok_text_edits then
 	local original_write_to_dot_repeat = text_edits.write_to_dot_repeat
 	text_edits.write_to_dot_repeat = function(text_edit)
-		if vim.fn.mode() ~= "i" then return end
+		if vim.fn.mode() ~= "i" then
+			return
+		end
 		return original_write_to_dot_repeat(text_edit)
 	end
 end
@@ -161,13 +192,16 @@ if copilot_ok then
 end
 
 vim.keymap.set("n", "<leader>ac", function()
-	if not copilot_ok then return end
+	if not copilot_ok then
+		return
+	end
 	copilot.suggestion.toggle()
 	local status = copilot.suggestion.is_enabled() and "enabled" or "disabled"
 	vim.notify(("Copilot %s"):format(status), vim.log.levels.INFO)
 end, { desc = "Toggle copilot" })
 
 vim.keymap.set("n", "<leader>ap", function()
-	if copilot_ok then copilot.panel.toggle() end
+	if copilot_ok then
+		copilot.panel.toggle()
+	end
 end, { desc = "Toggle copilot panel" })
-
