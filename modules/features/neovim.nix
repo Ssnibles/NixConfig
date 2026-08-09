@@ -98,6 +98,7 @@
             marksman
             ltex-ls-plus
             roslyn-ls
+            imagemagick
 
             # qmlls from qt6.qtdeclarative, wrapped so it can resolve both
             # the QtQuick modules and the Quickshell QML types (`import Quickshell`)
