@@ -19,8 +19,10 @@
         environment.systemPackages = with pkgs; [
           bat
           btop
+          chafa # Terminal image viewer (Sixel enabled)
           fastfetch
           fd
+          file
           fzf
           git
           gnupg
@@ -83,12 +85,11 @@
                   --height=60%
                   --layout=reverse
                   --border=rounded
-                  --border-label=""
+                  --border-label=\"\"
                   --info=inline
                   --prompt=\"❯ \"
                   --pointer=\"▶\"
                   --marker=\"✓\"
-                  --header=\"╱\"
                   --padding=1,2
                   --margin=0,1
                   --scrollbar=\"│\"
@@ -107,7 +108,58 @@
                   --color=border:#${c.fgDim}
                   --color=selected-bg:#${c.bgSubtle},selected-fg:#${c.fg}
                   --color=gutter:#${c.bg}
+                  --preview '
+                    if file --mime-type {} | grep -q image/
+                      chafa --format=sixel --size=\"\$FZF_PREVIEW_COLUMNS\"x\"\$FZF_PREVIEW_LINES\" {}
+                    else
+                      bat --style=numbers --color=always --line-range :500 {}
+                    end
+                  '
                 "
+
+                set -gx FZF_DEFAULT_COMMAND 'fish -c "__fzf_cache_fd file"'
+                set -gx FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
+                set -gx FZF_ALT_C_COMMAND 'fish -c "__fzf_cache_fd dir"'
+              '';
+            };
+            ".config/fish/functions/__fzf_cache_fd.fish" = {
+              text = ''
+                function __fzf_cache_fd --description "Cache fd results per directory to avoid frequent disk scanning"
+                    set -l mode $argv[1]
+                    if test -z "$mode"
+                        set mode file
+                    end
+
+                    set -l cache_dir "/tmp/fzf_fd_cache_$USER"
+                    command mkdir -p $cache_dir
+
+                    set -l pwd_hash (pwd | sha256sum | string sub -l 16)
+                    set -l cache_file "$cache_dir/$pwd_hash"
+                    if test "$mode" = "dir"
+                        set cache_file "$cache_file.dir"
+                    end
+
+                    # Refresh index if older than 300 seconds (5 minutes) or missing
+                    set -l max_age 300
+                    set -l needs_refresh 1
+
+                    if test -f "$cache_file"
+                        set -l file_age (math (date +%s) - (stat -c %Y "$cache_file"))
+                        if test $file_age -lt $max_age
+                            set needs_refresh 0
+                        end
+                    end
+
+                    if test $needs_refresh -eq 1
+                        if test "$mode" = "dir"
+                            fd --type d --strip-cwd-prefix --hidden --follow --exclude .git > "$cache_file" 2>/dev/null
+                        else
+                            fd --type f --strip-cwd-prefix --hidden --follow --exclude .git > "$cache_file" 2>/dev/null
+                        end
+                    end
+
+                    cat "$cache_file"
+                end
               '';
             };
             ".config/fish/functions/mkcd.fish" = {
@@ -129,6 +181,21 @@
                     if test -d "$repo"
                         cd "$repo"
                         git status --short --branch
+                    else
+                        echo "NixConfig not found at $repo" >&2
+                        return 1
+                    end
+                end
+              '';
+            };
+            ".config/fish/functions/nixup.fish" = {
+              text = ''
+                function nixup --description "Update NixOS configuration and rebuild"
+                    set -l repo "$HOME/NixConfig"
+                    if test -d "$repo"
+                        cd "$repo"
+                        git pull
+                        nh os switch
                     else
                         echo "NixConfig not found at $repo" >&2
                         return 1
@@ -160,8 +227,6 @@
         programs.fish = {
           enable = true;
 
-          # Generate completions from man pages for every package in
-          # environment.systemPackages (enabled by default, explicit for clarity).
           generateCompletions = true;
 
           shellAliases = {
@@ -190,26 +255,14 @@
             set -gx EDITOR nvim
             set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
 
-            # fish plugins:
-            #   fzf.fish keybindings: C-r history, C-Alt-f files, C-Alt-l git log,
-            #     C-Alt-s git status, C-Alt-p processes, C-v variables
-            #   autopair: auto-close quotes/brackets
-            #   done: desktop notification when a command takes >= 10s
-            #   bass:  `bass <bash-script>` to source bash configs
-
-            # done tweaks
             set -g __done_min_cmd_duration 10000
             set -g __done_notification_urgency_level normal
           '';
         };
 
-        # nix-index-database ships both a full and a bin-only index. The small
-        # db is enough for command-not-found suggestions and is a fraction of
-        # the size. Replace the module default (full db).
         programs.nix-index.package =
           inputs.nix-index-database.packages.${pkgs.stdenv.hostPlatform.system}.nix-index-with-small-db;
 
-        # direnv + nix-direnv with fish integration (direnv hook fish).
         programs.direnv = {
           enable = true;
           nix-direnv.enable = true;
