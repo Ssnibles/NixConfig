@@ -14,6 +14,7 @@
         extraGroups = [
           "networkmanager"
           "wheel"
+          "plugdev"
           "dialout"
         ];
         shell = pkgs.fish;

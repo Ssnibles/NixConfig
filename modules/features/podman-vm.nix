@@ -27,14 +27,14 @@
         ]
         ++ [
           (pkgs.writeShellScriptBin "vivado" ''
-            exec distrobox enter vivado
+            distrobox enter vivado -- bash -c "source /home/josh/Vivado/Vivado/2024.1/settings64.sh && /home/josh/Vivado/Vivado/2024.1/bin/vivado"
           '')
           (pkgs.makeDesktopItem {
             name = "vivado";
-            desktopName = "Vivado 2019.2";
+            desktopName = "Vivado 2024.1";
             comment = "AMD Vivado Design Suite";
-            exec = "vivado %F";
-            icon = "/home/josh/Xilinx/Vivado/2019.2/doc/images/vivado_logo.png";
+            exec = "vivado";
+            icon = "/home/josh/Vivado/Vivado/2024.1/icons/vivado.png";
             categories = [
               "Development"
               "Electronics"

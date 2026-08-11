@@ -4,13 +4,13 @@
     {
       pkgs,
       lib,
-      config,
       ...
     }:
     {
       imports = [
         ./_hardware-generated.nix
-      ] ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
+      ]
+      ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
       # Laptop-specific kernel adjustments
       boot.kernelParams = [
@@ -67,18 +67,23 @@
         };
       };
 
-      environment.systemPackages =
-        with pkgs.unstable; [
-          dfu-util
-          emacs-pgtk
-          gowall
-        ];
+      environment.systemPackages = with pkgs.unstable; [
+        dfu-util
+        emacs-pgtk
+        gowall
+        openocd
+      ];
+
+      services.udev.packages = [ pkgs.openocd ];
+      users.extraGroups.plugdev = {};
 
       # Define udev rules for DFU devices
       services.udev.extraRules = ''
         # Generic DFU rule (for meshtastic thingy)
         SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0666", GROUP="dialout"
         SUBSYSTEM=="usb", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", MODE="0666", GROUP="dialout"
+        ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0666", GROUP="plugdev"
+        ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", MODE="0666", GROUP="plugdev"
       '';
 
       system.stateVersion = "25.05";
