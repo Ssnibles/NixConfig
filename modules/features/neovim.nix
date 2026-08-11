@@ -201,6 +201,7 @@
             neogit
 
             grug-far-nvim
+            inc-rename-nvim
 
             mini-nvim
             plenary-nvim
@@ -210,16 +211,7 @@
             tiny-inline-diagnostic-nvim
             conform-nvim
             fidget-nvim
-            inc-rename-nvim
           ];
-
-          utility.images.image-nvim = {
-            enable = true;
-            setupOpts = {
-              backend = "sixel";
-              processor = "magick_rock";
-            };
-          };
 
           luaConfigRC.user-config = ''
             dofile(vim.fn.stdpath("config") .. "/init.lua")
