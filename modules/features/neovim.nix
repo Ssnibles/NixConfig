@@ -52,6 +52,7 @@
             tabstop = 2;
             expandtab = true;
             smartindent = true;
+            autoindent = true;
             shiftround = true;
             termguicolors = true;
             cursorline = true;
