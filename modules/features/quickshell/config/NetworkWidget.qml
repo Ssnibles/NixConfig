@@ -36,7 +36,7 @@ Pill {
 
   // Match Command Center Wi-Fi Pill styling
   pillHeight: 30
-  padding: 6
+  padding: 8
   orientation: Qt.Vertical
   anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
