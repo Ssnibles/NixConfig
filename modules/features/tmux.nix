@@ -28,18 +28,34 @@
             extrakto
             tmux-fzf
             prefix-highlight
+            tmux-floax
+            tmux-thumbs
           ];
 
           extraConfig = ''
+            set-option -g prefix `
+            bind-key ` send-prefix
+
             # Resurrect & Continuum session options
             set -g @resurrect-strategy-nvim 'session'
             set -g @resurrect-capture-pane-contents 'on'
             set -g @continuum-restore 'on'
             set -g @continuum-save-interval '10'
+            # Uncomment to have tmux auto-(re)start via a systemd user unit
+            # on login, so continuum has something to restore into:
+            # set -g @continuum-boot 'on'
 
             # Tmux-FZF configuration
             set -g @tmux-fzf-launch-key 'F'
             set -g @tmux-fzf-order 'command:session:window:pane:keybinding:clipboard:process'
+
+            # tmux-floax configuration
+            set -g @floax-width '80%'
+            set -g @floax-height '80%'
+            set -g @floax-border-color "#${c.border}"
+            set -g @floax-text-color "#${c.fg}"
+            set -g @floax-bind 'p'
+            set -g @floax-change-path 'true'
 
             # Modern Terminal & True Color support
             set -as terminal-features ",*:RGB"
@@ -53,11 +69,13 @@
             set -g repeat-time 500
             set -g set-titles on
             set -g set-titles-string "#S / #W"
-            set -g prefix `
 
-            # Image passthrough
-            set -gq allow-passthrough on
-            set-option -g focus-events on
+            # Client/session ergonomics
+            set -g detach-on-destroy off
+            set -g aggressive-resize on
+            set -g display-time 2000
+            set -g display-panes-time 1000
+            set -g update-environment "DISPLAY SSH_AUTH_SOCK SSH_CONNECTION WINDOWID XAUTHORITY SWAYSOCK WAYLAND_DISPLAY"
 
             # Indexing & Window behavior
             setw -g pane-base-index 1
@@ -65,19 +83,16 @@
             setw -g automatic-rename on
             setw -g automatic-rename-format '#{b:pane_current_command}'
 
-            bind ` send-prefix
-
             # Smart Command Mode & Auto-Completion (: and fuzzy finder)
-            set -g status-keys vi
+            set -g status-keys emacs
             bind-key : command-prompt -T command
-            # bind-key C-: run-shell -b "TMUX_FZF_OPTIONS='-p 80%,60%' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
-            bind-key -T command-prompt C-j history-down
-            bind-key -T command-prompt C-k history-up
+            # was C-: — Ctrl combos get eaten by tmux before programs in the
+            # pane ever see them, so this is now prefix + ; instead.
+            bind-key \; run-shell -b "TMUX_FZF_OPTIONS='-p 80%,60%' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
 
             # Window & Pane splitting (Neovim-style: v=side-by-side vertical split, s=top/bottom horizontal split)
             unbind '"'
             unbind %
-            unbind C-b
             bind v split-window -h -c "#{pane_current_path}"
             bind | split-window -h -c "#{pane_current_path}"
             bind s split-window -v -c "#{pane_current_path}"
@@ -115,7 +130,20 @@
             bind -n M-L next-window
             bind [ previous-window
             bind ] next-window
-            bind ` last-window
+
+            # Pane navigation (replaces vim-tmux-navigator, which bound
+            # C-h/j/k/l with -n and swallowed those chords before any
+            # program in the pane — readline, vim, fzf, etc. — could see
+            # them). Alt+hjkl doesn't collide with -n M-H/M-L above since
+            # tmux treats Alt+letter and Alt+Shift+letter as distinct binds.
+            # Note: this only moves tmux panes, it has no awareness of
+            # Neovim splits the way the plugin did — mirror these as
+            # <M-h/j/k/l> window-nav maps in your Neovim config too if you
+            # want the same keys to feel seamless across both.
+            bind -n M-h select-pane -L
+            bind -n M-j select-pane -D
+            bind -n M-k select-pane -U
+            bind -n M-l select-pane -R
 
             # Quick config reload & memory clear
             bind r run-shell 'tmux source-file ~/.config/tmux/tmux.conf 2>/dev/null || tmux source-file /etc/tmux.conf' \; display-message "Tmux configuration reloaded!"
@@ -124,9 +152,8 @@
             # Vi Copy Mode keybindings (Neovim-style clipboard integration)
             bind-key -T copy-mode-vi v send-keys -X begin-selection
             bind-key -T copy-mode-vi V send-keys -X select-line
-            bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
+            bind-key -T copy-mode-vi b send-keys -X rectangle-toggle
             bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy"
-            bind-key -T copy-mode-vi C-y send-keys -X copy-pipe-and-cancel "wl-copy"
             bind P paste-buffer
 
             # Minimal "Out of your way" Visual Styling (from oldconf)
@@ -151,6 +178,12 @@
             set -g pane-border-style "fg=#${c.border}"
             set -g pane-active-border-style "fg=#${c.accent}"
 
+            # Optional: subtle pane titles, off by default to stay minimal.
+            # Uncomment if you ever run 3+ panes at once and want a quick
+            # visual anchor for which pane is which.
+            # set -g pane-border-status top
+            # set -g pane-border-format "#[fg=#${c.fgDim}] #{pane_index} #{pane_current_command} "
+
             set -g message-style "fg=#${c.accent},bg=#${c.bg},bold"
             set -g message-command-style "fg=#${c.accent},bg=#${c.bg},bold"
 
@@ -169,6 +202,10 @@
             set -g @prefix_highlight_copy_mode_attr "fg=#${c.bg},bg=#${c.teal}"
             set -g @prefix_highlight_show_sync_mode 'on'
             set -g @prefix_highlight_sync_mode_attr "fg=#${c.bg},bg=#${c.red}"
+
+            # Optional: native floating scratch terminal, no plugin needed.
+            # Handy if you decide tmux-floax is more than you want:
+            # bind-key -n M-g display-popup -d "#{pane_current_path}" -w 80% -h 80% -E "tmux new-session -A -s scratch"
           '';
         };
 
@@ -181,4 +218,3 @@
       };
     };
 }
-
