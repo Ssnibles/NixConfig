@@ -17,12 +17,12 @@ M.core = {
   "plugins.indentinator",
   "plugins.nix-snippets",
   "plugins.inc-rename",
+  "plugins.typst-snippets",
+  "plugins.java-snippets",
 }
 
 M.deferred = {
   "plugins.neogit",
-  "plugins.typst-snippets",
-  "plugins.java-snippets",
   "plugins.dap",
   "plugins.rust",
 }
