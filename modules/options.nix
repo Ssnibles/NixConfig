@@ -11,7 +11,7 @@
 
       options.wallpaper = lib.mkOption {
         type = lib.types.str;
-        default = "wp5458622-stardew-valley-desktop-wallpapers.png";
+        default = "lighthouse.jpg";
         description = "Wallpaper filename from assets/wallpapers/";
       };
 
