@@ -14,7 +14,6 @@
       config = {
         programs.tmux = {
           enable = true;
-          shortcut = "`";
           keyMode = "vi";
           baseIndex = 1;
           escapeTime = 0;
@@ -54,6 +53,11 @@
             set -g repeat-time 500
             set -g set-titles on
             set -g set-titles-string "#S / #W"
+            set -g prefix `
+
+            # Image passthrough
+            set -gq allow-passthrough on
+            set-option -g focus-events on
 
             # Indexing & Window behavior
             setw -g pane-base-index 1
@@ -61,14 +65,19 @@
             setw -g automatic-rename on
             setw -g automatic-rename-format '#{b:pane_current_command}'
 
+            bind ` send-prefix
+
             # Smart Command Mode & Auto-Completion (: and fuzzy finder)
-            set -g status-keys emacs
+            set -g status-keys vi
             bind-key : command-prompt -T command
-            bind-key C-: run-shell -b "TMUX_FZF_OPTIONS='-p 80%,60%' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
+            # bind-key C-: run-shell -b "TMUX_FZF_OPTIONS='-p 80%,60%' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
+            bind-key -T command-prompt C-j history-down
+            bind-key -T command-prompt C-k history-up
 
             # Window & Pane splitting (Neovim-style: v=side-by-side vertical split, s=top/bottom horizontal split)
             unbind '"'
             unbind %
+            unbind C-b
             bind v split-window -h -c "#{pane_current_path}"
             bind | split-window -h -c "#{pane_current_path}"
             bind s split-window -v -c "#{pane_current_path}"
