@@ -1,1 +1,2 @@
 2026-08-11 Add better boilerplate snippets +CI
+2026-08-12 Update +typst snippets for +neovim
