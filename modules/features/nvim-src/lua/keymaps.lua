@@ -46,6 +46,8 @@ map("n", "O", open_lines("O"), { desc = "Open line(s) above" })
 map("x", "<leader>p", '"_dP', { desc = "Paste without yanking" })
 map({ "n", "v" }, "<leader>D", '"_d', { desc = "Delete to void" })
 map("n", "x", '"_x', { desc = "Delete character to void" })
+map({ "n", "v" }, "c", '"_c', { desc = "Change to void" })
+map({ "n", "v" }, "C", '"_C', { desc = "Change line to void" })
 
 map({ "n", "v" }, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
 map("n", "<leader>Y", '"+Y', { desc = "Yank line to system clipboard" })
