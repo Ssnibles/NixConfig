@@ -83,7 +83,7 @@ fzf.setup({
 		"^[^/%%.]+$",
 		"/[^/%%.]+$",
 	},
-	files = { cmd = "fd --type f --hidden --exclude .git" },
+	-- files = { cmd = "fd --type f --hidden --exclude .git" },
 	oldfiles = { include_current_session = false, cwd_only = true, stat_file = false },
 	buffers = {
 		file_ignore_patterns = {
