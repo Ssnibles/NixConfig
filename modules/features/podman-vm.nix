@@ -27,7 +27,7 @@
         ]
         ++ [
           (pkgs.writeShellScriptBin "vivado" ''
-            exec distrobox enter vivado -- /home/josh/vivado-wrapper.sh "$@"
+            exec distrobox enter vivado
           '')
           (pkgs.makeDesktopItem {
             name = "vivado";
