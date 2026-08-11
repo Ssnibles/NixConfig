@@ -1044,7 +1044,7 @@ Scope {
             spacing: 10
 
             property var buttonModel: [
-              { icon: "󰌾", label: "Lock", cmd: ["loginctl", "lock-session"], hoverCol: Colors.accent },
+              { icon: "󰌾", label: "Lock", cmd: ["quickshell", "ipc", "call", "lockscreen", "lock"], hoverCol: Colors.accent },
               { icon: "󰤄", label: "Sleep", cmd: ["systemctl", "suspend"], hoverCol: Colors.accent },
               { icon: "󰜉", label: "Reboot", cmd: ["systemctl", "reboot"], hoverCol: Colors.orange },
               { icon: "󰐥", label: "Power", cmd: ["systemctl", "poweroff"], hoverCol: Colors.red }
