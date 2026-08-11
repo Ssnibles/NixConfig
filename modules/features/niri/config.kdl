@@ -189,11 +189,11 @@ binds {
     Mod+Shift+K         { move-column-to-workspace-up; }
 
     // System Utilities
-// Normal screenshot: Freezes screen, saves PNG file, copies image to clipboard
-    Mod+S { spawn "sh" "-c" "wayfreeze & PID=$!; grim -g \"$(slurp)\" - | tee \"$HOME/Pictures/Screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png\" | wl-copy -t image/png; kill $PID"; }
+    // Normal screenshot: Saves PNG file and copies image to clipboard
+    Mod+S { spawn "sh" "-c" "pgrep -x slurp >/dev/null && exit 0; GEOM=$(slurp); [ -n \"$GEOM\" ] && grim -g \"$GEOM\" - | tee \"$HOME/Pictures/Screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png\" | wl-copy -t image/png"; }
 
-    // OCR screenshot: Freezes screen, runs Tesseract, copies text to clipboard
-    Mod+Shift+S { spawn "sh" "-c" "wayfreeze & PID=$!; grim -g \"$(slurp)\" - | tesseract stdin stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'; kill $PID"; }
+    // OCR screenshot: Runs Tesseract and copies text to clipboard
+    Mod+Shift+S { spawn "sh" "-c" "pgrep -x slurp >/dev/null && exit 0; GEOM=$(slurp); [ -n \"$GEOM\" ] && grim -g \"$GEOM\" - | tesseract stdin stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'"; }
 
     // Brightness Control
     XF86MonBrightnessDown { spawn "brightnessctl" "set" "5%-"; }
