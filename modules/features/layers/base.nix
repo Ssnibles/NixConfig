@@ -127,6 +127,7 @@
           dualsensectl # DualSense utility: firmware updates, LED and rumble settings.
           self.packages.${pkgs.stdenv.hostPlatform.system}.dualsense-pair
           self.packages.${pkgs.stdenv.hostPlatform.system}.html-server
+          self.packages.${pkgs.stdenv.hostPlatform.system}.boilerplate
         ];
 
         # Enable redistributable firmware (required for AMD GPU firmware)
