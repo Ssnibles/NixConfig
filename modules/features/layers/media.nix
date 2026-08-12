@@ -15,6 +15,11 @@
 
         hjem.users.${config.username} = {
           files = {
+            ".config/feh/themes" = {
+              text = ''
+                feh --auto-zoom --scale-down --geometry 50%x50%
+              '';
+            };
             ".config/zathura/zathurarc" = {
               text = ''
                 " Auto-reload PDF on file change
