@@ -10,6 +10,7 @@
         environment.systemPackages = with pkgs.unstable; [
           spotify
           zathura
+          feh
         ];
 
         hjem.users.${config.username} = {
