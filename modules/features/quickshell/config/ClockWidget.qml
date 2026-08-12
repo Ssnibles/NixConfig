@@ -68,6 +68,7 @@ Item {
   }
 
   function getOrdinalDate(date) {
+    onTriggerd: Qt.formatDate(date)
     var day = date.getDate();
     var suffix = "th";
 
