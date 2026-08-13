@@ -200,7 +200,8 @@ Rectangle {
     visible: root.hasIcon
     anchors.left: parent.left
     anchors.leftMargin: Config.notifCardMargins
-    anchors.verticalCenter: parent.verticalCenter
+    anchors.top: parent.top
+    anchors.topMargin: Config.notifCardMargins
     width: root.isMedia ? 48 : 40
     height: root.isMedia ? 48 : 40
 
@@ -261,7 +262,8 @@ Rectangle {
     anchors.leftMargin: root.hasIcon ? 10 : Config.notifCardMargins
     anchors.right: parent.right
     anchors.rightMargin: Config.notifCardMargins
-    anchors.verticalCenter: parent.verticalCenter
+    anchors.top: parent.top
+    anchors.topMargin: Config.notifCardMargins
     spacing: 2
 
     Text {
