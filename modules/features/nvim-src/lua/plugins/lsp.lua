@@ -69,6 +69,7 @@ local function attach_lsp_keymaps(bufnr)
 		return ":IncRename: " .. vim.fn.expand("<cword>")
 	end, "Rename Symbol", { expr = true })
 	map("<leader>ca", lsp.buf.code_action, "Code action")
+	map("<leader>cl", lsp.codelens.run, "CodeLens action")
 end
 
 -- Global LSP defaults automatically applied to all servers
@@ -511,8 +512,8 @@ local SERVERS = {
 				dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = true,
 			},
 			["csharp|code_lens"] = {
-				dotnet_enable_references_code_lens = false,
-				dotnet_enable_tests_code_lens = false,
+				dotnet_enable_references_code_lens = true,
+				dotnet_enable_tests_code_lens = true,
 			},
 			["csharp|symbol_search"] = {
 				dotnet_search_reference_assemblies = false,
