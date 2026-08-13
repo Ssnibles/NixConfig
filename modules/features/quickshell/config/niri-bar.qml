@@ -31,6 +31,17 @@ ShellRoot {
       exclusionMode: ExclusionMode.Auto
       color: Colors.bg
 
+      mask: Region { item: barPanel.contentItem }
+
+      // Background MouseArea to absorb all hover and pointer events,
+      // preventing focus-follows-mouse and clickthrough to windows underneath
+      MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        acceptedButtons: Qt.AllButtons
+        onClicked: function(mouse) { mouse.accepted = true }
+      }
+
       // Thin border on the inner edge to separate the bar from workspace windows
       Rectangle {
         anchors.top: parent.top

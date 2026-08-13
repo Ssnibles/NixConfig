@@ -85,6 +85,8 @@ PanelWindow {
   exclusionMode: ExclusionMode.Ignore
   color: "transparent"
 
+  mask: Region { item: tipLoader.item }
+
   anchors { top: true; bottom: true }
   anchors.left: barSide === "left"
   anchors.right: barSide === "right"

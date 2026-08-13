@@ -54,6 +54,16 @@ Scope {
       implicitHeight: Config.barHeight
       color: Colors.bg
 
+      mask: Region { item: panel.contentItem }
+
+      // Background MouseArea to absorb all hover and pointer events
+      MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        acceptedButtons: Qt.AllButtons
+        onClicked: function(mouse) { mouse.accepted = true }
+      }
+
       // Find the tag list matching this specific monitor (e.g. "eDP-1")
       property var monitorData: {
         if (!root.allMonitorsTags || root.allMonitorsTags.length === 0) return null;

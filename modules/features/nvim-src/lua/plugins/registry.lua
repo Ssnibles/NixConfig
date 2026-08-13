@@ -15,16 +15,16 @@ M.core = {
   "plugins.lint",
   "plugins.sshinator",
   "plugins.indentinator",
-  "plugins.nix-snippets",
   "plugins.inc-rename",
-  "plugins.typst-snippets",
-  "plugins.java-snippets",
 }
 
 M.deferred = {
-  "plugins.neogit",
-  "plugins.dap",
-  "plugins.rust",
+  { "plugins.typst-snippets", ft = "typst" },
+  { "plugins.nix-snippets", ft = "nix" },
+  { "plugins.java-snippets", ft = "java" },
+  { "plugins.rust", ft = "rust" },
+  { "plugins.neogit", cmd = "Neogit" },
+  { "plugins.dap", keys = { "<leader>mb", "<leader>mc" } },
 }
 
 return M

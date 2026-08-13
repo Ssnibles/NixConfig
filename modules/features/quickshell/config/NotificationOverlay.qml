@@ -27,6 +27,9 @@ Scope {
       implicitWidth: Config.notifWidth + Config.notifCardMargins * 2
       implicitHeight: notifList.contentHeight + Config.notifCardMargins * 2
       color: "transparent"
+      visible: NotificationStore.activeModel ? NotificationStore.activeModel.count > 0 : false
+
+      mask: Region { item: notifList }
 
       ListView {
         id: notifList
