@@ -35,10 +35,11 @@
         partOf = [ "graphical-session.target" ];
         path = [ config.system.path ];
         environment = {
-          QT_QPA_PLATFORM = "wayland";
+          QT_QPA_PLATFORM = "wayland;xcb";
         };
         serviceConfig = {
           Type = "simple";
+          ExecStartPre = "${pkgs.bash}/bin/bash -c 'test -n \"$WAYLAND_DISPLAY\"'";
           ExecStart = "${pkgs.vicinae}/bin/vicinae server";
           Restart = "on-failure";
           RestartSec = 2;

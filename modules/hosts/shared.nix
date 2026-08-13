@@ -5,6 +5,7 @@
     {
       # Bootloader
       boot.loader.limine.enable = true;
+      boot.loader.limine.maxGenerations = 10;
       boot.loader.efi.canTouchEfiVariables = true;
 
       # Use latest kernel.
