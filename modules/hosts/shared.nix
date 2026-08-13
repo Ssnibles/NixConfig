@@ -18,6 +18,7 @@
       boot.kernelParams = [
         "mitigations=off"
         "8250.nr_uarts=0"
+        "nowatchdog"
       ];
       boot.kernel.sysctl = {
         "vm.swappiness" = 10;
