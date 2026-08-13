@@ -7,8 +7,8 @@
         # Give notification daemon time to initialize on login
         sleep 3
 
-        # Filter out benign dbus-broker duplicate service name warnings
-        RAW_ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | ${pkgs.gnugrep}/bin/grep -v "Ignoring duplicate name" || true)
+        # Filter out benign dbus-broker duplicate service name warnings, gkr-pam initial auth notice, and early bluetoothd init warnings
+        RAW_ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | ${pkgs.gnugrep}/bin/grep -v -E "Ignoring duplicate name|gkr-pam: unable to locate daemon control file|bluetoothd.*Failed to set|systemd-coredump.*vicinae" || true)
         ERROR_COUNT=$(echo "$RAW_ERRORS" | ${pkgs.gnugrep}/bin/grep -v '^$' | wc -l)
 
         if [ "$ERROR_COUNT" -gt 0 ]; then

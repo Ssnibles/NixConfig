@@ -32,6 +32,7 @@
       systemd.user.services.vicinae-server = {
         description = "Vicinae application launcher server";
         wantedBy = [ "graphical-session.target" ];
+        after = [ "graphical-session.target" ];
         partOf = [ "graphical-session.target" ];
         path = [ config.system.path ];
         environment = {
@@ -39,17 +40,17 @@
         };
         serviceConfig = {
           Type = "simple";
-          ExecStartPre = "${pkgs.bash}/bin/bash -c 'test -n \"$WAYLAND_DISPLAY\"'";
+          ExecStartPre = "${pkgs.coreutils}/bin/sleep 1";
           ExecStart = "${pkgs.vicinae}/bin/vicinae server";
           Restart = "on-failure";
           RestartSec = 2;
-          PassEnvironment = [ "WAYLAND_DISPLAY" "XDG_RUNTIME_DIR" "DBUS_SESSION_BUS_ADDRESS" ];
         };
       };
 
       systemd.user.services.clipboard-persist = {
         description = "Persist Wayland clipboard after the source application closes";
         wantedBy = [ "graphical-session.target" ];
+        after = [ "graphical-session.target" ];
         partOf = [ "graphical-session.target" ];
         path = [ config.system.path ];
         startLimitBurst = 0;
@@ -65,6 +66,7 @@
       systemd.user.services.clipboard-persist-primary = {
         description = "Persist Wayland primary selection after the source application closes";
         wantedBy = [ "graphical-session.target" ];
+        after = [ "graphical-session.target" ];
         partOf = [ "graphical-session.target" ];
         path = [ config.system.path ];
         startLimitBurst = 0;
@@ -80,6 +82,7 @@
       systemd.user.services.cliphist-store-text = {
         description = "Store text clipboard history with cliphist";
         wantedBy = [ "graphical-session.target" ];
+        after = [ "graphical-session.target" ];
         partOf = [ "graphical-session.target" ];
         path = [ config.system.path ];
         startLimitBurst = 0;
@@ -95,6 +98,7 @@
       systemd.user.services.cliphist-store-image = {
         description = "Store image clipboard history with cliphist";
         wantedBy = [ "graphical-session.target" ];
+        after = [ "graphical-session.target" ];
         partOf = [ "graphical-session.target" ];
         path = [ config.system.path ];
         startLimitBurst = 0;

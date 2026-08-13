@@ -21,9 +21,6 @@
           wl-clipboard
           brightnessctl
           playerctl
-          xdg-desktop-portal-hyprland
-          xdg-desktop-portal-gtk
-          gnome-keyring
           grim
           seahorse
           libnotify
@@ -32,11 +29,7 @@
           self.packages."${pkgs.stdenv.hostPlatform.system}".myNoctalia
         ];
 
-        services.gnome.gnome-keyring.enable = true;
-        services.dbus.packages = [
-          pkgs.gnome-keyring
-          pkgs.gcr
-        ];
+        # gnome-keyring already enabled in shared.nix; seahorse.enable registers dbus packages
         programs.seahorse.enable = true;
 
         xdg.portal = {

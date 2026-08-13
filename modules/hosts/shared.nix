@@ -18,7 +18,6 @@
       boot.kernelParams = [
         "mitigations=off"
         "8250.nr_uarts=0"
-        "noatime"
       ];
       boot.kernel.sysctl = {
         "vm.swappiness" = 10;
@@ -31,6 +30,8 @@
       '';
 
       services.upower.enable = true;
+      # Defer upower until after graphical.target — it's only needed by the desktop session
+      systemd.services.upower.wantedBy = lib.mkForce [ "graphical.target" ];
 
       # Enable ly for login management
       services.displayManager.ly.enable = true;
@@ -64,10 +65,8 @@
       # Don't block boot on network online
       systemd.services.NetworkManager-wait-online.enable = false;
 
-      # Don't let random-seed refresh block sysinit.target — run it async
-      systemd.services.systemd-boot-random-seed = {
-        unitConfig.Before = lib.mkForce [ ];
-      };
+      # Disable systemd-boot random seed update since Limine bootloader is used (saves ~8.9s on boot)
+      systemd.services.systemd-boot-random-seed.enable = false;
 
       # Prevent dbus/dbus-broker from restarting during rebuilds and killing GUI apps
       systemd.services.dbus-broker.restartIfChanged = false;

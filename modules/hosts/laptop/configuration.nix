@@ -12,13 +12,36 @@
       ]
       ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
+      # Mount /boot on-demand via fstab to prevent systemd-gpt-auto-generator from
+      # creating its own boot.mount, which deadlocks dbus-broker during early boot
+      # (dbus-broker's ProtectSystem=full namespace setup triggers the automount,
+      #  blocking it while PID 1 waits for dbus's READY notification — ~8.8s stall)
+      fileSystems."/boot" = {
+        device = "/dev/disk/by-uuid/2FFF-0D5B";
+        fsType = "vfat";
+        options = [
+          "noauto"
+          "x-systemd.automount"
+          "x-systemd.idle-timeout=120"
+          "fmask=0177"
+          "dmask=0077"
+          "nodev"
+          "nosuid"
+          "noexec"
+        ];
+      };
+
       # Laptop-specific kernel adjustments
       boot.kernelParams = [
         "ideapad_laptop.allow_v4_dytc=Y"
       ];
 
-      # Load TPM driver early so it's ready before userspace starts
-      boot.initrd.kernelModules = [ "tpm_crb" ];
+      # Load critical drivers early in initrd:
+      # - tpm_crb: TPM ready before userspace
+      # - nvme: root disk available immediately (instead of on-demand probe)
+      # - amdgpu: GPU initialized during initrd so Plymouth uses real framebuffer
+      #   and userspace doesn't wait for late GPU init (~15s → immediate)
+      boot.initrd.kernelModules = [ "tpm_crb" "nvme" "amdgpu" ];
 
       boot.extraModprobeConfig = ''
         options rtw89_pci disable_aspm_l1=y disable_aspm_l1ss=y
@@ -63,7 +86,6 @@
           RUNTIME_PM_ON_AC = "auto";
           PCIE_ASPM_ON_AC = "performance";
           PCIE_ASPM_ON_BAT = "powersave";
-          LAPTOP_MODE = 5;
         };
       };
 
