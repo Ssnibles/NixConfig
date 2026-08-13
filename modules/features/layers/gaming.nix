@@ -1,6 +1,6 @@
 { ... }:
 {
-  nixos.modules.shared =
+  nixos.modules.desktop =
     { pkgs, ... }:
     {
       programs.steam = {
