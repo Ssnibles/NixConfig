@@ -34,12 +34,15 @@
         wantedBy = [ "graphical-session.target" ];
         partOf = [ "graphical-session.target" ];
         path = [ config.system.path ];
-        environment = { };
+        environment = {
+          QT_QPA_PLATFORM = "wayland";
+        };
         serviceConfig = {
           Type = "simple";
           ExecStart = "${pkgs.vicinae}/bin/vicinae server";
           Restart = "on-failure";
           RestartSec = 2;
+          PassEnvironment = [ "WAYLAND_DISPLAY" "XDG_RUNTIME_DIR" "DBUS_SESSION_BUS_ADDRESS" ];
         };
       };
 

@@ -7,10 +7,12 @@
         # Give notification daemon time to initialize on login
         sleep 3
 
-        ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q -n 5)
-        ERROR_COUNT=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | wc -l)
+        # Filter out benign dbus-broker duplicate service name warnings
+        RAW_ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | ${pkgs.gnugrep}/bin/grep -v "Ignoring duplicate name" || true)
+        ERROR_COUNT=$(echo "$RAW_ERRORS" | ${pkgs.gnugrep}/bin/grep -v '^$' | wc -l)
 
         if [ "$ERROR_COUNT" -gt 0 ]; then
+          ERRORS=$(echo "$RAW_ERRORS" | head -n 5)
           ${pkgs.libnotify}/bin/notify-send \
             -u critical \
             -i dialog-error \

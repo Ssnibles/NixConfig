@@ -34,6 +34,7 @@
       # Enable ly for login management
       services.displayManager.ly.enable = true;
       security.pam.services.ly.enableGnomeKeyring = true;
+      services.gnome.gnome-keyring.enable = true;
 
       # Swap Caps Lock and Escape via udev hwdb (kernel-level, no daemon needed)
       services.udev.extraHwdb = ''

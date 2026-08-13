@@ -13,6 +13,10 @@
         ];
       };
 
+      # Prevent Plymouth from waiting indefinitely for a quit signal that 'ly' doesn't send
+      systemd.services.plymouth-quit-wait.enable = false;
+      systemd.services.display-manager.preStart = "${pkgs.plymouth}/bin/plymouth quit || true";
+
       # Silent boot parameters to enable a smooth Plymouth transition
       boot.consoleLogLevel = 0;
       boot.initrd.verbose = false;
