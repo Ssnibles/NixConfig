@@ -540,52 +540,13 @@
 
             # Automatically write preferences to about:config via user.js
             ".mozilla/firefox/${cfg.profileName}/user.js".text = userJsContent;
-
-            ".mozilla/firefox/${cfg.profileName}/startpage/InstrumentSerif-Italic.ttf".source =
-              ./startpage/InstrumentSerif-Italic.ttf;
-            ".mozilla/firefox/${cfg.profileName}/startpage/InstrumentSerif-Regular.ttf".source =
-              ./startpage/InstrumentSerif-Regular.ttf;
-
-            # Profile startpage (self-contained HTML to ensure relative assets load cleanly across Nix store symlinks)
-            ".mozilla/firefox/${cfg.profileName}/startpage/index.html".text = ''
-              <!DOCTYPE html>
-              <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>New Tab</title>
-                <style>
-                  ${colorsCss}
-                  ${builtins.readFile ./startpage/style.css}
-                </style>
-              </head>
-              <body>
-                <div class="startpage-container">
-                  <div id="clock">00:00</div>
-                  <div id="date"></div>
-                </div>
-                <script>
-                  ${builtins.readFile ./startpage/script.js}
-                </script>
-              </body>
-              </html>
-            '';
-          }
-          // (lib.optionalAttrs cfg.enableCustomCss {
-            ".mozilla/firefox/${cfg.profileName}/chrome/colors.css".text = colorsCss;
-          })
-          // (lib.optionalAttrs (cfg.enableCustomCss && cfg.userChromeFile != null) {
-            ".mozilla/firefox/${cfg.profileName}/chrome/userChrome.css".source = cfg.userChromeFile;
-          })
-          // (lib.optionalAttrs (cfg.enableCustomCss && cfg.userContentFile != null) {
-            ".mozilla/firefox/${cfg.profileName}/chrome/userContent.css".source = cfg.userContentFile;
-          });
+          };
 
           environment.sessionVariables = {
             MOZ_ALLOW_DOWNGRADE = "1";
           };
 
-          xdg.mime-apps.default-applications = lib.mkIf cfg.defaultBrowser {
+          xdg.mime-apps.default-applications = {
             "text/html" = [ "firefox-devedition.desktop" ];
             "application/xhtml+xml" = [ "firefox-devedition.desktop" ];
             "application/xml" = [ "firefox-devedition.desktop" ];
@@ -598,24 +559,42 @@
             "application/x-extension-shtml" = [ "firefox-devedition.desktop" ];
             "application/x-extension-xhtml" = [ "firefox-devedition.desktop" ];
             "application/x-extension-xht" = [ "firefox-devedition.desktop" ];
+            "application/pdf" = [ "org.pwmt.zathura.desktop" ];
+            "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
           };
         };
 
-        # Symlink userChrome.css and userContent.css directly from NixConfig repo for live-reload
-        # (bypasses Nix store so edits take effect on Firefox restart without rebuild)
-        system.activationScripts.firefox-chrome-symlinks = lib.mkIf cfg.enableCustomCss ''
+        # Direct repository symlinks for live-reloading UI customization (userChrome, userContent, startpage)
+        # Bypasses Nix store so edits in NixConfig take effect immediately on Firefox refresh/restart
+        system.activationScripts.firefox-config = ''
           mkdir -p /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome
-          chown -R ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome
-          ${lib.optionalString (cfg.userChromeFile != null) ''
+          chown -R ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}
+
+          # Dynamic theme CSS variables
+          cat << 'EOF' > /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/colors.css
+          ${colorsCss}
+          EOF
+          chown ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/colors.css
+
+          ${lib.optionalString (cfg.enableCustomCss && cfg.userChromeFile != null) ''
             ln -sfn /home/${config.username}/NixConfig/modules/features/firefox/userChrome.css /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userChrome.css
             chown -h ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userChrome.css
           ''}
-          ${lib.optionalString (cfg.userContentFile != null) ''
+          ${lib.optionalString (cfg.enableCustomCss && cfg.userContentFile != null) ''
             ln -sfn /home/${config.username}/NixConfig/modules/features/firefox/userContent.css /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userContent.css
             chown -h ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userContent.css
           ''}
-        '';
 
+          # Symlink startpage directory for live reloading
+          rm -rf /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage
+          ln -sfn /home/${config.username}/NixConfig/modules/features/firefox/startpage /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage
+          chown -h ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage
+
+          cat << 'EOF' > /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/colors.css
+          ${colorsCss}
+          EOF
+          chown ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/colors.css
+        '';
       };
     };
 }
