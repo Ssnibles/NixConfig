@@ -31,7 +31,7 @@
   /* Spacing */
   --fx-radius: 12px;
   --fx-radius-sm: 8px;
-  --fx-radius-lg: 16px;
+  --fx-radius-lg: 20px;
   --fx-space-xs: 2px;
   --fx-space-sm: 4px;
   --fx-space-md: 8px;
@@ -47,6 +47,9 @@
   --panel-border-radius: var(--fx-radius) !important;
   --panel-menuitem-border-radius: var(--fx-radius-sm) !important;
   --toolbarbutton-border-radius: var(--fx-radius-sm) !important;
+
+  /* Sidebar border removal */
+  --sidebar-border-color: transparent !important;
 }
 
 /* ==========================================================================
@@ -252,17 +255,27 @@
    SIDEBAR — Sidebery container
    ========================================================================== */
 
-#sidebar-box {
+#sidebar-box,
+#sidebar,
+browser#sidebar,
+.sidebar-panel,
+#webextpanels-window,
+#webext-panels-browser,
+#sidebar-inline-browser {
   background-color: var(--fx-bg) !important;
-  border-right: none !important;
+  background: var(--fx-bg) !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
 }
 
-#sidebar {
-  background-color: var(--fx-bg) !important;
-}
-
-#webextpanels-window {
-  background-color: var(--fx-bg) !important;
+#sidebar-splitter {
+  display: none !important;
+  border: none !important;
+  width: 0 !important;
 }
   
 
@@ -282,13 +295,24 @@
 }
 
 #tabbrowser-tabpanels {
-  padding: 8px !important;
+  padding: 8px 8px 0 8px !important;
+}
+
+#tabbrowser-tabpanels .deck-selected,
+.tabbrowser-tabpanel,
+.browserSidebarContainer,
+.browserStack,
+browser {
+  border-radius: var(--fx-radius-lg) var(--fx-radius-lg) 0 0 !important;
+  overflow: hidden !important;
+  border: none !important;
 }
 
 browser[type="content"] {
-  border-radius: var(--fx-radius) !important;
+  border-radius: var(--fx-radius-lg) var(--fx-radius-lg) 0 0 !important;
   overflow: hidden !important;
   border: 2px solid var(--fx-border) !important;
+  border-bottom: none !important;
 }
 
 /* ==========================================================================

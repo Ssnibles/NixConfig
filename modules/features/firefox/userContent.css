@@ -104,9 +104,9 @@
     --status-ok: #b4d4cf !important;
     --status-err: #d8647e !important;
 
-    --border: #252530 !important;
+    --border: transparent !important;
     --border-active: #6e94b2 !important;
-    --border-subtle: #252530 !important;
+    --border-subtle: transparent !important;
 
     /* Tabs Engine */
     --tabs-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
@@ -166,6 +166,9 @@
     background: #141415 !important;
     background-color: #141415 !important;
     color: #cdcdcd !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   .Sidebery,
@@ -186,7 +189,8 @@
   #nav_bar_container {
     background: #141415 !important;
     background-color: #141415 !important;
-    border-bottom: 1px solid #252530 !important;
+    border: none !important;
+    border-bottom: none !important;
     padding: 4px 6px !important;
     gap: 4px !important;
   }
@@ -228,7 +232,8 @@
   .pinned-tabs-container {
     background: #141415 !important;
     background-color: #141415 !important;
-    border-bottom: 1px solid #252530 !important;
+    border: none !important;
+    border-bottom: none !important;
     padding: 4px 6px !important;
     gap: 4px !important;
   }
@@ -365,7 +370,8 @@
   .Dock {
     background: #141415 !important;
     background-color: #141415 !important;
-    border-top: 1px solid #252530 !important;
+    border: none !important;
+    border-top: none !important;
     padding: 4px 6px !important;
   }
 
