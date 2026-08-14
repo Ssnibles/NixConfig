@@ -261,6 +261,11 @@
   background-color: var(--fx-bg) !important;
 }
 
+#webextpanels-window {
+  background-color: var(--fx-bg) !important;
+}
+  
+
 /* ==========================================================================
    FLOATING CONTENT VIEWPORT — Rounded page with depth
    ========================================================================== */
@@ -277,13 +282,13 @@
 }
 
 #tabbrowser-tabpanels {
-  padding: 0 6px 6px 0 !important;
+  padding: 8px !important;
 }
 
 browser[type="content"] {
   border-radius: var(--fx-radius) !important;
   overflow: hidden !important;
-  border: 1px solid var(--fx-border) !important;
+  border: 2px solid var(--fx-border) !important;
 }
 
 /* ==========================================================================

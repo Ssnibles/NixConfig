@@ -111,36 +111,39 @@
 
       # Build custom New Tab WebExtension package (.xpi)
       customNewTabXpi = pkgs.runCommand "custom-newtab.xpi" { buildInputs = [ pkgs.zip ]; } ''
-        mkdir -p tmp_ext
-        cp -r ${./startpage}/* tmp_ext/
-        cd tmp_ext
-        chmod -R +w .
-        cat << 'EOF' > colors.css
-${colorsCss}EOF
-        zip -r $out ./*
+                mkdir -p tmp_ext
+                cp -r ${./startpage}/* tmp_ext/
+                cd tmp_ext
+                chmod -R +w .
+                cat << 'EOF' > colors.css
+        ${colorsCss}EOF
+                zip -r $out ./*
       '';
 
       # Auto-generate extension settings for enterprise policies
       autoExtensionSettings =
-        (if cfg.extensions.enable then
-          lib.foldl' (
-            acc: extName:
-            let
-              extInfo = knownExtensions.${extName} or {
-                id = extName;
-                url = "https://addons.mozilla.org/firefox/downloads/latest/${extName}/latest.xpi";
-              };
-            in
-            acc
-            // {
-              "${extInfo.id}" = {
-                install_url = extInfo.url;
-                installation_mode = "force_installed";
-              };
-            }
-          ) cfg.extensions.extraExtensionSettings cfg.extensions.packages
-        else
-          cfg.extensions.extraExtensionSettings)
+        (
+          if cfg.extensions.enable then
+            lib.foldl' (
+              acc: extName:
+              let
+                extInfo =
+                  knownExtensions.${extName} or {
+                    id = extName;
+                    url = "https://addons.mozilla.org/firefox/downloads/latest/${extName}/latest.xpi";
+                  };
+              in
+              acc
+              // {
+                "${extInfo.id}" = {
+                  install_url = extInfo.url;
+                  installation_mode = "force_installed";
+                };
+              }
+            ) cfg.extensions.extraExtensionSettings cfg.extensions.packages
+          else
+            cfg.extensions.extraExtensionSettings
+        )
         // {
           "custom-newtab@nixconfig.local" = {
             install_url = "file://${customNewTabXpi}";
@@ -180,6 +183,12 @@ ${colorsCss}EOF
           description = "Path to the userChrome.css file to symlink into the Firefox profile.";
         };
 
+        userContentFile = lib.mkOption {
+          type = lib.types.nullOr lib.types.path;
+          default = ./userContent.css;
+          description = "Path to the userContent.css file to symlink into the Firefox profile.";
+        };
+
         extensions = {
           enable = lib.mkOption {
             type = lib.types.bool;
@@ -204,7 +213,9 @@ ${colorsCss}EOF
         };
 
         settings = lib.mkOption {
-          type = lib.types.attrsOf (lib.types.either lib.types.bool (lib.types.either lib.types.int lib.types.str));
+          type = lib.types.attrsOf (
+            lib.types.either lib.types.bool (lib.types.either lib.types.int lib.types.str)
+          );
           default = {
             # ==============================================================
             # CORE UI & EXPERIENCE
@@ -215,7 +226,8 @@ ${colorsCss}EOF
             "browser.uidensity" = 1;
             "browser.tabs.inTitlebar" = 1;
             "browser.shell.checkDefaultBrowser" = false;
-            "browser.startup.homepage" = "file:///home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/index.html";
+            "browser.startup.homepage" =
+              "file:///home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/index.html";
             "browser.startup.page" = 1;
             "browser.newtabpage.enabled" = true;
             "browser.urlbar.clickSelectsAll" = true;
@@ -438,7 +450,9 @@ ${colorsCss}EOF
         };
 
         extraSettings = lib.mkOption {
-          type = lib.types.attrsOf (lib.types.either lib.types.bool (lib.types.either lib.types.int lib.types.str));
+          type = lib.types.attrsOf (
+            lib.types.either lib.types.bool (lib.types.either lib.types.int lib.types.str)
+          );
           default = { };
           description = "Additional user preferences to merge into about:config / user.js.";
         };
@@ -490,117 +504,82 @@ ${colorsCss}EOF
         };
 
         hjem.users."${config.username}" = {
-          files =
-            {
-              # Hide standard firefox.desktop launcher entry so only Firefox Developer Edition appears
-              ".local/share/applications/firefox.desktop".text = ''
-                [Desktop Entry]
-                Type=Application
-                Name=Firefox
-                NoDisplay=true
-              '';
+          files = {
+            # Hide standard firefox.desktop launcher entry so only Firefox Developer Edition appears
+            ".local/share/applications/firefox.desktop".text = ''
+              [Desktop Entry]
+              Type=Application
+              Name=Firefox
+              NoDisplay=true
+            '';
 
-              # Profile initialization config
-              ".mozilla/firefox/profiles.ini".text = ''
-                [Profile0]
-                Name=${cfg.profileName}
-                IsRelative=1
-                Path=${cfg.profileName}
-                Default=1
+            # Profile initialization config
+            ".mozilla/firefox/profiles.ini".text = ''
+              [Profile0]
+              Name=${cfg.profileName}
+              IsRelative=1
+              Path=${cfg.profileName}
+              Default=1
 
-                [Profile1]
-                Name=dev-edition-default
-                IsRelative=1
-                Path=${cfg.profileName}
-                Default=1
+              [Profile1]
+              Name=dev-edition-default
+              IsRelative=1
+              Path=${cfg.profileName}
+              Default=1
 
-                [General]
-                StartWithLastProfile=1
-                Version=2
-              '';
+              [General]
+              StartWithLastProfile=1
+              Version=2
+            '';
 
-              ".mozilla/firefox/installs.ini".text = ''
-                [Default]
-                Default=${cfg.profileName}
-                Locked=0
-              '';
+            ".mozilla/firefox/installs.ini".text = ''
+              [Default]
+              Default=${cfg.profileName}
+              Locked=0
+            '';
 
-              # Automatically write preferences to about:config via user.js
-              ".mozilla/firefox/${cfg.profileName}/user.js".text = userJsContent;
+            # Automatically write preferences to about:config via user.js
+            ".mozilla/firefox/${cfg.profileName}/user.js".text = userJsContent;
 
-              # Profile startpage (self-contained HTML to ensure relative assets load cleanly across Nix store symlinks)
-              ".mozilla/firefox/${cfg.profileName}/startpage/index.html".text = ''
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <title>New Tab</title>
-                  <link rel="preconnect" href="https://fonts.googleapis.com">
-                  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
-                  <style>
-                    ${colorsCss}
-                    ${builtins.readFile ./startpage/style.css}
-                  </style>
-                </head>
-                <body>
-                  <div class="startpage-container">
-                    <div id="clock">00:00</div>
-                    <div id="date"></div>
-                  </div>
-                  <script>
-                    ${builtins.readFile ./startpage/script.js}
-                  </script>
-                </body>
-                </html>
-              '';
-            }
-            // (lib.optionalAttrs cfg.enableCustomCss {
-              ".mozilla/firefox/${cfg.profileName}/chrome/colors.css".text = colorsCss;
-            })
-            // (lib.optionalAttrs cfg.enableCustomCss {
-              ".mozilla/firefox/${cfg.profileName}/chrome/userContent.css".text = ''
-                @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap');
-                @import url('colors.css');
+            ".mozilla/firefox/${cfg.profileName}/startpage/InstrumentSerif-Italic.ttf".source =
+              ./startpage/InstrumentSerif-Italic.ttf;
+            ".mozilla/firefox/${cfg.profileName}/startpage/InstrumentSerif-Regular.ttf".source =
+              ./startpage/InstrumentSerif-Regular.ttf;
 
-                @-moz-document url("about:blank"), url("about:newtab"), url("about:home"), url-prefix("moz-extension://") {
-                  html, body {
-                    background-color: var(--fx-bg) !important;
-                    background-image: none !important;
-                    color: var(--fx-fg) !important;
-                    font-family: "Instrument Serif", Georgia, serif !important;
-                  }
-
-                  .Widgets, .Widgets * {
-                    font-family: "Instrument Serif", Georgia, serif !important;
-                  }
-
-                  .Time, [class*="Time"], .Widgets .container .Time {
-                    font-family: "Instrument Serif", Georgia, serif !important;
-                    font-size: 11rem !important;
-                    font-weight: 400 !important;
-                    font-style: italic !important;
-                    line-height: 1 !important;
-                    color: var(--fx-fg) !important;
-                    letter-spacing: -2px !important;
-                    text-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
-                    font-variant-numeric: tabular-nums !important;
-                  }
-
-                  .Date, [class*="Date"], .Widgets .container .Date {
-                    font-family: "Instrument Serif", Georgia, serif !important;
-                    font-size: 2rem !important;
-                    font-weight: 400 !important;
-                    font-style: italic !important;
-                    color: var(--fx-accent) !important;
-                    margin-top: 1rem !important;
-                    letter-spacing: 1px !important;
-                    opacity: 0.9 !important;
-                  }
-                }
-              '';
-            });
+            # Profile startpage (self-contained HTML to ensure relative assets load cleanly across Nix store symlinks)
+            ".mozilla/firefox/${cfg.profileName}/startpage/index.html".text = ''
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>New Tab</title>
+                <style>
+                  ${colorsCss}
+                  ${builtins.readFile ./startpage/style.css}
+                </style>
+              </head>
+              <body>
+                <div class="startpage-container">
+                  <div id="clock">00:00</div>
+                  <div id="date"></div>
+                </div>
+                <script>
+                  ${builtins.readFile ./startpage/script.js}
+                </script>
+              </body>
+              </html>
+            '';
+          }
+          // (lib.optionalAttrs cfg.enableCustomCss {
+            ".mozilla/firefox/${cfg.profileName}/chrome/colors.css".text = colorsCss;
+          })
+          // (lib.optionalAttrs (cfg.enableCustomCss && cfg.userChromeFile != null) {
+            ".mozilla/firefox/${cfg.profileName}/chrome/userChrome.css".source = cfg.userChromeFile;
+          })
+          // (lib.optionalAttrs (cfg.enableCustomCss && cfg.userContentFile != null) {
+            ".mozilla/firefox/${cfg.profileName}/chrome/userContent.css".source = cfg.userContentFile;
+          });
 
           environment.sessionVariables = {
             MOZ_ALLOW_DOWNGRADE = "1";
@@ -622,26 +601,20 @@ ${colorsCss}EOF
           };
         };
 
-        # Symlink userChrome.css directly from NixConfig repo for live-reload
+        # Symlink userChrome.css and userContent.css directly from NixConfig repo for live-reload
         # (bypasses Nix store so edits take effect on Firefox restart without rebuild)
-        # Runs AFTER hjem so it doesn't conflict with hjem's deactivation of old symlinks
-        systemd.services.firefox-chrome-symlinks = lib.mkIf (cfg.enableCustomCss && cfg.userChromeFile != null) {
-          description = "Symlink Firefox userChrome.css from NixConfig for live-reload";
-          after = [ "hjem-activate@${config.username}.service" ];
-          wants = [ "hjem-activate@${config.username}.service" ];
-          wantedBy = [ "multi-user.target" ];
-          serviceConfig = {
-            Type = "oneshot";
-            RemainAfterExit = true;
-          };
-          script = ''
-            mkdir -p /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome
-            chown -R ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome
+        system.activationScripts.firefox-chrome-symlinks = lib.mkIf cfg.enableCustomCss ''
+          mkdir -p /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome
+          chown -R ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome
+          ${lib.optionalString (cfg.userChromeFile != null) ''
             ln -sfn /home/${config.username}/NixConfig/modules/features/firefox/userChrome.css /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userChrome.css
             chown -h ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userChrome.css
-          '';
-        };
-
+          ''}
+          ${lib.optionalString (cfg.userContentFile != null) ''
+            ln -sfn /home/${config.username}/NixConfig/modules/features/firefox/userContent.css /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userContent.css
+            chown -h ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userContent.css
+          ''}
+        '';
 
       };
     };

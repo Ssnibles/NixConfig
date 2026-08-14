@@ -33,7 +33,6 @@
 
       environment.systemPackages = with pkgs.unstable; [
         amberol
-        chromium
       ];
 
       hardware.graphics = {

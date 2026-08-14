@@ -1,0 +1,522 @@
+/* ==========================================================================
+   Firefox Custom userContent.css — Extension & Web Content Styling
+   Seamless visual integration for Sidebery vertical tabs with Firefox UI
+   ========================================================================== */
+
+:root {
+  --fx-bg: #141415;
+  --fx-bg-raised: #1c1c24;
+  --fx-bg-subtle: #252530;
+  --fx-border: #252530;
+  --fx-fg: #cdcdcd;
+  --fx-fg-mid: #878787;
+  --fx-fg-dim: #606079;
+  --fx-accent: #6e94b2;
+  --fx-teal: #b4d4cf;
+  --fx-purple: #bb9dbd;
+  --fx-red: #d8647e;
+  --fx-orange: #e8b589;
+}
+
+/* Fallback for external colors.css */
+@import url("colors.css");
+
+/* ==========================================================================
+   1. CUSTOM STARTPAGE & ABOUT PAGES — Instrument Serif Clock Aesthetics
+   ========================================================================== */
+
+@-moz-document url("about:blank"), url("about:newtab"), url("about:home") {
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap');
+
+  html, body {
+    background-color: var(--fx-bg, #141415) !important;
+    background-image: none !important;
+    color: var(--fx-fg, #cdcdcd) !important;
+    font-family: "Instrument Serif", Georgia, serif !important;
+  }
+
+  .Widgets, .Widgets * {
+    font-family: "Instrument Serif", Georgia, serif !important;
+  }
+
+  .Time, [class*="Time"], .Widgets .container .Time, #clock {
+    font-family: "Instrument Serif", Georgia, serif !important;
+    font-size: 11rem !important;
+    font-weight: 400 !important;
+    font-style: italic !important;
+    line-height: 1 !important;
+    color: var(--fx-fg, #cdcdcd) !important;
+    letter-spacing: -2px !important;
+    text-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+    font-variant-numeric: tabular-nums !important;
+  }
+
+  .Date, [class*="Date"], .Widgets .container .Date, #date {
+    font-family: "Instrument Serif", Georgia, serif !important;
+    font-size: 2rem !important;
+    font-weight: 400 !important;
+    font-style: italic !important;
+    color: var(--fx-accent, #6e94b2) !important;
+    margin-top: 1rem !important;
+    letter-spacing: 1px !important;
+    opacity: 0.9 !important;
+  }
+}
+
+/* ==========================================================================
+   2. SIDEBERY EXTENSION — Pure Color & Visual Alignment
+   ========================================================================== */
+
+@-moz-document url-prefix("moz-extension://") {
+  /* Scope Instrument Serif for custom newtab extension */
+  html:has(.startpage-container),
+  body:has(.startpage-container),
+  .startpage-container,
+  .startpage-container *,
+  #clock,
+  #date {
+    font-family: "Instrument Serif", Georgia, serif !important;
+  }
+
+  /* High Specificity Theme Variable Overrides for Sidebery */
+  :root:has(.Sidebery),
+  #root,
+  #root[data-theme],
+  #root[data-style],
+  .Sidebery,
+  .Sidebar {
+    /* Color Palette */
+    --bg: #141415 !important;
+    --bg-hover: #1c1c24 !important;
+    --bg-active: #252530 !important;
+    --frame-bg: #141415 !important;
+    --toolbar-bg: #141415 !important;
+
+    --fg: #cdcdcd !important;
+    --fg-trans: #878787 !important;
+    --fg-active: #cdcdcd !important;
+    --fg-sub: #606079 !important;
+
+    --accent: #6e94b2 !important;
+    --active-color: #6e94b2 !important;
+    --status-notice: #6e94b2 !important;
+    --status-progress: #b4d4cf !important;
+    --status-ok: #b4d4cf !important;
+    --status-err: #d8647e !important;
+
+    --border: #252530 !important;
+    --border-active: #6e94b2 !important;
+    --border-subtle: #252530 !important;
+
+    /* Tabs Engine */
+    --tabs-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    --tabs-count-font: system-ui, sans-serif !important;
+    --tabs-height: 34px !important;
+    --tabs-indent: 12px !important;
+    --tabs-border-radius: 8px !important;
+
+    --tabs-bg: #141415 !important;
+    --tabs-hover-bg: #1c1c24 !important;
+    --tabs-activated-bg: #252530 !important;
+    --tabs-selected-bg: #252530 !important;
+
+    --tabs-fg: #cdcdcd !important;
+    --tabs-activated-fg: #cdcdcd !important;
+    --tabs-selected-fg: #cdcdcd !important;
+    --tabs-hover-fg: #cdcdcd !important;
+
+    --tabs-activated-shadow: none !important;
+    --tabs-accent-color: #6e94b2 !important;
+
+    /* Navigation Bar */
+    --nav-btn-width: 34px !important;
+    --nav-btn-height: 34px !important;
+    --nav-btn-bg: transparent !important;
+    --nav-btn-hover-bg: #1c1c24 !important;
+    --nav-btn-activated-bg: #252530 !important;
+    --nav-btn-fg: #878787 !important;
+    --nav-btn-active-fg: #6e94b2 !important;
+    --nav-btn-active-bg: #252530 !important;
+
+    /* Context Menu */
+    --ctx-menu-bg: #1c1c24 !important;
+    --ctx-menu-fg: #cdcdcd !important;
+    --ctx-menu-border: #252530 !important;
+    --ctx-menu-hover-bg: #252530 !important;
+    --ctx-menu-border-radius: 12px !important;
+
+    /* Search Bar */
+    --search-bg: #1c1c24 !important;
+    --search-fg: #cdcdcd !important;
+    --search-border: #252530 !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     Force Base Container Colors (#141415 background & #cdcdcd text)
+     ------------------------------------------------------------------------ */
+  #root,
+  #root[data-theme],
+  .Sidebery,
+  .Sidebar,
+  .TabsPanel,
+  .BookmarksPanel,
+  .HistoryPanel,
+  .Settings,
+  .scroll-container {
+    background: #141415 !important;
+    background-color: #141415 !important;
+    color: #cdcdcd !important;
+  }
+
+  .Sidebery,
+  .Sidebar,
+  .TabsPanel,
+  .BookmarksPanel,
+  .HistoryPanel,
+  .Settings {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     Top Navigation Header Bar & Panels Switcher
+     ------------------------------------------------------------------------ */
+  .NavigationBar,
+  #nav_bar,
+  .nav-bar,
+  #nav_bar_container {
+    background: #141415 !important;
+    background-color: #141415 !important;
+    border-bottom: 1px solid #252530 !important;
+    padding: 4px 6px !important;
+    gap: 4px !important;
+  }
+
+  .NavBtn,
+  .nav-item,
+  .nav-btn {
+    border-radius: 8px !important;
+    color: #878787 !important;
+    background-color: transparent !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+  }
+
+  .NavBtn:hover,
+  .nav-item:hover,
+  .nav-btn:hover {
+    background-color: #1c1c24 !important;
+    color: #cdcdcd !important;
+  }
+
+  .NavBtn[data-active="true"],
+  .NavBtn.active,
+  .nav-item.active,
+  .nav-btn.active {
+    background-color: #252530 !important;
+    color: #6e94b2 !important;
+  }
+
+  .NavBtn svg,
+  .nav-item svg,
+  .nav-btn svg {
+    fill: currentColor !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     Pinned Tabs Bar
+     ------------------------------------------------------------------------ */
+  .PinnedDock,
+  .pinned-tabs-container {
+    background: #141415 !important;
+    background-color: #141415 !important;
+    border-bottom: 1px solid #252530 !important;
+    padding: 4px 6px !important;
+    gap: 4px !important;
+  }
+
+  .PinnedTab,
+  .pinned-tab {
+    border-radius: 8px !important;
+    background-color: transparent !important;
+    transition: background-color 0.12s ease !important;
+  }
+
+  .PinnedTab:hover,
+  .pinned-tab:hover {
+    background-color: #1c1c24 !important;
+  }
+
+  .PinnedTab[data-active="true"],
+  .PinnedTab.active {
+    background-color: #252530 !important;
+    box-shadow: inset 0 -2px 0 #6e94b2 !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     Tabs List — Match Browser #141415 Background & #cdcdcd Foreground
+     ------------------------------------------------------------------------ */
+  .TabsPanel,
+  .tabs-panel {
+    background: #141415 !important;
+    background-color: #141415 !important;
+    padding: 4px 2px !important;
+  }
+
+  .Tab,
+  .tab {
+    position: relative !important;
+    border-radius: 8px !important;
+    margin: 2px 4px !important;
+    padding: 5px 8px !important;
+    background-color: transparent !important;
+    color: #cdcdcd !important;
+    border: 1px solid transparent !important;
+    transition: background-color 0.12s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.12s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  .Tab:hover,
+  .tab:hover {
+    background-color: #1c1c24 !important;
+    color: #cdcdcd !important;
+  }
+
+  /* Active Tab */
+  .Tab[data-active="true"],
+  .Tab.active,
+  .Tab[data-selected="true"],
+  .tab.active {
+    background-color: #252530 !important;
+    color: #cdcdcd !important;
+    border-color: #252530 !important;
+  }
+
+  /* Left accent indicator strip for active tab */
+  .Tab[data-active="true"]::before,
+  .Tab.active::before {
+    content: "" !important;
+    position: absolute !important;
+    left: 2px !important;
+    top: 6px !important;
+    bottom: 6px !important;
+    width: 3px !important;
+    background-color: #6e94b2 !important;
+    border-radius: 3px !important;
+  }
+
+  /* Tab Title typography & colors */
+  .Tab .title,
+  .tab .title,
+  .Tab .t-box,
+  .Tab .t-title {
+    color: #cdcdcd !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+  }
+
+  .Tab[data-active="true"] .title,
+  .Tab.active .title {
+    font-weight: 600 !important;
+    color: #cdcdcd !important;
+  }
+
+  /* Discarded / Unloaded tabs */
+  .Tab[data-discarded="true"] .title,
+  .tab[data-discarded="true"] .title {
+    color: #878787 !important;
+    opacity: 0.75 !important;
+  }
+
+  /* Close button on tab */
+  .Tab .close-btn,
+  .Tab .close {
+    color: #878787 !important;
+    border-radius: 4px !important;
+    opacity: 0.5 !important;
+    transition: opacity 0.12s ease, background-color 0.12s ease, color 0.12s ease !important;
+  }
+
+  .Tab .close-btn:hover,
+  .Tab .close:hover {
+    opacity: 1 !important;
+    background-color: #1c1c24 !important;
+    color: #cdcdcd !important;
+  }
+
+  /* New Tab button (+) */
+  .add-tab-btn,
+  .new-tab-btn,
+  #add_tab_btn {
+    color: #878787 !important;
+    border-radius: 8px !important;
+    transition: background-color 0.12s ease, color 0.12s ease !important;
+  }
+
+  .add-tab-btn:hover,
+  .new-tab-btn:hover {
+    background-color: #1c1c24 !important;
+    color: #cdcdcd !important;
+  }
+
+  /* Bottom Dock Bar (Trash, Bookmarks, History icons at bottom) */
+  .BottomBar,
+  #bottom_bar,
+  .bottom-bar,
+  .dock,
+  .Dock {
+    background: #141415 !important;
+    background-color: #141415 !important;
+    border-top: 1px solid #252530 !important;
+    padding: 4px 6px !important;
+  }
+
+  .BottomBar .btn,
+  .dock .btn,
+  .Dock .btn {
+    color: #878787 !important;
+    fill: #878787 !important;
+    border-radius: 8px !important;
+  }
+
+  .BottomBar .btn:hover,
+  .dock .btn:hover,
+  .Dock .btn:hover {
+    background-color: #1c1c24 !important;
+    color: #cdcdcd !important;
+    fill: #cdcdcd !important;
+  }
+
+  /* Media / Audio icons */
+  .Tab[data-audible="true"] .audio-btn,
+  .Tab .audio-icon {
+    color: #b4d4cf !important;
+    fill: #b4d4cf !important;
+  }
+
+  .Tab[data-muted="true"] .audio-btn {
+    color: #606079 !important;
+    fill: #606079 !important;
+  }
+
+  /* Tree hierarchy lines */
+  .Tab .lvl-mark,
+  .Tab .tree-line {
+    background-color: #252530 !important;
+    opacity: 0.4 !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     Search Bar
+     ------------------------------------------------------------------------ */
+  .SearchInput,
+  .search-box,
+  .SearchInput input {
+    background-color: #1c1c24 !important;
+    color: #cdcdcd !important;
+    border: 1px solid #252530 !important;
+    border-radius: 8px !important;
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+    transition: border-color 0.15s ease !important;
+  }
+
+  .SearchInput input::placeholder {
+    color: #606079 !important;
+  }
+
+  .SearchInput input:focus,
+  .SearchInput:focus-within {
+    border-color: #6e94b2 !important;
+    outline: none !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     Context Menus & Popups
+     ------------------------------------------------------------------------ */
+  .CtxMenu,
+  .ctx-menu,
+  .context-menu {
+    background-color: #1c1c24 !important;
+    border: 1px solid #252530 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    padding: 4px !important;
+  }
+
+  .CtxMenu .btn,
+  .ctx-menu .item,
+  .CtxMenu .opt {
+    border-radius: 8px !important;
+    color: #cdcdcd !important;
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+    transition: background-color 0.12s ease !important;
+  }
+
+  .CtxMenu .btn:hover,
+  .ctx-menu .item:hover,
+  .CtxMenu .opt:hover {
+    background-color: #252530 !important;
+    color: #cdcdcd !important;
+  }
+
+  .CtxMenu .separator {
+    border-top: 1px solid #252530 !important;
+    margin: 4px 6px !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     Bookmarks & History Panels
+     ------------------------------------------------------------------------ */
+  .BookmarksPanel,
+  .HistoryPanel,
+  .bookmarks-tree {
+    background: #141415 !important;
+    background-color: #141415 !important;
+  }
+
+  .Node,
+  .node,
+  .BookmarkNode {
+    border-radius: 8px !important;
+    color: #cdcdcd !important;
+    transition: background-color 0.12s ease !important;
+  }
+
+  .Node:hover,
+  .node:hover,
+  .BookmarkNode:hover {
+    background-color: #1c1c24 !important;
+  }
+
+  .Node[data-active="true"],
+  .Node.active {
+    background-color: #252530 !important;
+    color: #6e94b2 !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     Scrollbars
+     ------------------------------------------------------------------------ */
+  * {
+    scrollbar-width: thin !important;
+    scrollbar-color: #252530 transparent !important;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #252530 !important;
+    border-radius: 4px !important;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #606079 !important;
+  }
+}
