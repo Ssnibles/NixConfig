@@ -6,11 +6,20 @@ function updateClock() {
   hours = hours < 10 ? '0' + hours : hours;
   minutes = minutes < 10 ? '0' + minutes : minutes;
 
-  document.getElementById('clock').textContent = `${hours}:${minutes}`;
+  const clockEl = document.getElementById('clock');
+  const dateEl = document.getElementById('date');
 
-  const options = { weekday: 'long', month: 'long', day: 'numeric' };
-  document.getElementById('date').textContent = now.toLocaleDateString(undefined, options);
+  if (clockEl) {
+    clockEl.textContent = hours + ':' + minutes;
+  }
+
+  if (dateEl) {
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    dateEl.textContent = now.toLocaleDateString(undefined, options);
+  }
 }
 
-updateClock();
-setInterval(updateClock, 1000);
+document.addEventListener('DOMContentLoaded', () => {
+  updateClock();
+  setInterval(updateClock, 1000);
+});

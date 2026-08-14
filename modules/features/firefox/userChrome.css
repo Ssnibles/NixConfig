@@ -1,34 +1,68 @@
-/* Firefox Custom userChrome.css - Ultra Minimal Vertical Tabs Theme */
+/* ==========================================================================
+   Firefox Custom userChrome.css — Premium Minimal Theme
+   Designed for Sidebery vertical tabs + floating content viewport
+   ========================================================================== */
 @import url("colors.css");
 
-:root {
-  --toolbar-field-background-color: var(--fx-bg-raised) !important;
-  --toolbar-field-color: var(--fx-fg) !important;
-  --toolbar-field-border-color: var(--fx-border) !important;
-  --toolbar-field-focus-border-color: var(--fx-accent) !important;
+/* ==========================================================================
+   DESIGN SYSTEM — Variables for consistent spacing, radii, animations
+   ========================================================================== */
 
+:root {
+  /* Toolbar field overrides (native Firefox vars) */
+  --toolbar-field-background-color: var(--fx-bg-raised) !important;
+  --toolbar-field-focus-background-color: var(--fx-bg-raised) !important;
+  --toolbar-field-color: var(--fx-fg) !important;
+  --toolbar-field-focus-color: var(--fx-fg) !important;
+  --toolbar-field-border-color: transparent !important;
+  --toolbar-field-focus-border-color: var(--fx-accent) !important;
+  --urlbar-background-open: var(--fx-bg-raised) !important;
+
+  /* Theme overrides (native Firefox vars) */
   --lwt-accent-color: var(--fx-bg) !important;
   --lwt-text-color: var(--fx-fg) !important;
   --lwt-sidebar-background: var(--fx-bg) !important;
   --lwt-sidebar-text-color: var(--fx-fg) !important;
   --lwt-selected-tab-background-color: var(--fx-bg-subtle) !important;
+
+  /* Spacing */
+  --fx-radius: 12px;
+  --fx-radius-sm: 8px;
+  --fx-radius-lg: 16px;
+  --fx-space-xs: 2px;
+  --fx-space-sm: 4px;
+  --fx-space-md: 8px;
+  --fx-space-lg: 12px;
+
+  /* Animations — smooth Material-style easing */
+  --fx-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --fx-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --fx-transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  --fx-transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+
+
+  /* Global border radii for panels */
+  --panel-border-radius: var(--fx-radius) !important;
+  --panel-menuitem-border-radius: var(--fx-radius-sm) !important;
+  --toolbarbutton-border-radius: var(--fx-radius-sm) !important;
 }
 
 /* ==========================================================================
-   HIDDEN CLUTTER & UNNECESSARY UI ELEMENTS
+   HIDDEN ELEMENTS — Remove all unnecessary UI clutter
    ========================================================================== */
 
-/* Hide top default horizontal tab bar */
+/* Top horizontal tab bar (replaced by Sidebery) */
 #TabsToolbar {
   visibility: collapse !important;
 }
 
-/* Hide clunky default sidebar header ("Sidebery" + Close button) */
+/* Sidebar header ("Sidebery" label + close button) */
 #sidebar-header {
   display: none !important;
 }
 
-/* Hide Firefox Native Vertical Tabs Bar & Sidebar Selector Strip */
+/* Firefox native vertical tabs & sidebar selector (use Sidebery instead) */
 #sidebar-select-box,
 #sidebar-main,
 #vertical-tabs,
@@ -36,7 +70,7 @@
   display: none !important;
 }
 
-/* Hide URL bar internal clutter (shields, bookmark star, page actions) */
+/* URL bar internal clutter */
 #tracking-protection-icon-container,
 #star-button-box,
 #page-action-buttons,
@@ -46,29 +80,41 @@
   display: none !important;
 }
 
-/* Fade identity/lock icon until hovered */
-#identity-box {
-  opacity: 0.4 !important;
-  transition: opacity 0.2s ease !important;
-}
-#identity-box:hover {
-  opacity: 1 !important;
+/* Bookmarks toolbar */
+#PersonalToolbar {
+  display: none !important;
 }
 
-/* Fade disabled navigation buttons */
-#back-button[disabled="true"],
-#forward-button[disabled="true"] {
-  opacity: 0.25 !important;
-  pointer-events: none !important;
-}
-
-/* Hide sidebar splitter line for seamless edge-to-edge layout */
+/* Sidebar splitter line */
 #sidebar-splitter {
   display: none !important;
 }
 
 /* ==========================================================================
-   NAVIGATION & TOOLBAR STYLING
+   IDENTITY / LOCK ICON — Subtle fade, reveals on hover
+   ========================================================================== */
+
+#identity-box {
+  opacity: 0.3 !important;
+  transition: opacity var(--fx-transition) !important;
+}
+
+#identity-box:hover {
+  opacity: 1 !important;
+}
+
+/* ==========================================================================
+   DISABLED NAV BUTTONS — Fade out when inactive
+   ========================================================================== */
+
+#back-button[disabled="true"],
+#forward-button[disabled="true"] {
+  opacity: 0.2 !important;
+  pointer-events: none !important;
+}
+
+/* ==========================================================================
+   NAVIGATOR TOOLBOX — Top chrome area
    ========================================================================== */
 
 #navigator-toolbox {
@@ -76,56 +122,148 @@
   border-bottom: none !important;
 }
 
+/* ==========================================================================
+   NAV BAR — Main toolbar
+   ========================================================================== */
+
 #nav-bar {
   background-color: var(--fx-bg) !important;
   color: var(--fx-fg) !important;
   box-shadow: none !important;
-  padding: 4px 8px !important;
+  padding: var(--fx-space-sm) var(--fx-space-md) !important;
   border: none !important;
 }
 
-#PersonalToolbar {
-  display: none !important;
-}
+/* ==========================================================================
+   URL BAR — Centered pill with accent glow on focus
+   ========================================================================== */
 
-/* Ultra-Clean Centered URL Bar */
 #urlbar-container {
   max-width: 700px !important;
   margin: 0 auto !important;
 }
 
-#urlbar-background {
+/* Override Firefox internal urlbar background variables */
+#urlbar {
+  --urlbar-box-bgcolor: var(--fx-bg-raised) !important;
+  --urlbar-box-focus-bgcolor: var(--fx-bg-raised) !important;
+  --urlbar-box-hover-bgcolor: var(--fx-bg-raised) !important;
+  --urlbar-box-active-bgcolor: var(--fx-bg-raised) !important;
   background-color: var(--fx-bg-raised) !important;
-  border: 1px solid var(--fx-border) !important;
-  border-radius: 12px !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  border-radius: var(--fx-radius) !important;
 }
 
-#urlbar[focused="true"] > #urlbar-background {
+#urlbar-background {
+  background-color: var(--fx-bg-raised) !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--fx-radius) !important;
+  transition: border-color var(--fx-transition),
+              background-color var(--fx-transition) !important;
+}
+
+#urlbar-input-container {
+  background-color: var(--fx-bg-raised) !important;
+  border-radius: var(--fx-radius) !important;
+}
+
+/* Active / Focused / Open background & border states */
+#urlbar[focused="true"] > #urlbar-background,
+#urlbar[open] > #urlbar-background,
+#urlbar[breakout][breakout-extend] > #urlbar-background {
+  background-color: var(--fx-bg-raised) !important;
   border-color: var(--fx-accent) !important;
-  box-shadow: 0 0 12px rgba(110, 148, 178, 0.25) !important;
+}
+
+#urlbar[focused="true"],
+#urlbar[open],
+#urlbar[breakout][breakout-extend],
+#urlbar[focused="true"] #urlbar-input-container,
+#urlbar[open] #urlbar-input-container,
+#urlbar[breakout][breakout-extend] #urlbar-input-container {
+  background-color: var(--fx-bg-raised) !important;
 }
 
 #urlbar-input {
   color: var(--fx-fg) !important;
   text-align: center !important;
 }
+
 #urlbar[focused="true"] #urlbar-input {
   text-align: left !important;
 }
 
-/* Toolbar Buttons */
+/* ==========================================================================
+   URL DROPDOWN / AUTOCOMPLETE — Styled results panel
+   ========================================================================== */
+
+.urlbarView,
+.urlbarView-body-outer,
+.urlbarView-body-inner,
+.urlbarView-results {
+  background-color: var(--fx-bg-raised) !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  scrollbar-width: none !important;
+}
+
+.urlbarView-results::-webkit-scrollbar {
+  display: none !important;
+}
+
+.urlbarView {
+  margin-inline: 0 !important;
+  width: 100% !important;
+  border-radius: 0 0 var(--fx-radius) var(--fx-radius) !important;
+}
+
+#urlbar[open] > .urlbarView,
+#urlbar[open],
+#urlbar[breakout][breakout-extend] {
+  background-color: var(--fx-bg-raised) !important;
+}
+
+/* Search one-offs row at the bottom of the dropdown */
+.search-one-offs {
+  background-color: var(--fx-bg-raised) !important;
+  border-top: 1px solid var(--fx-border) !important;
+  border-radius: 0 0 var(--fx-radius) var(--fx-radius) !important;
+}
+
+.urlbarView-row {
+  border-radius: var(--fx-radius-sm) !important;
+  margin: var(--fx-space-xs) var(--fx-space-sm) !important;
+  padding: var(--fx-space-sm) var(--fx-space-md) !important;
+  transition: background-color var(--fx-transition-fast) !important;
+}
+
+.urlbarView-row:hover,
+.urlbarView-row[selected] {
+  background-color: var(--fx-bg-subtle) !important;
+}
+
+/* ==========================================================================
+   TOOLBAR BUTTONS — Micro-animations on hover/active
+   ========================================================================== */
+
 .toolbarbutton-1 {
-  border-radius: 8px !important;
-  transition: background-color 0.15s ease, opacity 0.15s ease !important;
+  border-radius: var(--fx-radius-sm) !important;
+  transition: background-color var(--fx-transition-fast),
+              transform var(--fx-transition-fast),
+              opacity var(--fx-transition-fast) !important;
 }
 
 .toolbarbutton-1:hover:not([disabled="true"]) {
   background-color: var(--fx-bg-raised) !important;
+  transform: scale(1.05);
+}
+
+.toolbarbutton-1:active:not([disabled="true"]) {
+  transform: scale(0.95);
 }
 
 /* ==========================================================================
-   SIDEBAR & SIDEBERY CONTAINER
+   SIDEBAR — Sidebery container
    ========================================================================== */
 
 #sidebar-box {
@@ -138,7 +276,7 @@
 }
 
 /* ==========================================================================
-   FLOATING WEB CONTENT VIEWPORT (ZEN / ARC FLOATING CARD STYLE)
+   FLOATING CONTENT VIEWPORT — Rounded page with depth
    ========================================================================== */
 
 #tabbrowser-tabpanels {
@@ -150,18 +288,97 @@
   background-color: var(--fx-bg) !important;
 }
 
-/* Give web pages rounded floating corners inside the window */
 browser[type="content"] {
-  border-radius: 12px !important;
+  border-radius: var(--fx-radius) !important;
   overflow: hidden !important;
   border: 1px solid var(--fx-border) !important;
 }
 
-/* Modern Popups & Context Menus */
+/* ==========================================================================
+   PANELS & CONTEXT MENUS — Flat styled popups
+   ========================================================================== */
+
 menupopup,
 panel {
   --panel-background: var(--fx-bg-raised) !important;
   --panel-border-color: var(--fx-border) !important;
   --panel-color: var(--fx-fg) !important;
-  border-radius: 10px !important;
+  border-radius: var(--fx-radius) !important;
+}
+
+/* Menu items — rounded hover states */
+menuitem,
+menu {
+  border-radius: var(--fx-radius-sm) !important;
+  margin: var(--fx-space-xs) var(--fx-space-sm) !important;
+  transition: background-color var(--fx-transition-fast) !important;
+}
+
+menuitem:hover,
+menu:hover,
+menuitem[_moz-menuactive="true"],
+menu[_moz-menuactive="true"] {
+  background-color: var(--fx-bg-subtle) !important;
+}
+
+/* Menu separators */
+menuseparator {
+  border-color: var(--fx-border) !important;
+  margin: var(--fx-space-sm) var(--fx-space-md) !important;
+  opacity: 0.5 !important;
+}
+
+/* ==========================================================================
+   FINDBAR — Themed to match the rest of the UI
+   ========================================================================== */
+
+findbar {
+  background-color: var(--fx-bg) !important;
+  border-top: 1px solid var(--fx-border) !important;
+  padding: var(--fx-space-sm) var(--fx-space-lg) !important;
+  color: var(--fx-fg) !important;
+}
+
+findbar .findbar-textbox {
+  background-color: var(--fx-bg-raised) !important;
+  color: var(--fx-fg) !important;
+  border: 1px solid var(--fx-border) !important;
+  border-radius: var(--fx-radius-sm) !important;
+  padding: var(--fx-space-sm) var(--fx-space-md) !important;
+  transition: border-color var(--fx-transition) !important;
+}
+
+findbar .findbar-textbox:focus {
+  border-color: var(--fx-accent) !important;
+}
+
+findbar toolbarbutton {
+  border-radius: var(--fx-radius-sm) !important;
+  transition: background-color var(--fx-transition-fast) !important;
+}
+
+findbar toolbarbutton:hover {
+  background-color: var(--fx-bg-raised) !important;
+}
+
+/* ==========================================================================
+   TOOLTIP — Styled to match
+   ========================================================================== */
+
+tooltip {
+  background-color: var(--fx-bg-raised) !important;
+  color: var(--fx-fg) !important;
+  border: 1px solid var(--fx-border) !important;
+  border-radius: var(--fx-radius-sm) !important;
+  padding: var(--fx-space-sm) var(--fx-space-md) !important;
+}
+
+/* ==========================================================================
+   NOTIFICATION BAR — Clean inline notifications
+   ========================================================================== */
+
+notification-message {
+  background-color: var(--fx-bg-raised) !important;
+  color: var(--fx-fg) !important;
+  border-bottom: 1px solid var(--fx-border) !important;
 }

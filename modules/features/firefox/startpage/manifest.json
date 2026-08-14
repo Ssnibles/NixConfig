@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "Custom New Tab",
+  "version": "1.0.0",
+  "description": "Minimal custom new tab page with Instrument Serif typography and dark theme",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "custom-newtab@nixconfig.local"
+    }
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": []
+}

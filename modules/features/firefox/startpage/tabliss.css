@@ -1,0 +1,48 @@
+/* Tabliss Custom CSS - Ported from custom Firefox Startpage */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap');
+
+/* Global Font & Background */
+body, html, #root {
+  background-color: #141415 !important;
+  background-image: none !important;
+  color: #cdcdcd !important;
+  font-family: "Instrument Serif", Georgia, serif !important;
+}
+
+/* Ensure all widget containers use Instrument Serif */
+.Widgets, .Widgets * {
+  font-family: "Instrument Serif", Georgia, serif !important;
+}
+
+/* Time / Clock Widget styling */
+.Time,
+.Time--time,
+.Widgets .container .Time,
+div[class*="Time"] {
+  font-family: "Instrument Serif", Georgia, serif !important;
+  font-size: 11rem !important;
+  font-weight: 400 !important;
+  font-style: italic !important;
+  line-height: 1 !important;
+  color: #cdcdcd !important;
+  letter-spacing: -2px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* Date Widget styling */
+.Date,
+.Time--date,
+.Widgets .container .Date,
+div[class*="Date"] {
+  font-family: "Instrument Serif", Georgia, serif !important;
+  font-size: 2rem !important;
+  font-weight: 400 !important;
+  font-style: italic !important;
+  color: #6e94b2 !important;
+  margin-top: 1rem !important;
+  letter-spacing: 1px !important;
+  opacity: 0.9 !important;
+}
