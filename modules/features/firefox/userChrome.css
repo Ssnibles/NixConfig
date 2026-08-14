@@ -20,10 +20,13 @@
 
   /* Theme overrides (native Firefox vars) */
   --lwt-accent-color: var(--fx-bg) !important;
+  --lwt-accent-color-inactive: var(--fx-bg) !important;
+  --lwt-frame: var(--fx-bg) !important;
   --lwt-text-color: var(--fx-fg) !important;
   --lwt-sidebar-background: var(--fx-bg) !important;
   --lwt-sidebar-text-color: var(--fx-fg) !important;
   --lwt-selected-tab-background-color: var(--fx-bg-subtle) !important;
+  --tabpanel-background-color: var(--fx-bg) !important;
 
   /* Spacing */
   --fx-radius: 12px;
@@ -279,13 +282,19 @@
    FLOATING CONTENT VIEWPORT — Rounded page with depth
    ========================================================================== */
 
-#tabbrowser-tabpanels {
-  background-color: var(--fx-bg) !important;
-  padding: 0 6px 6px 0 !important;
-}
-
+#main-window,
+#appcontent,
+#tabbrowser-tabbox,
+#tabbrowser-tabpanels,
+.tabpanel,
+.browserStack,
 .browserSidebarContainer {
   background-color: var(--fx-bg) !important;
+  background: var(--fx-bg) !important;
+}
+
+#tabbrowser-tabpanels {
+  padding: 0 6px 6px 0 !important;
 }
 
 browser[type="content"] {

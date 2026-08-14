@@ -279,7 +279,7 @@ EOF
             "browser.uidensity" = 1;
             "browser.tabs.inTitlebar" = 1;
             "browser.shell.checkDefaultBrowser" = false;
-            "browser.startup.homepage" = "about:newtab";
+            "browser.startup.homepage" = "file:///home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/index.html";
             "browser.startup.page" = 1;
             "browser.newtabpage.enabled" = true;
             "browser.urlbar.clickSelectsAll" = true;
@@ -513,6 +513,11 @@ EOF
             DisableTelemetry = true;
             DisableFirefoxStudies = true;
             DisablePocket = true;
+            Homepage = {
+              URL = "file:///home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/index.html";
+              Locked = true;
+              StartPage = "homepage";
+            };
             SearchEngines = {
               Default = "DuckDuckGo";
               PreventInstalls = true;
