@@ -20,7 +20,7 @@
           bat
           btop
           chafa # Terminal image viewer (Sixel enabled)
-          fastfetch
+          microfetch
           fd
           file
           fzf

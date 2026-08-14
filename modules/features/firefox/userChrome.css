@@ -1,0 +1,167 @@
+/* Firefox Custom userChrome.css - Ultra Minimal Vertical Tabs Theme */
+@import url("colors.css");
+
+:root {
+  --toolbar-field-background-color: var(--fx-bg-raised) !important;
+  --toolbar-field-color: var(--fx-fg) !important;
+  --toolbar-field-border-color: var(--fx-border) !important;
+  --toolbar-field-focus-border-color: var(--fx-accent) !important;
+
+  --lwt-accent-color: var(--fx-bg) !important;
+  --lwt-text-color: var(--fx-fg) !important;
+  --lwt-sidebar-background: var(--fx-bg) !important;
+  --lwt-sidebar-text-color: var(--fx-fg) !important;
+  --lwt-selected-tab-background-color: var(--fx-bg-subtle) !important;
+}
+
+/* ==========================================================================
+   HIDDEN CLUTTER & UNNECESSARY UI ELEMENTS
+   ========================================================================== */
+
+/* Hide top default horizontal tab bar */
+#TabsToolbar {
+  visibility: collapse !important;
+}
+
+/* Hide clunky default sidebar header ("Sidebery" + Close button) */
+#sidebar-header {
+  display: none !important;
+}
+
+/* Hide Firefox Native Vertical Tabs Bar & Sidebar Selector Strip */
+#sidebar-select-box,
+#sidebar-main,
+#vertical-tabs,
+#tabbrowser-tabs[orient="vertical"] {
+  display: none !important;
+}
+
+/* Hide URL bar internal clutter (shields, bookmark star, page actions) */
+#tracking-protection-icon-container,
+#star-button-box,
+#page-action-buttons,
+#urlbar-search-mode-indicator,
+#urlbar-zoom-button,
+#identity-permission-box {
+  display: none !important;
+}
+
+/* Fade identity/lock icon until hovered */
+#identity-box {
+  opacity: 0.4 !important;
+  transition: opacity 0.2s ease !important;
+}
+#identity-box:hover {
+  opacity: 1 !important;
+}
+
+/* Fade disabled navigation buttons */
+#back-button[disabled="true"],
+#forward-button[disabled="true"] {
+  opacity: 0.25 !important;
+  pointer-events: none !important;
+}
+
+/* Hide sidebar splitter line for seamless edge-to-edge layout */
+#sidebar-splitter {
+  display: none !important;
+}
+
+/* ==========================================================================
+   NAVIGATION & TOOLBAR STYLING
+   ========================================================================== */
+
+#navigator-toolbox {
+  background-color: var(--fx-bg) !important;
+  border-bottom: none !important;
+}
+
+#nav-bar {
+  background-color: var(--fx-bg) !important;
+  color: var(--fx-fg) !important;
+  box-shadow: none !important;
+  padding: 4px 8px !important;
+  border: none !important;
+}
+
+#PersonalToolbar {
+  display: none !important;
+}
+
+/* Ultra-Clean Centered URL Bar */
+#urlbar-container {
+  max-width: 700px !important;
+  margin: 0 auto !important;
+}
+
+#urlbar-background {
+  background-color: var(--fx-bg-raised) !important;
+  border: 1px solid var(--fx-border) !important;
+  border-radius: 12px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#urlbar[focused="true"] > #urlbar-background {
+  border-color: var(--fx-accent) !important;
+  box-shadow: 0 0 12px rgba(110, 148, 178, 0.25) !important;
+}
+
+#urlbar-input {
+  color: var(--fx-fg) !important;
+  text-align: center !important;
+}
+#urlbar[focused="true"] #urlbar-input {
+  text-align: left !important;
+}
+
+/* Toolbar Buttons */
+.toolbarbutton-1 {
+  border-radius: 8px !important;
+  transition: background-color 0.15s ease, opacity 0.15s ease !important;
+}
+
+.toolbarbutton-1:hover:not([disabled="true"]) {
+  background-color: var(--fx-bg-raised) !important;
+}
+
+/* ==========================================================================
+   SIDEBAR & SIDEBERY CONTAINER
+   ========================================================================== */
+
+#sidebar-box {
+  background-color: var(--fx-bg) !important;
+  border-right: none !important;
+}
+
+#sidebar {
+  background-color: var(--fx-bg) !important;
+}
+
+/* ==========================================================================
+   FLOATING WEB CONTENT VIEWPORT (ZEN / ARC FLOATING CARD STYLE)
+   ========================================================================== */
+
+#tabbrowser-tabpanels {
+  background-color: var(--fx-bg) !important;
+  padding: 0 6px 6px 0 !important;
+}
+
+.browserSidebarContainer {
+  background-color: var(--fx-bg) !important;
+}
+
+/* Give web pages rounded floating corners inside the window */
+browser[type="content"] {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--fx-border) !important;
+}
+
+/* Modern Popups & Context Menus */
+menupopup,
+panel {
+  --panel-background: var(--fx-bg-raised) !important;
+  --panel-border-color: var(--fx-border) !important;
+  --panel-color: var(--fx-fg) !important;
+  border-radius: 10px !important;
+}
