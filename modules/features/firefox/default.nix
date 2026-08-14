@@ -9,8 +9,6 @@
     }:
     let
       cfg = config.features.firefox;
-      startpagePort = 9723;
-      startpageUrl = "http://127.0.0.1:${toString startpagePort}";
       inherit (config.theme.colors)
         bg
         bgRaised
@@ -22,11 +20,26 @@
         accent
         teal
         purple
-        green
-        yellow
         red
         orange
         ;
+
+      colorsCss = ''
+        :root {
+          --fx-bg: #${bg};
+          --fx-bg-raised: #${bgRaised};
+          --fx-bg-subtle: #${bgSubtle};
+          --fx-border: #${border};
+          --fx-fg: #${fg};
+          --fx-fg-mid: #${fgMid};
+          --fx-fg-dim: #${fgDim};
+          --fx-accent: #${accent};
+          --fx-teal: #${teal};
+          --fx-purple: #${purple};
+          --fx-red: #${red};
+          --fx-orange: #${orange};
+        }
+      '';
 
       # Map Nix primitive values to JS literals for user.js
       toJsValue =
@@ -102,72 +115,8 @@
         cp -r ${./startpage}/* tmp_ext/
         cd tmp_ext
         chmod -R +w .
-        cat << 'EOF' > style.css
-:root {
-  --fx-bg: #${bg};
-  --fx-bg-raised: #${bgRaised};
-  --fx-bg-subtle: #${bgSubtle};
-  --fx-border: #${border};
-  --fx-fg: #${fg};
-  --fx-fg-mid: #${fgMid};
-  --fx-fg-dim: #${fgDim};
-  --fx-accent: #${accent};
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  width: 100%;
-  height: 100%;
-  background-color: var(--fx-bg);
-  color: var(--fx-fg);
-  font-family: "Instrument Serif", Georgia, serif;
-  overflow: hidden;
-}
-
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
-.startpage-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  user-select: none;
-}
-
-#clock {
-  font-size: 11rem;
-  font-weight: 400;
-  font-style: italic;
-  line-height: 1;
-  color: var(--fx-fg);
-  letter-spacing: -2px;
-  margin: 0;
-  padding: 0;
-  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  font-variant-numeric: tabular-nums;
-}
-
-#date {
-  font-size: 2rem;
-  font-weight: 400;
-  font-style: italic;
-  color: var(--fx-accent);
-  margin-top: 1rem;
-  letter-spacing: 1px;
-  opacity: 0.9;
-}
-EOF
+        cat << 'EOF' > colors.css
+${colorsCss}EOF
         zip -r $out ./*
       '';
 
@@ -231,18 +180,6 @@ EOF
           description = "Path to the userChrome.css file to symlink into the Firefox profile.";
         };
 
-        userContentFile = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
-          default = null;
-          description = "Optional path to the userContent.css file to symlink into the Firefox profile.";
-        };
-
-        hideHorizontalTabs = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Hide horizontal top tabs (recommended when using vertical tabs like Sidebery).";
-        };
-
         extensions = {
           enable = lib.mkOption {
             type = lib.types.bool;
@@ -255,9 +192,8 @@ EOF
             default = [
               "ublock-origin"
               "sidebery"
-              "tabliss"
             ];
-            description = "List of Firefox extension slugs or IDs to auto-install (e.g. ublock-origin, sidebery, bitwarden, tabliss).";
+            description = "List of Firefox extension slugs or IDs to auto-install (e.g. ublock-origin, sidebery, bitwarden).";
           };
 
           extraExtensionSettings = lib.mkOption {
@@ -592,7 +528,7 @@ EOF
               # Automatically write preferences to about:config via user.js
               ".mozilla/firefox/${cfg.profileName}/user.js".text = userJsContent;
 
-              # Minimal Startpage HTML with injected system theme colors & Instrument Serif italic font
+              # Profile startpage (self-contained HTML to ensure relative assets load cleanly across Nix store symlinks)
               ".mozilla/firefox/${cfg.profileName}/startpage/index.html".text = ''
                 <!DOCTYPE html>
                 <html lang="en">
@@ -604,70 +540,8 @@ EOF
                   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
                   <style>
-                    :root {
-                      --fx-bg: #${bg};
-                      --fx-bg-raised: #${bgRaised};
-                      --fx-bg-subtle: #${bgSubtle};
-                      --fx-border: #${border};
-                      --fx-fg: #${fg};
-                      --fx-fg-mid: #${fgMid};
-                      --fx-fg-dim: #${fgDim};
-                      --fx-accent: #${accent};
-                    }
-
-                    * {
-                      margin: 0;
-                      padding: 0;
-                      box-sizing: border-box;
-                    }
-
-                    html, body {
-                      width: 100%;
-                      height: 100%;
-                      background-color: var(--fx-bg);
-                      color: var(--fx-fg);
-                      font-family: "Instrument Serif", Georgia, serif;
-                      overflow: hidden;
-                    }
-
-                    body {
-                      display: flex;
-                      justify-content: center;
-                      align-items: center;
-                      min-height: 100vh;
-                    }
-
-                    .startpage-container {
-                      display: flex;
-                      flex-direction: column;
-                      align-items: center;
-                      justify-content: center;
-                      text-align: center;
-                      user-select: none;
-                    }
-
-                    #clock {
-                      font-size: 11rem;
-                      font-weight: 400;
-                      font-style: italic;
-                      line-height: 1;
-                      color: var(--fx-fg);
-                      letter-spacing: -2px;
-                      margin: 0;
-                      padding: 0;
-                      text-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-                      font-variant-numeric: tabular-nums;
-                    }
-
-                    #date {
-                      font-size: 2rem;
-                      font-weight: 400;
-                      font-style: italic;
-                      color: var(--fx-accent);
-                      margin-top: 1rem;
-                      letter-spacing: 1px;
-                      opacity: 0.9;
-                    }
+                    ${colorsCss}
+                    ${builtins.readFile ./startpage/style.css}
                   </style>
                 </head>
                 <body>
@@ -676,59 +550,19 @@ EOF
                     <div id="date"></div>
                   </div>
                   <script>
-                    function updateClock() {
-                      const now = new Date();
-                      let hours = now.getHours();
-                      let minutes = now.getMinutes();
-
-                      hours = hours < 10 ? '0' + hours : hours;
-                      minutes = minutes < 10 ? '0' + minutes : minutes;
-
-                      document.getElementById('clock').textContent = hours + ':' + minutes;
-
-                      const options = { weekday: 'long', month: 'long', day: 'numeric' };
-                      document.getElementById('date').textContent = now.toLocaleDateString(undefined, options);
-                    }
-
-                    updateClock();
-                    setInterval(updateClock, 1000);
+                    ${builtins.readFile ./startpage/script.js}
                   </script>
                 </body>
                 </html>
               '';
             }
             // (lib.optionalAttrs cfg.enableCustomCss {
-              ".mozilla/firefox/${cfg.profileName}/chrome/colors.css".text = ''
-                :root {
-                  --fx-bg: #${bg};
-                  --fx-bg-raised: #${bgRaised};
-                  --fx-bg-subtle: #${bgSubtle};
-                  --fx-border: #${border};
-                  --fx-fg: #${fg};
-                  --fx-fg-mid: #${fgMid};
-                  --fx-fg-dim: #${fgDim};
-                  --fx-accent: #${accent};
-                  --fx-teal: #${teal};
-                  --fx-purple: #${purple};
-                  --fx-red: #${red};
-                  --fx-orange: #${orange};
-                }
-              '';
+              ".mozilla/firefox/${cfg.profileName}/chrome/colors.css".text = colorsCss;
             })
             // (lib.optionalAttrs cfg.enableCustomCss {
               ".mozilla/firefox/${cfg.profileName}/chrome/userContent.css".text = ''
                 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap');
-
-                :root {
-                  --fx-bg: #${bg};
-                  --fx-bg-raised: #${bgRaised};
-                  --fx-bg-subtle: #${bgSubtle};
-                  --fx-border: #${border};
-                  --fx-fg: #${fg};
-                  --fx-fg-mid: #${fgMid};
-                  --fx-fg-dim: #${fgDim};
-                  --fx-accent: #${accent};
-                }
+                @import url('colors.css');
 
                 @-moz-document url("about:blank"), url("about:newtab"), url("about:home"), url-prefix("moz-extension://") {
                   html, body {

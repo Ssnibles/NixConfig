@@ -19,7 +19,12 @@ function updateClock() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    updateClock();
+    setInterval(updateClock, 1000);
+  });
+} else {
   updateClock();
   setInterval(updateClock, 1000);
-});
+}

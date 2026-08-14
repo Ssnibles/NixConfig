@@ -43,8 +43,6 @@
   --fx-transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
   --fx-transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
-
-
   /* Global border radii for panels */
   --panel-border-radius: var(--fx-radius) !important;
   --panel-menuitem-border-radius: var(--fx-radius-sm) !important;
@@ -169,21 +167,11 @@
   border-radius: var(--fx-radius) !important;
 }
 
-/* Active / Focused / Open background & border states */
+/* Active / Focused / Open border states */
 #urlbar[focused="true"] > #urlbar-background,
 #urlbar[open] > #urlbar-background,
 #urlbar[breakout][breakout-extend] > #urlbar-background {
-  background-color: var(--fx-bg-raised) !important;
   border-color: var(--fx-accent) !important;
-}
-
-#urlbar[focused="true"],
-#urlbar[open],
-#urlbar[breakout][breakout-extend],
-#urlbar[focused="true"] #urlbar-input-container,
-#urlbar[open] #urlbar-input-container,
-#urlbar[breakout][breakout-extend] #urlbar-input-container {
-  background-color: var(--fx-bg-raised) !important;
 }
 
 #urlbar-input {
@@ -220,11 +208,6 @@
   border-radius: 0 0 var(--fx-radius) var(--fx-radius) !important;
 }
 
-#urlbar[open] > .urlbarView,
-#urlbar[open],
-#urlbar[breakout][breakout-extend] {
-  background-color: var(--fx-bg-raised) !important;
-}
 
 /* Search one-offs row at the bottom of the dropdown */
 .search-one-offs {

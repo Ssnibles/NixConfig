@@ -1,0 +1,14 @@
+:root {
+  --fx-bg: #141415;
+  --fx-bg-raised: #1c1c24;
+  --fx-bg-subtle: #252530;
+  --fx-border: #252530;
+  --fx-fg: #cdcdcd;
+  --fx-fg-mid: #878787;
+  --fx-fg-dim: #606079;
+  --fx-accent: #6e94b2;
+  --fx-teal: #b4d4cf;
+  --fx-purple: #bb9dbd;
+  --fx-red: #d8647e;
+  --fx-orange: #e8b589;
+}

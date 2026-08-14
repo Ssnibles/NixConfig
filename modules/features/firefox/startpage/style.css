@@ -1,13 +1,4 @@
-:root {
-  --fx-bg: #141415;
-  --fx-bg-raised: #1c1c24;
-  --fx-bg-subtle: #252530;
-  --fx-border: #252530;
-  --fx-fg: #cdcdcd;
-  --fx-fg-mid: #878787;
-  --fx-fg-dim: #606079;
-  --fx-accent: #6e94b2;
-}
+@import url('colors.css');
 
 * {
   margin: 0;
