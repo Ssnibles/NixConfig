@@ -60,6 +60,7 @@ Scope {
       exclusionMode: ExclusionMode.Ignore
 
       // State for transition animation
+      property bool isPrimaryScreen: panel.modelData === Quickshell.screens[0]
       property real panelOpacity: 0
       property real panelSlide: 60
 
@@ -187,6 +188,7 @@ Scope {
       // Main Card container
       Rectangle {
         id: mainCard
+        visible: panel.isPrimaryScreen
         width: Config.commandCenterWidth
         anchors.top: parent.top
         anchors.bottom: parent.bottom

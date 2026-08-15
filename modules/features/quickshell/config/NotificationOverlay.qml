@@ -9,7 +9,7 @@ Scope {
   property string position: Config.notifPosition
 
   Variants {
-    model: Quickshell.screens
+    model: Quickshell.screens.length > 0 ? [Quickshell.screens[0]] : []
 
     PanelWindow {
       id: panel

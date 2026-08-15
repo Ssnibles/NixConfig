@@ -68,8 +68,12 @@ layout {
     }
 }
 
+output "*" {
+    scale 1.0
+}
+
 output "eDP-1" {
-  mode "1920x1080@60.056"
+    mode "1920x1080@60.056"
 }
 
 // Global Window Management Rules
@@ -155,6 +159,32 @@ binds {
     Mod+Shift+Right { move-column-right; }
     Mod+Shift+H     { move-column-left; }
     Mod+Shift+L     { move-column-right; }
+
+    // Multi-Monitor Focus Navigation
+    Mod+Ctrl+Left  { focus-monitor-left; }
+    Mod+Ctrl+Right { focus-monitor-right; }
+    Mod+Ctrl+Up    { focus-monitor-up; }
+    Mod+Ctrl+Down  { focus-monitor-down; }
+    Mod+Ctrl+H     { focus-monitor-left; }
+    Mod+Ctrl+L     { focus-monitor-right; }
+    Mod+Ctrl+K     { focus-monitor-up; }
+    Mod+Ctrl+J     { focus-monitor-down; }
+
+    // Moving Columns Across Monitors
+    Mod+Shift+Ctrl+Left  { move-column-to-monitor-left; }
+    Mod+Shift+Ctrl+Right { move-column-to-monitor-right; }
+    Mod+Shift+Ctrl+Up    { move-column-to-monitor-up; }
+    Mod+Shift+Ctrl+Down  { move-column-to-monitor-down; }
+    Mod+Shift+Ctrl+H     { move-column-to-monitor-left; }
+    Mod+Shift+Ctrl+L     { move-column-to-monitor-right; }
+    Mod+Shift+Ctrl+K     { move-column-to-monitor-up; }
+    Mod+Shift+Ctrl+J     { move-column-to-monitor-down; }
+
+    // Moving Workspace Across Monitors
+    Mod+Alt+Shift+Left  { move-workspace-to-monitor-left; }
+    Mod+Alt+Shift+Right { move-workspace-to-monitor-right; }
+    Mod+Alt+Shift+H     { move-workspace-to-monitor-left; }
+    Mod+Alt+Shift+L     { move-workspace-to-monitor-right; }
 
     Mod+Equal { set-column-width "+50"; }
     Mod+Minus { set-column-width "-50"; }

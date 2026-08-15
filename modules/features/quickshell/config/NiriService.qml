@@ -10,6 +10,22 @@ QtObject {
   property var allWorkspaces: []
   property string currentTitle: ""
 
+  readonly property Process _niriInitWs: Process {
+    command: ["niri", "msg", "--json", "workspaces"]
+    running: true
+    stdout: StdioCollector {
+      onDataChanged: {
+        try {
+          var wsList = JSON.parse(this.text)
+          if (Array.isArray(wsList)) {
+            wsList.sort((a, b) => a.idx - b.idx)
+            root.allWorkspaces = wsList
+          }
+        } catch (e) {}
+      }
+    }
+  }
+
   readonly property Process _niriEvents: Process {
     command: ["niri", "msg", "--json", "event-stream"]
     running: true
@@ -44,22 +60,20 @@ QtObject {
       var updated = []
       for (var j = 0; j < root.allWorkspaces.length; j++) {
         var ws = root.allWorkspaces[j]
-        if (ws.output === outputName) {
-          updated.push({
-            id: ws.id,
-            idx: ws.idx,
-            name: ws.name,
-            output: ws.output,
-            is_active: ws.id === activated.id,
-            is_focused: activated.focused ? ws.id === activated.id : ws.is_focused,
-            is_urgent: ws.is_urgent
-          })
-        } else {
-          updated.push(ws)
-        }
+        var isThisOutput = (ws.output === outputName)
+        updated.push({
+          id: ws.id,
+          idx: ws.idx,
+          name: ws.name,
+          output: ws.output,
+          is_active: isThisOutput ? (ws.id === activated.id) : ws.is_active,
+          is_focused: activated.focused ? (ws.id === activated.id) : (isThisOutput ? ws.is_focused : false),
+          is_urgent: ws.is_urgent
+        })
       }
       root.allWorkspaces = updated
-    } else if (event.WindowFocused !== undefined) {
+    }
+ else if (event.WindowFocused !== undefined) {
       var focus = event.WindowFocused
       if (focus) {
         root.currentTitle = root.formatActiveTitle(focus.title, focus.app_id)

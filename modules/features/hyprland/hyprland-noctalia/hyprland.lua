@@ -243,6 +243,19 @@ hl.bind(mod .. " + SHIFT + l", hl.dsp.window.move({ direction = "right" }))
 hl.bind(mod .. " + SHIFT + k", hl.dsp.window.move({ direction = "up" }))
 hl.bind(mod .. " + SHIFT + j", hl.dsp.window.move({ direction = "down" }))
 
+-- Focus monitor
+hl.bind(mod .. " + ALT + h", hl.dsp.focus({ monitor = "l" }))
+hl.bind(mod .. " + ALT + l", hl.dsp.focus({ monitor = "r" }))
+hl.bind(mod .. " + ALT + k", hl.dsp.focus({ monitor = "u" }))
+hl.bind(mod .. " + ALT + j", hl.dsp.focus({ monitor = "d" }))
+
+-- Move window to monitor
+hl.bind(mod .. " + SHIFT + CTRL + h", hl.dsp.window.move({ monitor = "l" }))
+hl.bind(mod .. " + SHIFT + CTRL + l", hl.dsp.window.move({ monitor = "r" }))
+hl.bind(mod .. " + SHIFT + CTRL + k", hl.dsp.window.move({ monitor = "u" }))
+hl.bind(mod .. " + SHIFT + CTRL + j", hl.dsp.window.move({ monitor = "d" }))
+
+
 hl.bind(mod .. " + S", hl.dsp.exec_cmd(screenshotFull))
 hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd(screenshotRegion))
 
