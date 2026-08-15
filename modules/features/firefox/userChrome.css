@@ -238,17 +238,15 @@
 .toolbarbutton-1 {
   border-radius: var(--fx-radius-sm) !important;
   transition: background-color var(--fx-transition-fast),
-              transform var(--fx-transition-fast),
               opacity var(--fx-transition-fast) !important;
 }
 
 .toolbarbutton-1:hover:not([disabled="true"]) {
   background-color: var(--fx-bg-raised) !important;
-  transform: scale(1.05);
 }
 
 .toolbarbutton-1:active:not([disabled="true"]) {
-  transform: scale(0.95);
+  background-color: var(--fx-bg-subtle) !important;
 }
 
 /* ==========================================================================

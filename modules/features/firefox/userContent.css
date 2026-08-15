@@ -26,8 +26,6 @@
    ========================================================================== */
 
 @-moz-document url("about:blank"), url("about:newtab"), url("about:home") {
-  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap');
-
   html, body {
     background-color: var(--fx-bg, #141415) !important;
     background-image: none !important;
@@ -69,8 +67,6 @@
 
 @-moz-document url-prefix("moz-extension://") {
   /* Scope Instrument Serif for custom newtab extension */
-  html:has(.startpage-container),
-  body:has(.startpage-container),
   .startpage-container,
   .startpage-container *,
   #clock,
@@ -79,7 +75,6 @@
   }
 
   /* High Specificity Theme Variable Overrides for Sidebery */
-  :root:has(.Sidebery),
   #root,
   #root[data-theme],
   #root[data-style],

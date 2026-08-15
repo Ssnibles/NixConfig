@@ -204,6 +204,17 @@
           };
         };
 
+        sideberySettings = lib.mkOption {
+          type = lib.types.attrs;
+          default = {
+            pinnedNoUnload = false;
+            pinnedNoUnloadExplicit = false;
+            pinnedForcedDiscard = true;
+            discardFolded = true;
+          };
+          description = "Declarative settings for Sidebery extension managed via Enterprise Policy and storage.js.";
+        };
+
         settings = lib.mkOption {
           type = lib.types.attrsOf (
             lib.types.either lib.types.bool (lib.types.either lib.types.int lib.types.str)
@@ -244,11 +255,8 @@
             # ==============================================================
             # Font/canvas/image caches — larger = fewer re-decodes
             "gfx.content.skia-font-cache-size" = 20;
-            "gfx.canvas.accelerated.cache-size" = 512;
+            "gfx.canvas.accelerated.cache-size" = 32;
             "image.mem.decode_bytes_at_a_time" = 32768;
-
-            # JIT — compile hot functions sooner for snappier JS
-            "javascript.options.baselinejit.threshold" = 50;
 
             # Batch content paint notifications — fewer layout reflows
             "content.notify.interval" = 100000;
@@ -260,11 +268,14 @@
             # Network buffer tuning
             "network.buffer.cache.size" = 65535;
             "network.buffer.cache.count" = 48;
-            "network.http.max-connections" = 1800;
-            "network.http.max-persistent-connections-per-server" = 10;
+            "network.http.max-connections" = 900;
+            "network.http.max-persistent-connections-per-server" = 6;
             "network.http.max-urgent-start-excessive-connections-per-host" = 5;
             "network.http.request.max-start-delay" = 5;
             "network.dnsCacheExpiration" = 3600;
+            "dom.ipc.processCount.webIsolated" = 4;
+            "accessibility.force_disabled" = 1;
+            "media.autoplay.default" = 5;
 
             # ==============================================================
             # PRIVACY & SECURITY
@@ -277,7 +288,15 @@
             "privacy.trackingprotection.fingerprinting.enabled" = true;
             "privacy.trackingprotection.cryptomining.enabled" = true;
             "privacy.globalprivacycontrol.enabled" = true;
+
+            # Session restore & lazy loading
             "browser.sessionrestore.restore_on_demand" = true;
+            "browser.sessionrestore.restore_pinned_tabs_on_demand" = true;
+            "browser.sessionrestore.restore_tabs_lazily" = true;
+            "browser.sessionrestore.restore_hidden_tabs_on_demand" = true;
+            "browser.sessionstore.pause_tab_loading_on_startup" = true;
+            "browser.sessionstore.max_resumed_tabs" = 0;
+            "browser.tabs.loadDormantOnSelect" = true;
 
             # HTTPS-only mode
             "dom.security.https_only_mode" = true;
@@ -331,7 +350,7 @@
             # ==============================================================
             "browser.cache.disk.enable" = false;
             "browser.cache.memory.enable" = true;
-            "browser.cache.memory.capacity" = 262144; # 256MB RAM cache
+            "browser.cache.memory.capacity" = 65536; # 64MB RAM cache
             "browser.privatebrowsing.forceMediaMemoryCache" = true;
             "media.memory_cache_max_size" = 65536;
             "browser.sessionstore.interval" = 600000; # 10min session saves
@@ -419,7 +438,6 @@
             # ==============================================================
             "media.ffmpeg.vaapi.enabled" = true;
             "gfx.webrender.all" = true;
-            "layers.acceleration.force-enabled" = true;
             "layout.css.backdrop-filter.enabled" = true;
             "svg.context-properties.content.enabled" = true;
 
@@ -483,6 +501,17 @@
           '')
         ];
 
+        # Firefox Enterprise Managed Storage Policy for WebExtension Sidebery
+        environment.etc."firefox/policies/managed/{3c078156-979c-498b-8990-85f7987dd929}.json".text =
+          builtins.toJSON {
+            name = "{3c078156-979c-498b-8990-85f7987dd929}";
+            description = "Managed Storage policy for Sidebery extension";
+            type = "storage";
+            data = {
+              settings = cfg.sideberySettings;
+            };
+          };
+
         programs.firefox = {
           enable = true;
           package = lib.mkDefault cfg.package;
@@ -533,6 +562,10 @@
 
             # Automatically write preferences to about:config via user.js
             ".mozilla/firefox/${cfg.profileName}/user.js".text = userJsContent;
+
+            # Declaratively seed Sidebery extension settings (discards pinned tabs on startup)
+            ".mozilla/firefox/${cfg.profileName}/browser-extension-data/{3c078156-979c-498b-8990-85f7987dd929}/storage.js".text =
+              builtins.toJSON { settings = cfg.sideberySettings; };
           };
 
           environment.sessionVariables = {
