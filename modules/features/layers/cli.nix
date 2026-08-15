@@ -78,6 +78,19 @@
                   email = jb878@students.waikato.ac.nz
               '';
             };
+            ".gitconfig" = {
+              clobber = true;
+              text = ''
+                [user]
+                  name = Ssnibles
+                  email = joshua.breite@gmail.com
+
+                [includeIf "gitdir/i:~/Uni/"]
+                  path = ~/.config/git/config-uni
+                [includeIf "gitdir/i:~/StudioProjects/"]
+                  path = ~/.config/git/config-uni
+              '';
+            };
             ".config/fish/config.fish" = {
               clobber = true;
               text = ''
