@@ -99,14 +99,6 @@
           id = "sponsorBlocker@ajay.app";
           url = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
         };
-        "tabliss" = {
-          id = "tabliss@tabliss.io";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/tabliss/latest.xpi";
-        };
-        "tabliss@tabliss.io" = {
-          id = "tabliss@tabliss.io";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/tabliss/latest.xpi";
-        };
       };
 
       # Build custom New Tab WebExtension package (.xpi)
@@ -228,7 +220,7 @@
             "browser.shell.checkDefaultBrowser" = false;
             "browser.startup.homepage" =
               "file:///home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/index.html";
-            "browser.startup.page" = 1;
+            "browser.startup.page" = 3;
             "browser.newtabpage.enabled" = true;
             "browser.urlbar.clickSelectsAll" = true;
             "browser.urlbar.trimHttps" = true;
@@ -285,6 +277,7 @@
             "privacy.trackingprotection.fingerprinting.enabled" = true;
             "privacy.trackingprotection.cryptomining.enabled" = true;
             "privacy.globalprivacycontrol.enabled" = true;
+            "browser.sessionrestore.restore_on_demand" = true;
 
             # HTTPS-only mode
             "dom.security.https_only_mode" = true;
@@ -466,7 +459,7 @@
             Homepage = {
               URL = "file:///home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/index.html";
               Locked = true;
-              StartPage = "homepage";
+              StartPage = "previous-session";
             };
             SearchEngines = {
               Default = "DuckDuckGo";

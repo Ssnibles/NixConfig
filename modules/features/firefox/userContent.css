@@ -112,6 +112,9 @@
     --tabs-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     --tabs-count-font: system-ui, sans-serif !important;
     --tabs-height: 34px !important;
+    --tabs-pinned-height: 40px !important;
+    --tabs-pinned-width: 100% !important;
+    --tabs-pinned-icon-size: 22px !important;
     --tabs-indent: 12px !important;
     --tabs-border-radius: 8px !important;
 
@@ -226,34 +229,145 @@
   }
 
   /* ------------------------------------------------------------------------
-     Pinned Tabs Bar
+     Pinned Tabs Bar & Responsive Tiling Grid
      ------------------------------------------------------------------------ */
+  #root .PinnedTabsBar,
+  .PinnedTabsBar,
   .PinnedDock,
+  .pinned-dock,
+  #pinned_dock,
   .pinned-tabs-container {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     background: #141415 !important;
     background-color: #141415 !important;
     border: none !important;
     border-bottom: none !important;
-    padding: 4px 6px !important;
-    gap: 4px !important;
+    padding: 6px !important;
+    gap: 6px !important;
   }
 
+  .PinnedTabsBar .tab-wrapper,
+  .PinnedDock > div,
+  .PinnedDock > .d-tabs,
+  .PinnedDock > .d-wrapper,
+  .PinnedDock > .tabs,
+  .PinnedDock > .items,
+  .PinnedDock > .tab-wrapper {
+    display: flex !important;
+    flex: 1 1 0% !important;
+    flex-grow: 1 !important;
+    flex-shrink: 1 !important;
+    flex-basis: 0% !important;
+    width: auto !important;
+    min-width: 36px !important;
+    max-width: 100% !important;
+    gap: 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  .PinnedTabsBar .Tab,
+  .PinnedTabsBar .tab-wrapper .Tab,
   .PinnedTab,
-  .pinned-tab {
-    border-radius: 8px !important;
-    background-color: transparent !important;
-    transition: background-color 0.12s ease !important;
-  }
-
-  .PinnedTab:hover,
-  .pinned-tab:hover {
+  .pinned-tab,
+  .Tab[data-pin="true"],
+  .Tab[data-pinned="true"],
+  .tab[data-pinned="true"] {
+    flex: 1 1 0% !important;
+    flex-grow: 1 !important;
+    flex-shrink: 1 !important;
+    flex-basis: 0% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 36px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    border-radius: 10px !important;
     background-color: #1c1c24 !important;
+    border: 2px solid transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.12s ease !important;
+    box-sizing: border-box !important;
+    position: relative !important;
   }
 
-  .PinnedTab[data-active="true"],
-  .PinnedTab.active {
+  .PinnedTabsBar .Tab:hover,
+  .PinnedTabsBar .tab-wrapper:hover .Tab,
+  .PinnedTab:hover,
+  .pinned-tab:hover,
+  .Tab[data-pin="true"]:hover,
+  .Tab[data-pinned="true"]:hover,
+  .tab[data-pinned="true"]:hover {
     background-color: #252530 !important;
-    box-shadow: inset 0 -2px 0 #6e94b2 !important;
+  }
+
+  .PinnedTabsBar .Tab[data-active="true"],
+  .PinnedTabsBar .tab-wrapper[data-active="true"] .Tab,
+  .PinnedTab[data-active="true"],
+  .PinnedTab.active,
+  .Tab[data-pin="true"][data-active="true"],
+  .Tab[data-pinned="true"][data-active="true"],
+  .tab[data-pinned="true"].active {
+    background-color: #252530 !important;
+    border: 2px solid #6e94b2 !important;
+    box-shadow: none !important;
+  }
+
+  .PinnedTabsBar .Tab .ctx,
+  .Tab[data-pin="true"] .ctx {
+    display: none !important;
+  }
+
+  /* Inner body wrapper & Favicon / Icon sizing in pinned tabs */
+  .PinnedTabsBar .Tab .body,
+  .PinnedTab .body,
+  .pinned-tab .body,
+  .Tab[data-pin="true"] .body,
+  .Tab[data-pinned="true"] .body,
+  .tab[data-pinned="true"] .body {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .PinnedTabsBar .Tab .fav,
+  .PinnedTab .fav,
+  .pinned-tab .fav,
+  .Tab[data-pin="true"] .fav,
+  .Tab[data-pinned="true"] .fav,
+  .tab[data-pinned="true"] .fav,
+  .PinnedTabsBar .Tab .fav-icon,
+  .PinnedTab .fav-icon,
+  .Tab[data-pin="true"] .fav-icon,
+  .Tab[data-pinned="true"] .fav-icon,
+  .PinnedTabsBar .Tab img,
+  .PinnedTab img,
+  .Tab[data-pin="true"] img,
+  .Tab[data-pinned="true"] img,
+  .PinnedTabsBar .Tab svg,
+  .PinnedTab svg,
+  .Tab[data-pin="true"] svg,
+  .Tab[data-pinned="true"] svg {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+    font-size: 22px !important;
+    margin: 0 auto !important;
   }
 
   /* ------------------------------------------------------------------------
