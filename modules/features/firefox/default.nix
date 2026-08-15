@@ -568,7 +568,7 @@
         # Bypasses Nix store so edits in NixConfig take effect immediately on Firefox refresh/restart
         system.activationScripts.firefox-config = ''
           mkdir -p /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome
-          chown -R ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}
+          chown -R ${config.username}:users /home/${config.username}/.mozilla
 
           # Dynamic theme CSS variables
           cat << 'EOF' > /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/colors.css
