@@ -47,21 +47,7 @@
           enableZshIntegration = true;
           enableFishIntegration = true;
         };
-        programs.git = {
-          enable = true;
-          config = [
-            {
-              user = {
-                name = "Ssnibles";
-                email = "joshua.breite@gmail.com";
-              };
-            }
-            {
-              includeIf."gitdir/i:~/Uni/".path = "~/.config/git/config-uni";
-              includeIf."gitdir/i:~/StudioProjects/".path = "~/.config/git/config-uni";
-            }
-          ];
-        };
+        programs.git.enable = true;
         # make ZSH shut up about zshrc
         hjem.users.${config.username}.files =
           let
