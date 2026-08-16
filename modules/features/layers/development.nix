@@ -21,6 +21,7 @@
             opencode
             antigravity
             nodejs
+            playwright
             cargo
             gcc
             go
