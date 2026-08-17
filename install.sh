@@ -4,7 +4,11 @@
 # =============================================================================
 set -euo pipefail
 
+# Ensure running as root early before prompting or creating files
+[[ $EUID -ne 0 ]] && { echo -e "\033[0;31m  ERROR: Run as root: sudo bash install.sh\033[0m" >&2; exit 1; }
+
 REPO_URL="https://github.com/Ssnibles/NixConfig.git"
+SSH_REPO_URL="git@github.com:Ssnibles/NixConfig.git"
 CONFIG_BRANCH="main"
 MOUNT="/mnt"
 DEFAULT_USERNAME="josh"
@@ -35,15 +39,25 @@ run_git() {
 
 require_cmd() { command -v "$1" >/dev/null 2>&1 || die "Required command '$1' not found."; }
 
-# Read from /dev/tty so piped invocations (curl | bash) can still prompt.
+# Read from /dev/tty (if available) so piped invocations (curl | bash) can still prompt.
 ask() {
   local var="$1" prompt="$2" default="${3:-}" input
-  if [[ -n "$default" ]]; then
-    read -rp "$prompt [$default]: " input < /dev/tty
-    printf -v "$var" '%s' "${input:-$default}"
+  if [[ -c /dev/tty ]]; then
+    if [[ -n "$default" ]]; then
+      read -rp "$prompt [$default]: " input < /dev/tty
+      printf -v "$var" '%s' "${input:-$default}"
+    else
+      read -rp "$prompt: " input < /dev/tty
+      printf -v "$var" '%s' "$input"
+    fi
   else
-    read -rp "$prompt: " input < /dev/tty
-    printf -v "$var" '%s' "$input"
+    if [[ -n "$default" ]]; then
+      read -rp "$prompt [$default]: " input
+      printf -v "$var" '%s' "${input:-$default}"
+    else
+      read -rp "$prompt: " input
+      printf -v "$var" '%s' "$input"
+    fi
   fi
 }
 
@@ -51,7 +65,7 @@ ask() {
 settle_disk() {
   blockdev --rereadpt "$1" 2>/dev/null || true
   partprobe "$1" 2>/dev/null || true
-  udevadm settle
+  udevadm settle --timeout=10 2>/dev/null || sleep 1
 }
 
 # Set up ~/.ssh/authorized_keys from a local file or a GitHub username.
@@ -62,10 +76,11 @@ install_ssh_keys() {
   if [[ "$method" == "file" ]]; then
     cp "$source" "$ssh_dir/authorized_keys"
     success "Copied SSH key from $source"
-  elif curl -fsSL "https://github.com/${source}.keys" -o "$ssh_dir/authorized_keys"; then
+  elif curl -fsSL "https://github.com/${source}.keys" -o "$ssh_dir/authorized_keys" && [[ -s "$ssh_dir/authorized_keys" ]]; then
     success "SSH keys imported from github.com/${source}"
   else
-    warn "Could not fetch keys from github.com/${source} -- skipping."
+    warn "Could not fetch keys from github.com/${source} (or user has no SSH keys) -- skipping."
+    rm -f "$ssh_dir/authorized_keys"
     return
   fi
   chmod 700 "$ssh_dir"; chmod 600 "$ssh_dir/authorized_keys"
@@ -82,6 +97,7 @@ NO_REBOOT=false
 SKIP_FORMAT=false
 UPDATE=false
 OVERWRITE=false
+AUTO_CONFIRM=false
 SSH_KEY_GITHUB=""
 COPY_SSH_KEY=""
 LOG_FILE="/tmp/nixos-install.log"
@@ -98,6 +114,7 @@ while [[ $# -gt 0 ]]; do
     --skip-format)         SKIP_FORMAT=true;                       shift   ;;
     --update)              UPDATE=true;                            shift   ;;
     --overwrite)           OVERWRITE=true;                         shift   ;;
+    -y|--yes)              AUTO_CONFIRM=true;                      shift   ;;
     --ssh-key-from-github) SSH_KEY_GITHUB="$2";                    shift 2 ;;
     --copy-ssh-key)        COPY_SSH_KEY="$2";                      shift 2 ;;
     --log)                 LOG_FILE="$2";                          shift 2 ;;
@@ -119,6 +136,7 @@ Options:
   --skip-format                Skip disk wipe/format; use existing partitions
   --update                     Run nix flake update after cloning
   --overwrite                  Remove an existing ~/NixConfig directory without prompting
+  -y, --yes                    Skip disk wipe confirmation prompt
   --ssh-key-from-github <user> Import SSH keys from GitHub
   --copy-ssh-key <path>        Copy local authorized_keys file to new install
   --log <file>                 Log file path (default: $LOG_FILE)
@@ -171,7 +189,6 @@ trap cleanup EXIT
 
 # ── Preflight ─────────────────────────────────────────────────────────────
 echo -e "\n${BOLD}---  NixOS Bootstrap Installer - $HOST  ---${NC}"
-[[ $EUID -ne 0 ]]   && die "Run as root: sudo bash install.sh"
 [[ -d /nix/store ]] || die "This doesn't look like a NixOS live environment."
 [[ "$DRY_RUN" == true ]] && warn "DRY-RUN -- no disk changes will be made."
 
@@ -225,7 +242,7 @@ else
   warn "This will ERASE all data on ${DISK}!"
   echo "    $PART_EFI   -- 512 MiB EFI System Partition (FAT32)"
   echo "    $PART_ROOT  -- remainder, ext4 (root)"
-  if [[ "$DRY_RUN" == false ]]; then
+  if [[ "$DRY_RUN" == false && "$AUTO_CONFIRM" == false ]]; then
     ask CONFIRM "  Type 'yes' to continue"
     [[ "$CONFIRM" == "yes" ]] || { info "Aborted."; exit 0; }
   fi
@@ -244,8 +261,8 @@ elif [[ "$DRY_RUN" == true ]]; then
 else
   info "Stopping swap and unmounting active partitions on $DISK..."
   swapoff -a 2>/dev/null || true
-  for part in $(lsblk -ln -o NAME "$DISK" | tail -n +2); do
-    umount -f "/dev/$part" 2>/dev/null || true
+  for part in $(lsblk -ln -o PATH "$DISK" | tail -n +2); do
+    umount -f "$part" 2>/dev/null || true
   done
   umount -R "$MOUNT" 2>/dev/null || true
 
@@ -284,6 +301,7 @@ if [[ "$DRY_RUN" == false ]]; then
   # the user expects existing data to be preserved.
   [[ "$SKIP_FORMAT" == false ]] && rm -rf "${MOUNT:?}"/* 2>/dev/null || true
 
+  settle_disk "${DISK:-}"
   info "Mounting root partition (label: nixos)..."
   mount /dev/disk/by-label/nixos "$MOUNT"
   mkdir -p "$MOUNT/boot"
@@ -317,6 +335,10 @@ if [[ "$DRY_RUN" == false ]]; then
 
   info "Cloning $REPO_URL (branch: $CONFIG_BRANCH) -> $HOME_TARGET"
   run_git clone -b "$CONFIG_BRANCH" "$REPO_URL" "$HOME_TARGET"
+
+  info "Configuring Git remote 'origin' to SSH ($SSH_REPO_URL)..."
+  run_git -C "$HOME_TARGET" remote set-url origin "$SSH_REPO_URL" || \
+    warn "Could not set Git remote URL to SSH."
 
   # Symlink /etc/nixos -> /home/$USERNAME/NixConfig (relative, so it resolves
   # correctly both under /mnt during install and at / after reboot).
