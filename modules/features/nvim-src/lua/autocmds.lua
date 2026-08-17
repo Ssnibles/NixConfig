@@ -299,21 +299,3 @@ autocmd("BufReadPost", {
 	end,
 })
 
-vim.api.nvim_create_autocmd("BufWriteCmd", {
-	group = augroup,
-	pattern = "*",
-	callback = function(ev)
-		local success, err = pcall(function()
-			-- Execute write silently without triggering hit-enter prompts
-			vim.cmd("silent! lockmarks write!")
-		end)
-
-		if not success then
-			vim.api.nvim_echo({ { "Save Failed: " .. tostring(err), "ErrorMsg" } }, true, {})
-		else
-			-- Force a screen refresh to clear any command-line status messages
-			vim.cmd("redraw!")
-			vim.api.nvim_buf_set_var(ev.buf, "changed", 0)
-		end
-	end,
-})

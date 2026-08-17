@@ -29,16 +29,14 @@ local function component(render_fn, hl_fn)
 	return { render = render_fn, hl = hl_fn }
 end
 
---- Mode Indicator Component
---- Displays current editor mode and updates highlight accordingly.
+local cached_mode = "n"
 local mode = component(
 	function()
-		local m = vim.api.nvim_get_mode().mode
-		return " " .. (mode_map[m] or "?") .. " "
+		cached_mode = vim.api.nvim_get_mode().mode
+		return " " .. (mode_map[cached_mode] or "?") .. " "
 	end,
 	function()
-		local m = vim.api.nvim_get_mode().mode
-		return hl_map[m] or "StlModeN"
+		return hl_map[cached_mode] or "StlModeN"
 	end
 )
 

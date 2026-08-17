@@ -4,8 +4,7 @@ local map = vim.keymap.set
 map("n", "U", "<C-r>", { desc = "Redo" })
 map("n", "Q", "<Nop>", { desc = "Disable Ex mode" })
 map("n", "<C-z>", "<Nop>", { desc = "Disable suspend" })
-map("n", "<C-w>q", "<Nop>", { desc = "Disable window close" })
-map({"n", "c"}, "<Esc>", "<C-c>", {desc = "Remap es"})
+
 
 -- Saving & Quitting
 map("i", "<C-s>", "<C-o><cmd>update<CR>", { desc = "Save buffer" })

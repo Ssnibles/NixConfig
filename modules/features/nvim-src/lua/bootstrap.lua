@@ -58,8 +58,9 @@ local triggers = {
 	ft = function(mod, fts, load_fn)
 		fts = to_list(fts)
 		-- If a matching buffer is already loaded, trigger immediately
+		local has_contains = vim.list_contains or vim.tbl_contains
 		for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-			if vim.api.nvim_buf_is_loaded(buf) and vim.tbl_contains(fts, vim.bo[buf].filetype) then
+			if vim.api.nvim_buf_is_loaded(buf) and has_contains(fts, vim.bo[buf].filetype) then
 				load_fn()
 				return
 			end
@@ -108,7 +109,7 @@ local triggers = {
 				vim.keymap.set(mode, lhs, function()
 					pcall(vim.keymap.del, mode, lhs)
 					load_fn()
-					vim.api.nvim_feedkeys(vim.keycode(lhs), "m", false)
+					vim.api.nvim_feedkeys(vim.keycode(lhs), "t", false)
 				end, { desc = desc, silent = true })
 			end
 		end

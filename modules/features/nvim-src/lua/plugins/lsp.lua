@@ -58,13 +58,6 @@ local function attach_lsp_keymaps(bufnr)
 	end, "Find references")
 	map("K", show_hover_doc, "Hover documentation")
 	map("L", lsp.buf.signature_help, "Signature help")
-	-- map("<leader>rn", function()
-	-- 	if not supports_lsp_rename(vim.api.nvim_get_current_buf()) then
-	-- 		vim.notify("No attached LSP supports rename in this buffer", vim.log.levels.WARN)
-	-- 		return
-	-- 	end
-	-- 	prompt_lsp_rename()
-	-- end, "Rename symbol")
 	map("<leader>rn", function()
 		return ":IncRename: " .. vim.fn.expand("<cword>")
 	end, "Rename Symbol", { expr = true })

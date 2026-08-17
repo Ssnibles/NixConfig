@@ -74,25 +74,6 @@ hip.setup({
 
 require("mini.cursorword").setup({ delay = 200 })
 
--- require("mini.indentscope").setup({
--- 	symbol = "│",
--- 	options = { try_as_border = true },
--- 	draw = {
--- 		delay = 100,
--- 		animation = require("mini.indentscope").gen_animation.none(),
--- 		predicate = function()
--- 			local ignore_filetypes = { "help", "lazy", "mason", "oil" }
--- 			local ignore_buftypes = { "nofile", "quickfix", "terminal", "prompt" }
--- 			local ft = vim.bo.filetype
--- 			local bt = vim.bo.buftype
--- 			if vim.tbl_contains(ignore_filetypes, ft) or vim.tbl_contains(ignore_buftypes, bt) then
--- 				return false
--- 			end
--- 			return true
--- 		end,
--- 	},
--- })
-
 require("mini.align").setup()
 require("mini.move").setup()
 require("mini.operators").setup()
@@ -100,7 +81,3 @@ require("mini.splitjoin").setup()
 
 require("mini.pairs").setup()
 require("mini.bufremove").setup({})
-
-vim.keymap.set("n", "<leader>bd", function()
-  require("mini.bufremove").delete(0, false)
-end, { desc = "Delete buffer" })

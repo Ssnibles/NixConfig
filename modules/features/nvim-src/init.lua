@@ -13,12 +13,8 @@ if not vim.env.NVIM_LISTEN_ADDRESS then
 	vim.env.NVIM_LISTEN_ADDRESS = "/tmp/nvim.socket"
 end
 
-vim.opt.clipboard = "unnamedplus"
-vim.opt.undofile = true
 vim.opt.updatetime = 250
 vim.opt.timeoutlen = 500
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
 vim.opt.jumpoptions = "view"
 vim.opt.diffopt:append("vertical")
 vim.opt.diffopt:append("linematch:60")
@@ -31,7 +27,6 @@ vim.opt.list = false
 vim.opt.joinspaces = false
 vim.opt.fillchars = { eob = " ", foldopen = "▾", foldclose = "▸", foldsep = "│", diff = "╱", lastline = "…" }
 vim.opt.grepprg = "rg --vimgrep --smart-case --hidden"
-vim.opt.grepformat = "%f:%l:%c:%m"
 vim.opt.smoothscroll = true
 
 vim.opt.shortmess:append("CF")
