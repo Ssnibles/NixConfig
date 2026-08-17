@@ -72,6 +72,10 @@ output "*" {
     scale 1.0
 }
 
+output "eDP-1" {
+    mode "1920x1200@60.056"
+}
+
 // Global Window Management Rules
 window-rule {
     geometry-corner-radius 8
