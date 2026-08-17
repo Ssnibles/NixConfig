@@ -3,10 +3,12 @@
   nixos.modules.shared =
     {
       pkgs,
+      lib,
       config,
       ...
     }:
     let
+      cfg = config.features.qutebrowser;
       inherit (config.theme.colors)
         bg
         bgRaised
@@ -24,11 +26,18 @@
         ;
     in
     {
-      environment.systemPackages = [ pkgs.unstable.qutebrowser ];
+      options.features.qutebrowser.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable Qutebrowser";
+      };
 
-      hjem.users."${config.username}" = {
-        files = {
-          ".config/qutebrowser/config.py" = {
+      config = lib.mkIf cfg.enable {
+        environment.systemPackages = [ pkgs.unstable.qutebrowser ];
+
+        hjem.users."${config.username}" = {
+          files = {
+            ".config/qutebrowser/config.py" = {
             text = ''
             config.load_autoconfig(False)
 
@@ -193,24 +202,9 @@
             config.set("content.javascript.enabled", True, "chrome://*/*")
             config.set("content.javascript.enabled", True, "qute://*/*")
           '';
+            };
           };
         };
-        # xdg.mime-apps.default-applications = {
-        #   "text/html" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "application/xhtml+xml" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "application/xml" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "x-scheme-handler/http" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "x-scheme-handler/https" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "x-scheme-handler/ftp" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "x-scheme-handler/chrome" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "application/x-extension-htm" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "application/x-extension-html" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "application/x-extension-shtml" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "application/x-extension-xhtml" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "application/x-extension-xht" = [ "org.qutebrowser.qutebrowser.desktop" ];
-        #   "application/pdf" = [ "org.pwmt.zathura.desktop" ];
-        #   "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
-        # };
       };
     };
 }

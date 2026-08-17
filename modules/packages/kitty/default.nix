@@ -7,7 +7,7 @@
   nixos.modules.shared = { pkgs, lib, config, ... }: let
     inherit (config.theme.colors) bg bgRaised fg accent teal purple green yellow red orange;
   in {
-    environment.systemPackages = [ pkgs.kitty ];
+    # environment.systemPackages = [ pkgs.kitty ];
 
     hjem.users."${config.username}" = {
       files = {

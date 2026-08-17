@@ -16,7 +16,7 @@
         environment.systemPackages = with pkgs; [
           hyprpaper
           hyprshot
-          kitty
+          foot
           firefox
           wl-clipboard
           brightnessctl

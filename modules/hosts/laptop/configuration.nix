@@ -90,7 +90,6 @@
 
       environment.systemPackages = with pkgs.unstable; [
         dfu-util
-        emacs-pgtk
         gowall
         openocd
       ];

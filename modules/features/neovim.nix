@@ -98,7 +98,6 @@
             jdt-language-server
             marksman
             ltex-ls-plus
-            roslyn-ls
             imagemagick
 
             # qmlls from qt6.qtdeclarative, wrapped so it can resolve both
@@ -119,8 +118,6 @@
             shfmt
             ktlint
             google-java-format
-            csharpier
-            dotnet-sdk_9
             statix
             deadnix
 
@@ -135,7 +132,6 @@
             neovim-remote
 
             python3Packages.debugpy
-            netcoredbg
             delve
             lldb
             vscode-js-debug
@@ -164,7 +160,6 @@
               p.typst
               p.c
               p.cpp
-              p.c_sharp
               p.go
               p.json
               p.yaml
@@ -185,7 +180,6 @@
             friendly-snippets
             copilot-lua
             nvim-lint
-            roslyn-nvim
 
             nvim-dap
             nvim-dap-ui
