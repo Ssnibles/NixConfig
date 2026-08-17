@@ -30,9 +30,9 @@
         ];
       };
 
-      # Laptop-specific kernel adjustments
+      # Laptop-specific kernel adjustments (HP EliteBook 865 G9 AMDGPU)
       boot.kernelParams = [
-        "ideapad_laptop.allow_v4_dytc=Y"
+        "amdgpu.dcdebugmask=0x40000"
       ];
 
       # Load critical drivers early in initrd:
