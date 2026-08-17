@@ -17,9 +17,8 @@
       # (dbus-broker's ProtectSystem=full namespace setup triggers the automount,
       #  blocking it while PID 1 waits for dbus's READY notification — ~8.8s stall)
       fileSystems."/boot" = {
-        device = "/dev/disk/by-uuid/2FFF-0D5B";
         fsType = "vfat";
-        options = [
+        options = lib.mkForce [
           "noauto"
           "x-systemd.automount"
           "x-systemd.idle-timeout=120"
