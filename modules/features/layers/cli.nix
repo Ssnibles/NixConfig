@@ -90,7 +90,7 @@
                   --padding=1,2
                   --margin=0,1
                   --scrollbar=\"│\"
-                  --preview-window=right,50%,border-left
+                  --preview-window=right,40%border-left
                   --bind=ctrl-/:toggle-preview
                   --bind=ctrl-j:down,ctrl-k:up
                   --bind=ctrl-f:page-down,ctrl-b:page-up
@@ -243,6 +243,7 @@
             gl = "git log --oneline --graph";
             n = "nvim";
             cat = "bat";
+            t = "tmux";
             build-nixconf = "$HOME/NixConfig/build.sh";
           };
 

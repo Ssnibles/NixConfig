@@ -48,7 +48,8 @@
             set -g @continuum-save-interval '10'
 
             # Tmux-FZF configuration
-            set -g @tmux-fzf-launch-key 'F'
+            set -g @tmux-fzf-launch-key 'f'
+            set -g @tmux-fzf-options '-p 80%,60%'
             set -g @tmux-fzf-order 'command:session:window:pane:keybinding:clipboard:process'
 
             # tmux-floax configuration
@@ -102,17 +103,23 @@
             bind c new-window -c "#{pane_current_path}"
             bind n new-window -c "#{pane_current_path}"
 
-            # Pane lifecycle & zooming (Neovim / workflow inspired)
+            # Pane lifecycle & zooming
             bind q kill-pane
             bind Q kill-window
+            bind z resize-pane -Z
             bind o resize-pane -Z
-            bind f resize-pane -Z
             bind x kill-pane
             bind = select-layout tiled
             bind y setw synchronize-panes \; display-message "Pane synchronization: #{?pane_synchronized,ON,OFF}"
             bind e choose-window
             bind B break-pane
-            bind z set -g status \; display-message "Status bar toggled"
+            bind b set -g status \; display-message "Status bar toggled"
+            bind TAB last-window
+            bind m set -g mouse \; display-message "Mouse mode: #{?mouse,ON,OFF}"
+
+            # Window swapping & reordering
+            bind -r < swap-window -d -t -1
+            bind -r > swap-window -d -t +1
 
             # Pane resizing (Capital H, J, K, L)
             bind -r H resize-pane -L 5
@@ -148,8 +155,9 @@
             # Vi Copy Mode keybindings (Neovim-style clipboard integration)
             bind-key -T copy-mode-vi v send-keys -X begin-selection
             bind-key -T copy-mode-vi V send-keys -X select-line
-            bind-key -T copy-mode-vi b send-keys -X rectangle-toggle
+            bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
             bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy"
+            bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "wl-copy"
             bind P paste-buffer
 
             # Minimal Visual Styling (inspired by custom Neovim ui.lua line)

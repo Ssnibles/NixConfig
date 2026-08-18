@@ -9,41 +9,41 @@ require("luasnip.loaders.from_vscode").lazy_load()
 local cmp = require("blink.cmp")
 
 local keymap = {
-    preset = "none",
+	preset = "none",
 
-    -- Open completion menu manually
-    ["<C-space>"] = {
-        function()
-            cmp.show({ providers = { "lsp", "copilot", "snippets", "buffer", "path" } })
-        end,
-    },
+	-- Open completion menu manually
+	["<C-space>"] = {
+		function()
+			cmp.show({ providers = { "lsp", "copilot", "snippets", "buffer", "path" } })
+		end,
+	},
 
-    -- Tab accepts completion when menu is visible; falls back to regular Tab
-    ["<Tab>"] = {
-        function()
-            if cmp.is_visible() then
-                return cmp.accept()
-            end
-        end,
-        "fallback",
-    },
+	-- Tab accepts completion when menu is visible; falls back to regular Tab
+	["<Tab>"] = {
+		function()
+			if cmp.is_visible() then
+				return cmp.accept()
+			end
+		end,
+		"fallback",
+	},
 
-    -- Snippet navigation (Forward: Ctrl+L, Backward: Ctrl+H)
-    ["<C-l>"] = { "snippet_forward", "fallback" },
-    ["<C-h>"] = { "snippet_backward", "fallback" },
+	-- Snippet navigation (Forward: Ctrl+L, Backward: Ctrl+H)
+	["<C-l>"] = { "snippet_forward", "fallback" },
+	["<C-h>"] = { "snippet_backward", "fallback" },
 
-    -- Menu selection and cancel options
-    ["<Esc>"] = { "cancel", "fallback" },
-    ["<C-c>"] = { "cancel", "fallback" },
-    ["<C-e>"] = { "cancel", "fallback" },
-    ["<Up>"] = { "select_prev", "fallback" },
-    ["<Down>"] = { "select_next", "fallback" },
-    ["<C-p>"] = { "select_prev", "fallback" },
-    ["<C-n>"] = { "select_next", "fallback" },
-    ["<C-k>"] = { "select_prev", "fallback" },
-    ["<C-j>"] = { "select_next", "fallback" },
-    ["<C-b>"] = { "scroll_documentation_up", "fallback" },
-    ["<C-f>"] = { "scroll_documentation_down", "fallback" },
+	-- Menu selection and cancel options
+	["<Esc>"] = { "cancel", "fallback" },
+	["<C-c>"] = { "cancel", "fallback" },
+	["<C-e>"] = { "cancel", "fallback" },
+	["<Up>"] = { "select_prev", "fallback" },
+	["<Down>"] = { "select_next", "fallback" },
+	["<C-p>"] = { "select_prev", "fallback" },
+	["<C-n>"] = { "select_next", "fallback" },
+	["<C-k>"] = { "select_prev", "fallback" },
+	["<C-j>"] = { "select_next", "fallback" },
+	["<C-b>"] = { "scroll_documentation_up", "fallback" },
+	["<C-f>"] = { "scroll_documentation_down", "fallback" },
 }
 
 cmp.setup({

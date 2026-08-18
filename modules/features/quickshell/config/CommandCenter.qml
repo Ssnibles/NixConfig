@@ -233,7 +233,6 @@ Scope {
                 font.family: Config.serifFont
                 font.letterSpacing: 2
                 font.pixelSize: 36
-                font.bold: true
                 font.italic: true
 
                 function updateTime() {
