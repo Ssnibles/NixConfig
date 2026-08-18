@@ -11,9 +11,10 @@ Pill {
   property bool horizontal: false
 
   visible: root.batPresent
-  pillHeight: 30
-  padding: 0
-  anchors.horizontalCenter: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.horizontalCenter : undefined
+  pillHeight: root.horizontal ? 24 : 30
+  padding: root.horizontal ? 8 : 0
+  orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
+  anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
 
   pillColor: batTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised
   border.width: 1
@@ -84,16 +85,26 @@ Pill {
     }
   }
 
-  Column {
-    anchors.verticalCenter: parent.verticalCenter
-    spacing: 3
+  Row {
+    anchors.centerIn: parent
+    spacing: 4
 
     Text {
-      anchors.horizontalCenter: parent.horizontalCenter
       text: root.batIcon
       color: root.batColor
       font.family: root.uiFont
-      font.pixelSize: 18
+      font.pixelSize: root.horizontal ? 14 : 18
+      anchors.verticalCenter: parent.verticalCenter
+    }
+
+    Text {
+      visible: root.horizontal
+      text: root.batPct + "%"
+      color: root.batColor
+      font.family: Config.sansFont
+      font.pixelSize: 12
+      font.bold: true
+      anchors.verticalCenter: parent.verticalCenter
     }
   }
 

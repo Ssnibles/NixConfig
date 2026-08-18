@@ -18,9 +18,9 @@ Item {
   property real volPct: root.volInfo ? root.volInfo.volume : 0
   property bool volMuted: root.volInfo ? root.volInfo.muted : false
 
-  width: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.width : 38
-  height: volLayout.implicitHeight > 0 ? volLayout.implicitHeight + 8 : 38
-  anchors.horizontalCenter: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.horizontalCenter : undefined
+  width: root.horizontal ? horizontalRow.implicitWidth + 16 : ((parent && !horizontal) ? parent.width : 38)
+  height: root.horizontal ? 24 : (volLayout.implicitHeight > 0 ? volLayout.implicitHeight + 8 : 38)
+  anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
 
   Tooltip {
     id: volTooltip
@@ -37,8 +37,8 @@ Item {
   Rectangle {
     id: volBg
     anchors.fill: parent
-    radius: 4
-    color: volTooltip.hovered ? Colors.bgRaised : "transparent"
+    radius: 6
+    color: volTooltip.hovered ? Colors.bgSubtle : "transparent"
     Behavior on color { ColorAnimation { duration: 100 } }
   }
 
@@ -64,8 +64,10 @@ Item {
     }
   }
 
+  // Vertical layout for sidebar
   Column {
     id: volLayout
+    visible: !root.horizontal
     anchors.top: parent.top
     anchors.topMargin: 4
     anchors.horizontalCenter: parent.horizontalCenter
@@ -135,6 +137,31 @@ Item {
       color: root.volMuted ? Colors.red : Colors.fgMid
       font.family: root.uiFont
       font.pixelSize: 11
+    }
+  }
+
+  // Horizontal layout for topbar
+  Row {
+    id: horizontalRow
+    visible: root.horizontal
+    anchors.centerIn: parent
+    spacing: 6
+
+    Text {
+      text: Utils.volumeIcon(root.volPct, root.volMuted)
+      color: root.volMuted ? Colors.red : Colors.accent
+      font.family: root.uiFont
+      font.pixelSize: 14
+      anchors.verticalCenter: parent.verticalCenter
+    }
+
+    Text {
+      text: root.volMuted ? "Muted" : Math.round(root.volPct * 100) + "%"
+      color: root.volMuted ? Colors.red : Colors.fg
+      font.family: root.uiFont
+      font.pixelSize: 12
+      font.bold: true
+      anchors.verticalCenter: parent.verticalCenter
     }
   }
 }

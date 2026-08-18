@@ -7,8 +7,8 @@
         # Give notification daemon time to initialize on login
         sleep 3
 
-        # Filter out benign dbus-broker duplicate service name warnings, gkr-pam initial auth notice, early bluetoothd init warnings, and touchpad early probe warnings
-        RAW_ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | ${pkgs.gnugrep}/bin/grep -v -E "Ignoring duplicate name|gkr-pam: unable to locate daemon control file|bluetoothd.*Failed to set|i2c_hid_acpi.*incomplete report|systemd-coredump.*vicinae" || true)
+        # Filter out benign dbus-broker duplicate service name warnings, gkr-pam initial auth notice, early bluetoothd init warnings, touchpad early probe warnings, and target manual start errors
+        RAW_ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | ${pkgs.gnugrep}/bin/grep -v -E "Ignoring duplicate name|gkr-pam: unable to locate daemon control file|bluetoothd.*Failed to set|i2c_hid_acpi.*incomplete report|graphical-session.target|systemd-coredump.*vicinae" || true)
         ERROR_COUNT=$(echo "$RAW_ERRORS" | ${pkgs.gnugrep}/bin/grep -v '^$' | wc -l)
 
         if [ "$ERROR_COUNT" -gt 0 ]; then

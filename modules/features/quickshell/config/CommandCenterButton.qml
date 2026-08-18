@@ -6,7 +6,7 @@ Pill {
 
   property bool horizontal: false
   padding: 4
-  anchors.horizontalCenter: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.horizontalCenter : undefined
+  anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
   pillColor: (hoverArea.containsMouse || Config.commandCenterVisible) ? Colors.bgSubtle : Colors.bgRaised
 
   Text {

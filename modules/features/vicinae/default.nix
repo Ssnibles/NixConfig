@@ -48,7 +48,8 @@
                 },
                 "launcher_window": {
                   "layer_shell": {
-                    "layer": "overlay"
+                    "enabled": true,
+                    "layer": "top"
                   }
                 }
               }

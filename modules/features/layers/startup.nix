@@ -29,6 +29,13 @@
         };
       };
 
+      systemd.user.targets.wayland-session = {
+        description = "Wayland session target";
+        bindsTo = [ "graphical-session.target" ];
+        wants = [ "graphical-session-pre.target" ];
+        after = [ "graphical-session-pre.target" ];
+      };
+
       systemd.user.services.vicinae-server = {
         description = "Vicinae application launcher server";
         wantedBy = [ "graphical-session.target" ];

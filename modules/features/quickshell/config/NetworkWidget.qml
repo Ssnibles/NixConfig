@@ -36,10 +36,10 @@ Pill {
   property color netColor: (root.isWired || root.isWifi) ? Colors.accent : Colors.fgDim
 
   // Match Command Center Wi-Fi Pill styling
-  pillHeight: 30
+  pillHeight: root.horizontal ? 24 : 30
   padding: 8
-  orientation: Qt.Vertical
-  anchors.horizontalCenter: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.horizontalCenter : undefined
+  orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
+  anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
 
   pillColor: netTooltip.hovered ? Colors.bgRaised : Colors.bgSubtle
   border.width: 1
@@ -52,7 +52,7 @@ Pill {
     id: labelRow
     anchors.centerIn: parent
     spacing: 4
-    rotation: 270
+    rotation: root.horizontal ? 0 : 270
     transformOrigin: Item.Center
 
     Text {

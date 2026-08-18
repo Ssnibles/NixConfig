@@ -13,7 +13,7 @@ Item {
   property bool italic: true
 
   width: horizontal ? Math.min(titleLabel.implicitWidth, root.maxText) : 26
-  height: horizontal ? 26 : Math.min(titleLabel.implicitWidth, root.maxText)
+  height: horizontal ? 24 : Math.min(titleLabel.implicitWidth, root.maxText)
   anchors.verticalCenter: horizontal ? (parent ? parent.verticalCenter : undefined) : undefined
   anchors.horizontalCenter: horizontal ? undefined : (parent ? parent.horizontalCenter : undefined)
   visible: titleText !== ""

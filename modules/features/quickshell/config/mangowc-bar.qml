@@ -100,45 +100,31 @@ Scope {
 
         property int visibleTagCount: Math.max(root.minWorkspaces, highestUsedTag)
 
-        Row {
-          id: centerRow
-          anchors.centerIn: parent
-          spacing: 6
+        property var mangoWorkspaces: {
+          var result = []
+          var tags = barContent.tagsList
+          var count = barContent.visibleTagCount
+          for (var i = 0; i < count; i++) {
+            var tagData = (tags && i < tags.length) ? tags[i] : null
+            var active = tagData ? tagData.is_active : (i === 0)
+            var countClients = tagData ? (tagData.client_count > 0) : false
+            result.push({
+              id: i + 1,
+              is_focused: active,
+              is_active: active,
+              is_occupied: countClients,
+              is_urgent: false
+            })
+          }
+          return result
+        }
 
-          Repeater {
-            model: barContent.visibleTagCount
-
-            Rectangle {
-              width: 28
-              height: 24
-              radius: 6
-              anchors.verticalCenter: parent.verticalCenter
-
-              property var tagData: (barContent.tagsList && index < barContent.tagsList.length) ? barContent.tagsList[index] : null
-              property bool isActive: tagData ? tagData.is_active : (index === 0)
-              property bool isOccupied: tagData ? (tagData.client_count > 0) : false
-
-              color: isActive ? Colors.accent : (isOccupied ? Colors.fgDim : Colors.bgSubtle)
-
-              Behavior on color {
-                ColorAnimation { duration: 200; easing.type: Easing.InOutQuad }
-              }
-
-              Text {
-                anchors.centerIn: parent
-                text: index + 1
-                color: isActive ? Colors.bg : Colors.fg
-                font.pixelSize: 12
-                font.bold: isActive
-                font.family: Config.sansFont
-              }
-
-              MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: mangoService.focusTag(index + 1)
-              }
-            }
+        WorkspacesWidget {
+          id: workspacesWidget
+          horizontal: true
+          workspaces: barContent.mangoWorkspaces
+          onFocusRequested: function(workspaceId) {
+            mangoService.focusTag(workspaceId)
           }
         }
 

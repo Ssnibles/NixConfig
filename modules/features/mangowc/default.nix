@@ -48,8 +48,8 @@
           files = {
             ".config/mango/colours.conf" = {
               text = ''
-                focuscolor = #${accent}
-                bordercolor = #${border}
+                focuscolor = 0x${accent}ff
+                bordercolor = 0x${border}ff
               '';
             };
           };

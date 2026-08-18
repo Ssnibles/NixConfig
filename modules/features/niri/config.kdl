@@ -2,7 +2,7 @@
 prefer-no-csd
 
 // Startup Applications
-spawn-sh-at-startup "systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP && systemctl --user start graphical-session.target"
+spawn-sh-at-startup "systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP && systemctl --user start wayland-session.target"
 spawn-sh-at-startup "quickshell"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpaper -m fill"
 spawn-at-startup "niri-float-sticky"

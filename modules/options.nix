@@ -11,7 +11,7 @@
 
       options.wallpaper = lib.mkOption {
         type = lib.types.str;
-        default = "shepperd.jpg";
+        default = "sheppard.jpg";
         description = "Wallpaper filename from assets/wallpapers/";
       };
 

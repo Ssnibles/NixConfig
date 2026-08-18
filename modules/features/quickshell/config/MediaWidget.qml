@@ -16,9 +16,9 @@ Item {
   property bool horizontal: false
 
   visible: root.hasMedia
-  width: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.width : 38
-  height: mediaLayout.implicitHeight + 8
-  anchors.horizontalCenter: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.horizontalCenter : undefined
+  width: root.horizontal ? horizontalMediaRow.implicitWidth + 12 : ((parent && !horizontal) ? parent.width : 38)
+  height: root.horizontal ? 24 : mediaLayout.implicitHeight + 8
+  anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
 
   Rectangle {
     id: mediaBg
@@ -70,9 +70,10 @@ Item {
     Utils.goToSource(root.mediaPlayer, Quickshell)
   }
 
-  // --- UI Layout ---
+  // --- UI Layout (Vertical for Sidebar) ---
   Column {
     id: mediaLayout
+    visible: !root.horizontal
     spacing: 8
     anchors.top: parent.top
     anchors.topMargin: 6
@@ -101,7 +102,7 @@ Item {
         from: 0
         to: 360
         duration: Config.mediaRotationDuration
-        running: root.mediaPlayer && root.mediaPlayer.isPlaying
+        running: root.visible && root.mediaPlayer && root.mediaPlayer.isPlaying
       }
 
     }
@@ -134,6 +135,48 @@ Item {
         font.pixelSize: 11
         horizontalAlignment: Text.AlignHCenter
       }
+    }
+  }
+
+  // --- UI Layout (Horizontal for Topbar) ---
+  Row {
+    id: horizontalMediaRow
+    visible: root.horizontal
+    anchors.centerIn: parent
+    spacing: 6
+
+    Item {
+      width: 14
+      height: 14
+      anchors.verticalCenter: parent.verticalCenter
+
+      Text {
+        anchors.centerIn: parent
+        text: root.mediaPlayer && root.mediaPlayer.isPlaying ? "󰎈" : "󰎆"
+        color: root.mediaPlayer && root.mediaPlayer.isPlaying ? Colors.accent : Colors.fgDim
+        font.pixelSize: 13
+        font.bold: true
+        font.family: root.uiFont
+      }
+
+      NumberAnimation on rotation {
+        loops: Animation.Infinite
+        from: 0
+        to: 360
+        duration: Config.mediaRotationDuration
+        running: root.visible && root.mediaPlayer && root.mediaPlayer.isPlaying
+      }
+    }
+
+    Text {
+      text: root.mediaText
+      color: Colors.fg
+      font.family: Config.sansFont
+      font.pixelSize: 12
+      elide: Text.ElideRight
+      maximumLineCount: 1
+      width: Math.min(implicitWidth, 200)
+      anchors.verticalCenter: parent.verticalCenter
     }
   }
 

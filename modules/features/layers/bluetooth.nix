@@ -10,6 +10,8 @@
       };
 
       services.blueman.enable = true;
+
+      systemd.services.bluetooth.serviceConfig.LogFilterPatterns = [ "~Failed to set default system config" ];
     };
 }
 
