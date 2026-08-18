@@ -268,126 +268,16 @@ Scope {
               spacing: 6
               Layout.alignment: Qt.AlignTop
 
-              // Wi-Fi Pill
-              Pill {
-                id: ccWifiPill
-                property var wifiDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
-                property bool isWifi: wifiDev && wifiDev.connected
-                property var wifiNet: Utils.findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected })
-                property string wifiSsid: wifiNet ? wifiNet.name : ""
-
-                visible: isWifi
-                pillHeight: 24
-                padding: 6
-                pillColor: wifiMouse.containsMouse ? Colors.bgRaised : Colors.bgSubtle
-                border.color: Colors.border
-                border.width: 1
+              // Network Pill (Wi-Fi / Wired)
+              NetworkWidget {
+                horizontal: true
                 anchors.verticalCenter: parent.verticalCenter
-
-                Row {
-                  spacing: 4
-                  Text {
-                    text: "󰤨"
-                    color: Colors.accent
-                    font.family: Config.monoFont
-                    font.pixelSize: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-                  Text {
-                    text: ccWifiPill.wifiSsid
-                    color: Colors.fg
-                    font.family: Config.sansFont
-                    font.pixelSize: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-                }
-
-                MouseArea {
-                  id: wifiMouse
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  acceptedButtons: Qt.LeftButton | Qt.RightButton
-                  onClicked: Quickshell.execDetached(["kitty", "-e", "nmtui"])
-                }
-              }
-
-              // Wired Pill
-              Pill {
-                id: ccWiredPill
-                property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
-                property bool isWired: wiredDev && wiredDev.connected
-
-                visible: isWired
-                pillHeight: 24
-                padding: 6
-                pillColor: wiredMouse.containsMouse ? Colors.bgRaised : Colors.bgSubtle
-                border.color: Colors.border
-                border.width: 1
-                anchors.verticalCenter: parent.verticalCenter
-
-                Row {
-                  spacing: 4
-                  Text {
-                    text: "󰈀"
-                    color: Colors.accent
-                    font.family: Config.monoFont
-                    font.pixelSize: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-                  Text {
-                    text: "Ethernet"
-                    color: Colors.fg
-                    font.family: Config.sansFont
-                    font.pixelSize: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-                }
-
-                MouseArea {
-                  id: wiredMouse
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  acceptedButtons: Qt.LeftButton | Qt.RightButton
-                  onClicked: Quickshell.execDetached(["kitty", "-e", "nmtui"])
-                }
               }
 
               // Battery Pill
-              Pill {
-                id: ccBatPill
-                property var batDevice: Utils.findBatteryDevice(UPower.devices, UPower.displayDevice)
-                property bool batPresent: batDevice !== null && batDevice.isLaptopBattery
-                property int batPct: batDevice ? Math.round(batDevice.percentage * 100) : 0
-                property bool batCharging: batDevice && batDevice.state === UPowerDeviceState.Charging
-                property bool batPlugged: batDevice && batDevice.state === UPowerDeviceState.FullyCharged
-
-                visible: batPresent
-                pillHeight: 24
-                padding: 6
-                pillColor: Colors.bgSubtle
-                border.color: Colors.border
-                border.width: 1
+              BatteryWidget {
+                horizontal: true
                 anchors.verticalCenter: parent.verticalCenter
-
-                Row {
-                  spacing: 4
-                  Text {
-                    text: Utils.batteryIcon(ccBatPill.batPct, ccBatPill.batCharging, ccBatPill.batPlugged, ccBatPill.batPresent)
-                    color: ccBatPill.batCharging ? Colors.green : Colors.accent
-                    font.family: Config.monoFont
-                    font.pixelSize: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-                  Text {
-                    text: ccBatPill.batPct + "%"
-                    color: Colors.fg
-                    font.family: Config.sansFont
-                    font.pixelSize: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-                }
               }
 
               // Bluetooth Pill

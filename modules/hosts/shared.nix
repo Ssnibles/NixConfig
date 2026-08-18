@@ -85,9 +85,11 @@
       systemd.services.dbus.restartTriggers = lib.mkForce [ ];
       systemd.user.services.dbus.restartTriggers = lib.mkForce [ ];
 
-      # Suppress benign log spam in systemd journal
-      systemd.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring duplicate name" ];
-      systemd.user.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring duplicate name" ];
+      # Suppress benign log spam in systemd journal (use space-free regex so systemd does not split tokens)
+      systemd.services.dbus.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
+      systemd.user.services.dbus.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
+      systemd.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
+      systemd.user.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
       systemd.services.display-manager.serviceConfig.LogFilterPatterns = [ "~gkr-pam: unable to locate daemon control file" ];
     };
 }

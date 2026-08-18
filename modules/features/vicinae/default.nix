@@ -12,6 +12,9 @@
       hjem.users."${config.username}" = {
         enable = true;
         files = {
+          ".local/share/vicinae/snippets/.keep" = {
+            text = "";
+          };
           ".local/share/vicinae/themes/nixconfig.toml" = {
             text = ''
               [meta]
@@ -51,6 +54,9 @@
                     "enabled": true,
                     "layer": "top"
                   }
+                },
+                "snippets": {
+                  "enabled": false
                 }
               }
             '';

@@ -18,15 +18,10 @@ Pill {
 
   pillColor: batTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised
   border.width: 1
-  border.color: {
-    if (!root.batPresent)                    return Colors.border
-    if (root.batCharging || root.batPlugged) return Qt.rgba(Colors.green.r,  Colors.green.g,  Colors.green.b,  0.5)
-    if (root.batPct <= 15)                   return Qt.rgba(Colors.red.r,    Colors.red.g,    Colors.red.b,    0.7)
-    if (root.batPct <= 30)                   return Qt.rgba(Colors.yellow.r, Colors.yellow.g, Colors.yellow.b, 0.5)
-    return Colors.border
-  }
+  border.color: Colors.border
 
   Behavior on pillColor { ColorAnimation { duration: 120 } }
+  Behavior on border.color { ColorAnimation { duration: 120 } }
 
   // UPower State
   property var batDevice: Utils.findBatteryDevice(UPower.devices, UPower.displayDevice)

@@ -47,7 +47,10 @@
         };
         serviceConfig = {
           Type = "simple";
-          ExecStartPre = "${pkgs.coreutils}/bin/sleep 1";
+          ExecStartPre = [
+            "${pkgs.coreutils}/bin/mkdir -p %h/.local/share/vicinae/snippets"
+            "${pkgs.coreutils}/bin/sleep 1"
+          ];
           ExecStart = "${pkgs.vicinae}/bin/vicinae server";
           Restart = "on-failure";
           RestartSec = 2;

@@ -76,11 +76,25 @@ Scope {
             anchors.verticalCenter: parent.verticalCenter
           }
 
-          WindowTitleWidget {
-            id: windowTitleWidget
-            horizontal: true
-            titleText: mangoService.currentTitle
+          Pill {
+            id: windowTitlePill
+            visible: mangoService.currentTitle !== ""
             anchors.verticalCenter: parent.verticalCenter
+            pillHeight: 24
+            padding: 10
+            pillColor: Colors.bgRaised
+            clip: true
+
+            Behavior on width {
+              NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+            }
+
+            WindowTitleWidget {
+              id: windowTitleWidget
+              horizontal: true
+              titleText: mangoService.currentTitle
+              anchors.verticalCenter: parent.verticalCenter
+            }
           }
         }
 

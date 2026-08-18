@@ -12,8 +12,10 @@ Item {
   property int maxText: horizontal ? 350 : 120
   property bool italic: true
 
-  width: horizontal ? Math.min(titleLabel.implicitWidth, root.maxText) : 26
-  height: horizontal ? 24 : Math.min(titleLabel.implicitWidth, root.maxText)
+  implicitWidth: horizontal ? Math.min(titleLabel.implicitWidth, root.maxText) : 26
+  implicitHeight: horizontal ? 24 : Math.min(titleLabel.implicitWidth, root.maxText)
+  width: implicitWidth
+  height: implicitHeight
   anchors.verticalCenter: horizontal ? (parent ? parent.verticalCenter : undefined) : undefined
   anchors.horizontalCenter: horizontal ? undefined : (parent ? parent.horizontalCenter : undefined)
   visible: titleText !== ""
@@ -27,6 +29,7 @@ Item {
     font.pixelSize: root.fontSize
     font.italic: root.italic
     elide: root.horizontal ? Text.ElideRight : Text.ElideNone
+    verticalAlignment: Text.AlignVCenter
 
     anchors.verticalCenter: root.horizontal ? parent.verticalCenter : undefined
 
@@ -43,6 +46,6 @@ Item {
     ]
 
     width: root.horizontal ? Math.min(titleLabel.implicitWidth, root.maxText) : titleLabel.implicitWidth
-    height: 26
+    height: root.horizontal ? parent.height : 26
   }
 }

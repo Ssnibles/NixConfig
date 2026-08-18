@@ -21,7 +21,6 @@
           historyLimit = 50000;
 
           plugins = with pkgs.tmuxPlugins; [
-            sensible
             yank
             resurrect
             continuum
@@ -36,14 +35,17 @@
             set-option -g prefix `
             bind-key ` send-prefix
 
-            # Resurrect & Continuum session options
+            # Unbind default Ctrl shortcuts so tmux never intercepts Control keys
+            unbind C-b
+            unbind C-z
+
+            # Resurrect & Continuum session options (bind S to save, R to restore without Ctrl chords)
+            set -g @resurrect-save 'S'
+            set -g @resurrect-restore 'R'
             set -g @resurrect-strategy-nvim 'session'
             set -g @resurrect-capture-pane-contents 'on'
             set -g @continuum-restore 'on'
             set -g @continuum-save-interval '10'
-            # Uncomment to have tmux auto-(re)start via a systemd user unit
-            # on login, so continuum has something to restore into:
-            # set -g @continuum-boot 'on'
 
             # Tmux-FZF configuration
             set -g @tmux-fzf-launch-key 'F'
@@ -86,9 +88,8 @@
             # Smart Command Mode & Auto-Completion (: and fuzzy finder)
             set -g status-keys emacs
             bind-key : command-prompt -T command
-            # was C-: — Ctrl combos get eaten by tmux before programs in the
-            # pane ever see them, so this is now prefix + ; instead.
             bind-key \; run-shell -b "TMUX_FZF_OPTIONS='-p 80%,60%' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
+            bind-key S run-shell -b "TMUX_FZF_OPTIONS='-p 80%,60%' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/session.sh"
 
             # Window & Pane splitting (Neovim-style: v=side-by-side vertical split, s=top/bottom horizontal split)
             unbind '"'
@@ -100,7 +101,7 @@
             bind c new-window -c "#{pane_current_path}"
             bind n new-window -c "#{pane_current_path}"
 
-            # Pane lifecycle & zooming (Neovim <leader>wq / <leader>wo inspired)
+            # Pane lifecycle & zooming (Neovim / workflow inspired)
             bind q kill-pane
             bind Q kill-window
             bind o resize-pane -Z
@@ -109,6 +110,8 @@
             bind = select-layout tiled
             bind y setw synchronize-panes \; display-message "Pane synchronization: #{?pane_synchronized,ON,OFF}"
             bind e choose-window
+            bind B break-pane
+            bind z set -g status \; display-message "Status bar toggled"
 
             # Pane resizing (Capital H, J, K, L)
             bind -r H resize-pane -L 5
@@ -116,7 +119,7 @@
             bind -r K resize-pane -U 5
             bind -r L resize-pane -R 5
 
-            # Window / Buffer Navigation (Neovim-style)
+            # Window / Buffer Navigation (Neovim-style, Alt-based)
             bind -n M-1 select-window -t 1
             bind -n M-2 select-window -t 2
             bind -n M-3 select-window -t 3
@@ -131,23 +134,15 @@
             bind [ previous-window
             bind ] next-window
 
-            # Pane navigation (replaces vim-tmux-navigator, which bound
-            # C-h/j/k/l with -n and swallowed those chords before any
-            # program in the pane — readline, vim, fzf, etc. — could see
-            # them). Alt+hjkl doesn't collide with -n M-H/M-L above since
-            # tmux treats Alt+letter and Alt+Shift+letter as distinct binds.
-            # Note: this only moves tmux panes, it has no awareness of
-            # Neovim splits the way the plugin did — mirror these as
-            # <M-h/j/k/l> window-nav maps in your Neovim config too if you
-            # want the same keys to feel seamless across both.
+            # Pane navigation (Alt+hjkl for seamless movement without Ctrl collisions)
             bind -n M-h select-pane -L
             bind -n M-j select-pane -D
             bind -n M-k select-pane -U
             bind -n M-l select-pane -R
 
-            # Quick config reload & memory clear
+            # Quick config reload & history clear
             bind r run-shell 'tmux source-file ~/.config/tmux/tmux.conf 2>/dev/null || tmux source-file /etc/tmux.conf' \; display-message "Tmux configuration reloaded!"
-            bind C clear-history
+            bind K clear-history
 
             # Vi Copy Mode keybindings (Neovim-style clipboard integration)
             bind-key -T copy-mode-vi v send-keys -X begin-selection
@@ -156,36 +151,31 @@
             bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy"
             bind P paste-buffer
 
-            # Minimal "Out of your way" Visual Styling (from oldconf)
+            # Minimal Visual Styling (inspired by custom Neovim ui.lua line)
             set -g status-position top
             set -g status-interval 1
             set -g status-justify left
             set -g status-style "fg=#${c.fg},bg=#${c.bg}"
 
             set -g status-left-length 50
-            set -g status-left "#{prefix_highlight}#[fg=#${c.accent},bold] #S "
+            set -g status-left "#{prefix_highlight}#[fg=#${c.bg},bg=#${c.accent},bold] #S #[default] "
 
-            setw -g window-status-format "#[fg=#${c.fgDim}] #I #W "
-            setw -g window-status-current-format "#[fg=#${c.accent},bold] #I #W "
+            setw -g window-status-format "#[fg=#${c.fgMid}] #I #W "
+            setw -g window-status-current-format "#[fg=#${c.accent},bg=#${c.bgSubtle},bold] #I #W #[default]"
             setw -g window-status-separator ""
             setw -g window-status-activity-style "fg=#${c.yellow}"
-            setw -g window-status-bell-style "fg=#${c.red}"
+            setw -g window-status-bell-style "fg=#${c.red},bold"
 
             set -g status-right-length 100
-            set -g status-right "#[fg=#${c.teal}] #{b:pane_current_path}  #[fg=#${c.fg}]#H  #[fg=#${c.accent},bold]%H:%M %d %b "
+            set -g status-right "#{?window_zoomed_flag,#[fg=#${c.bg},bg=#${c.yellow},bold] ZOOM #[default] ,}#[fg=#${c.teal},bold]#{b:pane_current_path} "
 
-            set -g pane-border-lines simple
+            # Solid pane split borders
+            set -g pane-border-lines single
             set -g pane-border-style "fg=#${c.border}"
             set -g pane-active-border-style "fg=#${c.accent}"
 
-            # Optional: subtle pane titles, off by default to stay minimal.
-            # Uncomment if you ever run 3+ panes at once and want a quick
-            # visual anchor for which pane is which.
-            # set -g pane-border-status top
-            # set -g pane-border-format "#[fg=#${c.fgDim}] #{pane_index} #{pane_current_command} "
-
-            set -g message-style "fg=#${c.accent},bg=#${c.bg},bold"
-            set -g message-command-style "fg=#${c.accent},bg=#${c.bg},bold"
+            set -g message-style "fg=#${c.accent},bg=#${c.bgSubtle},bold"
+            set -g message-command-style "fg=#${c.accent},bg=#${c.bgSubtle},bold"
 
             set -g visual-activity off
             set -g visual-bell off
@@ -194,18 +184,14 @@
             set -g bell-action none
 
             # Prefix Highlight Plugin Configuration
-            set -g @prefix_highlight_output_prefix " PREFIX "
-            set -g @prefix_highlight_output_lower ""
+            set -g @prefix_highlight_output_prefix ""
+            set -g @prefix_highlight_output_suffix ""
             set -g @prefix_highlight_fg "#${c.bg}"
             set -g @prefix_highlight_bg "#${c.accent}"
             set -g @prefix_highlight_show_copy_mode 'on'
-            set -g @prefix_highlight_copy_mode_attr "fg=#${c.bg},bg=#${c.teal}"
+            set -g @prefix_highlight_copy_mode_attr "fg=#${c.bg},bg=#${c.teal},bold"
             set -g @prefix_highlight_show_sync_mode 'on'
-            set -g @prefix_highlight_sync_mode_attr "fg=#${c.bg},bg=#${c.red}"
-
-            # Optional: native floating scratch terminal, no plugin needed.
-            # Handy if you decide tmux-floax is more than you want:
-            # bind-key -n M-g display-popup -d "#{pane_current_path}" -w 80% -h 80% -E "tmux new-session -A -s scratch"
+            set -g @prefix_highlight_sync_mode_attr "fg=#${c.bg},bg=#${c.red},bold"
           '';
         };
 

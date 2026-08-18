@@ -42,9 +42,7 @@ Pill {
   padding: showLabel ? 6 : 0
   anchors.horizontalCenter: (parent && !showLabel) ? parent.horizontalCenter : undefined
 
-  pillColor: showLabel
-               ? (btTooltip.hovered ? Colors.bgRaised : Colors.bgSubtle)
-               : (btTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised)
+  pillColor: btTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised
   border.width: 1
   border.color: Colors.border
 

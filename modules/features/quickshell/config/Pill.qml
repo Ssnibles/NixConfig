@@ -15,6 +15,12 @@ Rectangle {
   color: root.pillColor
   radius: root.pillRadius
   antialiasing: true
+  clip: true
+  border.width: 1
+  border.color: Colors.border
+
+  Behavior on pillColor { ColorAnimation { duration: 120 } }
+  Behavior on border.color { ColorAnimation { duration: 120 } }
 
   default property alias data: contentItem.data
 

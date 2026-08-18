@@ -36,12 +36,12 @@ Pill {
   property color netColor: (root.isWired || root.isWifi) ? Colors.accent : Colors.fgDim
 
   // Match Command Center Wi-Fi Pill styling
-  pillHeight: root.horizontal ? 24 : 30
-  padding: 8
+  pillHeight: root.horizontal ? 25 : 30
+  padding: root.horizontal ? 6 : 0
   orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
   anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
 
-  pillColor: netTooltip.hovered ? Colors.bgRaised : Colors.bgSubtle
+  pillColor: netTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised
   border.width: 1
   border.color: Colors.border
 
@@ -64,6 +64,7 @@ Pill {
     }
 
     Text {
+      visible: root.horizontal
       text: root.netText
       color: Colors.fg
       font.family: Config.sansFont

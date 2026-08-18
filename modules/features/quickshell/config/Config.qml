@@ -75,7 +75,7 @@ Singleton {
   readonly property string lockAvatarPath: Quickshell.shellDir + "/assets/avatar.png"
   readonly property string lockFallbackIcon: "󰀉"
   readonly property string lockWallpaperPath: "file://" + (Quickshell.env("HOME") || "/home/josh") + "/Pictures/wallpaper"
-  readonly property string lockClockFormat: "hh:mm"
+  readonly property string lockClockFormat: "HH:mm"
   readonly property string lockDateFormat: "dddd, MMMM d"
   readonly property int lockCardRadius: 12
   readonly property int lockInputRadius: 10

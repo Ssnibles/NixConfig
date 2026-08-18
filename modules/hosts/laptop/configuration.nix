@@ -32,9 +32,11 @@
         "ath11k_pci"
       ];
 
-      # Set max PWM brightness for HP elitebook
+      # Set max PWM brightness for HP elitebook & fix ELAN touchpad incomplete report spam
       boot.kernelParams = [
         "amdgpu.dcdebugmask=0x40000"
+        "i2c_hid.polling_mode=1"
+        "i2c_hid_acpi.polling_mode=1"
       ];
 
       services.tlp = {
