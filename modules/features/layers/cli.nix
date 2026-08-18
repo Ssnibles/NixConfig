@@ -55,7 +55,9 @@
           in
           {
             ".zshrc" = {
-              text = "";
+              text = ''
+                ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#${c.fgDim}"
+              '';
             };
             ".config/git/config-uni" = {
               text = ''
@@ -78,6 +80,9 @@
             ".config/fish/config.fish" = {
               clobber = true;
               text = ''
+                set -g fish_color_autosuggestion #${c.fgMid}
+                set -g fish_color_comment #${c.fgMid}
+
                 set -gx FZF_DEFAULT_OPTS "
                   --height=60%
                   --layout=reverse
@@ -101,8 +106,8 @@
                   --color=fg:#${c.fg},bg:#${c.bg},hl:#${c.accent}
                   --color=fg+:#${c.fg},bg+:#${c.bgSubtle},hl+:#${c.accent}
                   --color=info:#${c.purple},prompt:#${c.accent},pointer:#${c.accent}
-                  --color=marker:#${c.green},spinner:#${c.purple},header:#${c.fgDim}
-                  --color=border:#${c.fgDim}
+                  --color=marker:#${c.green},spinner:#${c.purple},header:#${c.fgMid}
+                  --color=border:#${c.fgMid}
                   --color=selected-bg:#${c.bgSubtle},selected-fg:#${c.fg}
                   --color=gutter:#${c.bg}
                   --preview '
