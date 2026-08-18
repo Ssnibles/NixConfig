@@ -35,8 +35,6 @@
 
         programs.mango.enable = true;
 
-
-
         system.activationScripts.mango-config = ''
           mkdir -p /home/${config.username}/.config/mango
           chown -R ${config.username}:users /home/${config.username}/.config/mango
@@ -50,8 +48,8 @@
           files = {
             ".config/mango/colours.conf" = {
               text = ''
-                focuscolor = ${accent}
-                bordercolor = ${border}
+                focuscolor = #${accent}
+                bordercolor = #${border}
               '';
             };
           };

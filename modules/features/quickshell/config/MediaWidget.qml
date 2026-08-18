@@ -13,11 +13,12 @@ Item {
 
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
+  property bool horizontal: false
 
   visible: root.hasMedia
-  width: parent ? parent.width : 38
+  width: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.width : 38
   height: mediaLayout.implicitHeight + 8
-  anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+  anchors.horizontalCenter: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.horizontalCenter : undefined
 
   Rectangle {
     id: mediaBg

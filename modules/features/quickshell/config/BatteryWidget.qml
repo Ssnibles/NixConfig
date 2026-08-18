@@ -8,11 +8,12 @@ Pill {
 
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
+  property bool horizontal: false
 
   visible: root.batPresent
   pillHeight: 30
   padding: 0
-  anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+  anchors.horizontalCenter: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.horizontalCenter : undefined
 
   pillColor: batTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised
   border.width: 1

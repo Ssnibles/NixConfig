@@ -8,7 +8,7 @@ PanelWindow {
   property var screenTarget: null
   screen: screenTarget
 
-  property string barSide: "left" // which side the bar is on; popup hugs the other side
+  property string barSide: "left" // "left" | "right" | "top"
 
   property var _active: null
   property bool recentlyActive: false
@@ -26,19 +26,13 @@ PanelWindow {
       cardOpacity = 1
     } else {
       if (!root.hovered) {
-        // Keep the tooltip fully visible during the grace window so the cursor
-        // can cross the gap between the bar and the tooltip without flickering.
-        // The fade only begins once the grace period expires.
         recentTimer.restart()
         fadeTimer.stop()
-        // cardOpacity stays at 1 — graceFadeTimer will drop it after the delay
         graceFadeTimer.restart()
       }
     }
   }
 
-  // Fires after the grace window: if nothing is active and the tip isn’t
-  // being hovered, begin the opacity fade.
   Timer {
     id: graceFadeTimer
     interval: Config.popupGraceMs
@@ -52,7 +46,6 @@ PanelWindow {
 
   onHoveredChanged: {
     if (hovered) {
-      // Cursor entered the tooltip window — cancel any pending fade
       graceFadeTimer.stop()
       fadeTimer.stop()
       cardOpacity = 1
@@ -87,37 +80,54 @@ PanelWindow {
 
   mask: Region { item: tipLoader.item }
 
-  anchors { top: true; bottom: true }
-  anchors.left: barSide === "left"
-  anchors.right: barSide === "right"
-  margins { left: barSide === "left" ? Config.popupGap : 0; right: barSide === "left" ? 0 : Config.popupGap }
-  implicitWidth: cachedActive
+  anchors {
+    top: true
+    bottom: barSide !== "top"
+    left: barSide !== "right"
+    right: barSide !== "left"
+  }
+  margins {
+    top: barSide === "top" ? (Config.barHeight + 6) : 0
+    left: barSide === "left" ? Config.popupGap : 0
+    right: barSide === "right" ? Config.popupGap : 0
+  }
+  implicitWidth: barSide === "top" ? (screenTarget ? screenTarget.width : 1920) : (cachedActive
     ? (cachedActive.contentWidth > 0 ? cachedActive.contentWidth : cachedActive.maxWidth)
-    : Config.popupMaxWidth
+    : Config.popupMaxWidth)
+  implicitHeight: barSide === "top" ? 300 : (screenTarget ? screenTarget.height : 1080)
 
-  // Loads either the default rendered card or a fully custom per-Tooltip
-  // component (Tooltip.contentComponent). The Loader owns all shared
-  // behaviour: fade opacity, and vertical clamping next to the target widget.
   Loader {
     id: tipLoader
-    width: parent.width
+    width: cachedActive ? (cachedActive.contentWidth > 0 ? cachedActive.contentWidth : cachedActive.maxWidth) : Config.popupMaxWidth
     opacity: root.cardOpacity
 
     HoverHandler {
       id: cardHover
     }
 
-    // The Tooltip instance currently active (null while fading out).
     readonly property var src: root.cachedActive
 
-    // Vertical centre of the widget that opened the popup, in window coords.
     readonly property real targetCenterY: {
       if (!src || !src.target) return 0
       var p = src.target.mapToItem(null, 0, src.target.height / 2)
       return p ? p.y : 0
     }
 
+    readonly property real targetCenterX: {
+      if (!src || !src.target) return 0
+      var p = src.target.mapToItem(null, src.target.width / 2, 0)
+      return p ? p.x : 0
+    }
+
+    x: {
+      if (barSide !== "top") return 0
+      if (!src) return 0
+      var w = item ? item.width : Config.popupMaxWidth
+      return Math.round(Math.max(12, Math.min(targetCenterX - w / 2, root.width - w - 12)))
+    }
+
     y: {
+      if (barSide === "top") return 0
       if (!src) return 0
       var h = item ? item.height : 0
       return Math.round(Math.max(6, Math.min(targetCenterY - h / 2, root.height - h - 6)))
@@ -125,8 +135,6 @@ PanelWindow {
 
     sourceComponent: src ? (src.contentComponent ? src.contentComponent : defaultCard) : null
 
-    // The stock card: icon + title row, divider and plain-text detail lines.
-    // Fully custom popups replace this entirely via Tooltip.contentComponent.
     Component {
       id: defaultCard
       Rectangle {

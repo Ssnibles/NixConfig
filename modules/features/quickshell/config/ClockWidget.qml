@@ -8,10 +8,12 @@ Item {
   property string timeFormat: Config.timeFormat
   property string timeStr: ""
   property PanelWindow sharedWindow: null
+  property bool horizontal: false
 
-  anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
-  implicitWidth: clockCol.implicitWidth
-  implicitHeight: clockCol.implicitHeight
+  anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
+  anchors.verticalCenter: (parent && horizontal) ? parent.verticalCenter : undefined
+  implicitWidth: horizontal ? rowClock.implicitWidth : clockCol.implicitWidth
+  implicitHeight: horizontal ? rowClock.implicitHeight : clockCol.implicitHeight
 
   function updateTime() {
     var d = new Date()
@@ -29,8 +31,10 @@ Item {
 
   Component.onCompleted: updateTime()
 
+  // Vertical stacked format (for side bar)
   Column {
     id: clockCol
+    visible: !root.horizontal
     anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
     spacing: -2
 
@@ -53,6 +57,22 @@ Item {
     }
   }
 
+  // Horizontal single line format (for top bar)
+  Row {
+    id: rowClock
+    visible: root.horizontal
+    anchors.verticalCenter: parent ? parent.verticalCenter : undefined
+    spacing: 2
+
+    Text {
+      text: root.timeStr
+      color: Colors.accent
+      font.family: root.uiFont
+      font.pixelSize: 14
+      font.bold: true
+    }
+  }
+
   Tooltip {
     target: root
     sharedWindow: root.sharedWindow
@@ -62,13 +82,9 @@ Item {
       var d = new Date()
       return Qt.formatDate(d, getOrdinalDate(d))
     }
-    // details: [
-    //   Qt.formatTime(new Date(), "hh:mm")
-    // ]
   }
 
   function getOrdinalDate(date) {
-    onTriggerd: Qt.formatDate(date)
     var day = date.getDate();
     var suffix = "th";
 
@@ -79,8 +95,6 @@ Item {
           case 3: suffix = "rd"; break;
         }
     }
-    // Combines the day, suffix, and remaining formatted date
     return day + suffix + " " + Qt.formatDate(date, "of MMMM yyyy");
-}
-
+  }
 }

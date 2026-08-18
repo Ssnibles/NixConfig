@@ -12,17 +12,11 @@
       ]
       ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
-      # Mount /boot on-demand via fstab to prevent systemd-gpt-auto-generator from
-      # creating its own boot.mount, which deadlocks dbus-broker during early boot
-      # (dbus-broker's ProtectSystem=full namespace setup triggers the automount,
-      #  blocking it while PID 1 waits for dbus's READY notification — ~8.8s stall)
+      # Standard mount options for /boot (no automount to avoid dbus-broker ProtectSystem=full deadlocks)
       fileSystems."/boot" = {
         fsType = "vfat";
-        options = lib.mkForce [
-          "noauto"
-          "x-systemd.automount"
-          "x-systemd.idle-timeout=120"
-          "fmask=0177"
+        options = [
+          "fmask=0077"
           "dmask=0077"
           "nodev"
           "nosuid"
@@ -30,31 +24,18 @@
         ];
       };
 
-      # Load critical drivers early in initrd:
-      # - tpm_crb: TPM ready before userspace
-      # - nvme: root disk available immediately (instead of on-demand probe)
-      boot.initrd.kernelModules = [
-        "tpm_crb"
-        "nvme"
+      # NVMe is in availableKernelModules; TPM modules removed from initrd as root is unencrypted
+      boot.initrd.kernelModules = [ ];
+
+      # Pre-load Wi-Fi driver & firmware early
+      boot.kernelModules = [
+        "ath11k_pci"
       ];
+
       # Set max PWM brightness for HP elitebook
       boot.kernelParams = [
         "amdgpu.dcdebugmask=0x40000"
       ];
-
-      networking.networkmanager = {
-        wifi = {
-          scanRandMacAddress = false; # avoid scan-triggered disconnects on rtw89
-        };
-      };
-
-      # rtw89-specific quirks for the laptop's Realtek Wi-Fi.
-      networking.wireless.iwd.settings = {
-        General.DisableANQP = true; # firmware stumbles on ANQP queries
-      };
-
-      # Automated runtime power tuning
-      powerManagement.powertop.enable = true;
 
       services.tlp = {
         enable = true;

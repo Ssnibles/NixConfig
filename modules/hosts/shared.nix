@@ -38,8 +38,6 @@
       '';
 
       services.upower.enable = true;
-      # Defer upower until after graphical.target — it's only needed by the desktop session
-      systemd.services.upower.wantedBy = lib.mkForce [ "graphical.target" ];
 
       # Enable ly for login management
       services.displayManager.ly.enable = true;

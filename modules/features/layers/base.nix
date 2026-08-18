@@ -88,6 +88,8 @@
             EnableOWE = true;
           };
 
+          nftables.enable = true;
+
           firewall = {
             enable = true;
             allowedTCPPorts = [ 53317 ];

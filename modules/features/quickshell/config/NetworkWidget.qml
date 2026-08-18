@@ -9,6 +9,7 @@ Pill {
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
   property int maxTextWidth: Config.wifiMaxTextLength
+  property bool horizontal: false
 
   // Networking state
   property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
@@ -38,7 +39,7 @@ Pill {
   pillHeight: 30
   padding: 8
   orientation: Qt.Vertical
-  anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+  anchors.horizontalCenter: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.horizontalCenter : undefined
 
   pillColor: netTooltip.hovered ? Colors.bgRaised : Colors.bgSubtle
   border.width: 1

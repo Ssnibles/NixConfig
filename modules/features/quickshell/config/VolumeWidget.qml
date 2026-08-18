@@ -8,6 +8,7 @@ Item {
 
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
+  property bool horizontal: false
 
   // Pipewire Audio Binding
   property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
@@ -17,9 +18,9 @@ Item {
   property real volPct: root.volInfo ? root.volInfo.volume : 0
   property bool volMuted: root.volInfo ? root.volInfo.muted : false
 
-  width: parent ? parent.width : 38
-  height: volLayout.height + 8
-  anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+  width: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.width : 38
+  height: volLayout.implicitHeight > 0 ? volLayout.implicitHeight + 8 : 38
+  anchors.horizontalCenter: (parent && !horizontal && parent.toString().indexOf("Row") === -1) ? parent.horizontalCenter : undefined
 
   Tooltip {
     id: volTooltip

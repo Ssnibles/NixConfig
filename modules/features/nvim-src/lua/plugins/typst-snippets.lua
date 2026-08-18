@@ -80,7 +80,6 @@ ls.add_snippets("typst", {
 	}),
 
 	s({ trig = "erd", desc = "Mermaid Entity-Relationship Diagram (Database design)" }, {
-		t({ '#import "@preview/mmdr:0.2.2": mermaid', "", "" }),
 		t({ "#mermaid(", "" }),
 		t({ '  "erDiagram', "" }),
 		t({ "  " }),
@@ -95,7 +94,6 @@ ls.add_snippets("typst", {
 	}),
 
 	s({ trig = "mmd", desc = "Mermaid Diagram wrapper" }, {
-		t({ '#import "@preview/mmdr:0.2.2": mermaid', "", "" }),
 		t({ "#mermaid(", "" }),
 		t({ '  "', "" }),
 		t({ "  " }),

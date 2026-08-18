@@ -1,60 +1,37 @@
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Io
 import QtQuick
+
 Scope {
   id: root
 
-  property string currentTime: ""
+  // Global MangoWC IPC Service
+  MangoService {
+    id: mangoService
+  }
+
   property int minWorkspaces: Config.mangowcMinWorkspaces
-
-
-  // Continuous listener for MangoWC JSON stream
-  Process {
-    id: statusWatcher
-    command: ["mmsg", "watch", "all-tags"]
-    running: true
-
-    stdout: SplitParser {
-      onRead: line => {
-        var cleanLine = line.trim();
-        if (!cleanLine.startsWith("{")) return;
-
-        try {
-          var data = JSON.parse(cleanLine);
-          if (data.all_tags) {
-            root.allMonitorsTags = data.all_tags;
-          }
-        } catch (e) {
-          // Ignore partial or malformed lines
-        }
-      }
-    }
-  }
-
-  // Switch workspace tag
-  function viewTag(tagNum) {
-    Quickshell.execDetached(["mmsg", "tag", tagNum.toString()]);
-  }
 
   Variants {
     model: Quickshell.screens
 
     PanelWindow {
-      id: panel
+      id: barPanel
       required property var modelData
+      screen: barPanel.modelData
+      focusable: false
+      aboveWindows: true
 
-      // Binds each panel strictly to its own screen so windows don't overlap
-      screen: panel.modelData
-
-      anchors.top: true
-      anchors.left: true
-      anchors.right: true
-
+      anchors {
+        top: true
+        left: true
+        right: true
+      }
       implicitHeight: Config.barHeight
+      exclusionMode: ExclusionMode.Auto
       color: Colors.bg
 
-      mask: Region { item: panel.contentItem }
+      mask: Region { item: barPanel.contentItem }
 
       // Background MouseArea to absorb all hover and pointer events
       MouseArea {
@@ -64,99 +41,150 @@ Scope {
         onClicked: function(mouse) { mouse.accepted = true }
       }
 
-      // Find the tag list matching this specific monitor (e.g. "eDP-1")
-      property var monitorData: {
-        if (!root.allMonitorsTags || root.allMonitorsTags.length === 0) return null;
-        for (var i = 0; i < root.allMonitorsTags.length; i++) {
-          if (root.allMonitorsTags[i].monitor === panel.modelData.name) {
-            return root.allMonitorsTags[i];
-          }
-        }
-        // Fallback to the first monitor if name matching fails
-        return root.allMonitorsTags[0];
-      }
-
-      property var tagsList: monitorData ? (monitorData.tags || []) : []
-
-      // Calculate highest workspace in use for this monitor
-      property int highestUsedTag: {
-        var maxIndex = 1;
-        for (var i = 0; i < tagsList.length; i++) {
-          var tag = tagsList[i];
-          if (tag.is_active || tag.client_count > 0) {
-            maxIndex = Math.max(maxIndex, tag.index);
-          }
-        }
-        return maxIndex;
-      }
-
-      property int visibleTagCount: Math.max(root.minWorkspaces, highestUsedTag)
-
-      Item {
-        id: barContent
+      // Thin bottom border line
+      Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        height: 1
+        color: Colors.border
+      }
+
+      // Bar Content Container
+      Item {
+        id: barContent
+        anchors.fill: parent
         anchors.leftMargin: 12
         anchors.rightMargin: 12
-        height: panel.implicitHeight
 
-        Text {
-          id: clockText
+        // Left Section: Clock, Command Center Button, Window Title
+        Row {
+          id: leftRow
           anchors.left: parent.left
           anchors.verticalCenter: parent.verticalCenter
-          text: root.currentTime
-          color: Colors.fg
-          font.pixelSize: 16
-          font.bold: true
-          font.family: Config.sansFont
+          spacing: 12
+
+          ClockWidget {
+            id: clockWidget
+            horizontal: true
+            sharedWindow: sharedTipWindow
+          }
+
+          CommandCenterButton {
+            id: commandCenterButton
+            horizontal: true
+            anchors.verticalCenter: parent.verticalCenter
+          }
+
+          WindowTitleWidget {
+            id: windowTitleWidget
+            horizontal: true
+            titleText: mangoService.currentTitle
+            anchors.verticalCenter: parent.verticalCenter
+          }
         }
 
+        // Center Section: MangoWC Workspace / Tag Indicators
+        property var tagsList: mangoService.tagsForOutput(barPanel.modelData.name)
+
+        property int highestUsedTag: {
+          var maxIndex = 1
+          for (var i = 0; i < tagsList.length; i++) {
+            var tag = tagsList[i]
+            if (tag.is_active || tag.client_count > 0) {
+              maxIndex = Math.max(maxIndex, tag.index)
+            }
+          }
+          return maxIndex
+        }
+
+        property int visibleTagCount: Math.max(root.minWorkspaces, highestUsedTag)
+
         Row {
-          id: tagRow
+          id: centerRow
           anchors.centerIn: parent
           spacing: 6
 
           Repeater {
-            model: panel.visibleTagCount
+            model: barContent.visibleTagCount
 
             Rectangle {
-              width: 30
-              height: 26
+              width: 28
+              height: 24
               radius: 6
+              anchors.verticalCenter: parent.verticalCenter
 
-              property var tagData: (panel.tagsList && index < panel.tagsList.length) ? panel.tagsList[index] : null
+              property var tagData: (barContent.tagsList && index < barContent.tagsList.length) ? barContent.tagsList[index] : null
               property bool isActive: tagData ? tagData.is_active : (index === 0)
               property bool isOccupied: tagData ? (tagData.client_count > 0) : false
 
               color: isActive ? Colors.accent : (isOccupied ? Colors.fgDim : Colors.bgSubtle)
 
+              Behavior on color {
+                ColorAnimation { duration: 200; easing.type: Easing.InOutQuad }
+              }
+
               Text {
                 anchors.centerIn: parent
                 text: index + 1
-                color: Colors.fg
-                font.pixelSize: 13
+                color: isActive ? Colors.bg : Colors.fg
+                font.pixelSize: 12
+                font.bold: isActive
                 font.family: Config.sansFont
               }
 
               MouseArea {
                 anchors.fill: parent
-                onClicked: root.viewTag(index + 1)
+                cursorShape: Qt.PointingHandCursor
+                onClicked: mangoService.focusTag(index + 1)
               }
             }
           }
         }
+
+        // Right Section: Media, Volume, Network, Battery Widgets
+        Row {
+          id: rightRow
+          anchors.right: parent.right
+          anchors.verticalCenter: parent.verticalCenter
+          spacing: 10
+
+          MediaWidget {
+            id: mediaWidget
+            horizontal: true
+            anchors.verticalCenter: parent.verticalCenter
+            sharedWindow: sharedTipWindow
+          }
+
+          VolumeWidget {
+            id: volumeWidget
+            horizontal: true
+            anchors.verticalCenter: parent.verticalCenter
+            sharedWindow: sharedTipWindow
+          }
+
+          NetworkWidget {
+            id: networkWidget
+            horizontal: true
+            anchors.verticalCenter: parent.verticalCenter
+            sharedWindow: sharedTipWindow
+          }
+
+          BatteryWidget {
+            id: batteryWidget
+            horizontal: true
+            anchors.verticalCenter: parent.verticalCenter
+            sharedWindow: sharedTipWindow
+          }
+        }
+      }
+
+      // Shared Tooltip Window Layer
+      SharedTooltipWindow {
+        id: sharedTipWindow
+        screenTarget: barPanel.modelData
+        barSide: "top"
       }
     }
   }
-
-  Timer {
-    interval: 1000
-    running: true
-    repeat: true
-    onTriggered: root.currentTime = Qt.formatDateTime(new Date(), Config.mangowcClockFormat)
-  }
-
-  Component.onCompleted: root.currentTime = Qt.formatDateTime(new Date(), Config.mangowcClockFormat)
-
 }
