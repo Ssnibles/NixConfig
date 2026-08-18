@@ -7,6 +7,13 @@
       boot.loader.limine.enable = true;
       boot.loader.limine.maxGenerations = 10;
       boot.loader.efi.canTouchEfiVariables = true;
+      boot.loader.timeout = 5;
+
+      # Enable hardware graphics (Mesa, Vulkan, VA-API hardware acceleration)
+      hardware.graphics = {
+        enable = true;
+        enable32Bit = true;
+      };
 
       # Use latest kernel.
       boot.kernelPackages = pkgs.linuxPackages_latest;

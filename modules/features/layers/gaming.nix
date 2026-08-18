@@ -1,7 +1,7 @@
 { ... }:
 {
   nixos.modules.desktop =
-    { pkgs, ... }:
+    { pkgs, config, ... }:
     {
       programs.steam = {
         enable = true;
@@ -14,7 +14,7 @@
         protonup-ng
       ];
       environment.sessionVariables = {
-        STEAM_EXTRA_COMPAT_TOOLS_PATH = "/home/user/.steam/root/compatibilitytools.d";
+        STEAM_EXTRA_COMPAT_TOOLS_PATH = "/home/${config.username}/.steam/root/compatibilitytools.d";
       };
     };
 }

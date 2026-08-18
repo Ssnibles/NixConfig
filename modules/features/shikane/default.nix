@@ -40,7 +40,7 @@
                 match = "eDP-1"
                 enable = true
                 scale = 1.0
-                mode = "1920x1080@60Hz"
+                mode = "1920x1200@60Hz"
                 position = "0,0"
 
                 # Dual Monitor Setup (External display on top/primary, laptop below)

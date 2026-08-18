@@ -243,7 +243,6 @@
           shellAbbrs = {
             lg = "lazygit";
             y = "yazi";
-            nixup = "sudo nixos-rebuild switch --flake .";
             nixclean = "sudo nix-collect-garbage --delete-older-than 30d";
           };
 

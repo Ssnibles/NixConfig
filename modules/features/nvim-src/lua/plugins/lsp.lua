@@ -111,7 +111,7 @@ local function register_server(name, config)
 			lsp.config(name, lsp_opts)
 		end
 		lsp.enable(name)
-	else
+	elseif config.warn_if_missing then
 		vim.notify(("Skipped %s LSP: `%s` not found on PATH"):format(name, exe), vim.log.levels.WARN)
 	end
 end

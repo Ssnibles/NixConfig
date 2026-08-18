@@ -35,27 +35,7 @@
 
         programs.mango.enable = true;
 
-        environment.systemPackages = with pkgs; [
-          swaybg
-          wl-clipboard
-          brightnessctl
-          playerctl
-          grim
-          grimblast
-          slurp
-          libnotify
-          networkmanagerapplet
-          adwaita-icon-theme
-        ];
 
-        xdg.portal = {
-          enable = true;
-          extraPortals = [
-            pkgs.xdg-desktop-portal-gtk
-            pkgs.xdg-desktop-portal-wlr
-          ];
-          configPackages = [ pkgs.xdg-desktop-portal-gnome ];
-        };
 
         system.activationScripts.mango-config = ''
           mkdir -p /home/${config.username}/.config/mango

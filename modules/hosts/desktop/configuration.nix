@@ -35,10 +35,7 @@
         amberol
       ];
 
-      hardware.graphics = {
-        enable = true;
-        enable32Bit = true;
-      };
+
 
       # Open ports in the firewall.
       networking.firewall.allowedTCPPorts = [ 5353 ];

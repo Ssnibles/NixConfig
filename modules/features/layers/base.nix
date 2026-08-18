@@ -13,8 +13,6 @@
       ];
 
       config = {
-        username = "josh";
-
         nixpkgs = {
           config = {
             allowUnfree = true;
@@ -26,26 +24,16 @@
           overlays = [
             inputs.millennium.overlays.default
             (final: prev: {
-              unstable =
-                (import inputs.nixpkgs-unstable {
-                  inherit (prev.stdenv.hostPlatform) system;
-                  config = {
-                    allowUnfree = true;
-                    permittedInsecurePackages = [
-                      "pnpm-10.29.2"
-                      "electron-40.10.5"
-                    ];
-                  };
-                }).extend
-                  (
-                    final': prev': {
-                      qutebrowser = prev'.qutebrowser.overrideAttrs (old: {
-                        patches = (old.patches or [ ]) ++ [
-                          ../qutebrowser-profile-scripts.patch
-                        ];
-                      });
-                    }
-                  );
+              unstable = import inputs.nixpkgs-unstable {
+                inherit (prev.stdenv.hostPlatform) system;
+                config = {
+                  allowUnfree = true;
+                  permittedInsecurePackages = [
+                    "pnpm-10.29.2"
+                    "electron-40.10.5"
+                  ];
+                };
+              };
             })
           ];
         };
@@ -88,7 +76,7 @@
           networkmanager = {
             enable = true;
             wifi.backend = "iwd";
-            wifi.powersave = false;
+            wifi.powersave = true;
             wifi.macAddress = "stable";
             dns = "systemd-resolved";
           };
@@ -123,12 +111,30 @@
         boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
         environment.systemPackages = with pkgs; [
-          iwd
           dualsensectl # DualSense utility: firmware updates, LED and rumble settings.
+          swaybg
+          wl-clipboard
+          brightnessctl
+          playerctl
+          grim
+          grimblast
+          slurp
+          libnotify
+          networkmanagerapplet
+          adwaita-icon-theme
           self.packages.${pkgs.stdenv.hostPlatform.system}.dualsense-pair
           self.packages.${pkgs.stdenv.hostPlatform.system}.html-server
           self.packages.${pkgs.stdenv.hostPlatform.system}.boilerplate
         ];
+
+        xdg.portal = {
+          enable = true;
+          extraPortals = [
+            pkgs.xdg-desktop-portal-gtk
+            pkgs.xdg-desktop-portal-wlr
+          ];
+          configPackages = [ pkgs.xdg-desktop-portal-gnome ];
+        };
 
         # Enable redistributable firmware (required for AMD GPU firmware)
         hardware.enableRedistributableFirmware = true;

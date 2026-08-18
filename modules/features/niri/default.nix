@@ -31,29 +31,10 @@
         programs.niri.enable = true;
 
         environment.systemPackages = with pkgs; [
-          swaybg
-          wl-clipboard
-          brightnessctl
-          playerctl
-          grim
-          grimblast
-          slurp
           tesseract
-          libnotify
-          networkmanagerapplet
-          adwaita-icon-theme
           xwayland-satellite
           inputs.niri-float-sticky.packages.${pkgs.stdenv.hostPlatform.system}.niri-float-sticky
         ];
-
-        xdg.portal = {
-          enable = true;
-          extraPortals = [
-            pkgs.xdg-desktop-portal-gtk
-            pkgs.xdg-desktop-portal-wlr
-          ];
-          configPackages = [ pkgs.xdg-desktop-portal-gnome ];
-        };
 
         system.activationScripts.niri-config = ''
           mkdir -p /home/${config.username}/.config/niri
