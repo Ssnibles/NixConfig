@@ -55,15 +55,77 @@ function stripMarkup(text) {
 }
 
 var _appNameOverrides = {
+  "antigravity": "Antigravity",
+  "antigravity-editor": "Antigravity",
   "zen": "Zen",
   "zen-browser": "Zen",
+  "zen-alpha": "Zen",
   "zen-beta": "Zen",
   "firefox": "Firefox",
+  "firefox-developer-edition": "Firefox",
+  "firefox-devedition": "Firefox",
+  "firefoxdevedition": "Firefox",
+  "firefox-aurora": "Firefox",
   "org.mozilla.firefox": "Firefox",
+  "org.mozilla.firefoxdeveloperedition": "Firefox",
   "nvim": "Neovim",
   "neovim": "Neovim",
-  "foot": "Foot"
+  "foot": "Foot",
+  "ghostty": "Ghostty",
+  "kitty": "Kitty",
+  "alacritty": "Alacritty",
+  "code": "Code",
+  "code-url-handler": "Code",
+  "vscode": "Code",
+  "discord": "Discord",
+  "vesktop": "Vesktop",
+  "webcord": "Discord",
+  "spotify": "Spotify",
+  "thunar": "Files",
+  "nemo": "Files",
+  "nautilus": "Files",
+  "qutebrowser": "Qutebrowser"
 }
+
+var _knownApps = [
+  "Antigravity",
+  "Neovim",
+  "Zen Browser",
+  "Zen",
+  "Firefox Developer Edition",
+  "Firefox Dev Edition",
+  "Firefox",
+  "Mozilla Firefox",
+  "Google Chrome",
+  "Chromium",
+  "Foot",
+  "Kitty",
+  "Ghostty",
+  "Alacritty",
+  "Code",
+  "VSCode",
+  "VSCodium",
+  "Discord",
+  "Vesktop",
+  "WebCord",
+  "Spotify",
+  "Obsidian",
+  "Thunderbird",
+  "LibreOffice",
+  "Qutebrowser",
+  "Thunar",
+  "Nemo",
+  "Nautilus",
+  "Steam",
+  "GIMP",
+  "Inkscape",
+  "Blender",
+  "VLC",
+  "mpv",
+  "Telegram",
+  "Slack",
+  "Signal"
+]
 
 function prettifyAppName(className) {
   if (!className) return ""
@@ -77,26 +139,114 @@ function prettifyAppName(className) {
 }
 
 var _titleSuffixMap = {
-  " — Zen Browser": "Zen",
+  " — Firefox Developer Edition": "Firefox",
+  " - Firefox Developer Edition": "Firefox",
+  " — Firefox Dev Edition": "Firefox",
+  " - Firefox Dev Edition": "Firefox",
   " — Mozilla Firefox": "Firefox",
+  " - Mozilla Firefox": "Firefox",
+  " — Firefox": "Firefox",
+  " - Firefox": "Firefox",
+  " — Zen Browser": "Zen",
   " - nvim": "Neovim",
   " - foot": null // keep app name, just drop the suffix
 }
 
 function formatActiveTitle(title, appId) {
+  title = title ? String(title).trim() : ""
   var appName = prettifyAppName(appId)
-  title = title || ""
 
+  if (!title) return appName
+
+  // If title is just the browser/app name itself (e.g. "Firefox Developer Edition")
+  var tLower = title.toLowerCase()
+  if (tLower === "firefox developer edition" || tLower === "firefox dev edition" || tLower === "mozilla firefox") {
+    return appName || "Firefox"
+  }
+
+  // 1. If title already follows "Program: Title" format, keep it as is
+  var colonIdx = title.indexOf(":")
+  if (colonIdx > 0 && colonIdx < 30) {
+    var prefix = title.substring(0, colonIdx).trim()
+    var rest = title.substring(colonIdx + 1).trim()
+    if (prefix && rest) {
+      return title
+    }
+  }
+
+  // 2. Strip known title suffixes like " — Firefox Developer Edition", " — Zen Browser", " - nvim", etc.
   for (var suffix in _titleSuffixMap) {
     if (title.endsWith(suffix)) {
-      title = title.slice(0, title.length - suffix.length)
+      title = title.slice(0, title.length - suffix.length).trim()
       if (_titleSuffixMap[suffix]) appName = _titleSuffixMap[suffix]
       break
     }
   }
 
-  title = String(title).trim()
-  if (appName && title && title !== appName) return appName + ": " + title
+  // 3. Try splitting title by " - " or " — " or " | "
+  var parts = title.split(/\s+[\-\u2014|]\s+/)
+
+  if (parts.length > 1) {
+    var detectedApp = ""
+    var appIdx = -1
+
+    // Check if any part matches appName or a known app in _knownApps list
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i].trim()
+      var pLower = p.toLowerCase()
+
+      if (appName && pLower === appName.toLowerCase()) {
+        detectedApp = appName
+        appIdx = i
+        break
+      }
+
+      for (var k = 0; k < _knownApps.length; k++) {
+        if (pLower === _knownApps[k].toLowerCase()) {
+          detectedApp = _knownApps[k]
+          appIdx = i
+          break
+        }
+      }
+      if (appIdx !== -1) break
+    }
+
+    if (appIdx !== -1) {
+      appName = detectedApp
+      parts.splice(appIdx, 1)
+      var remainingTitle = parts.join(" - ").trim()
+      if (remainingTitle) {
+        return appName + ": " + remainingTitle
+      }
+      return appName
+    }
+
+    // If no known app matched, but appName is known from appId, format with full title
+    if (appName) {
+      return appName + ": " + title
+    }
+
+    // Fallback: If title has multiple parts and last part looks like an App Name
+    var lastPart = parts[parts.length - 1].trim()
+    if (lastPart && lastPart.length < 25 && /^[A-Z][a-zA-Z0-9\s]*$/.test(lastPart)) {
+      appName = lastPart
+      parts.pop()
+      var remTitle = parts.join(" - ").trim()
+      if (remTitle) {
+        return appName + ": " + remTitle
+      }
+      return appName
+    }
+  }
+
+  // 4. Single title string without " - " separators
+  if (appName && title) {
+    if (title.toLowerCase() === appName.toLowerCase()) {
+      return appName
+    }
+    return appName + ": " + title
+  }
+
   return appName || title
 }
 

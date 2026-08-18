@@ -38,6 +38,9 @@
 
               [cursor]
               style=block
+
+              [text-bindings]
+              \x1f = Control+BackSpace
             '';
           };
           ".config/foot/colors.ini" = {

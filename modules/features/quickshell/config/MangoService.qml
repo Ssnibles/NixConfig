@@ -46,9 +46,9 @@ QtObject {
 
         try {
           var data = JSON.parse(cleanLine)
-          if (data && (data.title || data.app_id || data.name)) {
+          if (data && (data.title || data.app_id || data.appId || data.class || data.name)) {
             var title = data.title || data.name || ""
-            var appId = data.app_id || data.appId || data.class || ""
+            var appId = data.app_id || data.appId || data.class || data.instance || ""
             root.currentTitle = Utils.formatActiveTitle(title, appId)
           } else {
             root.currentTitle = ""

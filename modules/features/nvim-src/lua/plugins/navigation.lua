@@ -83,11 +83,7 @@ vim.keymap.set("x", "<leader>fr", function()
 end, { desc = "Find and replace selection (buffer)" })
 
 local smart_splits = require("smart-splits")
-local smart_config = {}
-if vim.env.TMUX and vim.env.TMUX ~= "" then
-	smart_config.multiplexer_integration = "tmux"
-end
-smart_splits.setup(smart_config)
+smart_splits.setup({})
 
 local map = vim.keymap.set
 map("n", "<C-h>", smart_splits.move_cursor_left, { desc = "Move left" })

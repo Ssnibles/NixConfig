@@ -117,6 +117,12 @@
                 set -gx FZF_DEFAULT_COMMAND 'fish -c "__fzf_cache_fd file"'
                 set -gx FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
                 set -gx FZF_ALT_C_COMMAND 'fish -c "__fzf_cache_fd dir"'
+
+                # Bind Ctrl+Backspace (\x1f / \c_ / CSI u) to delete word
+                bind \c_ backward-kill-word
+                bind \x1f backward-kill-word
+                bind \e\[127\;5u backward-kill-word
+                bind \e\[8\;5u backward-kill-word
               '';
             };
             ".config/fish/functions/__fzf_cache_fd.fish" = {
@@ -250,6 +256,13 @@
             set -g fish_greeting
             set -gx EDITOR nvim
             set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
+            stty -ixon 2>/dev/null
+
+            # Bind Ctrl+Backspace (\c_, \x1f, CSI u) to delete previous word
+            bind \c_ backward-kill-word
+            bind \x1f backward-kill-word
+            bind \e\[127\;5u backward-kill-word
+            bind \e\[8\;5u backward-kill-word
 
             set -g __done_min_cmd_duration 10000
             set -g __done_notification_urgency_level normal
