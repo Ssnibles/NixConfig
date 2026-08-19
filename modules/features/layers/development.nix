@@ -30,7 +30,7 @@
             rclone
             fuse
             sshpass
-            zellij
+            harlequin
             self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
           ]
           ++ pomodoroPkg
