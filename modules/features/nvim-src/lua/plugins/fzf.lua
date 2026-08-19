@@ -44,6 +44,8 @@ fzf.setup({
 			title = false,
 		},
 	},
+	helptags = { previewer = false },
+	keymaps = { previewer = false },
 	hl = {
 		normal = "FzfLuaNormal",
 		border = "FzfLuaBorder",

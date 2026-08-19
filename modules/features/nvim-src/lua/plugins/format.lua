@@ -24,6 +24,7 @@ conform.setup({
 		java = { "google-java-format" },
 		cs = { "csharpier" },
 		rust = { "rustfmt" },
+		zig = { "zigfmt" },
 		typst = { "typstyle" },
 	},
 	format_on_save = function(bufnr)

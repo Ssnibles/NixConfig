@@ -24,6 +24,13 @@
             playwright
             cargo
             zig
+            pkg-config
+            wayland
+            wlroots
+            wayland-protocols
+            libxkbcommon
+            pixman
+            libinput
             gcc
             go
             yazi

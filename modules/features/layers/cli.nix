@@ -57,7 +57,7 @@
           {
             ".zshrc" = {
               text = ''
-                ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#${c.fgDim}"
+                ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#${c.bgSubtle}"
               '';
             };
             ".config/git/config-uni" = {
@@ -81,8 +81,8 @@
             ".config/fish/config.fish" = {
               clobber = true;
               text = ''
-                set -g fish_color_autosuggestion #${c.fgMid}
-                set -g fish_color_comment #${c.fgMid}
+                set -g fish_color_autosuggestion #${c.fgDim}
+                set -g fish_color_comment #${c.fgDim}
 
                 set -gx FZF_DEFAULT_OPTS "
                   --height=60%
@@ -121,7 +121,6 @@
                       ls -la {} 2>/dev/null
                     end
                   '
-
                 "
 
                 set -gx FZF_DEFAULT_COMMAND 'fish -c "__fzf_cache_fd file"'

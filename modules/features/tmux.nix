@@ -9,6 +9,31 @@
     }:
     let
       c = config.theme.colors;
+
+      tmuxWindowPicker = pkgs.writeShellScriptBin "tmux-window-picker" ''
+        set -euo pipefail
+
+        current_win="$(${pkgs.tmux}/bin/tmux display-message -p '#S:#I' 2>/dev/null || echo "")"
+        windows="$(${pkgs.tmux}/bin/tmux list-windows -a -F '#S:#I - #W (#{pane_current_command})' 2>/dev/null | ${pkgs.gnugrep}/bin/grep -v "^''${current_win} " || true)"
+
+        selected=$(echo -e "$windows" | ${pkgs.fzf}/bin/fzf \
+          --prompt="Switch Window > " \
+          --header="Current: ''${current_win} | Select window to jump" \
+          --preview="${pkgs.tmux}/bin/tmux capture-pane -e -pt '{1}'" \
+          --preview-window="right:60%" \
+          --height=100% \
+          --margin=0 \
+          --padding=0 \
+          --layout=reverse \
+          --border=rounded \
+          --color="bg+:#${c.bgSubtle},bg:#${c.bg},spinner:#${c.accent},hl:#${c.accent},fg:#${c.fg},header:#${c.fgMid},info:#${c.teal},pointer:#${c.accent},marker:#${c.accent},prompt:#${c.accent}")
+
+        if [ -n "$selected" ]; then
+          target=$(echo "$selected" | ${pkgs.coreutils}/bin/cut -d' ' -f1)
+          ${pkgs.tmux}/bin/tmux select-window -t "$target"
+          ${pkgs.tmux}/bin/tmux switch-client -t "''${target%%:*}"
+        fi
+      '';
     in
     {
       config = {
@@ -16,6 +41,7 @@
           enable = true;
           keyMode = "vi";
           baseIndex = 1;
+          clock24 = true;
           escapeTime = 0;
           terminal = "tmux-256color";
           historyLimit = 50000;
@@ -28,18 +54,25 @@
             tmux-fzf
             prefix-highlight
             tmux-floax
-            tmux-thumbs
+            jump
           ];
 
           extraConfig = ''
             set-option -g prefix `
             bind-key ` send-prefix
 
+            # Ensure system tools are always available to tmux subprocesses & tmux-fzf
+            set-environment -g PATH "${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.tmux}/bin:${pkgs.coreutils}/bin:${pkgs.gnused}/bin:${pkgs.gawk}/bin:${pkgs.findutils}/bin:${pkgs.git}/bin:${pkgs.procps}/bin:$PATH"
+            set-environment -g TMUX_FZF_PREVIEW 0
+
             # Unbind default Ctrl shortcuts so tmux never intercepts Control keys
             unbind C-b
             unbind C-z
 
-            # Resurrect & Continuum session options (bind S to save, R to restore without Ctrl chords)
+            # Tmux-Jump configuration (flash.nvim / EasyMotion style jump to position)
+            set -g @jump-key 'space'
+
+            # Resurrect & Continuum session options
             set -g @resurrect-save-key 'S'
             set -g @resurrect-restore-key 'R'
             set -g @resurrect-strategy-nvim 'session'
@@ -52,50 +85,57 @@
             bind-key S run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/save.sh"
             bind-key R run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/restore.sh"
 
+            # Interactive Session & Window Tree Picker
+            bind-key w choose-tree -sZ
+
+            # Fast Interactive Floating Window Switcher (popup)
+            bind-key o display-popup -E -w 75% -h 65% "${tmuxWindowPicker}/bin/tmux-window-picker"
+            bind-key N command-prompt -p "New Session Name:" "new-session -A -s '%%'"
+
             # Tmux-FZF configuration
             set -g @tmux-fzf-launch-key 'f'
-            set -g @tmux-fzf-options '-p 80%,60%'
+            set -g @tmux-fzf-options '-p -w 80% -h 60% -m --no-preview'
+            set -g @tmux-fzf-preview '0'
             set -g @tmux-fzf-order 'command:session:window:pane:keybinding:clipboard:process'
+
+            # Smart Command Mode & Auto-Completion (: and tmux-fzf launcher)
+            set -g status-keys emacs
+            bind-key : command-prompt -T command
+            bind-key \; run-shell -b "TMUX_FZF_OPTIONS='-p -w 80% -h 60% --no-preview' TMUX_FZF_PREVIEW=0 TMUX_FZF_CLIENT='#{client_tty}' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
 
             # tmux-floax configuration
             set -g @floax-width '80%'
             set -g @floax-height '80%'
             set -g @floax-border-color "#${c.border}"
             set -g @floax-text-color "#${c.fg}"
-            set -g @floax-bind 'p'
+            set -g @floax-bind 'P'
             set -g @floax-change-path 'true'
 
+            # Native Floating LazyGit Popup
+            bind g display-popup -d "#{pane_current_path}" -w 85% -h 85% -E "${pkgs.lazygit}/bin/lazygit"
+
             # Modern Terminal & True Color support
-            set -as terminal-features ",*:RGB"
+            set-option -a terminal-features ",xterm-256color:RGB,xterm-kitty:RGB,ghostty:RGB,foot:RGB,alacritty:RGB,tmux-256color:RGB,*:RGB"
+            set-option -a terminal-overrides ",xterm-256color:Tc,xterm-kitty:Tc,ghostty:Tc,foot:Tc,alacritty:Tc,tmux-256color:Tc,*:Tc"
+            set-option -a terminal-overrides ',*:Smulx=\E[4::%p1%dm'
+            set-option -a terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d;m'
+
+            # Ensure COLORTERM=truecolor is always exported to all Tmux windows/panes
+            set-environment -g COLORTERM "truecolor"
+            set -g update-environment "DISPLAY SSH_AUTH_SOCK SSH_CONNECTION WINDOWID XAUTHORITY SWAYSOCK WAYLAND_DISPLAY PATH COLORTERM"
             set -gw xterm-keys on
-            set -as terminal-overrides ",*:Tc"
-            set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'
-            set -as terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d;m'
             set -g allow-passthrough on
             set -s set-clipboard on
             set -g focus-events on
             set -g mouse on
-            set -g repeat-time 500
-            set -g set-titles on
-            set -g set-titles-string "#S / #W"
-
-            # Client/session ergonomics
             set -g detach-on-destroy off
             set -g aggressive-resize on
-            set -g display-time 2000
-            set -g display-panes-time 1000
-            set -g update-environment "DISPLAY SSH_AUTH_SOCK SSH_CONNECTION WINDOWID XAUTHORITY SWAYSOCK WAYLAND_DISPLAY PATH"
 
             # Indexing & Window behavior
-            setw -g pane-base-index 1
+            set -g pane-base-index 1
             set -g renumber-windows on
             setw -g automatic-rename on
             setw -g automatic-rename-format '#{b:pane_current_command}'
-
-            # Smart Command Mode & Auto-Completion (: and fuzzy finder)
-            set -g status-keys emacs
-            bind-key : command-prompt -T command
-            bind-key \; run-shell -b "TMUX_FZF_OPTIONS='-p 80%,60%' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
 
             # Window & Pane splitting (Neovim-style: v=side-by-side vertical split, s=top/bottom horizontal split)
             unbind '"'
@@ -111,7 +151,6 @@
             bind q kill-pane
             bind Q kill-window
             bind z resize-pane -Z
-            bind o resize-pane -Z
             bind x kill-pane
             bind = select-layout tiled
             bind y setw synchronize-panes \; display-message "Pane synchronization: #{?pane_synchronized,ON,OFF}"
@@ -124,6 +163,11 @@
             # Window swapping & reordering
             bind -r < swap-window -d -t -1
             bind -r > swap-window -d -t +1
+
+            # Pane joining & fast pane swapping
+            bind J choose-window 'join-pane -h -s "%%"'
+            bind -r '{' swap-pane -U
+            bind -r '}' swap-pane -D
 
             # Pane resizing (Capital H, J, K, L)
             bind -r H resize-pane -L 5
@@ -157,12 +201,15 @@
             bind K clear-history
 
             # Vi Copy Mode keybindings (Neovim-style clipboard integration)
+            bind-key V copy-mode
             bind-key -T copy-mode-vi v send-keys -X begin-selection
             bind-key -T copy-mode-vi V send-keys -X select-line
             bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
             bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy"
             bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "wl-copy"
-            bind P paste-buffer
+            bind-key -T copy-mode-vi WheelUpPane send-keys -X -N 2 scroll-up
+            bind-key -T copy-mode-vi WheelDownPane send-keys -X -N 2 scroll-down
+            unbind p
 
             # Minimal Visual Styling (inspired by custom Neovim ui.lua line)
             set -g status-position top
@@ -171,7 +218,7 @@
             set -g status-style "fg=#${c.fg},bg=#${c.bg}"
 
             set -g status-left-length 50
-            set -g status-left "#{prefix_highlight}#[fg=#${c.bg},bg=#${c.accent},bold] #S #[default] "
+            set -g status-left "#{prefix_highlight}#[fg=#${c.bg},bg=#${c.accent},bold] #S #[default] #{?pane_synchronized,#[fg=#${c.bg},bg=#${c.red},bold] SYNC #[default] ,}"
 
             setw -g window-status-format "#[fg=#${c.fgMid}] #I #W "
             setw -g window-status-current-format "#[fg=#${c.accent},bg=#${c.bgSubtle},bold] #I #W #[default]"
