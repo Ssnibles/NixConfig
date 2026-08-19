@@ -14,9 +14,15 @@
         set -euo pipefail
 
         current_win="$(${pkgs.tmux}/bin/tmux display-message -p '#S:#I' 2>/dev/null || echo "")"
-        windows="$(${pkgs.tmux}/bin/tmux list-windows -a -F '#S:#I - #W (#{pane_current_command})' 2>/dev/null | ${pkgs.gnugrep}/bin/grep -v "^''${current_win} " || true)"
+        windows="$(${pkgs.tmux}/bin/tmux list-windows -a -F '#S:#I - #W (#{pane_current_command})' 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E -v "^''${current_win} " || true)"
 
-        selected=$(echo -e "$windows" | ${pkgs.fzf}/bin/fzf \
+        if [ -z "$windows" ]; then
+          ${pkgs.tmux}/bin/tmux display-message "No other windows to switch to"
+          sleep 0.8
+          exit 0
+        fi
+
+        selected=$(printf '%s\n' "$windows" | ${pkgs.fzf}/bin/fzf \
           --prompt="Switch Window > " \
           --header="Current: ''${current_win} | Select window to jump" \
           --preview="${pkgs.tmux}/bin/tmux capture-pane -e -pt '{1}'" \
@@ -30,8 +36,17 @@
 
         if [ -n "$selected" ]; then
           target=$(echo "$selected" | ${pkgs.coreutils}/bin/cut -d' ' -f1)
-          ${pkgs.tmux}/bin/tmux select-window -t "$target"
-          ${pkgs.tmux}/bin/tmux switch-client -t "''${target%%:*}"
+          ${pkgs.tmux}/bin/tmux switch-client -t "$target"
+        fi
+      '';
+
+      tmuxPathFormatter = pkgs.writeShellScript "tmux-path-formatter" ''
+        p="$1"
+        p="''${p/#$HOME/\~}"
+        if [ "''${#p}" -gt 35 ]; then
+          echo "...''${p: -32}"
+        else
+          echo "$p"
         fi
       '';
     in
@@ -42,7 +57,7 @@
           keyMode = "vi";
           baseIndex = 1;
           clock24 = true;
-          escapeTime = 0;
+          escapeTime = 5;
           terminal = "tmux-256color";
           historyLimit = 50000;
 
@@ -62,12 +77,15 @@
             bind-key ` send-prefix
 
             # Ensure system tools are always available to tmux subprocesses & tmux-fzf
-            set-environment -g PATH "${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.tmux}/bin:${pkgs.coreutils}/bin:${pkgs.gnused}/bin:${pkgs.gawk}/bin:${pkgs.findutils}/bin:${pkgs.git}/bin:${pkgs.procps}/bin:$PATH"
+            set-environment -g PATH "${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.tmux}/bin:${pkgs.coreutils}/bin:${pkgs.gnused}/bin:${pkgs.gawk}/bin:${pkgs.findutils}/bin:${pkgs.git}/bin:${pkgs.procps}/bin:${pkgs.wl-clipboard}/bin:${pkgs.lazygit}/bin:$PATH"
             set-environment -g TMUX_FZF_PREVIEW 0
 
             # Unbind default Ctrl shortcuts so tmux never intercepts Control keys
             unbind C-b
             unbind C-z
+
+            # Extrakt text/URL/path extractor keybinding
+            set -g @extrakto_key 'u'
 
             # Tmux-Jump configuration (flash.nvim / EasyMotion style jump to position)
             set -g @jump-key 'space'
@@ -90,7 +108,7 @@
 
             # Fast Interactive Floating Window Switcher (popup)
             bind-key o display-popup -E -w 75% -h 65% "${tmuxWindowPicker}/bin/tmux-window-picker"
-            bind-key N command-prompt -p "New Session Name:" "new-session -A -s '%%'"
+            bind-key N command-prompt -p "New Session Name:" "if-shell -F '%1' 'new-session -A -s \"%1\"'"
 
             # Tmux-FZF configuration
             set -g @tmux-fzf-launch-key 'f'
@@ -116,6 +134,7 @@
 
             # Modern Terminal & True Color support
             set-option -a terminal-features ",xterm-256color:RGB,xterm-kitty:RGB,ghostty:RGB,foot:RGB,alacritty:RGB,tmux-256color:RGB,*:RGB"
+            set-option -a terminal-features ",*:hyperlinks"
             set-option -a terminal-overrides ",xterm-256color:Tc,xterm-kitty:Tc,ghostty:Tc,foot:Tc,alacritty:Tc,tmux-256color:Tc,*:Tc"
             set-option -a terminal-overrides ',*:Smulx=\E[4::%p1%dm'
             set-option -a terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d;m'
@@ -197,7 +216,7 @@
             bind -n M-l select-pane -R
 
             # Quick config reload & history clear
-            bind-key r run-shell 'tmux source-file ~/.config/tmux/tmux.conf 2>/dev/null || tmux source-file /etc/tmux.conf' \; display-message "Tmux configuration reloaded!"
+            bind-key r run-shell 'if [ -f ~/.config/tmux/tmux.conf ]; then tmux source-file ~/.config/tmux/tmux.conf && tmux display-message "Reloaded ~/.config/tmux/tmux.conf"; elif [ -f ~/.tmux.conf ]; then tmux source-file ~/.tmux.conf && tmux display-message "Reloaded ~/.tmux.conf"; elif [ -f /etc/tmux.conf ]; then tmux source-file /etc/tmux.conf && tmux display-message "Reloaded /etc/tmux.conf"; else tmux display-message "Failed to reload tmux config"; fi'
             bind K clear-history
 
             # Vi Copy Mode keybindings (Neovim-style clipboard integration)
@@ -205,11 +224,12 @@
             bind-key -T copy-mode-vi v send-keys -X begin-selection
             bind-key -T copy-mode-vi V send-keys -X select-line
             bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
-            bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy"
-            bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "wl-copy"
+            bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy 2>/dev/null || true"
+            bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe "${pkgs.wl-clipboard}/bin/wl-copy 2>/dev/null || true"
             bind-key -T copy-mode-vi WheelUpPane send-keys -X -N 2 scroll-up
             bind-key -T copy-mode-vi WheelDownPane send-keys -X -N 2 scroll-down
-            unbind p
+            bind p paste-buffer -p
+            bind P choose-buffer
 
             # Minimal Visual Styling (inspired by custom Neovim ui.lua line)
             set -g status-position top
@@ -227,7 +247,7 @@
             setw -g window-status-bell-style "fg=#${c.red},bold"
 
             set -g status-right-length 100
-            set -g status-right "#{?window_zoomed_flag,#[fg=#${c.bg},bg=#${c.yellow},bold] ZOOM #[default] ,}#[fg=#${c.teal},bold]#{b:pane_current_path} "
+            set -g status-right "#{?window_zoomed_flag,#[fg=#${c.bg},bg=#${c.yellow},bold] ZOOM #[default] ,}#[fg=#${c.teal},bold]#(${tmuxPathFormatter} '#{pane_current_path}') "
 
             # Solid pane split borders
             set -g pane-border-lines single
@@ -250,8 +270,7 @@
             set -g @prefix_highlight_bg "#${c.accent}"
             set -g @prefix_highlight_show_copy_mode 'on'
             set -g @prefix_highlight_copy_mode_attr "fg=#${c.bg},bg=#${c.teal},bold"
-            set -g @prefix_highlight_show_sync_mode 'on'
-            set -g @prefix_highlight_sync_mode_attr "fg=#${c.bg},bg=#${c.red},bold"
+            set -g @prefix_highlight_show_sync_mode 'off'
           '';
         };
 
@@ -270,11 +289,13 @@
             findutils
             procps
             git
+            wl-clipboard
+            lazygit
           ];
           serviceConfig = {
             Type = "forking";
             ExecStart = "${pkgs.tmux}/bin/tmux new-session -d -s default";
-            ExecStop = "${pkgs.tmux}/bin/tmux kill-server";
+            ExecStop = "${pkgs.bash}/bin/bash -c '${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/save.sh 2>/dev/null || true; ${pkgs.tmux}/bin/tmux kill-server'";
             Restart = "on-failure";
           };
         };

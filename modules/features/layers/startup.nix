@@ -1,60 +1,18 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, lib, config, ... }:
-    let
-      clipboard-history-script = pkgs.writeShellScript "vicinae-clipboard-history" ''
-        # @vicinae.schemaVersion 1
-        # @vicinae.title Clipboard History
-        # @vicinae.mode silent
-        set -euo pipefail
-        selection=$(${pkgs.cliphist}/bin/cliphist list | ${pkgs.vicinae}/bin/vicinae dmenu -p "Clipboard history")
-        [ -n "$selection" ] || exit 0
-        printf '%s\n' "$selection" | ${pkgs.cliphist}/bin/cliphist decode | ${pkgs.wl-clipboard}/bin/wl-copy
-      '';
-    in
+    { pkgs, config, ... }:
     {
       environment.systemPackages = with pkgs; [
         wl-clip-persist
         cliphist
       ];
 
-      hjem.users.${config.username} = {
-        enable = true;
-        files = {
-          ".local/share/vicinae/scripts/clipboard-history" = {
-            source = clipboard-history-script;
-            executable = true;
-          };
-        };
-      };
-
       systemd.user.targets.wayland-session = {
         description = "Wayland session target";
         bindsTo = [ "graphical-session.target" ];
         wants = [ "graphical-session-pre.target" ];
         after = [ "graphical-session-pre.target" ];
-      };
-
-      systemd.user.services.vicinae-server = {
-        description = "Vicinae application launcher server";
-        wantedBy = [ "graphical-session.target" ];
-        after = [ "graphical-session.target" ];
-        partOf = [ "graphical-session.target" ];
-        path = [ config.system.path ];
-        environment = {
-          QT_QPA_PLATFORM = "wayland;xcb";
-        };
-        serviceConfig = {
-          Type = "simple";
-          ExecStartPre = [
-            "${pkgs.coreutils}/bin/mkdir -p %h/.local/share/vicinae/snippets"
-            "${pkgs.coreutils}/bin/sleep 1"
-          ];
-          ExecStart = "${pkgs.vicinae}/bin/vicinae server";
-          Restart = "on-failure";
-          RestartSec = 2;
-        };
       };
 
       systemd.user.services.clipboard-persist = {

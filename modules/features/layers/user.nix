@@ -2,7 +2,6 @@
 {
   nixos.modules.shared =
     {
-      pkgs,
       config,
       ...
     }:
@@ -10,7 +9,7 @@
       # Create system groups
       users.groups.plugdev = { };
 
-      # Define a user account. Don't forget to set a password with 'passwd'.
+      # Define a user account.
       users.users."${config.username}" = {
         isNormalUser = true;
         description = "${config.username} user account";
@@ -20,7 +19,6 @@
           "plugdev"
           "dialout"
         ];
-        shell = pkgs.fish;
       };
       hjem.users."${config.username}" = {
         enable = true;

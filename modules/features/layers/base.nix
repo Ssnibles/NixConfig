@@ -113,7 +113,6 @@
         boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
         environment.systemPackages = with pkgs; [
-          dualsensectl # DualSense utility: firmware updates, LED and rumble settings.
           swaybg
           wl-clipboard
           brightnessctl
@@ -124,7 +123,6 @@
           libnotify
           networkmanagerapplet
           adwaita-icon-theme
-          self.packages.${pkgs.stdenv.hostPlatform.system}.dualsense-pair
           self.packages.${pkgs.stdenv.hostPlatform.system}.html-server
           self.packages.${pkgs.stdenv.hostPlatform.system}.boilerplate
         ];
@@ -144,37 +142,15 @@
         # Enable CUPS to print documents.
         services.printing.enable = false;
 
-        # ------------------------------------------------------------------
-        # Sony PlayStation 5 (DualSense) controller support
-        # ------------------------------------------------------------------
-        # The mainline hid-playstation kernel driver (>= 5.12) provides
-        # native support for the DualSense and DualSense Edge over USB and
-        # Bluetooth: haptic feedback, adaptive triggers, touchpad, gyro and
-        # microphone. Load it explicitly so it is available even before the
-        # controller is plugged in.
-        boot.kernelModules = [ "hid-playstation" ];
-
-        # Valve's steam-devices udev rules grant the logged-in user uaccess
-        # to the DualSense hidraw nodes (USB 054c:0ce6 and Bluetooth
-        # *054C:0CE6*), which is required for haptics/trigger settings and
-        # for games (Steam, RPCS3, ...) to fully control the controller.
-        # It also loads the uinput module for virtual gamepad support.
-        hardware.steam-hardware.enable = true;
-
-        # ------------------------------------------------------------------
-
         programs.nh = {
           enable = true;
           clean.enable = true;
           clean.extraArgs = "--keep-since 30d --keep 3";
         };
 
-        # List services that you want to enable:
-
         # Optimizations
         nix.optimise.automatic = true;
         nix.optimise.dates = [ "03:45" ];
       };
-
     };
 }

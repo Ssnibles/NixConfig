@@ -5,6 +5,16 @@
     let
       inherit (config.theme.colors) bg bgRaised bgSubtle border fg fgMid fgDim
         accent teal purple green yellow red orange;
+
+      clipboard-history-script = pkgs.writeShellScript "vicinae-clipboard-history" ''
+        # @vicinae.schemaVersion 1
+        # @vicinae.title Clipboard History
+        # @vicinae.mode silent
+        set -euo pipefail
+        selection=$(${pkgs.cliphist}/bin/cliphist list | ${pkgs.vicinae}/bin/vicinae dmenu -p "Clipboard history")
+        [ -n "$selection" ] || exit 0
+        printf '%s\n' "$selection" | ${pkgs.cliphist}/bin/cliphist decode | ${pkgs.wl-clipboard}/bin/wl-copy
+      '';
     in
     {
       environment.systemPackages = with pkgs; [ vicinae ];
@@ -12,6 +22,10 @@
       hjem.users."${config.username}" = {
         enable = true;
         files = {
+          ".local/share/vicinae/scripts/clipboard-history" = {
+            source = clipboard-history-script;
+            executable = true;
+          };
           ".local/share/vicinae/snippets/.keep" = {
             text = "";
           };
@@ -61,6 +75,27 @@
               }
             '';
           };
+        };
+      };
+
+      systemd.user.services.vicinae-server = {
+        description = "Vicinae application launcher server";
+        wantedBy = [ "graphical-session.target" ];
+        after = [ "graphical-session.target" ];
+        partOf = [ "graphical-session.target" ];
+        path = [ config.system.path ];
+        environment = {
+          QT_QPA_PLATFORM = "wayland;xcb";
+        };
+        serviceConfig = {
+          Type = "simple";
+          ExecStartPre = [
+            "${pkgs.coreutils}/bin/mkdir -p %h/.local/share/vicinae/snippets"
+            "${pkgs.coreutils}/bin/sleep 1"
+          ];
+          ExecStart = "${pkgs.vicinae}/bin/vicinae server";
+          Restart = "on-failure";
+          RestartSec = 2;
         };
       };
     };
