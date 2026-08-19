@@ -40,12 +40,17 @@
             unbind C-z
 
             # Resurrect & Continuum session options (bind S to save, R to restore without Ctrl chords)
-            set -g @resurrect-save 'S'
-            set -g @resurrect-restore 'R'
+            set -g @resurrect-save-key 'S'
+            set -g @resurrect-restore-key 'R'
             set -g @resurrect-strategy-nvim 'session'
             set -g @resurrect-capture-pane-contents 'on'
+            set -g @resurrect-processes '"~nvim" "~fish" btop yazi lazygit ssh'
             set -g @continuum-restore 'on'
             set -g @continuum-save-interval '10'
+
+            # Explicit manual session save & restore bindings
+            bind-key S run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/save.sh"
+            bind-key R run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/restore.sh"
 
             # Tmux-FZF configuration
             set -g @tmux-fzf-launch-key 'f'
@@ -79,7 +84,7 @@
             set -g aggressive-resize on
             set -g display-time 2000
             set -g display-panes-time 1000
-            set -g update-environment "DISPLAY SSH_AUTH_SOCK SSH_CONNECTION WINDOWID XAUTHORITY SWAYSOCK WAYLAND_DISPLAY"
+            set -g update-environment "DISPLAY SSH_AUTH_SOCK SSH_CONNECTION WINDOWID XAUTHORITY SWAYSOCK WAYLAND_DISPLAY PATH"
 
             # Indexing & Window behavior
             setw -g pane-base-index 1
@@ -91,7 +96,6 @@
             set -g status-keys emacs
             bind-key : command-prompt -T command
             bind-key \; run-shell -b "TMUX_FZF_OPTIONS='-p 80%,60%' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
-            bind-key S run-shell -b "TMUX_FZF_OPTIONS='-p 80%,60%' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/session.sh"
 
             # Window & Pane splitting (Neovim-style: v=side-by-side vertical split, s=top/bottom horizontal split)
             unbind '"'
@@ -149,7 +153,7 @@
             bind -n M-l select-pane -R
 
             # Quick config reload & history clear
-            bind r run-shell 'tmux source-file ~/.config/tmux/tmux.conf 2>/dev/null || tmux source-file /etc/tmux.conf' \; display-message "Tmux configuration reloaded!"
+            bind-key r run-shell 'tmux source-file ~/.config/tmux/tmux.conf 2>/dev/null || tmux source-file /etc/tmux.conf' \; display-message "Tmux configuration reloaded!"
             bind K clear-history
 
             # Vi Copy Mode keybindings (Neovim-style clipboard integration)
@@ -202,6 +206,30 @@
             set -g @prefix_highlight_show_sync_mode 'on'
             set -g @prefix_highlight_sync_mode_attr "fg=#${c.bg},bg=#${c.red},bold"
           '';
+        };
+
+        # Systemd User Service to automatically launch tmux daemon on boot/login
+        systemd.user.services.tmux = {
+          description = "Tmux terminal multiplexer daemon";
+          documentation = [ "man:tmux(1)" ];
+          wantedBy = [ "default.target" ];
+          path = with pkgs; [
+            tmux
+            fzf
+            bash
+            coreutils
+            gnused
+            gawk
+            findutils
+            procps
+            git
+          ];
+          serviceConfig = {
+            Type = "forking";
+            ExecStart = "${pkgs.tmux}/bin/tmux new-session -d -s default";
+            ExecStop = "${pkgs.tmux}/bin/tmux kill-server";
+            Restart = "on-failure";
+          };
         };
 
         # Useful shell aliases for tmux

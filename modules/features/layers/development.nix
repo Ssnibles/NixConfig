@@ -23,6 +23,7 @@
             nodejs
             playwright
             cargo
+            zig
             gcc
             go
             yazi

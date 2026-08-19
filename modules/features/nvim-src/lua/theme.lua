@@ -371,6 +371,16 @@ function M.setup()
 	hl("IndentinatorBar", { fg = indent })
 	hl("IndentinatorScopeBar", { fg = blend(c.blue, c.comment, 0.3) })
 	hl("IndentinatorScopeUnderline", { sp = blend(c.blue, c.comment, 0.45), underline = true })
+
+	-- MiniStarter highlight groups
+	hl("MiniStarterHeader", { fg = c.blue, bold = true })
+	hl("MiniStarterSection", { fg = c.purple, bold = true })
+	hl("MiniStarterItem", { fg = c.fg })
+	hl("MiniStarterItemBullet", { fg = c.cyan })
+	hl("MiniStarterItemPrefix", { fg = c.blue, bold = true })
+	hl("MiniStarterFooter", { fg = c.comment, italic = true })
+	hl("MiniStarterQuery", { fg = c.yellow, bold = true })
 end
 
 return M
+

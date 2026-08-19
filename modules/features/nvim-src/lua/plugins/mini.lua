@@ -43,6 +43,7 @@ clue.setup({
     { mode = "n", keys = "<Leader>l", desc = "+lsp" },
     { mode = "n", keys = "<Leader>m", desc = "+dap" },
     { mode = "n", keys = "<Leader>q", desc = "+quit/lists" },
+    { mode = "n", keys = "<Leader>s", desc = "+starter/session" },
     { mode = "n", keys = "<Leader>t", desc = "+toggles/terminal" },
     { mode = "n", keys = "<Leader>T", desc = "+tabs" },
     { mode = "n", keys = "<Leader>w", desc = "+window" },
@@ -81,3 +82,49 @@ require("mini.splitjoin").setup()
 
 require("mini.pairs").setup()
 require("mini.bufremove").setup({})
+
+local starter = require("mini.starter")
+local logo = [[
+  ███╗   ██╗███████╗██╗   ██╗██╗███╗   ██╗
+  ████╗  ██║██╔════╝██║   ██║██║████╗  ██║
+  ██╔██╗ ██║█████╗  ██║   ██║██║██╔██╗ ██║
+  ██║╚██╗██║██╔══╝  ╚██╗ ██╔╝██║██║╚██╗██║
+  ██║ ╚████║███████╗ ╚████╔╝ ██║██║ ╚████║
+  ╚═╝  ╚═══╝╚══════╝  ╚═══╝  ╚═╝╚═╝  ╚═══╝
+]]
+
+starter.setup({
+  evaluate_single = true,
+  header = logo,
+  items = {
+    {
+      name = "New file",
+      action = "enew",
+      section = "Actions",
+    },
+    {
+      name = "Open oldfile (fzf)",
+      action = function()
+        require("fzf-lua").oldfiles()
+      end,
+      section = "Actions",
+    },
+    {
+      name = "Open Neovim Wiki",
+      action = "help nvim",
+      section = "Actions",
+    },
+    {
+      name = "Quit Neovim",
+      action = "qa",
+      section = "Actions",
+    },
+  },
+  content_hooks = {
+    starter.gen_hook.adding_bullet("  󰅂 ", false),
+    starter.gen_hook.indexing("section", { "Actions" }),
+    starter.gen_hook.aligning("center", "center"),
+  },
+  footer = "",
+})
+

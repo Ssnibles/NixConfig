@@ -4,7 +4,7 @@ local map = vim.keymap.set
 map("n", "U", "<C-r>", { desc = "Redo" })
 map("n", "Q", "<Nop>", { desc = "Disable Ex mode" })
 map("n", "<C-z>", "<Nop>", { desc = "Disable suspend" })
-
+map({ "n", "i", "v", "c" }, "<Esc>", "<C-c>")
 
 -- Saving & Quitting
 map("i", "<C-s>", "<C-o><cmd>update<CR>", { desc = "Save buffer" })
@@ -30,15 +30,15 @@ map("v", ">", ">gv", { desc = "Indent right (keep selection)" })
 
 -- Count-aware Open Lines
 local function open_lines(key)
-  return function()
-    local count = vim.v.count1
-    if count == 1 then
-      vim.api.nvim_feedkeys(key, "n", false)
-      return
-    end
-    local keys = key .. string.rep("<CR>", count - 1) .. "<Esc>" .. (count - 1) .. "kA"
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "n", false)
-  end
+	return function()
+		local count = vim.v.count1
+		if count == 1 then
+			vim.api.nvim_feedkeys(key, "n", false)
+			return
+		end
+		local keys = key .. string.rep("<CR>", count - 1) .. "<Esc>" .. (count - 1) .. "kA"
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "n", false)
+	end
 end
 
 map("n", "o", open_lines("o"), { desc = "Open line(s) below" })
@@ -84,21 +84,21 @@ map("n", "<leader>wk", "<C-w>K", { desc = "Move window up" })
 
 -- Buffer & Tab Navigation
 map("n", "<leader>bd", function()
-  local ok, mini_bufremove = pcall(require, "mini.bufremove")
-  if ok then
-    mini_bufremove.delete(0, false)
-  else
-    vim.cmd("bdelete")
-  end
+	local ok, mini_bufremove = pcall(require, "mini.bufremove")
+	if ok then
+		mini_bufremove.delete(0, false)
+	else
+		vim.cmd("bdelete")
+	end
 end, { desc = "Delete buffer" })
 
 map("n", "<leader>bo", function()
-  local current = vim.api.nvim_get_current_buf()
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if buf ~= current and vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buflisted then
-      vim.api.nvim_buf_delete(buf, { unload = false })
-    end
-  end
+	local current = vim.api.nvim_get_current_buf()
+	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+		if buf ~= current and vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buflisted then
+			vim.api.nvim_buf_delete(buf, { unload = false })
+		end
+	end
 end, { desc = "Close other buffers" })
 
 map("n", "<leader>`", "<cmd>b#<CR>", { desc = "Alternate buffer" })
@@ -116,18 +116,18 @@ map("n", "[q", "<cmd>cprevious<CR>", { desc = "Previous quickfix" })
 map("n", "<leader>qo", "<cmd>copen<CR>", { desc = "Open quickfix" })
 map("n", "<leader>qc", "<cmd>cclose<CR>", { desc = "Close quickfix" })
 map("n", "<leader>qf", function()
-  local qf_exists = false
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if vim.bo[vim.api.nvim_win_get_buf(win)].buftype == "quickfix" then
-      qf_exists = true
-      break
-    end
-  end
-  if qf_exists then
-    vim.cmd("cclose")
-  else
-    vim.cmd("copen")
-  end
+	local qf_exists = false
+	for _, win in ipairs(vim.api.nvim_list_wins()) do
+		if vim.bo[vim.api.nvim_win_get_buf(win)].buftype == "quickfix" then
+			qf_exists = true
+			break
+		end
+	end
+	if qf_exists then
+		vim.cmd("cclose")
+	else
+		vim.cmd("copen")
+	end
 end, { desc = "Toggle quickfix list" })
 map("n", "<leader>ql", "<cmd>lopen<CR>", { desc = "Open location list" })
 map("n", "<leader>qL", "<cmd>lclose<CR>", { desc = "Close location list" })
@@ -140,17 +140,17 @@ map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
 
 map("n", "]d", function()
-  vim.diagnostic.jump({ count = 1, float = true })
+	vim.diagnostic.jump({ count = 1, float = true })
 end, { desc = "Next diagnostic" })
 map("n", "[d", function()
-  vim.diagnostic.jump({ count = -1, float = true })
+	vim.diagnostic.jump({ count = -1, float = true })
 end, { desc = "Previous diagnostic" })
 
 map("n", "]e", function()
-  vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = true })
+	vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = true })
 end, { desc = "Next error" })
 map("n", "[e", function()
-  vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })
+	vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })
 end, { desc = "Previous error" })
 
 -- Toggles
@@ -158,21 +158,21 @@ map("n", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "Toggle wrap" })
 map("n", "<leader>ts", "<cmd>set spell!<CR>", { desc = "Toggle spell" })
 map("n", "<leader>tn", "<cmd>set relativenumber!<CR>", { desc = "Toggle relative numbers" })
 map("n", "<leader>td", function()
-  vim.diagnostic.enable(not vim.diagnostic.is_enabled())
+	vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end, { desc = "Toggle diagnostics" })
 map("n", "<leader>ti", function()
-  local bufnr = vim.api.nvim_get_current_buf()
-  local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
-  vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })
+	local bufnr = vim.api.nvim_get_current_buf()
+	local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
+	vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })
 end, { desc = "Toggle inlay hints" })
 map("n", "<leader>tc", function()
-  if vim.g.user_cursorword_enabled == nil then
-    vim.g.user_cursorword_enabled = true
-  end
-  vim.g.user_cursorword_enabled = not vim.g.user_cursorword_enabled
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    vim.b[buf].minicursorword_disable = not vim.g.user_cursorword_enabled
-  end
+	if vim.g.user_cursorword_enabled == nil then
+		vim.g.user_cursorword_enabled = true
+	end
+	vim.g.user_cursorword_enabled = not vim.g.user_cursorword_enabled
+	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+		vim.b[buf].minicursorword_disable = not vim.g.user_cursorword_enabled
+	end
 end, { desc = "Toggle cursor word" })
 
 -- LSP & Pickers
@@ -188,3 +188,6 @@ map("n", "<leader>/", "<cmd>FzfLua live_grep<CR>", { desc = "Search project" })
 -- Miscellaneous
 map("n", "<leader>cd", "<cmd>cd %:p:h<CR>", { desc = "Change to file directory" })
 map("n", "zz", "za", { desc = "Toggle Folds" })
+map("n", "<leader>sd", function() require("mini.starter").open() end, { desc = "Open startup dashboard" })
+map("n", "<leader>sh", function() require("mini.starter").open() end, { desc = "Starter home" })
+

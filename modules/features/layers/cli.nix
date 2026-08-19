@@ -17,6 +17,7 @@
 
       config = {
         environment.systemPackages = with pkgs; [
+          any-nix-shell
           bat
           btop
           chafa # Terminal image viewer (Sixel enabled)
@@ -95,7 +96,6 @@
                   --padding=1,2
                   --margin=0,1
                   --scrollbar=\"│\"
-                  --preview-window=right,40%border-left
                   --bind=ctrl-/:toggle-preview
                   --bind=ctrl-j:down,ctrl-k:up
                   --bind=ctrl-f:page-down,ctrl-b:page-up
@@ -111,12 +111,17 @@
                   --color=selected-bg:#${c.bgSubtle},selected-fg:#${c.fg}
                   --color=gutter:#${c.bg}
                   --preview '
-                    if file --mime-type {} | grep -q image/
-                      chafa --format=sixel --size=\"\$FZF_PREVIEW_COLUMNS\"x\"\$FZF_PREVIEW_LINES\" {}
-                    else
-                      bat --style=numbers --color=always --line-range :500 {}
+                    if test -f {}
+                      if file --mime-type {} | grep -q image/
+                        chafa --format=sixel --size=\"\$FZF_PREVIEW_COLUMNS\"x\"\$FZF_PREVIEW_LINES\" {}
+                      else
+                        bat --style=numbers --color=always --line-range :500 {}
+                      end
+                    else if test -d {}
+                      ls -la {} 2>/dev/null
                     end
                   '
+
                 "
 
                 set -gx FZF_DEFAULT_COMMAND 'fish -c "__fzf_cache_fd file"'
@@ -272,6 +277,8 @@
 
             set -g __done_min_cmd_duration 10000
             set -g __done_notification_urgency_level normal
+
+            any-nix-shell fish --info-right | source
           '';
         };
 
