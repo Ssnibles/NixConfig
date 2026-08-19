@@ -31,6 +31,7 @@
             fuse
             sshpass
             harlequin
+            sqlite
             self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
           ]
           ++ pomodoroPkg
