@@ -1,3 +1,9 @@
+# =============================================================================
+# Desktop Host Specific Configuration
+# =============================================================================
+# Hardware definitions, rfkill bluetooth workaround for ASUS motherboard WMI,
+# Logitech wireless peripheral support, local firewall rules, and state version.
+# =============================================================================
 { ... }:
 {
   nixos.modules.desktop =
@@ -13,12 +19,12 @@
       ]
       ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
-      # Desktop-specific kernel modules
+      # Desktop-specific USB Bluetooth kernel modules
       boot.kernelModules = [ "btusb" ];
 
-      # Unblock Bluetooth at boot — asus_wmi soft-blocks the adapter
+      # Unblock Bluetooth adapter at boot (asus_wmi soft-blocks the adapter on desktop startup)
       systemd.services.unblock-bluetooth = {
-        description = "Unblock Bluetooth rfkill";
+        description = "Unblock Bluetooth rfkill for ASUS WMI";
         after = [ "sysinit.target" ];
         before = [ "bluetooth.service" ];
         wantedBy = [ "multi-user.target" ];
@@ -35,9 +41,7 @@
         amberol
       ];
 
-
-
-      # Open ports in the firewall.
+      # Open desktop local discovery & streaming ports
       networking.firewall.allowedTCPPorts = [ 5353 ];
       networking.firewall.allowedUDPPorts = [ 5353 ];
 

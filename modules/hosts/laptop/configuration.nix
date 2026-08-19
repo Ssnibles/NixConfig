@@ -1,3 +1,9 @@
+# =============================================================================
+# Laptop Host Specific Configuration
+# =============================================================================
+# Hardware definitions, TLP battery power optimization profiles, i2c_hid ACPI
+# touchpad polling workarounds, ath11k Wi-Fi kernel modules, and DFU udev rules.
+# =============================================================================
 { ... }:
 {
   nixos.modules.laptop =
@@ -39,6 +45,7 @@
         "i2c_hid_acpi.polling_mode=1"
       ];
 
+      # ── TLP Power Management Profiles ─────────────────────────────────────
       services.tlp = {
         enable = true;
         settings = {
@@ -63,6 +70,7 @@
         };
       };
 
+      # Hardware tools & microcontrollers (OpenOCD, DFU utilities)
       environment.systemPackages = with pkgs.unstable; [
         dfu-util
         gowall
@@ -71,9 +79,8 @@
 
       services.udev.packages = [ pkgs.openocd ];
 
-      # Define udev rules for DFU devices
+      # Define udev rules for DFU devices & Meshtastic hardware
       services.udev.extraRules = ''
-        # Generic DFU rule (for meshtastic thingy)
         SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0666", GROUP="dialout"
         SUBSYSTEM=="usb", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", MODE="0666", GROUP="dialout"
         ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0666", GROUP="plugdev"

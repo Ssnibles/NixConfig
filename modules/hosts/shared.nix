@@ -1,21 +1,27 @@
+# =============================================================================
+# Shared Host Base Configuration
+# =============================================================================
+# Core hardware tuning, bootloader (Limine), graphics acceleration, login manager (Ly),
+# udev kernel remaps (Caps/Esc swap), swap, and systemd service optimizations.
+# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
     { pkgs, lib, ... }:
     {
-      # Bootloader
+      # ── Bootloader & Firmware ──────────────────────────────────────────────
       boot.loader.limine.enable = true;
       boot.loader.limine.maxGenerations = 10;
       boot.loader.efi.canTouchEfiVariables = true;
       boot.loader.timeout = 5;
 
-      # Enable hardware graphics (Mesa, Vulkan, VA-API hardware acceleration)
+      # ── Hardware Graphics Acceleration (Mesa / Vulkan) ────────────────────
       hardware.graphics = {
         enable = true;
         enable32Bit = true;
       };
 
-      # Use latest kernel.
+      # ── Kernel & Performance Tuning ───────────────────────────────────────
       boot.kernelPackages = pkgs.linuxPackages_latest;
 
       boot.initrd.systemd.enable = true;
@@ -32,19 +38,19 @@
         "vm.vfs_cache_pressure" = 200;
       };
 
-      # Limit journal size to 100M
+      # ── System Journal & Power Management ─────────────────────────────────
       services.journald.extraConfig = ''
         SystemMaxUse=100M
       '';
 
       services.upower.enable = true;
 
-      # Enable ly for login management
+      # ── Display Manager & Authentication ─────────────────────────────────
       services.displayManager.ly.enable = true;
       security.pam.services.ly.enableGnomeKeyring = true;
       services.gnome.gnome-keyring.enable = true;
 
-      # Swap Caps Lock and Escape via udev hwdb (kernel-level, no daemon needed)
+      # ── Kernel-level Keyboard Mapping (Caps Lock <-> Escape Swap) ─────────
       services.udev.extraHwdb = ''
         evdev:atkbd:dmi:bvn*:bvr*:bd*:svn*:pn*:pvr*
          KEYBOARD_KEY_3a=esc
@@ -54,9 +60,9 @@
          KEYBOARD_KEY_70029=capslock
       '';
 
+      # ── Networking & Filesystems ──────────────────────────────────────────
       networking.hostName = "nixos";
 
-      # Reduce writes with noatime
       fileSystems."/" = {
         options = [ "noatime" ];
       };
@@ -68,13 +74,13 @@
         }
       ];
 
-      # Don't block boot on network online
+      # ── Systemd Boot & Service Optimizations ──────────────────────────────
       systemd.services.NetworkManager-wait-online.enable = false;
 
-      # Disable systemd-boot random seed update since Limine bootloader is used (saves ~8.9s on boot)
+      # Disable systemd-boot random seed update since Limine is used (saves ~8.9s on boot)
       systemd.services.systemd-boot-random-seed.enable = false;
 
-      # Prevent dbus/dbus-broker from restarting during rebuilds and killing GUI apps
+      # Prevent DBus restart triggers during nixos-rebuild to keep GUI apps running
       systemd.services.dbus-broker.restartIfChanged = false;
       systemd.user.services.dbus-broker.restartIfChanged = false;
       systemd.services.dbus.restartIfChanged = false;
@@ -85,7 +91,7 @@
       systemd.services.dbus.restartTriggers = lib.mkForce [ ];
       systemd.user.services.dbus.restartTriggers = lib.mkForce [ ];
 
-      # Suppress benign log spam in systemd journal (use space-free regex so systemd does not split tokens)
+      # Suppress benign log spam in systemd journal
       systemd.services.dbus.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
       systemd.user.services.dbus.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
       systemd.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
