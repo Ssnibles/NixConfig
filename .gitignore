@@ -5,3 +5,4 @@ result
 nohup.out
 *.bin
 _installer-options.nix
+Session.vim*

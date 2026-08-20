@@ -24,7 +24,6 @@
           any-nix-shell
           fishPlugins.fzf-fish # FZF fuzzy search integration
           fishPlugins.autopair # Auto-close pairs (quotes, brackets)
-          fishPlugins.done # Desktop notification on command completion
           fishPlugins.bass # Source Bash scripts in Fish
         ];
 
@@ -130,9 +129,9 @@
 
                   if test $needs_refresh -eq 1
                       if test "$mode" = "dir"
-                          fd --type d --strip-cwd-prefix --hidden --follow --exclude .git > "$cache_file" 2>/dev/null
+                          fd --type d --strip-cwd-prefix --hidden --exclude .git > "$cache_file" 2>/dev/null
                       else
-                          fd --type f --strip-cwd-prefix --hidden --follow --exclude .git > "$cache_file" 2>/dev/null
+                          fd --type f --strip-cwd-prefix --hidden --exclude .git > "$cache_file" 2>/dev/null
                       end
                   end
 
@@ -239,14 +238,14 @@
             set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
             stty -ixon 2>/dev/null
 
+            # Bind Ctrl+L to clear terminal scrollback and repaint prompt cleanly
+            bind \cl 'clear; commandline -f repaint'
+
             # Bind Ctrl+Backspace (\c_, \x1f, CSI u) to delete previous word
             bind \c_ backward-kill-word
             bind \x1f backward-kill-word
             bind \e\[127\;5u backward-kill-word
             bind \e\[8\;5u backward-kill-word
-
-            set -g __done_min_cmd_duration 10000
-            set -g __done_notification_urgency_level normal
 
             any-nix-shell fish --info-right | source
           '';
