@@ -104,6 +104,21 @@
         fi
       '';
 
+      tmuxSeshKiller = pkgs.writeShellScriptBin "tmux-sesh-killer" ''
+        set -u
+        target="''${1:-}"
+        [ -z "$target" ] && exit 0
+
+        # Strip icon prefix if present (e.g. "⚡ main" -> "main", "📁 /path" -> "/path")
+        clean_target=$(echo "$target" | ${pkgs.gnused}/bin/sed -E 's/^[^a-zA-Z0-9/~._-]+ //' | ${pkgs.gnused}/bin/sed 's/^[[:space:]]*//')
+
+        if [ -n "$clean_target" ] && ${pkgs.tmux}/bin/tmux has-session -t "$clean_target" 2>/dev/null; then
+          ${pkgs.tmux}/bin/tmux kill-session -t "$clean_target" 2>/dev/null || true
+        elif [ -n "$clean_target" ]; then
+          ${pkgs.zoxide}/bin/zoxide remove "$clean_target" 2>/dev/null || true
+        fi
+      '';
+
       tmuxSeshPicker = pkgs.writeShellScriptBin "tmux-sesh-picker" ''
         set -u
 
@@ -113,14 +128,14 @@
           --border=none \
           --ansi \
           --prompt='⚡ ' \
-          --header='  ^a all  ^t tmux  ^g configs  ^x zoxide  ^d kill  ^f find' \
+          --header='  ^a all  ^t tmux  ^g configs  ^x zoxide  ^d kill/remove  ^f find' \
           --bind 'tab:down,btab:up' \
           --bind 'ctrl-a:change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons)' \
           --bind 'ctrl-t:change-prompt(🪟 )+reload(${pkgs.sesh}/bin/sesh list -t --icons)' \
           --bind 'ctrl-g:change-prompt(⚙️ )+reload(${pkgs.sesh}/bin/sesh list -c --icons)' \
           --bind 'ctrl-x:change-prompt(📁 )+reload(${pkgs.sesh}/bin/sesh list -z --icons)' \
           --bind 'ctrl-f:change-prompt(🔎 )+reload(${pkgs.findutils}/bin/find ~ -maxdepth 3 -type d -name .git 2>/dev/null | ${pkgs.gnused}/bin/sed s:/.git::)' \
-          --bind 'ctrl-d:execute(${pkgs.tmux}/bin/tmux kill-session -t {2..})+change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons)' \
+          --bind 'ctrl-d:execute(${tmuxSeshKiller}/bin/tmux-sesh-killer {})+change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons)' \
           --preview-window='right:55%' \
           --preview='${pkgs.sesh}/bin/sesh preview {}' \
         2>/dev/null || echo "")
@@ -137,6 +152,7 @@
           pkgs.sesh
           tmuxResurrectSave
           tmuxSeshPicker
+          tmuxSeshKiller
         ];
 
         programs.tmux = {
@@ -186,17 +202,18 @@
             # Last session toggle (Prefix + L via sesh, preserves history across kills)
             bind -N "last-session (via sesh)" L run-shell "${pkgs.sesh}/bin/sesh last"
 
-            # ─── Resurrect (manual snapshot only) ────────────────────────────
+            # ─── Resurrect (manual snapshot & full restoration) ───────────────
             set -g @resurrect-save-key 'S'
             set -g @resurrect-restore-key 'R'
             set -g @resurrect-strategy-nvim 'session'
             set -g @resurrect-strategy-vim 'session'
-            set -g @resurrect-processes 'nvim vim vi btop yazi lazygit ssh man less bat cat'
-            set -g @resurrect-capture-pane-contents 'off'
+            set -g @resurrect-processes 'nvim vim vi btop yazi lazygit ssh man less bat cat fish bash python node cargo'
+            set -g @resurrect-capture-pane-contents 'on'
             set -g @resurrect-hook-post-save-all '${tmuxResurrectSave}/bin/tmux-resurrect-save'
 
-            # Explicit manual session save binding using safe wrapper
+            # Explicit manual session save & restore bindings using safe wrapper
             bind-key S run-shell "${tmuxResurrectSave}/bin/tmux-resurrect-save run"
+            bind-key R run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/restore.sh"
 
             # ─── Session & Window Navigation ─────────────────────────────────
             # Interactive Session & Window Tree Picker
@@ -244,6 +261,7 @@
             set -g focus-events on
             set -g mouse on
             set -g detach-on-destroy off
+            set -s exit-empty off
             set -g aggressive-resize on
 
             # ─── Indexing & Window behavior ──────────────────────────────────
@@ -315,16 +333,13 @@
 
             # ─── Alt Passthrough Mode (Prefix + a) ──────────────────────────
             # Toggle Alt Passthrough mode so Alt+j/k/h/l go directly to Neovim (for mini.move)
-            bind a if-shell -F '#{==:#{key-table},passthrough}' \
-              'set -u key-table \; display-message "ALT NAVIGATION: ENABLED"' \
-              'set key-table passthrough \; display-message "ALT PASSTHROUGH: ON (Leader+a or Esc to exit)"'
+            bind a if-shell -F '#{==:#{client_key_table},passthrough}' \
+              'switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"' \
+              'switch-client -T passthrough \; display-message "ALT PASSTHROUGH: ON (Leader+a or Esc to exit)"'
 
-            bind -T passthrough M-h send-keys M-h
-            bind -T passthrough M-j send-keys M-j
-            bind -T passthrough M-k send-keys M-k
-            bind -T passthrough M-l send-keys M-l
-            bind -T passthrough Escape set -u key-table \; display-message "ALT NAVIGATION: ENABLED"
-            bind -T passthrough ` set -u key-table \; display-message "ALT NAVIGATION: ENABLED"
+            bind -T passthrough Escape switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"
+            bind -T passthrough ` switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"
+            bind -T passthrough a switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"
 
             # ─── Utility ─────────────────────────────────────────────────────
             # Quick config reload
@@ -351,7 +366,7 @@
             set -g status-style "fg=#${c.fg},bg=#${c.bg}"
 
             set -g status-left-length 60
-            set -g status-left "#{?client_prefix,#[fg=#${c.bg}]#[bg=#${c.yellow}]#[bold] ⌨ LEADER #[default] ,}#{?#{==:#{key-table},passthrough},#[fg=#${c.bg}]#[bg=#${c.red}]#[bold] ALT-PASSTHROUGH #[default] ,}#[fg=#${c.bg},bg=#${c.accent},bold] #S #[default] #{?pane_synchronized,#[fg=#${c.bg},bg=#${c.red},bold] SYNC #[default] ,}"
+            set -g status-left "#{?client_prefix,#[fg=#${c.bg}]#[bg=#${c.yellow}]#[bold] ⌨ LEADER #[default] ,}#{?#{==:#{client_key_table},passthrough},#[fg=#${c.bg}]#[bg=#${c.red}]#[bold] ALT-PASSTHROUGH #[default] ,}#[fg=#${c.bg},bg=#${c.accent},bold] #S #[default] #{?pane_synchronized,#[fg=#${c.bg},bg=#${c.red},bold] SYNC #[default] ,}"
 
             setw -g window-status-format "#[fg=#${c.fgMid}] #I #W "
             setw -g window-status-current-format "#[fg=#${c.accent},bg=#${c.bgSubtle},bold] #I #W #[default]"
@@ -397,7 +412,7 @@
           ];
           serviceConfig = {
             Type = "forking";
-            ExecStart = "${pkgs.tmux}/bin/tmux start-server";
+            ExecStart = "${pkgs.tmux}/bin/tmux start-server \\; set-option -s exit-empty off";
             ExecStop = "${pkgs.tmux}/bin/tmux kill-server";
             Restart = "on-failure";
           };
@@ -412,7 +427,23 @@
                   if test (count $argv) -gt 0
                       ${pkgs.sesh}/bin/sesh connect $argv[1]
                   else
-                      set -l session (${pkgs.sesh}/bin/sesh list -i | ${pkgs.fzf}/bin/fzf --height 40% --reverse --no-sort --ansi --border-label ' sesh ' --prompt '⚡ ')
+                      set -l session (${pkgs.sesh}/bin/sesh list --icons | ${pkgs.fzf}/bin/fzf \
+                          --height 70% \
+                          --reverse \
+                          --border rounded \
+                          --no-sort \
+                          --ansi \
+                          --prompt '⚡ ' \
+                          --header '  ^a all  ^t tmux  ^g configs  ^x zoxide  ^d kill/remove  ^f find' \
+                          --bind 'tab:down,btab:up' \
+                          --bind 'ctrl-a:change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons)' \
+                          --bind 'ctrl-t:change-prompt(🪟 )+reload(${pkgs.sesh}/bin/sesh list -t --icons)' \
+                          --bind 'ctrl-g:change-prompt(⚙️ )+reload(${pkgs.sesh}/bin/sesh list -c --icons)' \
+                          --bind 'ctrl-x:change-prompt(📁 )+reload(${pkgs.sesh}/bin/sesh list -z --icons)' \
+                          --bind 'ctrl-f:change-prompt(🔎 )+reload(${pkgs.findutils}/bin/find ~ -maxdepth 3 -type d -name .git 2>/dev/null | ${pkgs.gnused}/bin/sed s:/.git::)' \
+                          --bind 'ctrl-d:execute(${tmuxSeshKiller}/bin/tmux-sesh-killer {})+change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons)' \
+                          --preview-window 'right:55%' \
+                          --preview '${pkgs.sesh}/bin/sesh preview {}')
                       if test -n "$session"
                           ${pkgs.sesh}/bin/sesh connect $session
                       end

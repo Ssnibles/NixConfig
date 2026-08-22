@@ -82,13 +82,13 @@ require("mini.splitjoin").setup()
 
 require("mini.pairs").setup()
 require("mini.bufremove").setup({})
-require("mini.sessions").setup({
-	autoread = true,
-	autowrite = true,
-	hooks = {
-		post_autowrite = function() end,
-	},
-})
+-- require("mini.sessions").setup({
+-- 	autoread = true,
+-- 	autowrite = true,
+-- 	hooks = {
+-- 		post_autowrite = function() end,
+-- 	},
+-- })
 
 local starter = require("mini.starter")
 local logo = [[

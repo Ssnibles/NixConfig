@@ -106,6 +106,7 @@
             vscode-langservers-extracted
             kotlin-language-server
             jdt-language-server
+            jdk
             marksman
             ltex-ls-plus
             imagemagick
@@ -137,22 +138,26 @@
             clippy
             zig
             (writeShellScriptBin "zls" ''
-              export CPATH="${lib.makeSearchPathOutput "dev" "include" [
-                wayland
-                wlroots
-                libxkbcommon
-                libinput
-                libdrm
-              ]}:${pixman}/include/pixman-1''${CPATH:+:$CPATH}"
-              export PKG_CONFIG_PATH="${lib.makeSearchPathOutput "dev" "lib/pkgconfig" [
-                wayland
-                wlroots
-                pixman
-                libxkbcommon
-                libinput
-                libdrm
-                wayland-protocols
-              ]}''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+              export CPATH="${
+                lib.makeSearchPathOutput "dev" "include" [
+                  wayland
+                  wlroots
+                  libxkbcommon
+                  libinput
+                  libdrm
+                ]
+              }:${pixman}/include/pixman-1''${CPATH:+:$CPATH}"
+              export PKG_CONFIG_PATH="${
+                lib.makeSearchPathOutput "dev" "lib/pkgconfig" [
+                  wayland
+                  wlroots
+                  pixman
+                  libxkbcommon
+                  libinput
+                  libdrm
+                  wayland-protocols
+                ]
+              }''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
               exec "${zls}/bin/zls" "$@"
             '')
             pkg-config

@@ -14,7 +14,7 @@ local keymap = {
 	-- Open completion menu manually
 	["<C-space>"] = {
 		function()
-			cmp.show({ providers = { "lsp", "copilot", "snippets", "buffer", "path" } })
+			cmp.show({ providers = { "lsp", "copilot", "snippets", "buffer", "path", "cmdline" } })
 		end,
 	},
 

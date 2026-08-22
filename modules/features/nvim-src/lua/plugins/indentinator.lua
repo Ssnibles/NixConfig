@@ -1,16 +1,12 @@
 require("indentinator").setup({
 	enabled = true,
-	style = "rounded",
-	draw_gap_hl = false,
-	show_first_indent_level = false,
-	scope = {
+	indent = {
 		enabled = true,
+		rainbow = {
+			enabled = false,
+		},
+	},
+	scope = {
 		treesitter = true,
-		delimiters = true,
-		underline_delimiters = true,
-		rainbow_delimiters = true,
-		background = false,
-		text_highlight = false,
-		range = "block",
 	},
 })

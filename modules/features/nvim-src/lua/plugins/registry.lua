@@ -15,6 +15,8 @@ M.core = {
   "plugins.lint",
   "plugins.sshinator",
   "plugins.indentinator",
+  "plugins.zline",
+  "plugins.repl-icate",
   "plugins.inc-rename",
 }
 

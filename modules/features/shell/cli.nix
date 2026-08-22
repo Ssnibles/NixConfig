@@ -38,6 +38,7 @@
           zip
           unzip
           croc
+          mermaid-cli
         ];
 
         programs.git.enable = true;
