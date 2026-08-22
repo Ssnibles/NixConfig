@@ -57,6 +57,13 @@
                 bordercolor = 0x${border}ff
               '';
             };
+            ".config/xdg-desktop-portal-wlr/config" = {
+              text = ''
+                [screencast]
+                chooser_type = simple
+                chooser_cmd = ${pkgs.slurp}/bin/slurp -f %o -or
+              '';
+            };
           };
         };
       };

@@ -1,9 +1,3 @@
-# =============================================================================
-# Hyprland Wayland Compositor Feature
-# =============================================================================
-# Hyprland window manager with Quickshell status bar, Hyprpaper wallpaper daemon,
-# and Hyprshot screenshot integration.
-# =============================================================================
 { self, ... }:
 {
   nixos.modules.desktop =
@@ -13,6 +7,24 @@
       config,
       ...
     }:
+    let
+      inherit (config.theme.colors)
+        bg
+        bgRaised
+        bgSubtle
+        border
+        fg
+        fgMid
+        fgDim
+        accent
+        teal
+        purple
+        green
+        yellow
+        red
+        orange
+        ;
+    in
     {
       config = {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
@@ -26,18 +38,67 @@
 
         programs.seahorse.enable = true;
 
-        xdg.portal.extraPortals = [
-          pkgs.xdg-desktop-portal-hyprland
-        ];
+        environment.sessionVariables = {
+          QS_BAR = "hyprland";
+          XDG_CURRENT_DESKTOP = "Hyprland";
+          ELECTRON_OZONE_PLATFORM_HINT = "auto";
+        };
+
+        xdg.portal = {
+          enable = true;
+          extraPortals = [
+            pkgs.xdg-desktop-portal-hyprland
+            pkgs.xdg-desktop-portal-gtk
+          ];
+          config.hyprland = {
+            default = [ "hyprland" "gtk" ];
+            "org.freedesktop.impl.portal.Screencast" = "hyprland";
+            "org.freedesktop.impl.portal.Screenshot" = "hyprland";
+          };
+        };
+
+        system.activationScripts.hyprland-config = ''
+          mkdir -p /home/${config.username}/.config/hypr
+          chown -R ${config.username}:users /home/${config.username}/.config/hypr
+          ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/hyprland/hyprland.lua /home/${config.username}/.config/hypr/hyprland.lua
+          chown -h ${config.username}:users /home/${config.username}/.config/hypr/hyprland.lua
+        '';
 
         hjem.users."${config.username}" = {
           enable = true;
           files = {
             ".config/hypr/hyprland.lua" = {
               source = ./hyprland.lua;
+              clobber = true;
             };
             ".config/hypr/generated.lua" = {
-              source = ./generated.lua;
+              text = ''
+                local M = {}
+
+                M.bg = "${bg}"
+                M.bgRaised = "${bgRaised}"
+                M.bgSubtle = "${bgSubtle}"
+                M.border = "${border}"
+                M.fg = "${fg}"
+                M.fgMid = "${fgMid}"
+                M.fgDim = "${fgDim}"
+                M.accent = "${accent}"
+                M.teal = "${teal}"
+                M.purple = "${purple}"
+                M.green = "${green}"
+                M.yellow = "${yellow}"
+                M.red = "${red}"
+                M.orange = "${orange}"
+                M.accent_hash = "#${accent}"
+                M.border_hash = "#${border}"
+                M.isDesktop = true
+                M.isLaptop = false
+                M.wallpaper = "~/Pictures/wallpaper"
+                M.screenshot_dir = "~/Pictures/Screenshots"
+                M.special_workspace = "special"
+
+                return M
+              '';
             };
           };
         };

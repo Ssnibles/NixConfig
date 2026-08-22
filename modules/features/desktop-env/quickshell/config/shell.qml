@@ -10,7 +10,9 @@ Scope {
     id: barLoader
     source: {
       var bar = Quickshell.env("QS_BAR")
-      return bar === "niri" ? "niri-bar.qml" : "mangowc-bar.qml"
+      if (bar === "niri") return "niri-bar.qml"
+      if (bar === "hyprland") return "hyprland-bar.qml"
+      return "mangowc-bar.qml"
     }
   }
 
