@@ -56,9 +56,38 @@
             '';
           };
 
+        xdg.portal = {
+          enable = true;
+          config = {
+            dwl = {
+              default = [ "gtk" ];
+              "org.freedesktop.impl.portal.Screencast" = [ "wlr" ];
+              "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+            };
+            wlroots = {
+              default = [ "gtk" ];
+              "org.freedesktop.impl.portal.Screencast" = [ "wlr" ];
+              "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+            };
+          };
+          extraPortals = [
+            pkgs.xdg-desktop-portal-gtk
+            pkgs.xdg-desktop-portal-wlr
+          ];
+        };
+
         hjem.users."${config.username}" = {
           enable = true;
           files = {
+            ".config/xdg-desktop-portal-wlr/config" = {
+              text = ''
+                [screencast]
+                max_fps = 60
+                chooser_type = simple
+                chooser_cmd = ${pkgs.slurp}/bin/slurp -f 'Monitor: %o' -or
+                force_mod_linear = 1
+              '';
+            };
             ".config/dwl/autostart" = {
               executable = true;
               text = ''
@@ -77,7 +106,7 @@
                 export MOZ_ENABLE_WAYLAND=1
                 export XCURSOR_THEME=Bibata-Modern-Ice
                 export XCURSOR_SIZE=24
-                export XDG_CURRENT_DESKTOP=dwl
+                export XDG_CURRENT_DESKTOP=wlroots:dwl
                 export XDG_SESSION_DESKTOP=dwl
                 export XDG_SESSION_TYPE=wayland
 
