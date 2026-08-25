@@ -46,7 +46,7 @@ Item {
         property: morphAnim.isForward ? "pillEnd" : "pillStart"
         from: morphAnim.isForward ? morphAnim.endFrom : morphAnim.startFrom
         to: morphAnim.isForward ? morphAnim.endTo : morphAnim.startTo
-        duration: 150
+        duration: 60
         easing.type: Easing.OutQuad
       }
       NumberAnimation {
@@ -56,7 +56,7 @@ Item {
         to: morphAnim.isForward
           ? (morphAnim.startFrom + (morphAnim.startTo - morphAnim.startFrom) * 0.2)
           : (morphAnim.endFrom + (morphAnim.endTo - morphAnim.endFrom) * 0.2)
-        duration: 150
+        duration: 60
         easing.type: Easing.OutQuad
       }
     }
@@ -67,15 +67,15 @@ Item {
         target: root
         property: morphAnim.isForward ? "pillStart" : "pillEnd"
         to: morphAnim.isForward ? morphAnim.startTo : morphAnim.endTo
-        duration: 200
+        duration: 100
         easing.type: Easing.OutBack
-        easing.overshoot: 1.25
+        easing.overshoot: 1.15
       }
       NumberAnimation {
         target: root
         property: morphAnim.isForward ? "pillEnd" : "pillStart"
         to: morphAnim.isForward ? morphAnim.endTo : morphAnim.startTo
-        duration: 200
+        duration: 100
         easing.type: Easing.OutCubic
       }
     }
@@ -181,19 +181,19 @@ Item {
 
         Behavior on x {
           enabled: root.horizontal
-          NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+          NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
         }
         Behavior on y {
           enabled: !root.horizontal
-          NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+          NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
         }
         Behavior on width {
           enabled: root.horizontal
-          NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+          NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
         }
         Behavior on height {
           enabled: !root.horizontal
-          NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+          NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
         }
 
         // Unfocused status indicator (circle) inside slot
@@ -210,6 +210,15 @@ Item {
           }
           Behavior on color {
             ColorAnimation { duration: 200; easing.type: Easing.InOutQuad }
+          }
+        }
+
+        MouseArea {
+          anchors.fill: parent
+          cursorShape: Qt.PointingHandCursor
+          onClicked: {
+            var wsId = dotItem.modelData ? (dotItem.modelData.id || (dotItem.index + 1)) : (dotItem.index + 1)
+            root.focusRequested(wsId)
           }
         }
       }

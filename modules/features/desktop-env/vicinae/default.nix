@@ -92,6 +92,8 @@
         path = [ config.system.path ];
         environment = {
           QT_QPA_PLATFORM = "wayland;xcb";
+          ELECTRON_OZONE_PLATFORM_HINT = "auto";
+          XDG_CURRENT_DESKTOP = "Hyprland";
         };
         serviceConfig = {
           Type = "simple";
