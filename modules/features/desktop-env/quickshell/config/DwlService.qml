@@ -7,14 +7,16 @@ import "Utils.js" as Utils
 QtObject {
   id: root
 
+  property bool active: false
+  property var monitorTags: ({})
   property int selectedTagMask: 1
   property int occupiedTagMask: 0
   property string currentTitle: ""
   property string currentAppId: ""
 
   readonly property Process _statusWatcher: Process {
-    command: ["sh", "-c", "exec tail -F -n +1 /tmp/dwl-status.fifo 2>/dev/null"]
-    running: true
+    command: ["sh", "-c", "exec stdbuf -oL tail -F -n +1 /tmp/dwl-status.fifo 2>/dev/null"]
+    running: root.active
 
     stdout: SplitParser {
       onRead: line => {
@@ -23,6 +25,7 @@ QtObject {
         var parts = clean.split(/\s+/)
         if (parts.length < 2) return
 
+        var outputName = parts[0]
         var component = parts[1]
 
         if (component === "title") {
@@ -35,8 +38,14 @@ QtObject {
           if (parts.length >= 4) {
             var occupied = parseInt(parts[2], 10)
             var selected = parseInt(parts[3], 10)
-            if (!isNaN(occupied)) root.occupiedTagMask = occupied
-            if (!isNaN(selected)) root.selectedTagMask = selected
+            if (!isNaN(occupied) && !isNaN(selected)) {
+              var copy = Object.assign({}, root.monitorTags)
+              copy[outputName] = { occupied: occupied, selected: selected }
+              root.monitorTags = copy
+
+              root.occupiedTagMask = occupied
+              root.selectedTagMask = selected
+            }
           }
         }
       }
@@ -45,16 +54,24 @@ QtObject {
 
   function focusTag(tagNum) {
     var key = tagNum === 10 ? "0" : tagNum.toString()
-    Quickshell.execDetached(["wtype", "-M", "logo", "-k", key])
+    Quickshell.execDetached(["wtype", "-M", "logo", "-k", key, "-m", "logo"])
   }
 
-  function getWorkspaces() {
+  function getWorkspaces(outputName) {
+    var selMask = root.selectedTagMask
+    var occMask = root.occupiedTagMask
+
+    if (outputName && root.monitorTags[outputName]) {
+      selMask = root.monitorTags[outputName].selected
+      occMask = root.monitorTags[outputName].occupied
+    }
+
     var result = []
     var highestOccupiedOrSelected = 1
 
     for (var j = 1; j <= 10; j++) {
       var m = 1 << (j - 1)
-      if ((root.selectedTagMask & m) !== 0 || (root.occupiedTagMask & m) !== 0) {
+      if ((selMask & m) !== 0 || (occMask & m) !== 0) {
         highestOccupiedOrSelected = Math.max(highestOccupiedOrSelected, j)
       }
     }
@@ -63,8 +80,8 @@ QtObject {
 
     for (var i = 1; i <= count; i++) {
       var mask = 1 << (i - 1)
-      var active = (root.selectedTagMask & mask) !== 0
-      var occupied = (root.occupiedTagMask & mask) !== 0
+      var active = (selMask & mask) !== 0
+      var occupied = (occMask & mask) !== 0
       result.push({
         id: i,
         is_focused: active,

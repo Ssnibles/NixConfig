@@ -6,13 +6,14 @@ import "Utils.js" as Utils
 QtObject {
   id: root
 
+  property bool active: false
   property var allMonitorsTags: []
   property string currentTitle: ""
 
   // Continuous listener for MangoWC JSON stream for workspace tags
   readonly property Process _tagsWatcher: Process {
     command: ["mmsg", "watch", "all-tags"]
-    running: true
+    running: root.active
 
     stdout: SplitParser {
       onRead: line => {
@@ -32,7 +33,7 @@ QtObject {
   // Continuous listener for focused client changes (window title)
   readonly property Process _titleWatcher: Process {
     command: ["mmsg", "watch", "focusing-client"]
-    running: true
+    running: root.active
 
     stdout: SplitParser {
       onRead: line => {

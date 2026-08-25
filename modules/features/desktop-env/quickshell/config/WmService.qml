@@ -7,11 +7,11 @@ QtObject {
   readonly property string wm: (Quickshell.env("QS_BAR") || "mangowc").toLowerCase()
 
   // Service Backends
-  readonly property MangoService mangoSvc: MangoService {}
-  readonly property RiverService riverSvc: RiverService {}
-  readonly property DwlService dwlSvc: DwlService {}
-  readonly property HyprlandService hyprSvc: HyprlandService {}
-  readonly property NiriService niriSvc: NiriService {}
+  readonly property MangoService mangoSvc: MangoService { active: root.wm === "mangowc" }
+  readonly property RiverService riverSvc: RiverService { active: root.wm === "river" }
+  readonly property DwlService dwlSvc: DwlService { active: root.wm === "dwl" }
+  readonly property HyprlandService hyprSvc: HyprlandService { active: root.wm === "hyprland" }
+  readonly property NiriService niriSvc: NiriService { active: root.wm === "niri" }
 
   readonly property string currentTitle: {
     if (root.wm === "mangowc") return mangoSvc.currentTitle
@@ -49,7 +49,7 @@ QtObject {
     }
 
     if (root.wm === "river") return riverSvc.getWorkspaces()
-    if (root.wm === "dwl") return dwlSvc.getWorkspaces()
+    if (root.wm === "dwl") return dwlSvc.getWorkspaces(outputName)
     if (root.wm === "hyprland") return hyprSvc.workspacesList
     if (root.wm === "niri") return niriSvc.workspacesForOutput(outputName)
     return []

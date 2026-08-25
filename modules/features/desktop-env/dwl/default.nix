@@ -64,10 +64,11 @@
               text = ''
                 #!/usr/bin/env sh
 
-                # Pipe dwl status output (stdin to this script) to FIFO
+                # Pipe dwl status output (stdin to this script) to FIFO line-buffered without data-stealing cat process
                 rm -f /tmp/dwl-status.fifo
                 mkfifo /tmp/dwl-status.fifo
-                cat > /tmp/dwl-status.fifo &
+                exec 3<> /tmp/dwl-status.fifo
+                stdbuf -oL awk '{print; fflush()}' <&0 > /tmp/dwl-status.fifo &
 
                 # Session Environment Variables
                 export QS_BAR=dwl

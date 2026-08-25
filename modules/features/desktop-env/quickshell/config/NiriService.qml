@@ -7,12 +7,13 @@ import "Utils.js" as Utils
 QtObject {
   id: root
 
+  property bool active: false
   property var allWorkspaces: []
   property string currentTitle: ""
 
   readonly property Process _niriInitWs: Process {
     command: ["niri", "msg", "--json", "workspaces"]
-    running: true
+    running: root.active
     stdout: StdioCollector {
       onDataChanged: {
         try {
@@ -28,7 +29,7 @@ QtObject {
 
   readonly property Process _niriEvents: Process {
     command: ["niri", "msg", "--json", "event-stream"]
-    running: true
+    running: root.active
 
     stdout: SplitParser {
       onRead: line => {

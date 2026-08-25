@@ -6,6 +6,7 @@ import "Utils.js" as Utils
 QtObject {
   id: root
 
+  property bool active: false
   property var workspacesList: []
   property string currentTitle: ""
   property int currentFocusedId: 1
@@ -58,7 +59,7 @@ QtObject {
 
   // Native zero-latency Quickshell.Hyprland IPC signal handlers
   readonly property Connections _hyprConn: Connections {
-    target: Hyprland
+    target: root.active ? Hyprland : null
     function onFocusedWorkspaceChanged() { root.updateData() }
     function onRawEvent(name, data) { root.updateData() }
   }

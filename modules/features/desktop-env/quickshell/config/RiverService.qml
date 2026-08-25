@@ -7,6 +7,7 @@ import "Utils.js" as Utils
 QtObject {
   id: root
 
+  property bool active: false
   property int focusedTagMask: 1
   property int viewsTagMask: 0
   property string currentTitle: ""
@@ -14,7 +15,7 @@ QtObject {
   // Watch focused tag bitmask from ristate -t
   readonly property Process _tagWatcher: Process {
     command: ["ristate", "-t"]
-    running: true
+    running: root.active
 
     stdout: SplitParser {
       onRead: line => {
@@ -30,7 +31,7 @@ QtObject {
   // Watch occupied views tag bitmask from ristate -vt
   readonly property Process _viewsTagWatcher: Process {
     command: ["ristate", "-vt"]
-    running: true
+    running: root.active
 
     stdout: SplitParser {
       onRead: line => {
@@ -46,7 +47,7 @@ QtObject {
   // Watch focused view title from ristate -w
   readonly property Process _titleWatcher: Process {
     command: ["ristate", "-w"]
-    running: true
+    running: root.active
 
     stdout: SplitParser {
       onRead: line => {
