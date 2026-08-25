@@ -43,7 +43,6 @@ clue.setup({
 		{ mode = "n", keys = "<Leader>l", desc = "+lsp" },
 		{ mode = "n", keys = "<Leader>m", desc = "+dap" },
 		{ mode = "n", keys = "<Leader>q", desc = "+quit/lists" },
-		{ mode = "n", keys = "<Leader>s", desc = "+starter/session" },
 		{ mode = "n", keys = "<Leader>t", desc = "+toggles/terminal" },
 		{ mode = "n", keys = "<Leader>T", desc = "+tabs" },
 		{ mode = "n", keys = "<Leader>w", desc = "+window" },
@@ -82,13 +81,6 @@ require("mini.splitjoin").setup()
 
 require("mini.pairs").setup()
 require("mini.bufremove").setup({})
--- require("mini.sessions").setup({
--- 	autoread = true,
--- 	autowrite = true,
--- 	hooks = {
--- 		post_autowrite = function() end,
--- 	},
--- })
 
 local starter = require("mini.starter")
 local logo = [[
