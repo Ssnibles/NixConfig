@@ -42,14 +42,11 @@ local CONFIG = {
 local augroup = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 local autocmd = vim.api.nvim_create_autocmd
 
--- Enables native Tree-sitter indentation when a parser is available
+-- Enables native Tree-sitter highlighting when a parser is available
 autocmd("FileType", {
 	group = augroup,
 	callback = function(ev)
-		local ok, _ = pcall(vim.treesitter.start, ev.buf)
-		if ok then
-			vim.bo[ev.buf].indentexpr = "v:lua.vim.treesitter.indent.get_indent()"
-		end
+		pcall(vim.treesitter.start, ev.buf)
 	end,
 })
 
