@@ -175,9 +175,10 @@
                 rivertile -view-padding 12 -outer-padding 12 -main-ratio 0.55 &
 
                 # Systemd & Session Autostart
-                riverctl spawn "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=river"
-                riverctl spawn "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+                riverctl spawn "dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP=river XDG_SESSION_DESKTOP=river XDG_SESSION_TYPE=wayland QT_QPA_PLATFORM=wayland ELECTRON_OZONE_PLATFORM_HINT=wayland MOZ_ENABLE_WAYLAND=1 XCURSOR_THEME=Bibata-Modern-Ice XCURSOR_SIZE=24"
+                riverctl spawn "systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE QT_QPA_PLATFORM ELECTRON_OZONE_PLATFORM_HINT MOZ_ENABLE_WAYLAND XCURSOR_THEME XCURSOR_SIZE"
                 riverctl spawn "systemctl --user start wayland-session.target"
+                riverctl spawn "systemctl --user restart vicinae-server"
                 riverctl spawn "QS_BAR=river quickshell"
                 riverctl spawn "swaybg -i $HOME/Pictures/wallpaper -m fill"
                 riverctl spawn "sh -c 'sleep 1; exec nm-applet --indicator'"

@@ -5,9 +5,9 @@ import QtQuick
 Scope {
   id: root
 
-  // Global River IPC Service
-  RiverService {
-    id: riverService
+  // Unified Window Manager Service
+  WmService {
+    id: wmService
   }
 
   Variants {
@@ -76,7 +76,7 @@ Scope {
 
           Pill {
             id: windowTitlePill
-            visible: riverService.currentTitle !== ""
+            visible: wmService.currentTitle !== ""
             anchors.verticalCenter: parent.verticalCenter
             pillHeight: 24
             padding: 10
@@ -90,19 +90,19 @@ Scope {
             WindowTitleWidget {
               id: windowTitleWidget
               horizontal: true
-              titleText: riverService.currentTitle
+              titleText: wmService.currentTitle
               anchors.verticalCenter: parent.verticalCenter
             }
           }
         }
 
-        // Center Section: River Workspace / Tag Indicators
+        // Center Section: Unified Workspaces Widget
         WorkspacesWidget {
           id: workspacesWidget
           horizontal: true
-          workspaces: riverService.getWorkspaces()
+          workspaces: wmService.getWorkspaces(barPanel.modelData.name)
           onFocusRequested: function(workspaceId) {
-            riverService.focusTag(workspaceId)
+            wmService.focusWorkspace(workspaceId)
           }
         }
 

@@ -41,7 +41,7 @@ All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by N
 ```qml
 Scope {
   Loader {
-    source: Quickshell.env("QS_BAR") === "niri" ? "niri-bar.qml" : "mangowc-bar.qml"
+    source: (bar === "niri") ? "niri-bar.qml" : "bar.qml"
   }
   NotificationOverlay { }
   CommandCenter { }
@@ -49,7 +49,7 @@ Scope {
 }
 ```
 
-- **Status Bar Loading**: Set `QS_BAR=niri` for the vertical Niri bar; defaults to `mangowc-bar.qml`.
+- **Status Bar Loading**: Set `QS_BAR=niri` for the vertical Niri bar; defaults to the unified `bar.qml` top bar (which connects to `WmService` for DWL, MangoWC, River, Hyprland, etc.).
 - **Notification Overlay**: Global notification stack present on every display.
 - **Command Center**: Slide-out dashboard overlay controllable via IPC.
 - **Lock Screen**: Wayland session lock (`WlSessionLock`) with PAM authentication.
@@ -152,13 +152,17 @@ Scope {
 - **Role**: Vertical side bar for Niri window manager.
 - **Features**: `PanelWindow` hugging `Config.barSide`, displaying clock, active window title, workspace list, system control pills, and hosting `SharedTooltipWindow`.
 
-#### `mangowc-bar.qml`
-- **Role**: Horizontal top bar for MangoWC compositor.
-- **Features**: Uses `mmsg watch all-tags` process IPC to display workspace tags, status indicators, and clock.
+#### `bar.qml`
+- **Role**: Consolidated horizontal top bar for Wayland compositors (DWL, MangoWC, River, Hyprland, etc.).
+- **Features**: Powered by `WmService.qml` to render workspace dots, active window titles, system status indicators, clock, and tooltips.
 
 ---
 
 ### 5.2 Services & Infrastructure
+
+#### `WmService.qml`
+- **Role**: Unified router bridging active compositor backends (`DwlService`, `MangoService`, `RiverService`, `HyprlandService`, `NiriService`) based on `QS_BAR`.
+- **Exposes**: `currentTitle`, `getWorkspaces(outputName)`, `focusWorkspace(id)`.
 
 #### `NiriService.qml`
 - **Role**: IPC service bridging Niri window manager via `niri msg --json event-stream`.

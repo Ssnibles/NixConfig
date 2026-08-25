@@ -51,6 +51,12 @@
     # pomodoro.url = "path:/home/josh/pomodoro";
     # pomodoro.inputs.nixpkgs.follows = "nixpkgs";
 
+    dwl.url = "path:/home/josh/dwl";
+    dwl.inputs.nixpkgs.follows = "nixpkgs";
+    # When pushed to GitHub, switch to:
+    # dwl.url = "github:Ssnibles/dwl";
+    # dwl.inputs.nixpkgs.follows = "nixpkgs";
+
     niri-float-sticky.url = "github:probeldev/niri-float-sticky";
     niri-float-sticky.inputs.nixpkgs.follows = "nixpkgs";
   };

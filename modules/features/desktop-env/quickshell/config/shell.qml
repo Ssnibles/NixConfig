@@ -6,14 +6,11 @@ import Quickshell.Wayland
 Scope {
   id: root
 
+  readonly property string barType: (Quickshell.env("QS_BAR") || "").toLowerCase()
+
   Loader {
     id: barLoader
-    source: {
-      if (bar === "niri") return "niri-bar.qml"
-      if (bar === "river") return "river-bar.qml"
-      if (bar === "hyprland") return "hyprland-bar.qml"
-      return "mangowc-bar.qml"
-    }
+    source: (root.barType === "niri") ? "niri-bar.qml" : "bar.qml"
   }
 
   NotificationOverlay { }

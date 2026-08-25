@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "dwl": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1787621402,
+        "narHash": "sha256-fIMYv1LZ6MB97PoaLzzU6Wir6Tl9b73+E3Mh8pztBio=",
+        "path": "/home/josh/dwl",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/josh/dwl",
+        "type": "path"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -400,6 +417,7 @@
     },
     "root": {
       "inputs": {
+        "dwl": "dwl",
         "flake-parts": "flake-parts",
         "hjem": "hjem",
         "import-tree": "import-tree",
