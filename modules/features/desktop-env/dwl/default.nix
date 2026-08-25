@@ -15,15 +15,16 @@
       ...
     }:
     let
-      inherit (config.theme.colors)
-        bg
-        border
-        accent
-        red
-        ;
+      cfg = config.features.dwl;
     in
     {
-      config = {
+      options.features.dwl.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable DWL Wayland compositor feature.";
+      };
+
+      config = lib.mkIf cfg.enable {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
         programs.dwl.enable = true;
 

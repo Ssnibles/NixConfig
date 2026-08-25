@@ -87,6 +87,13 @@
         ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", MODE="0666", GROUP="plugdev"
       '';
 
+      # ── Desktop Environment Features ───────────────────────────────────────
+      features.dwl.enable = true;
+      features.hyprland.enable = false;
+      features.mangowc.enable = false;
+      features.river.enable = false;
+      features.niri.enable = false;
+
       system.stateVersion = "25.05";
     };
 }

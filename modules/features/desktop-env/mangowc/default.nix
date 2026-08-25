@@ -14,21 +14,10 @@
       ...
     }:
     let
+      cfg = config.features.mangowc;
       inherit (config.theme.colors)
-        bg
-        bgRaised
-        bgSubtle
-        border
-        fg
-        fgMid
-        fgDim
         accent
-        teal
-        purple
-        green
-        yellow
-        red
-        orange
+        border
         ;
     in
     {
@@ -36,7 +25,13 @@
         inputs.mangowc.nixosModules.mango
       ];
 
-      config = {
+      options.features.mangowc.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable MangoWC Wayland compositor feature.";
+      };
+
+      config = lib.mkIf cfg.enable {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
 
         programs.mango.enable = true;

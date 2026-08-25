@@ -14,25 +14,16 @@
       ...
     }:
     let
-      inherit (config.theme.colors)
-        bg
-        bgRaised
-        bgSubtle
-        border
-        fg
-        fgMid
-        fgDim
-        accent
-        teal
-        purple
-        green
-        yellow
-        red
-        orange
-        ;
+      cfg = config.features.niri;
     in
     {
-      config = {
+      options.features.niri.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable Niri Wayland compositor feature.";
+      };
+
+      config = lib.mkIf cfg.enable {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
         programs.niri.enable = true;
 

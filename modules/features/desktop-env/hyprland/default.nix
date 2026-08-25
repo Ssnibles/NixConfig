@@ -1,6 +1,6 @@
 { self, ... }:
 {
-  nixos.modules.desktop =
+  nixos.modules.shared =
     {
       pkgs,
       lib,
@@ -8,6 +8,7 @@
       ...
     }:
     let
+      cfg = config.features.hyprland;
       inherit (config.theme.colors)
         bg
         bgRaised
@@ -26,7 +27,13 @@
         ;
     in
     {
-      config = {
+      options.features.hyprland.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable Hyprland Wayland compositor feature.";
+      };
+
+      config = lib.mkIf cfg.enable {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
         programs.hyprland.enable = true;
 

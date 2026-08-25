@@ -15,6 +15,7 @@
       ...
     }:
     let
+      cfg = config.features.river;
       inherit (config.theme.colors)
         bg
         border
@@ -23,7 +24,13 @@
         ;
     in
     {
-      config = {
+      options.features.river.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable River Wayland compositor feature.";
+      };
+
+      config = lib.mkIf cfg.enable {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
         programs.river.enable = true;
 

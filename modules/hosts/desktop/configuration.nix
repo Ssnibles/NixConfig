@@ -45,6 +45,13 @@
       networking.firewall.allowedTCPPorts = [ 5353 ];
       networking.firewall.allowedUDPPorts = [ 5353 ];
 
+      # ── Desktop Environment Features ───────────────────────────────────────
+      features.dwl.enable = true;
+      features.hyprland.enable = true;
+      features.mangowc.enable = false;
+      features.river.enable = false;
+      features.niri.enable = false;
+
       system.stateVersion = "25.11";
     };
 }
