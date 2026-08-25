@@ -17,7 +17,6 @@
       config = {
         environment.systemPackages = with pkgs; [
           shikane
-          nwg-displays
         ];
 
         systemd.user.services.shikane = {
@@ -38,31 +37,31 @@
               text = ''
                 # Shikane Dynamic Display Configuration
 
-                # Laptop Display Profile
-                [[profile]]
-                name = "laptop"
-
-                [[profile.output]]
-                match = "eDP-1"
-                enable = true
-                scale = 1.0
-                mode = "1920x1200@60Hz"
-                position = "0,0"
-
                 # Dual Monitor Setup (External display on top/primary, laptop below)
                 [[profile]]
                 name = "dual_laptop_external"
 
                 [[profile.output]]
-                match = "eDP-1"
+                search = "n=eDP-1"
                 enable = true
                 scale = 1.0
-                position = "0,1080"
+                position = "0,1440"
 
                 [[profile.output]]
-                match = ".*"
+                search = "n/.*"
                 enable = true
                 scale = 1.0
+                position = "0,0"
+
+                # Laptop Display Profile
+                [[profile]]
+                name = "laptop"
+
+                [[profile.output]]
+                search = "n=eDP-1"
+                enable = true
+                scale = 1.0
+                mode = "1920x1200@60Hz"
                 position = "0,0"
 
                 # Fallback Profile (Auto-enable any connected monitors)
@@ -70,7 +69,7 @@
                 name = "fallback"
 
                 [[profile.output]]
-                match = ".*"
+                search = "n/.*"
                 enable = true
                 scale = 1.0
               '';
