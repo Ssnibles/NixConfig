@@ -17,7 +17,7 @@
 
         wallpaper = lib.mkOption {
           type = lib.types.str;
-          default = "sheppard.jpg";
+          default = "blackbird.jpg";
           description = "Active wallpaper filename located in assets/wallpapers/.";
         };
 
