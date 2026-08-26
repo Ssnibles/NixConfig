@@ -7,8 +7,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1787701749,
-        "narHash": "sha256-7NYJP0RswzH0LLVXg0YV06OUcF/nxgrsSxZSNuH9nws=",
+        "lastModified": 1787638876,
+        "narHash": "sha256-U0ANsyHD4WduE9ccT8P4ZcTCdJCYbBjvnqv5arQRJzg=",
         "path": "/home/josh/dwl",
         "type": "path"
       },
@@ -171,11 +171,11 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1787671150,
-        "narHash": "sha256-6WPcOjKp78Qt30f3uLbVXAczcIk5rO0sFBsF9AxYT3Y=",
+        "lastModified": 1787704578,
+        "narHash": "sha256-Xypw40lSPc3yYqw7OdiNe+XNy1ZgnCXI4h5HJeJiWK0=",
         "owner": "mangowm",
         "repo": "mango",
-        "rev": "d63dd9c478415b95f23b4d12cf9c8e272e739caf",
+        "rev": "200d88bf5ee27774ea1095b6895c93d70ac5a579",
         "type": "github"
       },
       "original": {
