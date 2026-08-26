@@ -247,7 +247,7 @@
             bind \e\[127\;5u backward-kill-word
             bind \e\[8\;5u backward-kill-word
 
-            any-nix-shell fish --info-right | source
+            any-nix-shell fish | source
           '';
         };
 
@@ -263,7 +263,8 @@
           settings = {
             add_newline = false;
 
-            format = "$username$directory$git_branch$git_status$fill$nix_shell$nodejs$rust$python$battery$cmd_duration\n$character";
+            format = "$username$directory$git_branch$git_status\n$character";
+            right_format = "$nix_shell$nodejs$rust$python$battery$cmd_duration";
 
             character = {
               success_symbol = "[╰──>>](bold green)";
