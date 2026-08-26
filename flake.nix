@@ -59,7 +59,19 @@
 
     niri-float-sticky.url = "github:probeldev/niri-float-sticky";
     niri-float-sticky.inputs.nixpkgs.follows = "nixpkgs";
+
+    devenv = {
+      url = "github:cachix/devenv";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
+  outputs =
+    inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [
+        inputs.devenv.flakeModule
+        (inputs.import-tree ./modules)
+      ];
+    };
 }

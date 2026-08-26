@@ -11,35 +11,36 @@
       unstablePkgs = inputs.nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
     in
     {
-      devShells.default = pkgs.mkShell {
-        buildInputs =
-          with pkgs;
-          [
-            # Rust toolchain
-            bacon
-            cargo
-            rust-analyzer
-            rustc
-            rustfmt
-            clippy
-            glibc
-            sea-orm-cli
+      devenv.shells.default = {
+        devenv.root = "${inputs.self}";
+        name = "NixConfig Developer Shell";
 
-            # Nix language tools
-            nixfmt
-            nil
-            alejandra
+        packages = with pkgs; [
+          # Rust toolchain
+          bacon
+          cargo
+          rust-analyzer
+          rustc
+          rustfmt
+          clippy
+          glibc
+          sea-orm-cli
 
-            # Shell & utilities
-            unstablePkgs.fish
-            self'.packages.boilerplate
-          ];
+          # Nix language tools
+          nixfmt
+          nil
+          alejandra
 
-        nativeBuildInputs = [ pkgs.pkg-config ];
+          # Shell & utilities
+          pkg-config
+          unstablePkgs.fish
+          self'.packages.boilerplate
+        ];
 
-        env.RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+        languages.rust.enable = true;
+        languages.nix.enable = true;
 
-        shellHook = ''
+        enterShell = ''
           if [ -z "$FISH_INIT" ] && [ -x "$(command -v fish)" ]; then
             export FISH_INIT=1
             exec fish

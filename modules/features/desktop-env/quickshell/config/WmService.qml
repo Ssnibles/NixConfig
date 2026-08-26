@@ -4,7 +4,19 @@ import QtQuick
 QtObject {
   id: root
 
-  readonly property string wm: (Quickshell.env("QS_BAR") || "mangowc").toLowerCase()
+  readonly property string wm: {
+    var xdg = (Quickshell.env("XDG_CURRENT_DESKTOP") || Quickshell.env("XDG_SESSION_DESKTOP") || "").toLowerCase()
+    if (xdg.includes("dwl")) return "dwl"
+    if (xdg.includes("hyprland")) return "hyprland"
+    if (xdg.includes("river")) return "river"
+    if (xdg.includes("niri")) return "niri"
+    if (xdg.includes("mango")) return "mangowc"
+
+    var envWm = (Quickshell.env("QS_BAR") || "").toLowerCase()
+    if (envWm !== "") return envWm
+
+    return "mangowc"
+  }
 
   // Service Backends
   readonly property MangoService mangoSvc: MangoService { active: root.wm === "mangowc" }
@@ -20,6 +32,32 @@ QtObject {
     if (root.wm === "hyprland") return hyprSvc.currentTitle
     if (root.wm === "niri") return niriSvc.currentTitle
     return ""
+  }
+
+  readonly property string currentLayoutSymbol: {
+    if (root.wm === "dwl") return dwlSvc.currentLayoutSymbol
+    return ""
+  }
+
+  readonly property var availableLayouts: [
+    { symbol: "[]=", name: "Tile", icon: "󰙀", key: "t" },
+    { symbol: "[M]", name: "Monocle", icon: "󰍹", key: "m" },
+    { symbol: "[\\]", name: "Dwindle", icon: "󱗼", key: "r" },
+    { symbol: "(@)", name: "Spiral", icon: "󰑖", key: "s" }
+  ]
+
+  function getLayoutInfo(symbol) {
+    var sym = symbol || currentLayoutSymbol
+    if (sym === "[]=") return { symbol: "[]=", name: "Tile", icon: "󰙀", key: "t" }
+    if (sym === "><>") return { symbol: "><>", name: "Floating", icon: "󰀽", key: "v" }
+    if (sym === "[M]" || /^\[\d+\]$/.test(sym)) return { symbol: "[M]", name: "Monocle", icon: "󰍹", key: "m" }
+    if (sym === "[\\]") return { symbol: "[\\]", name: "Dwindle", icon: "󱗼", key: "r" }
+    if (sym === "(@)") return { symbol: "(@)", name: "Spiral", icon: "󰑖", key: "s" }
+    return { symbol: sym, name: sym || "Unknown", icon: "󰕰", key: "" }
+  }
+
+  function setLayout(symbol) {
+    if (root.wm === "dwl") dwlSvc.setLayout(symbol)
   }
 
   function getWorkspaces(outputName) {

@@ -45,6 +45,7 @@
             libinput
 
             # CLI Dev Utilities
+            devenv
             yazi
             lazygit
             rclone

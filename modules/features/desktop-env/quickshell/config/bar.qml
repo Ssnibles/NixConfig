@@ -7,7 +7,7 @@ Scope {
 
   // Unified Window Manager Service
   WmService {
-    id: wmService
+    id: rootWmService
   }
 
   Variants {
@@ -74,9 +74,17 @@ Scope {
             anchors.verticalCenter: parent.verticalCenter
           }
 
+          LayoutWidget {
+            id: layoutWidget
+            wmService: rootWmService
+            sharedWindow: sharedTipWindow
+            horizontal: true
+            anchors.verticalCenter: parent.verticalCenter
+          }
+
           Pill {
             id: windowTitlePill
-            visible: wmService.currentTitle !== ""
+            visible: rootWmService.currentTitle !== ""
             anchors.verticalCenter: parent.verticalCenter
             pillHeight: 24
             padding: 10
@@ -90,7 +98,7 @@ Scope {
             WindowTitleWidget {
               id: windowTitleWidget
               horizontal: true
-              titleText: wmService.currentTitle
+              titleText: rootWmService.currentTitle
               anchors.verticalCenter: parent.verticalCenter
             }
           }
@@ -100,9 +108,9 @@ Scope {
         WorkspacesWidget {
           id: workspacesWidget
           horizontal: true
-          workspaces: wmService.getWorkspaces(barPanel.modelData.name)
+          workspaces: rootWmService.getWorkspaces(barPanel.modelData.name)
           onFocusRequested: function(workspaceId) {
-            wmService.focusWorkspace(workspaceId)
+            rootWmService.focusWorkspace(workspaceId)
           }
         }
 
