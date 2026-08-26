@@ -40,19 +40,23 @@ QtObject {
   }
 
   readonly property var availableLayouts: [
-    { symbol: "[]=", name: "Tile", icon: "󰙀", key: "t" },
+    { symbol: "RT", name: "Tree", icon: "󰅩", key: "t" },
+    { symbol: "[]=", name: "Tile", icon: "󰙀", key: "Shift+t" },
     { symbol: "[M]", name: "Monocle", icon: "󰍹", key: "m" },
     { symbol: "[\\]", name: "Dwindle", icon: "󱗼", key: "r" },
-    { symbol: "(@)", name: "Spiral", icon: "󰑖", key: "s" }
+    { symbol: "(@)", name: "Spiral", icon: "󰑖", key: "s" },
+    { symbol: "><>", name: "Floating", icon: "󰀽", key: "v" }
   ]
 
   function getLayoutInfo(symbol) {
     var sym = symbol || currentLayoutSymbol
-    if (sym === "[]=") return { symbol: "[]=", name: "Tile", icon: "󰙀", key: "t" }
+    if (sym === "RT" || sym === "tree") return { symbol: "RT", name: "Tree", icon: "󰅩", key: "t" }
+    if (sym === "[]=") return { symbol: "[]=", name: "Tile", icon: "󰙀", key: "Shift+t" }
     if (sym === "><>") return { symbol: "><>", name: "Floating", icon: "󰀽", key: "v" }
     if (sym === "[M]" || /^\[\d+\]$/.test(sym)) return { symbol: "[M]", name: "Monocle", icon: "󰍹", key: "m" }
     if (sym === "[\\]") return { symbol: "[\\]", name: "Dwindle", icon: "󱗼", key: "r" }
     if (sym === "(@)") return { symbol: "(@)", name: "Spiral", icon: "󰑖", key: "s" }
+    if (sym === "[O]") return { symbol: "[O]", name: "Overview", icon: "󰕰", key: "o" }
     return { symbol: sym, name: sym || "Unknown", icon: "󰕰", key: "" }
   }
 

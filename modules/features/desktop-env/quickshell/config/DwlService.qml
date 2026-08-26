@@ -13,7 +13,7 @@ QtObject {
   property int occupiedTagMask: 0
   property string currentTitle: ""
   property string currentAppId: ""
-  property string currentLayoutSymbol: "[]="
+  property string currentLayoutSymbol: "RT"
 
   readonly property Process _statusWatcher: Process {
     command: ["sh", "-c", "exec stdbuf -oL tail -F -n +1 /tmp/dwl-status.fifo 2>/dev/null"]
@@ -38,7 +38,7 @@ QtObject {
         } else if (component === "layout") {
           var layoutStr = parts.slice(2).join(" ").trim()
           if (layoutStr) root.currentLayoutSymbol = layoutStr
-        } else if (component === "tags") {
+        } else if (component === "tags" || component === "workspace") {
           if (parts.length >= 4) {
             var occupied = parseInt(parts[2], 10)
             var selected = parseInt(parts[3], 10)
@@ -63,14 +63,20 @@ QtObject {
 
   function setLayout(symbol) {
     var key = ""
-    if (symbol === "[]=" || symbol === "tile") key = "t"
-    else if (symbol === "><>" || symbol === "floating") key = "v"
-    else if (symbol === "[M]" || symbol === "monocle" || /^\[\d+\]$/.test(symbol)) key = "m"
-    else if (symbol === "[\\]" || symbol === "dwindle") key = "r"
-    else if (symbol === "(@)" || symbol === "spiral") key = "s"
+    var useShift = false
+    if (symbol === "RT" || symbol === "tree") { key = "t"; }
+    else if (symbol === "[]=" || symbol === "tile") { key = "t"; useShift = true; }
+    else if (symbol === "><>" || symbol === "floating") { key = "v"; }
+    else if (symbol === "[M]" || symbol === "monocle" || /^\[\d+\]$/.test(symbol)) { key = "m"; }
+    else if (symbol === "[\\]" || symbol === "dwindle") { key = "r"; }
+    else if (symbol === "(@)" || symbol === "spiral") { key = "s"; }
 
     if (key !== "") {
-      Quickshell.execDetached(["wtype", "-M", "logo", "-k", key, "-m", "logo"])
+      if (useShift) {
+        Quickshell.execDetached(["wtype", "-M", "logo", "-M", "shift", "-k", key, "-m", "shift", "-m", "logo"])
+      } else {
+        Quickshell.execDetached(["wtype", "-M", "logo", "-k", key, "-m", "logo"])
+      }
     }
   }
 

@@ -243,7 +243,7 @@ Scope {
             z: 10
 
             property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
-            property var wifiDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
+            property var wifiDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi && d.connected }) || Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
             property bool isWired: wiredDev && wiredDev.connected
             property bool isWifi: wifiDev && wifiDev.connected
             property var wifiNet: Utils.findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected })

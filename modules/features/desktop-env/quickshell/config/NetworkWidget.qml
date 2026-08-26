@@ -13,7 +13,7 @@ Pill {
 
   // Networking state
   property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
-  property var wifiDev:  Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
+  property var wifiDev:  Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi && d.connected }) || Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
 
   property bool isWired: root.wiredDev && root.wiredDev.connected
   property bool isWifi:  root.wifiDev  && root.wifiDev.connected
