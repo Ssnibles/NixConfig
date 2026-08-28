@@ -9,10 +9,7 @@ The configuration pins `nixos-26.05` (stable) for system base components and int
 ## Table of Contents
 
 - [Features](#features)
-  - [System & Core Architecture](#system--core-architecture)
-  - [Desktop, Compositors & Shell](#desktop-compositors--shell)
-  - [Shell & Command-Line Workflow](#shell--command-line-workflow)
-  - [Development Environment](#development-environment)
+- [Wiki & Feature Guides](#-wiki--feature-guides)
 - [Architecture & Module Organization](#architecture--module-organization)
 - [Project Directory Structure](#project-directory-structure)
 - [Hosts Comparison](#hosts-comparison)
@@ -23,11 +20,27 @@ The configuration pins `nixos-26.05` (stable) for system base components and int
 - [Post-Install & Daily Workflow](#post-install--daily-workflow)
   - [Rebuild Script (`build.sh`)](#rebuild-script-buildsh)
   - [Fish Abbreviations & Custom Functions](#fish-abbreviations--custom-functions)
-- [Development Shell](#development-shell)
+- [Development Shell](#development-shell--flake-templates)
 - [Module Scaffolding (`boilerplate`)](#module-scaffolding-boilerplate)
 - [Theme & Wallpaper Customization](#theme--wallpaper-customization)
 - [Nix & NixOS Learning Resources](#nix--nixos-learning-resources)
 - [Troubleshooting](#troubleshooting)
+
+---
+
+## 📚 Wiki & Feature Guides
+
+In-depth documentation, architecture references, and workflow guides for specific sub-systems and developer toolchains are available in the **[NixConfig Wiki](docs/wiki/index.md)**:
+
+| Feature / Subsystem | Guide Link | Description |
+| :--- | :--- | :--- |
+| **ESP32 & Arduino** | [esp32-arduino.md](docs/wiki/esp32-arduino.md) | ESP32 microcontroller dev, `arduino-cli`, `esptool`, `esp-init`/`esp-compile`/`esp-upload` workflow scripts, and Neovim LSP setup |
+| **Quickshell UI** | [quickshell.md](docs/wiki/quickshell.md) | Quickshell QML framework, status bars, Command Center dashboard, Lock Screen, and IPC commands |
+| **Firefox & Sidebery** | [firefox.md](docs/wiki/firefox.md) | `userChrome.css` native styling, `userContent.css` Sidebery customization, and Browser Toolbox debugging |
+| **AMD Vivado FPGA** | [vivado-fpga.md](docs/wiki/vivado-fpga.md) | Distrobox Ubuntu 22.04 container setup, GUI/X11 forwarding, and desktop launch wrapper |
+| **Declarative Neovim** | [neovim.md](docs/wiki/neovim.md) | `nvf` Neovim setup, custom Lua plugins, `:GenerateCompileFlags` Nix include parser, and LSP hints |
+| **Wayland Compositors** | [compositors.md](docs/wiki/compositors.md) | Hyprland (with noctalia shell), Niri (scrollable tiling), and MangoWC (DWM-style minimal compositor) |
+| **Gaming & PS5 Controllers** | [gaming.md](docs/wiki/gaming.md) | Steam with Millennium skinning, Gamescope, MangoHud, and DualSense PS5 controller kernel drivers |
 
 ---
 
@@ -64,6 +77,7 @@ The configuration pins `nixos-26.05` (stable) for system base components and int
 ### Development Environment
 
 - **Neovim**: Configured declaratively via [nvf](https://github.com/NotAShelf/nvf) with custom Lua plugins under `modules/features/nvim-src/`.
+- **ESP32 & Microcontroller Dev**: ESP32 Arduino framework integration with `arduino-cli`, `esptool`, and auto-generated `compile_commands.json` for Neovim / Clangd LSP autocompletion (`esp32-arduino` template).
 - **FPGA & Embedded Tools**: AMD Vivado Design Suite 2024.1 running in an isolated Distrobox Ubuntu 22.04 container with X11/GUI passthrough and custom launcher scripts (`assets/setup_vivado.sh` & `vivado.nix`).
 - **Development Toolchains**: Rust toolchain (`rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt`, `bacon`), Node.js, Python 3, Android Studio, `yazi` file manager, `zellij`, and `lazygit`.
 - **Custom Utilities**: `boilerplate` (Nix module scaffolding generator) and `plsfail` (robust command failure tester).
@@ -324,7 +338,7 @@ Custom shell shortcuts defined in `modules/features/layers/shell.nix`:
 
 ---
 
-## Development Shell
+## Development Shell & Flake Templates
 
 Enter the isolated development environment using Nix flakes or Direnv:
 
@@ -339,6 +353,19 @@ direnv allow
 - Nix: `nixfmt`, `nil` (Nix LSP), `alejandra`
 - Shell: Unstable Fish shell 4+
 - Scaffolding: `boilerplate`
+
+### Project Templates
+
+#### ESP32 Arduino (`esp32-arduino`)
+Initialize a new ESP32 microcontroller project anywhere:
+```bash
+mkdir my-esp32-project && cd my-esp32-project
+nix flake init -t /home/josh/NixConfig#esp32-arduino
+```
+Once initialized:
+1. Run `nix develop` (or `direnv allow`).
+2. Run `esp-init` to download board definitions and install the ESP32 core.
+3. Use `esp-compile`, `esp-upload`, `esp-monitor`, and `esp-gen-lsp` for building, flashing, monitoring, and Neovim LSP setup.
 
 ---
 
