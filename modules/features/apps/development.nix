@@ -44,6 +44,10 @@
             pixman
             libinput
 
+            # Embedded & Microcontroller Dev
+            arduino-cli
+            esptool
+
             # CLI Dev Utilities
             devenv
             yazi
