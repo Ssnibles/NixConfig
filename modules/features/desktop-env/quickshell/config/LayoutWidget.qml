@@ -12,7 +12,7 @@ Pill {
   readonly property bool active: wmService !== null && wmService.wm === "dwl"
   visible: active
 
-  readonly property var layoutInfo: wmService ? wmService.getLayoutInfo(wmService.currentLayoutSymbol) : { symbol: "[]=", name: "Tile", icon: "󰙀", key: "t" }
+  readonly property var layoutInfo: wmService ? wmService.getLayoutInfo(wmService.currentLayoutSymbol) : { symbol: "[\\]", name: "Dwindle", icon: "󱗼", key: "r" }
 
   pillHeight: root.horizontal ? 24 : 32
   padding: 8

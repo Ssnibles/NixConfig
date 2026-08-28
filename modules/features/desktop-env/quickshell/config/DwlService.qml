@@ -13,7 +13,7 @@ QtObject {
   property int occupiedTagMask: 0
   property string currentTitle: ""
   property string currentAppId: ""
-  property string currentLayoutSymbol: "RT"
+  property string currentLayoutSymbol: "[\\]"
 
   readonly property Process _statusWatcher: Process {
     command: ["sh", "-c", "exec stdbuf -oL tail -F -n +1 /tmp/dwl-status.fifo 2>/dev/null"]
@@ -56,26 +56,43 @@ QtObject {
     }
   }
 
+  readonly property var availableLayouts: [
+    { symbol: "[\\]", name: "Dwindle", icon: "󱗼", key: "r", wtypeKey: "r", shift: false },
+    { symbol: "[]=",  name: "Tile",    icon: "󰙀", key: "t", wtypeKey: "t", shift: false },
+    { symbol: "[M]",  name: "Monocle", icon: "󰍹", key: "m", wtypeKey: "m", shift: false },
+    { symbol: "|||",  name: "Columns", icon: "󰡍", key: "c", wtypeKey: "c", shift: false }
+  ]
+
+  function getLayoutInfo(symbol) {
+    var sym = symbol || currentLayoutSymbol
+    for (var i = 0; i < availableLayouts.length; i++) {
+      var item = availableLayouts[i]
+      if (sym === item.symbol || sym === item.name.toLowerCase()) return item
+    }
+    if (sym === "><>" || sym === "floating") {
+      return { symbol: "><>", name: "Floating", icon: "󰀽", key: "Shift+Space", wtypeKey: "space", shift: true }
+    }
+    if (sym === "[M]" || sym === "monocle" || /^\[\d+\]$/.test(sym)) {
+      return { symbol: sym, name: "Monocle", icon: "󰍹", key: "m", wtypeKey: "m", shift: false }
+    }
+    if (sym === "[O]" || sym === "overview") {
+      return { symbol: "[O]", name: "Overview", icon: "󰕰", key: "o", wtypeKey: "o", shift: false }
+    }
+    return { symbol: sym, name: sym || "Unknown", icon: "󰕰", key: "", wtypeKey: "", shift: false }
+  }
+
   function focusTag(tagNum) {
     var key = tagNum === 10 ? "0" : tagNum.toString()
     Quickshell.execDetached(["wtype", "-M", "logo", "-k", key, "-m", "logo"])
   }
 
   function setLayout(symbol) {
-    var key = ""
-    var useShift = false
-    if (symbol === "RT" || symbol === "tree") { key = "t"; }
-    else if (symbol === "[]=" || symbol === "tile") { key = "t"; useShift = true; }
-    else if (symbol === "><>" || symbol === "floating") { key = "v"; }
-    else if (symbol === "[M]" || symbol === "monocle" || /^\[\d+\]$/.test(symbol)) { key = "m"; }
-    else if (symbol === "[\\]" || symbol === "dwindle") { key = "r"; }
-    else if (symbol === "(@)" || symbol === "spiral") { key = "s"; }
-
-    if (key !== "") {
-      if (useShift) {
-        Quickshell.execDetached(["wtype", "-M", "logo", "-M", "shift", "-k", key, "-m", "shift", "-m", "logo"])
+    var info = getLayoutInfo(symbol)
+    if (info && info.wtypeKey) {
+      if (info.shift) {
+        Quickshell.execDetached(["wtype", "-M", "logo", "-M", "shift", "-k", info.wtypeKey, "-m", "shift", "-m", "logo"])
       } else {
-        Quickshell.execDetached(["wtype", "-M", "logo", "-k", key, "-m", "logo"])
+        Quickshell.execDetached(["wtype", "-M", "logo", "-k", info.wtypeKey, "-m", "logo"])
       }
     }
   }
