@@ -169,6 +169,15 @@
             typstyle
             neovim-remote
 
+            # C / C++ Tooling & Language Servers
+            clang-tools
+            cppcheck
+            cpplint
+            gdb
+            cmake
+            ninja
+            gnumake
+
             python3Packages.debugpy
             delve
             lldb
@@ -240,6 +249,8 @@
             plenary-nvim
             typst-preview-nvim
             rustaceanvim
+            clangd_extensions-nvim
+            aerial-nvim
 
             tiny-inline-diagnostic-nvim
             conform-nvim

@@ -1,5 +1,5 @@
 vim.g.disable_autoformat = vim.g.disable_autoformat or false
-vim.g.disable_autoformat_ft = vim.g.disable_autoformat_ft or { c = true, cpp = true }
+vim.g.disable_autoformat_ft = vim.g.disable_autoformat_ft or {}
 
 local conform = require("conform")
 
@@ -7,6 +7,8 @@ conform.setup({
 	formatters_by_ft = {
 		lua = { "stylua" },
 		python = { "isort", "black" },
+		c = { "clang-format" },
+		cpp = { "clang-format" },
 		html = { "prettierd", "prettier", stop_after_first = true },
 		css = { "prettierd", "prettier", stop_after_first = true },
 		scss = { "prettierd", "prettier", stop_after_first = true },

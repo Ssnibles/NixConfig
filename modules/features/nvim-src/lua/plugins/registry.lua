@@ -25,6 +25,7 @@ M.deferred = {
 	{ "plugins.nix-snippets", ft = "nix" },
 	{ "plugins.java-snippets", ft = "java" },
 	{ "plugins.rust", ft = "rust" },
+	{ "plugins.c", ft = { "c", "cpp", "objc", "objcpp", "cuda" } },
 	{ "plugins.neogit", cmd = "Neogit" },
 	{ "plugins.dap", keys = { "<leader>mb", "<leader>mc" } },
 }

@@ -2,6 +2,8 @@
 local CONFIG = {
   filetypes = {
     nix = { "deadnix_nvim", "statix_nvim" },
+    c = { "cppcheck" },
+    cpp = { "cppcheck" },
   },
   -- Reduced from BufEnter/InsertLeave to avoid screen flashing & diagnostic redraws
   autocmd_events = { "BufWritePost", "BufReadPost" },

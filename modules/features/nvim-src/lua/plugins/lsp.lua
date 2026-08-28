@@ -27,6 +27,99 @@ local function show_hover_doc()
 	})
 end
 
+-- Universal LSP helper functions (work across all LSPs & filetypes)
+local function universal_switch_source_header()
+	if vim.fn.exists(":ClangdSwitchSourceHeader") == 2 then
+		vim.cmd("ClangdSwitchSourceHeader")
+		return
+	end
+
+	local file = vim.api.nvim_buf_get_name(0)
+	if file == "" then
+		return
+	end
+
+	local ext = vim.fn.fnamemodify(file, ":e")
+	local stem = vim.fn.fnamemodify(file, ":r")
+
+	local alt_exts = {
+		c = { "h", "hpp" },
+		cpp = { "hpp", "h" },
+		cc = { "h", "hpp" },
+		h = { "c", "cpp", "cc" },
+		hpp = { "cpp", "c" },
+		ts = { "spec.ts", "test.ts" },
+		js = { "spec.js", "test.js" },
+	}
+
+	local targets = alt_exts[ext]
+	if targets then
+		for _, alt in ipairs(targets) do
+			local alt_file = stem .. "." .. alt
+			if vim.uv.fs_stat(alt_file) then
+				vim.cmd("edit " .. vim.fn.fnameescape(alt_file))
+				return
+			end
+		end
+	end
+
+	pcall(vim.cmd, "b#")
+end
+
+local function universal_view_ast()
+	if vim.fn.exists(":ClangdAST") == 2 then
+		vim.cmd("ClangdAST")
+	elseif vim.fn.exists(":InspectTree") == 2 then
+		vim.cmd("InspectTree")
+	else
+		vim.notify("AST view not supported for current buffer", vim.log.levels.WARN)
+	end
+end
+
+local function universal_code_outline()
+	if vim.fn.exists(":AerialToggle") == 2 then
+		vim.cmd("AerialToggle!")
+	else
+		local ok, fzf = pcall(require, "fzf-lua")
+		if ok then
+			fzf.lsp_document_symbols()
+		else
+			lsp.buf.document_symbol()
+		end
+	end
+end
+
+local function universal_type_hierarchy()
+	if vim.fn.exists(":ClangdTypeHierarchy") == 2 then
+		vim.cmd("ClangdTypeHierarchy")
+	elseif lsp.buf.type_hierarchy then
+		lsp.buf.type_hierarchy()
+	else
+		vim.notify("Type hierarchy not supported by current LSP", vim.log.levels.WARN)
+	end
+end
+
+local function universal_symbol_info()
+	if vim.fn.exists(":ClangdSymbolInfo") == 2 then
+		vim.cmd("ClangdSymbolInfo")
+	else
+		local ok, fzf = pcall(require, "fzf-lua")
+		if ok then
+			fzf.lsp_document_symbols()
+		else
+			lsp.buf.document_symbol()
+		end
+	end
+end
+
+local function universal_lsp_memory_status()
+	if vim.fn.exists(":ClangdMemoryUsage") == 2 then
+		vim.cmd("ClangdMemoryUsage")
+	else
+		vim.cmd("LspInfo")
+	end
+end
+
 -- Builds client capabilities including blink.cmp completions, folding ranges, and semantic tokens
 local capabilities = (function()
 	local ok, blink = pcall(require, "blink.cmp")
@@ -50,6 +143,7 @@ local function attach_lsp_keymaps(bufnr)
 		vim.keymap.set("n", keys, fn, opts)
 	end
 
+	-- LSP Navigation & Inspection
 	map("gd", lsp.buf.definition, "Go to definition")
 	map("gD", lsp.buf.declaration, "Go to declaration")
 	map("gi", lsp.buf.implementation, "Go to implementation")
@@ -58,11 +152,43 @@ local function attach_lsp_keymaps(bufnr)
 	end, "Find references")
 	map("K", show_hover_doc, "Hover documentation")
 	map("L", lsp.buf.signature_help, "Signature help")
+
+	-- Refactoring & Actions
 	map("<leader>rn", function()
 		return ":IncRename: " .. vim.fn.expand("<cword>")
 	end, "Rename Symbol", { expr = true })
 	map("<leader>ca", lsp.buf.code_action, "Code action")
-	map("<leader>cl", lsp.codelens.run, "CodeLens action")
+	map("<leader>cl", function()
+		if vim.lsp.codelens then
+			pcall(lsp.codelens.run)
+		end
+		local ok, lint = pcall(require, "lint")
+		if ok then
+			lint.try_lint()
+		end
+	end, "CodeLens action / Lint")
+
+	map("<leader>cf", function()
+		local ok, conform = pcall(require, "conform")
+		if ok then
+			conform.format({ bufnr = bufnr, lsp_format = "fallback" })
+		else
+			lsp.buf.format({ async = true })
+		end
+	end, "Format buffer")
+
+	-- Advanced Universal Features
+	map("<leader>ch", universal_switch_source_header, "Switch Source/Header (alternate file)")
+	map("<leader>cA", universal_view_ast, "View AST (Abstract Syntax Tree)")
+	map("<leader>co", universal_code_outline, "Code Outline (Aerial / Symbols)")
+	map("<leader>cT", universal_type_hierarchy, "Type Hierarchy")
+	map("<leader>cI", universal_symbol_info, "Symbol Info / Document Symbols")
+	map("<leader>cM", universal_lsp_memory_status, "LSP Memory / Status Info")
+
+	-- Automatic Inlay Hints
+	if lsp.inlay_hint then
+		pcall(lsp.inlay_hint.enable, true, { bufnr = bufnr })
+	end
 end
 
 -- Global LSP defaults automatically applied to all servers
@@ -534,6 +660,52 @@ local SERVERS = {
 			},
 		},
 	},
+
+	-- C / C++ (clangd)
+	clangd = {
+		cmd = {
+			"clangd",
+			"--background-index",
+			"--clang-tidy",
+			"--header-insertion=iwyu",
+			"--completion-style=detailed",
+			"--function-arg-placeholders",
+			"--fallback-style=llvm",
+			"--query-driver=/**/*",
+			"--all-scopes-completion",
+			"--suggest-missing-includes",
+			"--cross-file-rename",
+		},
+		filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
+		root_markers = {
+			".clangd",
+			".clang-format",
+			".clang-tidy",
+			"compile_commands.json",
+			"compile_flags.txt",
+			"CMakeLists.txt",
+			"Makefile",
+			"meson.build",
+			"build.ninja",
+			"flake.nix",
+			".git",
+		},
+		capabilities = {
+			offsetEncoding = { "utf-16" },
+		},
+		on_new_config = function(new_config, _)
+			local ok_c, c_plugin = pcall(require, "plugins.c")
+			local fallback_flags
+			if ok_c and type(c_plugin.get_nix_c_flags) == "function" then
+				fallback_flags = c_plugin.get_nix_c_flags()
+			else
+				fallback_flags = { "-std=c11", "-Wall", "-Wextra" }
+			end
+
+			new_config.init_options = new_config.init_options or {}
+			new_config.init_options.fallbackFlags = fallback_flags
+		end,
+	},
 }
 
 -- Execute server registrations
@@ -686,4 +858,23 @@ end
 local ok_roslyn, roslyn = pcall(require, "roslyn")
 if ok_roslyn then
 	roslyn.setup({ filewatching = "roslyn" })
+end
+
+local ok_aerial, aerial = pcall(require, "aerial")
+if ok_aerial then
+	aerial.setup({
+		on_attach = function(bufnr)
+			vim.keymap.set("n", "[a", "<cmd>AerialPrev<CR>", { buffer = bufnr, desc = "Previous symbol (Aerial)" })
+			vim.keymap.set("n", "]a", "<cmd>AerialNext<CR>", { buffer = bufnr, desc = "Next symbol (Aerial)" })
+		end,
+		show_guides = true,
+		layout = {
+			max_width = { 40, 0.2 },
+			min_width = 30,
+			default_direction = "prefer_right",
+		},
+		filter_kind = false,
+		highlight_on_hover = true,
+		autojump = false,
+	})
 end
