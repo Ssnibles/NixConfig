@@ -1,0 +1,19 @@
+board_manager:
+  additional_urls:
+    - https://espressif.github.io/arduino-esp32/package_esp32_index.json
+
+library:
+  enable_unsafe_install: false
+
+output:
+  no_color: false
+
+daemon:
+  port: "50051"
+
+updater:
+  enable_notification: true
+
+telemetry:
+  addr: :9090
+  enable: false
