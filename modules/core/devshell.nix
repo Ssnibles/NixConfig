@@ -12,7 +12,9 @@
     in
     {
       devenv.shells.default = {
-        devenv.root = "${inputs.self}";
+        devenv.root = let
+          pwd = builtins.getEnv "PWD";
+        in if pwd != "" then pwd else "${inputs.self}";
         name = "NixConfig Developer Shell";
 
         packages = with pkgs; [
