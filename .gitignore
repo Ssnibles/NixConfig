@@ -1,6 +1,7 @@
 *.age
 secrets/
 .direnv/
+.devenv/
 result
 nohup.out
 *.bin
