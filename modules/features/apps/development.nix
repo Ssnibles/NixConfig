@@ -31,8 +31,6 @@
           with pkgs;
           [
             # Editors & AI tools
-            opencode
-            antigravity
             unstablePkgs.antigravity-cli
 
             # Runtimes & Compilers
