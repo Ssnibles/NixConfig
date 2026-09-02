@@ -35,7 +35,6 @@
 
             # Runtimes & Compilers
             nodejs
-            playwright
             cargo
             zig
             gcc

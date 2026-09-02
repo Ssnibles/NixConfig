@@ -7,7 +7,12 @@
 { ... }:
 {
   nixos.modules.desktop =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       # Pin standard Linux kernel for NVIDIA driver compatibility
       boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
@@ -46,9 +51,7 @@
 
       # Wayland & EGL / GBM environment variables for NVIDIA GPUs
       environment.sessionVariables = {
-        GBM_BACKEND = "nvidia-drm";
         __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-        WLR_NO_HARDWARE_CURSORS = "1";
         LIBVA_DRIVER_NAME = "nvidia";
       };
     };
