@@ -8,7 +8,13 @@
   perSystem =
     { pkgs, self', ... }:
     let
-      unstablePkgs = inputs.nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+      unstablePkgs = import inputs.nixpkgs-unstable {
+        inherit (pkgs.stdenv.hostPlatform) system;
+        config = {
+          allowUnfree = true;
+          allowUnfreePredicate = _: true;
+        };
+      };
     in
     {
       devenv.shells.default = {

@@ -90,7 +90,7 @@
       # ── Desktop Environment Features ───────────────────────────────────────
       features.dwl.enable = true;
       features.hyprland.enable = false;
-      features.mangowc.enable = false;
+      features.mangowc.enable = true;
       features.river.enable = false;
       features.niri.enable = false;
 

@@ -17,6 +17,13 @@
       pomodoroPkg = lib.optional (
         inputs ? pomodoro
       ) inputs.pomodoro.packages.${pkgs.stdenv.hostPlatform.system}.default;
+      unstablePkgs = import inputs.nixpkgs-unstable {
+        inherit (pkgs.stdenv.hostPlatform) system;
+        config = {
+          allowUnfree = true;
+          allowUnfreePredicate = _: true;
+        };
+      };
     in
     {
       config = {
@@ -26,6 +33,7 @@
             # Editors & AI tools
             opencode
             antigravity
+            unstablePkgs.antigravity-cli
 
             # Runtimes & Compilers
             nodejs

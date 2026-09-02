@@ -59,14 +59,19 @@
         xdg.portal = {
           enable = true;
           config = {
+            common = {
+              default = [ "gtk" ];
+              "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+              "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+            };
             dwl = {
               default = [ "gtk" ];
-              "org.freedesktop.impl.portal.Screencast" = [ "wlr" ];
+              "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
               "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
             };
             wlroots = {
               default = [ "gtk" ];
-              "org.freedesktop.impl.portal.Screencast" = [ "wlr" ];
+              "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
               "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
             };
           };
@@ -116,7 +121,7 @@
                 systemctl --user start wayland-session.target
 
                 # Restart services to inherit updated graphical environment variables
-                systemctl --user restart vicinae-server 2>/dev/null || true
+                systemctl --user restart xdg-desktop-portal-wlr xdg-desktop-portal pipewire wireplumber vicinae-server 2>/dev/null || true
 
                 # Background Applications
                 pkill -x swaybg 2>/dev/null || true

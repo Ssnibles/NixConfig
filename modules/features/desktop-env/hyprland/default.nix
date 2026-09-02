@@ -59,7 +59,7 @@
           ];
           config.hyprland = {
             default = [ "hyprland" "gtk" ];
-            "org.freedesktop.impl.portal.Screencast" = "hyprland";
+            "org.freedesktop.impl.portal.ScreenCast" = "hyprland";
             "org.freedesktop.impl.portal.Screenshot" = "hyprland";
           };
         };

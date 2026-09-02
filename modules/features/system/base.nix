@@ -30,6 +30,7 @@
         nixpkgs = {
           config = {
             allowUnfree = true;
+            allowUnfreePredicate = _: true;
             permittedInsecurePackages = permittedInsecure;
           };
           overlays = [
@@ -39,6 +40,7 @@
                 inherit (prev.stdenv.hostPlatform) system;
                 config = {
                   allowUnfree = true;
+                  allowUnfreePredicate = _: true;
                   permittedInsecurePackages = permittedInsecure;
                 };
               };

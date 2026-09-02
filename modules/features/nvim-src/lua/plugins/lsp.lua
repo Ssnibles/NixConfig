@@ -323,8 +323,8 @@ local function get_nixd_config()
 let
   flake = builtins.getFlake %s;
   system = builtins.currentSystem;
-  pkgs = import flake.inputs.nixpkgs { inherit system; };
-  unstable = import flake.inputs."nixpkgs-unstable" { inherit system; };
+  pkgs = import flake.inputs.nixpkgs { inherit system; config = { allowUnfree = true; }; };
+  unstable = import flake.inputs."nixpkgs-unstable" { inherit system; config = { allowUnfree = true; }; };
 in
   pkgs // { unstable = unstable; }
 ]]):format(flake_ref)
