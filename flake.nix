@@ -31,7 +31,8 @@
     };
 
     mangowc = {
-      url = "github:mangowm/mango";
+      # url = "github:mangowm/mango";
+      url = "path:/home/josh/mango";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

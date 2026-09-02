@@ -328,17 +328,14 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1788327700,
-        "narHash": "sha256-dyxeITZr2gFpOClObYnnUxRzur5/AW5mh6Qt0RdOlsQ=",
-        "owner": "mangowm",
-        "repo": "mango",
-        "rev": "a092a34aff906c6c53593b1ef8876fcd236fc1a1",
-        "type": "github"
+        "lastModified": 1788345050,
+        "narHash": "sha256-iOmQ+ETG5a6BbpP9oinJmYa0J/CpIOU7i0B0i1pyxaM=",
+        "path": "/home/josh/mango",
+        "type": "path"
       },
       "original": {
-        "owner": "mangowm",
-        "repo": "mango",
-        "type": "github"
+        "path": "/home/josh/mango",
+        "type": "path"
       }
     },
     "millennium": {
