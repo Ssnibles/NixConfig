@@ -7,7 +7,7 @@
 { ... }:
 {
   nixos.modules.shared =
-    { config, lib, ... }:
+    { config, ... }:
     let
       schemes = {
         catppuccin-mocha = {

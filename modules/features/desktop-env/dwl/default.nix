@@ -43,7 +43,7 @@
 
         programs.dwl.package =
           let
-            dwl-base = inputs.dwl.packages.${pkgs.system}.default;
+            dwl-base = inputs.dwl.packages.${pkgs.stdenv.hostPlatform.system}.default;
           in
           pkgs.symlinkJoin {
             name = "dwl-${dwl-base.version}";
@@ -54,6 +54,7 @@
               makeWrapper ${dwl-base}/bin/dwl $out/bin/dwl \
                 --run 'has_s=0; for arg in "$@"; do if [ "$arg" = "-s" ]; then has_s=1; break; fi; done; if [ "$has_s" -eq 0 ] && [ -f "$HOME/.config/dwl/autostart" ]; then set -- -s "$HOME/.config/dwl/autostart" "$@"; fi'
             '';
+            meta.mainProgram = "dwl";
           };
 
         xdg.portal = {

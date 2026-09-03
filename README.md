@@ -39,7 +39,7 @@ In-depth documentation, architecture references, and workflow guides for specifi
 | **Firefox & Sidebery** | [firefox.md](docs/wiki/firefox.md) | `userChrome.css` native styling, `userContent.css` Sidebery customization, and Browser Toolbox debugging |
 | **AMD Vivado FPGA** | [vivado-fpga.md](docs/wiki/vivado-fpga.md) | Distrobox Ubuntu 22.04 container setup, GUI/X11 forwarding, and desktop launch wrapper |
 | **Declarative Neovim** | [neovim.md](docs/wiki/neovim.md) | `nvf` Neovim setup, custom Lua plugins, `:GenerateCompileFlags` Nix include parser, and LSP hints |
-| **Wayland Compositors** | [compositors.md](docs/wiki/compositors.md) | Hyprland (with noctalia shell), Niri (scrollable tiling), and MangoWC (DWM-style minimal compositor) |
+| **Wayland Compositors** | [compositors.md](docs/wiki/compositors.md) | Hyprland, Niri (scrollable tiling), and MangoWC (DWM-style minimal compositor) |
 | **Gaming & PS5 Controllers** | [gaming.md](docs/wiki/gaming.md) | Steam with Millennium skinning, Gamescope, MangoHud, and DualSense PS5 controller kernel drivers |
 
 ---
@@ -59,7 +59,7 @@ In-depth documentation, architecture references, and workflow guides for specifi
 ### Desktop, Compositors & Shell
 
 - **Compositors**:
-  - **Hyprland**: Featuring [noctalia-shell](https://github.com/Ssnibles/noctalia) desktop shell environment.
+  - **Hyprland**: Modern Wayland dynamic tiling compositor.
   - **Niri**: Scrollable-tiling Wayland compositor.
   - **MangoWC**: DWM-inspired Wayland compositor.
 - **Unified Shell Bar**: Quickshell QML framework supplying unified status bar widgets, notifications, and menus across compositors.
@@ -90,7 +90,7 @@ In-depth documentation, architecture references, and workflow guides for specifi
 +-------------------------------------------------------------+
 |                         flake.nix                           |
 |   inputs: nixpkgs 26.05, nixpkgs-unstable, flake-parts,    |
-|           hjem, nvf, millennium, mangowc, noctalia ...      |
+|           hjem, nvf, millennium, mangowc, dwl ...          |
 +------------------------------+------------------------------+
                                | import-tree ./modules
                                v
@@ -120,8 +120,8 @@ In-depth documentation, architecture references, and workflow guides for specifi
       v                                                 v
 +-----------------------------+           +-----------------------------+
 |    Feature Layers (shared)  |           |     Desktop / Compositors   |
-| base, shell, cli, gaming,   |           | hyprland-noctalia, niri,    |
-| media, development, user... |           | mangowc, quickshell...      |
+| base, shell, cli, gaming,   |           | hyprland, niri,             |
+| media, development, user... |           | mangowc, dwl, quickshell... |
 +-----------------------------+           +-----------------------------+
 ```
 
@@ -178,7 +178,8 @@ modules/
 │   │   ├── startup.nix            | Wayland clipboard persistence services
 │   │   ├── user.nix               | User account definition & hjem setup
 │   │   └── wallpapers.nix         | Declarative wallpaper symlinks via hjem
-│   ├── hyprland/                  | Hyprland compositors (noctalia shell & waybar)
+│   ├── dwl/                       | DWL (dwm for Wayland) compositor
+│   ├── hyprland/                  | Hyprland dynamic tiling compositor
 │   ├── mangowc/                   | MangoWC Wayland compositor
 │   ├── niri/                      | Niri scrollable tiling compositor
 │   ├── quickshell/                | Unified QML desktop shell bar
@@ -186,7 +187,6 @@ modules/
 │   ├── firefox/                   | Firefox browser custom profile
 │   ├── neovim.nix                 | Declarative Neovim built with nvf
 │   ├── nvim-src/                  | Custom Lua Neovim configuration source
-│   ├── qutebrowser.nix            | Qutebrowser keyboard-driven browser
 │   ├── zen-browser.nix            | Zen Browser configuration
 │   ├── vivado.nix                 | AMD Vivado launcher wrapper & desktop shortcut
 │   └── podman-vm.nix              | Podman, Distrobox, and Boxbuddy virtualization
@@ -195,10 +195,8 @@ modules/
 │   ├── dualsense-pair/            | Utility script to pair DualSense controllers
 │   ├── foot/                      | Foot terminal configuration & package wrapper
 │   ├── html-server/               | Quick local HTML preview web server
-│   ├── kitty/                     | Kitty terminal package & module wrapper
-│   ├── noctalia/                  | Noctalia shell build wrapper
 │   ├── plsfail/                   | Command failure stress-testing utility
-│   └── tuxedo/                    | Tuxedo hardware control package
+│   └── tuxedo/                    | Tuxedo todo.txt TUI client
 └── themes/
     ├── default.nix                | Theme options (active palette selector)
     └── palette.nix                | Curated color schemes (vague, catppuccin, gruvbox, rose-pine...)
@@ -210,8 +208,8 @@ modules/
 
 | Host | Primary Compositor | Display Manager | Bootloader | GPU Hardware | Primary Target |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`desktop`** | Hyprland (noctalia shell) | Ly | Limine (EFI) | NVIDIA Proprietary | High-Performance Workstation & Gaming |
-| **`laptop`** | MangoWC + Niri | Ly | Limine (EFI) | AMD iGPU | Portable Productivity & Battery Efficiency |
+| **`desktop`** | Hyprland + DWL + Quickshell | Ly | Limine (EFI) | NVIDIA Proprietary | High-Performance Workstation & Gaming |
+| **`laptop`** | DWL + MangoWC + Quickshell | Ly | Limine (EFI) | AMD iGPU | Portable Productivity & Battery Efficiency |
 
 Both hosts inherit all shared feature layers (`base`, `shell`, `cli`, `development`, `gaming`, `pipewire`, etc.). Host-specific `configuration.nix` files add tailored hardware settings (such as NVIDIA drivers on `desktop` or power management on `laptop`).
 
@@ -405,7 +403,7 @@ Edit `modules/options.nix` to change the global active color palette:
 config.theme.active = "vague"; # Choices: vague, catppuccin, gruvbox, rose-pine...
 ```
 
-The selected scheme dynamically propagates color variables (`c.bg`, `c.fg`, `c.accent`, `c.purple`, etc.) across Neovim, Fish, Vicinae, Quickshell, and Foot/Kitty terminals.
+The selected scheme dynamically propagates color variables (`c.bg`, `c.fg`, `c.accent`, `c.purple`, etc.) across Neovim, Fish, Vicinae, Quickshell, and Foot terminal.
 
 ### Wallpaper Management
 

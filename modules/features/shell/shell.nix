@@ -4,12 +4,11 @@
 # Unstable Fish shell, Oh-My-Zsh setup, Starship prompt configuration,
 # FZF integration script with directory caching, shell aliases, and keybindings.
 # =============================================================================
-{ inputs, ... }:
+{ ... }:
 {
   nixos.modules.shared =
     {
       pkgs,
-      lib,
       config,
       ...
     }:
@@ -89,12 +88,6 @@
               set -gx FZF_DEFAULT_COMMAND 'fish -c "__fzf_cache_fd file"'
               set -gx FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
               set -gx FZF_ALT_C_COMMAND 'fish -c "__fzf_cache_fd dir"'
-
-              # Bind Ctrl+Backspace (\x1f / \c_ / CSI u) to delete word
-              bind \c_ backward-kill-word
-              bind \x1f backward-kill-word
-              bind \e\[127\;5u backward-kill-word
-              bind \e\[8\;5u backward-kill-word
             '';
           };
 

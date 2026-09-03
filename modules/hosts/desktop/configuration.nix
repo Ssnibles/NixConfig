@@ -10,7 +10,6 @@
     {
       pkgs,
       lib,
-      config,
       ...
     }:
     {
@@ -49,7 +48,6 @@
       features.dwl.enable = true;
       features.hyprland.enable = true;
       features.mangowc.enable = true;
-      features.river.enable = false;
       features.niri.enable = false;
 
       system.stateVersion = "25.11";

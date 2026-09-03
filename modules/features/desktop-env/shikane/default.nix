@@ -9,7 +9,6 @@
   nixos.modules.shared =
     {
       pkgs,
-      lib,
       config,
       ...
     }:

@@ -9,6 +9,8 @@
   nixos.modules.shared =
     { pkgs, lib, ... }:
     {
+      nixpkgs.hostPlatform = "x86_64-linux";
+
       # ── Bootloader & Firmware ──────────────────────────────────────────────
       boot.loader.limine.enable = true;
       boot.loader.limine.maxGenerations = 10;

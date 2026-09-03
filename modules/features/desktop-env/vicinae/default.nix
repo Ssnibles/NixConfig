@@ -7,9 +7,9 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, lib, config, ... }:
+    { pkgs, config, ... }:
     let
-      inherit (config.theme.colors) bg bgRaised bgSubtle border fg fgMid fgDim
+      inherit (config.theme.colors) bg bgRaised border fg
         accent teal purple green yellow red orange;
 
       clipboard-history-script = pkgs.writeShellScript "vicinae-clipboard-history" ''

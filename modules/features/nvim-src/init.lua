@@ -4,7 +4,6 @@ for _, dev_plugin in ipairs({
 	"/home/josh/sshinator.nvim",
 	"/home/josh/indentinator.nvim",
 	"/home/josh/zline.nvim",
-	-- "/home/josh/repl-icate.nvim",
 }) do
 	if vim.uv.fs_stat(dev_plugin) then
 		vim.opt.runtimepath:append(dev_plugin)

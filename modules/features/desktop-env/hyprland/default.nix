@@ -1,4 +1,4 @@
-{ self, ... }:
+{ ... }:
 {
   nixos.modules.shared =
     {
@@ -40,7 +40,6 @@
         environment.systemPackages = with pkgs; [
           hyprpaper
           hyprshot
-          seahorse
         ];
 
         programs.seahorse.enable = true;
@@ -74,10 +73,6 @@
         hjem.users."${config.username}" = {
           enable = true;
           files = {
-            ".config/hypr/hyprland.lua" = {
-              source = ./hyprland.lua;
-              clobber = true;
-            };
             ".config/hypr/generated.lua" = {
               text = ''
                 local M = {}

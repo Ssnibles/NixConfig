@@ -9,8 +9,6 @@
   nixos.modules.shared =
     {
       pkgs,
-      lib,
-      config,
       ...
     }:
     let
@@ -35,7 +33,7 @@
           };
           overlays = [
             inputs.millennium.overlays.default
-            (final: prev: {
+            (_: prev: {
               unstable = import inputs.nixpkgs-unstable {
                 inherit (prev.stdenv.hostPlatform) system;
                 config = {

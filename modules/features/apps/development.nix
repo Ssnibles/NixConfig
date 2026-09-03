@@ -10,20 +10,12 @@
     {
       pkgs,
       lib,
-      config,
       ...
     }:
     let
       pomodoroPkg = lib.optional (
         inputs ? pomodoro
       ) inputs.pomodoro.packages.${pkgs.stdenv.hostPlatform.system}.default;
-      unstablePkgs = import inputs.nixpkgs-unstable {
-        inherit (pkgs.stdenv.hostPlatform) system;
-        config = {
-          allowUnfree = true;
-          allowUnfreePredicate = _: true;
-        };
-      };
     in
     {
       config = {
@@ -31,7 +23,7 @@
           with pkgs;
           [
             # Editors & AI tools
-            unstablePkgs.antigravity-cli
+            pkgs.unstable.antigravity-cli
 
             # Runtimes & Compilers
             nodejs

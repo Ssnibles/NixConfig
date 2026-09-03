@@ -88,7 +88,6 @@ def host_templates(name: str) -> dict[Path, str]:
             {{ inputs, config, ... }}:
             {{
               flake.nixosConfigurations.{name} = inputs.nixpkgs.lib.nixosSystem {{
-                system = "x86_64-linux";
                 modules = [
                   config.nixos.modules.shared
                   config.nixos.modules.{name}

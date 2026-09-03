@@ -22,8 +22,6 @@
     nvf.url = "github:NotAShelf/nvf";
     nvf.inputs.nixpkgs.follows = "nixpkgs";
 
-    wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
-
     # Packages
     millennium = {
       url = "github:SteamClientHomebrew/Millennium?dir=packages/nix";

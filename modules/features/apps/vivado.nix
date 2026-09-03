@@ -6,10 +6,10 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, config, ... }:
+    { pkgs, ... }:
     let
       vivado-script = pkgs.writeShellScriptBin "vivado" ''
-        exec ${pkgs.distrobox}/bin/distrobox enter arch-vivado -- vivado "$@"
+        exec ${pkgs.distrobox}/bin/distrobox enter vivado -- vivado "$@"
       '';
 
       vivado-desktop = pkgs.makeDesktopItem {

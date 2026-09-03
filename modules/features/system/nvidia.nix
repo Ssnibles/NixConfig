@@ -10,7 +10,6 @@
     {
       pkgs,
       lib,
-      config,
       ...
     }:
     {
@@ -52,7 +51,7 @@
       # Wayland & EGL / GBM environment variables for NVIDIA GPUs
       environment.sessionVariables = {
         # Force applications to use Wayland natively
-        NIXOS_OZONE_HLWM = "1"; # For Chromium/Electron apps (VS Code, Discord, Slack)
+        NIXOS_OZONE_WL = "1"; # For Chromium/Electron apps (VS Code, Discord, Slack)
         ELECTRON_OZONE_PLATFORM_HINT = "auto";
         # Keep GLX and Video Acceleration pointed to NVIDIA
         __GLX_VENDOR_LIBRARY_NAME = "nvidia";
