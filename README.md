@@ -32,15 +32,15 @@ The configuration pins `nixos-26.05` (stable) for system base components and int
 
 In-depth documentation, architecture references, and workflow guides for specific sub-systems and developer toolchains are available in the **[NixConfig Wiki](docs/wiki/index.md)**:
 
-| Feature / Subsystem | Guide Link | Description |
-| :--- | :--- | :--- |
-| **ESP32 & Arduino** | [esp32-arduino.md](docs/wiki/esp32-arduino.md) | ESP32 microcontroller dev, `arduino-cli`, `esptool`, `esp-init`/`esp-compile`/`esp-upload` workflow scripts, and Neovim LSP setup |
-| **Quickshell UI** | [quickshell.md](docs/wiki/quickshell.md) | Quickshell QML framework, status bars, Command Center dashboard, Lock Screen, and IPC commands |
-| **Firefox & Sidebery** | [firefox.md](docs/wiki/firefox.md) | `userChrome.css` native styling, `userContent.css` Sidebery customization, and Browser Toolbox debugging |
-| **AMD Vivado FPGA** | [vivado-fpga.md](docs/wiki/vivado-fpga.md) | Distrobox Ubuntu 22.04 container setup, GUI/X11 forwarding, and desktop launch wrapper |
-| **Declarative Neovim** | [neovim.md](docs/wiki/neovim.md) | `nvf` Neovim setup, custom Lua plugins, `:GenerateCompileFlags` Nix include parser, and LSP hints |
-| **Wayland Compositors** | [compositors.md](docs/wiki/compositors.md) | Hyprland, Niri (scrollable tiling), and MangoWC (DWM-style minimal compositor) |
-| **Gaming & PS5 Controllers** | [gaming.md](docs/wiki/gaming.md) | Steam with Millennium skinning, Gamescope, MangoHud, and DualSense PS5 controller kernel drivers |
+| Feature / Subsystem          | Guide Link                                     | Description                                                                                                                       |
+| :--------------------------- | :--------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| **ESP32 & Arduino**          | [esp32-arduino.md](docs/wiki/esp32-arduino.md) | ESP32 microcontroller dev, `arduino-cli`, `esptool`, `esp-init`/`esp-compile`/`esp-upload` workflow scripts, and Neovim LSP setup |
+| **Quickshell UI**            | [quickshell.md](docs/wiki/quickshell.md)       | Quickshell QML framework, status bars, Command Center dashboard, Lock Screen, and IPC commands                                    |
+| **Firefox & Sidebery**       | [firefox.md](docs/wiki/firefox.md)             | `userChrome.css` native styling, `userContent.css` Sidebery customization, and Browser Toolbox debugging                          |
+| **AMD Vivado FPGA**          | [vivado-fpga.md](docs/wiki/vivado-fpga.md)     | Distrobox Ubuntu 22.04 container setup, GUI/X11 forwarding, and desktop launch wrapper                                            |
+| **Declarative Neovim**       | [neovim.md](docs/wiki/neovim.md)               | `nvf` Neovim setup, custom Lua plugins, `:GenerateCompileFlags` Nix include parser, and LSP hints                                 |
+| **Wayland Compositors**      | [compositors.md](docs/wiki/compositors.md)     | Hyprland, Niri (scrollable tiling), and MangoWC (DWM-style minimal compositor)                                                    |
+| **Gaming & PS5 Controllers** | [gaming.md](docs/wiki/gaming.md)               | Steam with Millennium skinning, Gamescope, MangoHud, and DualSense PS5 controller kernel drivers                                  |
 
 ---
 
@@ -206,10 +206,10 @@ modules/
 
 ## Hosts Comparison
 
-| Host | Primary Compositor | Display Manager | Bootloader | GPU Hardware | Primary Target |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **`desktop`** | Hyprland + DWL + Quickshell | Ly | Limine (EFI) | NVIDIA Proprietary | High-Performance Workstation & Gaming |
-| **`laptop`** | DWL + MangoWC + Quickshell | Ly | Limine (EFI) | AMD iGPU | Portable Productivity & Battery Efficiency |
+| Host          | Primary Compositor          | Display Manager | Bootloader   | GPU Hardware       | Primary Target                             |
+| :------------ | :-------------------------- | :-------------- | :----------- | :----------------- | :----------------------------------------- |
+| **`desktop`** | Hyprland + DWL + Quickshell | Ly              | Limine (EFI) | NVIDIA Proprietary | High-Performance Workstation & Gaming      |
+| **`laptop`**  | DWL + MangoWC + Quickshell  | Ly              | Limine (EFI) | AMD iGPU           | Portable Productivity & Battery Efficiency |
 
 Both hosts inherit all shared feature layers (`base`, `shell`, `cli`, `development`, `gaming`, `pipewire`, etc.). Host-specific `configuration.nix` files add tailored hardware settings (such as NVIDIA drivers on `desktop` or power management on `laptop`).
 
@@ -323,16 +323,16 @@ cd ~/NixConfig
 
 Custom shell shortcuts defined in `modules/features/layers/shell.nix`:
 
-| Shortcut | Expands to / Description |
-| :--- | :--- |
-| `rebuild` | `sudo nixos-rebuild switch --flake ~/NixConfig#<hostname>` |
-| `update` | `sudo nixos-rebuild switch --flake ~/NixConfig#<hostname> --upgrade` |
-| `clean` | `nh clean all` |
-| `lg` | `lazygit` |
-| `y` | `yazi` |
-| `nixconf` | Jump to `~/NixConfig` directory and show git branch status |
-| `nixup` | Pull latest configuration changes and rebuild with `nh os switch` |
-| `mkcd <dir>` | Create directory `<dir>` and `cd` into it immediately |
+| Shortcut     | Expands to / Description                                             |
+| :----------- | :------------------------------------------------------------------- |
+| `rebuild`    | `sudo nixos-rebuild switch --flake ~/NixConfig#<hostname>`           |
+| `update`     | `sudo nixos-rebuild switch --flake ~/NixConfig#<hostname> --upgrade` |
+| `clean`      | `nh clean all`                                                       |
+| `lg`         | `lazygit`                                                            |
+| `y`          | `yazi`                                                               |
+| `nixconf`    | Jump to `~/NixConfig` directory and show git branch status           |
+| `nixup`      | Pull latest configuration changes and rebuild with `nh os switch`    |
+| `mkcd <dir>` | Create directory `<dir>` and `cd` into it immediately                |
 
 ---
 
@@ -347,6 +347,7 @@ direnv allow
 ```
 
 **Tools Included in DevShell**:
+
 - Rust: `rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt`, `bacon`, `sea-orm-cli`
 - Nix: `nixfmt`, `nil` (Nix LSP), `alejandra`
 - Shell: Unstable Fish shell 4+
@@ -355,12 +356,16 @@ direnv allow
 ### Project Templates
 
 #### ESP32 Arduino (`esp32-arduino`)
+
 Initialize a new ESP32 microcontroller project anywhere:
+
 ```bash
 mkdir my-esp32-project && cd my-esp32-project
 nix flake init -t /home/josh/NixConfig#esp32-arduino
 ```
+
 Once initialized:
+
 1. Run `nix develop` (or `direnv allow`).
 2. Run `esp-init` to download board definitions and install the ESP32 core.
 3. Use `esp-compile`, `esp-upload`, `esp-monitor`, and `esp-gen-lsp` for building, flashing, monitoring, and Neovim LSP setup.
@@ -422,18 +427,21 @@ options.wallpaper = lib.mkOption {
 Whether you are starting out or mastering advanced flake architectures, here are curated resources to deepen your understanding:
 
 ### Core Concepts & Official Guides
+
 - 📖 [Nix Reference Manual](https://nix.dev/manual/nix/latest/) — Essential reference for the Nix language, expressions, and built-in functions.
 - 🐧 [NixOS Official Manual](https://nixos.org/manual/nixos/stable/) — Comprehensive guide for configuring NixOS services, modules, and hardware options.
 - 🚀 [Nix.dev Tutorials](https://nix.dev/) — Opinionated, official documentation for getting started with reproducible environments.
 - 💊 [Nix Pills](https://nixos.org/guides/nix-pills/) — The classic deep-dive tutorial explaining how Nix derivations, closures, and the store work step-by-step from first principles.
 
 ### Flakes & Modular Architecture
+
 - ⚡ [Zero to Nix](https://zero-to-nix.com/) — Modern, beginner-friendly guide to Nix Flakes by Determinate Systems.
 - 🧩 [Flake-Parts Documentation](https://flake.parts/) — Framework for composing modular, multi-system flake configurations.
 - 🌳 [Dendritic Architecture Pattern](https://github.com/mightyiam/dendritic) — The filesystem-as-module-tree design pattern implemented in this repository.
 - 🏠 [Hjem User Environment Manager](https://github.com/feel-co/hjem) — Lightweight, module-native user file management used in place of Home Manager.
 
 ### Search & Community Tools
+
 - 🔍 [NixOS Package & Option Search](https://search.nixos.org/) — Search millions of Nix packages and standard system options.
 - 🔎 [Noogle (Nix Function Search)](https://noogle.dev/) — Search Nix language library functions (`lib.*`, `builtins.*`).
 - 💬 [NixOS Discourse Forum](https://discourse.nixos.org/) — Active community Q&A and architecture discussions.
@@ -469,4 +477,4 @@ sudo nixos-rebuild switch --rollback
 
 ---
 
-*Configured and maintained by Ssnibles.*
+_Configured and maintained by yours truly :)._
