@@ -58,6 +58,10 @@ QtObject {
         }
       }
       if (!outputName) return
+      if (activated.focused) {
+        var sc = Config.screenByName(outputName)
+        if (sc) Config.lastActiveScreen = sc
+      }
       var updated = []
       for (var j = 0; j < root.allWorkspaces.length; j++) {
         var ws = root.allWorkspaces[j]

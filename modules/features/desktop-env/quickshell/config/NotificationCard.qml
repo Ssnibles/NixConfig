@@ -229,7 +229,7 @@ Rectangle {
         width: parent.width
         height: parent.height
         visible: false
-        layer.enabled: true
+        layer.enabled: img.visible
         Rectangle {
           width: parent.width
           height: parent.height
@@ -246,7 +246,7 @@ Rectangle {
         source: root.iconSource
         visible: source !== "" && status === Image.Ready
 
-        layer.enabled: true
+        layer.enabled: img.visible
         layer.effect: MultiEffect {
           maskEnabled: true
           maskSource: iconMask

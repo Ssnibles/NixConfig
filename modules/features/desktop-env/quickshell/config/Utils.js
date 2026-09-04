@@ -33,25 +33,9 @@ function formatTime(seconds) {
   return m + ":" + pad2(s)
 }
 
-function escapeRegex(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-}
-
-var _stripCache = {}
-var _stripCacheCount = 0
-
 function stripMarkup(text) {
-  if (!text || text.length === 0) return ""
-  var cached = _stripCache[text]
-  if (cached !== undefined) return cached
-  var result = text.replace(/<[^>]*>/g, "")
-  if (_stripCacheCount > 100) {
-    _stripCache = {}
-    _stripCacheCount = 0
-  }
-  _stripCache[text] = result
-  _stripCacheCount++
-  return result
+  if (!text) return ""
+  return String(text).replace(/<[^>]*>/g, "")
 }
 
 var _appNameOverrides = {
@@ -414,10 +398,6 @@ function goToSource(source, quickshellObj) {
   if (targets.length === 0) return
 
   focusWindow(targets, qs)
-}
-
-function focusPlayer(player, quickshellObj) {
-  goToSource(player, quickshellObj)
 }
 
 function cleanUrl(url) {

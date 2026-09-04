@@ -86,8 +86,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1788333467,
-        "narHash": "sha256-skTP5KYqBXV9GWgakF6UaiPUNKAbwU85MaYTvH4We8k=",
+        "lastModified": 1788486477,
+        "narHash": "sha256-6+RcLk4OzpJFPL3Vkq83m2o+eyHtH4zuER3q/0FcSXg=",
         "path": "/home/josh/dwl",
         "type": "path"
       },
@@ -329,8 +329,8 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1788481579,
-        "narHash": "sha256-EKiL4r7DvgfcbpaqWk5Mk+NoDiFnarqBXCjGBz3fAg4=",
+        "lastModified": 1788501390,
+        "narHash": "sha256-TrdgU8JTU3FLA3W7vmKQq632gjbdPSHduGiQws59QF8=",
         "path": "/home/josh/mango",
         "type": "path"
       },
@@ -587,11 +587,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788115442,
-        "narHash": "sha256-hpEx9BvlTtnONKZK/GAdVtQriW14x0ec+Ir5uafNPYY=",
+        "lastModified": 1788494938,
+        "narHash": "sha256-ozY1uUiOLXt3KLpUQwu8Y1DG+lKa53Gke7NW9gvUu3I=",
         "owner": "NotAShelf",
         "repo": "nvf",
-        "rev": "f33afa7a878cfac9bebab42d8eccc7680c389cd6",
+        "rev": "5e4f212f8720c17fdd06f5c57591f251aff67453",
         "type": "github"
       },
       "original": {

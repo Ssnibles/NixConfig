@@ -186,7 +186,8 @@ Scope {
 
 #### `CommandCenter.qml`
 - **Role**: Slide-out quick settings dashboard and system metrics panel.
-- **IPC Target**: `"command-center"` (functions: `toggle()`).
+- **IPC Target**: `"command-center"` (functions: `toggle()`, `open()`, `close()`).
+- **Multi-Monitor Cursor Tracking**: Automatically detects which monitor the mouse cursor is located on (via `mmsg get cursorpos` on MangoWC, `hyprctl cursorpos` on Hyprland, `niri msg --json focused-output` on Niri, or bar hover/active window focus fallback) and slides out on that specific monitor while rendering a transparent dismiss overlay across all other screens.
 - **Features**: Header clock & date, status pills (Wi-Fi, Ethernet, Battery, Bluetooth), system sliders (`SliderControl` for Pipewire volume & `brightnessctl` screen brightness), full MPRIS media player card with position seekbar, album art preview, and player selection, plus notification history list.
 
 #### `LockScreen.qml`
@@ -211,8 +212,8 @@ Scope {
 - **Properties**: `value` (0.0–1.0), `fillColor`, `snapPercent`, signal `moved(real value)`. Supports mouse drag and direct click positioning.
 
 #### `CommandCenterButton.qml`
-- **Role**: Quick toggle button component for dashboard cards.
-- **Properties**: `icon`, `title`, `subtitle`, `active`, `accentColor`, signal `clicked()`.
+- **Role**: Quick dashboard trigger button component for status bars.
+- **Properties**: `horizontal`, `screen`. Toggles `Config.commandCenterVisible`, automatically setting the target screen to the parent bar's monitor.
 
 #### Standard Bar Widgets
 - **`ClockWidget.qml`**: Time/date stack with click-to-popup details.

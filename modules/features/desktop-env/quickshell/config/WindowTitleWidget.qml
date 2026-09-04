@@ -7,7 +7,7 @@ Item {
   property string uiFont: Config.monoFont
   property color textColor: Colors.fgMid
   property int fontSize: 13
-  property real rotation: horizontal ? 0 : 270
+  property real targetRotation: horizontal ? 0 : 270
   property bool horizontal: false
   property int maxText: horizontal ? 350 : 120
   property bool italic: true
@@ -16,8 +16,6 @@ Item {
   implicitHeight: horizontal ? 24 : Math.min(titleLabel.implicitWidth, root.maxText)
   width: implicitWidth
   height: implicitHeight
-  anchors.verticalCenter: horizontal ? (parent ? parent.verticalCenter : undefined) : undefined
-  anchors.horizontalCenter: horizontal ? undefined : (parent ? parent.horizontalCenter : undefined)
   visible: titleText !== ""
   clip: true
 
@@ -35,7 +33,7 @@ Item {
 
     transform: [
       Rotation {
-        angle: root.horizontal ? 0 : root.rotation
+        angle: root.horizontal ? 0 : root.targetRotation
         origin.x: 0
         origin.y: 0
       },

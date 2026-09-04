@@ -63,9 +63,6 @@ Rectangle {
     ? Math.max(root.contentHeight + root.padding * 2, root.pillHeight)
     : root.pillHeight
 
-  width: implicitWidth
-  height: implicitHeight
-
   Item {
     id: contentItem
     anchors.centerIn: parent

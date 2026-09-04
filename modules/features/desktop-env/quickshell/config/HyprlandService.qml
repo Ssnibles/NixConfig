@@ -26,6 +26,11 @@ QtObject {
       root.currentTitle = ""
     }
 
+    if (Hyprland.focusedMonitor && Hyprland.focusedMonitor.name) {
+      var sc = Config.screenByName(Hyprland.focusedMonitor.name)
+      if (sc) Config.lastActiveScreen = sc
+    }
+
     var highestId = focusedId
     var occupiedMap = {}
 

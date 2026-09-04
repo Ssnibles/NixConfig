@@ -424,7 +424,7 @@ Scope {
                       id: coverArtMask
                       anchors.fill: parent
                       visible: false
-                      layer.enabled: true
+                      layer.enabled: coverArt.visible
                       Rectangle {
                         anchors.fill: parent
                         radius: 8
@@ -444,7 +444,7 @@ Scope {
                         lockMediaCard.activePlayer.trackArtUrl || ""
                       ) : ""
 
-                      layer.enabled: true
+                      layer.enabled: coverArt.visible
                       layer.effect: MultiEffect {
                         maskEnabled: true
                         maskSource: coverArtMask
@@ -654,6 +654,13 @@ Scope {
 
                   Behavior on border.color { ColorAnimation { duration: 150 } }
 
+                  // Background click area for card margin focusing
+                  MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.IBeamCursor
+                    onClicked: passInput.forceActiveFocus()
+                  }
+
                   RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: 16
@@ -681,6 +688,7 @@ Scope {
                       clip: true
                       focus: false
                       enabled: !surface.authenticating
+                      cursorVisible: activeFocus
 
                       onTextChanged: {
                         if (passInput.text.length > 0 && surface.errorMessage !== "") {
@@ -698,6 +706,8 @@ Scope {
                       }
 
                       Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
                         text: "Enter password..."
                         color: Colors.fgDim
                         font.family: Config.sansFont
@@ -748,13 +758,6 @@ Scope {
                         }
                       }
                     }
-                  }
-
-                  // Click inside card focuses text input
-                  MouseArea {
-                    anchors.fill: parent
-                    anchors.rightMargin: 40
-                    onClicked: passInput.forceActiveFocus()
                   }
                 }
 

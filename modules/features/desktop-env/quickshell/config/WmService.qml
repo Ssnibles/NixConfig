@@ -1,61 +1,56 @@
 import Quickshell
 import QtQuick
 
-QtObject {
+Scope {
   id: root
 
-  readonly property string wm: {
-    var xdg = (Quickshell.env("XDG_CURRENT_DESKTOP") || Quickshell.env("XDG_SESSION_DESKTOP") || "").toLowerCase()
-    if (xdg.includes("dwl")) return "dwl"
-    if (xdg.includes("hyprland")) return "hyprland"
-    if (xdg.includes("river")) return "river"
-    if (xdg.includes("niri")) return "niri"
-    if (xdg.includes("mango")) return "mangowc"
+  readonly property string wm: Config.wm
 
-    var envWm = (Quickshell.env("QS_BAR") || "").toLowerCase()
-    if (envWm !== "") return envWm
-
-    return "mangowc"
+  Loader {
+    id: backendLoader
+    source: {
+      switch (root.wm) {
+        case "mangowc":  return "MangoService.qml"
+        case "river":    return "RiverService.qml"
+        case "dwl":      return "DwlService.qml"
+        case "hyprland": return "HyprlandService.qml"
+        case "niri":     return "NiriService.qml"
+        default:         return "MangoService.qml"
+      }
+    }
+    onLoaded: {
+      if (item) item.active = true
+    }
   }
 
-  // Service Backends
-  readonly property MangoService mangoSvc: MangoService { active: root.wm === "mangowc" }
-  readonly property RiverService riverSvc: RiverService { active: root.wm === "river" }
-  readonly property DwlService dwlSvc: DwlService { active: root.wm === "dwl" }
-  readonly property HyprlandService hyprSvc: HyprlandService { active: root.wm === "hyprland" }
-  readonly property NiriService niriSvc: NiriService { active: root.wm === "niri" }
+  readonly property var activeSvc: backendLoader.item
 
-  readonly property string currentTitle: {
-    if (root.wm === "mangowc") return mangoSvc.currentTitle
-    if (root.wm === "river") return riverSvc.currentTitle
-    if (root.wm === "dwl") return dwlSvc.currentTitle
-    if (root.wm === "hyprland") return hyprSvc.currentTitle
-    if (root.wm === "niri") return niriSvc.currentTitle
-    return ""
-  }
+  readonly property string currentTitle: activeSvc ? (activeSvc.currentTitle || "") : ""
 
   readonly property string currentLayoutSymbol: {
-    if (root.wm === "dwl") return dwlSvc.currentLayoutSymbol
+    if (root.wm === "dwl" && activeSvc) return activeSvc.currentLayoutSymbol || ""
     return ""
   }
 
   readonly property var availableLayouts: {
-    if (root.wm === "dwl") return dwlSvc.availableLayouts
+    if (root.wm === "dwl" && activeSvc) return activeSvc.availableLayouts || []
     return []
   }
 
   function getLayoutInfo(symbol) {
-    if (root.wm === "dwl") return dwlSvc.getLayoutInfo(symbol)
+    if (root.wm === "dwl" && activeSvc) return activeSvc.getLayoutInfo(symbol)
     return { symbol: symbol, name: symbol || "Unknown", icon: "󰕰", key: "" }
   }
 
   function setLayout(symbol) {
-    if (root.wm === "dwl") dwlSvc.setLayout(symbol)
+    if (root.wm === "dwl" && activeSvc) activeSvc.setLayout(symbol)
   }
 
   function getWorkspaces(outputName) {
+    if (!activeSvc) return []
+
     if (root.wm === "mangowc") {
-      var tags = mangoSvc.tagsForOutput(outputName)
+      var tags = activeSvc.tagsForOutput(outputName)
       var maxIdx = 1
       for (var i = 0; i < tags.length; i++) {
         if (tags[i].is_active || tags[i].client_count > 0) {
@@ -79,18 +74,19 @@ QtObject {
       return res
     }
 
-    if (root.wm === "river") return riverSvc.getWorkspaces()
-    if (root.wm === "dwl") return dwlSvc.getWorkspaces(outputName)
-    if (root.wm === "hyprland") return hyprSvc.workspacesList
-    if (root.wm === "niri") return niriSvc.workspacesForOutput(outputName)
+    if (root.wm === "river") return activeSvc.getWorkspaces()
+    if (root.wm === "dwl") return activeSvc.getWorkspaces(outputName)
+    if (root.wm === "hyprland") return activeSvc.workspacesList || []
+    if (root.wm === "niri") return activeSvc.workspacesForOutput(outputName)
     return []
   }
 
   function focusWorkspace(id) {
-    if (root.wm === "mangowc") mangoSvc.focusTag(id)
-    else if (root.wm === "river") riverSvc.focusTag(id)
-    else if (root.wm === "dwl") dwlSvc.focusTag(id)
-    else if (root.wm === "hyprland") hyprSvc.focusWorkspace(id)
-    else if (root.wm === "niri") niriSvc.focusWorkspace(id)
+    if (!activeSvc) return
+    if (root.wm === "mangowc") activeSvc.focusTag(id)
+    else if (root.wm === "river") activeSvc.focusTag(id)
+    else if (root.wm === "dwl") activeSvc.focusTag(id)
+    else if (root.wm === "hyprland") activeSvc.focusWorkspace(id)
+    else if (root.wm === "niri") activeSvc.focusWorkspace(id)
   }
 }

@@ -68,10 +68,11 @@
         };
 
         system.activationScripts.quickshell-config = ''
-          mkdir -p /home/${config.username}/.config/quickshell
-          chown -R ${config.username}:users /home/${config.username}/.config/quickshell
-          ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/quickshell/config/* /home/${config.username}/.config/quickshell/
-          chown -h ${config.username}:users /home/${config.username}/.config/quickshell/
+          TARGET_DIR="/home/${config.username}/.config/quickshell"
+          mkdir -p "$TARGET_DIR"
+          find "$TARGET_DIR" -xtype l -delete
+          ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/quickshell/config/* "$TARGET_DIR"/
+          chown -R ${config.username}:users "$TARGET_DIR"
         '';
       };
     };

@@ -271,7 +271,7 @@ Item {
               width: parent.width
               height: parent.height
               visible: false
-              layer.enabled: true
+              layer.enabled: popoverCover.visible
               Rectangle {
                 width: parent.width
                 height: parent.height
@@ -291,7 +291,7 @@ Item {
                 root.mediaPlayer.trackArtist || "",
                 root.mediaPlayer.trackArtUrl || ""
               ) : ""
-              layer.enabled: true
+              layer.enabled: popoverCover.visible
               layer.effect: MultiEffect {
                 maskEnabled: true
                 maskSource: popoverCoverMask

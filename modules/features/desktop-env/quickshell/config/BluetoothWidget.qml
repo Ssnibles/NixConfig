@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
+import Quickshell.Bluetooth
 import "Utils.js" as Utils
 
 Pill {
@@ -10,10 +10,23 @@ Pill {
   property string uiFont: Config.monoFont
   property bool showLabel: false
 
-  property bool isPowered: false
-  property bool isConnected: false
-  property string connectedDevice: ""
-  property var connectedDevicesList: []
+  readonly property var adapter: Bluetooth.defaultAdapter
+  readonly property bool isPowered: adapter ? adapter.enabled : false
+
+  readonly property var connectedDevicesList: {
+    var list = []
+    var devs = Bluetooth.devices ? Bluetooth.devices.values : []
+    for (var i = 0; i < devs.length; i++) {
+      if (devs[i] && devs[i].connected) {
+        var n = devs[i].deviceName || devs[i].name || devs[i].address || ""
+        if (n && list.indexOf(n) === -1) list.push(n)
+      }
+    }
+    return list
+  }
+
+  readonly property bool isConnected: connectedDevicesList.length > 0
+  readonly property string connectedDevice: isConnected ? connectedDevicesList[0] : ""
 
   property string btIcon: {
     if (root.isConnected) return "󰂱"
@@ -48,87 +61,6 @@ Pill {
 
   Behavior on pillColor { ColorAnimation { duration: 120 } }
   Behavior on border.color { ColorAnimation { duration: 120 } }
-
-  // Process to check bluetooth status via bluetoothctl
-  Process {
-    id: showProc
-    stdout: StdioCollector {
-      onDataChanged: {
-        var text = this.text || ""
-        root.isPowered = text.indexOf("Powered: yes") !== -1
-        if (root.isPowered) {
-          connProc.exec(["bluetoothctl", "devices", "Connected"])
-        } else {
-          root.isConnected = false
-          root.connectedDevice = ""
-          root.connectedDevicesList = []
-        }
-      }
-    }
-  }
-
-  Process {
-    id: connProc
-    stdout: StdioCollector {
-      onDataChanged: {
-        var text = this.text || ""
-        var lines = text.trim().split("\n")
-        var devices = []
-        for (var i = 0; i < lines.length; i++) {
-          var line = lines[i].trim()
-          if (line !== "") {
-            var parts = line.split(" ")
-            if (parts.length >= 3) {
-              devices.push(parts.slice(2).join(" "))
-            }
-          }
-        }
-        if (devices.length > 0) {
-          root.isConnected = true
-          root.connectedDevicesList = devices
-          root.connectedDevice = devices[0]
-        } else {
-          root.isConnected = false
-          root.connectedDevicesList = []
-          root.connectedDevice = ""
-        }
-      }
-    }
-  }
-
-  // Persistent monitor process to receive bluetoothctl event output without polling
-  Process {
-    id: monitorProc
-    command: ["bluetoothctl"]
-    running: true
-    stdout: StdioCollector {
-      onDataChanged: {
-        refreshTimer.restart()
-      }
-    }
-  }
-
-  Timer {
-    id: refreshTimer
-    interval: 150
-    repeat: false
-    onTriggered: {
-      showProc.exec(["bluetoothctl", "show"])
-    }
-  }
-
-  Timer {
-    id: delayedRefreshTimer
-    interval: 400
-    repeat: false
-    onTriggered: {
-      showProc.exec(["bluetoothctl", "show"])
-    }
-  }
-
-  Component.onCompleted: {
-    showProc.exec(["bluetoothctl", "show"])
-  }
 
   // Bar mode content (centered icon, pixelSize 18)
   Text {
@@ -199,9 +131,11 @@ Pill {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: function(mouse) {
       if (mouse.button === Qt.LeftButton) {
-        root.isPowered = !root.isPowered
-        Quickshell.execDetached(["bluetoothctl", "power", root.isPowered ? "on" : "off"])
-        delayedRefreshTimer.restart()
+        if (root.adapter) {
+          root.adapter.enabled = !root.adapter.enabled
+        } else {
+          Quickshell.execDetached(["bluetoothctl", "power", root.isPowered ? "off" : "on"])
+        }
       } else {
         Quickshell.execDetached(["blueman-manager"])
       }

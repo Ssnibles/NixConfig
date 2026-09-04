@@ -14,11 +14,56 @@ Singleton {
 
   // --- Command Center State & Geometry ----------------------------------
   property bool commandCenterVisible: false
+  property var targetScreen: null
+  property var lastActiveScreen: null
   readonly property int commandCenterWidth: 500
   readonly property int commandCenterRadius: 16
   readonly property int commandCenterCardRadius: 12
   readonly property string commandCenterClockFormat: "HH:mm"
   readonly property string commandCenterDateFormat: "dddd, MMMM d"
+
+  // --- Window Manager Detection ------------------------------------------
+  readonly property string wm: {
+    var envWm = (Quickshell.env("QS_BAR") || "").toLowerCase()
+    if (envWm !== "") return envWm
+
+    var xdg = (Quickshell.env("XDG_CURRENT_DESKTOP") || Quickshell.env("XDG_SESSION_DESKTOP") || "").toLowerCase()
+    if (xdg.indexOf("dwl") !== -1) return "dwl"
+    if (xdg.indexOf("hyprland") !== -1) return "hyprland"
+    if (xdg.indexOf("river") !== -1) return "river"
+    if (xdg.indexOf("niri") !== -1) return "niri"
+    if (xdg.indexOf("mango") !== -1) return "mangowc"
+
+    return "mangowc"
+  }
+
+  // --- Screen Resolution Helpers ----------------------------------------
+  function screenByName(name) {
+    if (!name || !Quickshell.screens) return null
+    for (var i = 0; i < Quickshell.screens.length; i++) {
+      if (Quickshell.screens[i].name === name) {
+        return Quickshell.screens[i]
+      }
+    }
+    return null
+  }
+
+  function screenAt(x, y) {
+    if (!Quickshell.screens) return null
+    for (var i = 0; i < Quickshell.screens.length; i++) {
+      var s = Quickshell.screens[i]
+      if (x >= s.x && x < s.x + s.width && y >= s.y && y < s.y + s.height) {
+        return s
+      }
+    }
+    return null
+  }
+
+  function resolveActiveScreen() {
+    if (targetScreen) return targetScreen
+    if (lastActiveScreen) return lastActiveScreen
+    return (Quickshell.screens && Quickshell.screens.length > 0) ? Quickshell.screens[0] : null
+  }
 
   // --- Media --------------------------------------------------------------
   // Whether the command center's media card always stays visible, showing

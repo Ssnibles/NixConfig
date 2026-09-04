@@ -37,6 +37,9 @@ Scope {
         hoverEnabled: true
         acceptedButtons: Qt.AllButtons
         onClicked: function(mouse) { mouse.accepted = true }
+        onEntered: {
+          Config.lastActiveScreen = barPanel.modelData
+        }
       }
 
       // Thin bottom border line
@@ -71,6 +74,7 @@ Scope {
           CommandCenterButton {
             id: commandCenterButton
             horizontal: true
+            screen: barPanel.modelData
             anchors.verticalCenter: parent.verticalCenter
           }
 

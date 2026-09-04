@@ -3,12 +3,13 @@ import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 
-ShellRoot {
+Scope {
   id: rootShell
 
   // Global Niri IPC Event Stream Service
   NiriService {
     id: niriService
+    active: true
   }
 
   Variants {
@@ -40,6 +41,9 @@ ShellRoot {
         hoverEnabled: true
         acceptedButtons: Qt.AllButtons
         onClicked: function(mouse) { mouse.accepted = true }
+        onEntered: {
+          Config.lastActiveScreen = barPanel.modelData
+        }
       }
 
       // Thin border on the inner edge to separate the bar from workspace windows
@@ -76,6 +80,7 @@ ShellRoot {
 
           CommandCenterButton {
             id: commandCenterButton
+            screen: barPanel.modelData
           }
 
           WindowTitleWidget {

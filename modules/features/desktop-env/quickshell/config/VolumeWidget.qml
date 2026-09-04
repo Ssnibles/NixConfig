@@ -59,7 +59,6 @@ Item {
       var step = 0.05
       var dir = wheel.angleDelta.y > 0 ? 1 : -1
       var newVol = Math.max(0, Math.min(1.5, root.volPct + dir * step))
-      root.volPct = newVol
       Pipewire.defaultAudioSink.audio.volume = newVol
     }
   }
@@ -106,7 +105,6 @@ Item {
 
         function updateVolume(mouseY) {
           var pct = Math.max(0, Math.min(1.5, (parent.height - mouseY) / parent.height))
-          root.volPct = pct
           if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
             Pipewire.defaultAudioSink.audio.volume = pct
           }

@@ -16,11 +16,127 @@ Scope {
 
   property bool closing: false
   property bool active: Config.commandCenterVisible || ccScope.closing
+  property bool pendingOpen: false
+
+  Timer {
+    id: openTimeoutTimer
+    interval: 50
+    repeat: false
+    onTriggered: {
+      if (ccScope.pendingOpen) {
+        ccScope.pendingOpen = false
+        if (!Config.targetScreen) {
+          Config.targetScreen = Config.resolveActiveScreen()
+        }
+        Config.commandCenterVisible = true
+      }
+    }
+  }
+
+  Process {
+    id: cursorQueryProc
+    stdout: SplitParser {
+      onRead: line => {
+        if (!ccScope.pendingOpen) return
+        var txt = line.trim()
+        if (!txt) return
+
+        var foundScreen = null
+        try {
+          if (Config.wm === "mangowc") {
+            var data = JSON.parse(txt)
+            if (data && data.monitor) {
+              foundScreen = Config.screenByName(data.monitor)
+            } else if (data && data.x !== undefined && data.y !== undefined) {
+              foundScreen = Config.screenAt(data.x, data.y)
+            }
+          } else if (Config.wm === "hyprland") {
+            var parts = txt.split(",")
+            if (parts.length >= 2) {
+              var hx = parseInt(parts[0].trim())
+              var hy = parseInt(parts[1].trim())
+              if (!isNaN(hx) && !isNaN(hy)) {
+                foundScreen = Config.screenAt(hx, hy)
+              }
+            }
+          } else if (Config.wm === "niri") {
+            var niriData = JSON.parse(txt)
+            if (niriData && niriData.name) {
+              foundScreen = Config.screenByName(niriData.name)
+            }
+          }
+        } catch (e) {}
+
+        if (foundScreen) {
+          Config.targetScreen = foundScreen
+          Config.lastActiveScreen = foundScreen
+        }
+
+        ccScope.pendingOpen = false
+        openTimeoutTimer.stop()
+        if (!Config.targetScreen) {
+          Config.targetScreen = Config.resolveActiveScreen()
+        }
+        Config.commandCenterVisible = true
+      }
+    }
+
+    onExited: function(exitCode, exitStatus) {
+      if (ccScope.pendingOpen) {
+        ccScope.pendingOpen = false
+        openTimeoutTimer.stop()
+        if (!Config.targetScreen) {
+          Config.targetScreen = Config.resolveActiveScreen()
+        }
+        Config.commandCenterVisible = true
+      }
+    }
+  }
+
+  function openOnActiveScreen(): void {
+    if (Config.commandCenterVisible) return
+
+    var cmd = null
+    if (Config.wm === "mangowc") {
+      cmd = ["mmsg", "get", "cursorpos"]
+    } else if (Config.wm === "hyprland") {
+      cmd = ["hyprctl", "cursorpos"]
+    } else if (Config.wm === "niri") {
+      cmd = ["niri", "msg", "--json", "focused-output"]
+    }
+
+    if (cmd) {
+      ccScope.pendingOpen = true
+      openTimeoutTimer.start()
+      cursorQueryProc.exec(cmd)
+    } else {
+      Config.targetScreen = Config.resolveActiveScreen()
+      Config.commandCenterVisible = true
+    }
+  }
 
   IpcHandler {
     target: "command-center"
     function toggle(): void {
-      Config.commandCenterVisible = !Config.commandCenterVisible
+      if (Config.commandCenterVisible || ccScope.pendingOpen) {
+        ccScope.pendingOpen = false
+        openTimeoutTimer.stop()
+        Config.commandCenterVisible = false
+      } else {
+        ccScope.openOnActiveScreen()
+      }
+    }
+
+    function open(): void {
+      if (!Config.commandCenterVisible) {
+        ccScope.openOnActiveScreen()
+      }
+    }
+
+    function close(): void {
+      ccScope.pendingOpen = false
+      openTimeoutTimer.stop()
+      Config.commandCenterVisible = false
     }
   }
 
@@ -29,6 +145,9 @@ Scope {
     function onCommandCenterVisibleChanged() {
       if (Config.commandCenterVisible) {
         ccScope.closing = false
+        if (!Config.targetScreen) {
+          Config.targetScreen = Config.resolveActiveScreen()
+        }
       } else if (ccScope.active) {
         ccScope.closing = true
       }
@@ -60,7 +179,12 @@ Scope {
       exclusionMode: ExclusionMode.Ignore
 
       // State for transition animation
-      property bool isPrimaryScreen: panel.modelData === Quickshell.screens[0]
+      property bool isTargetScreen: {
+        var target = Config.targetScreen || Config.lastActiveScreen || (Quickshell.screens && Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)
+        if (!target) return false
+        return panel.modelData === target || (panel.modelData && target && panel.modelData.name === target.name)
+      }
+      property bool isPrimaryScreen: isTargetScreen
       property real panelOpacity: 0
       property real panelSlide: 60
 
@@ -97,9 +221,11 @@ Scope {
       Component.onCompleted: {
         panelOpacity = 0
         panelSlide = 60
-        outsideDismiss.forceActiveFocus()
+        if (panel.isTargetScreen) {
+          outsideDismiss.forceActiveFocus()
+          brightnessGetProc.exec(["brightnessctl", "-m"])
+        }
         fadeInAnim.start()
-        brightnessGetProc.exec(["brightnessctl", "-m"])
       }
 
       Connections {
@@ -111,7 +237,7 @@ Scope {
           } else if (Config.commandCenterVisible) {
             fadeOutAnim.stop()
             fadeInAnim.start()
-            outsideDismiss.forceActiveFocus()
+            if (panel.isTargetScreen) outsideDismiss.forceActiveFocus()
           }
         }
       }
@@ -134,6 +260,7 @@ Scope {
         onFinished: {
           if (ccScope.closing) {
             ccScope.closing = false
+            Config.targetScreen = null
           }
         }
       }
@@ -173,7 +300,11 @@ Scope {
       MouseArea {
         id: outsideDismiss
         anchors.fill: parent
-        focus: true
+        hoverEnabled: true
+        focus: panel.isTargetScreen
+        onEntered: {
+          Config.lastActiveScreen = panel.modelData
+        }
         Keys.onPressed: function(event) {
           if (event.key === Qt.Key_Escape) {
             Config.commandCenterVisible = false
@@ -188,7 +319,7 @@ Scope {
       // Main Card container
       Rectangle {
         id: mainCard
-        visible: panel.isPrimaryScreen
+        visible: panel.isTargetScreen
         width: Config.commandCenterWidth
         anchors.top: parent.top
         anchors.bottom: parent.bottom
@@ -345,7 +476,6 @@ Scope {
                   fillColor: panel.volMuted ? Colors.red : Colors.accent
                   snapPercent: 5
                   onMoved: function(v) {
-                    panel.volPct = v
                     volSetTimer.targetVal = v
                     volSetTimer.restart()
                   }
@@ -504,7 +634,7 @@ Scope {
                     width: parent.width
                     height: parent.height
                     visible: false
-                    layer.enabled: true
+                    layer.enabled: coverArt.visible
                     Rectangle {
                       width: parent.width
                       height: parent.height
@@ -525,7 +655,7 @@ Scope {
                       mediaCard.activePlayer.trackArtUrl || ""
                     ) : ""
 
-                    layer.enabled: true
+                    layer.enabled: coverArt.visible
                     layer.effect: MultiEffect {
                       maskEnabled: true
                       maskSource: coverArtMask

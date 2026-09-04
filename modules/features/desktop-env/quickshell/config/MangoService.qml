@@ -54,6 +54,10 @@ QtObject {
           } else {
             root.currentTitle = ""
           }
+          if (data && data.monitor) {
+            var sc = Config.screenByName(data.monitor)
+            if (sc) Config.lastActiveScreen = sc
+          }
         } catch (e) {
           root.currentTitle = ""
         }

@@ -97,8 +97,7 @@ Singleton {
     store._currentDownloadItem = store._downloadQueue.shift()
     var item = store._currentDownloadItem
     var script = 'if [ -f "$2" ]; then exit 0; fi; mkdir -p "$1" && curl -s -L -f "$3" -o "$2"'
-    downloadProc.command = ["sh", "-c", script, "sh", store.cacheDir, item.targetPath, item.url]
-    downloadProc.running = true
+    downloadProc.exec(["sh", "-c", script, "sh", store.cacheDir, item.targetPath, item.url])
   }
 
   function _hashString(str) {
@@ -294,7 +293,8 @@ Singleton {
         isMedia: true,
         appName: mediaPlayer.name || "",
         desktopEntry: mediaPlayer.desktopEntry || "",
-        timeStr: Qt.formatDateTime(new Date(), "hh:mm A")
+        timeStr: Qt.formatDateTime(new Date(), "hh:mm A"),
+        createdAt: Date.now()
       }
 
       // Deduplicate in activeModel by clean title
@@ -414,7 +414,8 @@ Singleton {
           isMedia: true,
           appName: notification.appName || "",
           desktopEntry: notification.desktopEntry || "",
-          timeStr: Qt.formatDateTime(new Date(), "hh:mm A")
+          timeStr: Qt.formatDateTime(new Date(), "hh:mm A"),
+          createdAt: Date.now()
         }
 
         // Deduplicate in activeModel by clean title
@@ -480,7 +481,8 @@ Singleton {
         isMedia: false,
         appName: notification.appName || "",
         desktopEntry: notification.desktopEntry || "",
-        timeStr: Qt.formatDateTime(new Date(), "hh:mm A")
+        timeStr: Qt.formatDateTime(new Date(), "hh:mm A"),
+        createdAt: Date.now()
       }
 
       // Record into history
@@ -534,21 +536,19 @@ Singleton {
 
   Timer {
     id: dismissTimer
-    interval: store.timeoutMs
+    interval: 500
+    repeat: true
+    running: activeModel.count > 0
     onTriggered: {
-      var indexToDismiss = -1
-      var startIndex = (store.hoveredIndex !== -1) ? store.hoveredIndex + 1 : 0
-      for (var i = startIndex; i < activeModel.count; i++) {
+      var now = Date.now()
+      for (var i = activeModel.count - 1; i >= 0; i--) {
         var item = activeModel.get(i)
-        if (item && item.urgency !== 2) { // 2 = Critical
-          indexToDismiss = i
-          break
+        if (item && item.urgency !== 2 && item.createdAt && (now - item.createdAt >= store.timeoutMs)) {
+          if (store.hoveredIndex !== i) {
+            store.dismissActiveAt(i, true)
+          }
         }
       }
-      if (indexToDismiss !== -1) {
-        store.dismissActiveAt(indexToDismiss, true)
-      }
-      if (activeModel.count > 0) restart()
     }
   }
 
