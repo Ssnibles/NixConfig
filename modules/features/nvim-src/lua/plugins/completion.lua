@@ -14,7 +14,7 @@ local keymap = {
 	-- Open completion menu manually
 	["<C-space>"] = {
 		function()
-			cmp.show({ providers = { "lsp", "copilot", "snippets", "buffer", "path", "cmdline" } })
+			cmp.show()
 		end,
 	},
 
@@ -160,17 +160,6 @@ cmp.setup({
 		},
 	},
 })
-
-local ok_text_edits, text_edits = pcall(require, "blink.cmp.lib.text_edits")
-if ok_text_edits then
-	local original_write_to_dot_repeat = text_edits.write_to_dot_repeat
-	text_edits.write_to_dot_repeat = function(text_edit)
-		if vim.fn.mode() ~= "i" then
-			return
-		end
-		return original_write_to_dot_repeat(text_edit)
-	end
-end
 
 local copilot_ok, copilot = pcall(require, "copilot")
 if copilot_ok then

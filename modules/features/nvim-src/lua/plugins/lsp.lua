@@ -155,18 +155,14 @@ local function attach_lsp_keymaps(bufnr)
 
 	-- Refactoring & Actions
 	map("<leader>rn", function()
-		return ":IncRename: " .. vim.fn.expand("<cword>")
+		return ":IncRename " .. vim.fn.expand("<cword>")
 	end, "Rename Symbol", { expr = true })
 	map("<leader>ca", lsp.buf.code_action, "Code action")
 	map("<leader>cl", function()
 		if vim.lsp.codelens then
 			pcall(lsp.codelens.run)
 		end
-		local ok, lint = pcall(require, "lint")
-		if ok then
-			lint.try_lint()
-		end
-	end, "CodeLens action / Lint")
+	end, "CodeLens action")
 
 	map("<leader>cf", function()
 		local ok, conform = pcall(require, "conform")
@@ -190,6 +186,8 @@ local function attach_lsp_keymaps(bufnr)
 		pcall(lsp.inlay_hint.enable, true, { bufnr = bufnr })
 	end
 end
+
+vim.g.attach_lsp_keymaps = attach_lsp_keymaps
 
 -- Global LSP defaults automatically applied to all servers
 lsp.config("*", {
@@ -690,9 +688,9 @@ local SERVERS = {
 			"flake.nix",
 			".git",
 		},
-		capabilities = {
+		capabilities = vim.tbl_deep_extend("force", capabilities, {
 			offsetEncoding = { "utf-16" },
-		},
+		}),
 		on_new_config = function(new_config, _)
 			local ok_c, c_plugin = pcall(require, "plugins.c")
 			local fallback_flags

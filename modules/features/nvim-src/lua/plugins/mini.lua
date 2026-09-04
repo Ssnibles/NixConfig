@@ -76,8 +76,11 @@ require("mini.cursorword").setup({ delay = 200 })
 
 require("mini.align").setup()
 require("mini.move").setup()
-require("mini.operators").setup()
+require("mini.operators").setup({
+	replace = { prefix = "gR" },
+})
 require("mini.splitjoin").setup()
+require("mini.trailspace").setup()
 
 require("mini.pairs").setup()
 require("mini.bufremove").setup({})

@@ -50,39 +50,15 @@ autocmd("FileType", {
 	end,
 })
 
--- Trims trailing whitespace and empty lines on save
+-- Safely trims trailing whitespace and trailing blank lines without corrupting undo or extmarks
 local function trim_trailing_whitespace()
 	if vim.bo.buftype ~= "" or CONFIG.trim_whitespace_skip_ft[vim.bo.filetype] then
 		return
 	end
-
-	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-	local modified = false
-
-	-- Trim trailing whitespace per line
-	for i, line in ipairs(lines) do
-		local new_line = line:gsub("%s+$", "")
-		if new_line ~= line then
-			lines[i] = new_line
-			modified = true
-		end
-	end
-
-	-- Trim trailing blank lines at end of file
-	local last = #lines
-	while last > 1 and lines[last]:match("^%s*$") do
-		last = last - 1
-	end
-
-	if last < #lines and #lines > 1 then
-		for i = #lines, last + 1, -1 do
-			table.remove(lines, i)
-		end
-		modified = true
-	end
-
-	if modified then
-		vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+	local ok, trailspace = pcall(require, "mini.trailspace")
+	if ok then
+		trailspace.trim()
+		trailspace.trim_last_lines()
 	end
 end
 
@@ -92,10 +68,14 @@ autocmd("BufWritePre", {
 	callback = trim_trailing_whitespace,
 })
 
--- Automatically enables LSP inlay hints and CodeLens once attached
+-- Automatically attaches keymaps, enables LSP inlay hints and CodeLens once attached
 autocmd("LspAttach", {
 	group = augroup,
 	callback = function(args)
+		if vim.g.attach_lsp_keymaps then
+			pcall(vim.g.attach_lsp_keymaps, args.buf)
+		end
+
 		local client = vim.lsp.get_client_by_id(args.data.client_id)
 		if vim.lsp.inlay_hint and not vim.lsp.inlay_hint.is_enabled({ bufnr = args.buf }) then
 			pcall(vim.lsp.inlay_hint.enable, true, { bufnr = args.buf })
@@ -181,36 +161,21 @@ autocmd("FileType", {
 	end,
 })
 
--- Ensures signcolumn remains visible across window buffers
-autocmd("BufWinEnter", {
+-- Switches to absolute line numbers in Insert mode, preserving relative numbers in Normal and Visual modes
+autocmd("InsertEnter", {
 	group = augroup,
 	callback = function()
-		local bt = vim.bo.buftype
-		if bt == "terminal" or bt == "nofile" or bt == "acwrite" then
-			return
-		end
-		if vim.wo.signcolumn == "no" then
-			vim.wo.signcolumn = vim.o.signcolumn
+		if vim.bo.buftype == "" then
+			vim.opt_local.relativenumber = false
 		end
 	end,
 })
-
--- Switches to absolute line numbers in Insert and Visual modes
-autocmd({ "ModeChanged", "BufEnter" }, {
+autocmd("InsertLeave", {
 	group = augroup,
-	pattern = "*",
 	callback = function()
-		local bt = vim.bo.buftype
-		if bt == "terminal" or bt == "nofile" or bt == "prompt" or bt == "quickfix" then
-			return
+		if vim.bo.buftype == "" then
+			vim.opt_local.relativenumber = true
 		end
-
-		local mode = vim.v.event.new_mode or vim.api.nvim_get_mode().mode
-		local first = mode:sub(1, 1)
-		local is_insert_or_visual = (first == "i" or first == "v" or first == "V" or first == "\22")
-
-		vim.opt_local.number = true
-		vim.opt_local.relativenumber = not is_insert_or_visual
 	end,
 })
 

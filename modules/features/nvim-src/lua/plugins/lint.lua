@@ -104,7 +104,7 @@ vim.api.nvim_create_autocmd(CONFIG.autocmd_events, {
 })
 
 -- Manual lint trigger mapping
-vim.keymap.set("n", "<leader>cl", function()
+vim.keymap.set("n", "<leader>cL", function()
   run_lint()
   vim.notify("Triggered linters for " .. vim.bo.filetype, vim.log.levels.INFO)
 end, { desc = "Lint buffer" })

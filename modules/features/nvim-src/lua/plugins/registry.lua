@@ -13,6 +13,8 @@ M.core = {
 	"plugins.fidget",
 	"plugins.terminal",
 	"plugins.lint",
+	"plugins.neogit",
+	"plugins.dap",
 	"plugins.sshinator",
 	"plugins.indentinator",
 	"plugins.zline",
@@ -25,8 +27,6 @@ M.deferred = {
 	{ "plugins.java-snippets", ft = "java" },
 	{ "plugins.rust", ft = "rust" },
 	{ "plugins.c", ft = { "c", "cpp", "objc", "objcpp", "cuda" } },
-	{ "plugins.neogit", cmd = "Neogit" },
-	{ "plugins.dap", keys = { "<leader>mb", "<leader>mc" } },
 }
 
 return M
