@@ -64,6 +64,9 @@
         };
 
         system.activationScripts.hyprland-config = ''
+          if [ -f /var/lib/hjem/manifest-${config.username}.json ]; then
+            ${pkgs.jq}/bin/jq 'del(.files[] | select(.target == "/home/${config.username}/.config/hypr/hyprland.lua"))' /var/lib/hjem/manifest-${config.username}.json > /var/lib/hjem/manifest-${config.username}.json.tmp && mv /var/lib/hjem/manifest-${config.username}.json.tmp /var/lib/hjem/manifest-${config.username}.json || true
+          fi
           mkdir -p /home/${config.username}/.config/hypr
           chown -R ${config.username}:users /home/${config.username}/.config/hypr
           ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/hyprland/hyprland.lua /home/${config.username}/.config/hypr/hyprland.lua
