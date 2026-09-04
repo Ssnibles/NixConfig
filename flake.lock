@@ -66,11 +66,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1788402531,
-        "narHash": "sha256-vkKkue371vWQIKJBbVM/QTk6XU65PKJ+q39Q6+OKIVk=",
+        "lastModified": 1788550903,
+        "narHash": "sha256-XMMZULOICeCNuJPFzUyy6KRws26ug78HmbAqtEmXVxk=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "30058c52e5b8d7ed7ba4d8e7c793c7726aa7b9a0",
+        "rev": "2769b83ebd3e259192740ee40e39af59c5642774",
         "type": "github"
       },
       "original": {
@@ -86,8 +86,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1788486477,
-        "narHash": "sha256-6+RcLk4OzpJFPL3Vkq83m2o+eyHtH4zuER3q/0FcSXg=",
+        "lastModified": 1788330243,
+        "narHash": "sha256-V2ce7dnOdvDsflY1EiCtYYwqhxZhu3a6HH77dQQ4rNM=",
         "path": "/home/josh/dwl",
         "type": "path"
       },
@@ -329,8 +329,8 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1788503711,
-        "narHash": "sha256-D+45YloW0L7TY/WRf+MoceWOAdYSrziLQ3LDZ1TiuZY=",
+        "lastModified": 1788559320,
+        "narHash": "sha256-jvm6OEmOvJGU7jp7K/LDhhxzOv81XMLqjHnVLt7AQDc=",
         "path": "/home/josh/mango",
         "type": "path"
       },
@@ -564,11 +564,11 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1788316716,
-        "narHash": "sha256-bc7rSpXIdn9QWGNqfWcPZWOhEVF8NoeAZkWq0XWnf/k=",
+        "lastModified": 1788404924,
+        "narHash": "sha256-lhEhY8X5EgkQ/eg6IFz4cc8jRuSYSvnxx1al7d1dvZ0=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "3ed67ec0a4d3c7ab4ae1f04f8ee8df07bfa506a2",
+        "rev": "0968519e14f7aa7d3e9b389682bd74d2b51c8ce8",
         "type": "github"
       },
       "original": {
