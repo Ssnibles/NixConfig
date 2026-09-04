@@ -85,46 +85,46 @@ require("mini.trailspace").setup()
 require("mini.pairs").setup()
 require("mini.bufremove").setup({})
 
-local starter = require("mini.starter")
-local logo = [[
-  ⠀⠀⠀⠀⠀⠀⡠⠛⠋⠉⠉⠓⠻⢤⠀
-  ⠀⠀⠀⠀⠀⡟⣠⣶⠖⣤⠀⣴⣯⣹⣷
-  ⠀⣀⣀⣀⠀⣆⢹⣿⣿⡿⠀⠹⠿⠿⣉
-  ⡞⠀⠀⠀⠀⠀⠓⠦⢄⡄⠩⠥⠔⠊⠁
-  ⠙⡄⢠⣴⣶⣦⠀⢠⡄⣴⠀⣯⠀⠀⠀
-  ⠀⠲⠖⠁⠉⠁⠧⠼⠁⠈⠓⠋⠀⠀⠀
-]]
-
-starter.setup({
-	header = logo,
-	items = {
-		{
-			name = "New file",
-			action = "enew",
-			section = "Actions",
-		},
-		{
-			name = "Open oldfile (fzf)",
-			action = function()
-				require("fzf-lua").oldfiles()
-			end,
-			section = "Actions",
-		},
-		{
-			name = "Open Neovim Wiki",
-			action = "help nvim",
-			section = "Actions",
-		},
-		{
-			name = "Quit Neovim",
-			action = "qa",
-			section = "Actions",
-		},
-	},
-	content_hooks = {
-		starter.gen_hook.adding_bullet("  󰅂 ", false),
-		starter.gen_hook.indexing("section", { "Actions" }),
-		starter.gen_hook.aligning("center", "center"),
-	},
-	footer = "",
-})
+-- local starter = require("mini.starter")
+-- local logo = [[
+--   ⠀⠀⠀⠀⠀⠀⡠⠛⠋⠉⠉⠓⠻⢤⠀
+--   ⠀⠀⠀⠀⠀⡟⣠⣶⠖⣤⠀⣴⣯⣹⣷
+--   ⠀⣀⣀⣀⠀⣆⢹⣿⣿⡿⠀⠹⠿⠿⣉
+--   ⡞⠀⠀⠀⠀⠀⠓⠦⢄⡄⠩⠥⠔⠊⠁
+--   ⠙⡄⢠⣴⣶⣦⠀⢠⡄⣴⠀⣯⠀⠀⠀
+--   ⠀⠲⠖⠁⠉⠁⠧⠼⠁⠈⠓⠋⠀⠀⠀
+-- ]]
+--
+-- starter.setup({
+-- 	header = logo,
+-- 	items = {
+-- 		{
+-- 			name = "New file",
+-- 			action = "enew",
+-- 			section = "Actions",
+-- 		},
+-- 		{
+-- 			name = "Open oldfile (fzf)",
+-- 			action = function()
+-- 				require("fzf-lua").oldfiles()
+-- 			end,
+-- 			section = "Actions",
+-- 		},
+-- 		{
+-- 			name = "Open Neovim Wiki",
+-- 			action = "help nvim",
+-- 			section = "Actions",
+-- 		},
+-- 		{
+-- 			name = "Quit Neovim",
+-- 			action = "qa",
+-- 			section = "Actions",
+-- 		},
+-- 	},
+-- 	content_hooks = {
+-- 		starter.gen_hook.adding_bullet("  󰅂 ", false),
+-- 		starter.gen_hook.indexing("section", { "Actions" }),
+-- 		starter.gen_hook.aligning("center", "center"),
+-- 	},
+-- 	footer = "",
+-- })
