@@ -9,6 +9,7 @@
   nixos.modules.shared =
     {
       pkgs,
+      config,
       ...
     }:
     let
@@ -153,6 +154,7 @@
         # ── System Maintenance & Store Optimization ─────────────────────────
         programs.nh = {
           enable = true;
+          flake = "/home/${config.username}/NixConfig";
           clean.enable = true;
           clean.extraArgs = "--keep-since 30d --keep 3";
         };
