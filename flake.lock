@@ -66,11 +66,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1788565719,
-        "narHash": "sha256-/iJw3mGGJ/+P3qdb/nFgJhJ9m5rW/OjWN8QgNY2Ucjw=",
+        "lastModified": 1788582287,
+        "narHash": "sha256-dg00rtwZFDmswg8Wp+GodoXHysrUsz4WMMWXtOKvvlU=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "360b5eb1397291383d10845a63a0247981bd5598",
+        "rev": "8ea6b32683c7108e6705edc7817ccfa8d358a2d9",
         "type": "github"
       },
       "original": {
@@ -86,8 +86,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1788330243,
-        "narHash": "sha256-V2ce7dnOdvDsflY1EiCtYYwqhxZhu3a6HH77dQQ4rNM=",
+        "lastModified": 1788486477,
+        "narHash": "sha256-6+RcLk4OzpJFPL3Vkq83m2o+eyHtH4zuER3q/0FcSXg=",
         "path": "/home/josh/dwl",
         "type": "path"
       },
@@ -329,14 +329,18 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1788568361,
-        "narHash": "sha256-P8N32teY2S/0c8PJamSaWK9R00mpX7POyRwTnbL2+Mg=",
-        "path": "/home/josh/mango",
-        "type": "path"
+        "lastModified": 1788583598,
+        "narHash": "sha256-BlAqQJSNpNVcodv8rF6hJlFEhFcvV1X1z7HjXV++FBw=",
+        "owner": "mangowm",
+        "repo": "mango",
+        "rev": "b332fdbccde11a43ccab8e9d41ab07e1938c8e2b",
+        "type": "github"
       },
       "original": {
-        "path": "/home/josh/mango",
-        "type": "path"
+        "owner": "mangowm",
+        "ref": "main",
+        "repo": "mango",
+        "type": "github"
       }
     },
     "millennium": {
@@ -564,11 +568,11 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1788404924,
-        "narHash": "sha256-lhEhY8X5EgkQ/eg6IFz4cc8jRuSYSvnxx1al7d1dvZ0=",
+        "lastModified": 1788531059,
+        "narHash": "sha256-hLD4l3QOGBQhkVp3mQ2lJ/YbEi99qUgKapb40KovZ88=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "0968519e14f7aa7d3e9b389682bd74d2b51c8ce8",
+        "rev": "801bef6abd86b91e51083066b83fb354a11fc640",
         "type": "github"
       },
       "original": {
