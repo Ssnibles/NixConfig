@@ -66,11 +66,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1788550903,
-        "narHash": "sha256-XMMZULOICeCNuJPFzUyy6KRws26ug78HmbAqtEmXVxk=",
+        "lastModified": 1788565719,
+        "narHash": "sha256-/iJw3mGGJ/+P3qdb/nFgJhJ9m5rW/OjWN8QgNY2Ucjw=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "2769b83ebd3e259192740ee40e39af59c5642774",
+        "rev": "360b5eb1397291383d10845a63a0247981bd5598",
         "type": "github"
       },
       "original": {
@@ -329,8 +329,8 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1788562342,
-        "narHash": "sha256-GCAMZDrAqrglbChj3FhLzfy6AjhMePHX2d2Z7R7DmyM=",
+        "lastModified": 1788568361,
+        "narHash": "sha256-P8N32teY2S/0c8PJamSaWK9R00mpX7POyRwTnbL2+Mg=",
         "path": "/home/josh/mango",
         "type": "path"
       },
@@ -348,11 +348,11 @@
       },
       "locked": {
         "dir": "packages/nix",
-        "lastModified": 1788314497,
-        "narHash": "sha256-NiFndFWVN/sOMLUN1iEFEmqMpdcC0hnyPQSEs9eMGdo=",
+        "lastModified": 1788565178,
+        "narHash": "sha256-bjItIyGxVAUqaSpr2tdN/YTd8BP2DY+wAmun136LrZs=",
         "owner": "SteamClientHomebrew",
         "repo": "Millennium",
-        "rev": "a3d675611b68c5658a0b5ffd25b9f1b57c6d32ff",
+        "rev": "5cbebb86628767f365de987c451a2839afe153bc",
         "type": "github"
       },
       "original": {

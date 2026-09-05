@@ -23,6 +23,8 @@
         enable32Bit = true;
       };
 
+      hardware.keyboard.qmk.enable = true;
+
       # ── Kernel & Performance Tuning ───────────────────────────────────────
       boot.kernelPackages = pkgs.linuxPackages_latest;
 
@@ -98,6 +100,8 @@
       systemd.user.services.dbus.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
       systemd.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
       systemd.user.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
-      systemd.services.display-manager.serviceConfig.LogFilterPatterns = [ "~gkr-pam: unable to locate daemon control file" ];
+      systemd.services.display-manager.serviceConfig.LogFilterPatterns = [
+        "~gkr-pam: unable to locate daemon control file"
+      ];
     };
 }
