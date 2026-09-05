@@ -38,9 +38,9 @@
         "ath11k_pci"
       ];
 
-      # Set max PWM brightness for HP elitebook & fix ELAN touchpad incomplete report spam
+      # Set max PWM brightness for HP elitebook (0x40000), disable PSR (0x10) & Panel Replay (0x400) to fix external monitor flicker/resets, & fix ELAN touchpad spam
       boot.kernelParams = [
-        "amdgpu.dcdebugmask=0x40000"
+        "amdgpu.dcdebugmask=0x40410"
         "i2c_hid.polling_mode=1"
         "i2c_hid_acpi.polling_mode=1"
       ];
