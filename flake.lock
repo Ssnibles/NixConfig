@@ -329,11 +329,11 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1788583598,
-        "narHash": "sha256-BlAqQJSNpNVcodv8rF6hJlFEhFcvV1X1z7HjXV++FBw=",
+        "lastModified": 1788596127,
+        "narHash": "sha256-GM0TNxqLLiqL73qo+HZlDXDhcjdqbs2ySrvhbxIrI/M=",
         "owner": "mangowm",
         "repo": "mango",
-        "rev": "b332fdbccde11a43ccab8e9d41ab07e1938c8e2b",
+        "rev": "c62e01c303b8e19598df0b0b7cd16e466a71fc21",
         "type": "github"
       },
       "original": {
@@ -747,11 +747,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787172300,
-        "narHash": "sha256-E7zjvg5EMBq9hDjILKsNHb7ig90DcS28x/db8v0b5x0=",
+        "lastModified": 1788587463,
+        "narHash": "sha256-jF3K8osnK+NHtCV4zOTo1Ft1mPB/z7+ealajo9L4w2k=",
         "owner": "webstonehq",
         "repo": "tuxedo",
-        "rev": "2faa605aa9ca58b8fe2ae39a12d27dd8dfdd5ec1",
+        "rev": "69db0a14a72323c19b4b671f8abe32c0c34bdea1",
         "type": "github"
       },
       "original": {
