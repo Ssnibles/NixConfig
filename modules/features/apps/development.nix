@@ -52,8 +52,8 @@
             rclone
             fuse
             sshpass
-            beekeeper-studio
             sqlite
+            harlequin
             self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
           ]
           ++ pomodoroPkg
