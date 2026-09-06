@@ -33,7 +33,7 @@ Rectangle {
   // Generate candidate list for icon resolution (fallback hierarchy)
   property var candidateIcons: {
     var list = []
-    
+
     function addCandidate(s) {
       if (!s) return
       var str = String(s).trim()
@@ -67,7 +67,13 @@ Rectangle {
     }
 
     // Explicit app icon string provided by notification
-    addCandidate(root.appIcon)
+    if (root.appIcon) {
+      var ai = String(root.appIcon).trim()
+      addCandidate(ai)
+      if (ai.match(/\.(png|svg|xpm)$/i)) {
+        addCandidate(ai.replace(/\.(png|svg|xpm)$/i, ""))
+      }
+    }
 
     // Desktop entry variations
     if (root.desktopEntry) {
@@ -89,11 +95,6 @@ Rectangle {
       addCandidate(an.replace(/\s+/g, "-"))
     }
 
-    // Universal default fallback icons
-    addCandidate("dialog-information")
-    addCandidate("preferences-system-notifications")
-    addCandidate("notification-symbolic")
-
     return list
   }
 
@@ -102,11 +103,25 @@ Rectangle {
     for (var i = 0; i < candidates.length; i++) {
       var src = String(candidates[i]).trim()
       if (src === "") continue
+
+      // If candidate is an image://icon/ URL, verify the icon exists in the active theme
+      if (src.startsWith("image://icon/")) {
+        var iconName = src.substring(13).split("?")[0].trim()
+        if (iconName !== "" && Quickshell.hasThemeIcon(iconName)) {
+          return "image://icon/" + iconName
+        }
+        continue // Skip nonexistent icon to prevent Quickshell from drawing the purple/black texture
+      }
+
+      // File paths, web URLs, or custom image providers
       if (src.startsWith("/") || src.startsWith("file://") || src.startsWith("http://") || src.startsWith("https://") || src.startsWith("image://")) {
         return src
       }
-      if (Quickshell.hasThemeIcon(src)) {
-        return "image://icon/" + src
+
+      // If candidate is an icon name, check if active theme has it
+      var clean = src.replace(/\.(png|svg|xpm)$/i, "")
+      if (Quickshell.hasThemeIcon(clean)) {
+        return "image://icon/" + clean
       }
     }
     return ""
@@ -118,7 +133,7 @@ Rectangle {
   width: parent ? parent.width : Config.notifWidth
   height: Math.max(contentCol.implicitHeight, hasIcon ? (isMedia ? 48 : 40) : 0) + Config.notifCardMargins * 2
   radius: Config.notifRadius
-  
+
   color: hoverArea.containsMouse ? Colors.bgRaised : Colors.bg
   border.color: hoverArea.containsMouse
     ? (isMedia ? Colors.teal : (urgency === 2 ? Colors.red : Colors.accent))
@@ -185,7 +200,7 @@ Rectangle {
     if (urgency === 2) return "󰀦"
 
     // First letter fallback if program name / desktop entry is available
-    var cleanApp = (appName || desktopEntry || "").trim()
+    var cleanApp = (appName || desktopEntry || appIcon || summary || "").trim()
     if (cleanApp.length > 0) {
       var match = cleanApp.match(/[a-zA-Z0-9]/)
       if (match) return match[0].toUpperCase()

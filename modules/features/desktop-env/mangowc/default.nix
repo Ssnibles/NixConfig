@@ -36,6 +36,35 @@
 
         programs.mango.enable = true;
 
+        # Development wrapper: dynamically executes the local build from
+        # /home/${config.username}/mango/result/bin/mango if it exists.
+        # This allows rapid local development: simply run `nix build` in ~/mango,
+        # and on the next session start it automatically runs the new binary
+        # without needing a full `nixos-rebuild switch`.
+        programs.mango.package =
+          let
+            mango-base = inputs.mangowc.packages.${pkgs.stdenv.hostPlatform.system}.default;
+          in
+          pkgs.symlinkJoin {
+            name = "mango-dev";
+            paths = [ mango-base ];
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+            postBuild = ''
+              rm $out/bin/mango
+              makeWrapper ${mango-base}/bin/mango $out/bin/mango \
+                --run 'if [ -x /home/${config.username}/mango/result/bin/mango ]; then exec /home/${config.username}/mango/result/bin/mango "$@"; fi'
+              if [ -f $out/bin/mmsg ]; then
+                rm $out/bin/mmsg
+                makeWrapper ${mango-base}/bin/mmsg $out/bin/mmsg \
+                  --run 'if [ -x /home/${config.username}/mango/result/bin/mmsg ]; then exec /home/${config.username}/mango/result/bin/mmsg "$@"; fi'
+              fi
+            '';
+            meta.mainProgram = "mango";
+            passthru = (mango-base.passthru or { }) // {
+              inherit (mango-base) providedSessions;
+            };
+          };
+
         system.activationScripts.mango-config = ''
           mkdir -p /home/${config.username}/.config/mango
           chown -R ${config.username}:users /home/${config.username}/.config/mango

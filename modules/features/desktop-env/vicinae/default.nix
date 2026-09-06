@@ -9,8 +9,19 @@
   nixos.modules.shared =
     { pkgs, config, ... }:
     let
-      inherit (config.theme.colors) bg bgRaised border fg
-        accent teal purple green yellow red orange;
+      inherit (config.theme.colors)
+        bg
+        bgRaised
+        border
+        fg
+        accent
+        teal
+        purple
+        green
+        yellow
+        red
+        orange
+        ;
 
       clipboard-history-script = pkgs.writeShellScript "vicinae-clipboard-history" ''
         # @vicinae.schemaVersion 1
@@ -72,7 +83,7 @@
                 "launcher_window": {
                   "layer_shell": {
                     "enabled": true,
-                    "layer": "top"
+                    "layer": "overlay"
                   }
                 },
                 "snippets": {

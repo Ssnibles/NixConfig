@@ -15,6 +15,7 @@ Scope {
 
     PanelWindow {
       id: barPanel
+      WlrLayershell.layer: WlrLayer.Bottom
       required property var modelData
       screen: barPanel.modelData
       focusable: false

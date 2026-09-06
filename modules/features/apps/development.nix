@@ -52,7 +52,7 @@
             rclone
             fuse
             sshpass
-            harlequin
+            beekeeper-studio
             sqlite
             self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
           ]
