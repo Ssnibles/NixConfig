@@ -16,7 +16,7 @@ Scope {
       required property var modelData
       screen: modelData
 
-      WlrLayershell.layer: WlrLayer.Top
+      WlrLayershell.layer: WlrLayer.Overlay
 
       readonly property bool onTop: root.position.indexOf("top") !== -1
       readonly property bool onLeft: root.position.indexOf("left") !== -1
