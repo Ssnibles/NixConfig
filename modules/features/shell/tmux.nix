@@ -152,6 +152,12 @@
           tmuxResurrectSave
           tmuxSeshPicker
           tmuxSeshKiller
+          pkgs.tmuxPlugins.yank
+          pkgs.tmuxPlugins.resurrect
+          pkgs.tmuxPlugins.extrakto
+          pkgs.tmuxPlugins.tmux-fzf
+          pkgs.tmuxPlugins.tmux-floax
+          pkgs.tmuxPlugins.jump
         ];
 
         programs.tmux = {
@@ -163,16 +169,6 @@
           escapeTime = 5;
           terminal = "tmux-256color";
           historyLimit = 50000;
-
-          plugins = with pkgs.tmuxPlugins; [
-            yank
-            resurrect
-            extrakto
-            tmux-fzf
-            prefix-highlight
-            tmux-floax
-            jump
-          ];
 
           extraConfig = ''
             set-option -g prefix `
@@ -189,19 +185,14 @@
             unbind C-b
             unbind C-z
 
-            # Extrakt text/URL/path extractor keybinding
+            # ─── Plugin Configurations (Must precede plugin execution) ────────
+            # Extrakto text/URL/path extractor keybinding
             set -g @extrakto_key 'u'
 
             # Tmux-Jump configuration (flash.nvim / EasyMotion style jump to position)
             set -g @jump-key 'space'
 
-            # ─── Sesh Session Manager (Prefix + K) ──────────────────────────
-            bind-key K display-popup -E -w 80% -h 70% "${tmuxSeshPicker}/bin/tmux-sesh-picker"
-
-            # Last session toggle (Prefix + L via sesh, preserves history across kills)
-            bind -N "last-session (via sesh)" L run-shell "${pkgs.sesh}/bin/sesh last"
-
-            # ─── Resurrect (manual snapshot & full restoration) ───────────────
+            # Resurrect (manual snapshot & full restoration)
             set -g @resurrect-save-key 'S'
             set -g @resurrect-restore-key 'R'
             set -g @resurrect-strategy-nvim 'session'
@@ -209,6 +200,35 @@
             set -g @resurrect-processes 'nvim vim vi btop yazi lazygit ssh man less bat cat fish bash python node cargo'
             set -g @resurrect-capture-pane-contents 'on'
             set -g @resurrect-hook-post-save-all '${tmuxResurrectSave}/bin/tmux-resurrect-save'
+
+            # Tmux-FZF configuration
+            set-environment -g TMUX_FZF_LAUNCH_KEY 'f'
+            set -g @tmux-fzf-launch-key 'f'
+            set -g @tmux-fzf-options '-p -w 80% -h 60% -m --no-preview'
+            set -g @tmux-fzf-preview '0'
+            set -g @tmux-fzf-order 'command:session:window:pane:keybinding:clipboard:process'
+
+            # tmux-floax configuration
+            set -g @floax-width '80%'
+            set -g @floax-height '80%'
+            set -g @floax-border-color "#${c.border}"
+            set -g @floax-text-color "#${c.fg}"
+            set -g @floax-bind 'P'
+            set -g @floax-change-path 'true'
+
+            # ─── Load Plugins (Async -b prevents startup deadlocks in tmux 3.6+) ──
+            run-shell "${pkgs.tmuxPlugins.yank}/share/tmux-plugins/yank/yank.tmux"
+            run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/resurrect.tmux"
+            run-shell "${pkgs.tmuxPlugins.extrakto}/share/tmux-plugins/extrakto/extrakto.tmux"
+            run-shell -b "${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/main.tmux"
+            run-shell -b "${pkgs.tmuxPlugins.tmux-floax}/share/tmux-plugins/tmux-floax/floax.tmux"
+            run-shell -b "${pkgs.tmuxPlugins.jump}/share/tmux-plugins/jump/tmux-jump.tmux"
+
+            # ─── Sesh Session Manager (Prefix + K) ──────────────────────────
+            bind-key K display-popup -E -w 80% -h 70% "${tmuxSeshPicker}/bin/tmux-sesh-picker"
+
+            # Last session toggle (Prefix + L via sesh, preserves history across kills)
+            bind -N "last-session (via sesh)" L run-shell "${pkgs.sesh}/bin/sesh last"
 
             # Explicit manual session save & restore bindings using safe wrapper
             bind-key S run-shell "${tmuxResurrectSave}/bin/tmux-resurrect-save run"
@@ -222,24 +242,10 @@
             bind-key o display-popup -E -w 75% -h 65% "${tmuxWindowPicker}/bin/tmux-window-picker"
             bind-key N command-prompt -p "New Session Name:" "if-shell -F '%1' 'new-session -A -s \"%1\"'"
 
-            # ─── Tmux-FZF configuration ──────────────────────────────────────
-            set -g @tmux-fzf-launch-key 'f'
-            set -g @tmux-fzf-options '-p -w 80% -h 60% -m --no-preview'
-            set -g @tmux-fzf-preview '0'
-            set -g @tmux-fzf-order 'command:session:window:pane:keybinding:clipboard:process'
-
             # Smart Command Mode & Auto-Completion (: and tmux-fzf launcher)
             set -g status-keys emacs
             bind-key : command-prompt -T command
             bind-key \; run-shell -b "TMUX_FZF_OPTIONS='-p -w 80% -h 60% --no-preview' TMUX_FZF_PREVIEW=0 TMUX_FZF_CLIENT='#{client_tty}' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
-
-            # ─── tmux-floax configuration ────────────────────────────────────
-            set -g @floax-width '80%'
-            set -g @floax-height '80%'
-            set -g @floax-border-color "#${c.border}"
-            set -g @floax-text-color "#${c.fg}"
-            set -g @floax-bind 'P'
-            set -g @floax-change-path 'true'
 
             # Native Floating LazyGit Popup
             bind g display-popup -d "#{pane_current_path}" -w 85% -h 85% -E "${pkgs.lazygit}/bin/lazygit"
@@ -356,7 +362,7 @@
             bind-key -T copy-mode-vi WheelUpPane send-keys -X -N 2 scroll-up
             bind-key -T copy-mode-vi WheelDownPane send-keys -X -N 2 scroll-down
             bind p paste-buffer -p
-            bind P choose-buffer
+            # bind P choose-buffer  # Kept free for Floax floating scratchpad popup (Leader + P)
 
             # ─── Status Bar Styling ──────────────────────────────────────────
             set -g status-position top
@@ -397,6 +403,10 @@
           description = "Tmux terminal multiplexer daemon";
           documentation = [ "man:tmux(1)" ];
           wantedBy = [ "default.target" ];
+          environment = {
+            # Match NixOS programs.tmux.secureSocket socket directory in user shells
+            TMUX_TMPDIR = "%t";
+          };
           path = with pkgs; [
             "/etc/profiles/per-user/${config.username}/bin"
             "/run/current-system/sw/bin"
