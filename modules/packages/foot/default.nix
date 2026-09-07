@@ -27,6 +27,25 @@
     {
       environment.systemPackages = [ pkgs.foot ];
 
+      systemd.user.services.foot-server = {
+        description = "Foot terminal server";
+        documentation = [ "man:foot(1)" ];
+        wantedBy = [ "graphical-session.target" ];
+        partOf = [ "graphical-session.target" ];
+        after = [ "graphical-session.target" ];
+        aliases = [ "foot.service" ];
+        unitConfig = {
+          ConditionEnvironment = "WAYLAND_DISPLAY";
+        };
+        path = [ config.system.path ];
+        serviceConfig = {
+          Type = "simple";
+          ExecStart = "${pkgs.foot}/bin/foot --server";
+          Restart = "on-failure";
+          RestartSec = 2;
+        };
+      };
+
       hjem.users."${config.username}" = {
         files = {
           ".config/foot/foot.ini" = {
