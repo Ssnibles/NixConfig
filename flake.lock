@@ -86,8 +86,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1788486477,
-        "narHash": "sha256-6+RcLk4OzpJFPL3Vkq83m2o+eyHtH4zuER3q/0FcSXg=",
+        "lastModified": 1788330243,
+        "narHash": "sha256-V2ce7dnOdvDsflY1EiCtYYwqhxZhu3a6HH77dQQ4rNM=",
         "path": "/home/josh/dwl",
         "type": "path"
       },
@@ -329,8 +329,8 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1788735514,
-        "narHash": "sha256-vq0cBUK9vkyd9LKqzYGKD18CjpM/SvaDX2+5qugPZuo=",
+        "lastModified": 1788818987,
+        "narHash": "sha256-nYA/8An0W6AJ8Z8rWjhoosqiyqdSIfbbpIdyPo2vT/M=",
         "path": "/home/josh/mango",
         "type": "path"
       },
