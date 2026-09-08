@@ -29,8 +29,8 @@ local keymap = {
 	},
 
 	-- Snippet navigation (Forward: Ctrl+L, Backward: Ctrl+H)
-	["<C-l>"] = { "snippet_forward", "fallback" },
-	["<C-h>"] = { "snippet_backward", "fallback" },
+	["<C-]>"] = { "snippet_forward", "fallback" },
+	["<C-[>"] = { "snippet_backward", "fallback" },
 
 	-- Menu selection and cancel options
 	["<Esc>"] = { "cancel", "fallback" },

@@ -168,6 +168,3 @@ map("n", "<leader>/", "<cmd>FzfLua live_grep<CR>", { desc = "Search project" })
 -- Miscellaneous
 map("n", "<leader>cd", "<cmd>cd %:p:h<CR>", { desc = "Change to file directory" })
 map("n", "zz", "za", { desc = "Toggle Folds" })
-map("n", "<leader>sd", function() require("mini.starter").open() end, { desc = "Open startup dashboard" })
-map("n", "<leader>sh", function() require("mini.starter").open() end, { desc = "Starter home" })
-
