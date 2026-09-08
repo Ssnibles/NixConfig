@@ -45,6 +45,7 @@ var _appNameOverrides = {
   "zen-browser": "Zen",
   "zen-alpha": "Zen",
   "zen-beta": "Zen",
+  "zen-twilight": "Zen",
   "firefox": "Firefox",
   "firefox-developer-edition": "Firefox",
   "firefox-devedition": "Firefox",
