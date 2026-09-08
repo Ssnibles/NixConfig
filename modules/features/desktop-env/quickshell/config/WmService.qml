@@ -28,22 +28,44 @@ Scope {
   readonly property string currentTitle: activeSvc ? (activeSvc.currentTitle || "") : ""
 
   readonly property string currentLayoutSymbol: {
-    if (root.wm === "dwl" && activeSvc) return activeSvc.currentLayoutSymbol || ""
+    if (activeSvc && activeSvc.currentLayoutSymbol !== undefined) {
+      return activeSvc.currentLayoutSymbol || ""
+    }
     return ""
   }
 
   readonly property var availableLayouts: {
-    if (root.wm === "dwl" && activeSvc) return activeSvc.availableLayouts || []
+    if (activeSvc && activeSvc.availableLayouts !== undefined) {
+      return activeSvc.availableLayouts || []
+    }
     return []
   }
 
+  function getLayoutSymbol(outputName) {
+    if (!activeSvc) return ""
+    if (root.wm === "mangowc" && activeSvc.layoutForOutput) {
+      return activeSvc.layoutForOutput(outputName)
+    }
+    return activeSvc.currentLayoutSymbol || ""
+  }
+
   function getLayoutInfo(symbol) {
-    if (root.wm === "dwl" && activeSvc) return activeSvc.getLayoutInfo(symbol)
+    if (activeSvc && activeSvc.getLayoutInfo) {
+      return activeSvc.getLayoutInfo(symbol)
+    }
     return { symbol: symbol, name: symbol || "Unknown", icon: "󰕰", key: "" }
   }
 
   function setLayout(symbol) {
-    if (root.wm === "dwl" && activeSvc) activeSvc.setLayout(symbol)
+    if (activeSvc && activeSvc.setLayout) {
+      activeSvc.setLayout(symbol)
+    }
+  }
+
+  function nextLayout() {
+    if (activeSvc && activeSvc.nextLayout) {
+      activeSvc.nextLayout()
+    }
   }
 
   function getWorkspaces(outputName) {

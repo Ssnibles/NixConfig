@@ -5,14 +5,22 @@ Pill {
   id: root
 
   property var wmService: null
+  property var screen: null
   property PanelWindow sharedWindow: null
   property bool horizontal: true
 
-  // Only visible when dwl is the active window manager
-  readonly property bool active: wmService !== null && wmService.wm === "dwl"
+  // Visible when window manager provides layouts (mangowc, dwl)
+  readonly property bool active: wmService !== null && (wmService.wm === "mangowc" || wmService.wm === "dwl")
   visible: active
 
-  readonly property var layoutInfo: wmService ? wmService.getLayoutInfo(wmService.currentLayoutSymbol) : { symbol: "[\\]", name: "Dwindle", icon: "󱗼", key: "r" }
+  readonly property string currentLayoutSymbol: {
+    if (!wmService) return ""
+    var _ = wmService.currentLayoutSymbol
+    var screenName = root.screen ? root.screen.name : ""
+    return wmService.getLayoutSymbol(screenName)
+  }
+
+  readonly property var layoutInfo: wmService ? wmService.getLayoutInfo(root.currentLayoutSymbol) : { symbol: "DW", name: "Dwindle", icon: "󱗼", key: "r" }
 
   pillHeight: root.horizontal ? 24 : 32
   padding: 8
@@ -48,6 +56,11 @@ Pill {
     anchors.fill: parent
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
+    onClicked: function(mouse) {
+      if (mouse.button === Qt.LeftButton && root.wmService) {
+        root.wmService.nextLayout()
+      }
+    }
   }
 
   Tooltip {
@@ -94,7 +107,7 @@ Pill {
                 font.weight: Font.Bold
               }
               Text {
-                text: "DWL Window Tiling Mode"
+                text: (root.wmService && root.wmService.wm === "dwl") ? "DWL Window Tiling Mode" : "MangoWC Window Tiling Mode"
                 color: Colors.fgDim
                 font.family: Config.sansFont
                 font.pixelSize: 10
@@ -115,8 +128,13 @@ Pill {
               required property var modelData
               readonly property bool isCurrent: {
                 if (!root.wmService) return false
-                var cur = root.wmService.currentLayoutSymbol
-                return cur === modelData.symbol || (modelData.symbol === "[M]" && (cur === "[M]" || /^\[\d+\]$/.test(cur)))
+                var cur = root.currentLayoutSymbol
+                if (!cur) return false
+                if (cur === modelData.symbol) return true
+                if (modelData.layoutName && cur.toLowerCase() === modelData.layoutName.toLowerCase()) return true
+                if (modelData.name && cur.toLowerCase() === modelData.name.toLowerCase()) return true
+                if (modelData.symbol === "[M]" && (/^\[\d+\]$/.test(cur) || cur === "monocle")) return true
+                return false
               }
 
               width: contentCol.width
@@ -155,7 +173,8 @@ Pill {
                 }
 
                 Text {
-                  text: "Super+" + modelData.key
+                  text: modelData.key ? ("Super+" + modelData.key) : ""
+                  visible: modelData.key !== ""
                   color: isCurrent ? Colors.bgSubtle : Colors.fgDim
                   font.family: Config.monoFont
                   font.pixelSize: 10

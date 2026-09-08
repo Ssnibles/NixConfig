@@ -82,6 +82,7 @@ Scope {
           LayoutWidget {
             id: layoutWidget
             wmService: rootWmService
+            screen: barPanel.modelData
             sharedWindow: sharedTipWindow
             horizontal: true
             anchors.verticalCenter: parent.verticalCenter
