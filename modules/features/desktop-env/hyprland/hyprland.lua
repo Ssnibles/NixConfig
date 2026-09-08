@@ -113,7 +113,7 @@ hl.config({
 		disable_splash_rendering = true,
 		vrr = 2, -- Adaptive sync / VRR enabled in fullscreen games
 		enable_swallow = true,
-		swallow_regex = "^(foot|Alacritty|kitty)$",
+		swallow_regex = "^(foot|footclient|Alacritty|kitty)$",
 		focus_on_activate = true,
 	},
 })
