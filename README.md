@@ -182,7 +182,7 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 - **Zen Browser**: Configured with enterprise privacy policies (telemetry disabled, tracking protection enabled) and XDG MIME associations.
 - **Gaming Suite**: Steam with the Millennium skinning framework, Gamescope session integration, GameMode daemon, and MangoHud performance overlay.
 - **PlayStation 5 DualSense Controllers**: Full kernel driver support via `hid-playstation` and a custom Bluetooth pairing utility script (`dualsense-pair`).
-- **Media & Documents**: Spotify, Feh image viewer, and Zathura PDF reader configured with theme colors and SyncTeX Neovim reverse jumping (`nvr --remote-silent`).
+- **Media & Documents**: Spotify (themed and enhanced via Spicetify), Feh image viewer, and Zathura PDF reader configured with theme colors and SyncTeX Neovim reverse jumping (`nvr --remote-silent`).
 
 ---
 
@@ -277,8 +277,9 @@ NixConfig/
     │   │   ├── development.nix        # Runtimes, Antigravity CLI, compilers, Android Studio
     │   │   ├── firefox/               # Firefox Developer Edition, CSS, Sidebery
     │   │   ├── gaming.nix             # Steam, Millennium, Gamescope, MangoHud
-    │   │   ├── media.nix              # Spotify, Feh, and Zathura PDF reader
+    │   │   ├── media.nix              # Feh image viewer and Zathura PDF reader
     │   │   ├── neovim.nix             # NVF Neovim configuration & packages
+    │   │   ├── spotify.nix            # Spotify music player configured with Spicetify
     │   │   ├── vivado.nix             # AMD Vivado Distrobox integration
     │   │   └── zen-browser.nix        # Zen Browser with enterprise privacy policies
     │   │

@@ -1,7 +1,7 @@
 # =============================================================================
 # Media & Document Applications Feature
 # =============================================================================
-# Media players (Spotify, Feh) and Zathura PDF reader with dark mode recoloring
+# Media viewer (Feh) and Zathura PDF reader with dark mode recoloring
 # matching active theme colors and inverse search settings.
 # =============================================================================
 { ... }:
@@ -14,7 +14,6 @@
     {
       config = {
         environment.systemPackages = with pkgs.unstable; [
-          spotify
           zathura
           feh
         ];
