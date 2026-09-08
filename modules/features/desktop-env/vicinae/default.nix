@@ -34,7 +34,7 @@
       '';
     in
     {
-      environment.systemPackages = with pkgs; [ vicinae ];
+      environment.systemPackages = with pkgs.unstable; [ vicinae ];
 
       hjem.users."${config.username}" = {
         enable = true;
