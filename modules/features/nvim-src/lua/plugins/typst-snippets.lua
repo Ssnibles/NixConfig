@@ -5,6 +5,7 @@ local i = ls.insert_node
 local c = ls.choice_node
 local sn = ls.snippet_node
 
+-- Helper for simple text wrapping
 local function wrap(trig, open, close, desc)
 	return s({ trig = trig, desc = desc }, {
 		t(open),
@@ -13,7 +14,47 @@ local function wrap(trig, open, close, desc)
 	})
 end
 
+-- Helper for uniform callout blocks with icons, names, borders, and background fills
+local function make_callout(trig, title, icon, color_hex, desc)
+	return s({ trig = trig, desc = desc }, {
+		t({
+			'#block(',
+			'\twidth: 100%,',
+			'\tstroke: (left: 3.5pt + rgb("' .. color_hex .. '"), rest: 0.5pt + rgb("' .. color_hex .. '40")),',
+			'\tfill: rgb("' .. color_hex .. '15"),',
+			'\tinset: (x: 12pt, y: 10pt),',
+			'\tradius: (right: 4pt),',
+			'\t[',
+			'\t\t#text(weight: "bold", fill: rgb("' .. color_hex .. '"))[' .. icon .. " " .. title .. ": ",
+		}),
+		i(1, "Title"),
+		t({
+			'] \\',
+			'\t\t#v(2pt)',
+			'\t\t',
+		}),
+		i(2, "Content..."),
+		t({
+			"",
+			"\t]",
+			")",
+		}),
+	})
+end
+
+-- Helper for language code blocks
+local function make_codeblock(trig, lang, desc)
+	return s({ trig = trig, desc = desc }, {
+		t({ "```" .. lang, "" }),
+		i(1),
+		t({ "", "```" })
+	})
+end
+
 ls.add_snippets("typst", {
+	---------------------------------------------------------------------------
+	-- BOILERPLATES & TEMPLATES
+	---------------------------------------------------------------------------
 	s({ trig = "page", desc = "Mathematical textbook style page boilerplate with dynamic theme variable" }, {
 		t({ '#let theme = "' }),
 		c(1, {
@@ -64,6 +105,45 @@ ls.add_snippets("typst", {
 		t({ "    #box(line(length: 6cm, stroke: 0.8pt + stroke-color))", "" }),
 		t({ "  ])", "" }),
 		t({ "]", "", "" }),
+		t({ "// Underline links", "" }),
+		t({ "#show link: underline", "", "" }),
+		t({ "// Styled code blocks: actual background with language header bar", "" }),
+		t({ "#show raw.where(block: true): it => {", "" }),
+		t({ '  let lang = if it.lang != none { it.lang } else { "" }', "" }),
+		t({ "  block(", "" }),
+		t({ "    width: 100%,", "" }),
+		t({ "    radius: 4pt,", "" }),
+		t({ '    stroke: 0.5pt + (if theme == "dark" { rgb("#404040") } else { rgb("#d0d0d0") }),', "" }),
+		t({ '    fill: if theme == "dark" { rgb("#242424") } else { rgb("#f8f9fa") },', "" }),
+		t({ "    clip: true,", "" }),
+		t({ "    [", "" }),
+		t({ '      #if lang != "" [', "" }),
+		t({ "        #block(", "" }),
+		t({ "          width: 100%,", "" }),
+		t({ '          fill: if theme == "dark" { rgb("#181818") } else { rgb("#eeeeee") },', "" }),
+		t({ "          inset: (x: 10pt, y: 5pt),", "" }),
+		t({ '          stroke: (bottom: 0.5pt + (if theme == "dark" { rgb("#383838") } else { rgb("#d0d0d0") })),', "" }),
+		t({ "          [", "" }),
+		t({ '            #text(size: 8pt, weight: "bold", fill: if theme == "dark" { rgb("#a0a0a0") } else { rgb("#666666") })[#upper(lang)]', "" }),
+		t({ "          ]", "" }),
+		t({ "        )", "" }),
+		t({ "      ]", "" }),
+		t({ "      #block(inset: (x: 10pt, y: 8pt))[", "" }),
+		t({ "        #set text(fill: text-color)", "" }),
+		t({ "        #it", "" }),
+		t({ "      ]", "" }),
+		t({ "    ]", "" }),
+		t({ "  )", "" }),
+		t({ "}", "", "" }),
+		t({ "// Inline code styling", "" }),
+		t({ "#show raw.where(block: false): it => box(", "" }),
+		t({ '  fill: if theme == "dark" { rgb("#2a2a2a") } else { rgb("#f0f0f0") },', "" }),
+		t({ "  inset: (x: 3.5pt, y: 1.5pt),", "" }),
+		t({ "  baseline: 0%,", "" }),
+		t({ "  radius: 3pt,", "" }),
+		t({ '  stroke: 0.4pt + (if theme == "dark" { rgb("#404040") } else { rgb("#d0d0d0") }),', "" }),
+		t({ "  text(size: 0.9em, it)", "" }),
+		t({ ")", "", "" }),
 		t({ "= " }),
 		i(2, "Mathematical Language"),
 		t({ "", "", "== " }),
@@ -108,6 +188,45 @@ ls.add_snippets("typst", {
 		t({ "    #box(line(length: 6cm, stroke: 0.8pt + stroke-color))", "" }),
 		t({ "  ])", "" }),
 		t({ "]", "", "" }),
+		t({ "// Underline links", "" }),
+		t({ "#show link: underline", "", "" }),
+		t({ "// Styled code blocks: actual background with language header bar", "" }),
+		t({ "#show raw.where(block: true): it => {", "" }),
+		t({ '  let lang = if it.lang != none { it.lang } else { "" }', "" }),
+		t({ "  block(", "" }),
+		t({ "    width: 100%,", "" }),
+		t({ "    radius: 4pt,", "" }),
+		t({ '    stroke: 0.5pt + (if theme == "dark" { rgb("#404040") } else { rgb("#d0d0d0") }),', "" }),
+		t({ '    fill: if theme == "dark" { rgb("#242424") } else { rgb("#f8f9fa") },', "" }),
+		t({ "    clip: true,", "" }),
+		t({ "    [", "" }),
+		t({ '      #if lang != "" [', "" }),
+		t({ "        #block(", "" }),
+		t({ "          width: 100%,", "" }),
+		t({ '          fill: if theme == "dark" { rgb("#181818") } else { rgb("#eeeeee") },', "" }),
+		t({ "          inset: (x: 10pt, y: 5pt),", "" }),
+		t({ '          stroke: (bottom: 0.5pt + (if theme == "dark" { rgb("#383838") } else { rgb("#d0d0d0") })),', "" }),
+		t({ "          [", "" }),
+		t({ '            #text(size: 8pt, weight: "bold", fill: if theme == "dark" { rgb("#a0a0a0") } else { rgb("#666666") })[#upper(lang)]', "" }),
+		t({ "          ]", "" }),
+		t({ "        )", "" }),
+		t({ "      ]", "" }),
+		t({ "      #block(inset: (x: 10pt, y: 8pt))[", "" }),
+		t({ "        #set text(fill: text-color)", "" }),
+		t({ "        #it", "" }),
+		t({ "      ]", "" }),
+		t({ "    ]", "" }),
+		t({ "  )", "" }),
+		t({ "}", "", "" }),
+		t({ "// Inline code styling", "" }),
+		t({ "#show raw.where(block: false): it => box(", "" }),
+		t({ '  fill: if theme == "dark" { rgb("#2a2a2a") } else { rgb("#f0f0f0") },', "" }),
+		t({ "  inset: (x: 3.5pt, y: 1.5pt),", "" }),
+		t({ "  baseline: 0%,", "" }),
+		t({ "  radius: 3pt,", "" }),
+		t({ '  stroke: 0.4pt + (if theme == "dark" { rgb("#404040") } else { rgb("#d0d0d0") }),', "" }),
+		t({ "  text(size: 0.9em, it)", "" }),
+		t({ ")", "", "" }),
 		t({ "#align(center)[", "" }),
 		t({ '  #text(size: 20pt, weight: "bold", fill: text-color)[' }),
 		i(2, "COMPX201: Lecture Title"),
@@ -121,6 +240,494 @@ ls.add_snippets("typst", {
 		i(5),
 	}),
 
+	---------------------------------------------------------------------------
+	-- NOTE BLOCKS & CALLOUTS (With icons, names, and background fills)
+	---------------------------------------------------------------------------
+	make_callout("note", "Note", "📝", "#3182ce", "Note callout box with blue border, 📝 icon, and background fill"),
+	make_callout("info", "Info", "ℹ", "#3182ce", "Info callout box with blue border, ℹ icon, and background fill"),
+	make_callout("tip", "Tip", "💡", "#38a169", "Tip callout box with green border, 💡 icon, and background fill"),
+	make_callout("warn", "Warning", "⚠", "#dd6b20", "Warning callout box with orange border, ⚠ icon, and background fill"),
+	make_callout("warning", "Warning", "⚠", "#dd6b20", "Warning callout box (alias)"),
+	make_callout("caution", "Caution", "🚨", "#e53e3e", "Caution callout box with red border, 🚨 icon, and background fill"),
+	make_callout("danger", "Danger", "🛑", "#e53e3e", "Danger callout box with red border, 🛑 icon, and background fill"),
+	make_callout("important", "Important", "❗", "#e53e3e", "Important callout box with red border, ❗ icon, and background fill"),
+	make_callout("def", "Definition", "📖", "#3182ce", "Definition container box with blue border, 📖 icon, and background fill"),
+	make_callout("definition", "Definition", "📖", "#3182ce", "Definition container box (alias)"),
+	make_callout("thm", "Theorem", "📐", "#38a169", "Theorem container box with green border, 📐 icon, and background fill"),
+	make_callout("theorem", "Theorem", "📐", "#38a169", "Theorem container box (alias)"),
+	make_callout("lem", "Lemma", "🧩", "#805ad5", "Lemma container box with purple border, 🧩 icon, and background fill"),
+	make_callout("lemma", "Lemma", "🧩", "#805ad5", "Lemma container box (alias)"),
+	make_callout("cor", "Corollary", "📎", "#3182ce", "Corollary container box with blue border, 📎 icon, and background fill"),
+	make_callout("corollary", "Corollary", "📎", "#3182ce", "Corollary container box (alias)"),
+	make_callout("prop", "Proposition", "💡", "#3182ce", "Proposition container box with blue border, 💡 icon, and background fill"),
+	make_callout("ex", "Example", "✏", "#dd6b20", "Example container box with orange border, ✏ icon, and background fill"),
+	make_callout("example", "Example", "✏", "#dd6b20", "Example container box (alias)"),
+	make_callout("question", "Question", "❓", "#805ad5", "Question container box with purple border, ❓ icon, and background fill"),
+	make_callout("prob", "Problem", "❓", "#805ad5", "Problem container box with purple border, ❓ icon, and background fill"),
+	make_callout("sol", "Solution", "💡", "#38a169", "Solution container box with green border, 💡 icon, and background fill"),
+	make_callout("rem", "Remark", "💬", "#718096", "Remark container box with grey border, 💬 icon, and background fill"),
+	make_callout("remark", "Remark", "💬", "#718096", "Remark container box (alias)"),
+	make_callout("key", "Key Takeaway", "📌", "#dd6b20", "Key Takeaway callout box with orange border, 📌 icon, and background fill"),
+	make_callout("takeaway", "Key Takeaway", "📌", "#dd6b20", "Key Takeaway callout box (alias)"),
+
+	-- Proof block
+	s({ trig = "proof", desc = "Mathematical proof block with QED square" }, {
+		t({
+			'#block(',
+			'\twidth: 100%,',
+			'\tstroke: (left: 2.5pt + rgb("#718096"), rest: 0.5pt + rgb("#71809630")),',
+			'\tfill: rgb("#71809612"),',
+			'\tinset: (x: 12pt, y: 10pt),',
+			'\tradius: (right: 4pt),',
+			'\t[',
+			'\t\t#text(weight: "bold", fill: rgb("#718096"))[∎ Proof:] \\',
+			'\t\t#v(2pt)',
+			'\t\t',
+		}),
+		i(1, "Proof body..."),
+		t({
+			" #h(1fr) $square$",
+			"",
+			"\t]",
+			")",
+		}),
+	}),
+
+	-- Modern styled callout alert box with selectable colors
+	s({ trig = "callout", desc = "Modern styled callout alert box with icon and background fill" }, {
+		t("#block(stroke: (left: 3.5pt + rgb("),
+		c(1, {
+			sn(nil, { t('"#3182ce"') }),
+			sn(nil, { t('"#38a169"') }),
+			sn(nil, { t('"#dd6b20"') }),
+			sn(nil, { t('"#e53e3e"') }),
+			sn(nil, { t('"#805ad5"') }),
+		}),
+		t('), rest: 0.5pt + rgb("'),
+		c(2, {
+			sn(nil, { t("#3182ce40") }),
+			sn(nil, { t("#38a16940") }),
+			sn(nil, { t("#dd6b2040") }),
+			sn(nil, { t("#e53e3e40") }),
+			sn(nil, { t("#805ad540") }),
+		}),
+		t('")), fill: rgb("'),
+		c(3, {
+			sn(nil, { t("#3182ce15") }),
+			sn(nil, { t("#38a16915") }),
+			sn(nil, { t("#dd6b2015") }),
+			sn(nil, { t("#e53e3e15") }),
+			sn(nil, { t("#805ad515") }),
+		}),
+		t('"), inset: (x: 12pt, y: 10pt), radius: (right: 4pt), width: 100%)[\n  #text(weight: "bold")['),
+		i(4, "ℹ Info: Title"),
+		t({ "] \\\n  #v(2pt)\n  " }),
+		i(5, "Body content..."),
+		t({ "", "]" }),
+	}),
+
+	---------------------------------------------------------------------------
+	-- CODE BLOCKS (With background and language headers)
+	---------------------------------------------------------------------------
+	-- Code block show rule to drop into any file
+	s({ trig = "codeshow", desc = "Insert #show raw rule for code block background & language header" }, {
+		t({
+			"// Styled code blocks: actual background with language header bar",
+			"#show raw.where(block: true): it => {",
+			'  let lang = if it.lang != none { it.lang } else { "" }',
+			"  block(",
+			"    width: 100%,",
+			"    radius: 4pt,",
+			'    stroke: 0.5pt + (if theme == "dark" { rgb("#404040") } else { rgb("#d0d0d0") }),',
+			'    fill: if theme == "dark" { rgb("#242424") } else { rgb("#f8f9fa") },',
+			"    clip: true,",
+			"    [",
+			'      #if lang != "" [',
+			"        #block(",
+			"          width: 100%,",
+			'          fill: if theme == "dark" { rgb("#181818") } else { rgb("#eeeeee") },',
+			"          inset: (x: 10pt, y: 5pt),",
+			'          stroke: (bottom: 0.5pt + (if theme == "dark" { rgb("#383838") } else { rgb("#d0d0d0") })),',
+			"          [",
+			'            #text(size: 8pt, weight: "bold", fill: if theme == "dark" { rgb("#a0a0a0") } else { rgb("#666666") })[#upper(lang)]',
+			"          ]",
+			"        )",
+			"      ]",
+			"      #block(inset: (x: 10pt, y: 8pt))[",
+			"        #set text(fill: text-color)",
+			"        #it",
+			"      ]",
+			"    ]",
+			"  )",
+			"}",
+			"",
+			"// Inline code styling",
+			"#show raw.where(block: false): it => box(",
+			'  fill: if theme == "dark" { rgb("#2a2a2a") } else { rgb("#f0f0f0") },',
+			"  inset: (x: 3.5pt, y: 1.5pt),",
+			"  baseline: 0%,",
+			"  radius: 3pt,",
+			'  stroke: 0.4pt + (if theme == "dark" { rgb("#404040") } else { rgb("#d0d0d0") }),',
+			"  text(size: 0.9em, it)",
+			")",
+		}),
+	}),
+	s({ trig = "rawshow", desc = "Insert #show raw rule (alias)" }, {
+		t({
+			"#show raw.where(block: true): it => {",
+			'  let lang = if it.lang != none { it.lang } else { "" }',
+			"  block(",
+			"    width: 100%,",
+			"    radius: 4pt,",
+			'    stroke: 0.5pt + (if theme == "dark" { rgb("#404040") } else { rgb("#d0d0d0") }),',
+			'    fill: if theme == "dark" { rgb("#242424") } else { rgb("#f8f9fa") },',
+			"    clip: true,",
+			"    [",
+			'      #if lang != "" [',
+			"        #block(",
+			"          width: 100%,",
+			'          fill: if theme == "dark" { rgb("#181818") } else { rgb("#eeeeee") },',
+			"          inset: (x: 10pt, y: 5pt),",
+			'          stroke: (bottom: 0.5pt + (if theme == "dark" { rgb("#383838") } else { rgb("#d0d0d0") })),',
+			"          [",
+			'            #text(size: 8pt, weight: "bold", fill: if theme == "dark" { rgb("#a0a0a0") } else { rgb("#666666") })[#upper(lang)]',
+			"          ]",
+			"        )",
+			"      ]",
+			"      #block(inset: (x: 10pt, y: 8pt))[#it]",
+			"    ]",
+			"  )",
+			"}",
+		}),
+	}),
+
+	-- Code block with filename header banner
+	s({ trig = "cbf", desc = "Code block container with filename header banner" }, {
+		t({
+			"#block(",
+			"  width: 100%,",
+			"  radius: 4pt,",
+			'  stroke: 0.5pt + stroke-color,',
+			'  fill: if theme == "dark" { rgb("#242424") } else { rgb("#f8f9fa") },',
+			"  clip: true,",
+			"  [",
+			"    #block(",
+			"      width: 100%,",
+			'      fill: if theme == "dark" { rgb("#181818") } else { rgb("#eeeeee") },',
+			"      inset: (x: 10pt, y: 5pt),",
+			'      stroke: (bottom: 0.5pt + stroke-color),',
+			"      [",
+			"        #grid(",
+			"          columns: (1fr, auto),",
+			'          [#text(size: 8.5pt, weight: "bold")[📄 ',
+		}),
+		i(1, "filename.ext"),
+		t({
+			"]],",
+			'          [#text(size: 7.5pt, weight: "bold")[#upper("',
+		}),
+		i(2, "lang"),
+		t({
+			'")]],',
+			"        )",
+			"      ]",
+			"    )",
+			"    ```",
+		}),
+		i(3, "lang"),
+		t({ "", "" }),
+		i(4),
+		t({ "", "    ```", "  ]", ")" }),
+	}),
+
+	s({ trig = "ic", desc = "Inline monospaced code snippet" }, { t("`"), i(1, "code"), t("`") }),
+	s({ trig = "cb", desc = "Code block container with dynamic language identifier" }, {
+		t("```"),
+		i(1, "lang"),
+		t({ "", "" }),
+		i(2),
+		t({ "", "```" }),
+	}),
+	s({ trig = "```", desc = "Raw typst interpretation text block container" }, {
+		t("```"),
+		i(1, "typ"),
+		t({ "", "" }),
+		i(2),
+		t({ "", "```" }),
+	}),
+	s({ trig = "raw", desc = "Raw unhighlighted code text block container" }, {
+		t({ "```", "" }),
+		i(1),
+		t({ "", "```" }),
+	}),
+
+	-- Language-specific code blocks
+	make_codeblock("cbpy", "py", "Code block specified for Python code syntax"),
+	make_codeblock("cbsql", "sql", "Code block specified for SQL database query syntax"),
+	make_codeblock("cbv", "verilog", "Code block specified for Verilog HDL syntax"),
+	make_codeblock("cbverilog", "verilog", "Code block specified for Verilog HDL syntax (alias)"),
+	make_codeblock("cbjava", "java", "Code block specified for Java code syntax"),
+	make_codeblock("cbc", "c", "Code block specified for C programming language syntax"),
+	make_codeblock("cbcpp", "cpp", "Code block specified for C++ programming language syntax"),
+	make_codeblock("cbrs", "rust", "Code block specified for Rust code syntax"),
+	make_codeblock("cbjs", "js", "Code block specified for JavaScript code syntax"),
+	make_codeblock("cbts", "ts", "Code block specified for TypeScript code syntax"),
+	make_codeblock("cbsh", "sh", "Code block specified for Shell script programming syntax"),
+	make_codeblock("cbbash", "bash", "Code block specified for Bash syntax (alias)"),
+	make_codeblock("cbnix", "nix", "Code block specified for Nix package configuration syntax"),
+	make_codeblock("cblua", "lua", "Code block specified for Lua configuration script syntax"),
+	make_codeblock("cbtyp", "typ", "Code block specified for Typst markup syntax"),
+	make_codeblock("cbasm", "asm", "Code block specified for Assembly / RISC-V syntax"),
+	make_codeblock("cbhtml", "html", "Code block specified for HTML markup language syntax"),
+	make_codeblock("cbcss", "css", "Code block specified for CSS presentational language syntax"),
+	make_codeblock("cbjson", "json", "Code block specified for JSON data syntax"),
+	make_codeblock("cbgo", "go", "Code block specified for Go programming syntax"),
+	make_codeblock("cbhs", "hs", "Code block specified for Haskell functional language syntax"),
+
+	---------------------------------------------------------------------------
+	-- LINKS & REFERENCES (With automatic underlines)
+	---------------------------------------------------------------------------
+	s({ trig = "lnk", desc = "Hyperlink with custom display text (underlined)" }, {
+		t('#link("'),
+		i(1, "url"),
+		t('")['),
+		i(2, "text"),
+		t("]"),
+	}),
+	s({ trig = "url", desc = "Clickable hyperlink URL (underlined)" }, {
+		t('#link("'),
+		i(1, "url"),
+		t('")'),
+	}),
+	s({ trig = "linkshow", desc = "Insert #show link underline rule" }, {
+		t("#show link: underline"),
+	}),
+
+	---------------------------------------------------------------------------
+	-- NOTE TAKING ESSENTIALS: STEPS, LISTS, TERMS, BADGES, CARDS
+	---------------------------------------------------------------------------
+	s({ trig = "step", desc = "Numbered procedure step" }, {
+		t("+ *Step "),
+		i(1, "1"),
+		t(":* "),
+		i(2, "Description"),
+	}),
+	s({ trig = "steps", desc = "3-step procedural checklist" }, {
+		t("+ *Step 1:* "),
+		i(1, "First step"),
+		t({ "", "+ *Step 2:* " }),
+		i(2, "Second step"),
+		t({ "", "+ *Step 3:* " }),
+		i(3, "Third step"),
+	}),
+	s({ trig = "kv", desc = "Key-value / term definition pair" }, {
+		t("*"),
+		i(1, "Term"),
+		t(":* "),
+		i(2, "Definition"),
+		t("\\"),
+	}),
+	s({ trig = "term", desc = "Term definition with dash separator" }, {
+		t("*"),
+		i(1, "Term"),
+		t("* -- "),
+		i(2, "Description"),
+	}),
+	s({ trig = "badge", desc = "Inline colored pill badge / tag" }, {
+		t('#box(fill: rgb("'),
+		c(1, {
+			sn(nil, { t("#3182ce20") }),
+			sn(nil, { t("#38a16920") }),
+			sn(nil, { t("#dd6b2020") }),
+			sn(nil, { t("#e53e3e20") }),
+			sn(nil, { t("#805ad520") }),
+		}),
+		t('"), inset: (x: 5pt, y: 2pt), radius: 3pt)[#text(size: 8pt, weight: "bold", fill: rgb("'),
+		c(2, {
+			sn(nil, { t("#3182ce") }),
+			sn(nil, { t("#38a169") }),
+			sn(nil, { t("#dd6b20") }),
+			sn(nil, { t("#e53e3e") }),
+			sn(nil, { t("#805ad5") }),
+		}),
+		t('"))['),
+		i(3, "TAG"),
+		t("]]"),
+	}),
+	s({ trig = "qa", desc = "Question and Answer study block" }, {
+		t({ '*Q:* #text(weight: "bold")[' }),
+		i(1, "Question?"),
+		t({ "] \\", "*A:* " }),
+		i(2, "Answer"),
+	}),
+	s({ trig = "card", desc = "Bordered content card container" }, {
+		t({
+			'#block(width: 100%, stroke: 0.6pt + stroke-color, fill: if theme == "dark" { rgb("#242424") } else { rgb("#f8f9fa") }, inset: 12pt, radius: 4pt)[',
+			"\t",
+		}),
+		i(1, "Content..."),
+		t({ "", "]" }),
+	}),
+	s({ trig = "box", desc = "Simple padded container box" }, {
+		t({ '#box(stroke: 0.8pt + stroke-color, inset: 10pt, radius: 4pt, width: 100%)[', "\t" }),
+		i(1, "Content..."),
+		t({ "", "]" }),
+	}),
+	s({ trig = "todo", desc = "Incomplete checkbox todo list item" }, { t("- [ ] "), i(1) }),
+	s({ trig = "done", desc = "Completed checkbox todo list item" }, { t("- [x] "), i(1) }),
+	s({ trig = "quote", desc = "Attributed blockquote element" }, {
+		t('#quote(attribution: ['),
+		i(1, "Author / Source"),
+		t({ "])[", "\t" }),
+		i(2, "Quote text..."),
+		t({ "", "]" }),
+	}),
+	s({ trig = "date", desc = "Insert current date string" }, {
+		t(os.date("%d %B %Y")),
+	}),
+	s({ trig = "hr", desc = "Horizontal divider rule line" }, {
+		t('#line(length: 100%, stroke: 0.6pt + stroke-color)'),
+	}),
+	s({ trig = "divider", desc = "Horizontal divider rule line (alias)" }, {
+		t('#line(length: 100%, stroke: 0.6pt + stroke-color)'),
+	}),
+
+	---------------------------------------------------------------------------
+	-- TABLES
+	---------------------------------------------------------------------------
+	s({ trig = "tbl", desc = "2-column formatted table with styled header fill" }, {
+		t({
+			"#table(",
+			"  columns: (1fr, 1fr),",
+			'  fill: (col, row) => if row == 0 { rgb("#3182ce18") } else { none },',
+			"  stroke: 0.5pt + stroke-color,",
+			"  [*",
+		}),
+		i(1, "Header 1"),
+		t("*], [*"),
+		i(2, "Header 2"),
+		t({ "*],", "  [" }),
+		i(3, "Row 1 Cell 1"),
+		t("], ["),
+		i(4, "Row 1 Cell 2"),
+		t({ "],", "  [" }),
+		i(5, "Row 2 Cell 1"),
+		t("], ["),
+		i(6, "Row 2 Cell 2"),
+		t({ "],", ")" }),
+	}),
+	s({ trig = "tbl3", desc = "3-column formatted table with styled header fill" }, {
+		t({
+			"#table(",
+			"  columns: (1fr, 1fr, 1fr),",
+			'  fill: (col, row) => if row == 0 { rgb("#3182ce18") } else { none },',
+			"  stroke: 0.5pt + stroke-color,",
+			"  [*",
+		}),
+		i(1, "Header 1"),
+		t("*], [*"),
+		i(2, "Header 2"),
+		t("*], [*"),
+		i(3, "Header 3"),
+		t({ "*],", "  [" }),
+		i(4, "Row 1 Cell 1"),
+		t("], ["),
+		i(5, "Row 1 Cell 2"),
+		t("], ["),
+		i(6, "Row 1 Cell 3"),
+		t({ "],", "  [" }),
+		i(7, "Row 2 Cell 1"),
+		t("], ["),
+		i(8, "Row 2 Cell 2"),
+		t("], ["),
+		i(9, "Row 2 Cell 3"),
+		t({ "],", ")" }),
+	}),
+	s({ trig = "tbl4", desc = "4-column formatted table with styled header fill" }, {
+		t({
+			"#table(",
+			"  columns: (1fr, 1fr, 1fr, 1fr),",
+			'  fill: (col, row) => if row == 0 { rgb("#3182ce18") } else { none },',
+			"  stroke: 0.5pt + stroke-color,",
+			"  [*",
+		}),
+		i(1, "Col 1"),
+		t("*], [*"),
+		i(2, "Col 2"),
+		t("*], [*"),
+		i(3, "Col 3"),
+		t("*], [*"),
+		i(4, "Col 4"),
+		t({ "*],", "  [" }),
+		i(5, "R1C1"),
+		t("], ["),
+		i(6, "R1C2"),
+		t("], ["),
+		i(7, "R1C3"),
+		t("], ["),
+		i(8, "R1C4"),
+		t({ "],", ")" }),
+	}),
+	s({ trig = "truthtable", desc = "Formatted digital logic truth table" }, {
+		t({
+			"#table(",
+			"  columns: (1fr, 1fr, 1fr),",
+			"  align: center + horizon,",
+			'  fill: (col, row) => if row < 2 { rgb("#3182ce18") } else { none },',
+			"  stroke: 0.5pt + stroke-color,",
+			"  table.cell(colspan: 2)[*INPUT*],",
+			"  table.cell(rowspan: 2)[*OUTPUT*],",
+			"  [*A*], [*B*],",
+			"  [0], [0], [",
+		}),
+		i(1, "0"),
+		t({ "],", "  [0], [1], [" }),
+		i(2, "0"),
+		t({ "],", "  [1], [0], [" }),
+		i(3, "0"),
+		t({ "],", "  [1], [1], [" }),
+		i(4, "1"),
+		t({ "],", ")" }),
+	}),
+
+	---------------------------------------------------------------------------
+	-- FIGURES, MEDIA & DIAGRAMS
+	---------------------------------------------------------------------------
+	s({ trig = "fig", desc = "Figure block with embedded image and caption" }, {
+		t("#figure("),
+		t({ "", '  image("' }),
+		i(1, "path"),
+		t('", width: '),
+		i(2, "80%"),
+		t("),"),
+		t({ "", "  caption: [" }),
+		i(3, "Caption"),
+		t("],"),
+		t({ "", ")" }),
+	}),
+	s({ trig = "img", desc = "Image insertion element" }, {
+		t('#image("'),
+		i(1, "path"),
+		t('", width: '),
+		i(2, "100%"),
+		t(")"),
+	}),
+	s({ trig = "gridimg", desc = "Two figures side-by-side in a grid" }, {
+		t({
+			"#grid(",
+			"  columns: (1fr, 1fr),",
+			"  gutter: 12pt,",
+			'  figure(image("',
+		}),
+		i(1, "image1.png"),
+		t('"), caption: ['),
+		i(2, "Caption 1"),
+		t({ "]),", '  figure(image("' }),
+		i(3, "image2.png"),
+		t('"), caption: ['),
+		i(4, "Caption 2"),
+		t({ "]),", ")" }),
+	}),
 	s({ trig = "circuit", desc = "CeTZ & Zap digital logic circuit diagram" }, {
 		t({ "#zap.circuit({", "" }),
 		t({ "  import zap: *", "" }),
@@ -134,7 +741,11 @@ ls.add_snippets("typst", {
 		t({ '  wire("and1.out", "C", anchor: "west")', "" }),
 		t({ "})" }),
 	}),
-
+	s({ trig = "cetz", desc = "CeTZ Canvas drawing container" }, {
+		t({ "#cetz.canvas({", "  import cetz.draw: *", "  " }),
+		i(1, '// draw.line((0, 0), (2, 2))\n  // draw.circle((1, 1), radius: 0.5)'),
+		t({ "", "})" }),
+	}),
 	s({ trig = "erd", desc = "Mermaid Entity-Relationship Diagram (Database design)" }, {
 		t({ "#mermaid(", "" }),
 		t({ '  "erDiagram', "" }),
@@ -148,7 +759,12 @@ ls.add_snippets("typst", {
 		t({ '\n"', "" }),
 		t({ ")" }),
 	}),
-
+	s({ trig = "gantt", desc = "Mermaid Gantt chart (Project planning)" }, {
+		t({ "#mermaid(", '  "gantt\n  dateFormat YYYY-MM-DD\n  title ' }),
+		i(1, "Project Schedule"),
+		t({ '\n  section Phase 1\n  Design : 2026-09-01, 7d\n  Coding : 2026-09-08, 14d\n"' }),
+		t({ ")" }),
+	}),
 	s({ trig = "mmd", desc = "Mermaid Diagram wrapper" }, {
 		t({ "#mermaid(", "" }),
 		t({ '  "', "" }),
@@ -160,32 +776,9 @@ ls.add_snippets("typst", {
 		t({ '\n"', "" }),
 		t({ ")" }),
 	}),
-
-	s({ trig = "truthtable", desc = "Formatted digital logic truth table" }, {
-		t({ "#table(", "" }),
-		t({ "  columns: (1fr, 1fr, 1fr),", "" }),
-		t({ "  align: center + horizon,", "", "" }),
-		t({ "  table.cell(colspan: 2)[*INPUT*],", "" }),
-		t({ "  table.cell(rowspan: 2)[*OUTPUT*],", "", "" }),
-		t({ "  [*A*], [*B*],", "", "" }),
-		t({ "  [0], [0], [" }),
-		i(1, "0"),
-		t({ "],", "" }),
-		t({ "  [1], [0], [" }),
-		i(2, "0"),
-		t({ "],", "" }),
-		t({ "  [0], [1], [" }),
-		i(3, "0"),
-		t({ "],", "" }),
-		t({ "  [1], [1], [" }),
-		i(4, "1"),
-		t({ "],", "" }),
-		t({ ")" }),
-	}),
-
 	s({ trig = "bigo", desc = "Data Structures & Algorithms Big-O Complexity Card" }, {
-		t({ '#box(stroke: 1pt + rgb("#457b9d"), inset: 10pt, radius: 4pt, width: 100%)[', "" }),
-		t({ '  #text(weight: "bold", size: 12pt)[' }),
+		t({ '#block(stroke: 1pt + rgb("#3182ce"), fill: rgb("#3182ce12"), inset: 10pt, radius: 4pt, width: 100%)[', "" }),
+		t({ '  #text(weight: "bold", size: 12pt, fill: rgb("#3182ce"))[⚡ Big-O: ' }),
 		i(1, "Algorithm / Data Structure Name"),
 		t({ "]", "" }),
 		t({ "  #v(0.4em)", "" }),
@@ -207,40 +800,38 @@ ls.add_snippets("typst", {
 		t({ "]" }),
 	}),
 
-	s({ trig = "callout", desc = "Modern styled callout alert box" }, {
-		t({ "#box(stroke: 1pt + rgb(" }),
-		c(1, {
-			sn(nil, { t('"#3182ce"') }),
-			sn(nil, { t('"#38a169"') }),
-			sn(nil, { t('"#dd6b20"') }),
-			sn(nil, { t('"#e53e3e"') }),
-		}),
-		t({ "), inset: 10pt, radius: 4pt, width: 100%)[", "" }),
-		t({ '  #text(weight: "bold")[ ' }),
-		i(2, "Title"),
-		t({ " ]", "" }),
-		t({ "  #v(0.3em)", "" }),
-		i(3, "Body content..."),
-		t({ "", "]" }),
-	}),
-
-	s({ trig = "proof", desc = "Mathematical proof block" }, {
-		t({ "*Proof:* ", "" }),
-		i(1, "Proof body..."),
-		t({ " #h(1fr) $square$" }),
-	}),
+	---------------------------------------------------------------------------
+	-- HEADINGS & LAYOUT
+	---------------------------------------------------------------------------
 	s({ trig = "h1", desc = "Heading level 1" }, { t("= "), i(1, "Heading") }),
 	s({ trig = "h2", desc = "Heading level 2" }, { t("== "), i(1, "Heading") }),
 	s({ trig = "h3", desc = "Heading level 3" }, { t("=== "), i(1, "Heading") }),
 	s({ trig = "h4", desc = "Heading level 4" }, { t("==== "), i(1, "Heading") }),
+	s({ trig = "h5", desc = "Heading level 5" }, { t("===== "), i(1, "Heading") }),
 	s({ trig = "col", desc = "Multi-column layout block" }, {
 		t("#columns("),
 		i(1, "2"),
 		t(")["),
-		t({ "", "" }),
+		t({ "", "\t" }),
 		i(2),
 		t({ "", "]" }),
 	}),
+	s({ trig = "cols", desc = "Multi-column layout block (alias)" }, {
+		t("#columns("),
+		i(1, "2"),
+		t(")["),
+		t({ "", "\t" }),
+		i(2),
+		t({ "", "]" }),
+	}),
+	s({ trig = "col3", desc = "3-column layout block" }, {
+		t("#columns(3)["),
+		t({ "", "\t" }),
+		i(1),
+		t({ "", "]" }),
+	}),
+	s({ trig = "colbreak", desc = "Column break" }, { t("#colbreak()") }),
+	s({ trig = "pagebreak", desc = "Page break" }, { t("#pagebreak()") }),
 	s({ trig = "align", desc = "Content alignment block (center, left, right)" }, {
 		t("#align("),
 		c(1, {
@@ -249,11 +840,21 @@ ls.add_snippets("typst", {
 			sn(nil, { t("right") }),
 		}),
 		t(")["),
-		t({ "", "" }),
+		t({ "", "\t" }),
 		i(2),
 		t({ "", "]" }),
 	}),
+	s({ trig = "grid", desc = "2-column grid layout" }, {
+		t({ "#grid(", "  columns: (1fr, 1fr),", "  gutter: 10pt,", "  [" }),
+		i(1, "Left column"),
+		t({ "],", "  [" }),
+		i(2, "Right column"),
+		t({ "],", ")" }),
+	}),
 
+	---------------------------------------------------------------------------
+	-- TEXT FORMATTING
+	---------------------------------------------------------------------------
 	wrap("bf", "*", "*", "Bold text format"),
 	wrap("it", "_", "_", "Italic text format"),
 	wrap("st", "#strike[", "]", "Strikethrough text format"),
@@ -262,63 +863,9 @@ ls.add_snippets("typst", {
 	wrap("sup", "#super[", "]", "Superscript text"),
 	wrap("sub", "#sub[", "]", "Subscript text"),
 
-	s({ trig = "fig", desc = "Figure block with embedded image and caption" }, {
-		t("#figure("),
-		t({ "", '  image("' }),
-		i(1, "path"),
-		t('"),'),
-		t({ "", "  caption: [" }),
-		i(2, "Caption"),
-		t("],"),
-		t({ "", ")" }),
-	}),
-	s({ trig = "img", desc = "Image insertion element" }, { t('#image("'), i(1, "path"), t('")') }),
-	s({ trig = "tbl", desc = "Table block spanning full horizontal width with template entries" }, {
-		t("#table("),
-		t({ "", "  columns: (1fr, 1fr)," }),
-		t({ "", "  " }),
-		i(1, "[Header 1], [Header 2],\n  [Row 1 Cell 1], [Row 1 Cell 2],\n  [Row 2 Cell 1], [Row 2 Cell 2]"),
-		t({ "", ")" }),
-	}),
-	s(
-		{ trig = "lnk", desc = "Hyperlink with custom display text" },
-		{ t('#link("'), i(1, "url"), t('")[ '), i(2, "text"), t("]") }
-	),
-	s({ trig = "todo", desc = "Incomplete checkbox todo list item" }, { t("- [ ] "), i(1) }),
-	s({ trig = "done", desc = "Completed checkbox todo list item" }, { t("- [x] "), i(1) }),
-
-	s({ trig = "note", desc = "Note callout box with selectable border colours" }, {
-		t("#box(stroke: 1pt + "),
-		c(1, {
-			sn(nil, { t("blue") }),
-			sn(nil, { t("green") }),
-			sn(nil, { t("red") }),
-			sn(nil, { t("orange") }),
-			sn(nil, { t("purple") }),
-		}),
-		t({ ", inset: 8pt, radius: 4pt, width: 100%)[", "" }),
-		i(2, "Note"),
-		t({ "", "]" }),
-	}),
-	s({ trig = "def", desc = "Definition container box with blue border" }, {
-		t({ "#box(stroke: 1pt + blue, inset: 8pt, radius: 4pt, width: 100%)[", "" }),
-		t("*Definition:* "),
-		i(1),
-		t({ "", "]" }),
-	}),
-	s({ trig = "thm", desc = "Theorem container box with green border" }, {
-		t({ "#box(stroke: 1pt + green, inset: 8pt, radius: 4pt, width: 100%)[", "" }),
-		t("*Theorem:* "),
-		i(1),
-		t({ "", "]" }),
-	}),
-	s({ trig = "ex", desc = "Example container box with orange border" }, {
-		t({ "#box(stroke: 1pt + orange, inset: 8pt, radius: 4pt, width: 100%)[", "" }),
-		t("*Example:* "),
-		i(1),
-		t({ "", "]" }),
-	}),
-
+	---------------------------------------------------------------------------
+	-- MATHEMATICS
+	---------------------------------------------------------------------------
 	s({ trig = "$", desc = "Inline math block" }, { t("$"), i(1), t("$") }),
 	s({ trig = "$$", desc = "Display math block" }, { t("$ "), i(1), t(" $") }),
 	s({ trig = "eq", desc = "Multi-line block equation syntax" }, {
@@ -382,6 +929,7 @@ ls.add_snippets("typst", {
 	s({ trig = "floor", desc = "Mathematical floor rounding bracket function" }, { t("floor("), i(1), t(")") }),
 	s({ trig = "cases", desc = "Piecewise math function cases container" }, { t("cases("), i(1), t(")") }),
 
+	-- Matrices & Vectors
 	s({ trig = "vec", desc = "Vector column array template" }, { t("vec("), i(1), t(")") }),
 	s({ trig = "mat", desc = "Generic structural matrix template" }, { t("mat("), i(1), t(")") }),
 	s({ trig = "mat2", desc = "Two-by-two square matrix matrix notation template" }, {
@@ -421,6 +969,7 @@ ls.add_snippets("typst", {
 	s({ trig = "transpose", desc = "Matrix transpose mathematical superscript" }, { i(1), t("^T") }),
 	s({ trig = "inv", desc = "Matrix inverse mathematical power superscript" }, { i(1), t("^(-1)") }),
 
+	-- Accents & Brackets
 	s({ trig = "conj", desc = "Complex conjugate modifier function" }, { t("conj("), i(1), t(")") }),
 	s({ trig = "hat", desc = "Hat accent mathematical symbol modifier" }, { t("hat("), i(1), t(")") }),
 	s({ trig = "bar", desc = "Overline bar accent mathematical symbol modifier" }, { t("overline("), i(1), t(")") }),
@@ -430,7 +979,10 @@ ls.add_snippets("typst", {
 	s({ trig = "lr", desc = "Dynamic sizing left-right parentheses wrapper" }, { t("lr("), i(1), t(")") }),
 	s({ trig = "lrb", desc = "Dynamic sizing left-right square brackets wrapper" }, { t("lr(["), i(1), t("])") }),
 	s({ trig = "lrc", desc = "Dynamic sizing left-right curly braces wrapper" }, { t("lr({"), i(1), t("})") }),
+	s({ trig = "set", desc = "Mathematical set notation" }, { t("{ "), i(1), t(" }") }),
+	s({ trig = "setb", desc = "Set builder notation with condition" }, { t("{ "), i(1, "x"), t(" in "), i(2, "S"), t(" : "), i(3, "P(x)"), t(" }") }),
 
+	-- Math Symbols, Relations & Arrows
 	s({ trig = "inff", desc = "Infinity mathematical symbol" }, { t("infinity") }),
 	s({ trig = "nab", desc = "Nabla gradient mathematical operator" }, { t("nabla") }),
 	s({ trig = "arr", desc = "Standard math relation arrow direction" }, { t("arrow") }),
@@ -450,13 +1002,22 @@ ls.add_snippets("typst", {
 	s({ trig = "cup", desc = "Union set operation symbol" }, { t("union") }),
 	s({ trig = "cap", desc = "Intersection set operation symbol" }, { t("intersection") }),
 	s({ trig = "empty", desc = "Empty set null space placeholder symbol" }, { t("nothing") }),
+	s({ trig = "neq", desc = "Not equal relation symbol" }, { t("!=") }),
+	s({ trig = "leq", desc = "Less than or equal relation symbol" }, { t("<=") }),
+	s({ trig = "geq", desc = "Greater than or equal relation symbol" }, { t(">=") }),
+	s({ trig = "approx", desc = "Approximately equal relation symbol" }, { t("approx") }),
+	s({ trig = "times", desc = "Multiplication cross symbol" }, { t("times") }),
+	s({ trig = "cdot", desc = "Center dot multiplication symbol" }, { t("dot.c") }),
 
+	-- Number sets (Blackboard Bold)
+	s({ trig = "RR", desc = "Set of real numbers blackboard bold identifier" }, { t("RR") }),
 	s({ trig = "add", desc = "Set of real numbers blackboard bold identifier" }, { t("RR") }),
 	s({ trig = "NN", desc = "Set of natural numbers blackboard bold identifier" }, { t("NN") }),
 	s({ trig = "ZZ", desc = "Set of integers blackboard bold identifier" }, { t("ZZ") }),
 	s({ trig = "QQ", desc = "Set of rational numbers blackboard bold identifier" }, { t("QQ") }),
 	s({ trig = "CC", desc = "Set of complex numbers blackboard bold identifier" }, { t("CC") }),
 
+	-- Greek lowercase letters
 	s({ trig = "aa", desc = "Greek lowercase letter alpha" }, { t("alpha") }),
 	s({ trig = "bb", desc = "Greek lowercase letter beta" }, { t("beta") }),
 	s({ trig = "gg", desc = "Greek lowercase letter gamma" }, { t("gamma") }),
@@ -472,81 +1033,4 @@ ls.add_snippets("typst", {
 	s({ trig = "ps", desc = "Greek lowercase letter psi" }, { t("psi") }),
 	s({ trig = "rh", desc = "Greek lowercase letter rho" }, { t("rho") }),
 	s({ trig = "ta", desc = "Greek lowercase letter tau" }, { t("tau") }),
-
-	s({ trig = "ic", desc = "Inline monospaced code snippet" }, { t("`"), i(1, "code"), t("`") }),
-	s({ trig = "cb", desc = "Code block container with dynamic language identifier" }, {
-		t("```"),
-		i(1, "lang"),
-		t({ "", "" }),
-		i(2),
-		t({ "", "```" }),
-	}),
-	s({ trig = "```", desc = "Raw typst interpretation text block container" }, {
-		t("```"),
-		i(1, "typ"),
-		t({ "", "" }),
-		i(2),
-		t({ "", "```" }),
-	}),
-	s({ trig = "raw", desc = "Raw unhighlighted code text block container" }, {
-		t({ "```", "" }),
-		i(1),
-		t({ "", "```" }),
-	}),
-	s(
-		{ trig = "cbpy", desc = "Code block block specified for Python code syntax" },
-		{ t({ "```py", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbrs", desc = "Code block block specified for Rust code syntax" },
-		{ t({ "```rust", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbjs", desc = "Code block block specified for JavaScript code syntax" },
-		{ t({ "```js", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbts", desc = "Code block block specified for TypeScript code syntax" },
-		{ t({ "```ts", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbjava", desc = "Code block block specified for Java code syntax" },
-		{ t({ "```java", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbc", desc = "Code block block specified for C programming language syntax" },
-		{ t({ "```c", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbcpp", desc = "Code block block specified for C++ programming language syntax" },
-		{ t({ "```cpp", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbsh", desc = "Code block block specified for Shell script programming syntax" },
-		{ t({ "```sh", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbsql", desc = "Code block block specified for SQL database query syntax" },
-		{ t({ "```sql", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbhtml", desc = "Code block block specified for HTML markup language syntax" },
-		{ t({ "```html", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbcss", desc = "Code block block specified for CSS presentational language syntax" },
-		{ t({ "```css", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbnix", desc = "Code block block specified for Nix package configuration syntax" },
-		{ t({ "```nix", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cblua", desc = "Code block block specified for Lua configuration script syntax" },
-		{ t({ "```lua", "" }), i(1), t({ "", "```" }) }
-	),
-	s(
-		{ trig = "cbhs", desc = "Code block block specified for Haskell functional language syntax" },
-		{ t({ "```hs", "" }), i(1), t({ "", "```" }) }
-	),
 })
