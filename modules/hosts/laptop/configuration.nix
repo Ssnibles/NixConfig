@@ -57,7 +57,7 @@
           CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
           CPU_MAX_PERF_ON_BAT = 70;
           WIFI_PWR_ON_AC = "off";
-          WIFI_PWR_ON_BAT = "on";
+          WIFI_PWR_ON_BAT = "off";
           USB_AUTOSUSPEND = 1;
           AHCI_RUNTIME_PM_ON_BAT = "auto";
           RUNTIME_PM_ON_BAT = "auto";

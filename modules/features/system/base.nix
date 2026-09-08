@@ -85,16 +85,22 @@
           networkmanager = {
             enable = true;
             wifi.backend = "iwd";
-            wifi.powersave = true;
+            wifi.powersave = false;
             wifi.macAddress = "stable";
             dns = "systemd-resolved";
           };
 
-          wireless.iwd.settings.General = {
-            Country = "NZ";
-            EnableNetworkConfiguration = false;
-            # Opportunistic Wireless Encryption (Enhanced Open)
-            EnableOWE = true;
+          wireless.iwd.settings = {
+            General = {
+              Country = "NZ";
+              EnableNetworkConfiguration = false;
+              # Opportunistic Wireless Encryption (Enhanced Open)
+              EnableOWE = true;
+            };
+            Scan = {
+              # Prevent periodic 65s off-channel roaming scans on weak signal
+              DisableRoamingScan = true;
+            };
           };
 
           nftables.enable = true;
@@ -111,16 +117,20 @@
           enable = true;
           settings = {
             Resolve = {
-              DNS = "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111";
+              DNS = "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com";
               FallbackDNS = "8.8.8.8#dns.google 8.8.4.4#dns.google";
-              DNSSEC = "allow-downgrade";
+              DNSSEC = "false";
               DNSOverTLS = "opportunistic";
               Domains = [ "~." ];
             };
           };
         };
 
-        boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+        boot.kernel.sysctl = {
+          "net.ipv4.ip_forward" = 1;
+          # Automatically probe and clamp MSS when Path MTU black holes occur (e.g. PPPoE 1480 MTU)
+          "net.ipv4.tcp_mtu_probing" = 1;
+        };
 
         # ── Base System Packages ──────────────────────────────────────────────
         environment.systemPackages = with pkgs; [
