@@ -1,0 +1,105 @@
+/* ==========================================================================
+   Zen Browser Custom userContent.css
+   Dynamic theme integration (colors.css) + in-content pages & scrollbars
+   ========================================================================== */
+@import "colors.css";
+
+/* 1. Prevent White Flash on New Tab / Blank / Internal Pages */
+@-moz-document url("about:blank"), url("about:newtab"), url("about:home"),
+               url("about:privatebrowsing"), url("about:debugging"), url("about:processes") {
+  html, body {
+    background-color: var(--theme-bg) !important;
+    color: var(--theme-fg) !important;
+  }
+}
+
+/* 2. Theme Internal about:* Pages */
+@-moz-document url-prefix("about:") {
+  :root {
+    --in-content-page-background: var(--theme-bg) !important;
+    --in-content-page-color: var(--theme-fg) !important;
+    --in-content-box-background: var(--theme-bg-raised) !important;
+    --in-content-box-border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  html, body {
+    background-color: var(--theme-bg) !important;
+    color: var(--theme-fg) !important;
+  }
+
+  /* Sleek Translucent Scrollbars for internal browser pages */
+  * {
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--theme-fg-dim) transparent !important;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--theme-fg-dim) !important;
+    border-radius: 4px !important;
+    transition: background-color 0.15s ease !important;
+
+    &:hover {
+      background-color: var(--theme-fg-mid) !important;
+    }
+  }
+}
+
+/* 3. Style about:config to match theme */
+@-moz-document url-prefix("about:config") {
+  #toolbar {
+    background-color: var(--theme-bg-raised) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  #about-config-search {
+    border-radius: 8px !important;
+    background-color: var(--theme-bg-subtle) !important;
+    color: var(--theme-fg) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 6px 10px !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+
+    &:focus {
+      border-color: var(--theme-accent) !important;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent) !important;
+      outline: none !important;
+    }
+  }
+
+  table {
+    border-color: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  tr:hover {
+    background-color: var(--theme-bg-subtle) !important;
+  }
+
+  input[type="checkbox"] {
+    accent-color: var(--theme-accent) !important;
+  }
+
+  button.primary {
+    background-color: var(--theme-accent) !important;
+    color: var(--theme-bg) !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--theme-accent) 85%, white) !important;
+    }
+  }
+
+  button:not(.primary) {
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+}

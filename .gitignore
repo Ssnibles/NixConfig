@@ -7,3 +7,4 @@ nohup.out
 *.bin
 _installer-options.nix
 Session.vim*
+modules/features/apps/zen/colors.css

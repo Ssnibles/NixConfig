@@ -281,7 +281,7 @@ NixConfig/
     │   │   ├── neovim.nix             # NVF Neovim configuration & packages
     │   │   ├── spotify.nix            # Spotify music player configured with Spicetify
     │   │   ├── vivado.nix             # AMD Vivado Distrobox integration
-    │   │   └── zen-browser.nix        # Zen Browser with enterprise privacy policies
+    │   │   └── zen/                   # Zen Browser with enterprise privacy policies & live CSS
     │   │
     │   └── nvim-src/                  # Modular Lua source tree for Neovim
     │       ├── init.lua               # Neovim entry point
