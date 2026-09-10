@@ -1,7 +1,9 @@
+-- ── Mini.icons ───────────────────────────────────────────────────────
 local icons = require("mini.icons")
 icons.setup()
 icons.mock_nvim_web_devicons()
 
+-- ── Mini.ai (textobjects) ────────────────────────────────────────────
 require("mini.ai").setup({
 	n_lines = 500,
 	custom_textobjects = {
@@ -14,18 +16,15 @@ require("mini.ai").setup({
 	},
 })
 
+-- ── Mini.surround ────────────────────────────────────────────────────
 require("mini.surround").setup({
 	mappings = {
-		add = "sa",
-		delete = "sd",
-		replace = "sr",
-		find = "sf",
-		find_left = "sF",
-		highlight = "sh",
-		update_n_lines = "sn",
+		add = "sa", delete = "sd", replace = "sr", find = "sf",
+		find_left = "sF", highlight = "sh", update_n_lines = "sn",
 	},
 })
 
+-- ── Mini.clue (which-key) ────────────────────────────────────────────
 local clue = require("mini.clue")
 clue.setup({
 	clues = {
@@ -61,6 +60,7 @@ clue.setup({
 	window = { delay = 300, config = { border = "rounded", width = "auto" } },
 })
 
+-- ── Mini.hipatterns ──────────────────────────────────────────────────
 local hip = require("mini.hipatterns")
 hip.setup({
 	highlighters = {
@@ -72,59 +72,12 @@ hip.setup({
 	},
 })
 
+-- ── Simple mini modules ──────────────────────────────────────────────
 require("mini.cursorword").setup({ delay = 200 })
-
 require("mini.align").setup()
 require("mini.move").setup()
-require("mini.operators").setup({
-	replace = { prefix = "gR" },
-})
+require("mini.operators").setup({ replace = { prefix = "gR" } })
 require("mini.splitjoin").setup()
 require("mini.trailspace").setup()
-
 require("mini.pairs").setup()
 require("mini.bufremove").setup({})
-
--- local starter = require("mini.starter")
--- local logo = [[
---   ⠀⠀⠀⠀⠀⠀⡠⠛⠋⠉⠉⠓⠻⢤⠀
---   ⠀⠀⠀⠀⠀⡟⣠⣶⠖⣤⠀⣴⣯⣹⣷
---   ⠀⣀⣀⣀⠀⣆⢹⣿⣿⡿⠀⠹⠿⠿⣉
---   ⡞⠀⠀⠀⠀⠀⠓⠦⢄⡄⠩⠥⠔⠊⠁
---   ⠙⡄⢠⣴⣶⣦⠀⢠⡄⣴⠀⣯⠀⠀⠀
---   ⠀⠲⠖⠁⠉⠁⠧⠼⠁⠈⠓⠋⠀⠀⠀
--- ]]
---
--- starter.setup({
--- 	header = logo,
--- 	items = {
--- 		{
--- 			name = "New file",
--- 			action = "enew",
--- 			section = "Actions",
--- 		},
--- 		{
--- 			name = "Open oldfile (fzf)",
--- 			action = function()
--- 				require("fzf-lua").oldfiles()
--- 			end,
--- 			section = "Actions",
--- 		},
--- 		{
--- 			name = "Open Neovim Wiki",
--- 			action = "help nvim",
--- 			section = "Actions",
--- 		},
--- 		{
--- 			name = "Quit Neovim",
--- 			action = "qa",
--- 			section = "Actions",
--- 		},
--- 	},
--- 	content_hooks = {
--- 		starter.gen_hook.adding_bullet("  󰅂 ", false),
--- 		starter.gen_hook.indexing("section", { "Actions" }),
--- 		starter.gen_hook.aligning("center", "center"),
--- 	},
--- 	footer = "",
--- })

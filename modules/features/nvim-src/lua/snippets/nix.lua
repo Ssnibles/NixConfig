@@ -3,7 +3,6 @@ local s = ls.snippet
 local t = ls.text_node
 local i = ls.insert_node
 
-
 ls.add_snippets("nix", {
 	s({ trig = "module", desc = "NixOS Module Template" }, {
 		t({ "{ config, lib, pkgs, ... }:", "", "with lib;", "let", "  cfg = config.modules." }),
@@ -30,19 +29,19 @@ ls.add_snippets("nix", {
 	}),
 
 	s({ trig = "pkg", desc = "Nix Package (stdenv.mkDerivation)" }, {
-		t({ "{ lib, stdenv, fetchFromGitHub, ... }:", "", "stdenv.mkDerivation rec {", "  pname = \"" }),
+		t({ '{ lib, stdenv, fetchFromGitHub, ... }:', "", "stdenv.mkDerivation rec {", '  pname = "' }),
 		i(1, "name"),
-		t({ "\";", "  version = \"" }),
+		t({ '";', '  version = "' }),
 		i(2, "0.1.0"),
-		t({ "\";", "", "  src = fetchFromGitHub {", "    owner = \"" }),
+		t({ '";', "", "  src = fetchFromGitHub {", '    owner = "' }),
 		i(3, "owner"),
-		t({ "\";", "    repo = pname;", "    rev = \"v${version}\";", "    hash = \"" }),
+		t({ '";', "    repo = pname;", '    rev = "v${version}";', '    hash = "' }),
 		i(4, "sha256-..."),
-		t({ "\";", "  };", "", "  meta = with lib; {", "    description = \"" }),
+		t({ '";', "  };", "", '  meta = with lib; {', '    description = "' }),
 		i(5, "Description"),
-		t({ "\";", "    homepage = \"" }),
+		t({ '";', '    homepage = "' }),
 		i(6, "https://github.com/..."),
-		t({ "\";", "    license = licenses.mit;", "    maintainers = [ ];", "  };", "}" }),
+		t({ '";', "    license = licenses.mit;", "    maintainers = [ ];", "  };", "}" }),
 	}),
 
 	s({ trig = "shell", desc = "Nix Developer Shell (mkShell)" }, {
@@ -54,9 +53,9 @@ ls.add_snippets("nix", {
 	}),
 
 	s({ trig = "writeShellScriptBin", desc = "writeShellScriptBin script wrapper" }, {
-		t("(pkgs.writeShellScriptBin \""),
+		t('(pkgs.writeShellScriptBin "'),
 		i(1, "name"),
-		t({ "\" ''", "  " }),
+		t({ '" \'\'', "  " }),
 		i(2, "#!/usr/bin/env bash"),
 		t({ "", "  " }),
 		i(3),

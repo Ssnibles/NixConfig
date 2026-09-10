@@ -1,48 +1,16 @@
--- User configuration options
-local CONFIG = {
-	yank_highlight_timeout = 200,
-	large_file_size_mb = 5,
-
-	-- Filetypes to skip when trimming trailing whitespace on save
-	trim_whitespace_skip_ft = {
-		markdown = true,
-		text = true,
-		gitcommit = true,
-		diff = true,
-	},
-
-	-- Filetypes closed by pressing 'q' or '<Esc>'
-	close_with_q_ft = {
-		"help",
-		"man",
-		"qf",
-		"lspinfo",
-		"checkhealth",
-		"notify",
-		"oil",
-		"grug-far",
-		"NeogitStatus",
-		"cargo",
-	},
-
-	-- Filetypes with indent folding disabled by default
-	fold_indent_ft = {
-		"markdown",
-		"markdown.mdx",
-		"text",
-		"gitcommit",
-		"typst",
-		"txt",
-		"yaml",
-		"json",
-		"toml",
-	},
-}
-
 local augroup = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 local autocmd = vim.api.nvim_create_autocmd
 
--- Enables native Tree-sitter highlighting when a parser is available
+-- Filetypes closed by pressing 'q' or '<Esc>'
+local close_with_q = { "help", "man", "qf", "lspinfo", "checkhealth", "notify", "oil", "grug-far", "cargo" }
+
+-- Filetypes that skip trailing whitespace trimming
+local trim_skip = { markdown = true, text = true, gitcommit = true, diff = true }
+
+-- Filetypes using indent folding instead of treesitter
+local fold_indent = { "markdown", "markdown.mdx", "text", "gitcommit", "typst", "txt", "yaml", "json", "toml" }
+
+-- ── Tree-sitter highlighting ─────────────────────────────────────────
 autocmd("FileType", {
 	group = augroup,
 	callback = function(ev)
@@ -50,25 +18,22 @@ autocmd("FileType", {
 	end,
 })
 
--- Safely trims trailing whitespace and trailing blank lines without corrupting undo or extmarks
-local function trim_trailing_whitespace()
-	if vim.bo.buftype ~= "" or CONFIG.trim_whitespace_skip_ft[vim.bo.filetype] then
-		return
-	end
-	local ok, trailspace = pcall(require, "mini.trailspace")
-	if ok then
-		trailspace.trim()
-		trailspace.trim_last_lines()
-	end
-end
-
--- Trims trailing whitespace before writing to disk
+-- ── Trim trailing whitespace on save ─────────────────────────────────
 autocmd("BufWritePre", {
 	group = augroup,
-	callback = trim_trailing_whitespace,
+	callback = function()
+		if vim.bo.buftype ~= "" or trim_skip[vim.bo.filetype] then
+			return
+		end
+		local ok, trailspace = pcall(require, "mini.trailspace")
+		if ok then
+			trailspace.trim()
+			trailspace.trim_last_lines()
+		end
+	end,
 })
 
--- Automatically attaches keymaps, enables LSP inlay hints and CodeLens once attached
+-- ── LSP attach: keymaps, inlay hints, code lens ──────────────────────
 autocmd("LspAttach", {
 	group = augroup,
 	callback = function(args)
@@ -76,11 +41,11 @@ autocmd("LspAttach", {
 			pcall(vim.g.attach_lsp_keymaps, args.buf)
 		end
 
-		local client = vim.lsp.get_client_by_id(args.data.client_id)
 		if vim.lsp.inlay_hint and not vim.lsp.inlay_hint.is_enabled({ bufnr = args.buf }) then
 			pcall(vim.lsp.inlay_hint.enable, true, { bufnr = args.buf })
 		end
 
+		local client = vim.lsp.get_client_by_id(args.data.client_id)
 		if client and client:supports_method("textDocument/codeLens", args.buf) then
 			if vim.lsp.codelens.enable then
 				pcall(vim.lsp.codelens.enable, true, { bufnr = args.buf })
@@ -91,21 +56,18 @@ autocmd("LspAttach", {
 	end,
 })
 
--- Highlights yanked text briefly
+-- ── Yank highlight ───────────────────────────────────────────────────
 autocmd("TextYankPost", {
 	group = augroup,
 	callback = function()
-		vim.hl.on_yank({ timeout = CONFIG.yank_highlight_timeout })
+		vim.hl.on_yank({ timeout = 200 })
 	end,
 })
 
--- Checks if files were changed outside Neovim when window gains focus
-autocmd("FocusGained", {
-	group = augroup,
-	command = "checktime",
-})
+-- ── Check for external changes on focus ──────────────────────────────
+autocmd("FocusGained", { group = augroup, command = "checktime" })
 
--- Restores cursor to last known position when opening a buffer
+-- ── Restore cursor position ──────────────────────────────────────────
 autocmd("BufReadPost", {
 	group = augroup,
 	callback = function(ev)
@@ -113,32 +75,27 @@ autocmd("BufReadPost", {
 		if ft == "gitcommit" or ft == "gitrebase" then
 			return
 		end
-
 		local mark = vim.api.nvim_buf_get_mark(ev.buf, '"')
-		local line_count = vim.api.nvim_buf_line_count(ev.buf)
-		if mark[1] > 0 and mark[1] <= line_count then
+		if mark[1] > 0 and mark[1] <= vim.api.nvim_buf_line_count(ev.buf) then
 			pcall(vim.api.nvim_win_set_cursor, 0, mark)
 		end
 	end,
 })
 
--- Binds 'q' and '<Esc>' to close utility windows
+-- ── Close utility windows with q / <Esc> ────────────────────────────
 autocmd("FileType", {
 	group = augroup,
-	pattern = CONFIG.close_with_q_ft,
+	pattern = close_with_q,
 	callback = function(ev)
 		vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = ev.buf, silent = true })
 		vim.keymap.set("n", "<Esc>", "<cmd>close<CR>", { buffer = ev.buf, silent = true })
 	end,
 })
 
--- Equalises window splits when Neovim window is resized
-autocmd("VimResized", {
-	group = augroup,
-	command = "wincmd =",
-})
+-- ── Equalize splits on resize ────────────────────────────────────────
+autocmd("VimResized", { group = augroup, command = "wincmd =" })
 
--- Disables automatic comment insertion on new lines
+-- ── Disable auto-comment on new lines ────────────────────────────────
 autocmd("FileType", {
 	group = augroup,
 	callback = function()
@@ -146,7 +103,7 @@ autocmd("FileType", {
 	end,
 })
 
--- Enables spell checking and line wrap for prose filetypes
+-- ── Prose filetypes: spell + wrap ────────────────────────────────────
 autocmd("FileType", {
 	group = augroup,
 	pattern = { "markdown", "markdown.mdx", "text", "gitcommit" },
@@ -161,7 +118,7 @@ autocmd("FileType", {
 	end,
 })
 
--- Switches to absolute line numbers in Insert mode, preserving relative numbers in Normal and Visual modes
+-- ── Relative line numbers toggle on insert ───────────────────────────
 autocmd("InsertEnter", {
 	group = augroup,
 	callback = function()
@@ -179,7 +136,7 @@ autocmd("InsertLeave", {
 	end,
 })
 
--- Toggles cursorline highlighting based on focused window
+-- ── Cursorline follows focus ─────────────────────────────────────────
 autocmd("WinEnter", {
 	group = augroup,
 	callback = function()
@@ -197,17 +154,17 @@ autocmd("WinLeave", {
 	end,
 })
 
--- Sets indent foldmethod for structured text formats
+-- ── Indent folding for structured text ───────────────────────────────
 autocmd("FileType", {
 	group = augroup,
-	pattern = CONFIG.fold_indent_ft,
+	pattern = fold_indent,
 	callback = function()
 		vim.opt_local.foldmethod = "indent"
 		vim.opt_local.foldenable = false
 	end,
 })
 
--- Sets keywordprg to Neovim help for Lua and Vimscript
+-- ── Help keywordprg for Lua/Vim ──────────────────────────────────────
 autocmd("FileType", {
 	group = augroup,
 	pattern = { "lua", "vim" },
@@ -216,7 +173,7 @@ autocmd("FileType", {
 	end,
 })
 
--- Configures Typst preview and Zathura sync keymaps
+-- ── Typst preview & Zathura sync ─────────────────────────────────────
 autocmd("FileType", {
 	group = augroup,
 	pattern = "typst",
@@ -226,23 +183,21 @@ autocmd("FileType", {
 		end, { buffer = ev.buf, desc = "Toggle Typst preview" })
 
 		vim.keymap.set("n", "<leader>zo", function()
-			local pdf_path = vim.fn.expand("%:p:r") .. ".pdf"
-			local buf_path = vim.api.nvim_buf_get_name(ev.buf)
-
-			if vim.fn.filereadable(pdf_path) == 1 then
+			local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+			if vim.fn.filereadable(pdf) == 1 then
 				vim.system({
 					"zathura",
-					"--synctex-forward=" .. vim.fn.line(".") .. ":0:" .. buf_path,
-					pdf_path,
+					"--synctex-forward=" .. vim.fn.line(".") .. ":0:" .. vim.api.nvim_buf_get_name(ev.buf),
+					pdf,
 				}, { detach = true })
 			else
-				vim.notify("PDF not found: " .. pdf_path, vim.log.levels.WARN)
+				vim.notify("PDF not found: " .. pdf, vim.log.levels.WARN)
 			end
 		end, { buffer = ev.buf, desc = "Open PDF in Zathura" })
 	end,
 })
 
--- Disables heavy syntax highlighting and folding for large files
+-- ── Large file performance guard ─────────────────────────────────────
 autocmd("BufReadPost", {
 	group = augroup,
 	callback = function(ev)
@@ -250,9 +205,8 @@ autocmd("BufReadPost", {
 		if vim.bo[ev.buf].buftype ~= "" or path == "" then
 			return
 		end
-
 		local ok, stat = pcall(vim.uv.fs_stat, path)
-		if ok and stat and (stat.size / (1024 * 1024)) > CONFIG.large_file_size_mb then
+		if ok and stat and (stat.size / (1024 * 1024)) > 5 then
 			vim.b[ev.buf].large_file = true
 			vim.opt_local.foldmethod = "manual"
 			vim.opt_local.foldenable = false

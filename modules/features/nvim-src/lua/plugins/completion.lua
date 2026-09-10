@@ -3,36 +3,18 @@ require("luasnip").setup({
 	region_check_events = "InsertEnter,TextChangedI",
 	delete_check_events = "InsertLeave",
 })
-
 require("luasnip.loaders.from_vscode").lazy_load()
+
+-- ── Blink.cmp ────────────────────────────────────────────────────────
 
 local cmp = require("blink.cmp")
 
 local keymap = {
 	preset = "none",
-
-	-- Open completion menu manually
-	["<C-space>"] = {
-		function()
-			cmp.show()
-		end,
-	},
-
-	-- Tab accepts completion when menu is visible; falls back to regular Tab
-	["<Tab>"] = {
-		function()
-			if cmp.is_visible() then
-				return cmp.accept()
-			end
-		end,
-		"fallback",
-	},
-
-	-- Snippet navigation (Forward: Ctrl+L, Backward: Ctrl+H)
+	["<C-space>"] = { function() cmp.show() end },
+	["<Tab>"] = { function() if cmp.is_visible() then return cmp.accept() end end, "fallback" },
 	["<C-]>"] = { "snippet_forward", "fallback" },
 	["<C-[>"] = { "snippet_backward", "fallback" },
-
-	-- Menu selection and cancel options
 	["<Esc>"] = { "cancel", "fallback" },
 	["<C-c>"] = { "cancel", "fallback" },
 	["<C-e>"] = { "cancel", "fallback" },
@@ -47,43 +29,21 @@ local keymap = {
 }
 
 cmp.setup({
-	signature = {
-		enabled = true,
-		window = { border = "rounded", show_documentation = true },
-	},
+	signature = { enabled = true, window = { border = "rounded", show_documentation = true } },
 	snippets = { preset = "luasnip" },
 	keymap = keymap,
 	appearance = {
 		nerd_font_variant = "mono",
 		kind_icons = {
-			Text = "󰉿",
-			Method = "󰆧",
-			Function = "󰊕",
-			Constructor = "",
-			Field = "󰜢",
-			Variable = "󰀫",
-			Class = "󰠱",
-			Interface = "",
-			Module = "",
-			Property = "󰜢",
-			Unit = "󰑭",
-			Value = "󰎠",
-			Enum = "",
-			Keyword = "󰌋",
-			Snippet = "",
-			Color = "󰏘",
-			File = "󰈙",
-			Folder = "󰉋",
-			Reference = "󰈇",
-			EnumMember = "",
-			Constant = "󰏿",
-			Struct = "󰙅",
-			Event = "",
-			Operator = "󰆕",
+			Text = "󰉿", Method = "󰆧", Function = "󰊕", Constructor = "",
+			Field = "󰜢", Variable = "󰀫", Class = "󰠱", Interface = "",
+			Module = "", Property = "󰜢", Unit = "󰑭", Value = "󰎠",
+			Enum = "", Keyword = "󰌋", Snippet = "", Color = "󰏘",
+			File = "󰈙", Folder = "󰉋", Reference = "󰈇", EnumMember = "",
+			Constant = "󰏿", Struct = "󰙅", Event = "", Operator = "󰆕",
 			TypeParameter = "󰊄",
 		},
 	},
-
 	sources = {
 		default = { "lsp", "copilot", "snippets", "buffer", "path" },
 		per_filetype = {
@@ -93,93 +53,75 @@ cmp.setup({
 			gitcommit = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
 		},
 		providers = {
-			copilot = {
-				name = "copilot",
-				module = "blink-cmp-copilot",
-				score_offset = 100,
-				async = true,
-			},
+			copilot = { name = "copilot", module = "blink-cmp-copilot", score_offset = 100, async = true },
 			spell = {
-				name = "Spell",
-				module = "blink-cmp-spell",
-				enabled = function()
-					return vim.wo.spell
-				end,
+				name = "Spell", module = "blink-cmp-spell",
+				enabled = function() return vim.wo.spell end,
 				opts = { max_entries = 8 },
 			},
-			buffer = {
-				max_items = 8,
-				min_keyword_length = 3,
-				score_offset = -3,
-			},
-			snippets = {
-				min_keyword_length = 1,
-				score_offset = 10,
-			},
-			path = {
-				min_keyword_length = 2,
-				score_offset = -2,
-			},
+			buffer = { max_items = 8, min_keyword_length = 3, score_offset = -3 },
+			snippets = { min_keyword_length = 1, score_offset = 10 },
+			path = { min_keyword_length = 2, score_offset = -2 },
 		},
 	},
 	completion = {
 		list = {
 			selection = {
-				preselect = function(ctx)
-					return ctx.mode ~= "cmdline"
-				end,
+				preselect = function(ctx) return ctx.mode ~= "cmdline" end,
 				auto_insert = false,
 			},
 		},
 		menu = {
-			auto_show = true,
-			direction_priority = { "s", "n" },
-			border = "rounded",
-			scrollbar = true,
+			auto_show = true, direction_priority = { "s", "n" }, border = "rounded", scrollbar = true,
 			draw = {
 				padding = { 1, 1 },
 				columns = { { "kind_icon", gap = 1 }, { "label", "label_description", gap = 1 }, { "kind" } },
 			},
 		},
 		documentation = {
-			auto_show = true,
-			auto_show_delay_ms = 50,
+			auto_show = true, auto_show_delay_ms = 50,
 			window = { border = "rounded", max_width = 80, max_height = 30 },
 		},
-		ghost_text = {
-			enabled = true,
-			show_with_selection = true, -- Only show ghost text when an item is actively selected/highlighted
-			show_without_selection = false, -- Do not show ghost text immediately upon menu popup
-		},
+		ghost_text = { enabled = true, show_with_selection = true, show_without_selection = false },
 	},
 	cmdline = {
 		keymap = keymap,
-		completion = {
-			menu = { auto_show = true },
-			ghost_text = { enabled = true },
-		},
+		completion = { menu = { auto_show = true }, ghost_text = { enabled = true } },
 	},
 })
 
+-- ── Copilot ──────────────────────────────────────────────────────────
+
 local copilot_ok, copilot = pcall(require, "copilot")
 if copilot_ok then
-	copilot.setup({
-		suggestion = { enabled = false },
-		panel = { enabled = true },
+	copilot.setup({ suggestion = { enabled = false }, panel = { enabled = true } })
+
+	vim.keymap.set("n", "<leader>ac", function()
+		copilot.suggestion.toggle()
+		vim.notify("Copilot " .. (copilot.suggestion.is_enabled() and "enabled" or "disabled"))
+	end, { desc = "Toggle copilot" })
+
+	vim.keymap.set("n", "<leader>ap", function()
+		copilot.panel.toggle()
+	end, { desc = "Toggle copilot panel" })
+end
+
+-- ── Filetype snippets (deferred via autocmds) ────────────────────────
+
+local snippet_loaded = {}
+local function load_snippets(ft, mod)
+	vim.api.nvim_create_autocmd("FileType", {
+		pattern = ft,
+		once = true,
+		callback = function()
+			if not snippet_loaded[mod] then
+				snippet_loaded[mod] = true
+				pcall(require, mod)
+			end
+		end,
 	})
 end
 
-vim.keymap.set("n", "<leader>ac", function()
-	if not copilot_ok then
-		return
-	end
-	copilot.suggestion.toggle()
-	local status = copilot.suggestion.is_enabled() and "enabled" or "disabled"
-	vim.notify(("Copilot %s"):format(status), vim.log.levels.INFO)
-end, { desc = "Toggle copilot" })
-
-vim.keymap.set("n", "<leader>ap", function()
-	if copilot_ok then
-		copilot.panel.toggle()
-	end
-end, { desc = "Toggle copilot panel" })
+load_snippets("typst", "snippets.typst")
+load_snippets("nix", "snippets.nix")
+load_snippets("java", "snippets.java")

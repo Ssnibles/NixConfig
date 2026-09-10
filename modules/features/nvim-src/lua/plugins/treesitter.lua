@@ -5,10 +5,12 @@ require("nvim-treesitter-textobjects").setup({
 	move = { set_jumps = true },
 })
 
+-- ── Textobject keymaps ───────────────────────────────────────────────
+
 local ts_select = require("nvim-treesitter-textobjects.select")
 local ts_move = require("nvim-treesitter-textobjects.move")
 
-local select_keymaps = {
+local textobjects = {
 	["af"] = { query = "@function.outer", desc = "Around function" },
 	["if"] = { query = "@function.inner", desc = "Inside function" },
 	["ac"] = { query = "@class.outer", desc = "Around class" },
@@ -16,24 +18,29 @@ local select_keymaps = {
 	["aa"] = { query = "@parameter.outer", desc = "Around parameter" },
 	["ia"] = { query = "@parameter.inner", desc = "Inside parameter" },
 }
-for key, spec in pairs(select_keymaps) do
+
+for key, spec in pairs(textobjects) do
 	vim.keymap.set({ "o", "x" }, key, function()
 		ts_select.select_textobject(spec.query)
 	end, { silent = true, desc = spec.desc })
 end
 
-vim.keymap.set({ "n", "o", "x" }, "]f", function()
-	ts_move.goto_next_start("@function.outer")
-end, { silent = true, desc = "Next function" })
-vim.keymap.set({ "n", "o", "x" }, "[f", function()
-	ts_move.goto_previous_start("@function.outer")
-end, { silent = true, desc = "Previous function" })
-vim.keymap.set({ "n", "o", "x" }, "]c", function()
-	ts_move.goto_next_start("@class.outer")
-end, { silent = true, desc = "Next class" })
-vim.keymap.set({ "n", "o", "x" }, "[c", function()
-	ts_move.goto_previous_start("@class.outer")
-end, { silent = true, desc = "Previous class" })
+-- ── Movement keymaps ─────────────────────────────────────────────────
+
+local movements = {
+	{ "]f", "goto_next_start", "@function.outer", "Next function" },
+	{ "[f", "goto_previous_start", "@function.outer", "Previous function" },
+	{ "]c", "goto_next_start", "@class.outer", "Next class" },
+	{ "[c", "goto_previous_start", "@class.outer", "Previous class" },
+}
+
+for _, m in ipairs(movements) do
+	vim.keymap.set({ "n", "o", "x" }, m[1], function()
+		ts_move[m[2]](m[3])
+	end, { silent = true, desc = m[4] })
+end
+
+-- ── Treesitter Context ───────────────────────────────────────────────
 
 require("treesitter-context").setup({
 	enable = true,

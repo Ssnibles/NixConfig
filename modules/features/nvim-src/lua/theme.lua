@@ -27,35 +27,24 @@ local function blend(fg, bg, alpha)
 	end
 	local r1, g1, b1 = parse(fg)
 	local r2, g2, b2 = parse(bg)
-	local r = math.floor(r1 * alpha + r2 * (1 - alpha) + 0.5)
-	local g = math.floor(g1 * alpha + g2 * (1 - alpha) + 0.5)
-	local b = math.floor(b1 * alpha + b2 * (1 - alpha) + 0.5)
-	return string.format("#%02x%02x%02x", r, g, b)
+	return string.format(
+		"#%02x%02x%02x",
+		math.floor(r1 * alpha + r2 * (1 - alpha) + 0.5),
+		math.floor(g1 * alpha + g2 * (1 - alpha) + 0.5),
+		math.floor(b1 * alpha + b2 * (1 - alpha) + 0.5)
+	)
 end
 
 function M.setup()
 	local c = M.colors
-
 	vim.o.background = "dark"
 
 	require("mini.base16").setup({
 		palette = {
-			base00 = c.bg,
-			base01 = c.bg,
-			base02 = c.bg,
-			base03 = c.comment,
-			base04 = c.comment,
-			base05 = c.fg,
-			base06 = c.fg,
-			base07 = c.fg,
-			base08 = c.red,
-			base09 = c.orange,
-			base0A = c.yellow,
-			base0B = c.green,
-			base0C = c.cyan,
-			base0D = c.blue,
-			base0E = c.purple,
-			base0F = c.magenta,
+			base00 = c.bg, base01 = c.bg, base02 = c.bg, base03 = c.comment,
+			base04 = c.comment, base05 = c.fg, base06 = c.fg, base07 = c.fg,
+			base08 = c.red, base09 = c.orange, base0A = c.yellow, base0B = c.green,
+			base0C = c.cyan, base0D = c.blue, base0E = c.purple, base0F = c.magenta,
 		},
 	})
 
@@ -69,87 +58,65 @@ function M.setup()
 	hl("Normal", { fg = c.fg, bg = c.bg })
 
 	-- Flat editor-bg groups
-	local flat_groups = {
-		"NormalNC",
-		"SignColumn",
-		"FoldColumn",
-		"StatusLine",
-		"StatusLineNC",
-		"WinBar",
-		"WinBarNC",
-		"MsgArea",
-		"MsgSeparator",
-		"PmenuSbar",
-		"PmenuThumb",
-		"MiniAnimateNormalFloat",
-		"TreesitterContext",
-		"TreesitterContextLineNumber",
-		"TabLine",
-		"TabLineFill",
-		"OilNormal",
-	}
-	for _, g in ipairs(flat_groups) do
+	for _, g in ipairs({
+		"NormalNC", "SignColumn", "FoldColumn", "StatusLine", "StatusLineNC",
+		"WinBar", "WinBarNC", "MsgArea", "MsgSeparator", "PmenuSbar", "PmenuThumb",
+		"MiniAnimateNormalFloat", "TreesitterContext", "TreesitterContextLineNumber",
+		"TabLine", "TabLineFill", "OilNormal",
+	}) do
 		hl(g, { link = "Normal" })
 	end
 
-	-- Float groups: flat — same bg as editor
+	-- Float groups (same bg as editor — flat look)
 	hl("NormalFloat", { link = "Normal" })
-	local float_groups = {
-		"Pmenu",
-		"BlinkCmpMenu",
-		"BlinkCmpDoc",
-		"BlinkCmpSignatureHelp",
-		"FzfLuaNormal",
-		"FzfLuaPreviewNormal",
-		"FzfLuaPromptNormal",
-		"FzfLuaHelpNormal",
-		"MiniClueNormal",
-		"DAPUINormal",
-		"DAPUIFloatNormal",
-	}
-	for _, g in ipairs(float_groups) do
+	for _, g in ipairs({
+		"Pmenu", "BlinkCmpMenu", "BlinkCmpDoc", "BlinkCmpSignatureHelp",
+		"FzfLuaNormal", "FzfLuaPreviewNormal", "FzfLuaPromptNormal", "FzfLuaHelpNormal",
+		"MiniClueNormal", "DAPUINormal", "DAPUIFloatNormal",
+	}) do
 		hl(g, { link = "NormalFloat" })
 	end
 
+	-- Cursor
 	hl("CursorLine", { bg = c.bgSubtle })
 	hl("CursorLineNr", { fg = blend(c.blue, c.fg, 0.7), bold = true })
 	hl("CursorColumn", { bg = c.bgSubtle })
 	hl("CursorLineSign", { link = "CursorLine" })
 	hl("CursorLineFold", { link = "CursorLine" })
 
+	-- Selection & search
 	hl("Visual", { bg = c.selection })
 	hl("VisualNOS", { link = "Visual" })
-
 	hl("Search", { bg = c.search })
 	hl("IncSearch", { fg = c.bg, bg = c.blue })
 	hl("CurSearch", { link = "IncSearch" })
 	hl("Substitute", { bg = blend(c.green, c.bg, 0.15) })
-
 	hl("MatchParen", { fg = c.blue, bold = true, bg = c.selection })
 
+	-- Non-text
 	hl("NonText", { fg = blend(c.comment, c.bg, 0.3) })
 	hl("Whitespace", { fg = blend(c.comment, c.bg, 0.15) })
 	hl("Conceal", { fg = c.comment })
 	hl("EndOfBuffer", { fg = c.bg })
 
+	-- Line numbers
 	hl("LineNr", { fg = c.comment, bg = c.bg })
 	hl("LineNrAbove", { fg = c.comment })
 	hl("LineNrBelow", { fg = c.comment })
 
+	-- Separators & borders
 	hl("WinSeparator", { fg = separator })
-
 	hl("GlobalBorder", { fg = c.border })
 	hl("FloatBorder", { link = "GlobalBorder" })
 	hl("FloatTitle", { fg = c.blue, bold = true })
 	hl("FloatFooter", { fg = c.comment })
-
 	hl("LspInfoBorder", { fg = c.border })
 	hl("LspInfoTitle", { fg = c.blue, bold = true })
 
-	hl("FzfLuaBorder", { fg = c.border })
-	hl("FzfLuaPreviewBorder", { fg = c.border })
-	hl("FzfLuaPromptBorder", { fg = c.border })
-	hl("FzfLuaHelpBorder", { fg = c.border })
+	-- FzfLua
+	for _, g in ipairs({ "FzfLuaBorder", "FzfLuaPreviewBorder", "FzfLuaPromptBorder", "FzfLuaHelpBorder" }) do
+		hl(g, { fg = c.border })
+	end
 	hl("FzfLuaTitle", { fg = c.blue, bold = true })
 	hl("FzfLuaScrollFloatEmpty", { fg = c.comment })
 	hl("FzfLuaScrollFloatFull", { fg = c.blue })
@@ -159,6 +126,7 @@ function M.setup()
 	hl("FzfLuaDirPart", { fg = c.blue })
 	hl("FzfLuaFilePart", { fg = c.fg })
 
+	-- Mini.clue
 	hl("MiniClueBorder", { fg = c.border })
 	hl("MiniClueTitle", { fg = c.blue, bold = true })
 	hl("MiniClueDescGroup", { fg = c.comment })
@@ -166,10 +134,10 @@ function M.setup()
 	hl("MiniClueNextKeyWithPostkeys", { fg = c.blue, bold = true })
 	hl("MiniClueSeparator", { fg = c.border })
 
+	-- Blink.cmp
 	hl("BlinkCmpMenuBorder", { fg = c.border })
 	hl("BlinkCmpDocBorder", { fg = c.border })
 	hl("BlinkCmpSignatureHelpBorder", { fg = c.border })
-
 	hl("BlinkCmpMenuSelection", { fg = c.fg, bg = c.selection, bold = true })
 	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
 	hl("BlinkCmpLabelDetail", { fg = c.comment, italic = true })
@@ -178,33 +146,15 @@ function M.setup()
 	hl("BlinkCmpKind", { fg = c.comment })
 	hl("BlinkCmpGhostText", { fg = c.comment })
 
-	local kindHls = {
-		Field = c.purple,
-		Variable = c.fg,
-		Function = c.blue,
-		Method = c.blue,
-		Class = c.orange,
-		Interface = c.green,
-		Keyword = c.purple,
-		Snippet = c.cyan,
-		Text = c.comment,
-		Struct = c.orange,
-		TypeParameter = c.cyan,
-		Enum = c.green,
-		EnumMember = c.yellow,
-		Property = c.fg,
-		Constant = c.orange,
-		Module = c.purple,
-		Unit = c.orange,
-		Value = c.fg,
-		Reference = c.cyan,
-		Color = c.green,
-		File = c.blue,
-		Folder = c.blue,
-		Event = c.orange,
-		Constr = c.orange,
+	local kind_colors = {
+		Field = c.purple, Variable = c.fg, Function = c.blue, Method = c.blue,
+		Class = c.orange, Interface = c.green, Keyword = c.purple, Snippet = c.cyan,
+		Text = c.comment, Struct = c.orange, TypeParameter = c.cyan, Enum = c.green,
+		EnumMember = c.yellow, Property = c.fg, Constant = c.orange, Module = c.purple,
+		Unit = c.orange, Value = c.fg, Reference = c.cyan, Color = c.green,
+		File = c.blue, Folder = c.blue, Event = c.orange, Constr = c.orange,
 	}
-	for kind, color in pairs(kindHls) do
+	for kind, color in pairs(kind_colors) do
 		hl("BlinkCmpKind" .. kind, { fg = color })
 	end
 
@@ -214,6 +164,7 @@ function M.setup()
 	hl("BlinkCmpScrollBarThumb", { fg = c.border })
 	hl("BlinkCmpScrollBarGutter", { fg = c.bgSubtle })
 
+	-- Pmenu
 	hl("PmenuSel", { fg = c.fg, bg = c.selection, bold = true })
 	hl("PmenuKind", { fg = c.comment })
 	hl("PmenuKindSel", { fg = c.blue })
@@ -221,30 +172,28 @@ function M.setup()
 	hl("PmenuMatchSel", { fg = c.blue, bold = true })
 	hl("PmenuExtra", { fg = c.comment })
 
+	-- Diagnostics
 	hl("DiagnosticUnderlineError", { undercurl = true, sp = c.red })
 	hl("DiagnosticUnderlineWarn", { undercurl = true, sp = c.yellow })
 	hl("DiagnosticUnderlineHint", { undercurl = true, sp = c.cyan })
 	hl("DiagnosticUnderlineInfo", { undercurl = true, sp = c.blue })
 	hl("DiagnosticUnnecessary", { underdotted = true, sp = c.comment })
-
 	hl("DiagnosticSignError", { fg = c.red, bg = c.bg })
 	hl("DiagnosticSignWarn", { fg = c.yellow, bg = c.bg })
 	hl("DiagnosticSignHint", { fg = c.cyan, bg = c.bg })
 	hl("DiagnosticSignInfo", { fg = c.blue, bg = c.bg })
 	hl("DiagnosticSignOk", { fg = c.green, bg = c.bg })
-
 	hl("DiagnosticVirtualTextError", { fg = c.red, bg = blend(c.red, c.bg, 0.10) })
 	hl("DiagnosticVirtualTextWarn", { fg = c.yellow, bg = blend(c.yellow, c.bg, 0.10) })
 	hl("DiagnosticVirtualTextHint", { fg = c.cyan, bg = blend(c.cyan, c.bg, 0.08) })
 	hl("DiagnosticVirtualTextInfo", { fg = c.blue, bg = blend(c.blue, c.bg, 0.08) })
-
 	hl("DiagnosticDeprecated", { strikethrough = true, sp = c.comment })
-
 	hl("DiagnosticFloatingError", { fg = c.red })
 	hl("DiagnosticFloatingWarn", { fg = c.yellow })
 	hl("DiagnosticFloatingHint", { fg = c.cyan })
 	hl("DiagnosticFloatingInfo", { fg = c.blue })
 
+	-- LSP
 	hl("LspInlayHint", { fg = c.comment, bg = blend(c.fg, c.bg, 0.05), italic = true })
 	hl("LspReferenceText", { bg = c.selection })
 	hl("LspReferenceRead", { bg = c.selection })
@@ -253,6 +202,7 @@ function M.setup()
 	hl("LspCodeLensSeparator", { fg = c.comment })
 	hl("LspSignatureActiveParameter", { fg = c.blue, bold = true })
 
+	-- Semantic tokens
 	hl("@lsp.type.class", { fg = c.orange })
 	hl("@lsp.type.function", { fg = c.blue })
 	hl("@lsp.type.method", { fg = c.blue })
@@ -263,36 +213,36 @@ function M.setup()
 	hl("@lsp.type.keyword", { fg = c.purple })
 	hl("@lsp.type.comment", { fg = c.comment, italic = true })
 
+	-- Diff & git
 	hl("DiffAdd", { bg = blend(c.green, c.bg, 0.12) })
 	hl("DiffDelete", { bg = blend(c.red, c.bg, 0.12) })
 	hl("DiffChange", { bg = blend(c.yellow, c.bg, 0.12) })
 	hl("DiffText", { bg = blend(c.blue, c.bg, 0.2) })
-
 	hl("DiffAddGutter", { fg = c.green, bg = c.bg })
 	hl("DiffDeleteGutter", { fg = c.red, bg = c.bg })
 	hl("DiffChangeGutter", { fg = c.yellow, bg = c.bg })
-
 	hl("GitSignsAdd", { fg = c.green })
 	hl("GitSignsChange", { fg = c.yellow })
 	hl("GitSignsDelete", { fg = c.red })
 	hl("GitSignsCurrentLineBlame", { fg = c.comment, italic = true })
 
+	-- UI elements
 	hl("TabLineSel", { bg = c.bg, fg = c.fg, bold = true })
 	hl("QuickFixLine", { bg = c.selection, bold = true })
 	hl("ColorColumn", { bg = c.bgSubtle })
 	hl("CmdlineCursor", { fg = c.bg, bg = c.blue })
 
+	-- Spelling
 	hl("SpellBad", { undercurl = true, sp = c.red })
 	hl("SpellCap", { undercurl = true, sp = c.yellow })
 	hl("SpellRare", { undercurl = true, sp = c.cyan })
 	hl("SpellLocal", { undercurl = true, sp = c.blue })
 
+	-- Folding
 	hl("Folded", { fg = blend(c.blue, c.comment, 0.4), bg = blend(c.blue, c.bg, 0.07) })
 	hl("FoldColumn", { fg = c.comment })
 
-	vim.opt.foldtext = [[
-		v:lua.require('theme').fold_text()
-	]]
+	vim.opt.foldtext = [[v:lua.require('theme').fold_text()]]
 	function M.fold_text()
 		local line = vim.fn.getline(vim.v.foldstart)
 		local width = vim.fn.winwidth(0) - vim.fn.getwinvar(0, "&numberwidth") - 6
@@ -304,13 +254,15 @@ function M.setup()
 		return text .. string.rep("─", math.max(width - #text - #folded, 1)) .. folded
 	end
 
+	-- Treesitter context
 	hl("TreesitterContextSeparator", { fg = separator })
-	-- hl("TreesitterContextBottom", { underline = true, sp = separator })
 
+	-- Copilot
 	hl("CopilotSuggestion", { fg = c.purple, italic = true })
 	hl("CopilotPanelLabel", { fg = c.blue, bold = true })
 	hl("CopilotPanelSelected", { fg = c.blue, bg = c.selection, bold = true })
 
+	-- Mini modules
 	hl("MiniHipatternsFixme", { fg = c.bg, bg = c.red, bold = true })
 	hl("MiniHipatternsTodo", { fg = c.bg, bg = c.orange, bold = true })
 	hl("MiniHipatternsNote", { fg = c.bg, bg = c.blue, bold = true })
@@ -323,36 +275,20 @@ function M.setup()
 	hl("MiniPickMatchCurrent", { fg = c.blue, bold = true })
 	hl("MiniPickMatchMarked", { fg = c.blue, bold = true })
 	hl("MiniPickPreviewLine", { fg = c.comment })
+	hl("MiniStarterHeader", { fg = c.blue, bold = true })
+	hl("MiniStarterSection", { fg = c.purple, bold = true })
+	hl("MiniStarterItem", { fg = c.fg })
+	hl("MiniStarterItemBullet", { fg = c.cyan })
+	hl("MiniStarterItemPrefix", { fg = c.blue, bold = true })
+	hl("MiniStarterFooter", { fg = c.comment, italic = true })
+	hl("MiniStarterQuery", { fg = c.yellow, bold = true })
 
+	-- Oil
 	hl("OilDir", { fg = c.blue, bold = true })
 	hl("OilDirIcon", { fg = c.blue })
 	hl("OilFile", { link = "Normal" })
 
-	hl("NeogitBranch", { fg = c.blue, bold = true })
-	hl("NeogitRemote", { fg = c.yellow })
-	hl("NeogitHunkHeader", { fg = c.blue, bg = c.bgSubtle })
-	hl("NeogitHunkHeaderHighlight", { fg = c.blue, bg = c.selection })
-	hl("NeogitDiffAdd", { fg = c.green, bg = blend(c.green, c.bg, 0.10) })
-	hl("NeogitDiffDelete", { fg = c.red, bg = blend(c.red, c.bg, 0.10) })
-	hl("NeogitDiffAddHighlight", { fg = c.green, bg = blend(c.green, c.bg, 0.18) })
-	hl("NeogitDiffDeleteHighlight", { fg = c.red, bg = blend(c.red, c.bg, 0.18) })
-	hl("NeogitDiffContextHighlight", { bg = c.bgSubtle })
-	hl("NeogitDiffHeader", { fg = c.blue })
-	hl("NeogitSectionHeader", { fg = c.blue, bold = true })
-	hl("NeogitFilePath", { fg = c.blue, italic = true })
-	hl("NeogitGraphRed", { fg = c.red })
-	hl("NeogitGraphGreen", { fg = c.green })
-	hl("NeogitGraphBlue", { fg = c.blue })
-	hl("NeogitGraphPurple", { fg = c.purple })
-	hl("NeogitGraphYellow", { fg = c.yellow })
-	hl("NeogitGraphCyan", { fg = c.cyan })
-	hl("NeogitGraphGray", { fg = c.comment })
-	hl("NeogitGraphWhite", { fg = c.fg })
-	hl("NeogitNotificationInfo", { fg = c.blue })
-	hl("NeogitNotificationWarning", { fg = c.yellow })
-	hl("NeogitNotificationError", { fg = c.red })
-	hl("NeogitCommitViewHeader", { fg = c.blue, bold = true })
-
+	-- Statusline mode highlights
 	hl("StlModeN", { fg = c.bg, bg = c.blue, bold = true })
 	hl("StlModeI", { fg = c.bg, bg = c.green, bold = true })
 	hl("StlModeV", { fg = c.bg, bg = c.purple, bold = true })
@@ -367,20 +303,10 @@ function M.setup()
 	hl("StlFT", { fg = c.comment })
 	hl("StlPos", { fg = blend(c.comment, c.bg, 0.6) })
 
-	-- Indentinator highlight groups
+	-- Indentinator
 	hl("IndentinatorBar", { fg = indent })
 	hl("IndentinatorScopeBar", { fg = blend(c.blue, c.comment, 0.3) })
 	hl("IndentinatorScopeUnderline", { sp = blend(c.blue, c.comment, 0.45), underline = true })
-
-	-- MiniStarter highlight groups
-	hl("MiniStarterHeader", { fg = c.blue, bold = true })
-	hl("MiniStarterSection", { fg = c.purple, bold = true })
-	hl("MiniStarterItem", { fg = c.fg })
-	hl("MiniStarterItemBullet", { fg = c.cyan })
-	hl("MiniStarterItemPrefix", { fg = c.blue, bold = true })
-	hl("MiniStarterFooter", { fg = c.comment, italic = true })
-	hl("MiniStarterQuery", { fg = c.yellow, bold = true })
 end
 
 return M
-

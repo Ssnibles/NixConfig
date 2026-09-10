@@ -1,6 +1,8 @@
 local dap = require("dap")
 local dapui = require("dapui")
 
+-- ── DAP UI ───────────────────────────────────────────────────────────
+
 dapui.setup({
 	icons = { expanded = "▾", collapsed = "▸", current_frame = "▸" },
 	controls = { enabled = true, element = "repl" },
@@ -8,17 +10,18 @@ dapui.setup({
 })
 
 require("nvim-dap-virtual-text").setup({
-	enabled = true,
-	enabled_commands = true,
-	highlight_changed_variables = true,
-	virt_text_pos = "eol",
+	enabled = true, enabled_commands = true,
+	highlight_changed_variables = true, virt_text_pos = "eol",
 	all_frames = false,
 })
 
+-- Auto open/close UI
 dap.listeners.before.attach.dapui_config = function() dapui.open() end
 dap.listeners.before.launch.dapui_config = function() dapui.open() end
 dap.listeners.before.event_terminated.dapui_config = function() dapui.close() end
 dap.listeners.before.event_exited.dapui_config = function() dapui.close() end
+
+-- ── Helpers ──────────────────────────────────────────────────────────
 
 local function executable(cmd)
 	return vim.fn.executable(cmd) == 1 and vim.fn.exepath(cmd) or nil
@@ -34,183 +37,103 @@ end
 
 local function prompt_args(prompt)
 	local line = vim.trim(vim.fn.input(prompt))
-	if line == "" then return {} end
-	return vim.split(line, "%s+")
+	return line == "" and {} or vim.split(line, "%s+")
 end
 
 local dap_utils = require("dap.utils")
+
+-- ── Python ───────────────────────────────────────────────────────────
 
 local debugpy = executable("debugpy-adapter")
 if debugpy then
 	require("dap-python").setup(debugpy)
 	dap.configurations.python = {
-		{
-			type = "python",
-			request = "launch",
-			name = "Launch current file",
-			program = "${file}",
-			cwd = "${workspaceFolder}",
-		},
-		{
-			type = "python",
-			request = "launch",
-			name = "Launch module",
-			module = function() return vim.fn.input("Module: ") end,
-			cwd = "${workspaceFolder}",
-			args = function() return prompt_args("Args: ") end,
-		},
-		{
-			type = "python",
-			request = "launch",
-			name = "Pytest current file",
-			module = "pytest",
-			args = { "${file}" },
-			cwd = "${workspaceFolder}",
-			justMyCode = false,
-		},
+		{ type = "python", request = "launch", name = "Launch current file", program = "${file}", cwd = "${workspaceFolder}" },
+		{ type = "python", request = "launch", name = "Launch module", module = function() return vim.fn.input("Module: ") end, cwd = "${workspaceFolder}", args = function() return prompt_args("Args: ") end },
+		{ type = "python", request = "launch", name = "Pytest current file", module = "pytest", args = { "${file}" }, cwd = "${workspaceFolder}", justMyCode = false },
 	}
 end
+
+-- ── .NET ─────────────────────────────────────────────────────────────
 
 local netcoredbg = executable("netcoredbg")
 if netcoredbg then
-	dap.adapters.coreclr = {
-		type = "executable",
-		command = netcoredbg,
-		args = { "--interpreter=vscode" },
-	}
+	dap.adapters.coreclr = { type = "executable", command = netcoredbg, args = { "--interpreter=vscode" } }
 	dap.configurations.cs = {
-		{
-			type = "coreclr",
-			name = "Launch .NET DLL",
-			request = "launch",
-			program = function()
-				return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file")
-			end,
-			cwd = "${workspaceFolder}",
-			stopAtEntry = false,
-		},
-		{
-			type = "coreclr",
-			name = "Attach to process",
-			request = "attach",
-			processId = dap_utils.pick_process,
-		},
+		{ type = "coreclr", name = "Launch .NET DLL", request = "launch", program = function() return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file") end, cwd = "${workspaceFolder}", stopAtEntry = false },
+		{ type = "coreclr", name = "Attach to process", request = "attach", processId = dap_utils.pick_process },
 	}
 end
 
+-- ── Go ───────────────────────────────────────────────────────────────
+
 local delve = executable("dlv")
 if delve then
-	dap.adapters.go = {
-		type = "server",
-		host = "127.0.0.1",
-		port = "${port}",
-		executable = { command = delve, args = { "dap", "-l", "127.0.0.1:${port}" } },
-	}
+	dap.adapters.go = { type = "server", host = "127.0.0.1", port = "${port}", executable = { command = delve, args = { "dap", "-l", "127.0.0.1:${port}" } } }
 	dap.configurations.go = {
 		{ type = "go", name = "Debug package", request = "launch", program = "${workspaceFolder}" },
 		{ type = "go", name = "Debug file", request = "launch", program = "${file}" },
 	}
 end
 
+-- ── Java / Kotlin ────────────────────────────────────────────────────
+
 dap.adapters.java = function(callback, config)
 	callback({ type = "server", host = config.hostName or "127.0.0.1", port = config.port or 5005 })
 end
-
 dap.configurations.java = {
 	{ type = "java", request = "attach", name = "Attach to localhost:5005", hostName = "127.0.0.1", port = 5005 },
 	{
-		type = "java",
-		request = "attach",
-		name = "Attach to custom host/port",
-		hostName = function()
-			local host = vim.fn.input("Host: ", "127.0.0.1")
-			return host ~= "" and host or "127.0.0.1"
-		end,
-		port = function()
-			local port = tonumber(vim.fn.input("Port: ", "5005"))
-			return port or 5005
-		end,
+		type = "java", request = "attach", name = "Attach to custom host/port",
+		hostName = function() local h = vim.fn.input("Host: ", "127.0.0.1"); return h ~= "" and h or "127.0.0.1" end,
+		port = function() return tonumber(vim.fn.input("Port: ", "5005")) or 5005 end,
 	},
 }
-
 dap.configurations.kotlin = vim.deepcopy(dap.configurations.java)
+
+-- ── C / C++ (LLDB) ──────────────────────────────────────────────────
 
 local lldb = first_executable({ "codelldb", "lldb-dap", "lldb-vscode" })
 if lldb then
 	if lldb:match("codelldb$") then
-		dap.adapters.lldb = {
-			type = "server",
-			port = "${port}",
-			executable = { command = lldb, args = { "--port", "${port}" } },
-		}
+		dap.adapters.lldb = { type = "server", port = "${port}", executable = { command = lldb, args = { "--port", "${port}" } } }
 	else
 		dap.adapters.lldb = { type = "executable", command = lldb, name = "lldb" }
 	end
-
 	local lldb_configs = {
 		{
-			type = "lldb",
-			request = "launch",
-			name = "Launch executable",
+			type = "lldb", request = "launch", name = "Launch executable",
 			program = function()
 				local cwd = vim.fn.getcwd()
-				local default = cwd .. "/target/debug/" .. vim.fn.fnamemodify(cwd, ":t")
-				return vim.fn.input("Path to executable: ", default, "file")
+				return vim.fn.input("Path to executable: ", cwd .. "/target/debug/" .. vim.fn.fnamemodify(cwd, ":t"), "file")
 			end,
-			cwd = "${workspaceFolder}",
-			stopOnEntry = false,
+			cwd = "${workspaceFolder}", stopOnEntry = false,
 			args = function() return prompt_args("Args: ") end,
 		},
-		{
-			type = "lldb",
-			request = "attach",
-			name = "Attach to process",
-			pid = dap_utils.pick_process,
-			cwd = "${workspaceFolder}",
-		},
+		{ type = "lldb", request = "attach", name = "Attach to process", pid = dap_utils.pick_process, cwd = "${workspaceFolder}" },
 	}
 	dap.configurations.c = vim.deepcopy(lldb_configs)
 	dap.configurations.cpp = vim.deepcopy(lldb_configs)
 end
 
+-- ── JavaScript / TypeScript ──────────────────────────────────────────
+
 local js_debug = executable("js-debug-adapter")
 if js_debug then
-	dap.adapters["pwa-node"] = {
-		type = "server",
-		host = "127.0.0.1",
-		port = "${port}",
-		executable = { command = js_debug, args = { "${port}" },
-	} }
+	dap.adapters["pwa-node"] = { type = "server", host = "127.0.0.1", port = "${port}", executable = { command = js_debug, args = { "${port}" } } }
 	for _, lang in ipairs({ "javascript", "typescript", "javascriptreact", "typescriptreact" }) do
 		dap.configurations[lang] = {
-			{
-				type = "pwa-node",
-				request = "launch",
-				name = "Launch current file",
-				program = "${file}",
-				cwd = "${workspaceFolder}",
-				sourceMaps = true,
-				console = "integratedTerminal",
-			},
-			{
-				type = "pwa-node",
-				request = "attach",
-				name = "Attach to process",
-				processId = dap_utils.pick_process,
-				cwd = "${workspaceFolder}",
-			},
+			{ type = "pwa-node", request = "launch", name = "Launch current file", program = "${file}", cwd = "${workspaceFolder}", sourceMaps = true, console = "integratedTerminal" },
+			{ type = "pwa-node", request = "attach", name = "Attach to process", processId = dap_utils.pick_process, cwd = "${workspaceFolder}" },
 		}
 	end
 end
 
+-- ── Keymaps ──────────────────────────────────────────────────────────
+
 local map = vim.keymap.set
 map("n", "<leader>mb", dap.toggle_breakpoint, { desc = "Toggle breakpoint" })
-map(
-	"n",
-	"<leader>mB",
-	function() dap.set_breakpoint(vim.fn.input("Breakpoint condition: ")) end,
-	{ desc = "Conditional breakpoint" }
-)
+map("n", "<leader>mB", function() dap.set_breakpoint(vim.fn.input("Breakpoint condition: ")) end, { desc = "Conditional breakpoint" })
 map("n", "<leader>mc", dap.continue, { desc = "Continue/start" })
 map("n", "<leader>mi", dap.step_into, { desc = "Step into" })
 map("n", "<leader>mo", dap.step_over, { desc = "Step over" })
