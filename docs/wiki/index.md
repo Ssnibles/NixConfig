@@ -24,6 +24,10 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 - **[Firefox & Sidebery Customization](firefox.md)**  
   Guide for customizing Firefox native UI (`userChrome.css`), WebExtensions/Sidebery (`userContent.css`), theme color tokens (`colors.css`), and using the Browser Toolbox inspector.
 
+### 🔀 Version Control
+- **[Jujutsu (jj) Cheat Sheet](jujutsu.md)**  
+  Quick reference for the Jujutsu VCS. Covers the Git→jj mental model, daily workflow, bookmarks (branches), pushing & pulling, history rewriting, conflict resolution, and configured shell aliases.
+
 ### 🎮 Gaming & Hardware
 - **[Gaming, Steam & DualSense Controllers](gaming.md)**  
   Configuration guide for gaming on NixOS. Covers Steam with Millennium skinning framework, Gamescope composited sessions, MangoHud performance overlay, and Sony PlayStation 5 DualSense / DualSense Edge kernel driver (`hid-playstation`) & udev setup.
@@ -41,3 +45,4 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 | **Neovim** | `modules/features/apps/neovim.nix` | `modules/features/nvim-src/` | [neovim.md](neovim.md) |
 | **Wayland Compositors** | `modules/features/desktop-env/` | `hyprland/`, `niri/`, `mangowc/` | [compositors.md](compositors.md) |
 | **Gaming & PS5 Controllers** | `modules/features/apps/gaming.nix` | `modules/packages/dualsense-pair/` | [gaming.md](gaming.md) |
+| **Jujutsu (jj)** | `modules/features/shell/cli.nix` | `~/.config/jj/config.toml` | [jujutsu.md](jujutsu.md) |

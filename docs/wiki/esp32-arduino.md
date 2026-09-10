@@ -21,7 +21,9 @@ nix flake init -t /home/josh/NixConfig#esp32-arduino
 ## 🛠️ Step-by-Step Workflow
 
 ### 1. Activate Development Shell
+
 Enter the nix development shell (or rely on `direnv`):
+
 ```bash
 nix develop
 # or with direnv:
@@ -29,32 +31,43 @@ direnv allow
 ```
 
 ### 2. Download Board Index & Install ESP32 Core
+
 Run `esp-init` (first time setup per workspace):
+
 ```bash
 esp-init
 ```
-*This updates the `arduino-cli` board manager using the Espressif package URL (`https://espressif.github.io/arduino-esp32/package_esp32_index.json`) and installs the `esp32:esp32` core.*
+
+_This updates the `arduino-cli` board manager using the Espressif package URL (`https://espressif.github.io/arduino-esp32/package_esp32_index.json`) and installs the `esp32:esp32` core._
 
 ### 3. Check Connected Serial Devices
+
 Plug in your ESP32 board via USB and list connected boards:
+
 ```bash
 esp-boards
 ```
 
 ### 4. Compile the Sketch
+
 Compile `src/src.ino`:
+
 ```bash
 esp-compile
 ```
 
 ### 5. Generate LSP Compilation Database for Neovim / Clangd
+
 Generate `compile_commands.json` in your workspace root so Neovim LSP immediately recognizes ESP32 Arduino libraries, includes, and pins:
+
 ```bash
 esp-gen-lsp
 ```
 
 ### 6. Flash the Microcontroller
+
 Flash the compiled binary to your board:
+
 ```bash
 esp-upload /dev/ttyUSB0
 # Or for native USB devices (ESP32-S3 / ESP32-C3):
@@ -62,24 +75,27 @@ esp-upload /dev/ttyACM0
 ```
 
 ### 7. Monitor Serial Output
+
 Launch the `picocom` terminal emulator @ 115200 baud:
+
 ```bash
 esp-monitor /dev/ttyUSB0 115200
 ```
-*(To exit `picocom`, press **`Ctrl+A`** then **`Ctrl+Q`**).*
+
+_(To exit `picocom`, press **`Ctrl+A`** then **`Ctrl+Q`**)._
 
 ---
 
 ## 📋 Helper Commands Summary
 
-| Command | Description |
-|---|---|
-| `esp-init` | Update board manager index and install `esp32:esp32` core |
-| `esp-boards` | List connected microcontrollers and identified serial ports |
-| `esp-compile [FQBN]` | Compile `src/sketch.ino` (Default FQBN: `esp32:esp32:esp32`) |
-| `esp-upload [PORT] [FQBN]` | Flash compiled binary to connected ESP32 board |
-| `esp-monitor [PORT] [BAUD]` | Launch `picocom` serial monitor |
-| `esp-gen-lsp [FQBN]` | Build `compile_commands.json` for Clangd autocomplete & diagnostics |
+| Command                     | Description                                                         |
+| --------------------------- | ------------------------------------------------------------------- |
+| `esp-init`                  | Update board manager index and install `esp32:esp32` core           |
+| `esp-boards`                | List connected microcontrollers and identified serial ports         |
+| `esp-compile [FQBN]`        | Compile `src/sketch.ino` (Default FQBN: `esp32:esp32:esp32`)        |
+| `esp-upload [PORT] [FQBN]`  | Flash compiled binary to connected ESP32 board                      |
+| `esp-monitor [PORT] [BAUD]` | Launch `picocom` serial monitor                                     |
+| `esp-gen-lsp [FQBN]`        | Build `compile_commands.json` for Clangd autocomplete & diagnostics |
 
 ---
 
@@ -94,6 +110,7 @@ Pass custom Fully Qualified Board Names (FQBN) to `esp-compile` or `esp-upload` 
 - **NodeMCU-32S**: `esp32:esp32:nodemcu-32s`
 
 To search all installed ESP32 board targets:
+
 ```bash
 arduino-cli board listall esp32
 ```
@@ -112,4 +129,5 @@ users.users.${config.username}.extraGroups = [
   "dialout"
 ];
 ```
+
 No `sudo` is required to flash or monitor devices!
