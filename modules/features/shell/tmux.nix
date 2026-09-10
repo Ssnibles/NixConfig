@@ -178,7 +178,7 @@
             set -g default-shell "${pkgs.unstable.fish}/bin/fish"
 
             # Ensure system tools are always available to tmux subprocesses & tmux-fzf & sesh
-            set-environment -g PATH "/etc/profiles/per-user/${config.username}/bin:/run/current-system/sw/bin:${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.tmux}/bin:${pkgs.sesh}/bin:${pkgs.zoxide}/bin:${pkgs.coreutils}/bin:${pkgs.gnused}/bin:${pkgs.gawk}/bin:${pkgs.findutils}/bin:${pkgs.git}/bin:${pkgs.procps}/bin:${pkgs.wl-clipboard}/bin:${pkgs.lazygit}/bin:$PATH"
+            set-environment -g PATH "/etc/profiles/per-user/${config.username}/bin:/run/current-system/sw/bin:${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.tmux}/bin:${pkgs.sesh}/bin:${pkgs.zoxide}/bin:${pkgs.coreutils}/bin:${pkgs.gnused}/bin:${pkgs.gawk}/bin:${pkgs.findutils}/bin:${pkgs.git}/bin:${pkgs.procps}/bin:${pkgs.wl-clipboard}/bin:${pkgs.jujutsu}/bin:${pkgs.jjui}/bin:$PATH"
             set-environment -g TMUX_FZF_PREVIEW 0
 
             # Unbind default Ctrl shortcuts so tmux never intercepts Control keys
@@ -197,7 +197,7 @@
             set -g @resurrect-restore-key 'R'
             set -g @resurrect-strategy-nvim 'session'
             set -g @resurrect-strategy-vim 'session'
-            set -g @resurrect-processes 'nvim vim vi btop yazi lazygit ssh man less bat cat fish bash python node cargo'
+            set -g @resurrect-processes 'nvim vim vi btop yazi jjui ssh man less bat cat fish bash python node cargo'
             set -g @resurrect-capture-pane-contents 'on'
             set -g @resurrect-hook-post-save-all '${tmuxResurrectSave}/bin/tmux-resurrect-save'
 
@@ -247,8 +247,8 @@
             bind-key : command-prompt -T command
             bind-key \; run-shell -b "TMUX_FZF_OPTIONS='-p -w 80% -h 60% --no-preview' TMUX_FZF_PREVIEW=0 TMUX_FZF_CLIENT='#{client_tty}' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
 
-            # Native Floating LazyGit Popup
-            bind g display-popup -d "#{pane_current_path}" -w 85% -h 85% -E "${pkgs.lazygit}/bin/lazygit"
+            # Native Floating jjui Popup (Prefix + g)
+            bind g display-popup -d "#{pane_current_path}" -w 85% -h 85% -E "${pkgs.jjui}/bin/jjui"
 
             # ─── Terminal & True Color support ───────────────────────────────
             set-option -a terminal-features ",xterm-256color:RGB,xterm-kitty:RGB,ghostty:RGB,foot:RGB,alacritty:RGB,tmux-256color:RGB,*:RGB"

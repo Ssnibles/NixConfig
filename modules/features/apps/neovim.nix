@@ -240,8 +240,6 @@
             smart-splits-nvim
 
             gitsigns-nvim
-            neogit
-
             grug-far-nvim
             inc-rename-nvim
 

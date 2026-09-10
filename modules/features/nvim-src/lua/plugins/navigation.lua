@@ -11,7 +11,7 @@ local excluded_filetypes = {
 	help = true,
 	NvimTree = true,
 	["neo-tree"] = true,
-	neogit = true,
+	jj = true,
 	terminal = true,
 	Trouble = true,
 }

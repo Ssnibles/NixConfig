@@ -14,7 +14,9 @@
       inherit (config.theme.colors)
         bg
         bgRaised
+        bgSubtle
         fg
+        fgDim
         accent
         teal
         purple
@@ -68,7 +70,7 @@
               foreground=${fg}
               selection-foreground=${bg}
               selection-background=${accent}
-              regular0=${bg}
+              regular0=${bgSubtle}
               regular1=${red}
               regular2=${green}
               regular3=${yellow}
@@ -76,7 +78,7 @@
               regular5=${purple}
               regular6=${teal}
               regular7=${fg}
-              bright0=${bgRaised}
+              bright0=${fgDim}
               bright1=${orange}
               bright2=${green}
               bright3=${yellow}

@@ -162,9 +162,8 @@ map("n", "<leader>fh", fzf.help_tags, { desc = "Help" })
 map("n", "<leader>fk", fzf.keymaps, { desc = "Keymaps" })
 map("n", "<leader>f.", fzf.resume, { desc = "Resume last picker" })
 
-map("n", "<leader>gg", function()
-	require("neogit").open()
-end, { desc = "Neogit status" })
+-- Note: <leader>gg is owned by plugins.jj (opens jjui float)
+-- The pickers below work via git, which jj colocates with.
 map("n", "<leader>gc", fzf.git_commits, { desc = "Git commits" })
 map("n", "<leader>gS", fzf.git_status, { desc = "Git status (picker)" })
 map("n", "<leader>gl", fzf.git_commits, { desc = "Git log" })

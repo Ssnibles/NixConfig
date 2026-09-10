@@ -13,7 +13,7 @@ M.core = {
 	"plugins.fidget",
 	"plugins.terminal",
 	"plugins.lint",
-	"plugins.neogit",
+	"plugins.jj",
 	"plugins.dap",
 	"plugins.sshinator",
 	"plugins.indentinator",

@@ -48,7 +48,8 @@
             # CLI Dev Utilities
             devenv
             yazi
-            lazygit
+            jujutsu
+            jjui
             rclone
             fuse
             sshpass

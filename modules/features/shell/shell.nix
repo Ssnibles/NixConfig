@@ -43,7 +43,7 @@
           ".config/fish/config.fish" = {
             clobber = true;
             text = ''
-              set -g fish_color_autosuggestion '#${c.bgSubtle}'
+              set -g fish_color_autosuggestion '#${c.fgDim}'
               set -g fish_color_comment '#${c.bgSubtle}'
 
               set -gx FZF_DEFAULT_OPTS "
@@ -152,7 +152,7 @@
                   set -l repo "$HOME/NixConfig"
                   if test -d "$repo"
                       cd "$repo"
-                      git status --short --branch
+                      jj log --limit 5
                   else
                       echo "NixConfig not found at $repo" >&2
                       return 1
@@ -167,7 +167,7 @@
                   set -l repo "$HOME/NixConfig"
                   if test -d "$repo"
                       cd "$repo"
-                      git pull
+                      jj git fetch
                       nh os switch
                   else
                       echo "NixConfig not found at $repo" >&2
@@ -208,11 +208,17 @@
             ll = "ls -l";
             la = "ls -la";
             lt = "ls -ltr";
-            g = "git";
-            ga = "git add";
-            gc = "git commit";
-            gp = "git push";
-            gl = "git log --oneline --graph";
+            # jj (jujutsu) workflow aliases
+            j = "jj";
+            jl = "jj log";
+            jd = "jj diff";
+            js = "jj status";
+            jc = "jj commit";
+            jn = "jj new";
+            je = "jj edit";
+            jb = "jj bookmark";
+            jp = "jj git push";
+            jf = "jj git fetch";
             n = "nvim";
             cat = "bat";
             t = "tmux";
@@ -220,7 +226,6 @@
           };
 
           shellAbbrs = {
-            lg = "lazygit";
             y = "yazi";
             nixclean = "sudo nix-collect-garbage --delete-older-than 30d";
           };
