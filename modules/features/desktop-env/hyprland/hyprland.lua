@@ -194,7 +194,7 @@ hl.bind(mod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(mod .. " + SHIFT + F", hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(mod .. " + V", hl.dsp.exec_cmd("hyprctl dispatch togglefloating"))
 hl.bind(mod .. " + C", hl.dsp.exec_cmd("hyprctl dispatch togglefloating"))
-hl.bind(mod .. " + G", hl.dsp.exec_cmd("hyprctl dispatch togglefloating"))
+hl.bind(mod .. " + G", hl.dsp.exec_cmd("quickshell ipc call bar toggle"))
 hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
 
 -- Directional Focus (Vim + Arrow Keys)

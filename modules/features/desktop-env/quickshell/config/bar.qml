@@ -10,6 +10,9 @@ Scope {
     id: rootWmService
   }
 
+  // Bar visibility state (controlled via IPC in shell.qml)
+  property bool barVisible: true
+
   Variants {
     model: Quickshell.screens
 
@@ -18,6 +21,7 @@ Scope {
       WlrLayershell.layer: WlrLayer.Bottom
       required property var modelData
       screen: barPanel.modelData
+      visible: root.barVisible
       focusable: false
       aboveWindows: true
 

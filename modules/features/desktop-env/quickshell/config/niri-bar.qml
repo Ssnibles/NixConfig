@@ -12,6 +12,9 @@ Scope {
     active: true
   }
 
+  // Bar visibility state (controlled via IPC in shell.qml)
+  property bool barVisible: true
+
   Variants {
     model: Quickshell.screens
 
@@ -19,6 +22,7 @@ Scope {
       id: barPanel
       required property var modelData
       screen: barPanel.modelData
+      visible: rootShell.barVisible
       focusable: false
       aboveWindows: true
 

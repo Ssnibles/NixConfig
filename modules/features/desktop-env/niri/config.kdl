@@ -142,7 +142,7 @@ binds {
     Mod+Shift+F { set-column-width "100%"; }
     Mod+C { center-column; }
     Mod+O { toggle-overview; }
-    Mod+G { spawn "niri-float-sticky" "-ipc" "toggle_sticky"; }
+    Mod+G hotkey-overlay-title="Toggle Bar" { spawn "quickshell" "ipc" "call" "bar" "toggle"; }
 
     // Focus Navigation (Horizontal plane)
     Mod+Left  { focus-column-left; }
