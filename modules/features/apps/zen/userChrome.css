@@ -9,8 +9,12 @@
    -------------------------------------------------------------------------- */
 :root {
   --zen-blur-radius: 16px;
-  --zen-glass-opacity: 0.82;
-  --zen-glass-bg: color-mix(in srgb, var(--theme-bg) calc(var(--zen-glass-opacity) * 100%), transparent);
+  --zen-glass-opacity: 0.5;
+  --zen-glass-bg: color-mix(
+    in srgb,
+    var(--theme-bg) calc(var(--zen-glass-opacity) * 100%),
+    transparent
+  );
   --zen-glass-border: 1px solid rgba(255, 255, 255, 0.08);
   --zen-glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 
@@ -42,7 +46,9 @@ hbox#titlebar,
   .browserSidebarContainer:not(.zen-glance-overlay) {
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3) !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease !important;
 }
 
 /* Active split-view pane: accent outline */
@@ -99,8 +105,11 @@ hbox#titlebar,
       ) !important;
       border: var(--zen-glass-border) !important;
       box-shadow: var(--zen-glass-shadow) !important;
-      transition: height var(--zen-hidden-toolbar-transition),
-        box-shadow 0.2s ease, opacity 0.2s ease, border-color 0.2s ease !important;
+      transition:
+        height var(--zen-hidden-toolbar-transition),
+        box-shadow 0.2s ease,
+        opacity 0.2s ease,
+        border-color 0.2s ease !important;
     }
   }
 }
@@ -125,9 +134,14 @@ hbox#titlebar,
 #urlbar-background {
   background-color: var(--zen-glass-bg) !important;
   backdrop-filter: blur(var(--zen-blur-radius)) !important;
-  border-radius: var(--border-radius-medium, var(--zen-border-radius, 8px)) !important;
+  border-radius: var(
+    --border-radius-medium,
+    var(--zen-border-radius, 8px)
+  ) !important;
   border: var(--zen-glass-border) !important;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
     background-color 0.15s ease !important;
 }
 
@@ -158,7 +172,8 @@ hbox#titlebar,
   backdrop-filter: blur(var(--zen-blur-radius)) !important;
   border-radius: 12px !important;
   border: var(--zen-glass-border) !important;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-accent) 25%, transparent),
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 25%, transparent),
     0 24px 64px rgba(0, 0, 0, 0.55) !important;
 }
 
@@ -185,11 +200,18 @@ hbox#titlebar,
     transition: background-color 0.12s ease !important;
 
     &:hover:not([selected]) {
-      background-color: var(--zen-toolbar-element-bg-hover, rgba(255, 255, 255, 0.08)) !important;
+      background-color: var(
+        --zen-toolbar-element-bg-hover,
+        rgba(255, 255, 255, 0.08)
+      ) !important;
     }
 
     &[selected] {
-      background-color: color-mix(in srgb, var(--theme-accent) 18%, var(--theme-bg-subtle)) !important;
+      background-color: color-mix(
+        in srgb,
+        var(--theme-accent) 18%,
+        var(--theme-bg-subtle)
+      ) !important;
 
       & .urlbarView-title {
         color: var(--theme-fg) !important;
@@ -217,12 +239,20 @@ hbox#titlebar,
    -------------------------------------------------------------------------- */
 .tabbrowser-tab {
   & .tab-background {
-    border-radius: var(--border-radius-medium, var(--zen-border-radius, 8px)) !important;
-    transition: background-color 0.15s ease, box-shadow 0.15s ease !important;
+    border-radius: var(
+      --border-radius-medium,
+      var(--zen-border-radius, 8px)
+    ) !important;
+    transition:
+      background-color 0.15s ease,
+      box-shadow 0.15s ease !important;
   }
 
   &:hover:not([selected]) .tab-background {
-    background-color: var(--zen-toolbar-element-bg-hover, rgba(255, 255, 255, 0.08)) !important;
+    background-color: var(
+      --zen-toolbar-element-bg-hover,
+      rgba(255, 255, 255, 0.08)
+    ) !important;
   }
 
   &[selected]:not([zen-essential="true"]) .tab-background {
@@ -232,15 +262,24 @@ hbox#titlebar,
   }
 
   &[selected][pinned]:not([zen-essential="true"]) .tab-background {
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-accent) 40%, transparent),
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--theme-accent) 40%, transparent),
       0 2px 8px rgba(0, 0, 0, 0.25) !important;
   }
 }
 
 /* Accent indicator strip on selected tab in expanded sidebar */
 :root[zen-sidebar-expanded="true"] {
-  & .tabbrowser-tab[selected]:not([pinned]):not([zen-glance-tab]):not([usercontextid]):not([zen-essential="true"]) .tab-background::before,
-  & .tabbrowser-tab[selected]:not([pinned]):not([zen-glance-tab])[zenDefaultUserContextId="true"]:not([zen-essential="true"]) .tab-background::before {
+  &
+    .tabbrowser-tab[selected]:not([pinned]):not([zen-glance-tab]):not(
+      [usercontextid]
+    ):not([zen-essential="true"])
+    .tab-background::before,
+  &
+    .tabbrowser-tab[selected]:not([pinned]):not(
+      [zen-glance-tab]
+    )[zenDefaultUserContextId="true"]:not([zen-essential="true"])
+    .tab-background::before {
     content: "";
     position: absolute;
     left: 0;
@@ -251,8 +290,16 @@ hbox#titlebar,
     border-radius: 0 4px 4px 0;
   }
 
-  &[zen-right-side="true"] .tabbrowser-tab[selected]:not([pinned]):not([zen-glance-tab]):not([usercontextid]):not([zen-essential="true"]) .tab-background::before,
-  &[zen-right-side="true"] .tabbrowser-tab[selected]:not([pinned]):not([zen-glance-tab])[zenDefaultUserContextId="true"]:not([zen-essential="true"]) .tab-background::before {
+  &[zen-right-side="true"]
+    .tabbrowser-tab[selected]:not([pinned]):not([zen-glance-tab]):not(
+      [usercontextid]
+    ):not([zen-essential="true"])
+    .tab-background::before,
+  &[zen-right-side="true"]
+    .tabbrowser-tab[selected]:not([pinned]):not(
+      [zen-glance-tab]
+    )[zenDefaultUserContextId="true"]:not([zen-essential="true"])
+    .tab-background::before {
     left: auto;
     right: 0;
     border-radius: 4px 0 0 4px;
@@ -282,7 +329,9 @@ hbox#titlebar,
 .tabbrowser-tab[soundplaying]:not([muted]) .tab-audio-button {
   color: var(--theme-accent) !important;
   fill: var(--theme-accent) !important;
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--theme-accent) 60%, transparent)) !important;
+  filter: drop-shadow(
+    0 0 4px color-mix(in srgb, var(--theme-accent) 60%, transparent)
+  ) !important;
 }
 
 .tabbrowser-tab[muted] .tab-audio-button {
@@ -293,7 +342,10 @@ hbox#titlebar,
 /* Tab close button */
 .tab-close-button {
   border-radius: var(--toolbarbutton-border-radius, 6px) !important;
-  transition: background-color 0.12s ease, color 0.12s ease, opacity 0.12s ease !important;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease,
+    opacity 0.12s ease !important;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.12) !important;
@@ -310,10 +362,15 @@ hbox#titlebar,
 
   & toolbarbutton {
     border-radius: var(--toolbarbutton-border-radius, 6px) !important;
-    transition: background-color 0.15s ease, opacity 0.15s ease !important;
+    transition:
+      background-color 0.15s ease,
+      opacity 0.15s ease !important;
 
     &:hover {
-      background-color: var(--zen-toolbar-element-bg-hover, rgba(255, 255, 255, 0.08)) !important;
+      background-color: var(
+        --zen-toolbar-element-bg-hover,
+        rgba(255, 255, 255, 0.08)
+      ) !important;
     }
 
     &[active="true"] {
@@ -326,7 +383,10 @@ hbox#titlebar,
 
 #zen-sidebar-top-buttons toolbarbutton:hover:not([disabled="true"]),
 #zen-sidebar-foot-buttons toolbarbutton:hover:not([disabled="true"]) {
-  background-color: var(--zen-toolbar-element-bg-hover, rgba(255, 255, 255, 0.08)) !important;
+  background-color: var(
+    --zen-toolbar-element-bg-hover,
+    rgba(255, 255, 255, 0.08)
+  ) !important;
   border-radius: var(--toolbarbutton-border-radius, 6px) !important;
 }
 
@@ -369,11 +429,14 @@ findbar {
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     color: var(--theme-fg) !important;
     padding: 4px 8px !important;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease !important;
 
     &:focus {
       border-color: var(--theme-accent) !important;
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent) !important;
+      box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--theme-accent) 25%, transparent) !important;
       outline: none !important;
     }
   }
@@ -383,7 +446,10 @@ findbar {
     transition: background-color 0.12s ease !important;
 
     &:hover {
-      background-color: var(--zen-toolbar-element-bg-hover, rgba(255, 255, 255, 0.08)) !important;
+      background-color: var(
+        --zen-toolbar-element-bg-hover,
+        rgba(255, 255, 255, 0.08)
+      ) !important;
     }
   }
 
@@ -435,7 +501,10 @@ menuseparator {
    -------------------------------------------------------------------------- */
 tooltip {
   appearance: none !important;
-  background-color: var(--arrowpanel-background, var(--theme-bg-raised)) !important;
+  background-color: var(
+    --arrowpanel-background,
+    var(--theme-bg-raised)
+  ) !important;
   color: var(--theme-fg) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: var(--toolbarbutton-border-radius, 6px) !important;
