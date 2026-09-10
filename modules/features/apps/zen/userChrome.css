@@ -111,6 +111,13 @@ hbox#titlebar,
         opacity 0.2s ease,
         border-color 0.2s ease !important;
     }
+
+    /* When the urlbar is in breakout/floating mode, remove the wrapper's
+       glass bg so it doesn't double-stack with #urlbar-background's glass. */
+    &:has(#urlbar:is([breakout-extend], [open])) {
+      background-color: transparent !important;
+      backdrop-filter: none !important;
+    }
   }
 }
 
