@@ -12,9 +12,9 @@ local cmp = require("blink.cmp")
 local keymap = {
 	preset = "none",
 	["<C-space>"] = { function() cmp.show() end },
-	["<Tab>"] = { function() if cmp.is_visible() then return cmp.accept() end end, "fallback" },
-	["<C-]>"] = { "snippet_forward", "fallback" },
-	["<C-[>"] = { "snippet_backward", "fallback" },
+	["<CR>"] = { "accept", "fallback" },
+	["<Tab>"] = { "snippet_forward", "fallback" },
+	["<S-Tab>"] = { "snippet_backward", "fallback" },
 	["<Esc>"] = { "cancel", "fallback" },
 	["<C-c>"] = { "cancel", "fallback" },
 	["<C-e>"] = { "cancel", "fallback" },
@@ -85,7 +85,14 @@ cmp.setup({
 		ghost_text = { enabled = true, show_with_selection = true, show_without_selection = false },
 	},
 	cmdline = {
-		keymap = keymap,
+		keymap = {
+			preset = "inherit",
+			["<CR>"] = { "fallback" },
+			["<Esc>"] = false,
+			["<C-c>"] = false,
+			["<Tab>"] = { "select_next", "fallback" },
+			["<S-Tab>"] = { "select_prev", "fallback" },
+		},
 		completion = { menu = { auto_show = true }, ghost_text = { enabled = true } },
 	},
 })
