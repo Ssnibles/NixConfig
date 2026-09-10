@@ -2,6 +2,7 @@
 secrets/
 .direnv/
 .devenv/
+.venv/
 result
 nohup.out
 *.bin

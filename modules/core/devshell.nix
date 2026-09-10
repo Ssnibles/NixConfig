@@ -3,45 +3,26 @@
 # =============================================================================
 # Development environment for working on NixConfig and related projects.
 # =============================================================================
-{ inputs, ... }:
+{ ... }:
 {
   perSystem =
     { pkgs, self', ... }:
-    let
-      unstablePkgs = import inputs.nixpkgs-unstable {
-        inherit (pkgs.stdenv.hostPlatform) system;
-        config = {
-          allowUnfree = true;
-          allowUnfreePredicate = _: true;
-        };
-      };
-    in
     {
       devenv.shells.default = {
-        devenv.root = let
-          pwd = builtins.getEnv "PWD";
-        in if pwd != "" then pwd else "${inputs.self}";
         name = "NixConfig Developer Shell";
 
         packages = with pkgs; [
-          # Rust toolchain
+          # Rust extras (toolchain managed by languages.rust)
           bacon
-          cargo
-          rust-analyzer
-          rustc
-          rustfmt
-          clippy
-          glibc
           sea-orm-cli
 
           # Nix language tools
           nixfmt
           nil
-          alejandra
 
           # Shell & utilities
           pkg-config
-          unstablePkgs.fish
+          fish
           self'.packages.boilerplate
         ];
 
