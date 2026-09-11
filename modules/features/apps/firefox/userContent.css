@@ -1,60 +1,52 @@
 /* ==========================================================================
-   Firefox Custom userContent.css — Extension & Web Content Styling
-   Seamless visual integration for Sidebery vertical tabs with Firefox UI
+   userContent.css — Web Content & Extension Styling
+   Startpage · Sidebery · about: pages
    ========================================================================== */
 
-:root {
-  --fx-bg: #141415;
-  --fx-bg-raised: #1c1c24;
-  --fx-bg-subtle: #252530;
-  --fx-border: #252530;
-  --fx-fg: #cdcdcd;
-  --fx-fg-mid: #878787;
-  --fx-fg-dim: #606079;
-  --fx-accent: #6e94b2;
-  --fx-teal: #b4d4cf;
-  --fx-purple: #bb9dbd;
-  --fx-red: #d8647e;
-  --fx-orange: #e8b589;
-}
-
-/* Fallback for external colors.css */
 @import url("colors.css");
 
 /* ==========================================================================
-   1. CUSTOM STARTPAGE & ABOUT PAGES — Instrument Serif Clock Aesthetics
+   §1  STARTPAGE & ABOUT PAGES — Instrument Serif clock aesthetic
    ========================================================================== */
 
 @-moz-document url("about:blank"), url("about:newtab"), url("about:home") {
-  html, body {
-    background-color: var(--fx-bg, #141415) !important;
+  html,
+  body {
+    background-color: var(--fx-bg) !important;
     background-image: none !important;
-    color: var(--fx-fg, #cdcdcd) !important;
+    color: var(--fx-fg) !important;
     font-family: "Instrument Serif", Georgia, serif !important;
   }
 
-  .Widgets, .Widgets * {
+  .Widgets,
+  .Widgets * {
     font-family: "Instrument Serif", Georgia, serif !important;
   }
 
-  .Time, [class*="Time"], .Widgets .container .Time, #clock {
+  .Time,
+  [class*="Time"],
+  .Widgets .container .Time,
+  #clock {
     font-family: "Instrument Serif", Georgia, serif !important;
     font-size: 11rem !important;
     font-weight: 400 !important;
     font-style: italic !important;
     line-height: 1 !important;
-    color: var(--fx-fg, #cdcdcd) !important;
+    color: var(--fx-fg) !important;
     letter-spacing: -2px !important;
     text-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
     font-variant-numeric: tabular-nums !important;
   }
 
-  .Date, [class*="Date"], .Widgets .container .Date, #date {
+  .Date,
+  [class*="Date"],
+  .Widgets .container .Date,
+  #date {
     font-family: "Instrument Serif", Georgia, serif !important;
     font-size: 2rem !important;
     font-weight: 400 !important;
     font-style: italic !important;
-    color: var(--fx-accent, #6e94b2) !important;
+    color: var(--fx-accent) !important;
     margin-top: 1rem !important;
     letter-spacing: 1px !important;
     opacity: 0.9 !important;
@@ -62,11 +54,37 @@
 }
 
 /* ==========================================================================
-   2. SIDEBERY EXTENSION — Pure Color & Visual Alignment
+   §2  EXTENSION PAGES — Sidebery & Custom New Tab
    ========================================================================== */
 
 @-moz-document url-prefix("moz-extension://") {
-  /* Scope Instrument Serif for custom newtab extension */
+
+  /* ── Local design tokens (mirrors colors.css & userChrome.css) ── */
+  :root {
+    --sb-bg: var(--fx-bg, #141415);
+    --sb-bg-raised: var(--fx-bg-raised, #1c1c24);
+    --sb-bg-subtle: var(--fx-bg-subtle, #252530);
+    --sb-border: var(--fx-border, #252530);
+    --sb-fg: var(--fx-fg, #cdcdcd);
+    --sb-fg-mid: var(--fx-fg-mid, #878787);
+    --sb-fg-dim: var(--fx-fg-dim, #606079);
+    --sb-accent: var(--fx-accent, #6e94b2);
+    --sb-teal: var(--fx-teal, #b4d4cf);
+    --sb-red: var(--fx-red, #d8647e);
+
+    --sb-radius-sm: 8px;
+    --sb-radius: 12px;
+    --sb-transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    --sb-transition: 0.15s ease;
+
+    --sb-font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, sans-serif;
+  }
+
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.1  Startpage Extension — Instrument Serif typography
+     ──────────────────────────────────────────────────────────────────────── */
+
   .startpage-container,
   .startpage-container *,
   #clock,
@@ -74,547 +92,395 @@
     font-family: "Instrument Serif", Georgia, serif !important;
   }
 
-  /* High Specificity Theme Variable Overrides for Sidebery */
-  #root,
-  #root[data-theme],
-  #root[data-style],
-  .Sidebery,
-  .Sidebar {
-    /* Color Palette */
-    --bg: #141415 !important;
-    --bg-hover: #1c1c24 !important;
-    --bg-active: #252530 !important;
-    --frame-bg: #141415 !important;
-    --toolbar-bg: #141415 !important;
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.2  Sidebery v5 Native CSS Variable Overrides
+     ──────────────────────────────────────────────────────────────────────── */
 
-    --fg: #cdcdcd !important;
-    --fg-trans: #878787 !important;
-    --fg-active: #cdcdcd !important;
-    --fg-sub: #606079 !important;
+  #root {
+    /* Base Frame & Backgrounds */
+    --frame-bg: var(--sb-bg) !important;
+    --frame-fg: var(--sb-fg) !important;
+    --frame-el-bg: var(--sb-bg-raised) !important;
+    --frame-el-fg: var(--sb-fg) !important;
+    --frame-el-overlay-hover-bg: var(--sb-bg-raised) !important;
+    --frame-el-overlay-clicked-bg: var(--sb-bg-subtle) !important;
+    --frame-el-overlay-selected-bg: var(--sb-bg-subtle) !important;
+    --frame-el-overlay-selected-border: var(--sb-accent) !important;
 
-    --accent: #6e94b2 !important;
-    --active-color: #6e94b2 !important;
-    --status-notice: #6e94b2 !important;
-    --status-progress: #b4d4cf !important;
-    --status-ok: #b4d4cf !important;
-    --status-err: #d8647e !important;
-
-    --border: transparent !important;
-    --border-active: #6e94b2 !important;
-    --border-subtle: transparent !important;
-
-    /* Tabs Engine */
-    --tabs-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-    --tabs-count-font: system-ui, sans-serif !important;
+    /* Tabs Layout & Dimensions */
+    --tabs-font: var(--sb-font-ui) !important;
+    --tabs-count-font: var(--sb-font-ui) !important;
     --tabs-height: 34px !important;
-    --tabs-pinned-height: 40px !important;
+    --tabs-margin: 4px !important;
+    --tabs-pinned-height: 38px !important;
     --tabs-pinned-width: 100% !important;
-    --tabs-pinned-icon-size: 22px !important;
     --tabs-indent: 12px !important;
-    --tabs-border-radius: 8px !important;
+    --tabs-inner-gap: 6px !important;
+    --tabs-border-radius: var(--sb-radius-sm) !important;
 
-    --tabs-bg: #141415 !important;
-    --tabs-hover-bg: #1c1c24 !important;
-    --tabs-activated-bg: #252530 !important;
-    --tabs-selected-bg: #252530 !important;
-
-    --tabs-fg: #cdcdcd !important;
-    --tabs-activated-fg: #cdcdcd !important;
-    --tabs-selected-fg: #cdcdcd !important;
-    --tabs-hover-fg: #cdcdcd !important;
-
+    /* Tabs Colors & States */
+    --tabs-normal-bg: transparent !important;
+    --tabs-normal-fg: var(--sb-fg) !important;
+    --tabs-activated-bg: var(--sb-bg-subtle) !important;
+    --tabs-activated-fg: var(--sb-fg) !important;
     --tabs-activated-shadow: none !important;
-    --tabs-accent-color: #6e94b2 !important;
+    --tabs-discarded-title-opacity: 0.75 !important;
+    --tabs-discarded-favicon-opacity: 0.75 !important;
 
     /* Navigation Bar */
-    --nav-btn-width: 34px !important;
-    --nav-btn-height: 34px !important;
+    --nav-btn-width: 32px !important;
+    --nav-btn-height: 32px !important;
+    --nav-btn-border-radius: var(--sb-radius-sm) !important;
     --nav-btn-bg: transparent !important;
-    --nav-btn-hover-bg: #1c1c24 !important;
-    --nav-btn-activated-bg: #252530 !important;
-    --nav-btn-fg: #878787 !important;
-    --nav-btn-active-fg: #6e94b2 !important;
-    --nav-btn-active-bg: #252530 !important;
+    --nav-btn-fg: var(--sb-fg-mid) !important;
+    --nav-btn-accent: var(--sb-accent) !important;
 
-    /* Context Menu */
-    --ctx-menu-bg: #1c1c24 !important;
-    --ctx-menu-fg: #cdcdcd !important;
-    --ctx-menu-border: #252530 !important;
-    --ctx-menu-hover-bg: #252530 !important;
-    --ctx-menu-border-radius: 12px !important;
+    /* Context Menus & Popups */
+    --ctx-menu-bg: var(--sb-bg-raised) !important;
+    --ctx-menu-fg: var(--sb-fg) !important;
+    --ctx-menu-border: var(--sb-border) !important;
+    --ctx-menu-border-radius: var(--sb-radius) !important;
+    --ctx-menu-opt-border-radius: var(--sb-radius-sm) !important;
 
-    /* Search Bar */
-    --search-bg: #1c1c24 !important;
-    --search-fg: #cdcdcd !important;
-    --search-border: #252530 !important;
+    /* General Controls & Accents */
+    --border: var(--sb-border) !important;
+    --btn-border-radius: var(--sb-radius-sm) !important;
+    --btn-fg: var(--sb-fg-mid) !important;
+    --accent: var(--sb-accent) !important;
+    --status-active: var(--sb-accent) !important;
+    --status-notice: var(--sb-accent) !important;
+    --status-ok: var(--sb-teal) !important;
+    --status-err: var(--sb-red) !important;
   }
 
-  /* ------------------------------------------------------------------------
-     Force Base Container Colors (#141415 background & #cdcdcd text)
-     ------------------------------------------------------------------------ */
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.3  Base Containers & Typography
+     ──────────────────────────────────────────────────────────────────────── */
+
   #root,
-  #root[data-theme],
   .Sidebery,
-  .Sidebar,
   .TabsPanel,
   .BookmarksPanel,
   .HistoryPanel,
   .Settings,
   .scroll-container {
-    background: #141415 !important;
-    background-color: #141415 !important;
-    color: #cdcdcd !important;
+    background-color: var(--sb-bg) !important;
+    color: var(--sb-fg) !important;
+    font-family: var(--sb-font-ui) !important;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
   }
 
-  .Sidebery,
-  .Sidebar,
-  .TabsPanel,
-  .BookmarksPanel,
-  .HistoryPanel,
-  .Settings {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-  }
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.4  Navigation Bar (Panels Switcher)
+     ──────────────────────────────────────────────────────────────────────── */
 
-  /* ------------------------------------------------------------------------
-     Top Navigation Header Bar & Panels Switcher
-     ------------------------------------------------------------------------ */
-  .NavigationBar,
-  #nav_bar,
-  .nav-bar,
-  #nav_bar_container {
-    background: #141415 !important;
-    background-color: #141415 !important;
+  .NavigationBar {
+    background-color: var(--sb-bg) !important;
     border: none !important;
-    border-bottom: none !important;
     padding: 4px 6px !important;
     gap: 4px !important;
   }
 
-  .NavBtn,
-  .nav-item,
-  .nav-btn {
-    border-radius: 8px !important;
-    color: #878787 !important;
+  .NavBtn {
+    border-radius: var(--sb-radius-sm) !important;
+    color: var(--sb-fg-mid) !important;
     background-color: transparent !important;
-    transition: background-color 0.15s ease, color 0.15s ease !important;
+    transition: background-color var(--sb-transition),
+                color var(--sb-transition) !important;
   }
 
-  .NavBtn:hover,
-  .nav-item:hover,
-  .nav-btn:hover {
-    background-color: #1c1c24 !important;
-    color: #cdcdcd !important;
+  .NavBtn:hover {
+    background-color: var(--sb-bg-raised) !important;
+    color: var(--sb-fg) !important;
   }
 
-  .NavBtn[data-active="true"],
-  .NavBtn.active,
-  .nav-item.active,
-  .nav-btn.active {
-    background-color: #252530 !important;
-    color: #6e94b2 !important;
+  .NavBtn[data-active="true"] {
+    background-color: var(--sb-bg-subtle) !important;
+    color: var(--sb-accent) !important;
   }
 
-  .NavBtn svg,
-  .nav-item svg,
-  .nav-btn svg {
+  .NavBtn svg {
     fill: currentColor !important;
   }
 
-  /* ------------------------------------------------------------------------
-     Pinned Tabs Bar & Responsive Tiling Grid
-     ------------------------------------------------------------------------ */
-  #root .PinnedTabsBar,
-  .PinnedTabsBar,
-  .PinnedDock,
-  .pinned-dock,
-  #pinned_dock,
-  .pinned-tabs-container {
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.5  Pinned Tabs Bar (Compact Responsive Grid Dock)
+     ──────────────────────────────────────────────────────────────────────── */
+
+  .PinnedTabsBar {
     display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
+    flex-flow: row wrap !important;
     align-items: center !important;
     width: 100% !important;
-    max-width: 100% !important;
     box-sizing: border-box !important;
-    background: #141415 !important;
-    background-color: #141415 !important;
+    background-color: var(--sb-bg) !important;
     border: none !important;
-    border-bottom: none !important;
     padding: 6px !important;
     gap: 6px !important;
   }
 
-  .PinnedTabsBar .tab-wrapper,
-  .PinnedDock > div,
-  .PinnedDock > .d-tabs,
-  .PinnedDock > .d-wrapper,
-  .PinnedDock > .tabs,
-  .PinnedDock > .items,
-  .PinnedDock > .tab-wrapper {
+  .PinnedTabsBar .tab-wrapper {
     display: flex !important;
     flex: 1 1 0% !important;
-    flex-grow: 1 !important;
-    flex-shrink: 1 !important;
-    flex-basis: 0% !important;
-    width: auto !important;
     min-width: 36px !important;
     max-width: 100% !important;
     gap: 6px !important;
-    box-sizing: border-box !important;
   }
 
-  .PinnedTabsBar .Tab,
-  .PinnedTabsBar .tab-wrapper .Tab,
-  .PinnedTab,
-  .pinned-tab,
-  .Tab[data-pin="true"],
-  .Tab[data-pinned="true"],
-  .tab[data-pinned="true"] {
+  .PinnedTabsBar .Tab {
     flex: 1 1 0% !important;
-    flex-grow: 1 !important;
-    flex-shrink: 1 !important;
-    flex-basis: 0% !important;
-    width: 100% !important;
-    max-width: 100% !important;
     min-width: 36px !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    max-height: 40px !important;
+    max-width: 100% !important;
+    height: 38px !important;
     border-radius: 10px !important;
-    background-color: #1c1c24 !important;
+    background-color: var(--sb-bg-raised) !important;
     border: 2px solid transparent !important;
     margin: 0 !important;
     padding: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.12s ease !important;
     box-sizing: border-box !important;
     position: relative !important;
+    transition: background-color var(--sb-transition-fast),
+                border-color var(--sb-transition-fast) !important;
   }
 
-  .PinnedTabsBar .Tab:hover,
-  .PinnedTabsBar .tab-wrapper:hover .Tab,
-  .PinnedTab:hover,
-  .pinned-tab:hover,
-  .Tab[data-pin="true"]:hover,
-  .Tab[data-pinned="true"]:hover,
-  .tab[data-pinned="true"]:hover {
-    background-color: #252530 !important;
+  .PinnedTabsBar .Tab:hover {
+    background-color: var(--sb-bg-subtle) !important;
   }
 
-  .PinnedTabsBar .Tab[data-active="true"],
-  .PinnedTabsBar .tab-wrapper[data-active="true"] .Tab,
-  .PinnedTab[data-active="true"],
-  .PinnedTab.active,
-  .Tab[data-pin="true"][data-active="true"],
-  .Tab[data-pinned="true"][data-active="true"],
-  .tab[data-pinned="true"].active {
-    background-color: #252530 !important;
-    border: 2px solid #6e94b2 !important;
-    box-shadow: none !important;
+  .PinnedTabsBar .Tab[data-active="true"] {
+    background-color: var(--sb-bg-subtle) !important;
+    border-color: var(--sb-accent) !important;
   }
 
-  .PinnedTabsBar .Tab .ctx,
-  .Tab[data-pin="true"] .ctx {
+  .PinnedTabsBar .Tab .ctx {
     display: none !important;
   }
 
-  /* Inner body wrapper & Favicon / Icon sizing in pinned tabs */
-  .PinnedTabsBar .Tab .body,
-  .PinnedTab .body,
-  .pinned-tab .body,
-  .Tab[data-pin="true"] .body,
-  .Tab[data-pinned="true"] .body,
-  .tab[data-pinned="true"] .body {
-    width: 100% !important;
-    height: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 !important;
-    margin: 0 !important;
+  .PinnedTabsBar .Tab :is(.fav, .fav-icon) {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
   }
 
-  .PinnedTabsBar .Tab .fav,
-  .PinnedTab .fav,
-  .pinned-tab .fav,
-  .Tab[data-pin="true"] .fav,
-  .Tab[data-pinned="true"] .fav,
-  .tab[data-pinned="true"] .fav,
-  .PinnedTabsBar .Tab .fav-icon,
-  .PinnedTab .fav-icon,
-  .Tab[data-pin="true"] .fav-icon,
-  .Tab[data-pinned="true"] .fav-icon,
-  .PinnedTabsBar .Tab img,
-  .PinnedTab img,
-  .Tab[data-pin="true"] img,
-  .Tab[data-pinned="true"] img,
-  .PinnedTabsBar .Tab svg,
-  .PinnedTab svg,
-  .Tab[data-pin="true"] svg,
-  .Tab[data-pinned="true"] svg {
-    width: 22px !important;
-    height: 22px !important;
-    min-width: 22px !important;
-    min-height: 22px !important;
-    font-size: 22px !important;
-    margin: 0 auto !important;
-  }
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.6  Regular Tab Items & Tree
+     ──────────────────────────────────────────────────────────────────────── */
 
-  /* ------------------------------------------------------------------------
-     Tabs List — Match Browser #141415 Background & #cdcdcd Foreground
-     ------------------------------------------------------------------------ */
-  .TabsPanel,
-  .tabs-panel {
-    background: #141415 !important;
-    background-color: #141415 !important;
+  .TabsPanel {
+    background-color: var(--sb-bg) !important;
     padding: 4px 2px !important;
   }
 
-  .Tab,
-  .tab {
+  .Tab {
     position: relative !important;
-    border-radius: 8px !important;
+    width: calc(100% - 8px) !important;
     margin: 2px 4px !important;
-    padding: 5px 8px !important;
-    background-color: transparent !important;
-    color: #cdcdcd !important;
-    border: 1px solid transparent !important;
-    transition: background-color 0.12s cubic-bezier(0.4, 0, 0.2, 1),
-                color 0.12s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    height: 34px !important;
+    border: none !important;
+    transition: background-color var(--sb-transition-fast),
+                color var(--sb-transition-fast) !important;
   }
 
-  .Tab:hover,
-  .tab:hover {
-    background-color: #1c1c24 !important;
-    color: #cdcdcd !important;
+  .Tab .body {
+    padding: 0 4px 0 6px !important;
+    border-radius: var(--sb-radius-sm) !important;
+    transition: background-color var(--sb-transition-fast),
+                box-shadow var(--sb-transition-fast) !important;
   }
 
-  /* Active Tab */
-  .Tab[data-active="true"],
-  .Tab.active,
-  .Tab[data-selected="true"],
-  .tab.active {
-    background-color: #252530 !important;
-    color: #cdcdcd !important;
-    border-color: #252530 !important;
+  /* Active tab highlight & left accent indicator strip */
+  .Tab[data-active="true"] .body {
+    background-color: var(--sb-bg-subtle) !important;
   }
 
-  /* Left accent indicator strip for active tab */
-  .Tab[data-active="true"]::before,
-  .Tab.active::before {
+  .Tab[data-active="true"] .body::after {
     content: "" !important;
     position: absolute !important;
     left: 2px !important;
     top: 6px !important;
     bottom: 6px !important;
     width: 3px !important;
-    background-color: #6e94b2 !important;
+    background-color: var(--sb-accent) !important;
     border-radius: 3px !important;
+    pointer-events: none !important;
   }
 
-  /* Tab Title typography & colors */
-  .Tab .title,
-  .tab .title,
-  .Tab .t-box,
-  .Tab .t-title {
-    color: #cdcdcd !important;
+  .Tab:not([data-pin="true"]) .fav {
+    margin-left: 2px !important;
+    margin-right: 6px !important;
+  }
+
+  .Tab .title {
     font-size: 13px !important;
     font-weight: 400 !important;
+    padding: 0 1px !important;
   }
 
-  .Tab[data-active="true"] .title,
-  .Tab.active .title {
+  .Tab[data-active="true"] .title {
     font-weight: 600 !important;
-    color: #cdcdcd !important;
   }
 
-  /* Discarded / Unloaded tabs */
-  .Tab[data-discarded="true"] .title,
-  .tab[data-discarded="true"] .title {
-    color: #878787 !important;
+  .Tab[data-discarded="true"] .title {
+    color: var(--sb-fg-mid) !important;
     opacity: 0.75 !important;
   }
 
-  /* Close button on tab */
-  .Tab .close-btn,
+  /* Tab close button */
   .Tab .close {
-    color: #878787 !important;
+    color: var(--sb-fg-mid) !important;
     border-radius: 4px !important;
     opacity: 0.5 !important;
-    transition: opacity 0.12s ease, background-color 0.12s ease, color 0.12s ease !important;
+    transition: opacity var(--sb-transition-fast),
+                background-color var(--sb-transition-fast),
+                color var(--sb-transition-fast) !important;
   }
 
-  .Tab .close-btn:hover,
   .Tab .close:hover {
     opacity: 1 !important;
-    background-color: #1c1c24 !important;
-    color: #cdcdcd !important;
+    background-color: var(--sb-bg-raised) !important;
+    color: var(--sb-fg) !important;
   }
 
   /* New Tab button (+) */
-  .add-tab-btn,
-  .new-tab-btn,
-  #add_tab_btn {
-    color: #878787 !important;
-    border-radius: 8px !important;
-    transition: background-color 0.12s ease, color 0.12s ease !important;
+  .new-tab-btn {
+    color: var(--sb-fg-mid) !important;
+    border-radius: var(--sb-radius-sm) !important;
+    transition: background-color var(--sb-transition-fast),
+                color var(--sb-transition-fast) !important;
   }
 
-  .add-tab-btn:hover,
   .new-tab-btn:hover {
-    background-color: #1c1c24 !important;
-    color: #cdcdcd !important;
+    background-color: var(--sb-bg-raised) !important;
+    color: var(--sb-fg) !important;
   }
 
-  /* Bottom Dock Bar (Trash, Bookmarks, History icons at bottom) */
-  .BottomBar,
-  #bottom_bar,
-  .bottom-bar,
-  .dock,
-  .Dock {
-    background: #141415 !important;
-    background-color: #141415 !important;
-    border: none !important;
-    border-top: none !important;
-    padding: 4px 6px !important;
+  /* Audio / Media indicators */
+  .Tab .audio {
+    color: var(--sb-teal) !important;
+    fill: var(--sb-teal) !important;
   }
 
-  .BottomBar .btn,
-  .dock .btn,
-  .Dock .btn {
-    color: #878787 !important;
-    fill: #878787 !important;
-    border-radius: 8px !important;
+  .Tab[data-muted="true"] .audio {
+    color: var(--sb-fg-dim) !important;
+    fill: var(--sb-fg-dim) !important;
   }
 
-  .BottomBar .btn:hover,
-  .dock .btn:hover,
-  .Dock .btn:hover {
-    background-color: #1c1c24 !important;
-    color: #cdcdcd !important;
-    fill: #cdcdcd !important;
-  }
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.7  Search Bar
+     ──────────────────────────────────────────────────────────────────────── */
 
-  /* Media / Audio icons */
-  .Tab[data-audible="true"] .audio-btn,
-  .Tab .audio-icon {
-    color: #b4d4cf !important;
-    fill: #b4d4cf !important;
-  }
-
-  .Tab[data-muted="true"] .audio-btn {
-    color: #606079 !important;
-    fill: #606079 !important;
-  }
-
-  /* Tree hierarchy lines */
-  .Tab .lvl-mark,
-  .Tab .tree-line {
-    background-color: #252530 !important;
-    opacity: 0.4 !important;
-  }
-
-  /* ------------------------------------------------------------------------
-     Search Bar
-     ------------------------------------------------------------------------ */
   .SearchInput,
-  .search-box,
   .SearchInput input {
-    background-color: #1c1c24 !important;
-    color: #cdcdcd !important;
-    border: 1px solid #252530 !important;
-    border-radius: 8px !important;
+    background-color: var(--sb-bg-raised) !important;
+    color: var(--sb-fg) !important;
+    border: 1px solid var(--sb-border) !important;
+    border-radius: var(--sb-radius-sm) !important;
     padding: 6px 10px !important;
     font-size: 13px !important;
-    transition: border-color 0.15s ease !important;
+    transition: border-color var(--sb-transition) !important;
   }
 
   .SearchInput input::placeholder {
-    color: #606079 !important;
+    color: var(--sb-fg-dim) !important;
   }
 
   .SearchInput input:focus,
   .SearchInput:focus-within {
-    border-color: #6e94b2 !important;
+    border-color: var(--sb-accent) !important;
     outline: none !important;
   }
 
-  /* ------------------------------------------------------------------------
-     Context Menus & Popups
-     ------------------------------------------------------------------------ */
-  .CtxMenu,
-  .ctx-menu,
-  .context-menu {
-    background-color: #1c1c24 !important;
-    border: 1px solid #252530 !important;
-    border-radius: 12px !important;
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.8  Bottom Dock Bar
+     ──────────────────────────────────────────────────────────────────────── */
+
+  .BottomBar {
+    background-color: var(--sb-bg) !important;
+    border: none !important;
+    padding: 4px 6px !important;
+  }
+
+  .BottomBar .btn {
+    color: var(--sb-fg-mid) !important;
+    fill: var(--sb-fg-mid) !important;
+    border-radius: var(--sb-radius-sm) !important;
+  }
+
+  .BottomBar .btn:hover {
+    background-color: var(--sb-bg-raised) !important;
+    color: var(--sb-fg) !important;
+    fill: var(--sb-fg) !important;
+  }
+
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.9  Context Menus & Popups
+     ──────────────────────────────────────────────────────────────────────── */
+
+  .CtxMenu {
+    background-color: var(--sb-bg-raised) !important;
+    border: 1px solid var(--sb-border) !important;
+    border-radius: var(--sb-radius) !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
     padding: 4px !important;
   }
 
-  .CtxMenu .btn,
-  .ctx-menu .item,
-  .CtxMenu .opt {
-    border-radius: 8px !important;
-    color: #cdcdcd !important;
+  .CtxMenu .btn {
+    border-radius: var(--sb-radius-sm) !important;
+    color: var(--sb-fg) !important;
     padding: 6px 10px !important;
     font-size: 13px !important;
-    transition: background-color 0.12s ease !important;
+    transition: background-color var(--sb-transition-fast) !important;
   }
 
-  .CtxMenu .btn:hover,
-  .ctx-menu .item:hover,
-  .CtxMenu .opt:hover {
-    background-color: #252530 !important;
-    color: #cdcdcd !important;
+  .CtxMenu .btn:hover {
+    background-color: var(--sb-bg-subtle) !important;
+    color: var(--sb-fg) !important;
   }
 
   .CtxMenu .separator {
-    border-top: 1px solid #252530 !important;
+    border-top: 1px solid var(--sb-border) !important;
     margin: 4px 6px !important;
   }
 
-  /* ------------------------------------------------------------------------
-     Bookmarks & History Panels
-     ------------------------------------------------------------------------ */
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.10  Bookmarks & History Panels
+     ──────────────────────────────────────────────────────────────────────── */
+
   .BookmarksPanel,
-  .HistoryPanel,
-  .bookmarks-tree {
-    background: #141415 !important;
-    background-color: #141415 !important;
+  .HistoryPanel {
+    background-color: var(--sb-bg) !important;
   }
 
   .Node,
-  .node,
   .BookmarkNode {
-    border-radius: 8px !important;
-    color: #cdcdcd !important;
-    transition: background-color 0.12s ease !important;
+    border-radius: var(--sb-radius-sm) !important;
+    color: var(--sb-fg) !important;
+    transition: background-color var(--sb-transition-fast) !important;
   }
 
   .Node:hover,
-  .node:hover,
   .BookmarkNode:hover {
-    background-color: #1c1c24 !important;
+    background-color: var(--sb-bg-raised) !important;
   }
 
-  .Node[data-active="true"],
-  .Node.active {
-    background-color: #252530 !important;
-    color: #6e94b2 !important;
+  .Node[data-active="true"] {
+    background-color: var(--sb-bg-subtle) !important;
+    color: var(--sb-accent) !important;
   }
 
-  /* ------------------------------------------------------------------------
-     Scrollbars
-     ------------------------------------------------------------------------ */
+  /* ────────────────────────────────────────────────────────────────────────
+     §2.11  Scrollbars — Thin & Minimal
+     ──────────────────────────────────────────────────────────────────────── */
+
   * {
     scrollbar-width: thin !important;
-    scrollbar-color: #252530 transparent !important;
+    scrollbar-color: var(--sb-bg-subtle) transparent !important;
   }
 
   ::-webkit-scrollbar {
@@ -627,11 +493,11 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #252530 !important;
+    background-color: var(--sb-bg-subtle) !important;
     border-radius: 4px !important;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background-color: #606079 !important;
+    background-color: var(--sb-fg-dim) !important;
   }
 }

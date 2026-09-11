@@ -1,15 +1,33 @@
 /* ==========================================================================
-   Firefox Custom userChrome.css — Premium Minimal Theme
-   Designed for Sidebery vertical tabs + floating content viewport
+   userChrome.css — Firefox Chrome UI Theme
+   Sidebery vertical tabs · floating viewport · minimal chrome
    ========================================================================== */
+
 @import url("colors.css");
 
 /* ==========================================================================
-   DESIGN SYSTEM — Variables for consistent spacing, radii, animations
+   §1  DESIGN SYSTEM — Spacing, radii, transitions
    ========================================================================== */
 
 :root {
-  /* Toolbar field overrides (native Firefox vars) */
+  /* ── Spacing scale ── */
+  --fx-space-xs: 2px;
+  --fx-space-sm: 4px;
+  --fx-space-md: 8px;
+  --fx-space-lg: 12px;
+
+  /* ── Border radii ── */
+  --fx-radius-sm: 8px;
+  --fx-radius: 12px;
+  --fx-radius-lg: 28px;
+
+  /* ── Transitions (Material-style ease) ── */
+  --fx-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --fx-transition-fast: 0.12s var(--fx-ease);
+  --fx-transition: 0.2s var(--fx-ease);
+  --fx-transition-slow: 0.35s var(--fx-ease);
+
+  /* ── Firefox internal overrides — toolbar fields ── */
   --toolbar-field-background-color: var(--fx-bg-raised) !important;
   --toolbar-field-focus-background-color: var(--fx-bg-raised) !important;
   --toolbar-field-color: var(--fx-fg) !important;
@@ -18,7 +36,7 @@
   --toolbar-field-focus-border-color: var(--fx-accent) !important;
   --urlbar-background-open: var(--fx-bg-raised) !important;
 
-  /* Theme overrides (native Firefox vars) */
+  /* ── Firefox internal overrides — lightweight theme ── */
   --lwt-accent-color: var(--fx-bg) !important;
   --lwt-accent-color-inactive: var(--fx-bg) !important;
   --lwt-frame: var(--fx-bg) !important;
@@ -28,45 +46,23 @@
   --lwt-selected-tab-background-color: var(--fx-bg-subtle) !important;
   --tabpanel-background-color: var(--fx-bg) !important;
 
-  /* Spacing */
-  --fx-radius: 12px;
-  --fx-radius-sm: 8px;
-  --fx-radius-lg: 28px;
-  --fx-space-xs: 2px;
-  --fx-space-sm: 4px;
-  --fx-space-md: 8px;
-  --fx-space-lg: 12px;
-
-  /* Animations — smooth Material-style easing */
-  --fx-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --fx-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --fx-transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
-  --fx-transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* Global border radii for panels */
+  /* ── Firefox internal overrides — panels & buttons ── */
   --panel-border-radius: var(--fx-radius) !important;
   --panel-menuitem-border-radius: var(--fx-radius-sm) !important;
   --toolbarbutton-border-radius: var(--fx-radius-sm) !important;
-
-  /* Sidebar border removal */
   --sidebar-border-color: transparent !important;
 }
 
 /* ==========================================================================
-   HIDDEN ELEMENTS — Remove all unnecessary UI clutter
+   §2  HIDDEN ELEMENTS — Strip unnecessary chrome
    ========================================================================== */
 
-/* Top horizontal tab bar (replaced by Sidebery) */
-#TabsToolbar {
-  visibility: collapse !important;
-}
+/* Horizontal tab bar (Sidebery replaces this) */
+#TabsToolbar { visibility: collapse !important; }
 
-/* Sidebar header ("Sidebery" label + close button) */
-#sidebar-header {
-  display: none !important;
-}
-
-/* Firefox native vertical tabs & sidebar selector (use Sidebery instead) */
+/* Sidebar header, splitter, and native vertical tabs */
+#sidebar-header,
+#sidebar-splitter,
 #sidebar-select-box,
 #sidebar-main,
 #vertical-tabs,
@@ -85,31 +81,17 @@
 }
 
 /* Bookmarks toolbar */
-#PersonalToolbar {
-  display: none !important;
-}
-
-/* Sidebar splitter line */
-#sidebar-splitter {
-  display: none !important;
-}
+#PersonalToolbar { display: none !important; }
 
 /* ==========================================================================
-   IDENTITY / LOCK ICON — Subtle fade, reveals on hover
+   §3  SUBTLE UI POLISH — Fade states for identity & nav buttons
    ========================================================================== */
 
 #identity-box {
   opacity: 0.3 !important;
   transition: opacity var(--fx-transition) !important;
 }
-
-#identity-box:hover {
-  opacity: 1 !important;
-}
-
-/* ==========================================================================
-   DISABLED NAV BUTTONS — Fade out when inactive
-   ========================================================================== */
+#identity-box:hover { opacity: 1 !important; }
 
 #back-button[disabled="true"],
 #forward-button[disabled="true"] {
@@ -118,7 +100,7 @@
 }
 
 /* ==========================================================================
-   NAVIGATOR TOOLBOX — Top chrome area
+   §4  NAVIGATOR TOOLBOX & NAV BAR
    ========================================================================== */
 
 #navigator-toolbox {
@@ -126,20 +108,16 @@
   border-bottom: none !important;
 }
 
-/* ==========================================================================
-   NAV BAR — Main toolbar
-   ========================================================================== */
-
 #nav-bar {
   background-color: var(--fx-bg) !important;
   color: var(--fx-fg) !important;
   box-shadow: none !important;
-  padding: var(--fx-space-sm) var(--fx-space-md) !important;
   border: none !important;
+  padding: var(--fx-space-sm) var(--fx-space-md) !important;
 }
 
 /* ==========================================================================
-   URL BAR — Centered pill with accent glow on focus
+   §5  URL BAR — Centered pill, accent glow on focus
    ========================================================================== */
 
 #urlbar-container {
@@ -147,7 +125,6 @@
   margin: 0 auto !important;
 }
 
-/* Override Firefox internal urlbar background variables */
 #urlbar {
   --urlbar-box-bgcolor: var(--fx-bg-raised) !important;
   --urlbar-box-focus-bgcolor: var(--fx-bg-raised) !important;
@@ -161,8 +138,7 @@
   background-color: var(--fx-bg-raised) !important;
   border: 1px solid transparent !important;
   border-radius: var(--fx-radius) !important;
-  transition: border-color var(--fx-transition),
-              background-color var(--fx-transition) !important;
+  transition: border-color var(--fx-transition) !important;
 }
 
 #urlbar-input-container {
@@ -170,7 +146,7 @@
   border-radius: var(--fx-radius) !important;
 }
 
-/* Active / Focused / Open border states */
+/* Focused / open / breakout → accent border */
 #urlbar[focused="true"] > #urlbar-background,
 #urlbar[open] > #urlbar-background,
 #urlbar[breakout][breakout-extend] > #urlbar-background {
@@ -181,13 +157,10 @@
   color: var(--fx-fg) !important;
   text-align: center !important;
 }
-
-#urlbar[focused="true"] #urlbar-input {
-  text-align: left !important;
-}
+#urlbar[focused="true"] #urlbar-input { text-align: left !important; }
 
 /* ==========================================================================
-   URL DROPDOWN / AUTOCOMPLETE — Styled results panel
+   §6  URL DROPDOWN / AUTOCOMPLETE
    ========================================================================== */
 
 .urlbarView,
@@ -201,18 +174,12 @@
   scrollbar-width: none !important;
 }
 
-.urlbarView-results::-webkit-scrollbar {
-  display: none !important;
-}
-
 .urlbarView {
   margin-inline: 0 !important;
   width: 100% !important;
   border-radius: 0 0 var(--fx-radius) var(--fx-radius) !important;
 }
 
-
-/* Search one-offs row at the bottom of the dropdown */
 .search-one-offs {
   background-color: var(--fx-bg-raised) !important;
   border-top: 1px solid var(--fx-border) !important;
@@ -232,7 +199,7 @@
 }
 
 /* ==========================================================================
-   TOOLBAR BUTTONS — Micro-animations on hover/active
+   §7  TOOLBAR BUTTONS
    ========================================================================== */
 
 .toolbarbutton-1 {
@@ -250,7 +217,7 @@
 }
 
 /* ==========================================================================
-   SIDEBAR — Sidebery container
+   §8  SIDEBAR — Sidebery container
    ========================================================================== */
 
 #sidebar-box,
@@ -260,7 +227,6 @@ browser#sidebar,
 #webextpanels-window,
 #webext-panels-browser,
 #sidebar-inline-browser {
-  background-color: var(--fx-bg) !important;
   background: var(--fx-bg) !important;
   border: none !important;
   outline: none !important;
@@ -270,15 +236,8 @@ browser#sidebar,
   border-radius: 0 !important;
 }
 
-#sidebar-splitter {
-  display: none !important;
-  border: none !important;
-  width: 0 !important;
-}
-  
-
 /* ==========================================================================
-   FLOATING CONTENT VIEWPORT — Rounded page with depth
+   §9  FLOATING VIEWPORT — Rounded page area with subtle border
    ========================================================================== */
 
 #main-window,
@@ -288,7 +247,6 @@ browser#sidebar,
 .tabpanel,
 .browserStack,
 .browserSidebarContainer {
-  background-color: var(--fx-bg) !important;
   background: var(--fx-bg) !important;
 }
 
@@ -314,7 +272,7 @@ browser[type="content"] {
 }
 
 /* ==========================================================================
-   PANELS & CONTEXT MENUS — Flat styled popups
+   §10  PANELS & CONTEXT MENUS
    ========================================================================== */
 
 menupopup,
@@ -325,7 +283,6 @@ panel {
   border-radius: var(--fx-radius) !important;
 }
 
-/* Menu items — rounded hover states */
 menuitem,
 menu {
   border-radius: var(--fx-radius-sm) !important;
@@ -340,7 +297,6 @@ menu[_moz-menuactive="true"] {
   background-color: var(--fx-bg-subtle) !important;
 }
 
-/* Menu separators */
 menuseparator {
   border-color: var(--fx-border) !important;
   margin: var(--fx-space-sm) var(--fx-space-md) !important;
@@ -348,7 +304,7 @@ menuseparator {
 }
 
 /* ==========================================================================
-   FINDBAR — Themed to match the rest of the UI
+   §11  FINDBAR
    ========================================================================== */
 
 findbar {
@@ -381,7 +337,7 @@ findbar toolbarbutton:hover {
 }
 
 /* ==========================================================================
-   TOOLTIP — Styled to match
+   §12  TOOLTIPS & NOTIFICATIONS
    ========================================================================== */
 
 tooltip {
@@ -391,10 +347,6 @@ tooltip {
   border-radius: var(--fx-radius-sm) !important;
   padding: var(--fx-space-sm) var(--fx-space-md) !important;
 }
-
-/* ==========================================================================
-   NOTIFICATION BAR — Clean inline notifications
-   ========================================================================== */
 
 notification-message {
   background-color: var(--fx-bg-raised) !important;

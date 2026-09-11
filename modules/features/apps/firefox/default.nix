@@ -63,6 +63,9 @@
       # Combine base default about:config preferences with user extra settings
       allSettings = cfg.settings // cfg.extraSettings;
 
+      # Combine base default Sidebery settings with user extra settings
+      allSideberySettings = cfg.sideberySettings // cfg.extraSideberySettings;
+
       # Generate user.js file contents: user_pref("key", val);
       userJsContent = lib.concatStringsSep "\n" (
         lib.mapAttrsToList (name: value: ''user_pref("${name}", ${toJsValue value});'') allSettings
@@ -214,12 +217,69 @@
         sideberySettings = lib.mkOption {
           type = lib.types.attrs;
           default = {
+            # --- Visual Style & Theme ---
+            theme = "proton";
+            colorScheme = "dark";
+            density = "compact";
+            fontSize = "m";
+            animations = true;
+            animationSpeed = "fast";
+
+            # --- Navigation Bar (Panels & Tabs Switcher) ---
+            navBarLayout = "horizontal";
+            navBarInline = true;
+            navBarSide = "left";
+            navBtnCount = true;
+            hideEmptyPanels = true;
+            hideDiscardedTabPanels = false;
+
+            # --- Pinned Tabs (Compact Grid Dock) ---
+            pinnedTabsPosition = "panel";
+            pinnedTabsList = false;
             pinnedNoUnload = false;
             pinnedNoUnloadExplicit = false;
             pinnedForcedDiscard = true;
+
+            # --- Tabs Tree Hierarchy & Folding ---
+            tabsTree = true;
+            tabsTreeLimit = "none";
+            autoFoldTabs = false;
+            autoExpandTabs = false;
+            rmChildTabs = "folded";
+            tabsLvlDots = true;
             discardFolded = true;
+            discardFoldedDelay = 0;
+            tabsTreeBookmarks = true;
+            treeRmOutdent = "branch";
+
+            # --- Tab Behavior, Activation & Lifecycle ---
+            activateLastTabOnPanelSwitching = true;
+            activateLastTabOnPanelSwitchingLoadedOnly = true;
+            switchPanelAfterSwitchingTab = "always";
+            scrollPanelAfterSwitchingTab = "always";
+            activateAfterClosing = "next";
+            activateAfterClosingNoFolded = true;
+            activateAfterClosingNoDiscarded = true;
+            scrollThroughTabsSkipDiscarded = true;
+            tabWarmupOnHover = false;
+            tabRmBtn = "hover";
+            forceDiscard = true;
+            tabsReloadLimit = 5;
+            tabsReloadLimitNotif = true;
+
+            # --- Scrollbars & Search ---
+            nativeScrollbars = true;
+            nativeScrollbarsThin = true;
+            searchBarMode = "dynamic";
+            searchPanelSwitch = "same_type";
           };
-          description = "Declarative settings for Sidebery extension managed via Enterprise Policy and storage.js.";
+          description = "Declarative base settings for Sidebery extension managed via Enterprise Policy and storage.js.";
+        };
+
+        extraSideberySettings = lib.mkOption {
+          type = lib.types.attrs;
+          default = { };
+          description = "Additional user preferences to merge into Sidebery managed settings.";
         };
 
         settings = lib.mkOption {
@@ -297,12 +357,11 @@
             "privacy.globalprivacycontrol.enabled" = true;
 
             # Session restore & lazy loading
-            "browser.sessionrestore.restore_on_demand" = true;
-            "browser.sessionrestore.restore_pinned_tabs_on_demand" = true;
-            "browser.sessionrestore.restore_tabs_lazily" = true;
-            "browser.sessionrestore.restore_hidden_tabs_on_demand" = true;
+            "browser.sessionstore.restore_on_demand" = true;
+            "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
+            "browser.sessionstore.restore_tabs_lazily" = true;
+            "browser.sessionstore.restore_hidden_tabs_on_demand" = true;
             "browser.sessionstore.pause_tab_loading_on_startup" = true;
-            "browser.sessionstore.max_resumed_tabs" = 0;
             "browser.tabs.loadDormantOnSelect" = true;
 
             # HTTPS-only mode
@@ -515,7 +574,7 @@
             description = "Managed Storage policy for Sidebery extension";
             type = "storage";
             data = {
-              settings = cfg.sideberySettings;
+              settings = allSideberySettings;
             };
           };
 
@@ -572,7 +631,7 @@
 
             # Declaratively seed Sidebery extension settings (discards pinned tabs on startup)
             ".mozilla/firefox/${cfg.profileName}/browser-extension-data/{3c078156-979c-498b-8990-85f7987dd929}/storage.js".text =
-              builtins.toJSON { settings = cfg.sideberySettings; };
+              builtins.toJSON { settings = allSideberySettings; };
           };
 
           environment.sessionVariables = {

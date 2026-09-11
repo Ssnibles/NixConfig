@@ -13,7 +13,7 @@ This guide explains how Firefox UI customization works in this repository, how t
 | **`colors.css`** | **Theme System** | Dynamic CSS variables generated from your system color palette (`--fx-bg`, `--fx-accent`, etc.). |
 
 > [!NOTE]
-> Both `userChrome.css` and `userContent.css` are symlinked directly from your `NixConfig` workspace (`~/NixConfig/modules/features/firefox/`) into your Firefox profile directory (`~/.mozilla/firefox/default/chrome/`). Any changes saved here take effect immediately upon restarting Firefox or reloading the sidebar/page!
+> Both `userChrome.css` and `userContent.css` are symlinked directly from your `NixConfig` workspace (`~/NixConfig/modules/features/apps/firefox/`) into your Firefox profile directory (`~/.mozilla/firefox/default/chrome/`). Any changes saved here take effect immediately upon restarting Firefox or reloading the sidebar/page!
 
 ---
 
