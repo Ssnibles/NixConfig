@@ -19,6 +19,7 @@ A clean, modern, and high-performance **[dendritic](https://github.com/mightyiam
 ## Screenshots
 
 ![screenshot](./screenshots/image_20260911_130931.png)
+![screenshot 2](./screenshots/image_20260911_132149.png)
 
 ## Overview
 
