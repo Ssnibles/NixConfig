@@ -62,6 +62,9 @@
 
               [includeIf "gitdir/i:~/StudioProjects/"]
                 path = ~/.config/git/config-uni
+
+              [includeIf "gitdir/i:~/AndroidStudioProjects/"]
+                path = ~/.config/git/config-uni
             '';
           };
 
