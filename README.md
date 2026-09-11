@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![NixOS 26.05](https://img.shields.io/badge/NixOS-26.05%20(Stable)-5277C3?style=for-the-badge&logo=nixos&logoColor=white)](https://nixos.org)
+[![NixOS 26.05](<https://img.shields.io/badge/NixOS-26.05%20(Stable)-5277C3?style=for-the-badge&logo=nixos&logoColor=white>)](https://nixos.org)
 [![Nixpkgs Unstable](https://img.shields.io/badge/Nixpkgs-Unstable-5277C3?style=for-the-badge&logo=nixos&logoColor=white)](https://github.com/nixos/nixpkgs)
 [![Flake-Parts](https://img.shields.io/badge/Flake--Parts-Modular-blueviolet?style=for-the-badge&logo=nixos&logoColor=white)](https://flake.parts)
 [![Dendritic](https://img.shields.io/badge/Architecture-Dendritic-2ea44f?style=for-the-badge)](https://github.com/mightyiam/dendritic)
@@ -15,6 +15,10 @@ A clean, modern, and high-performance **[dendritic](https://github.com/mightyiam
 </div>
 
 ---
+
+## Screenshots
+
+![screenshot](./screenshots/image_20260911_130931.png)
 
 ## Overview
 
@@ -123,6 +127,7 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 ## Key Features
 
 ### Core System & Boot
+
 - **Limine Bootloader**: Fast, modern EFI bootloader configured with a 5-second timeout and 10-generation history retention.
 - **Plymouth Boot Splash**: Clean, graphical boot screen using the Catppuccin Mocha theme with silent boot parameters (`quiet`, `splash`, `loglevel=3`).
 - **Display Manager**: Lightweight TTY-based [Ly](https://github.com/fairyglade/ly) login manager with GNOME Keyring PAM integration.
@@ -134,6 +139,7 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 - **Automated Maintenance**: Fast builds via `nh`, automatic store deduplication (`nix.optimise`), and automated garbage collection keeping the latest 3 generations / 30 days.
 
 ### Wayland Desktop & Compositors
+
 - **Multi-Compositor Choice**: Choose between dynamically tiled, manual, or scrollable Wayland sessions:
   - **Hyprland**: Dynamic Wayland compositor configured through [`hyprland.lua`](file:///home/josh/NixConfig/modules/features/desktop-env/hyprland/hyprland.lua) with theme palette integration.
   - **DWL (dwm for Wayland)**: Fast, suckless-inspired Wayland compositor equipped with an autostart wrapper and Quickshell status bar support.
@@ -145,6 +151,7 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 - **System Cursors & Fonts**: Bibata Modern Ice cursor theme across GTK, Xcursor, and Hyprcursor, paired with SF Pro Text, Instrument Serif, and JetBrains Mono Nerd Font.
 
 ### Quickshell Desktop Shell
+
 - **Unified QML Shell Framework**: Highly modular desktop shell written in QML, providing consistent widgets and bars across all compositors.
 - **Multi-Compositor Routing**: Abstract `WmService.qml` routing events across DWL, Hyprland, Mango, Niri, and River.
 - **Command Center & Lock Screen**: Pull-down system control center with quick toggles, sliders, media controls, and a dedicated lock screen overlay.
@@ -152,6 +159,7 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 - **Notification Daemon**: Built-in notification overlay and notification store replacement.
 
 ### Terminal, Shell & Multiplexer
+
 - **Fish Shell 4+**: Bleeding-edge Fish shell as the default login shell, featuring auto-pairing, Bass script runner, and custom shortcuts.
 - **Cached FZF File & Directory Navigation**: Custom Fish caching engine (`__fzf_cache_fd`) that caches `fd` traversal per directory for 5 minutes, making file and directory searches instantaneous even in large codebases.
 - **Starship Prompt**: Custom Starship configuration with runtime language indicators (Rust, Python, Node.js, Nix shell), Git status indicators, and clean transient execution (`>>`).
@@ -164,6 +172,7 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 - **Modern CLI Utilities**: `zoxide` (smart directory jumping), `direnv` with `nix-direnv`, `bat`, `btop`, `ripgrep`, `fd`, `microfetch`, `croc`, and `nix-index` for command-not-found package lookup.
 
 ### Declarative Neovim & Development
+
 - **Declarative Neovim via NVF**: Neovim managed through [nvf](https://github.com/NotAShelf/nvf), linked directly to a modular Lua configuration tree under [`modules/features/nvim-src/`](file:///home/josh/NixConfig/modules/features/nvim-src/).
 - **Language Support & LSPs**: Complete LSP, DAP, formatter, and linter configurations for Rust, Zig, Go, C/C++, Python, TypeScript/JavaScript, Kotlin, Java, Typst, Nix, and QML.
 - **Specialized LSP Wrappers**:
@@ -173,11 +182,13 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 - **AI-Assisted Engineering**: Integrated with `antigravity-cli`.
 
 ### Hardware, Microcontrollers & FPGA
+
 - **ESP32 & Arduino Development**: Built-in developer workflow with `arduino-cli`, `esptool`, and automated Neovim / Clangd LSP compilation database generators.
 - **AMD Vivado Design Suite 2024.2**: Containerized FPGA workflow running inside an isolated Ubuntu 22.04 Distrobox container with full X11/GUI passthrough and desktop launcher integration.
 - **Hardware Debugging & Udev Rules**: OpenOCD, DFU utilities (`dfu-util`), and udev permissions for CP210x, CH340, FTDI FT2232, and Meshtastic hardware.
 
 ### Browsers, Media & Gaming
+
 - **Firefox Developer Edition**: High-performance browser setup with FastFox optimizations, custom `userChrome.css` and `userContent.css`, Sidebery vertical tab bar integration, and an embedded offline startpage WebExtension.
 - **Zen Browser**: Configured with enterprise privacy policies (telemetry disabled, tracking protection enabled) and XDG MIME associations.
 - **Gaming Suite**: Steam with the Millennium skinning framework, Gamescope session integration, GameMode daemon, and MangoHud performance overlay.
@@ -306,18 +317,18 @@ NixConfig/
 
 ## Hosts Comparison
 
-| Specification / Layer | Workstation (`desktop`) | Laptop (`laptop`) |
-| :--- | :--- | :--- |
-| **Primary Target** | High-performance workstation & gaming | Ultraportable productivity & battery life |
-| **Graphics Hardware** | Dedicated NVIDIA GPU (Proprietary driver) | Integrated AMD Radeon Graphics |
-| **Kernel & Modules** | `linuxPackages_latest` with NVIDIA DRM & fbdev | `linuxPackages_latest` with `amdgpu` |
-| **Power Management** | AC performance mode, no throttling | TLP battery profiles, ASPM power savings, AMDGPU ABM |
-| **Display Manager** | Ly TTY Login Manager | Ly TTY Login Manager |
-| **Bootloader** | Limine (EFI) with Plymouth Catppuccin splash | Limine (EFI) with Plymouth Catppuccin splash |
-| **Active Compositors** | Hyprland, DWL, MangoWC | DWL, MangoWC |
-| **Hardware Quirks** | ASUS WMI Bluetooth rfkill unblock service | ELAN ACPI touchpad polling workaround, ath11k Wi-Fi |
-| **Peripheral Stack** | Logitech wireless support, DualSense kernel driver | DFU / OpenOCD / Meshtastic serial udev permissions |
-| **Audio & Media** | Low-latency PipeWire, Amberol, Spotify | Low-latency PipeWire, Gowall, Spotify |
+| Specification / Layer  | Workstation (`desktop`)                            | Laptop (`laptop`)                                    |
+| :--------------------- | :------------------------------------------------- | :--------------------------------------------------- |
+| **Primary Target**     | High-performance workstation & gaming              | Ultraportable productivity & battery life            |
+| **Graphics Hardware**  | Dedicated NVIDIA GPU (Proprietary driver)          | Integrated AMD Radeon Graphics                       |
+| **Kernel & Modules**   | `linuxPackages_latest` with NVIDIA DRM & fbdev     | `linuxPackages_latest` with `amdgpu`                 |
+| **Power Management**   | AC performance mode, no throttling                 | TLP battery profiles, ASPM power savings, AMDGPU ABM |
+| **Display Manager**    | Ly TTY Login Manager                               | Ly TTY Login Manager                                 |
+| **Bootloader**         | Limine (EFI) with Plymouth Catppuccin splash       | Limine (EFI) with Plymouth Catppuccin splash         |
+| **Active Compositors** | Hyprland, DWL, MangoWC                             | DWL, MangoWC                                         |
+| **Hardware Quirks**    | ASUS WMI Bluetooth rfkill unblock service          | ELAN ACPI touchpad polling workaround, ath11k Wi-Fi  |
+| **Peripheral Stack**   | Logitech wireless support, DualSense kernel driver | DFU / OpenOCD / Meshtastic serial udev permissions   |
+| **Audio & Media**      | Low-latency PipeWire, Amberol, Spotify             | Low-latency PipeWire, Gowall, Spotify                |
 
 ---
 
@@ -325,15 +336,15 @@ NixConfig/
 
 Comprehensive documentation, architecture references, and step-by-step workflow manuals are available in the **[NixConfig Wiki](docs/wiki/index.md)**:
 
-| Feature / Subsystem | Guide Link | Description |
-| :--- | :--- | :--- |
-| **ESP32 & Arduino** | [esp32-arduino.md](docs/wiki/esp32-arduino.md) | ESP32 toolchains, `arduino-cli`, `esptool`, Neovim Clangd LSP compilation database generation (`esp-gen-lsp`), and project templates |
-| **Quickshell UI** | [quickshell.md](docs/wiki/quickshell.md) | Quickshell QML framework architecture, status bar widgets, Command Center, Lock Screen, and IPC control |
-| **Wayland Compositors** | [compositors.md](docs/wiki/compositors.md) | Configuration guide for Hyprland (with Lua), DWL, MangoWC, and Niri tiling compositors |
-| **Declarative Neovim** | [neovim.md](docs/wiki/neovim.md) | NVF Neovim setup, custom Lua plugins in `modules/features/nvim-src/`, language servers, DAPs, and formatting |
-| **Firefox & Sidebery** | [firefox.md](docs/wiki/firefox.md) | Custom `userChrome.css` styling, Sidebery vertical tab bar setup, startpage WebExtension, and live CSS debugging |
-| **AMD Vivado FPGA** | [vivado-fpga.md](docs/wiki/vivado-fpga.md) | Distrobox Ubuntu 22.04 container setup, GUI/X11 forwarding, desktop shortcut integration, and high-DPI scaling |
-| **Gaming & Controllers** | [gaming.md](docs/wiki/gaming.md) | Steam with Millennium skinning, Gamescope composited sessions, MangoHud overlay, and DualSense PS5 controller kernel drivers |
+| Feature / Subsystem      | Guide Link                                     | Description                                                                                                                          |
+| :----------------------- | :--------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| **ESP32 & Arduino**      | [esp32-arduino.md](docs/wiki/esp32-arduino.md) | ESP32 toolchains, `arduino-cli`, `esptool`, Neovim Clangd LSP compilation database generation (`esp-gen-lsp`), and project templates |
+| **Quickshell UI**        | [quickshell.md](docs/wiki/quickshell.md)       | Quickshell QML framework architecture, status bar widgets, Command Center, Lock Screen, and IPC control                              |
+| **Wayland Compositors**  | [compositors.md](docs/wiki/compositors.md)     | Configuration guide for Hyprland (with Lua), DWL, MangoWC, and Niri tiling compositors                                               |
+| **Declarative Neovim**   | [neovim.md](docs/wiki/neovim.md)               | NVF Neovim setup, custom Lua plugins in `modules/features/nvim-src/`, language servers, DAPs, and formatting                         |
+| **Firefox & Sidebery**   | [firefox.md](docs/wiki/firefox.md)             | Custom `userChrome.css` styling, Sidebery vertical tab bar setup, startpage WebExtension, and live CSS debugging                     |
+| **AMD Vivado FPGA**      | [vivado-fpga.md](docs/wiki/vivado-fpga.md)     | Distrobox Ubuntu 22.04 container setup, GUI/X11 forwarding, desktop shortcut integration, and high-DPI scaling                       |
+| **Gaming & Controllers** | [gaming.md](docs/wiki/gaming.md)               | Steam with Millennium skinning, Gamescope composited sessions, MangoHud overlay, and DualSense PS5 controller kernel drivers         |
 
 ---
 
@@ -378,18 +389,18 @@ curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh 
 
 #### Useful Installer Flags
 
-| Flag | Argument | Description |
-| :--- | :--- | :--- |
-| `--host`, `-H` | `<host>` | Flake host configuration (`desktop` or `laptop`) |
-| `--disk`, `-d` | `<path>` | Installation target drive (e.g., `/dev/nvme0n1`, `/dev/sda`) |
-| `--user`, `-u` | `<name>` | Primary username to configure (defaults to `josh`) |
-| `--hostname`, `-n` | `<name>` | Machine network hostname |
-| `--ssh-key`, `-k` | `<path>` | Local public key file to install into `~/.ssh/authorized_keys` |
-| `--github-ssh`, `-g`| `<user>` | Fetch and install public SSH keys from `github.com/<user>.keys` |
-| `--skip-format` | — | Reinstall system packages while preserving disk partition tables |
-| `--no-reboot` | — | Keep the installation mounted under `/mnt` after completion |
-| `--dry-run` | — | Print planned commands without partitioning or writing to disk |
-| `--overwrite` | — | Overwrite existing `~/NixConfig` directory without prompting |
+| Flag                 | Argument | Description                                                      |
+| :------------------- | :------- | :--------------------------------------------------------------- |
+| `--host`, `-H`       | `<host>` | Flake host configuration (`desktop` or `laptop`)                 |
+| `--disk`, `-d`       | `<path>` | Installation target drive (e.g., `/dev/nvme0n1`, `/dev/sda`)     |
+| `--user`, `-u`       | `<name>` | Primary username to configure (defaults to `josh`)               |
+| `--hostname`, `-n`   | `<name>` | Machine network hostname                                         |
+| `--ssh-key`, `-k`    | `<path>` | Local public key file to install into `~/.ssh/authorized_keys`   |
+| `--github-ssh`, `-g` | `<user>` | Fetch and install public SSH keys from `github.com/<user>.keys`  |
+| `--skip-format`      | —        | Reinstall system packages while preserving disk partition tables |
+| `--no-reboot`        | —        | Keep the installation mounted under `/mnt` after completion      |
+| `--dry-run`          | —        | Print planned commands without partitioning or writing to disk   |
+| `--overwrite`        | —        | Overwrite existing `~/NixConfig` directory without prompting     |
 
 ### 3. Manual Installation
 
@@ -487,17 +498,17 @@ For rapid development cycles or local compositor testing, [`rebuild.sh`](file://
 
 Defined in [`modules/features/shell/shell.nix`](file:///home/josh/NixConfig/modules/features/shell/shell.nix):
 
-| Shortcut | Type | Action / Expansion |
-| :--- | :--- | :--- |
-| `rebuild` | Alias | `sudo nixos-rebuild switch --flake ~/NixConfig#<host>` |
-| `update` | Alias | `sudo nixos-rebuild switch --flake ~/NixConfig#<host> --upgrade` |
-| `clean` | Alias | `nh clean all` (Automated generation cleanup) |
-| `nixclean` | Abbreviation | `sudo nix-collect-garbage --delete-older-than 30d` |
-| `lg` | Abbreviation | `lazygit` (Git TUI client) |
-| `y` | Abbreviation | `yazi` (Terminal file manager) |
-| `nixconf` | Function | Jump to `~/NixConfig` directory and print Git branch status |
-| `nixup` | Function | Pull upstream Git changes and rebuild using `nh os switch` |
-| `mkcd <dir>`| Function | Create directory `<dir>` and `cd` into it immediately |
+| Shortcut     | Type         | Action / Expansion                                               |
+| :----------- | :----------- | :--------------------------------------------------------------- |
+| `rebuild`    | Alias        | `sudo nixos-rebuild switch --flake ~/NixConfig#<host>`           |
+| `update`     | Alias        | `sudo nixos-rebuild switch --flake ~/NixConfig#<host> --upgrade` |
+| `clean`      | Alias        | `nh clean all` (Automated generation cleanup)                    |
+| `nixclean`   | Abbreviation | `sudo nix-collect-garbage --delete-older-than 30d`               |
+| `lg`         | Abbreviation | `lazygit` (Git TUI client)                                       |
+| `y`          | Abbreviation | `yazi` (Terminal file manager)                                   |
+| `nixconf`    | Function     | Jump to `~/NixConfig` directory and print Git branch status      |
+| `nixup`      | Function     | Pull upstream Git changes and rebuild using `nh os switch`       |
+| `mkcd <dir>` | Function     | Create directory `<dir>` and `cd` into it immediately            |
 
 ---
 
@@ -517,7 +528,8 @@ options.theme.active = lib.mkOption {
 ```
 
 #### Curated Palettes in [`palette.nix`](file:///home/josh/NixConfig/modules/themes/palette.nix):
-- **`vague`** *(Default)* — Warm, low-contrast muted aesthetic
+
+- **`vague`** _(Default)_ — Warm, low-contrast muted aesthetic
 - **`catppuccin-mocha`** — Vibrant modern pastel theme
 - **`gruvbox-dark`** / **`gruvbox-dark-hard`** / **`gruvbox-light-hard`** — Classic retro groove schemes
 - **`rose-pine`** / **`rose-pine-moon`** / **`rose-pine-dawn`** — Minimalist Soho-inspired elegance
@@ -577,6 +589,7 @@ direnv allow
 ```
 
 **Included Toolchains**:
+
 - **Rust**: `rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt`, `bacon`, `sea-orm-cli`
 - **Nix**: `nixfmt`, `nil` (Nix language server), `alejandra`
 - **Shell**: Unstable Fish 4+
@@ -696,6 +709,6 @@ Curated guides and references for mastering NixOS and dendritic flake architectu
 
 <div align="center">
 
-*Configured and maintained by [Josh](https://github.com/Ssnibles).*
+_Configured and maintained by [Josh](https://github.com/Ssnibles)._
 
 </div>

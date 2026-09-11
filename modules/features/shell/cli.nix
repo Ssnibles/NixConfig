@@ -28,6 +28,7 @@
           file
           fzf
           git
+          gh
           gnupg
           libnotify
           libsecret
