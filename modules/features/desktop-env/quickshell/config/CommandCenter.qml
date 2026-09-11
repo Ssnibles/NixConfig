@@ -570,7 +570,7 @@ Scope {
               cursorShape: mediaCard.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
               onClicked: function(mouse) {
                 if (mouse.button === Qt.RightButton && mediaCard.activePlayer) {
-                  Utils.goToSource(mediaCard.activePlayer, Quickshell)
+                  Utils.goToSource(mediaCard.activePlayer, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
                 }
               }
             }
@@ -650,6 +650,7 @@ Scope {
                     anchors.fill: parent
                     asynchronous: true
                     fillMode: Image.PreserveAspectCrop
+                    sourceSize: Qt.size(96, 96)
                     visible: source !== "" && status === Image.Ready
                     source: (mediaCard.hasPlayer && mediaCard.activePlayer && (mediaCard.activePlayer.trackTitle || mediaCard.activePlayer.trackArtUrl)) ? NotificationStore.getCoverArt(
                       mediaCard.activePlayer.trackTitle || "",
@@ -663,30 +664,60 @@ Scope {
                       maskSource: coverArtMask
                     }
                   }
+
+                  MouseArea {
+                    anchors.fill: parent
+                    cursorShape: mediaCard.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: function() {
+                      if (mediaCard.activePlayer) {
+                        Utils.goToSource(mediaCard.activePlayer, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
+                      }
+                    }
+                  }
                 }
 
                 // Track Details
-                Column {
+                Item {
                   Layout.fillWidth: true
-                  spacing: 2
+                  implicitHeight: ccTrackCol.implicitHeight
 
-                  Text {
-                    width: parent.width
-                    text: mediaCard.hasPlayer ? Utils.cleanTrackTitle(mediaCard.activePlayer.trackTitle) : "Nothing is playing"
-                    color: mediaCard.hasPlayer ? Colors.fg : Colors.fgDim
-                    font.bold: true
-                    font.pixelSize: 15
-                    font.family: Config.sansFont
-                    elide: Text.ElideRight
+                  Column {
+                    id: ccTrackCol
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 2
+
+                    Text {
+                      width: parent.width
+                      text: mediaCard.hasPlayer ? Utils.cleanTrackTitle(mediaCard.activePlayer.trackTitle) : "Nothing is playing"
+                      color: mediaCard.hasPlayer ? Colors.fg : Colors.fgDim
+                      font.bold: true
+                      font.pixelSize: 15
+                      font.family: Config.sansFont
+                      elide: Text.ElideRight
+                    }
+
+                    Text {
+                      width: parent.width
+                      text: mediaCard.hasPlayer ? (mediaCard.activePlayer.trackArtist || "Unknown Artist") : "No artist"
+                      color: Colors.fgMid
+                      font.pixelSize: 13
+                      font.family: Config.sansFont
+                      elide: Text.ElideRight
+                    }
                   }
 
-                  Text {
-                    width: parent.width
-                    text: mediaCard.hasPlayer ? (mediaCard.activePlayer.trackArtist || "Unknown Artist") : "No artist"
-                    color: Colors.fgMid
-                    font.pixelSize: 13
-                    font.family: Config.sansFont
-                    elide: Text.ElideRight
+                  MouseArea {
+                    anchors.fill: parent
+                    cursorShape: mediaCard.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: function() {
+                      if (mediaCard.activePlayer) {
+                        Utils.goToSource(mediaCard.activePlayer, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
+                      }
+                    }
                   }
                 }
 

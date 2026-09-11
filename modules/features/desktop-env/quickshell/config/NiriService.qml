@@ -97,7 +97,7 @@ QtObject {
   }
 
   function focusWindow(patterns) {
-    Utils.focusWindow(patterns, Quickshell)
+    Utils.focusWindow(patterns, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
   }
 
 

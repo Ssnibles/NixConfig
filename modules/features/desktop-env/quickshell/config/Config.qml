@@ -76,6 +76,7 @@ Singleton {
   // Whether the command center's media card always stays visible, showing
   // "Nothing is playing" when no media is active.
   readonly property bool alwaysShowMediaCard: true
+  readonly property bool animateMediaIcon: false
   readonly property int mediaRotationDuration: 4000
   readonly property int mediaSeekDebounceMs: 200
 

@@ -210,6 +210,7 @@ Scope {
             anchors.fill: parent
             source: Config.lockWallpaperPath
             fillMode: Image.PreserveAspectCrop
+            sourceSize: Qt.size(parent.width > 0 ? parent.width : 1920, parent.height > 0 ? parent.height : 1080)
             smooth: true
 
             layer.enabled: Config.lockBlurPercentage > 0
@@ -437,6 +438,7 @@ Scope {
                       anchors.fill: parent
                       asynchronous: true
                       fillMode: Image.PreserveAspectCrop
+                      sourceSize: Qt.size(96, 96)
                       visible: source !== "" && status === Image.Ready
                       source: (lockMediaCard.activePlayer && (lockMediaCard.activePlayer.trackTitle || lockMediaCard.activePlayer.trackArtUrl)) ? NotificationStore.getCoverArt(
                         lockMediaCard.activePlayer.trackTitle || "",
@@ -611,6 +613,7 @@ Scope {
                       anchors.fill: parent
                       source: Config.lockAvatarPath
                       fillMode: Image.PreserveAspectCrop
+                      sourceSize: Qt.size(192, 192)
                       smooth: true
                       visible: status === Image.Ready
 

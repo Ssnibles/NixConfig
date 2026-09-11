@@ -43,6 +43,8 @@ Item {
   MediaProgress {
     id: mediaTracker
     player: root.mediaPlayer
+    enabled: (!root.horizontal && root.visible) || (mediaTooltip && mediaTooltip.hovered)
+    tickInterval: (mediaTooltip && mediaTooltip.hovered) ? 300 : 1000
   }
 
   // Debounced seek — mirrors CommandCenter's seekTimer
@@ -67,7 +69,7 @@ Item {
 
   function focusMediaPlayer() {
     if (!root.mediaPlayer) return
-    Utils.goToSource(root.mediaPlayer, Quickshell)
+    Utils.goToSource(root.mediaPlayer, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
   }
 
   // --- UI Layout (Vertical for Sidebar) ---
@@ -102,7 +104,7 @@ Item {
         from: 0
         to: 360
         duration: Config.mediaRotationDuration
-        running: root.visible && root.mediaPlayer && root.mediaPlayer.isPlaying
+        running: Config.animateMediaIcon && root.visible && root.mediaPlayer && root.mediaPlayer.isPlaying
       }
 
     }
@@ -164,7 +166,7 @@ Item {
         from: 0
         to: 360
         duration: Config.mediaRotationDuration
-        running: root.visible && root.mediaPlayer && root.mediaPlayer.isPlaying
+        running: Config.animateMediaIcon && root.visible && root.mediaPlayer && root.mediaPlayer.isPlaying
       }
     }
 
@@ -285,6 +287,7 @@ Item {
               anchors.fill: parent
               asynchronous: true
               fillMode: Image.PreserveAspectCrop
+              sourceSize: Qt.size(96, 96)
               visible: source !== "" && status === Image.Ready
               source: (root.mediaPlayer && (root.mediaPlayer.trackTitle || root.mediaPlayer.trackArtUrl)) ? NotificationStore.getCoverArt(
                 root.mediaPlayer.trackTitle || "",
@@ -297,30 +300,52 @@ Item {
                 maskSource: popoverCoverMask
               }
             }
+
+            MouseArea {
+              anchors.fill: parent
+              cursorShape: root.mediaPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
+              acceptedButtons: Qt.LeftButton | Qt.RightButton
+              onClicked: root.focusMediaPlayer()
+            }
           }
 
           // Track Details
-          Column {
+          Item {
             Layout.fillWidth: true
-            spacing: 2
+            implicitHeight: trackDetailsCol.implicitHeight
 
-            Text {
-              width: parent.width
-              text: root.mediaPlayer ? root.mediaPlayer.trackTitle : "No Media"
-              color: Colors.fg
-              font.bold: true
-              font.pixelSize: 15
-              font.family: Config.sansFont
-              elide: Text.ElideRight
+            Column {
+              id: trackDetailsCol
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.verticalCenter: parent.verticalCenter
+              spacing: 2
+
+              Text {
+                width: parent.width
+                text: root.mediaPlayer ? root.mediaPlayer.trackTitle : "No Media"
+                color: Colors.fg
+                font.bold: true
+                font.pixelSize: 15
+                font.family: Config.sansFont
+                elide: Text.ElideRight
+              }
+
+              Text {
+                width: parent.width
+                text: root.mediaPlayer ? (root.mediaPlayer.trackArtist || "Unknown Artist") : ""
+                color: Colors.fgMid
+                font.pixelSize: 13
+                font.family: Config.sansFont
+                elide: Text.ElideRight
+              }
             }
 
-            Text {
-              width: parent.width
-              text: root.mediaPlayer ? (root.mediaPlayer.trackArtist || "Unknown Artist") : ""
-              color: Colors.fgMid
-              font.pixelSize: 13
-              font.family: Config.sansFont
-              elide: Text.ElideRight
+            MouseArea {
+              anchors.fill: parent
+              cursorShape: root.mediaPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
+              acceptedButtons: Qt.LeftButton | Qt.RightButton
+              onClicked: root.focusMediaPlayer()
             }
           }
 

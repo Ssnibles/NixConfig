@@ -271,7 +271,7 @@ function wifiIcon(signalStrength, connected) {
   return "\u{F0928}"
 }
 
-function focusWindow(patterns, quickshellObj) {
+function focusWindow(patterns, quickshellObj, toplevelManagerObj) {
   if (!patterns) return false
   var targets = Array.isArray(patterns) ? patterns : [patterns]
   var cleanTargets = []
@@ -283,11 +283,11 @@ function focusWindow(patterns, quickshellObj) {
   }
   if (cleanTargets.length === 0) return false
 
-  // 1. Try native Wayland ToplevelManager first
-  var manager = null
-  if (typeof ToplevelManager !== "undefined") {
+  // 1. Try native Wayland ToplevelManager first (if available in scope or passed in)
+  var manager = toplevelManagerObj || null
+  if (!manager && typeof ToplevelManager !== "undefined") {
     manager = ToplevelManager
-  } else if (quickshellObj && typeof quickshellObj.ToplevelManager !== "undefined") {
+  } else if (!manager && quickshellObj && typeof quickshellObj.ToplevelManager !== "undefined") {
     manager = quickshellObj.ToplevelManager
   }
 
@@ -313,48 +313,149 @@ function focusWindow(patterns, quickshellObj) {
     }
   }
 
-  // 2. Niri IPC focus-window action (for Niri compositor where zwlr activate is restricted)
+  // 2. Compositor IPC focus action (MangoWC, Niri, Hyprland, etc.)
   var qs = quickshellObj
   if (!qs && typeof Quickshell !== "undefined") qs = Quickshell
   if (qs && typeof qs.execDetached === "function") {
-    var script = 'wins=$(niri msg --json windows 2>/dev/null); ' +
-                 'if [ -z "$wins" ]; then exit 0; fi; ' +
-                 'id=$(echo "$wins" | node -e \'' +
-                 '  const fs = require("fs"); ' +
-                 '  const wins = JSON.parse(fs.readFileSync(0, "utf-8")); ' +
-                 '  const pats = process.argv.slice(2).map(p => p.toLowerCase()); ' +
-                 '  for (const p of pats) { ' +
-                 '    const found = wins.find(w => (w.app_id && w.app_id.toLowerCase().includes(p)) || (w.title && w.title.toLowerCase().includes(p))); ' +
-                 '    if (found) { console.log(found.id); break; } ' +
-                 '  }\' node "$@"); ' +
-                 'if [ -n "$id" ] && [ "$id" != "null" ]; then niri msg action focus-window --id "$id"; fi'
+    var nodeScript = [
+      'const cp = require("child_process");',
+      'const pats = process.argv.slice(2).map(p => p.toLowerCase());',
+      'if (!pats.length) process.exit(0);',
+      'function sh(cmd) {',
+      '  try { return cp.execSync(cmd, { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"] }); }',
+      '  catch (e) { return ""; }',
+      '}',
+      'function matchScore(appId, title) {',
+      '  appId = (appId || "").toLowerCase();',
+      '  title = (title || "").toLowerCase();',
+      '  for (let i = 0; i < pats.length; i++) {',
+      '    const p = pats[i];',
+      '    if (appId === p) return 100 - i;',
+      '    if (appId.includes(p)) return 80 - i;',
+      '    if (title === p) return 90 - i;',
+      '    if (title.includes(p)) return 70 - i;',
+      '  }',
+      '  return 0;',
+      '}',
+      'const d = (process.env.XDG_CURRENT_DESKTOP || "").toLowerCase();',
+      'const b = (process.env.QS_BAR || "").toLowerCase();',
+      '// 1. MangoWC',
+      'if (process.env.MANGO_INSTANCE_SIGNATURE || b === "mangowc" || d.includes("mango")) {',
+      '  const raw = sh("mmsg get all-clients");',
+      '  if (raw) {',
+      '    try {',
+      '      const clients = JSON.parse(raw).clients || [];',
+      '      let best = null, bestScore = 0;',
+      '      for (const c of clients) {',
+      '        const score = matchScore(c.appid, c.title);',
+      '        if (score > bestScore) { bestScore = score; best = c; }',
+      '      }',
+      '      if (best) { sh(`mmsg dispatch focusid client,${best.id}`); process.exit(0); }',
+      '    } catch (e) {}',
+      '  }',
+      '}',
+      '// 2. Niri',
+      'if (process.env.NIRI_SOCKET || b === "niri" || d.includes("niri")) {',
+      '  const raw = sh("niri msg --json windows");',
+      '  if (raw) {',
+      '    try {',
+      '      const wins = JSON.parse(raw);',
+      '      let best = null, bestScore = 0;',
+      '      for (const w of wins) {',
+      '        const score = matchScore(w.app_id, w.title);',
+      '        if (score > bestScore) { bestScore = score; best = w; }',
+      '      }',
+      '      if (best) { sh(`niri msg action focus-window --id ${best.id}`); process.exit(0); }',
+      '    } catch (e) {}',
+      '  }',
+      '}',
+      '// 3. Hyprland',
+      'if (process.env.HYPRLAND_INSTANCE_SIGNATURE || b === "hyprland" || d.includes("hyprland")) {',
+      '  const raw = sh("hyprctl clients -j");',
+      '  if (raw) {',
+      '    try {',
+      '      const clients = JSON.parse(raw);',
+      '      let best = null, bestScore = 0;',
+      '      for (const c of clients) {',
+      '        const score = Math.max(matchScore(c.class, c.title), matchScore(c.initialClass, c.initialTitle));',
+      '        if (score > bestScore) { bestScore = score; best = c; }',
+      '      }',
+      '      if (best && best.address) { sh(`hyprctl dispatch focuswindow address:${best.address}`); process.exit(0); }',
+      '    } catch (e) {}',
+      '  }',
+      '}',
+      '// Fallback: check available tools',
+      'try {',
+      '  const mRaw = sh("mmsg get all-clients");',
+      '  if (mRaw) {',
+      '    const clients = JSON.parse(mRaw).clients || [];',
+      '    let best = null, bestScore = 0;',
+      '    for (const c of clients) {',
+      '      const score = matchScore(c.appid, c.title);',
+      '      if (score > bestScore) { bestScore = score; best = c; }',
+      '    }',
+      '    if (best) { sh(`mmsg dispatch focusid client,${best.id}`); process.exit(0); }',
+      '  }',
+      '} catch (e) {}',
+      'try {',
+      '  const nRaw = sh("niri msg --json windows");',
+      '  if (nRaw) {',
+      '    const wins = JSON.parse(nRaw);',
+      '    let best = null, bestScore = 0;',
+      '    for (const w of wins) {',
+      '      const score = matchScore(w.app_id, w.title);',
+      '      if (score > bestScore) { bestScore = score; best = w; }',
+      '    }',
+      '    if (best) { sh(`niri msg action focus-window --id ${best.id}`); process.exit(0); }',
+      '  }',
+      '} catch (e) {}',
+      'try {',
+      '  const hRaw = sh("hyprctl clients -j");',
+      '  if (hRaw) {',
+      '    const clients = JSON.parse(hRaw);',
+      '    let best = null, bestScore = 0;',
+      '    for (const c of clients) {',
+      '      const score = Math.max(matchScore(c.class, c.title), matchScore(c.initialClass, c.initialTitle));',
+      '      if (score > bestScore) { bestScore = score; best = c; }',
+      '    }',
+      '    if (best && best.address) { sh(`hyprctl dispatch focuswindow address:${best.address}`); process.exit(0); }',
+      '  }',
+      '} catch (e) {}'
+    ].join('\n')
 
-    qs.execDetached(["sh", "-c", script, "sh"].concat(cleanTargets))
+    qs.execDetached(["node", "-e", nodeScript, "node"].concat(cleanTargets))
     return true
   }
 
   return false
 }
 
-function goToSource(source, quickshellObj) {
+function goToSource(source, quickshellObj, toplevelManagerObj) {
   if (!source) return
   var qs = quickshellObj
   if (!qs && typeof Quickshell !== "undefined") qs = Quickshell
 
-  if (source.notification && source.notification.actions) {
-    var defaultAction = null
-    for (var a = 0; a < source.notification.actions.length; a++) {
-      if (source.notification.actions[a].identifier === "default") {
-        defaultAction = source.notification.actions[a]
+  // 1. If source is an MPRIS player or media object with raise() method, invoke it
+  try {
+    if (typeof source.raise === "function") {
+      source.raise()
+    }
+  } catch (e) {}
+
+  // 2. If source is a notification with actions, invoke the default action (without returning early)
+  var notif = source.notification || (source.actions ? source : null)
+  if (notif && notif.actions) {
+    for (var a = 0; a < notif.actions.length; a++) {
+      if (notif.actions[a].identifier === "default") {
+        try {
+          notif.actions[a].invoke()
+        } catch (e) {}
         break
       }
     }
-    if (defaultAction) {
-      defaultAction.invoke()
-      return
-    }
   }
 
+  // 3. Extract target patterns for window matching
   var targets = []
 
   function addTarget(str) {
@@ -362,43 +463,97 @@ function goToSource(source, quickshellObj) {
     var s = String(str).trim()
     if (!s) return
 
+    // Strip surrounding quotes
+    if (s.charAt(0) === '"' && s.charAt(s.length - 1) === '"') {
+      s = s.slice(1, -1).trim()
+      if (!s) return
+    }
+
+    // If path, extract basename
     if (s.indexOf("/") !== -1) {
       s = s.substring(s.lastIndexOf("/") + 1)
     }
-    if (s.lastIndexOf(".") !== -1 && !s.endsWith(".desktop")) {
-      s = s.substring(0, s.lastIndexOf("."))
+
+    // Strip image file extensions
+    s = s.replace(/\.(png|svg|xpm|ico|jpg|jpeg|webp)$/i, "")
+    if (!s) return
+
+    // Strip MPRIS DBus prefix and instance suffix
+    var sMprisClean = s.replace(/^org\.mpris\.MediaPlayer2\./i, "").replace(/\.instance[_\d].*$/i, "")
+    if (sMprisClean !== s) {
+      addTarget(sMprisClean)
+    }
+
+    // Strip .desktop extension
+    var sNoDesktop = s.replace(/\.desktop$/i, "")
+    if (sNoDesktop !== s) {
+      addTarget(sNoDesktop)
     }
 
     if (targets.indexOf(s) === -1) targets.push(s)
+    if (targets.indexOf(s.toLowerCase()) === -1) targets.push(s.toLowerCase())
 
-    var sNoDesktop = s.replace(/\.desktop$/i, "")
-    if (sNoDesktop !== s && targets.indexOf(sNoDesktop) === -1) {
-      targets.push(sNoDesktop)
+    // If reverse domain identifier (e.g. org.mozilla.firefox, com.spotify.Client)
+    if (sNoDesktop.indexOf(".") !== -1) {
+      var parts = sNoDesktop.split(".")
+      var lastPart = parts[parts.length - 1]
+      if (lastPart) {
+        var genericNames = ["client", "desktop", "app", "application", "ui", "bin"]
+        if (genericNames.indexOf(lastPart.toLowerCase()) !== -1 && parts.length > 1) {
+          var prevPart = parts[parts.length - 2]
+          if (prevPart && targets.indexOf(prevPart.toLowerCase()) === -1) {
+            targets.push(prevPart.toLowerCase())
+          }
+        }
+        if (targets.indexOf(lastPart.toLowerCase()) === -1) {
+          targets.push(lastPart.toLowerCase())
+        }
+      }
     }
 
-    var sNoMpris = s.replace(/^org\.mpris\.MediaPlayer2\./i, "")
-    if (sNoMpris !== s && targets.indexOf(sNoMpris) === -1) {
-      targets.push(sNoMpris)
-    }
-
-    var parts = sNoDesktop.split(".")
-    var lastPart = parts[parts.length - 1]
-    if (lastPart && targets.indexOf(lastPart) === -1) {
-      targets.push(lastPart)
+    // Add prettified / overridden app name if known
+    var pretty = prettifyAppName(sNoDesktop)
+    if (pretty && pretty !== sNoDesktop) {
+      if (targets.indexOf(pretty) === -1) targets.push(pretty)
+      if (targets.indexOf(pretty.toLowerCase()) === -1) targets.push(pretty.toLowerCase())
     }
   }
 
-  addTarget(source.desktopEntry)
-  addTarget(source.appName || source.name)
-  addTarget(source.identity)
-  addTarget(source.appIcon)
-  if (source.isMedia) {
-    addTarget(source.trackTitle)
+  if (typeof source === "string") {
+    addTarget(source)
+  } else {
+    // Add track title and combinations first for media (highest match priority)
+    if (source.trackTitle) {
+      var rawT = String(source.trackTitle).trim()
+      var cleanT = cleanTrackTitle(rawT)
+      addTarget(rawT)
+      if (cleanT && cleanT !== rawT) addTarget(cleanT)
+      if (source.trackArtist) {
+        var artist = String(source.trackArtist).trim()
+        if (artist && artist.toLowerCase() !== "unknown artist") {
+          addTarget(artist + " - " + cleanT)
+          addTarget(cleanT + " - " + artist)
+          addTarget(artist)
+        }
+      }
+    }
+
+    addTarget(source.desktopEntry)
+    addTarget(source.appName || source.name)
+    addTarget(source.identity)
+    addTarget(source.appIcon)
+    if (source.dbusName) addTarget(source.dbusName)
+
+    if (notif) {
+      if (notif.desktopEntry) addTarget(notif.desktopEntry)
+      if (notif.appName) addTarget(notif.appName)
+      if (notif.appIcon) addTarget(notif.appIcon)
+    }
   }
 
   if (targets.length === 0) return
 
-  focusWindow(targets, qs)
+  focusWindow(targets, qs, toplevelManagerObj)
 }
 
 function cleanUrl(url) {

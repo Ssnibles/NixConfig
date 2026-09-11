@@ -554,7 +554,7 @@ Singleton {
 
   function invokeActionOrFocus(item, fromActiveIndex) {
     if (item) {
-      Utils.goToSource(item, Quickshell)
+      Utils.goToSource(item, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
     }
 
     if (fromActiveIndex !== undefined && fromActiveIndex >= 0) {
@@ -563,6 +563,6 @@ Singleton {
   }
 
   function focusSender(appName, desktopEntry, appIcon) {
-    Utils.goToSource({ appName: appName, desktopEntry: desktopEntry, appIcon: appIcon }, Quickshell)
+    Utils.goToSource({ appName: appName, desktopEntry: desktopEntry, appIcon: appIcon }, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
   }
 }

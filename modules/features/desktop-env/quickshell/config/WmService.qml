@@ -1,5 +1,7 @@
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
+import "Utils.js" as Utils
 
 Scope {
   id: root
@@ -110,5 +112,9 @@ Scope {
     else if (root.wm === "dwl") activeSvc.focusTag(id)
     else if (root.wm === "hyprland") activeSvc.focusWorkspace(id)
     else if (root.wm === "niri") activeSvc.focusWorkspace(id)
+  }
+
+  function focusWindow(patterns) {
+    Utils.focusWindow(patterns, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
   }
 }

@@ -258,6 +258,7 @@ Rectangle {
         anchors.fill: parent
         asynchronous: true
         fillMode: Image.PreserveAspectCrop
+        sourceSize: Qt.size(root.isMedia ? 96 : 80, root.isMedia ? 96 : 80)
         source: root.iconSource
         visible: source !== "" && status === Image.Ready
 
@@ -266,6 +267,13 @@ Rectangle {
           maskEnabled: true
           maskSource: iconMask
         }
+      }
+
+      MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.actionTriggered()
       }
     }
   }
