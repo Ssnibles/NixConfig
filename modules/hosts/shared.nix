@@ -26,7 +26,7 @@
       hardware.keyboard.qmk.enable = true;
 
       # ── Kernel & Performance Tuning ───────────────────────────────────────
-      boot.kernelPackages = pkgs.linuxPackages_latest;
+      boot.kernelPackages = pkgs.unstable.linuxPackages_latest;
 
       boot.initrd.systemd.enable = true;
       boot.initrd.compressor = "zstd";

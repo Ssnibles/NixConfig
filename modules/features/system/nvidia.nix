@@ -10,11 +10,10 @@
     {
       pkgs,
       lib,
+      config,
       ...
     }:
     {
-      # Pin standard Linux kernel for NVIDIA driver compatibility
-      boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
       boot.blacklistedKernelModules = [ "nouveau" ];
       boot.kernelModules = [
         "nvidia"
@@ -37,7 +36,7 @@
           finegrained = false;
         };
         nvidiaSettings = true;
-        package = pkgs.linuxPackages.nvidiaPackages.stable;
+        package = config.boot.kernelPackages.nvidiaPackages.latest;
       };
 
       hardware.graphics = {

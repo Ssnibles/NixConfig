@@ -310,7 +310,7 @@ NixConfig/
 | :--- | :--- | :--- |
 | **Primary Target** | High-performance workstation & gaming | Ultraportable productivity & battery life |
 | **Graphics Hardware** | Dedicated NVIDIA GPU (Proprietary driver) | Integrated AMD Radeon Graphics |
-| **Kernel & Modules** | Pinned `linuxPackages` with NVIDIA DRM & fbdev | `linuxPackages_latest` with `amdgpu` |
+| **Kernel & Modules** | `linuxPackages_latest` with NVIDIA DRM & fbdev | `linuxPackages_latest` with `amdgpu` |
 | **Power Management** | AC performance mode, no throttling | TLP battery profiles, ASPM power savings, AMDGPU ABM |
 | **Display Manager** | Ly TTY Login Manager | Ly TTY Login Manager |
 | **Bootloader** | Limine (EFI) with Plymouth Catppuccin splash | Limine (EFI) with Plymouth Catppuccin splash |
