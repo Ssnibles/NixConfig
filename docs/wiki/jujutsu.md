@@ -176,12 +176,28 @@ jj git push --bookmark main           # (alias: jp --bookmark main) — push
 
 ## ✂️ Rewriting History
 
-### Squash (fold a commit into its parent)
+### Squash (consolidating commits & changes)
 
 ```bash
-jj squash                              # squash @ into its parent
+# Basic squashing
+jj squash                              # squash @ into its parent (@-)
 jj squash -r <rev>                     # squash a specific commit into its parent
 jj squash --into <rev>                 # squash @ into a specific target commit
+jj squash --from <src> --into <dst>    # squash commit <src> into commit <dst>
+
+# Squashing specific files or directories (partial squash)
+jj squash <path>                       # move only <path> from @ into @-
+jj squash --from <src> --into <dst> <path>  # move only <path> from <src> into <dst>
+
+# Squashing a range of commits (e.g. combining 3 commits into 1)
+jj squash --from <rev2>::<rev3> --into <rev1>
+
+# Interactive squashing (choose diff hunks visually)
+jj squash -i                           # interactively choose what to squash from @ into @-
+jj squash -i --from <src> --into <dst> # interactively move hunks between commits
+
+# Squash with a new description directly
+jj squash -m "feat: new message"       # squash @ into @- and update description
 ```
 
 ### Split a commit
@@ -253,6 +269,14 @@ jj duplicate <rev>                     # create a copy of a commit
 ```bash
 jj git import                          # import Git refs/branches you created outside jj
 jj git export                          # export jj bookmarks back to Git refs
+```
+
+### Allowing large files (e.g. screenshots)
+
+By default, `jj` refuses to snapshot new untracked files larger than 1.0 MiB to prevent accidental repository bloat. To allow larger files:
+
+```bash
+jj config set --repo snapshot.max-new-file-size 2M    # increase repo limit (e.g. 2M or bytes)
 ```
 
 ---
