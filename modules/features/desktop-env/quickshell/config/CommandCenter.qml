@@ -324,7 +324,9 @@ Scope {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.right: parent.right
-        anchors.margins: 12
+        anchors.topMargin: Config.hasTopBar ? (Config.barHeight + Config.commandCenterMargin) : Config.commandCenterMargin
+        anchors.bottomMargin: Config.commandCenterMargin
+        anchors.rightMargin: Config.hasRightBar ? (Config.barWidth + Config.commandCenterMargin) : Config.commandCenterMargin
 
         // Prevent clicks inside mainCard from propagating to outsideDismiss
         MouseArea {

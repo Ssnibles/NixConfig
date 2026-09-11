@@ -19,8 +19,15 @@ Singleton {
   readonly property int commandCenterWidth: 500
   readonly property int commandCenterRadius: 16
   readonly property int commandCenterCardRadius: 12
+  readonly property int commandCenterMargin: 12
   readonly property string commandCenterClockFormat: "HH:mm"
   readonly property string commandCenterDateFormat: "dddd, MMMM d"
+
+  // --- Status Bars --------------------------------------------------------
+  property bool barVisible: true
+  readonly property string barType: wm === "niri" ? "niri" : "bar"
+  readonly property bool hasTopBar: barVisible && barType !== "niri"
+  readonly property bool hasRightBar: barVisible && barType === "niri" && barSide === "right"
 
   // --- Window Manager Detection ------------------------------------------
   readonly property string wm: {
