@@ -3,3 +3,4 @@ x 2026-08-20 2026-08-12 Update +typst snippets for +neovim
 x 2026-08-20 2026-08-14 Improve +tmux
 2026-08-20 Add mod mouse drag support for +mango
 2026-08-20 Update highlight colour for +zathura
+2026-09-12 Remove Yellow Carp DMCUB firmware workaround once upstream linux-firmware fixes regression +laptop +firmware

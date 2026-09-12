@@ -45,6 +45,21 @@
         "i2c_hid_acpi.polling_mode=1"
       ];
 
+      # Lock linux-firmware to known-good 20260810 release to avoid Yellow Carp DMCUB regression in 20260910
+      nixpkgs.overlays = [
+        (_: prev: {
+          linux-firmware = prev.linux-firmware.overrideAttrs (_: rec {
+            version = "20260810";
+            src = prev.fetchFromGitLab {
+              owner = "kernel-firmware";
+              repo = "linux-firmware";
+              tag = version;
+              hash = "sha256-P/fPpqaatp8Z2GV+I/OChiWGn6AhV+8w1RMFuX/LqHc=";
+            };
+          });
+        })
+      ];
+
       # ── TLP Power Management Profiles ─────────────────────────────────────
       services.tlp = {
         enable = true;
