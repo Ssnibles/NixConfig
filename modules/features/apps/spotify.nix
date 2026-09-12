@@ -2,8 +2,8 @@
 # Spotify & Spicetify Application Feature
 # =============================================================================
 # Spotify desktop music player configured and customized with Spicetify.
-# Includes theme color synchronization with the active system palette
-# and popular extensions (adblockify, hidePodcasts, shuffle).
+# Includes theme color synchronization with the active system palette,
+# useful extensions, and custom sidebar apps.
 # =============================================================================
 { inputs, ... }:
 {
@@ -34,6 +34,7 @@
       config = lib.mkIf config.features.spotify.enable {
         programs.spicetify = {
           enable = true;
+          wayland = lib.mkDefault true;
 
           spotifyPackage = lib.mkDefault pkgs.unstable.spotify;
 
@@ -72,9 +73,23 @@
           enabledExtensions = lib.mkDefault (
             with spicePkgs.extensions;
             [
-              adblockify
               hidePodcasts
               shuffle
+              playNext
+              queueTime
+              powerBar
+              volumePercentage
+              copyToClipboard
+              beautifulLyrics
+              songStats
+            ]
+          );
+
+          enabledCustomApps = lib.mkDefault (
+            with spicePkgs.apps;
+            [
+              newReleases
+              betterLibrary
             ]
           );
         };
