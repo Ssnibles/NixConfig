@@ -1,0 +1,74 @@
+" ==============================================================================
+" Tridactyl Configuration — Standard Vim Bindings
+" Clean modal navigation without Space-prefixed bindings
+" ==============================================================================
+
+" ── Link Hinting & Following ──────────────────────────────────────────────────
+bind f hint
+bind F hint -b
+bind ;b hint -b
+bind ;y hint -y
+bind ;p hint -p
+bind ;i hint -i
+bind ;I hint -I
+bind ;s hint -s
+
+" ── Opening URLs & Searches ───────────────────────────────────────────────────
+bind o fillcmdline open
+bind t fillcmdline tabopen
+bind O current_url open
+bind T current_url tabopen
+bind w fillcmdline winopen
+bind b fillcmdline buffer
+
+" ── Tab Navigation & Lifecycle ────────────────────────────────────────────────
+bind d tabclose
+bind u undo
+bind U undo
+bind gt tabnext
+bind gT tabprev
+bind ]t tabnext
+bind [t tabprev
+bind <C-Tab> tabnext
+bind <C-S-Tab> tabprev
+bind g0 tabfirst
+bind g$ tablast
+bind ga tab #
+bind r reload
+bind R reload --hard
+
+" ── Page Scrolling & Movement ─────────────────────────────────────────────────
+bind j scrollline 10
+bind k scrollline -10
+bind h scrollline -10 x
+bind l scrollline 10 x
+bind <C-d> scrollpage 0.5
+bind <C-u> scrollpage -0.5
+bind gg scrollto 0
+bind G scrollto 100
+bind H back
+bind L forward
+
+" ── Clipboard & Yanking ───────────────────────────────────────────────────────
+bind yy clipboard yank
+bind p clipboard open
+bind P clipboard tabopen
+
+" ── In-Page Search ────────────────────────────────────────────────────────────
+bind / fillcmdline find
+bind ? fillcmdline find -?
+bind n findnext 1
+bind N findnext -1
+bind <Esc> composite nohlsearch; mode normal
+
+" ── Text Input & External Editor ──────────────────────────────────────────────
+bind gi focusinput -l
+set editorcmd foot -e nvim %f
+
+" ── Visual Theme & Options ────────────────────────────────────────────────────
+set smoothscroll true
+set hintfiltermode vimperator-reflow
+set hintnames uniform
+set newtab about:newtab
+colors dark
+

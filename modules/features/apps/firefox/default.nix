@@ -109,6 +109,22 @@
           id = "sponsorBlocker@ajay.app";
           url = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
         };
+        "tridactyl" = {
+          id = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
+          url = "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
+        };
+        "tridactyl-vim" = {
+          id = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
+          url = "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
+        };
+        "tridactyl.vim@cmcaine.co.uk" = {
+          id = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
+          url = "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
+        };
+        "tridactyl.vim.betas.nonewtab@cmcaine.co.uk" = {
+          id = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
+          url = "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
+        };
       };
 
       # Build custom New Tab WebExtension package (.xpi)
@@ -150,6 +166,10 @@
           "custom-newtab@nixconfig.local" = {
             install_url = "file://${customNewTabXpi}";
             installation_mode = "force_installed";
+          };
+          # Block standard AMO Tridactyl so it gets cleanly uninstalled and cannot override newtab
+          "tridactyl.vim@cmcaine.co.uk" = {
+            installation_mode = "blocked";
           };
         };
     in
@@ -203,6 +223,7 @@
             default = [
               "ublock-origin"
               "sidebery"
+              "tridactyl"
             ];
             description = "List of Firefox extension slugs or IDs to auto-install (e.g. ublock-origin, sidebery, bitwarden).";
           };
@@ -232,6 +253,7 @@
             navBtnCount = true;
             hideEmptyPanels = true;
             hideDiscardedTabPanels = false;
+            navSwitchPanelsWheel = true;
 
             # --- Pinned Tabs (Compact Grid Dock) ---
             pinnedTabsPosition = "panel";
@@ -244,7 +266,8 @@
             # --- Tabs Tree Hierarchy & Folding ---
             tabsTree = true;
             tabsTreeLimit = "none";
-            autoFoldTabs = false;
+            autoFoldTabs = true;
+            autoFoldTabsExcept = "1";
             autoExpandTabs = false;
             rmChildTabs = "folded";
             tabsLvlDots = true;
@@ -254,6 +277,8 @@
             treeRmOutdent = "branch";
 
             # --- Tab Behavior, Activation & Lifecycle ---
+            moveNewTab = "last_child";
+            moveNewTabParent = "last_child";
             activateLastTabOnPanelSwitching = true;
             activateLastTabOnPanelSwitchingLoadedOnly = true;
             switchPanelAfterSwitchingTab = "always";
@@ -261,9 +286,14 @@
             activateAfterClosing = "next";
             activateAfterClosingNoFolded = true;
             activateAfterClosingNoDiscarded = true;
+            scrollThroughTabs = "panel";
             scrollThroughTabsSkipDiscarded = true;
             tabWarmupOnHover = false;
+            tabDoubleClick = "close";
+            tabsSecondClickActPrev = true;
             tabRmBtn = "hover";
+            showNewTabBtns = false;
+            previewTabs = true;
             forceDiscard = true;
             tabsReloadLimit = 5;
             tabsReloadLimitNotif = true;
@@ -566,6 +596,7 @@
           (pkgs.writeShellScriptBin "firefox" ''
             exec ${cfg.package}/bin/firefox-devedition "$@"
           '')
+          pkgs.tridactyl-native
         ];
 
         # Firefox Enterprise Managed Storage Policy for WebExtension Sidebery
@@ -687,6 +718,16 @@
           ${colorsCss}
           EOF
           chown ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/colors.css
+
+          # Tridactyl native messaging host & configuration
+          mkdir -p /home/${config.username}/.mozilla/native-messaging-hosts
+          ln -sfn ${pkgs.tridactyl-native}/lib/mozilla/native-messaging-hosts/tridactyl.json /home/${config.username}/.mozilla/native-messaging-hosts/tridactyl.json
+          chown -h ${config.username}:users /home/${config.username}/.mozilla/native-messaging-hosts/tridactyl.json
+
+          mkdir -p /home/${config.username}/.config/tridactyl
+          ln -sfn /home/${config.username}/NixConfig/modules/features/apps/firefox/tridactylrc /home/${config.username}/.config/tridactyl/tridactylrc
+          ln -sfn /home/${config.username}/NixConfig/modules/features/apps/firefox/tridactylrc /home/${config.username}/.tridactylrc
+          chown -h ${config.username}:users /home/${config.username}/.config/tridactyl/tridactylrc /home/${config.username}/.tridactylrc
         '';
       };
     };

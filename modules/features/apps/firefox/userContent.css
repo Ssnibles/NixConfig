@@ -328,8 +328,15 @@
     box-sizing: border-box !important;
     background-color: var(--sb-bg) !important;
     border: none !important;
-    padding: 6px !important;
+    padding: 6px 6px 12px 6px !important;
+    margin-bottom: 6px !important;
     gap: 6px !important;
+  }
+
+  .PinnedTabsBar[data-empty="true"] {
+    display: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   .PinnedTabsBar .tab-wrapper {
@@ -465,33 +472,61 @@
     opacity: 1 !important;
   }
 
-  /* Tab close button: clean fade & hover highlight */
+  /* Sleeping / Discarded tabs: desaturate favicon & dim */
+  .Tab:is([data-discarded="true"], [data-pending="true"], [data-unloaded="true"]) :is(.fav, .fav-icon) {
+    filter: grayscale(100%) opacity(0.55) !important;
+    transition: filter var(--sb-transition-fast), opacity var(--sb-transition-fast) !important;
+  }
+
+  .Tab:is([data-discarded="true"], [data-pending="true"], [data-unloaded="true"]):hover :is(.fav, .fav-icon) {
+    filter: grayscale(0%) opacity(1) !important;
+  }
+
+  /* Tree hierarchy guide & branch lines */
+  .Tab[data-pin="false"]:not([data-lvl="0"]) {
+    position: relative !important;
+  }
+
+  .Tab[data-pin="false"]:not([data-lvl="0"])::before {
+    content: "" !important;
+    position: absolute !important;
+    top: -2px !important;
+    left: calc(var(--tabs-indent) * 0.5 + 2px) !important;
+    width: calc(var(--tabs-indent) * 0.5) !important;
+    height: calc(50% + 2px) !important;
+    border-left: 1px solid var(--sb-border) !important;
+    border-bottom: 1px solid var(--sb-border) !important;
+    border-bottom-left-radius: 4px !important;
+    opacity: 0.7 !important;
+    pointer-events: none !important;
+  }
+
+  /* Tab close button: only show when tab is hovered */
   .Tab .close {
     color: var(--sb-fg-mid) !important;
     border-radius: 4px !important;
-    opacity: 0.4 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
     transition: opacity var(--sb-transition-fast),
                 background-color var(--sb-transition-fast),
                 color var(--sb-transition-fast) !important;
   }
 
-  .Tab .close:hover {
+  .Tab:hover .close {
+    opacity: 0.7 !important;
+    pointer-events: auto !important;
+  }
+
+  .Tab:hover .close:hover {
     opacity: 1 !important;
     background-color: var(--sb-bg-raised) !important;
     color: var(--sb-fg) !important;
   }
 
-  /* New Tab button (+) */
+  /* New Tab button (+) - Hidden */
+  .new-tab-btns,
   .new-tab-btn {
-    color: var(--sb-fg-mid) !important;
-    border-radius: var(--sb-radius-sm) !important;
-    transition: background-color var(--sb-transition-fast),
-                color var(--sb-transition-fast) !important;
-  }
-
-  .new-tab-btn:hover {
-    background-color: var(--sb-bg-raised) !important;
-    color: var(--sb-fg) !important;
+    display: none !important;
   }
 
   /* Audio / Media indicators */
@@ -503,6 +538,23 @@
   .Tab[data-muted="true"] .audio {
     color: var(--sb-fg-dim) !important;
     fill: var(--sb-fg-dim) !important;
+  }
+
+  /* Pulsing audio indicator for actively playing tabs */
+  .Tab[data-audible="true"]:not([data-muted="true"]) .audio {
+    animation: sb-audio-pulse 1.8s infinite ease-in-out !important;
+  }
+
+  @keyframes sb-audio-pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 1;
+      filter: drop-shadow(0 0 3px var(--sb-teal));
+    }
   }
 
   /* ────────────────────────────────────────────────────────────────────────
