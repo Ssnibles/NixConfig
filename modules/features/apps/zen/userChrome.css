@@ -1,521 +1,950 @@
 /* ==========================================================================
-   Zen Browser Custom userChrome.css
-   Dark glass aesthetic — dynamic theme via colors.css
+   userChrome.css — Zen Browser Quickshell Theme
+   Clean Spacing, Refined Radii, and Cohesive System Color Integration
    ========================================================================== */
+
 @import "colors.css";
 
-/* --------------------------------------------------------------------------
-   0. DESIGN TOKENS
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   §1  ROOT DESIGN SYSTEM & CALIBRATED RADII
+   ========================================================================== */
+
 :root {
-  --zen-blur-radius: 16px;
-  --zen-glass-opacity: 0.5;
-  --zen-glass-bg: color-mix(
-    in srgb,
-    var(--theme-bg) calc(var(--zen-glass-opacity) * 100%),
-    transparent
-  );
-  --zen-glass-border: 1px solid rgba(255, 255, 255, 0.08);
-  --zen-glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  /* Harmonize Zen's internal radii tokens with Quickshell */
+  --zen-border-radius: 8px !important;
+  --border-radius-medium: 8px !important;
+  --tab-border-radius: 8px !important;
+  --toolbarbutton-border-radius: 6px !important;
+  --button-border-radius: 6px !important;
+  --panel-border-radius: 10px !important;
+  --panel-menuitem-border-radius: 6px !important;
+  --arrowpanel-menuitem-border-radius: 6px !important;
 
-  /* Override Zen's internal acrylic tokens */
-  --zen-urlbar-background-base: var(--zen-glass-bg) !important;
-  --zen-urlbar-background-transparent: transparent !important;
-  --zen-urlbar-filter: blur(var(--zen-blur-radius)) !important;
+  /* Theme Canvas & Toolbar Overrides */
+  --zen-main-browser-background: var(--theme-bg) !important;
+  --zen-main-browser-background-toolbar: var(--theme-bg) !important;
+  --zen-themed-toolbar-bg: var(--theme-bg) !important;
+  --zen-themed-toolbar-bg-transparent: var(--theme-bg) !important;
+  --toolbox-bgcolor-inactive: var(--theme-bg) !important;
+  --toolbar-bgcolor: var(--theme-bg) !important;
+  --toolbar-color: var(--theme-fg) !important;
+  --toolbar-field-color: var(--theme-fg) !important;
+  --toolbar-field-focus-color: var(--theme-fg) !important;
+  --toolbar-field-background-color: var(--theme-bg-raised) !important;
+  --toolbar-field-focus-background-color: var(--theme-bg-raised) !important;
+  --toolbarbutton-icon-fill: var(--theme-accent) !important;
+  --tab-selected-textcolor: var(--theme-accent) !important;
+  --lwt-text-color: var(--theme-fg) !important;
+  --lwt-sidebar-text-color: var(--theme-fg) !important;
+  --lwt-sidebar-background-color: var(--theme-bg) !important;
+  --sidebar-text-color: var(--theme-fg) !important;
+  --arrowpanel-background: var(--theme-bg-raised) !important;
+  --arrowpanel-color: var(--theme-fg) !important;
+  --arrowpanel-border-color: var(--theme-border) !important;
+  --panel-background: var(--theme-bg-raised) !important;
+  --panel-color: var(--theme-fg) !important;
+  --panel-border-color: var(--theme-border) !important;
+  --zen-colors-border: var(--theme-border) !important;
+  --zen-appcontent-border: 1px solid var(--theme-border) !important;
+
+  /* System UI Font */
+  font-family: var(--theme-font-sans) !important;
 }
 
-/* --------------------------------------------------------------------------
-   1. CHROME SURFACES & CANVAS
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   §2  BASE WINDOW CANVAS
+   ========================================================================== */
+
+#main-window,
+#browser,
+#zen-main-app-wrapper,
 #navigator-toolbox,
-#TabsToolbar,
-hbox#titlebar,
-#zen-tabbox-wrapper,
-#zen-appcontent-wrapper {
-  background-color: transparent !important;
+#zen-appcontent-wrapper,
+#zen-tabbox-wrapper {
+  background-color: var(--theme-bg) !important;
 }
 
-#permissions-granted-icon {
-  color: var(--theme-accent) !important;
-}
-
-/* Web content viewport with ambient depth */
-:root:not([inDOMFullscreen="true"]):not([zen-no-padding="true"])
-  #tabbrowser-tabbox
-  #tabbrowser-tabpanels
-  .browserSidebarContainer:not(.zen-glance-overlay) {
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3) !important;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease !important;
-}
-
-/* Active split-view pane: accent outline */
-:root:not([inDOMFullscreen="true"])
-  #tabbrowser-tabpanels[zen-split-view="true"]
-  .browserSidebarContainer.deck-selected:not(.zen-glance-overlay) {
-  border-color: var(--theme-accent) !important;
-  outline: 2px solid var(--theme-accent) !important;
-  outline-offset: -1px !important;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35) !important;
-}
-
-/* Sidebar & web panel */
-#zen-tabbox-wrapper #sidebar-box,
-.sidebar-placesTree {
-  background-color: var(--zen-glass-bg) !important;
-  backdrop-filter: blur(var(--zen-blur-radius)) !important;
-}
-
-#zen-tabbox-wrapper #sidebar-box {
-  border-radius: var(--zen-native-inner-radius, 10px) !important;
-  border: var(--zen-glass-border) !important;
-  box-shadow: var(--zen-glass-shadow) !important;
-  overflow: hidden !important;
-}
-
-/* Floating vertical tab side panel (compact mode) */
-#navigator-toolbox .zen-toolbar-background {
-  background: var(--zen-glass-bg) !important;
-  backdrop-filter: blur(var(--zen-blur-radius)) !important;
-  box-shadow: var(--zen-glass-shadow) !important;
-}
-
-/* --------------------------------------------------------------------------
-   2. COMPACT MODE FLOATING NAVBAR (HUD)
-   -------------------------------------------------------------------------- */
-:root[zen-compact-mode="true"] {
-  & #zen-appcontent-navbar-container {
-    background-color: transparent !important;
-  }
-
-  & #zen-appcontent-navbar-wrapper {
-    & .zen-toolbar-background {
-      background: transparent !important;
-      box-shadow: none !important;
-    }
-
-    &:is([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {
-      backdrop-filter: blur(var(--zen-blur-radius)) !important;
-      background-color: var(--zen-glass-bg) !important;
-      border-radius: calc(
-        var(--zen-native-inner-radius, 10px) -
-          var(--zen-compact-mode-no-padding-radius-fix, 0px)
-      ) !important;
-      border: var(--zen-glass-border) !important;
-      box-shadow: var(--zen-glass-shadow) !important;
-      transition:
-        height var(--zen-hidden-toolbar-transition),
-        box-shadow 0.2s ease,
-        opacity 0.2s ease,
-        border-color 0.2s ease !important;
-    }
-
-    /* When the urlbar is in breakout/floating mode, remove the wrapper's
-       glass bg so it doesn't double-stack with #urlbar-background's glass. */
-    &:has(#urlbar:is([breakout-extend], [open])) {
-      background-color: transparent !important;
-      backdrop-filter: none !important;
-    }
-  }
-}
-
-/* --------------------------------------------------------------------------
-   3. URL BAR / OMNIBOX & SEARCH POPUP
-   -------------------------------------------------------------------------- */
-
-/* Centered URL text when unfocused */
-#urlbar:not([focused="true"]) #urlbar-input {
-  text-align: center !important;
-  text-overflow: ellipsis !important;
-}
-
-#urlbar[focused="true"] #urlbar-input {
-  text-align: left !important;
-}
-
-/* ── Idle state: glass pill ──
-   #urlbar-background is the correct internal visual element.
-   Note: .urlbar-background is a *class* on the same element. */
-#urlbar-background {
-  background-color: var(--zen-glass-bg) !important;
-  backdrop-filter: blur(var(--zen-blur-radius)) !important;
-  border-radius: var(
-    --border-radius-medium,
-    var(--zen-border-radius, 8px)
-  ) !important;
-  border: var(--zen-glass-border) !important;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    background-color 0.15s ease !important;
-}
-
-#urlbar:hover:not([focused="true"]) #urlbar-background {
-  border-color: rgba(255, 255, 255, 0.16) !important;
-}
-
-#urlbar[focused="true"]:not([breakout-extend]) #urlbar-background {
-  border-color: var(--theme-accent) !important;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent) !important;
-}
-
-/* ── Breakout / floating search popup ──
-   The wrapper containers MUST be fully transparent so #urlbar-background's
-   backdrop-filter can actually sample what is behind it. */
-#urlbar[breakout-extend],
-#urlbar[open],
-#urlbar[zen-floating-urlbar="true"] {
-  background: transparent !important;
-  background-color: transparent !important;
-  backdrop-filter: none !important;
-}
-
-#urlbar[breakout-extend] #urlbar-background,
-#urlbar[open] #urlbar-background,
-#urlbar[zen-floating-urlbar="true"] #urlbar-background {
-  background-color: var(--zen-glass-bg) !important;
-  backdrop-filter: blur(var(--zen-blur-radius)) !important;
-  border-radius: 12px !important;
-  border: var(--zen-glass-border) !important;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--theme-accent) 25%, transparent),
-    0 24px 64px rgba(0, 0, 0, 0.55) !important;
-}
-
-/* Every intermediate container must be transparent so the blur is unblocked */
-#urlbar-input-container,
-#urlbar-input,
-.urlbarView,
-.urlbarView-body-outer,
-.urlbarView-body-inner,
-#urlbar-results {
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
-/* ── Autocomplete results ── */
-.urlbarView {
+#nav-bar,
+#PersonalToolbar,
+#TabsToolbar {
+  background-color: var(--theme-bg) !important;
   border: none !important;
   box-shadow: none !important;
-
-  & .urlbarView-row {
-    border-radius: var(--border-radius-medium, 6px) !important;
-    margin: 2px 6px !important;
-    padding: 6px 8px !important;
-    transition: background-color 0.12s ease !important;
-
-    &:hover:not([selected]) {
-      background-color: var(
-        --zen-toolbar-element-bg-hover,
-        rgba(255, 255, 255, 0.08)
-      ) !important;
-    }
-
-    &[selected] {
-      background-color: color-mix(
-        in srgb,
-        var(--theme-accent) 18%,
-        var(--theme-bg-subtle)
-      ) !important;
-
-      & .urlbarView-title {
-        color: var(--theme-fg) !important;
-      }
-    }
-
-    & .urlbarView-url {
-      color: var(--theme-accent) !important;
-    }
-  }
 }
 
-/* Subtle security lock icon */
+/* ==========================================================================
+   §3  FLOATING CONTENT VIEWPORT
+   Respect Zen's native padding & let Zen's outer margin handle spacing
+   ========================================================================== */
+
+#tabbrowser-tabpanels {
+  background-color: var(--theme-bg) !important;
+}
+
+#tabbrowser-tabpanels .browserSidebarContainer {
+  background: var(--theme-bg-raised) !important;
+  box-shadow: var(--theme-shadow-card) !important;
+}
+
+/* Zen Split View separator with subtle accent hint */
+.zen-split-view-splitter::before {
+  background: var(--theme-accent) !important;
+}
+
+/* Zen Glance Floating Preview Modal */
+.zen-glance-overlay {
+  border-radius: 12px !important;
+  border: 1px solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-popup) !important;
+  background: var(--theme-bg-raised) !important;
+}
+
+/* ==========================================================================
+   §4  TOP NAVIGATION BAR & TOOLBAR BUTTONS
+   Natural spacing respecting Zen's layout and flexible springs
+   ========================================================================== */
+
+.toolbarbutton-1,
+#nav-bar toolbarbutton {
+  border-radius: 6px !important;
+  color: var(--theme-fg-mid) !important;
+  transition: background-color var(--theme-transition-fast),
+              color var(--theme-transition-fast),
+              transform var(--theme-transition-fast) !important;
+}
+
+.toolbarbutton-1:hover:not([disabled="true"]),
+#nav-bar toolbarbutton:hover:not([disabled="true"]) {
+  background-color: var(--theme-bg-raised) !important;
+  color: var(--theme-fg) !important;
+}
+
+.toolbarbutton-1:active:not([disabled="true"]),
+#nav-bar toolbarbutton:active:not([disabled="true"]) {
+  background-color: var(--theme-bg-subtle) !important;
+  transform: scale(0.96) !important;
+}
+
+#back-button[disabled="true"],
+#forward-button[disabled="true"],
+.toolbarbutton-1[disabled="true"] {
+  opacity: 0.25 !important;
+  pointer-events: none !important;
+}
+
+/* ==========================================================================
+   §5  SEARCH POPUP & OMNIBOX (Quickshell Command Palette Model)
+   Elevated card modal, frosted backdrop, crisp divider & disciplined hierarchy
+   ========================================================================== */
+
+/* --- A. Base URL Bar & Toolbar Field (Idle State) --- */
+#urlbar {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#urlbar:not([breakout-extend]) .urlbar-background {
+  border-radius: 8px !important;
+  background-color: var(--theme-bg-raised) !important;
+  border: 1px solid var(--theme-border) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transition: border-color var(--theme-transition-fast),
+              background-color var(--theme-transition-fast) !important;
+}
+
+#urlbar:not([breakout-extend]):hover .urlbar-background {
+  border-color: color-mix(in srgb, var(--theme-border) 60%, var(--theme-accent) 40%) !important;
+  background-color: var(--theme-bg-raised) !important;
+}
+
+#urlbar:not([breakout-extend]) #urlbar-input {
+  font-size: 13px !important;
+}
+
+/* --- B. Search Popup Modal Container (Breakout & Floating States) --- */
+
+/* Floating Search Popup (Ctrl+L, Ctrl+T, or New Tab spotlight modal) */
+#urlbar[open][zen-floating-urlbar="true"] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-width: min(90vw, 560px) !important;
+  width: min(90vw, 680px) !important;
+  max-width: 720px !important;
+  top: 18vh !important;
+  left: 50% !important;
+  translate: -50% 0 !important;
+  z-index: 1000 !important;
+}
+
+#urlbar[open][zen-floating-urlbar="true"] > .urlbar-background {
+  border-radius: 14px !important;
+  background-color: rgba(24, 24, 30, 0.94) !important;
+  backdrop-filter: blur(28px) saturate(150%) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-border) 80%, var(--theme-accent) 20%) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75),
+              0 4px 16px rgba(0, 0, 0, 0.4),
+              0 0 0 1px rgba(255, 255, 255, 0.06) !important;
+  outline: none !important;
+}
+
+/* Standard In-Toolbar Breakout Popup */
+#urlbar[breakout-extend]:not([zen-floating-urlbar="true"]) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#urlbar[breakout-extend]:not([zen-floating-urlbar="true"]) > .urlbar-background {
+  border-radius: 10px !important;
+  background-color: var(--theme-bg-raised) !important;
+  border: 1px solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-popup) !important;
+  outline: none !important;
+}
+
+/* --- C. Search Input Field & Header --- */
+#urlbar-input-container {
+  background: transparent !important;
+  border: none !important;
+  padding-inline: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+#urlbar[breakout-extend] #urlbar-input-container {
+  min-height: 48px !important;
+  height: 48px !important;
+}
+
+#urlbar-input {
+  color: var(--theme-fg) !important;
+  font-family: var(--theme-font-sans) !important;
+  font-size: 14.5px !important;
+  font-weight: 500 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#urlbar-input::placeholder {
+  color: var(--theme-fg-dim) !important;
+  opacity: 0.75 !important;
+  font-style: normal !important;
+}
+
+#urlbar-input::selection {
+  background-color: var(--theme-accent) !important;
+  color: var(--theme-bg) !important;
+}
+
+/* Identity & Leading Icons */
 #identity-box {
-  opacity: 0.4 !important;
-  transition: opacity 0.15s ease !important;
-
-  &:hover {
-    opacity: 1 !important;
-  }
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  opacity: 0.8 !important;
+  transition: opacity var(--theme-transition-fast) !important;
 }
 
-/* --------------------------------------------------------------------------
-   4. VERTICAL TABS
-   -------------------------------------------------------------------------- */
-.tabbrowser-tab {
-  & .tab-background {
-    border-radius: var(
-      --border-radius-medium,
-      var(--zen-border-radius, 8px)
-    ) !important;
-    transition:
-      background-color 0.15s ease,
-      box-shadow 0.15s ease !important;
-  }
-
-  &:hover:not([selected]) .tab-background {
-    background-color: var(
-      --zen-toolbar-element-bg-hover,
-      rgba(255, 255, 255, 0.08)
-    ) !important;
-  }
-
-  &[selected]:not([zen-essential="true"]) .tab-background {
-    background-color: var(--theme-bg-subtle) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
-    position: relative !important;
-  }
-
-  &[selected][pinned]:not([zen-essential="true"]) .tab-background {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--theme-accent) 40%, transparent),
-      0 2px 8px rgba(0, 0, 0, 0.25) !important;
-  }
+#identity-box:hover {
+  opacity: 1 !important;
 }
 
-/* Accent indicator strip on selected tab in expanded sidebar */
-:root[zen-sidebar-expanded="true"] {
-  &
-    .tabbrowser-tab[selected]:not([pinned]):not([zen-glance-tab]):not(
-      [usercontextid]
-    ):not([zen-essential="true"])
-    .tab-background::before,
-  &
-    .tabbrowser-tab[selected]:not([pinned]):not(
-      [zen-glance-tab]
-    )[zenDefaultUserContextId="true"]:not([zen-essential="true"])
-    .tab-background::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 6px;
-    bottom: 6px;
-    width: 3px;
-    background-color: var(--theme-accent);
-    border-radius: 0 4px 4px 0;
-  }
-
-  &[zen-right-side="true"]
-    .tabbrowser-tab[selected]:not([pinned]):not([zen-glance-tab]):not(
-      [usercontextid]
-    ):not([zen-essential="true"])
-    .tab-background::before,
-  &[zen-right-side="true"]
-    .tabbrowser-tab[selected]:not([pinned]):not(
-      [zen-glance-tab]
-    )[zenDefaultUserContextId="true"]:not([zen-essential="true"])
-    .tab-background::before {
-    left: auto;
-    right: 0;
-    border-radius: 4px 0 0 4px;
-  }
+#identity-icon-box {
+  border-radius: 6px !important;
+  background: transparent !important;
+  padding: 4px 6px !important;
+  transition: background-color var(--theme-transition-fast) !important;
 }
 
-/* Sleeping / discarded tabs */
-.tabbrowser-tab[pending="true"]:not([selected]) {
-  opacity: 0.6 !important;
-  transition: opacity 0.2s ease !important;
-
-  &:hover {
-    opacity: 0.95 !important;
-  }
-
-  & .tab-icon-image {
-    filter: grayscale(60%) !important;
-    transition: filter 0.2s ease !important;
-  }
-
-  &:hover .tab-icon-image {
-    filter: grayscale(0%) !important;
-  }
+#identity-icon-box:hover {
+  background: var(--theme-bg-subtle) !important;
 }
 
-/* Audio indicator */
-.tabbrowser-tab[soundplaying]:not([muted]) .tab-audio-button {
-  color: var(--theme-accent) !important;
+#identity-icon {
   fill: var(--theme-accent) !important;
-  filter: drop-shadow(
-    0 0 4px color-mix(in srgb, var(--theme-accent) 60%, transparent)
-  ) !important;
 }
 
-.tabbrowser-tab[muted] .tab-audio-button {
-  opacity: 0.6 !important;
-  filter: none !important;
+#tracking-protection-icon-container {
+  border-radius: 6px !important;
+  opacity: 0.65 !important;
+  padding: 4px !important;
+  transition: opacity var(--theme-transition-fast),
+              background-color var(--theme-transition-fast) !important;
 }
 
-/* Tab close button */
-.tab-close-button {
-  border-radius: var(--toolbarbutton-border-radius, 6px) !important;
-  transition:
-    background-color 0.12s ease,
-    color 0.12s ease,
-    opacity 0.12s ease !important;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.12) !important;
-    color: var(--theme-red) !important;
-    fill: var(--theme-red) !important;
-  }
+#tracking-protection-icon-container:hover {
+  opacity: 1 !important;
+  background-color: var(--theme-bg-subtle) !important;
 }
 
-/* --------------------------------------------------------------------------
-   5. WORKSPACES & SIDEBAR CONTROLS
-   -------------------------------------------------------------------------- */
-#zen-workspaces-button {
+.urlbar-page-action {
+  border-radius: 6px !important;
+  opacity: 0.65 !important;
+  transition: opacity var(--theme-transition-fast),
+              background-color var(--theme-transition-fast),
+              color var(--theme-transition-fast) !important;
+}
+
+.urlbar-page-action:hover {
+  opacity: 1 !important;
+  background-color: var(--theme-bg-subtle) !important;
+  color: var(--theme-accent) !important;
+}
+
+/* Search Mode Filter Chip (e.g. searching tabs, bookmarks, or specific engines) */
+#urlbar-search-mode-indicator,
+#urlbar-label-box {
+  background-color: color-mix(in srgb, var(--theme-accent) 18%, var(--theme-bg-subtle)) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-accent) 35%, transparent) !important;
+  border-radius: 6px !important;
+  color: var(--theme-accent) !important;
+  font-family: var(--theme-font-sans) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 3px 8px !important;
+  margin-inline-end: 6px !important;
+}
+
+#urlbar-search-mode-indicator-close {
+  border-radius: 4px !important;
+  margin-inline-start: 4px !important;
+  padding: 2px !important;
+  opacity: 0.7 !important;
+  transition: opacity var(--theme-transition-fast),
+              background-color var(--theme-transition-fast) !important;
+}
+
+#urlbar-search-mode-indicator-close:hover {
+  opacity: 1 !important;
+  background-color: color-mix(in srgb, var(--theme-red) 25%, transparent) !important;
+  fill: var(--theme-red) !important;
+}
+
+/* --- D. Results View Body & Hairline Divider --- */
+.urlbarView {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-top: 1px solid var(--theme-border) !important;
+  margin: 0 !important;
+  padding: 6px 8px 8px 8px !important;
+  overflow: visible !important;
+}
+
+.urlbar[noresults] .urlbarView {
+  border-top: none !important;
+  padding: 0 !important;
+}
+
+.urlbarView-body-outer,
+.urlbarView-body-inner {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#urlbar-results {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-height: 380px !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--theme-bg-subtle) transparent !important;
+}
+
+/* --- E. Search Result Row Items --- */
+.urlbarView-row {
+  border-radius: 8px !important;
+  margin: 2px 0 !important;
+  padding: 7px 10px !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
   background-color: transparent !important;
-
-  & toolbarbutton {
-    border-radius: var(--toolbarbutton-border-radius, 6px) !important;
-    transition:
-      background-color 0.15s ease,
-      opacity 0.15s ease !important;
-
-    &:hover {
-      background-color: var(
-        --zen-toolbar-element-bg-hover,
-        rgba(255, 255, 255, 0.08)
-      ) !important;
-    }
-
-    &[active="true"] {
-      background-color: var(--theme-bg-subtle) !important;
-      box-shadow: 0 0 0 1px var(--theme-accent) !important;
-      opacity: 1 !important;
-    }
-  }
+  border: 1px solid transparent !important;
+  position: relative !important;
+  color: var(--theme-fg) !important;
+  transition: background-color var(--theme-transition-fast),
+              border-color var(--theme-transition-fast) !important;
 }
 
-#zen-sidebar-top-buttons toolbarbutton:hover:not([disabled="true"]),
-#zen-sidebar-foot-buttons toolbarbutton:hover:not([disabled="true"]) {
-  background-color: var(
-    --zen-toolbar-element-bg-hover,
-    rgba(255, 255, 255, 0.08)
-  ) !important;
-  border-radius: var(--toolbarbutton-border-radius, 6px) !important;
+.urlbarView-row-inner {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 !important;
 }
 
-.content-shortcuts {
+/* Row Hover State */
+.urlbarView-row:hover:not([selected]) {
+  background-color: var(--theme-bg-subtle) !important;
+  border-color: color-mix(in srgb, var(--theme-border) 80%, transparent) !important;
+}
+
+/* Row Selected / Active Keyboard Navigation State */
+.urlbarView-row[selected] {
+  background-color: color-mix(in srgb, var(--theme-accent) 15%, var(--theme-bg-subtle)) !important;
+  border-color: color-mix(in srgb, var(--theme-accent) 35%, transparent) !important;
+}
+
+.urlbarView-row[selected]::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 3px !important;
+  top: 8px !important;
+  bottom: 8px !important;
+  width: 3px !important;
+  background-color: var(--theme-accent) !important;
+  border-radius: 3px !important;
+}
+
+/* Result Leading Favicon (Clean 16px transparent icon, no dark box) */
+.urlbarView-favicon {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 12px 0 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4)) !important;
+}
+
+.urlbarView-row:hover .urlbarView-favicon,
+.urlbarView-row[selected] .urlbarView-favicon {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Result Title & Content Flex Container */
+.urlbarView-no-wrap {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+/* Result Title Typography */
+.urlbarView-title {
+  font-family: var(--theme-font-sans) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: var(--theme-fg) !important;
+  line-height: 1.3 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  flex: 0 1 auto !important;
+}
+
+.urlbarView-row[selected] .urlbarView-title {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* Highlighted Query Match Characters */
+.urlbarView-highlight,
+.urlbarView-row strong {
+  color: var(--theme-accent) !important;
+  font-weight: 600 !important;
+}
+
+/* Hide the clunky dash separator and inline chain icon */
+.urlbarView-title-separator,
+.urlbarView-typeicon {
+  display: none !important;
+}
+
+/* Result URL text (Clean, muted, right-aligned) */
+.urlbarView-url {
+  font-family: var(--theme-font-sans) !important;
+  font-size: 12px !important;
+  color: var(--theme-fg-dim) !important;
+  opacity: 0.8 !important;
+  line-height: 1.3 !important;
+  margin-inline-start: auto !important;
+  text-align: end !important;
+  flex: 0 0 auto !important;
+  max-width: 45% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.urlbarView-row[selected] .urlbarView-url {
+  color: var(--theme-teal) !important;
+  opacity: 0.95 !important;
+}
+
+/* Result Action Badge (e.g. "Switch to Tab", "Search", etc.) */
+.urlbarView-action {
+  font-family: var(--theme-font-sans) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.4px !important;
+  color: var(--theme-accent) !important;
+  background-color: color-mix(in srgb, var(--theme-accent) 14%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-accent) 28%, transparent) !important;
+  border-radius: 4px !important;
+  padding: 2px 7px !important;
+  margin-inline-start: auto !important;
+}
+
+/* Switch to Tab / Remote Tab Action Pill with integrated arrow */
+.urlbarView-row:is([type="switchtab"], [type="remotetab"]) .urlbarView-action:last-child {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  margin-inline-start: auto !important;
+  margin-right: 0 !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.4px !important;
+  color: var(--theme-teal) !important;
+  background-color: color-mix(in srgb, var(--theme-teal) 14%, var(--theme-bg-subtle)) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-teal) 30%, transparent) !important;
+  transform: none !important;
+  scale: 1 !important;
+  opacity: 0.9 !important;
+}
+
+.urlbarView-row:is([type="switchtab"], [type="remotetab"]) .urlbarView-action:last-child::after {
+  content: "" !important;
+  display: inline-block !important;
+  width: 12px !important;
+  height: 12px !important;
+  position: static !important;
+  background-color: currentColor !important;
+  mask-image: url("chrome://browser/skin/zen-icons/urlbar-arrow.svg") !important;
+  mask-size: contain !important;
+  mask-repeat: no-repeat !important;
+  mask-position: center !important;
+  right: unset !important;
+}
+
+.urlbarView-row[selected]:is([type="switchtab"], [type="remotetab"]) .urlbarView-action:last-child {
+  opacity: 1 !important;
+  background-color: color-mix(in srgb, var(--theme-teal) 22%, var(--theme-bg-subtle)) !important;
+  border-color: var(--theme-teal) !important;
+}
+
+.urlbarView-row[type="bookmark"] .urlbarView-action {
+  color: var(--theme-yellow) !important;
+  background-color: color-mix(in srgb, var(--theme-yellow) 14%, transparent) !important;
+  border-color: color-mix(in srgb, var(--theme-yellow) 30%, transparent) !important;
+}
+
+.urlbarView-row[type="bookmark"] .urlbarView-favicon {
+  fill: var(--theme-yellow) !important;
+}
+
+.urlbarView-row:is([type="switchtab"], [type="remotetab"]) .urlbarView-favicon {
+  fill: var(--theme-teal) !important;
+}
+
+/* Result Shortcut & Engine Tags */
+.urlbarView-shortcutContent,
+.urlbarView-prettyName {
+  font-family: var(--theme-font-mono) !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  color: var(--theme-fg-mid) !important;
+  background-color: var(--theme-bg) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: 4px !important;
+  padding: 2px 6px !important;
+  margin-inline-start: 6px !important;
+}
+
+.urlbarView-row[selected] .urlbarView-shortcutContent,
+.urlbarView-row[selected] .urlbarView-prettyName {
+  background-color: var(--theme-bg-subtle) !important;
+  color: var(--theme-fg) !important;
+  border-color: color-mix(in srgb, var(--theme-accent) 30%, var(--theme-border)) !important;
+}
+
+/* Result Group / Category Labels */
+.urlbarView-row[label] {
+  --urlbarView-labeled-row-margin-top: calc(var(--urlbarView-labeled-row-label-top) + 2.4em) !important;
+}
+
+.urlbarView-row[label]::before {
+  font-family: var(--theme-font-sans) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+  color: var(--theme-fg-dim) !important;
+  padding-inline: 8px !important;
+}
+
+/* --- F. Search Engine One-Offs Footer --- */
+/* Hide the bottom footer in floating popup or whenever no engines exist */
+#urlbar[zen-floating-urlbar="true"] .search-one-offs,
+.search-one-offs:not(:has(.searchbar-engine-one-off-item)) {
+  display: none !important;
+}
+
+.search-one-offs {
+  background-color: color-mix(in srgb, var(--theme-bg) 80%, var(--theme-bg-raised)) !important;
+  border-top: 1px solid var(--theme-border) !important;
+  border-radius: 0 0 13px 13px !important;
+  padding: 6px 12px !important;
+  min-height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.search-panel-header {
+  font-family: var(--theme-font-sans) !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  color: var(--theme-fg-dim) !important;
+  padding-inline-end: 8px !important;
+}
+
+.searchbar-engine-one-off-item {
+  border-radius: 6px !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+  transition: background-color var(--theme-transition-fast),
+              border-color var(--theme-transition-fast) !important;
+}
+
+.searchbar-engine-one-off-item:hover {
+  background-color: var(--theme-bg-subtle) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.searchbar-engine-one-off-item[selected="true"] {
+  background-color: color-mix(in srgb, var(--theme-accent) 20%, var(--theme-bg-subtle)) !important;
+  border-color: var(--theme-accent) !important;
+}
+
+.search-setting-button {
+  border-radius: 6px !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  margin-inline-start: auto !important;
+  transition: background-color var(--theme-transition-fast) !important;
+}
+
+.search-setting-button:hover {
+  background-color: var(--theme-bg-subtle) !important;
+}
+
+/* ==========================================================================
+   §6  ZEN VERTICAL SIDEBAR & TAB MANAGEMENT
+   Respect native Zen tab sizing and collapsed/expanded sidebar states
+   ========================================================================== */
+
+#tabbrowser-tabs {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Individual Tab background & states */
+#tabbrowser-tabs .tabbrowser-tab .tab-background {
+  border-radius: 8px !important;
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  transition: background-color var(--theme-transition-fast),
+              border-color var(--theme-transition-fast) !important;
+}
+
+/* Hover State */
+#tabbrowser-tabs .tabbrowser-tab:hover:not([selected="true"]) .tab-background {
+  background-color: var(--theme-bg-raised) !important;
+}
+
+#tabbrowser-tabs .tabbrowser-tab:hover:not([selected="true"]) .tab-label {
+  color: var(--theme-fg) !important;
+}
+
+/* Selected / Active State */
+#tabbrowser-tabs .tabbrowser-tab[selected="true"] .tab-background,
+#tabbrowser-tabs .tabbrowser-tab[multiselected="true"] .tab-background {
+  background-color: var(--theme-bg-subtle) !important;
+  border-color: var(--theme-border) !important;
+}
+
+/* Accent strip ONLY in expanded sidebar mode, placed safely on tab-background */
+:root[zen-sidebar-expanded="true"] #tabbrowser-tabs .tabbrowser-tab[selected="true"] .tab-background::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 3px !important;
+  top: 8px !important;
+  bottom: 8px !important;
+  width: 3px !important;
+  background-color: var(--theme-accent) !important;
+  border-radius: 3px !important;
+  z-index: 3 !important;
+}
+
+#tabbrowser-tabs .tabbrowser-tab .tab-label {
+  font-family: var(--theme-font-sans) !important;
+  color: var(--theme-fg-mid) !important;
+}
+
+#tabbrowser-tabs .tabbrowser-tab[selected="true"] .tab-label {
+  color: var(--theme-fg) !important;
+  font-weight: 600 !important;
+}
+
+/* Tab Close Button */
+#tabbrowser-tabs .tabbrowser-tab .tab-close-button {
+  border-radius: 4px !important;
+  opacity: 0.35 !important;
+  transition: opacity var(--theme-transition-fast),
+              background-color var(--theme-transition-fast),
+              color var(--theme-transition-fast) !important;
+}
+
+#tabbrowser-tabs .tabbrowser-tab .tab-close-button:hover {
+  opacity: 1 !important;
+  background-color: var(--theme-bg-raised) !important;
+  color: var(--theme-red) !important;
+}
+
+/* Audio Indicator */
+#tabbrowser-tabs .tabbrowser-tab[soundplaying="true"] .tab-icon-overlay {
+  fill: var(--theme-teal) !important;
+  color: var(--theme-teal) !important;
+}
+
+/* Pinned Tabs */
+.tabbrowser-tab[pinned] .tab-background {
+  border-radius: 8px !important;
+  background-color: var(--theme-bg-raised) !important;
+  border: 1px solid var(--theme-border) !important;
+}
+
+.tabbrowser-tab[pinned][selected="true"] .tab-background {
   background-color: var(--theme-bg-subtle) !important;
   border-color: var(--theme-accent) !important;
 }
 
-#zenEditBookmarkPanelFaviconContainer {
-  background: var(--theme-bg) !important;
+/* ==========================================================================
+   §7  WORKSPACES SWITCHER
+   Clean 6px/8px radii and native layout preservation
+   ========================================================================== */
+
+#zen-workspaces-button {
+  background: transparent !important;
 }
 
-#zen-media-controls-toolbar #zen-media-progress-bar::-moz-range-track {
-  background: var(--theme-bg-subtle) !important;
+#zen-workspaces-button toolbarbutton {
+  border-radius: 6px !important;
+  transition: background-color var(--theme-transition-fast),
+              color var(--theme-transition-fast),
+              opacity var(--theme-transition-fast) !important;
+  background: transparent !important;
+  opacity: 0.7 !important;
+  color: var(--theme-fg-mid) !important;
 }
 
-/* Hide scrollbars in tab/sidebar containers */
-#tabbrowser-tabs,
-#zen-sidebar-top-buttons,
-#zen-sidebar-bottom-buttons,
-#zen-sidebar-foot-buttons {
-  scrollbar-width: none !important;
+#zen-workspaces-button toolbarbutton:hover {
+  background-color: var(--theme-bg-raised) !important;
+  opacity: 1 !important;
+  color: var(--theme-fg) !important;
 }
 
-/* --------------------------------------------------------------------------
-   6. FINDBAR
-   -------------------------------------------------------------------------- */
-findbar {
-  backdrop-filter: blur(var(--zen-blur-radius)) !important;
-  background-color: var(--zen-glass-bg) !important;
-  border: var(--zen-glass-border) !important;
-  border-radius: var(--zen-border-radius, 10px) !important;
-  margin: 0 16px 12px 16px !important;
-  padding: 6px 12px !important;
-  box-shadow: var(--zen-glass-shadow) !important;
-
-  & .findbar-textbox {
-    border-radius: var(--toolbarbutton-border-radius, 6px) !important;
-    background-color: var(--theme-bg-subtle) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    color: var(--theme-fg) !important;
-    padding: 4px 8px !important;
-    transition:
-      border-color 0.15s ease,
-      box-shadow 0.15s ease !important;
-
-    &:focus {
-      border-color: var(--theme-accent) !important;
-      box-shadow: 0 0 0 2px
-        color-mix(in srgb, var(--theme-accent) 25%, transparent) !important;
-      outline: none !important;
-    }
-  }
-
-  & toolbarbutton {
-    border-radius: var(--toolbarbutton-border-radius, 6px) !important;
-    transition: background-color 0.12s ease !important;
-
-    &:hover {
-      background-color: var(
-        --zen-toolbar-element-bg-hover,
-        rgba(255, 255, 255, 0.08)
-      ) !important;
-    }
-  }
-
-  & .found-matches {
-    color: color-mix(in srgb, var(--theme-fg) 70%, transparent) !important;
-  }
+#zen-workspaces-button toolbarbutton[active="true"] {
+  background-color: var(--theme-bg-subtle) !important;
+  border: 1px solid var(--theme-border) !important;
+  color: var(--theme-accent) !important;
+  opacity: 1 !important;
 }
 
-/* --------------------------------------------------------------------------
-   7. MENUS, POPUPS & PANELS
-   Note: backdrop-filter does NOT work on XUL menupopup/panel in Firefox's
-   chrome layer — this is a known Firefox architectural limitation. The tinted
-   frosted look is achieved purely via the semi-transparent --panel-background
-   and --arrowpanel-background set in colors.css.
-   -------------------------------------------------------------------------- */
+#zen-workspaces-button toolbarbutton[active="true"] .zen-workspace-icon {
+  fill: var(--theme-accent) !important;
+}
+
+/* Current Workspace Indicator (style Zen's native ::before background) */
+.zen-current-workspace-indicator::before {
+  background-color: var(--theme-bg-raised) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: 8px !important;
+}
+
+.zen-current-workspace-indicator-name {
+  font-family: var(--theme-font-sans) !important;
+  color: var(--theme-fg) !important;
+}
+
+/* Sidebar Top & Foot Action Buttons */
+#zen-sidebar-top-buttons toolbarbutton,
+#zen-sidebar-foot-buttons toolbarbutton {
+  border-radius: 6px !important;
+  transition: background-color var(--theme-transition-fast), color var(--theme-transition-fast) !important;
+}
+
+#zen-sidebar-top-buttons toolbarbutton:hover,
+#zen-sidebar-foot-buttons toolbarbutton:hover {
+  background-color: var(--theme-bg-raised) !important;
+  color: var(--theme-fg) !important;
+}
+
+/* ==========================================================================
+   §8  ZEN MEDIA CONTROLS
+   ========================================================================== */
+
+#zen-media-controls-toolbar .zen-media-card {
+  background-color: var(--theme-bg-raised) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--theme-shadow-card) !important;
+}
+
+#zen-media-controls-toolbar .zen-media-progress-bar {
+  background-color: var(--theme-bg-subtle) !important;
+  border-radius: 4px !important;
+  height: 4px !important;
+}
+
+#zen-media-controls-toolbar .zen-media-progress-bar::-moz-range-progress {
+  background-color: var(--theme-accent) !important;
+  border-radius: 4px !important;
+}
+
+#zen-media-controls-toolbar .zen-media-progress-bar::-moz-range-thumb {
+  background-color: var(--theme-accent) !important;
+  border: none !important;
+  border-radius: 50% !important;
+}
+
+#zen-media-controls-toolbar .zen-media-info-vbox label {
+  font-family: var(--theme-font-sans) !important;
+}
+
+/* ==========================================================================
+   §9  CONTEXT MENUS, PANELS & TOOLTIPS
+   Clean 10px card radii with 6px items
+   ========================================================================== */
+
 menupopup,
 panel {
-  --panel-border-color: rgba(255, 255, 255, 0.08) !important;
+  --panel-background: var(--theme-bg-raised) !important;
+  --panel-border-color: var(--theme-border) !important;
   --panel-color: var(--theme-fg) !important;
-  --panel-border-radius: var(--zen-border-radius, 10px) !important;
+  --arrowpanel-background: var(--theme-bg-raised) !important;
+  --arrowpanel-border-color: var(--theme-border) !important;
+  --arrowpanel-color: var(--theme-fg) !important;
+  border-radius: 10px !important;
+}
+
+.panel-arrowcontent,
+menupopup {
+  background-color: var(--theme-bg-raised) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--theme-shadow-popup) !important;
+  padding: 4px !important;
 }
 
 menuitem,
 menu {
-  border-radius: var(--toolbarbutton-border-radius, 6px) !important;
-  margin: 1px 4px !important;
+  border-radius: 6px !important;
+  margin: 1px 2px !important;
+  padding: 5px 10px !important;
+  font-family: var(--theme-font-sans) !important;
   color: var(--theme-fg) !important;
-  transition: background-color 0.1s ease !important;
+  transition: background-color var(--theme-transition-fast) !important;
+}
 
-  &:hover,
-  &[_moz-menuactive="true"] {
-    background-color: var(--theme-bg-subtle) !important;
-    color: var(--theme-fg) !important;
-  }
+menuitem:hover,
+menu:hover,
+menuitem[_moz-menuactive="true"],
+menu[_moz-menuactive="true"] {
+  background-color: var(--theme-bg-subtle) !important;
+  color: var(--theme-fg) !important;
 }
 
 menuseparator {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  margin: 4px 8px !important;
+  border-top: 1px solid var(--theme-border) !important;
+  margin: 4px 6px !important;
+  opacity: 0.6 !important;
 }
 
-.menu-accel,
-.menu-accel-container {
-  color: color-mix(in srgb, var(--theme-fg) 60%, transparent) !important;
-}
-
-/* --------------------------------------------------------------------------
-   8. TOOLTIPS
-   -------------------------------------------------------------------------- */
+/* Tooltips */
 tooltip {
-  appearance: none !important;
-  background-color: var(
-    --arrowpanel-background,
-    var(--theme-bg-raised)
-  ) !important;
+  background-color: var(--theme-bg-raised) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: 6px !important;
   color: var(--theme-fg) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: var(--toolbarbutton-border-radius, 6px) !important;
-  padding: 4px 8px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  font-family: var(--theme-font-sans) !important;
   font-size: 12px !important;
+  padding: 4px 8px !important;
+  box-shadow: var(--theme-shadow-popup) !important;
+}
+
+/* Toast Notifications */
+notification-message {
+  background-color: var(--theme-bg-raised) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--theme-shadow-popup) !important;
+  color: var(--theme-fg) !important;
+  font-family: var(--theme-font-sans) !important;
+}
+
+/* ==========================================================================
+   §10  FINDBAR & MISC
+   ========================================================================== */
+
+findbar {
+  background-color: var(--theme-bg) !important;
+  border-top: 1px solid var(--theme-border) !important;
+  padding: 4px 12px !important;
+  color: var(--theme-fg) !important;
+}
+
+findbar .findbar-textbox {
+  background-color: var(--theme-bg-raised) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: 6px !important;
+  padding: 5px 10px !important;
+  color: var(--theme-fg) !important;
+  font-family: var(--theme-font-sans) !important;
+  transition: border-color var(--theme-transition-fast) !important;
+}
+
+findbar .findbar-textbox:focus {
+  border-color: var(--theme-accent) !important;
+  box-shadow: 0 0 0 1px var(--theme-accent) !important;
+}
+
+#zen-loading-progress-bar {
+  background: var(--theme-accent) !important;
+  height: 2px !important;
+  border-radius: 2px !important;
 }

@@ -55,6 +55,22 @@
           --theme-red: #${red};
           --theme-orange: #${orange};
 
+          /* System Typography (Quickshell & System Theme) */
+          --theme-font-sans: "${config.theme.fonts.sans}", system-ui, -apple-system, sans-serif;
+          --theme-font-mono: "${config.theme.fonts.monospace}", monospace;
+          --theme-font-serif: "${config.theme.fonts.serif}", Georgia, serif;
+
+          /* UI Metrics (Refined Quickshell Design System) */
+          --theme-radius-sm: 6px;
+          --theme-radius: 8px;
+          --theme-radius-lg: 12px;
+          --theme-radius-pill: 9999px;
+          --theme-transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+          --theme-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          --theme-transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+          --theme-shadow-card: 0 4px 16px rgba(0, 0, 0, 0.25);
+          --theme-shadow-popup: 0 10px 30px rgba(0, 0, 0, 0.4);
+
           /* Zen Browser Native Design Tokens */
           --zen-primary-color: #${accent} !important;
           --zen-colors-primary: #${bgSubtle} !important;
@@ -74,23 +90,23 @@
           --lwt-sidebar-text-color: #${fg} !important;
           --lwt-sidebar-background-color: #${bg} !important;
           --sidebar-text-color: #${fg} !important;
-          --arrowpanel-background: color-mix(in srgb, #${bgRaised} 85%, transparent) !important;
+          --arrowpanel-background: color-mix(in srgb, #${bgRaised} 90%, transparent) !important;
           --arrowpanel-color: #${fg} !important;
-          --arrowpanel-border-color: rgba(255, 255, 255, 0.08) !important;
-          --panel-background: color-mix(in srgb, #${bgRaised} 85%, transparent) !important;
+          --arrowpanel-border-color: #${border} !important;
+          --panel-background: color-mix(in srgb, #${bgRaised} 90%, transparent) !important;
           --panel-color: #${fg} !important;
-          --panel-border-color: rgba(255, 255, 255, 0.08) !important;
+          --panel-border-color: #${border} !important;
           --newtab-background-color: #${bg} !important;
           --newtab-text-primary-color: #${fg} !important;
-          --urlbar-box-bgcolor: #${bg} !important;
-          --urlbar-box-focus-bgcolor: #${bg} !important;
-          --urlbar-box-hover-bgcolor: #${bg} !important;
+          --urlbar-box-bgcolor: #${bgRaised} !important;
+          --urlbar-box-focus-bgcolor: #${bgRaised} !important;
+          --urlbar-box-hover-bgcolor: #${bgRaised} !important;
 
           /* In-Content Page Tokens */
           --in-content-page-background: #${bg} !important;
           --in-content-page-color: #${fg} !important;
-          --in-content-box-background: #${bgSubtle} !important;
-          --in-content-box-border-color: rgba(255, 255, 255, 0.08) !important;
+          --in-content-box-background: #${bgRaised} !important;
+          --in-content-box-border-color: #${border} !important;
           --color-accent-primary: #${accent} !important;
           --color-accent-primary-hover: color-mix(in srgb, #${accent} 85%, white) !important;
           --color-accent-primary-active: color-mix(in srgb, #${accent} 70%, white) !important;

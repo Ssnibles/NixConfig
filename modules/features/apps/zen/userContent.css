@@ -1,105 +1,425 @@
 /* ==========================================================================
-   Zen Browser Custom userContent.css
-   Dynamic theme integration (colors.css) + in-content pages & scrollbars
+   userContent.css — Zen Browser Content & Extension Styling
+   Clean Spacing, Refined Radii, and In-Content Quickshell Aesthetic
    ========================================================================== */
+
 @import "colors.css";
 
-/* 1. Prevent White Flash on New Tab / Blank / Internal Pages */
-@-moz-document url("about:blank"), url("about:newtab"), url("about:home"),
-               url("about:privatebrowsing"), url("about:debugging"), url("about:processes") {
-  html, body {
-    background-color: var(--theme-bg) !important;
-    color: var(--theme-fg) !important;
-  }
+/* ==========================================================================
+   §1  GLOBAL SCROLLBARS — Thin Minimalist Scrollbars
+   ========================================================================== */
+
+* {
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--theme-bg-subtle) transparent !important;
 }
 
-/* 2. Theme Internal about:* Pages */
-@-moz-document url-prefix("about:") {
-  :root {
-    --in-content-page-background: var(--theme-bg) !important;
-    --in-content-page-color: var(--theme-fg) !important;
-    --in-content-box-background: var(--theme-bg-raised) !important;
-    --in-content-box-border-color: rgba(255, 255, 255, 0.08) !important;
-  }
-
-  html, body {
-    background-color: var(--theme-bg) !important;
-    color: var(--theme-fg) !important;
-  }
-
-  /* Sleek Translucent Scrollbars for internal browser pages */
-  * {
-    scrollbar-width: thin !important;
-    scrollbar-color: var(--theme-fg-dim) transparent !important;
-  }
-
-  ::-webkit-scrollbar {
-    width: 6px !important;
-    height: 6px !important;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent !important;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: var(--theme-fg-dim) !important;
-    border-radius: 4px !important;
-    transition: background-color 0.15s ease !important;
-
-    &:hover {
-      background-color: var(--theme-fg-mid) !important;
-    }
-  }
+::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
 }
 
-/* 3. Style about:config to match theme */
-@-moz-document url-prefix("about:config") {
-  #toolbar {
-    background-color: var(--theme-bg-raised) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--theme-bg-subtle) !important;
+  border-radius: 3px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-fg-dim) !important;
+}
+
+/* ==========================================================================
+   §2  STARTPAGE, ABOUT:BLANK, ABOUT:NEWTAB, ABOUT:HOME
+   Calibrated Instrument Serif Typography & Clean Search Bar
+   ========================================================================== */
+
+@-moz-document url("about:blank"), url("about:newtab"), url("about:home"), url("chrome://browser/content/blanktab.html") {
+  html,
+  body {
+    background-color: var(--theme-bg) !important;
+    background-image: none !important;
+    color: var(--theme-fg) !important;
+    font-family: var(--theme-font-sans) !important;
   }
 
-  #about-config-search {
+  /* Display Clock & Date (Quickshell CommandCenter style) */
+  .Widgets,
+  .Widgets * {
+    font-family: var(--theme-font-serif) !important;
+  }
+
+  .Time,
+  [class*="Time"],
+  .Widgets .container .Time,
+  #clock,
+  .clock {
+    font-family: var(--theme-font-serif) !important;
+    font-size: 4.5rem !important;
+    font-weight: 400 !important;
+    font-style: italic !important;
+    line-height: 1 !important;
+    color: var(--theme-fg) !important;
+    letter-spacing: -1px !important;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    font-variant-numeric: tabular-nums !important;
+    margin: 0 !important;
+  }
+
+  .Date,
+  [class*="Date"],
+  .Widgets .container .Date,
+  #date,
+  .date {
+    font-family: var(--theme-font-serif) !important;
+    font-size: 1.25rem !important;
+    font-weight: 400 !important;
+    font-style: italic !important;
+    color: var(--theme-accent) !important;
+    margin-top: 0.35rem !important;
+    letter-spacing: 0.5px !important;
+    opacity: 0.9 !important;
+  }
+
+  /* Search Bar */
+  .search-inner-wrapper,
+  .search-wrapper input,
+  #search-handoff-button,
+  .search-handoff-button {
     border-radius: 8px !important;
-    background-color: var(--theme-bg-subtle) !important;
+    background-color: var(--theme-bg-raised) !important;
+    border: 1px solid var(--theme-border) !important;
     color: var(--theme-fg) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    padding: 6px 10px !important;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
-
-    &:focus {
-      border-color: var(--theme-accent) !important;
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent) !important;
-      outline: none !important;
-    }
+    font-family: var(--theme-font-sans) !important;
+    max-width: 540px !important;
+    height: 42px !important;
+    box-shadow: none !important;
+    transition: border-color var(--theme-transition-fast),
+                box-shadow var(--theme-transition-fast) !important;
   }
 
-  table {
-    border-color: rgba(255, 255, 255, 0.06) !important;
+  .search-wrapper input:focus,
+  #search-handoff-button:focus-within {
+    border-color: var(--theme-accent) !important;
+    box-shadow: 0 0 0 1px var(--theme-accent), var(--theme-shadow-card) !important;
+  }
+
+  /* Top Sites & Shortcuts Cards */
+  .top-site-outer {
+    border-radius: 8px !important;
+    transition: transform var(--theme-transition-fast) !important;
+  }
+
+  .top-site-outer .tile {
+    background-color: var(--theme-bg-raised) !important;
+    border: 1px solid var(--theme-border) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    transition: background-color var(--theme-transition-fast),
+                border-color var(--theme-transition-fast),
+                box-shadow var(--theme-transition-fast) !important;
+  }
+
+  .top-site-outer:hover .tile {
+    background-color: var(--theme-bg-subtle) !important;
+    border-color: var(--theme-accent) !important;
+    box-shadow: var(--theme-shadow-card) !important;
+    transform: translateY(-2px);
+  }
+
+  .top-site-outer .title {
+    color: var(--theme-fg-mid) !important;
+    font-family: var(--theme-font-sans) !important;
+  }
+
+  .top-site-outer:hover .title {
+    color: var(--theme-fg) !important;
+  }
+}
+
+/* ==========================================================================
+   §3  PREFERENCES, SETTINGS & ADD-ONS (about:preferences, about:addons)
+   Subtle 8px Card Containers, 6px Buttons & Tidy Form Inputs
+   ========================================================================== */
+
+@-moz-document url-prefix("about:preferences"), url-prefix("about:addons"), url-prefix("about:settings") {
+  html,
+  body,
+  .pane-container,
+  #main,
+  #addons-page {
+    background-color: var(--theme-bg) !important;
+    color: var(--theme-fg) !important;
+    font-family: var(--theme-font-sans) !important;
+  }
+
+  /* Sidebar Navigation Categories */
+  #categories,
+  .navigation {
+    background: var(--theme-bg) !important;
+  }
+
+  #categories > .category,
+  .category {
+    border-radius: 6px !important;
+    margin: 2px 6px !important;
+    padding: 6px 12px !important;
+    color: var(--theme-fg-mid) !important;
+    font-family: var(--theme-font-sans) !important;
+    transition: background-color var(--theme-transition-fast),
+                color var(--theme-transition-fast) !important;
+  }
+
+  #categories > .category:hover,
+  .category:hover {
+    background-color: var(--theme-bg-raised) !important;
+    color: var(--theme-fg) !important;
+  }
+
+  #categories > .category[selected="true"],
+  .category[selected="true"] {
+    background-color: var(--theme-bg-subtle) !important;
+    color: var(--theme-accent) !important;
+    font-weight: 600 !important;
+  }
+
+  /* Settings Groupboxes & Cards */
+  groupbox,
+  .card,
+  .addon-card {
+    background-color: var(--theme-bg-raised) !important;
+    border: 1px solid var(--theme-border) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    color: var(--theme-fg) !important;
+    margin-bottom: 12px !important;
+    padding: 12px 16px !important;
+  }
+
+  groupbox h2,
+  .card-heading {
+    color: var(--theme-fg) !important;
+    font-family: var(--theme-font-sans) !important;
+    font-weight: 600 !important;
+  }
+
+  /* Buttons */
+  button,
+  .button,
+  groupbox button {
+    border-radius: 6px !important;
+    background-color: var(--theme-bg-subtle) !important;
+    border: 1px solid var(--theme-border) !important;
+    color: var(--theme-fg) !important;
+    font-family: var(--theme-font-sans) !important;
+    font-size: 13px !important;
+    padding: 5px 12px !important;
+    transition: background-color var(--theme-transition-fast),
+                border-color var(--theme-transition-fast),
+                transform var(--theme-transition-fast) !important;
+  }
+
+  button:hover,
+  .button:hover,
+  groupbox button:hover {
+    background-color: color-mix(in srgb, var(--theme-bg-subtle) 80%, white 20%) !important;
+  }
+
+  button:active,
+  .button:active,
+  groupbox button:active {
+    transform: scale(0.97) !important;
+  }
+
+  button[default],
+  button.primary,
+  .button.primary {
+    background-color: var(--theme-accent) !important;
+    color: var(--theme-bg) !important;
+    font-weight: 600 !important;
+    border: none !important;
+  }
+
+  button[default]:hover,
+  button.primary:hover,
+  .button.primary:hover {
+    filter: brightness(1.1) !important;
+  }
+
+  /* Text Inputs, Menulists & Select Boxes */
+  input[type="text"],
+  input[type="search"],
+  input[type="password"],
+  select,
+  menulist,
+  groupbox menulist {
+    border-radius: 6px !important;
+    background-color: var(--theme-bg-subtle) !important;
+    border: 1px solid var(--theme-border) !important;
+    color: var(--theme-fg) !important;
+    font-family: var(--theme-font-sans) !important;
+    padding: 5px 8px !important;
+    transition: border-color var(--theme-transition-fast) !important;
+  }
+
+  input[type="text"]:focus,
+  input[type="search"]:focus,
+  input[type="password"]:focus,
+  select:focus,
+  menulist:focus {
+    border-color: var(--theme-accent) !important;
+    outline: none !important;
+  }
+
+  /* Toggle Switches */
+  input[type="checkbox"]:is(.toggle-button, [is="toggle-button"]) {
+    border-radius: 12px !important;
+    background-color: var(--theme-bg-subtle) !important;
+    border: 1px solid var(--theme-border) !important;
+    transition: background-color var(--theme-transition-fast),
+                border-color var(--theme-transition-fast) !important;
+  }
+
+  input[type="checkbox"]:is(.toggle-button, [is="toggle-button"]):checked {
+    background-color: var(--theme-accent) !important;
+    border-color: var(--theme-accent) !important;
+  }
+}
+
+/* ==========================================================================
+   §4  TECHNICAL & CONFIG PAGES (about:config, about:debugging, about:support)
+   Monospace Precision & Clean Table Rows
+   ========================================================================== */
+
+@-moz-document url-prefix("about:config"), url-prefix("about:debugging"), url-prefix("about:support"), url-prefix("about:processes") {
+  html,
+  body {
+    background-color: var(--theme-bg) !important;
+    color: var(--theme-fg) !important;
+    font-family: var(--theme-font-sans) !important;
+  }
+
+  /* Search Box */
+  #about-config-search,
+  input[type="search"],
+  .filter-search-box {
+    border-radius: 6px !important;
+    background-color: var(--theme-bg-raised) !important;
+    border: 1px solid var(--theme-border) !important;
+    color: var(--theme-fg) !important;
+    font-family: var(--theme-font-sans) !important;
+    padding: 6px 12px !important;
+    box-shadow: none !important;
+    transition: border-color var(--theme-transition-fast) !important;
+  }
+
+  #about-config-search:focus,
+  input[type="search"]:focus,
+  .filter-search-box:focus {
+    border-color: var(--theme-accent) !important;
+    outline: none !important;
+  }
+
+  /* Table Rows */
+  table,
+  tr,
+  .config-table tr {
+    border-bottom: 1px solid var(--theme-border) !important;
   }
 
   tr:hover {
+    background-color: var(--theme-bg-raised) !important;
+  }
+
+  /* Monospace Identifiers */
+  .cell-name,
+  .pref-name,
+  td:first-child {
+    font-family: var(--theme-font-mono) !important;
+    font-size: 12px !important;
+    color: var(--theme-accent) !important;
+  }
+
+  /* Action Buttons */
+  button.button-toggle,
+  button.button-edit,
+  button.button-delete {
+    border-radius: 6px !important;
     background-color: var(--theme-bg-subtle) !important;
+    border: 1px solid var(--theme-border) !important;
+    color: var(--theme-fg) !important;
+    padding: 3px 8px !important;
+  }
+}
+
+/* ==========================================================================
+   §5  WEBEXTENSION PAGES (Sidebery & Extension Panels)
+   ========================================================================== */
+
+@-moz-document url-prefix("moz-extension://") {
+  :root {
+    --sb-bg: var(--theme-bg, #141415);
+    --sb-bg-raised: var(--theme-bg-raised, #1c1c24);
+    --sb-bg-subtle: var(--theme-bg-subtle, #252530);
+    --sb-border: var(--theme-border, #252530);
+    --sb-fg: var(--theme-fg, #cdcdcd);
+    --sb-fg-mid: var(--theme-fg-mid, #878787);
+    --sb-fg-dim: var(--theme-fg-dim, #606079);
+    --sb-accent: var(--theme-accent, #6e94b2);
+    --sb-teal: var(--theme-teal, #b4d4cf);
+    --sb-red: var(--theme-red, #d8647e);
+
+    --sb-radius-sm: 6px;
+    --sb-radius: 8px;
+    --sb-transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    --sb-font-ui: var(--theme-font-sans, system-ui, -apple-system, sans-serif);
   }
 
-  input[type="checkbox"] {
-    accent-color: var(--theme-accent) !important;
+  #root,
+  .Sidebery,
+  .TabsPanel,
+  .BookmarksPanel,
+  .HistoryPanel,
+  .Settings {
+    background-color: var(--sb-bg) !important;
+    color: var(--theme-fg) !important;
+    font-family: var(--sb-font-ui) !important;
   }
 
-  button.primary {
-    background-color: var(--theme-accent) !important;
-    color: var(--theme-bg) !important;
-    border-radius: 8px !important;
-    font-weight: 500 !important;
-
-    &:hover {
-      background-color: color-mix(in srgb, var(--theme-accent) 85%, white) !important;
-    }
+  /* Sidebery Tab items */
+  .Tab {
+    border-radius: 6px !important;
+    transition: background-color var(--sb-transition-fast) !important;
   }
 
-  button:not(.primary) {
-    border-radius: 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  .Tab .body {
+    border-radius: 6px !important;
+  }
+
+  .Tab[data-active="true"] .body {
+    background-color: var(--sb-bg-subtle) !important;
+  }
+
+  .Tab[data-active="true"] .body::after {
+    background-color: var(--sb-accent) !important;
+    border-radius: 2px !important;
+  }
+
+  /* Navigation Bar */
+  .NavBtn {
+    border-radius: 6px !important;
+    transition: background-color var(--sb-transition-fast) !important;
+  }
+
+  .NavBtn:hover {
+    background-color: var(--theme-bg-raised) !important;
+  }
+
+  .NavBtn[data-active="true"] {
+    background-color: var(--sb-bg-subtle) !important;
+    color: var(--sb-accent) !important;
   }
 }

@@ -6,7 +6,7 @@
 @import url("colors.css");
 
 /* ==========================================================================
-   §1  DESIGN SYSTEM — Spacing, radii, transitions
+   §1  DESIGN SYSTEM — Spacing, radii, transitions & browser theme tokens
    ========================================================================== */
 
 :root {
@@ -15,6 +15,10 @@
   --fx-space-sm: 4px;
   --fx-space-md: 8px;
   --fx-space-lg: 12px;
+
+  /* ── Highlight & active border tokens (uniform 2px) ── */
+  --fx-highlight-border-width: 2px;
+  --fx-border-width-active: var(--fx-highlight-border-width);
 
   /* ── Border radii ── */
   --fx-radius-sm: 8px;
@@ -27,7 +31,9 @@
   --fx-transition: 0.2s var(--fx-ease);
   --fx-transition-slow: 0.35s var(--fx-ease);
 
-  /* ── Firefox internal overrides — toolbar fields ── */
+  /* ── Chrome background & toolbar tokens ── */
+  --toolbar-bgcolor: var(--fx-bg) !important;
+  --toolbar-color: var(--fx-fg) !important;
   --toolbar-field-background-color: var(--fx-bg-raised) !important;
   --toolbar-field-focus-background-color: var(--fx-bg-raised) !important;
   --toolbar-field-color: var(--fx-fg) !important;
@@ -42,11 +48,21 @@
   --lwt-frame: var(--fx-bg) !important;
   --lwt-text-color: var(--fx-fg) !important;
   --lwt-sidebar-background: var(--fx-bg) !important;
+  --lwt-sidebar-background-color: var(--fx-bg) !important;
   --lwt-sidebar-text-color: var(--fx-fg) !important;
   --lwt-selected-tab-background-color: var(--fx-bg-subtle) !important;
+  --lwt-background-tab-separator-color: transparent !important;
   --tabpanel-background-color: var(--fx-bg) !important;
 
-  /* ── Firefox internal overrides — panels & buttons ── */
+  /* ── Firefox internal overrides — panels, menus & buttons ── */
+  --arrowpanel-background: var(--fx-bg-raised) !important;
+  --arrowpanel-color: var(--fx-fg) !important;
+  --arrowpanel-border-color: var(--fx-border) !important;
+  --arrowpanel-border-radius: var(--fx-radius) !important;
+  --arrowpanel-menuitem-border-radius: var(--fx-radius-sm) !important;
+  --panel-background: var(--fx-bg-raised) !important;
+  --panel-border-color: var(--fx-border) !important;
+  --panel-color: var(--fx-fg) !important;
   --panel-border-radius: var(--fx-radius) !important;
   --panel-menuitem-border-radius: var(--fx-radius-sm) !important;
   --toolbarbutton-border-radius: var(--fx-radius-sm) !important;
@@ -60,14 +76,25 @@
 /* Horizontal tab bar (Sidebery replaces this) */
 #TabsToolbar { visibility: collapse !important; }
 
-/* Sidebar header, splitter, and native vertical tabs */
+/* Sidebar header, native vertical tabs & revamp switcher bar */
 #sidebar-header,
-#sidebar-splitter,
 #sidebar-select-box,
-#sidebar-main,
+#sidebar-tools,
+#sidebar-switcher-target,
 #vertical-tabs,
 #tabbrowser-tabs[orient="vertical"] {
   display: none !important;
+}
+
+/* Invisible yet draggable sidebar splitter (preserves resize capability) */
+#sidebar-splitter {
+  width: 4px !important;
+  min-width: 4px !important;
+  max-width: 4px !important;
+  background: transparent !important;
+  border: none !important;
+  margin-inline: -2px !important;
+  cursor: col-resize !important;
 }
 
 /* URL bar internal clutter */
@@ -75,8 +102,12 @@
 #star-button-box,
 #page-action-buttons,
 #urlbar-search-mode-indicator,
-#urlbar-zoom-button,
-#identity-permission-box {
+#urlbar-zoom-button {
+  display: none !important;
+}
+
+/* Hide empty permission box; reveal only when site actively requests permissions */
+#identity-permission-box:not([hasPermissions]) {
   display: none !important;
 }
 
@@ -88,10 +119,14 @@
    ========================================================================== */
 
 #identity-box {
-  opacity: 0.3 !important;
+  opacity: 0.35 !important;
   transition: opacity var(--fx-transition) !important;
 }
-#identity-box:hover { opacity: 1 !important; }
+
+#identity-box:hover,
+#identity-box[open="true"] {
+  opacity: 1 !important;
+}
 
 #back-button[disabled="true"],
 #forward-button[disabled="true"] {
@@ -117,12 +152,12 @@
 }
 
 /* ==========================================================================
-   §5  URL BAR — Centered pill, accent glow on focus
+   §5  URL BAR — Centered pill, single-layer background & breakout elevation
    ========================================================================== */
 
 #urlbar-container {
   max-width: 700px !important;
-  margin: 0 auto !important;
+  margin-inline: auto !important;
 }
 
 #urlbar {
@@ -130,54 +165,62 @@
   --urlbar-box-focus-bgcolor: var(--fx-bg-raised) !important;
   --urlbar-box-hover-bgcolor: var(--fx-bg-raised) !important;
   --urlbar-box-active-bgcolor: var(--fx-bg-raised) !important;
-  background-color: var(--fx-bg-raised) !important;
-  border-radius: var(--fx-radius) !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 #urlbar-background {
   background-color: var(--fx-bg-raised) !important;
-  border: 1px solid transparent !important;
+  border: var(--fx-highlight-border-width) solid transparent !important;
   border-radius: var(--fx-radius) !important;
+  box-shadow: none !important;
   transition: border-color var(--fx-transition) !important;
 }
 
 #urlbar-input-container {
-  background-color: var(--fx-bg-raised) !important;
+  background-color: transparent !important;
   border-radius: var(--fx-radius) !important;
 }
 
-/* Focused / open / breakout → accent border */
+/* Focused / open / breakout → accent border, zero shadows */
 #urlbar[focused="true"] > #urlbar-background,
 #urlbar[open] > #urlbar-background,
 #urlbar[breakout][breakout-extend] > #urlbar-background {
   border-color: var(--fx-accent) !important;
+  box-shadow: none !important;
 }
 
 #urlbar-input {
   color: var(--fx-fg) !important;
   text-align: center !important;
 }
-#urlbar[focused="true"] #urlbar-input { text-align: left !important; }
+
+#urlbar[focused="true"] #urlbar-input,
+#urlbar[open] #urlbar-input {
+  text-align: start !important;
+}
 
 /* ==========================================================================
-   §6  URL DROPDOWN / AUTOCOMPLETE
+   §6  URL DROPDOWN / AUTOCOMPLETE — Zero-overdraw single GPU layer
    ========================================================================== */
 
-.urlbarView,
-.urlbarView-body-outer,
-.urlbarView-body-inner,
-.urlbarView-results {
-  background-color: var(--fx-bg-raised) !important;
+.urlbarView {
+  background-color: transparent !important;
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
   scrollbar-width: none !important;
-}
-
-.urlbarView {
   margin-inline: 0 !important;
   width: 100% !important;
-  border-radius: 0 0 var(--fx-radius) var(--fx-radius) !important;
+}
+
+.urlbarView-body-outer,
+.urlbarView-body-inner,
+.urlbarView-results {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .search-one-offs {
@@ -205,14 +248,15 @@
 .toolbarbutton-1 {
   border-radius: var(--fx-radius-sm) !important;
   transition: background-color var(--fx-transition-fast),
-              opacity var(--fx-transition-fast) !important;
+              color var(--fx-transition-fast) !important;
 }
 
 .toolbarbutton-1:hover:not([disabled="true"]) {
   background-color: var(--fx-bg-raised) !important;
 }
 
-.toolbarbutton-1:active:not([disabled="true"]) {
+.toolbarbutton-1:active:not([disabled="true"]),
+.toolbarbutton-1[open="true"] {
   background-color: var(--fx-bg-subtle) !important;
 }
 
@@ -227,7 +271,7 @@ browser#sidebar,
 #webextpanels-window,
 #webext-panels-browser,
 #sidebar-inline-browser {
-  background: var(--fx-bg) !important;
+  background-color: var(--fx-bg) !important;
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
@@ -237,38 +281,46 @@ browser#sidebar,
 }
 
 /* ==========================================================================
-   §9  FLOATING VIEWPORT — Rounded page area with subtle border
+   §9  FLOATING VIEWPORT — Rounded page area with single-layer clip & border
    ========================================================================== */
 
 #main-window,
 #appcontent,
 #tabbrowser-tabbox,
-#tabbrowser-tabpanels,
-.tabpanel,
-.browserStack,
-.browserSidebarContainer {
-  background: var(--fx-bg) !important;
+#tabbrowser-tabpanels {
+  background-color: var(--fx-bg) !important;
 }
 
 #tabbrowser-tabpanels {
-  padding: 8px 8px 0 8px !important;
+  padding: var(--fx-space-md) var(--fx-space-md) 0 var(--fx-space-md) !important;
 }
 
-#tabbrowser-tabpanels .deck-selected,
-.tabbrowser-tabpanel,
-.browserSidebarContainer,
-.browserStack,
-browser {
+/* Single-layer GPU clipping on content wrapper */
+#tabbrowser-tabpanels .browserSidebarContainer {
+  background-color: var(--fx-bg-raised) !important;
   border-radius: var(--fx-radius-lg) var(--fx-radius-lg) 0 0 !important;
   overflow: hidden !important;
-  border: none !important;
-}
-
-browser[type="content"] {
-  border-radius: var(--fx-radius-lg) var(--fx-radius-lg) 0 0 !important;
-  overflow: hidden !important;
-  border: 2px solid var(--fx-border) !important;
+  border: 1px solid var(--fx-border) !important;
   border-bottom: none !important;
+}
+
+#tabbrowser-tabpanels browser[type="content"] {
+  border-radius: calc(var(--fx-radius-lg) - 1px) calc(var(--fx-radius-lg) - 1px) 0 0 !important;
+  overflow: hidden !important;
+}
+
+/* Fullscreen handling: strip padding, radius & border for video & DOM fullscreen */
+:root[inDOMFullscreen] #tabbrowser-tabpanels,
+:root[inFullscreen] #tabbrowser-tabpanels {
+  padding: 0 !important;
+}
+
+:root[inDOMFullscreen] #tabbrowser-tabpanels .browserSidebarContainer,
+:root[inFullscreen] #tabbrowser-tabpanels .browserSidebarContainer,
+:root[inDOMFullscreen] #tabbrowser-tabpanels browser[type="content"],
+:root[inFullscreen] #tabbrowser-tabpanels browser[type="content"] {
+  border-radius: 0 !important;
+  border: none !important;
 }
 
 /* ==========================================================================
@@ -280,13 +332,26 @@ panel {
   --panel-background: var(--fx-bg-raised) !important;
   --panel-border-color: var(--fx-border) !important;
   --panel-color: var(--fx-fg) !important;
+  --arrowpanel-background: var(--fx-bg-raised) !important;
+  --arrowpanel-border-color: var(--fx-border) !important;
+  --arrowpanel-color: var(--fx-fg) !important;
   border-radius: var(--fx-radius) !important;
+}
+
+.panel-arrowcontent,
+menupopup {
+  background-color: var(--fx-bg-raised) !important;
+  border: 1px solid var(--fx-border) !important;
+  border-radius: var(--fx-radius) !important;
+  box-shadow: none !important;
+  padding: var(--fx-space-xs) !important;
 }
 
 menuitem,
 menu {
   border-radius: var(--fx-radius-sm) !important;
-  margin: var(--fx-space-xs) var(--fx-space-sm) !important;
+  margin: var(--fx-space-xs) var(--fx-space-xs) !important;
+  padding: var(--fx-space-xs) var(--fx-space-md) !important;
   transition: background-color var(--fx-transition-fast) !important;
 }
 
@@ -295,36 +360,43 @@ menu:hover,
 menuitem[_moz-menuactive="true"],
 menu[_moz-menuactive="true"] {
   background-color: var(--fx-bg-subtle) !important;
+  color: var(--fx-fg) !important;
 }
 
 menuseparator {
-  border-color: var(--fx-border) !important;
-  margin: var(--fx-space-sm) var(--fx-space-md) !important;
+  border-top: 1px solid var(--fx-border) !important;
+  margin: var(--fx-space-xs) var(--fx-space-sm) !important;
   opacity: 0.5 !important;
 }
 
 /* ==========================================================================
-   §11  FINDBAR
+   §11  FINDBAR — Floating pill design
    ========================================================================== */
 
 findbar {
-  background-color: var(--fx-bg) !important;
-  border-top: 1px solid var(--fx-border) !important;
-  padding: var(--fx-space-sm) var(--fx-space-lg) !important;
+  background-color: var(--fx-bg-raised) !important;
+  border: 1px solid var(--fx-border) !important;
+  border-radius: var(--fx-radius) !important;
+  margin: var(--fx-space-sm) var(--fx-space-md) !important;
+  padding: var(--fx-space-xs) var(--fx-space-md) !important;
   color: var(--fx-fg) !important;
+  box-shadow: none !important;
 }
 
 findbar .findbar-textbox {
-  background-color: var(--fx-bg-raised) !important;
+  background-color: var(--fx-bg) !important;
   color: var(--fx-fg) !important;
-  border: 1px solid var(--fx-border) !important;
+  border: var(--fx-highlight-border-width) solid var(--fx-border) !important;
   border-radius: var(--fx-radius-sm) !important;
-  padding: var(--fx-space-sm) var(--fx-space-md) !important;
+  padding: var(--fx-space-xs) var(--fx-space-md) !important;
+  box-shadow: none !important;
   transition: border-color var(--fx-transition) !important;
 }
 
 findbar .findbar-textbox:focus {
   border-color: var(--fx-accent) !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 findbar toolbarbutton {
@@ -333,7 +405,12 @@ findbar toolbarbutton {
 }
 
 findbar toolbarbutton:hover {
-  background-color: var(--fx-bg-raised) !important;
+  background-color: var(--fx-bg-subtle) !important;
+}
+
+findbar .findbar-closebutton {
+  border-radius: var(--fx-radius-sm) !important;
+  margin-inline-start: var(--fx-space-xs) !important;
 }
 
 /* ==========================================================================
@@ -345,7 +422,8 @@ tooltip {
   color: var(--fx-fg) !important;
   border: 1px solid var(--fx-border) !important;
   border-radius: var(--fx-radius-sm) !important;
-  padding: var(--fx-space-sm) var(--fx-space-md) !important;
+  padding: var(--fx-space-xs) var(--fx-space-md) !important;
+  box-shadow: none !important;
 }
 
 notification-message {

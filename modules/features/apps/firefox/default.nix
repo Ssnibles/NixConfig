@@ -239,6 +239,7 @@
             pinnedNoUnload = false;
             pinnedNoUnloadExplicit = false;
             pinnedForcedDiscard = true;
+            tabPinnedMiddleClick = "discard";
 
             # --- Tabs Tree Hierarchy & Folding ---
             tabsTree = true;
