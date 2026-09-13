@@ -14,6 +14,7 @@ Quick reference for `jj` — the Git-compatible VCS used in this repo. Jujutsu w
 | `git commit` | `jj commit` / `jj new` | `jj commit` = describe `@` and create a new empty child; `jj new` = just create a new child |
 | `git stash` | *Not needed* | Just `jj new` to start fresh — your old work stays as a commit |
 | `git rebase -i` | `jj rebase` / `jj squash` | Much simpler — no interactive editor needed |
+| Published / Pushed history | **Immutable commits (`◆`)** | Pushed commits lock (`◆` vs `○`) to prevent accidental history rewriting |
 
 > [!IMPORTANT]
 > There is **no staging area**. Every save you make is instantly part of the working-copy commit `@`. To split changes out, use `jj split`.
@@ -170,6 +171,25 @@ jj git fetch                           # (alias: jf) — get latest remote chang
 jj rebase -d main                      # rebase your work onto latest main
 jj bookmark set main -r @-             # advance main to your commit (@- if committed, @ if working copy)
 jj git push --bookmark main           # (alias: jp --bookmark main) — push
+```
+
+### 🔒 Immutable Commits (`◆` vs `○`)
+
+In `jj log`, commit symbols indicate whether a commit can be modified:
+- `○` (open circle): **Mutable** draft commit (can be freely amended, rebased, or squashed).
+- `◆` (filled diamond): **Immutable** commit (locked against accidental changes).
+- `@`: Your current active working copy.
+
+#### Why did a commit become immutable after pushing?
+By default, any commit that has been pushed to a tracked remote bookmark (like `main@origin`) or is part of `trunk()` automatically becomes **immutable**. This is a safety feature so you don't accidentally rewrite published history.
+
+If you push `@` directly (e.g. `jj bookmark set main -r @` followed by push), that commit becomes immutable (`◆`). Because your working copy `@` must always remain mutable for editing files, `jj` automatically creates a new empty working copy commit on top of it.
+
+#### Modifying an immutable commit (override)
+If you truly need to amend or rebase an immutable commit:
+```bash
+jj edit --ignore-immutable <change-id>
+jj rebase --ignore-immutable -r <rev> -d <destination>
 ```
 
 ---
