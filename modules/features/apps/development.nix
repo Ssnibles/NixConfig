@@ -24,6 +24,7 @@
           [
             # Editors & AI tools
             pkgs.unstable.antigravity-cli
+            dbeaver-bin
 
             # Runtimes & Compilers
             nodejs

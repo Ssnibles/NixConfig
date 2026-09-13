@@ -49,7 +49,7 @@
       features.hyprland.enable = true;
       features.mangowc.enable = true;
       features.niri.enable = false;
-      features.zen-browser.enable = true;
+      features.zen-browser.enable = false;
 
       system.stateVersion = "26.05";
     };
