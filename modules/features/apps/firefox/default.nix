@@ -621,6 +621,7 @@
             "application/x-extension-shtml" = "firefox-devedition.desktop";
             "application/x-extension-xhtml" = "firefox-devedition.desktop";
             "application/x-extension-xht" = "firefox-devedition.desktop";
+            "application/pdf" = "org.pwmt.zathura.desktop";
           };
         };
 
