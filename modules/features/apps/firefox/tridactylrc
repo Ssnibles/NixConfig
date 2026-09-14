@@ -21,6 +21,11 @@ bind T current_url tabopen
 bind w fillcmdline winopen
 bind b fillcmdline buffer
 
+" ── Search Engines ────────────────────────────────────────────────────────────
+set searchurls.searx https://search.ssnibles.xyz/search?q=%s
+set searchurls.s https://search.ssnibles.xyz/search?q=%s
+set searchengine searx
+
 " ── Tab Navigation & Lifecycle ────────────────────────────────────────────────
 bind d tabclose
 bind u undo

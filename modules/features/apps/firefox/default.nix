@@ -577,7 +577,18 @@
               StartPage = "previous-session";
             };
             SearchEngines = {
-              Default = "DuckDuckGo";
+              Add = [
+                {
+                  Name = "SearXNG";
+                  URLTemplate = "https://search.ssnibles.xyz/search?q={searchTerms}";
+                  Method = "GET";
+                  IconURL = "https://search.ssnibles.xyz/static/themes/simple/img/favicon.png";
+                  Alias = "@searxng";
+                  Description = "SearXNG (search.ssnibles.xyz)";
+                  SuggestURLTemplate = "https://search.ssnibles.xyz/autocompleter?q={searchTerms}";
+                }
+              ];
+              Default = "SearXNG";
               PreventInstalls = true;
             };
           };

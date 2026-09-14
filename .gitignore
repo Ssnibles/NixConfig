@@ -9,3 +9,4 @@ nohup.out
 _installer-options.nix
 Session.vim*
 modules/features/apps/zen/colors.css
+.jj/
