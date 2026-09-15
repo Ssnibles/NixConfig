@@ -37,8 +37,8 @@
           provider: "custom"
           base_url: "http://${ollamaHost}:${toString ollamaPort}/v1"
           api_mode: "chat_completions"
-          context_length: 32768
-          ollama_num_ctx: 32768
+          context_length: 65536
+          ollama_num_ctx: 65536
       '';
     in
     {
