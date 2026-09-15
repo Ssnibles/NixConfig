@@ -14,8 +14,8 @@
       ...
     }:
     let
-      model = "qwen2.5-coder:1.5b";
-      ollamaHost = "127.0.0.1";
+      model = "qwen2.5:7b";
+      ollamaHost = "100.124.73.101"; # Homeserver Tailscale IP
       ollamaPort = 11434;
 
       hermesLauncher = pkgs.writeShellScriptBin "hermes" ''
@@ -37,8 +37,8 @@
           provider: "custom"
           base_url: "http://${ollamaHost}:${toString ollamaPort}/v1"
           api_mode: "chat_completions"
-          context_length: 65536
-          ollama_num_ctx: 65536
+          context_length: 32768
+          ollama_num_ctx: 32768
       '';
     in
     {
@@ -46,34 +46,28 @@
         environment.systemPackages = [
           hermesLauncher
           hermesAgentLauncher
-          pkgs.ollama
+          pkgs.ollama # Provides CLI client to interact with homeserver
           pkgs.uv
         ];
 
-        services.ollama = {
-          enable = true;
-          host = ollamaHost;
-          port = ollamaPort;
-          loadModels = [ model ];
-        };
+        # Offload heavy LLM inference to the homeserver to maximize laptop battery
+        services.ollama.enable = false;
 
         environment.sessionVariables = {
           HERMES_API_TIMEOUT = "1800";
           OPENAI_BASE_URL = "http://${ollamaHost}:${toString ollamaPort}/v1";
+          OLLAMA_HOST = "${ollamaHost}:${toString ollamaPort}";
         };
 
         system.activationScripts.hermes-config = ''
-                    HERMES_DIR="/home/${config.username}/.hermes"
-                    mkdir -p "$HERMES_DIR"
+          HERMES_DIR="/home/${config.username}/.hermes"
+          mkdir -p "$HERMES_DIR"
 
-                    CONFIG_FILE="$HERMES_DIR/config.yaml"
-                    if [ ! -f "$CONFIG_FILE" ]; then
-                      cat << 'EOF' > "$CONFIG_FILE"
+          cat << 'EOF' > "$HERMES_DIR/config.yaml"
           ${hermesConfig}
           EOF
-                    fi
 
-                    chown -R ${config.username}:users "$HERMES_DIR"
+          chown -R ${config.username}:users "$HERMES_DIR"
         '';
       };
     };
