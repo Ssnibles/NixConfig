@@ -131,12 +131,20 @@ map("n", "<leader>tn", "<cmd>set relativenumber!<CR>", { desc = "Toggle relative
 map("n", "<leader>td", function()
 	local new_state = not vim.diagnostic.is_enabled()
 	vim.diagnostic.enable(new_state)
-	if not new_state then
-		pcall(function() require("diagnostics").clear() end)
+	local ok, tid = pcall(require, "tiny-inline-diagnostic")
+	if ok then
+		if new_state then
+			tid.enable()
+		else
+			tid.disable()
+		end
 	end
 end, { desc = "Toggle diagnostics" })
 map("n", "<leader>tD", function()
-	require("diagnostics").toggle()
+	local ok, tid = pcall(require, "tiny-inline-diagnostic")
+	if ok then
+		tid.toggle()
+	end
 end, { desc = "Toggle inline diagnostics" })
 map("n", "<leader>ti", function()
 	local bufnr = vim.api.nvim_get_current_buf()
