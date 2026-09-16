@@ -56,6 +56,11 @@ require("gitsigns").setup({
 	current_line_blame = true,
 	current_line_blame_opts = { virt_text = true, virt_text_pos = "eol", virt_text_priority = 5000, delay = 800 },
 	current_line_blame_formatter = function(name, info)
+		local bufnr = vim.api.nvim_get_current_buf()
+		local lnum = vim.api.nvim_win_get_cursor(0)[1] - 1
+		if vim.diagnostic.is_enabled({ bufnr = bufnr }) and #vim.diagnostic.get(bufnr, { lnum = lnum }) > 0 then
+			return {}
+		end
 		if info.author == name then info.author = "You" end
 		local days = math.floor((os.time() - info.author_time) / 86400)
 		local when
@@ -78,6 +83,26 @@ require("gitsigns").setup({
 		map("n", "<leader>gu", gs.reset_hunk, "Unstage/reset hunk")
 		map("n", "<leader>gb", gs.blame_line, "Blame line")
 		map("n", "<leader>gD", gs.diffthis, "Diff this")
+	end,
+})
+
+-- Immediately clear git blame if diagnostics appear on the current line
+vim.api.nvim_create_autocmd("DiagnosticChanged", {
+	group = vim.api.nvim_create_augroup("GitSignsDiagnosticSync", { clear = true }),
+	callback = function(args)
+		local bufnr = args.buf
+		if not vim.api.nvim_buf_is_valid(bufnr) or bufnr ~= vim.api.nvim_get_current_buf() then
+			return
+		end
+		local lnum = vim.api.nvim_win_get_cursor(0)[1] - 1
+		if #vim.diagnostic.get(bufnr, { lnum = lnum }) > 0 then
+			local ns = vim.api.nvim_create_namespace("gitsigns_blame")
+			pcall(vim.api.nvim_buf_del_extmark, bufnr, ns, 1)
+		else
+			pcall(function()
+				require("gitsigns.current_line_blame").update(bufnr)
+			end)
+		end
 	end,
 })
 
