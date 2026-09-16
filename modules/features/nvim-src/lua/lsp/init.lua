@@ -221,6 +221,9 @@ local function register_server(name, config)
 	table.insert(managed_servers, { name = name, cmd = exe, active = is_exec })
 
 	if is_exec then
+		if not lsp_opts.cmd then
+			lsp_opts.cmd = { exe }
+		end
 		if next(lsp_opts) ~= nil then
 			lsp.config(name, lsp_opts)
 		end

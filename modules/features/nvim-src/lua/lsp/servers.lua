@@ -117,10 +117,23 @@ return {
 				hint = { enable = true, arrayIndex = "Disable" },
 				runtime = { version = "LuaJIT" },
 				diagnostics = { globals = { "vim" } },
-				completion = { callSnippet = "Replace" },
+				completion = {
+					callSnippet = "Replace",
+					keywordSnippet = "Replace",
+					displayContext = 5,
+				},
 				workspace = {
 					checkThirdParty = false,
-					library = { [vim.env.VIMRUNTIME] = true, [vim.fn.stdpath("config")] = true },
+					library = (function()
+						local lib = {
+							vim.env.VIMRUNTIME,
+							vim.fn.stdpath("config"),
+						}
+						for _, path in ipairs(vim.api.nvim_get_runtime_file("lua", true)) do
+							table.insert(lib, path)
+						end
+						return lib
+					end)(),
 				},
 				telemetry = { enable = false },
 			},
@@ -129,15 +142,18 @@ return {
 
 	-- Python
 	pyright = {
-		exe = "pyright-langserver",
+		cmd = { "pyright-langserver", "--stdio" },
 		filetypes = { "python" },
 		root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" },
 		settings = {
 			python = {
 				analysis = {
-					autoImportCompletions = true, autoSearchPaths = true,
-					diagnosticMode = "openFilesOnly", typeCheckingMode = "basic",
+					autoImportCompletions = true,
+					autoSearchPaths = true,
+					diagnosticMode = "openFilesOnly",
+					typeCheckingMode = "basic",
 					useLibraryCodeForTypes = true,
+					indexing = true,
 				},
 			},
 		},
@@ -192,7 +208,7 @@ return {
 
 	-- Kotlin
 	kotlin_language_server = {
-		exe = "kotlin-language-server",
+		cmd = { "kotlin-language-server" },
 		filetypes = { "kotlin" },
 		root_markers = { "settings.gradle.kts", "settings.gradle", "build.gradle.kts", "build.gradle", ".git" },
 	},
@@ -239,7 +255,7 @@ return {
 
 	-- Markdown
 	marksman = {
-		exe = "marksman",
+		cmd = { "marksman", "server" },
 		filetypes = { "markdown", "markdown.mdx" },
 		root_markers = { "marksman.toml", ".git" },
 	},
@@ -269,7 +285,7 @@ return {
 
 	-- QML
 	qmlls = {
-		exe = "qmlls",
+		cmd = { "qmlls" },
 		filetypes = { "qml" },
 		root_markers = { ".qmlls.ini", "shell.qml", "qmldir", ".git" },
 	},
@@ -284,6 +300,7 @@ return {
 				enable_inlay_hints = true, enable_snippets = true, warn_style = true,
 				enable_build_on_save = true, build_on_save_step = "check",
 				enable_autofix = true, enable_import_embedfile = true,
+				operator_completions = true, include_at_in_builtins = true,
 			},
 		},
 	},
