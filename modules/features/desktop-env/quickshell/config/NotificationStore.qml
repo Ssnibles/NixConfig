@@ -366,6 +366,7 @@ Singleton {
       var isSpotify = appNameLower.indexOf("spotify") !== -1 || deLower.indexOf("spotify") !== -1
       var isBrowserOrPlayer = isSpotify ||
         appNameLower.indexOf("zen") !== -1 || deLower.indexOf("zen") !== -1 ||
+        appNameLower.indexOf("helium") !== -1 || deLower.indexOf("helium") !== -1 ||
         appNameLower.indexOf("qutebrowser") !== -1 || deLower.indexOf("qutebrowser") !== -1 ||
         appNameLower.indexOf("firefox") !== -1 || deLower.indexOf("firefox") !== -1 ||
         appNameLower.indexOf("chrome") !== -1 || deLower.indexOf("chrome") !== -1 ||

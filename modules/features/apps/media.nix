@@ -86,6 +86,29 @@
               '';
             };
           };
+
+          xdg.mime-apps.default-applications = {
+            "application/pdf" = [ "org.pwmt.zathura.desktop" ];
+            "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
+            "image/png" = [ "feh.desktop" ];
+            "image/jpeg" = [ "feh.desktop" ];
+            "image/jpg" = [ "feh.desktop" ];
+            "image/webp" = [ "feh.desktop" ];
+            "image/gif" = [ "feh.desktop" ];
+          };
+        };
+
+        xdg.mime = {
+          enable = true;
+          defaultApplications = {
+            "application/pdf" = [ "org.pwmt.zathura.desktop" ];
+            "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
+            "image/png" = [ "feh.desktop" ];
+            "image/jpeg" = [ "feh.desktop" ];
+            "image/jpg" = [ "feh.desktop" ];
+            "image/webp" = [ "feh.desktop" ];
+            "image/gif" = [ "feh.desktop" ];
+          };
         };
       };
     };

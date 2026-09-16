@@ -108,6 +108,7 @@
       features.mangowc.enable = true;
       features.niri.enable = false;
       features.zen-browser.enable = false;
+      features.helium.enable = false;
 
       system.stateVersion = "26.05";
     };

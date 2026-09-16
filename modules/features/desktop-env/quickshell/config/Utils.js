@@ -43,6 +43,8 @@ var _appNameOverrides = {
   "antigravity-editor": "Antigravity",
   "zen": "Zen",
   "zen-browser": "Zen",
+  "helium": "Helium",
+  "helium-browser": "Helium",
   "zen-alpha": "Zen",
   "zen-beta": "Zen",
   "zen-twilight": "Zen",

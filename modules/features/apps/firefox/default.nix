@@ -610,31 +610,6 @@
           pkgs.tridactyl-native
         ];
 
-        environment.sessionVariables = lib.mkIf cfg.defaultBrowser {
-          BROWSER = "firefox";
-          DEFAULT_BROWSER = "firefox";
-        };
-
-        xdg.mime = lib.mkIf cfg.defaultBrowser {
-          enable = true;
-          defaultApplications = {
-            "text/html" = "firefox-devedition.desktop";
-            "application/xhtml+xml" = "firefox-devedition.desktop";
-            "application/xml" = "firefox-devedition.desktop";
-            "x-scheme-handler/http" = "firefox-devedition.desktop";
-            "x-scheme-handler/https" = "firefox-devedition.desktop";
-            "x-scheme-handler/ftp" = "firefox-devedition.desktop";
-            "x-scheme-handler/chrome" = "firefox-devedition.desktop";
-            "x-scheme-handler/about" = "firefox-devedition.desktop";
-            "x-scheme-handler/unknown" = "firefox-devedition.desktop";
-            "application/x-extension-htm" = "firefox-devedition.desktop";
-            "application/x-extension-html" = "firefox-devedition.desktop";
-            "application/x-extension-shtml" = "firefox-devedition.desktop";
-            "application/x-extension-xhtml" = "firefox-devedition.desktop";
-            "application/x-extension-xht" = "firefox-devedition.desktop";
-            "application/pdf" = "org.pwmt.zathura.desktop";
-          };
-        };
 
         # Firefox Enterprise Managed Storage Policy for WebExtension Sidebery
         environment.etc."firefox/policies/managed/{3c078156-979c-498b-8990-85f7987dd929}.json".text =
@@ -706,29 +681,6 @@
 
           environment.sessionVariables = {
             MOZ_ALLOW_DOWNGRADE = "1";
-          }
-          // lib.optionalAttrs cfg.defaultBrowser {
-            BROWSER = "firefox";
-            DEFAULT_BROWSER = "firefox";
-          };
-
-          xdg.mime-apps.default-applications = {
-            "text/html" = [ "firefox-devedition.desktop" ];
-            "application/xhtml+xml" = [ "firefox-devedition.desktop" ];
-            "application/xml" = [ "firefox-devedition.desktop" ];
-            "x-scheme-handler/http" = [ "firefox-devedition.desktop" ];
-            "x-scheme-handler/https" = [ "firefox-devedition.desktop" ];
-            "x-scheme-handler/ftp" = [ "firefox-devedition.desktop" ];
-            "x-scheme-handler/chrome" = [ "firefox-devedition.desktop" ];
-            "x-scheme-handler/about" = [ "firefox-devedition.desktop" ];
-            "x-scheme-handler/unknown" = [ "firefox-devedition.desktop" ];
-            "application/x-extension-htm" = [ "firefox-devedition.desktop" ];
-            "application/x-extension-html" = [ "firefox-devedition.desktop" ];
-            "application/x-extension-shtml" = [ "firefox-devedition.desktop" ];
-            "application/x-extension-xhtml" = [ "firefox-devedition.desktop" ];
-            "application/x-extension-xht" = [ "firefox-devedition.desktop" ];
-            "application/pdf" = [ "org.pwmt.zathura.desktop" ];
-            "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
           };
         };
 

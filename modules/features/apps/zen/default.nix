@@ -274,21 +274,6 @@
           (pkgs.writeShellScriptBin "zen-browser" ''exec zen-twilight "$@"'')
         ];
 
-        hjem.users."${config.username}" = {
-          enable = true;
-          files = {
-            ".config/mimeapps.list" = {
-              text = ''
-                [Default Applications]
-                text/html=zen-twilight.desktop;zen.desktop
-                x-scheme-handler/http=zen-twilight.desktop;zen.desktop
-                x-scheme-handler/https=zen-twilight.desktop;zen.desktop
-                x-scheme-handler/about=zen-twilight.desktop;zen.desktop
-                x-scheme-handler/unknown=zen-twilight.desktop;zen.desktop
-              '';
-            };
-          };
-        };
 
         # Direct repository symlinks for live-reloading UI customization (userChrome & userContent)
         # Bypasses Nix store so edits in NixConfig take effect immediately on Zen Browser restart
