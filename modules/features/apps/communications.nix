@@ -11,6 +11,7 @@
       config = {
         environment.systemPackages = with pkgs.unstable; [
           vesktop
+          concord-tui
         ];
       };
     };

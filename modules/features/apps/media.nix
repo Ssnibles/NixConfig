@@ -16,6 +16,7 @@
         environment.systemPackages = with pkgs.unstable; [
           zathura
           feh
+          spotatui
         ];
 
         hjem.users.${config.username} = {
