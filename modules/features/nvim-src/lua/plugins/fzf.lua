@@ -1,22 +1,15 @@
 local fzf = require("fzf-lua")
 
--- Shared ignore patterns for files and buffers
-local ignore_patterns = {
-	"^oil$", "^oil://", "oil://", "^grug%-far", "grug%-far",
-	"^fugitive$", "^fugitive://", "fugitive://",
-	"^term$", "^term://", "term://",
-	"^NvimTree_", "^neo%-tree", "^Trouble",
-	"^%[.*%]$", "^[^/%%.]+$", "/[^/%%.]+$",
+-- Excluded filetypes for buffer pickers
+local excluded_ft = {
+	oil = true,
+	fugitive = true,
+	qf = true,
+	help = true,
+	fzf = true,
+	ministarter = true,
+	Trouble = true,
 }
-
-local function is_valid_file_extension(name)
-	if not name or name == "" or name:match("^%w+://") or name:match("^%[.*%]$") then return false end
-	local tail = vim.fn.fnamemodify(name, ":t")
-	if not tail or tail == "" then return false end
-	if tail:match("%.([a-zA-Z0-9_-]+)$") then return true end
-	local valid = { Makefile = true, Dockerfile = true, Containerfile = true, LICENSE = true, LICENCE = true, Justfile = true, Rakefile = true }
-	return valid[tail] == true
-end
 
 fzf.setup({
 	winopts = {
@@ -42,21 +35,26 @@ fzf.setup({
 			treesitter = { enabled = true, disabled = { "markdown", "markdown_inline" }, context = false },
 		},
 	},
-	file_ignore_patterns = ignore_patterns,
 	oldfiles = { include_current_session = false, cwd_only = true, stat_file = false },
 	buffers = {
-		file_ignore_patterns = ignore_patterns,
 		filter = function(bufnr)
+			if not vim.api.nvim_buf_is_valid(bufnr) or not vim.bo[bufnr].buflisted then
+				return false
+			end
 			local bt = vim.bo[bufnr].buftype
 			local ft = vim.bo[bufnr].filetype
 			local name = vim.api.nvim_buf_get_name(bufnr)
 
-			if bt == "terminal" or name:match("^term://") or ft == "terminal" then return true end
-			if bt ~= "" then return false end
-			if ft == "oil" or ft:find("^grug%-far") or ft == "fugitive" or ft == "qf" or ft == "help" or ft == "fzf" then
+			if bt == "terminal" or ft == "terminal" or name:match("^term://") then
+				return true
+			end
+			if bt ~= "" or name == "" then
 				return false
 			end
-			return is_valid_file_extension(name)
+			if excluded_ft[ft] or ft:find("^grug%-far") then
+				return false
+			end
+			return true
 		end,
 	},
 	grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },
