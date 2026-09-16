@@ -249,8 +249,6 @@
             rustaceanvim
             clangd_extensions-nvim
             aerial-nvim
-
-            tiny-inline-diagnostic-nvim
             conform-nvim
             fidget-nvim
           ];
