@@ -54,8 +54,15 @@
         lib.genAttrs webMimeTypes (_: activeBrowserEntries)
       );
 
+      fileManagerAssociation = lib.optionalAttrs (cfg.fileManager != "none") {
+        "inode/directory" = [ cfg.fileManager ];
+      };
+
       # Combined MIME associations for default-apps
-      allDefaultApplications = browserMimeAssociations // cfg.extraAssociations;
+      allDefaultApplications =
+        browserMimeAssociations
+        // fileManagerAssociation
+        // cfg.extraAssociations;
     in
     {
       options.features.default-apps = {
@@ -98,6 +105,12 @@
           type = lib.types.str;
           default = "nvim";
           description = "Default text editor executable.";
+        };
+
+        fileManager = lib.mkOption {
+          type = lib.types.str;
+          default = "yazi.desktop";
+          description = "Default file manager desktop entry for directory MIME handling.";
         };
 
         extraAssociations = lib.mkOption {

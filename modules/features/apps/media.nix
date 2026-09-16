@@ -75,8 +75,8 @@
                 set notification-warning-fg "#${c.fg}"
 
                 # Highlight and selection colors
-                set highlight-color "#${c.fgDim}"
-                set highlight-active-color "#${c.purple}"
+                set highlight-color "#${c.yellow}"
+                set highlight-active-color "#${c.orange}"
 
                 # Index (Table of Contents) colors
                 set index-bg "#${c.bg}"

@@ -197,33 +197,36 @@
 
           histSize = 10000;
         };
+        environment.shellAliases = {
+          ll = "ls -l";
+          la = "ls -la";
+          lt = "ls -ltr";
+          # jj (jujutsu) workflow aliases
+          j = "jj";
+          jl = "jj log";
+          jd = "jj diff";
+          js = "jj status";
+          jc = "jj commit";
+          jn = "jj new";
+          je = "jj edit";
+          jb = "jj bookmark";
+          jp = "jj git push";
+          jf = "jj git fetch";
+          n = "nvim";
+          cat = "bat";
+          t = "tmux";
+          build-nixconf = "$HOME/NixConfig/build.sh";
+        };
+
+        environment.sessionVariables = {
+          MANPAGER = "sh -c 'col -bx | bat -l man -p'";
+        };
 
         # ── Fish Program Configuration ───────────────────────────────────────
         programs.fish = {
           enable = true;
           package = pkgs.unstable.fish;
           generateCompletions = false;
-
-          shellAliases = {
-            ll = "ls -l";
-            la = "ls -la";
-            lt = "ls -ltr";
-            # jj (jujutsu) workflow aliases
-            j = "jj";
-            jl = "jj log";
-            jd = "jj diff";
-            js = "jj status";
-            jc = "jj commit";
-            jn = "jj new";
-            je = "jj edit";
-            jb = "jj bookmark";
-            jp = "jj git push";
-            jf = "jj git fetch";
-            n = "nvim";
-            cat = "bat";
-            t = "tmux";
-            build-nixconf = "$HOME/NixConfig/build.sh";
-          };
 
           shellAbbrs = {
             y = "yazi";
@@ -232,8 +235,6 @@
 
           interactiveShellInit = ''
             set -g fish_greeting
-            set -gx EDITOR nvim
-            set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
             stty -ixon 2>/dev/null
 
             # Bind Ctrl+L to clear terminal scrollback and repaint prompt cleanly

@@ -687,33 +687,48 @@
         # Direct repository symlinks for live-reloading UI customization (userChrome, userContent, startpage)
         # Bypasses Nix store so edits in NixConfig take effect immediately on Firefox refresh/restart
         system.activationScripts.firefox-config = ''
-          mkdir -p /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome
+          FX_PROFILE="/home/${config.username}/.mozilla/firefox/${cfg.profileName}"
+          REPO_FX_DIR="/home/${config.username}/NixConfig/modules/features/apps/firefox"
+
+          mkdir -p "$FX_PROFILE/chrome"
           chown -R ${config.username}:users /home/${config.username}/.mozilla
 
           # Dynamic theme CSS variables
-          cat << 'EOF' > /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/colors.css
-          ${colorsCss}
-          EOF
-          chown ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/colors.css
+          cat << 'EOF' > "$FX_PROFILE/chrome/colors.css"
+${colorsCss}
+EOF
+          chown ${config.username}:users "$FX_PROFILE/chrome/colors.css"
 
           ${lib.optionalString (cfg.enableCustomCss && cfg.userChromeFile != null) ''
-            ln -sfn /home/${config.username}/NixConfig/modules/features/apps/firefox/userChrome.css /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userChrome.css
-            chown -h ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userChrome.css
+            if [ -d "$REPO_FX_DIR" ]; then
+              ln -sfn "$REPO_FX_DIR/userChrome.css" "$FX_PROFILE/chrome/userChrome.css"
+            else
+              cp -f ${./userChrome.css} "$FX_PROFILE/chrome/userChrome.css"
+            fi
+            chown -h ${config.username}:users "$FX_PROFILE/chrome/userChrome.css"
           ''}
           ${lib.optionalString (cfg.enableCustomCss && cfg.userContentFile != null) ''
-            ln -sfn /home/${config.username}/NixConfig/modules/features/apps/firefox/userContent.css /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userContent.css
-            chown -h ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/chrome/userContent.css
+            if [ -d "$REPO_FX_DIR" ]; then
+              ln -sfn "$REPO_FX_DIR/userContent.css" "$FX_PROFILE/chrome/userContent.css"
+            else
+              cp -f ${./userContent.css} "$FX_PROFILE/chrome/userContent.css"
+            fi
+            chown -h ${config.username}:users "$FX_PROFILE/chrome/userContent.css"
           ''}
 
           # Symlink startpage directory for live reloading
-          rm -rf /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage
-          ln -sfn /home/${config.username}/NixConfig/modules/features/apps/firefox/startpage /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage
-          chown -h ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage
+          rm -rf "$FX_PROFILE/startpage"
+          if [ -d "$REPO_FX_DIR/startpage" ]; then
+            ln -sfn "$REPO_FX_DIR/startpage" "$FX_PROFILE/startpage"
+          else
+            cp -rf ${./startpage} "$FX_PROFILE/startpage"
+          fi
+          chown -h ${config.username}:users "$FX_PROFILE/startpage"
 
-          cat << 'EOF' > /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/colors.css
-          ${colorsCss}
-          EOF
-          chown ${config.username}:users /home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/colors.css
+          cat << 'EOF' > "$FX_PROFILE/startpage/colors.css"
+${colorsCss}
+EOF
+          chown ${config.username}:users "$FX_PROFILE/startpage/colors.css"
 
           # Tridactyl native messaging host & configuration
           mkdir -p /home/${config.username}/.mozilla/native-messaging-hosts
@@ -721,8 +736,13 @@
           chown -h ${config.username}:users /home/${config.username}/.mozilla/native-messaging-hosts/tridactyl.json
 
           mkdir -p /home/${config.username}/.config/tridactyl
-          ln -sfn /home/${config.username}/NixConfig/modules/features/apps/firefox/tridactylrc /home/${config.username}/.config/tridactyl/tridactylrc
-          ln -sfn /home/${config.username}/NixConfig/modules/features/apps/firefox/tridactylrc /home/${config.username}/.tridactylrc
+          if [ -d "$REPO_FX_DIR" ]; then
+            ln -sfn "$REPO_FX_DIR/tridactylrc" /home/${config.username}/.config/tridactyl/tridactylrc
+            ln -sfn "$REPO_FX_DIR/tridactylrc" /home/${config.username}/.tridactylrc
+          else
+            cp -f ${./tridactylrc} /home/${config.username}/.config/tridactyl/tridactylrc
+            cp -f ${./tridactylrc} /home/${config.username}/.tridactylrc
+          fi
           chown -h ${config.username}:users /home/${config.username}/.config/tridactyl/tridactylrc /home/${config.username}/.tridactylrc
         '';
       };
