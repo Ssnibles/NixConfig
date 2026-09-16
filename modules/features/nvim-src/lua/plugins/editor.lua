@@ -54,7 +54,7 @@ require("gitsigns").setup({
 	signcolumn = true,
 	numhl = true,
 	current_line_blame = true,
-	current_line_blame_opts = { virt_text = true, virt_text_pos = "eol", delay = 800 },
+	current_line_blame_opts = { virt_text = true, virt_text_pos = "right_align", delay = 800 },
 	current_line_blame_formatter = function(name, info)
 		if info.author == name then info.author = "You" end
 		local days = math.floor((os.time() - info.author_time) / 86400)
