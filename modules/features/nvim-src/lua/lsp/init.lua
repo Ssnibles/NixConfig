@@ -34,15 +34,7 @@ end
 -- ── Diagnostics ──────────────────────────────────────────────────────
 
 vim.diagnostic.config({
-	virtual_text = {
-		spacing = 4,
-		prefix = "●",
-		severity = { min = vim.diagnostic.severity.WARN },
-		format = function(d)
-			local msg = d.message
-			return msg and msg:gsub("%s+", " "):gsub("\n", " ") or ""
-		end,
-	},
+	virtual_text = false,
 	underline = true,
 	signs = {
 		text = {
