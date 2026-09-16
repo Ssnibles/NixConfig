@@ -217,72 +217,143 @@ local function expand_line(bufnr, lnum)
 	local primary = diags[1]
 	local primary_info = SEVERITIES[primary.severity] or SEVERITIES[vim.diagnostic.severity.INFO]
 
-	local col = math.min(math.max(primary.col or 0, 0), #line_text)
-	local prefix = line_text:sub(1, col)
-	local visual_col = vim.fn.strdisplaywidth(prefix)
-	local code_indent = vim.fn.strdisplaywidth(line_text:match("^%s*") or "")
-
 	local win_width = vim.api.nvim_win_get_width(win)
-	local max_indent = math.max(win_width - 35, 2)
-	local arrow_col = math.min(visual_col, max_indent)
-	local box_indent = arrow_col <= 24 and arrow_col or code_indent
+	local code_width = vim.fn.strdisplaywidth(line_text)
+	local space_right = win_width - code_width - 6
 
-	local max_msg_width = math.max(win_width - box_indent - 16, 28)
+	if space_right >= 32 then
+		-- ── Expand on the right of the line (tiny-inline style) ───────────
+		local arrow = "  "
+		local max_msg_width = math.max(space_right - #arrow - 8, 24)
+		local p_msg = primary.message:gsub("[\r\n]+", " "):gsub("%s+", " ")
+		local wrapped = wrap_text(p_msg, max_msg_width)
 
-	local virt_lines = {}
-
-	-- Line 1: Pointer arrow pointing to the column
-	table.insert(virt_lines, {
-		{ string.rep(" ", arrow_col) .. "▲", primary_info.hl },
-	})
-
-	-- Diagnostic items (up to 3)
-	local count = math.min(#diags, 3)
-	for idx = 1, count do
-		local d = diags[idx]
-		local info = SEVERITIES[d.severity] or SEVERITIES[vim.diagnostic.severity.INFO]
-		local is_last = (idx == count)
-		local connector = is_last and "╰─ " or "├─ "
-		local cont_prefix = is_last and "   " or "│  "
-
-		local msg = d.message:gsub("\r", ""):gsub("\t", "  ")
-		local wrapped = wrap_text(msg, max_msg_width)
-
-		-- First line of diagnostic with solid background pill
-		local first_row = {
-			{ string.rep(" ", box_indent) .. connector, info.hl },
-			{ " " .. info.sign .. " " .. (wrapped[1] or "") .. " ", info.text_hl },
+		-- First line of diagnostic directly at EOL
+		local virt_text = {
+			{ arrow, primary_info.hl },
+			{ " " .. primary_info.sign .. " " .. (wrapped[1] or "") .. " ", primary_info.text_hl },
 		}
-
-		if d.source or d.code then
-			local badge = " [" .. (d.source or "") .. (d.code and (":" .. tostring(d.code)) or "") .. "]"
-			first_row[#first_row + 1] = { badge, "Comment" }
+		if primary.source or primary.code then
+			local badge = " [" .. (primary.source or "") .. (primary.code and (":" .. tostring(primary.code)) or "") .. "]"
+			virt_text[#virt_text + 1] = { badge, "Comment" }
 		end
 
-		table.insert(virt_lines, first_row)
+		local virt_lines = {}
+		local right_indent = string.rep(" ", code_width + #arrow)
 
-		-- Continuation lines for wrapped text
+		-- Continuation lines for wrapped message
 		for w_idx = 2, #wrapped do
 			table.insert(virt_lines, {
-				{ string.rep(" ", box_indent) .. cont_prefix .. "  ", info.hl },
-				{ "   " .. wrapped[w_idx] .. " ", info.text_hl },
+				{ right_indent .. "│ ", primary_info.hl },
+				{ "   " .. wrapped[w_idx] .. " ", primary_info.text_hl },
 			})
 		end
-	end
 
-	if #diags > count then
-		local remaining = #diags - count
-		table.insert(virt_lines, {
-			{ string.rep(" ", box_indent) .. "    ", "Comment" },
-			{ ("… and %d more"):format(remaining), "Comment" },
+		-- Additional diagnostics on the same line
+		local count = math.min(#diags, 3)
+		for idx = 2, count do
+			local d = diags[idx]
+			local info = SEVERITIES[d.severity] or SEVERITIES[vim.diagnostic.severity.INFO]
+			local is_last = (idx == count)
+			local connector = is_last and "╰─ " or "├─ "
+			local d_msg = d.message:gsub("[\r\n]+", " "):gsub("%s+", " ")
+			local d_wrapped = wrap_text(d_msg, max_msg_width)
+
+			local row = {
+				{ right_indent .. connector, info.hl },
+				{ " " .. info.sign .. " " .. (d_wrapped[1] or "") .. " ", info.text_hl },
+			}
+			if d.source or d.code then
+				local badge = " [" .. (d.source or "") .. (d.code and (":" .. tostring(d.code)) or "") .. "]"
+				row[#row + 1] = { badge, "Comment" }
+			end
+			table.insert(virt_lines, row)
+
+			local cont = is_last and "   " or "│  "
+			for w_idx = 2, #d_wrapped do
+				table.insert(virt_lines, {
+					{ right_indent .. cont, info.hl },
+					{ "   " .. d_wrapped[w_idx] .. " ", info.text_hl },
+				})
+			end
+		end
+
+		if #diags > count then
+			table.insert(virt_lines, {
+				{ right_indent .. "   ", "Comment" },
+				{ ("… and %d more"):format(#diags - count), "Comment" },
+			})
+		end
+
+		local extmark_opts = {
+			virt_text = virt_text,
+			virt_text_pos = "eol",
+			priority = 200,
+		}
+		if #virt_lines > 0 then
+			extmark_opts.virt_lines = virt_lines
+			extmark_opts.virt_lines_above = false
+		end
+
+		pcall(vim.api.nvim_buf_set_extmark, bufnr, ns_expanded, lnum, 0, extmark_opts)
+	else
+		-- ── Expand underneath (code is too wide to fit on the right) ──────
+		local col = math.min(math.max(primary.col or 0, 0), #line_text)
+		local visual_col = vim.fn.strdisplaywidth(line_text:sub(1, col))
+		local code_indent = vim.fn.strdisplaywidth(line_text:match("^%s*") or "")
+		local max_indent = math.max(win_width - 35, 2)
+		local arrow_col = math.min(visual_col, max_indent)
+		local box_indent = arrow_col <= 24 and arrow_col or code_indent
+		local max_msg_width = math.max(win_width - box_indent - 16, 28)
+
+		local virt_lines = {
+			{ { string.rep(" ", arrow_col) .. "▲", primary_info.hl } },
+		}
+
+		local count = math.min(#diags, 3)
+		for idx = 1, count do
+			local d = diags[idx]
+			local info = SEVERITIES[d.severity] or SEVERITIES[vim.diagnostic.severity.INFO]
+			local is_last = (idx == count)
+			local connector = is_last and "╰─ " or "├─ "
+			local cont_prefix = is_last and "   " or "│  "
+
+			local msg = d.message:gsub("[\r\n]+", " "):gsub("%s+", " ")
+			local wrapped = wrap_text(msg, max_msg_width)
+
+			local first_row = {
+				{ string.rep(" ", box_indent) .. connector, info.hl },
+				{ " " .. info.sign .. " " .. (wrapped[1] or "") .. " ", info.text_hl },
+			}
+
+			if d.source or d.code then
+				local badge = " [" .. (d.source or "") .. (d.code and (":" .. tostring(d.code)) or "") .. "]"
+				first_row[#first_row + 1] = { badge, "Comment" }
+			end
+
+			table.insert(virt_lines, first_row)
+
+			for w_idx = 2, #wrapped do
+				table.insert(virt_lines, {
+					{ string.rep(" ", box_indent) .. cont_prefix .. "  ", info.hl },
+					{ "   " .. wrapped[w_idx] .. " ", info.text_hl },
+				})
+			end
+		end
+
+		if #diags > count then
+			table.insert(virt_lines, {
+				{ string.rep(" ", box_indent) .. "    ", "Comment" },
+				{ ("… and %d more"):format(#diags - count), "Comment" },
+			})
+		end
+
+		pcall(vim.api.nvim_buf_set_extmark, bufnr, ns_expanded, lnum, 0, {
+			virt_lines = virt_lines,
+			virt_lines_above = false,
+			priority = 200,
 		})
 	end
-
-	pcall(vim.api.nvim_buf_set_extmark, bufnr, ns_expanded, lnum, 0, {
-		virt_lines = virt_lines,
-		virt_lines_above = false,
-		priority = 200,
-	})
 end
 
 --- Collapse any expanded diagnostic in the buffer
