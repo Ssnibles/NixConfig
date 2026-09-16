@@ -4,6 +4,9 @@ require("luasnip").setup({
 	delete_check_events = "InsertLeave",
 })
 require("luasnip.loaders.from_vscode").lazy_load()
+require("luasnip.loaders.from_lua").lazy_load({
+	paths = { vim.fn.stdpath("config") .. "/lua/snippets" },
+})
 
 -- ── Blink.cmp ────────────────────────────────────────────────────────
 
@@ -222,22 +225,4 @@ if copilot_ok then
 	end, { desc = "Toggle copilot panel" })
 end
 
--- ── Filetype snippets (deferred via autocmds) ────────────────────────
 
-local snippet_loaded = {}
-local function load_snippets(ft, mod)
-	vim.api.nvim_create_autocmd("FileType", {
-		pattern = ft,
-		once = true,
-		callback = function()
-			if not snippet_loaded[mod] then
-				snippet_loaded[mod] = true
-				pcall(require, mod)
-			end
-		end,
-	})
-end
-
-load_snippets("typst", "snippets.typst")
-load_snippets("nix", "snippets.nix")
-load_snippets("java", "snippets.java")
