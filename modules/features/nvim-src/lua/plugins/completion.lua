@@ -8,16 +8,40 @@ require("luasnip.loaders.from_vscode").lazy_load()
 -- ── Blink.cmp ────────────────────────────────────────────────────────
 
 local cmp = require("blink.cmp")
+local ls = require("luasnip")
+
+-- Global LuaSnip jump as fallback in insert & snippet selection modes
+vim.keymap.set({ "i", "s" }, "<C-]>", function()
+	if ls.locally_jumpable(1) then
+		ls.jump(1)
+	end
+end, { desc = "Snippet forward", silent = true })
 
 local keymap = {
 	preset = "none",
-	["<C-space>"] = { function() cmp.show() end },
-	["<CR>"] = { "accept", "fallback" },
-	["<Tab>"] = { "snippet_forward", "fallback" },
-	["<S-Tab>"] = { "snippet_backward", "fallback" },
-	["<Esc>"] = { "cancel", "fallback" },
-	["<C-c>"] = { "cancel", "fallback" },
+	["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
+	["<CR>"] = { "fallback" },
+	["<Tab>"] = { "select_and_accept", "fallback" },
+	["<C-]>"] = { "snippet_forward", "fallback" },
+	["<S-Tab>"] = { "fallback" },
+	["<Esc>"] = {
+		function(cmp)
+			if cmp.is_visible() then
+				cmp.cancel()
+			end
+		end,
+		"fallback",
+	},
+	["<C-c>"] = {
+		function(cmp)
+			if cmp.is_visible() then
+				cmp.cancel()
+			end
+		end,
+		"fallback",
+	},
 	["<C-e>"] = { "cancel", "fallback" },
+	["<C-y>"] = { "select_and_accept", "fallback" },
 	["<Up>"] = { "select_prev", "fallback" },
 	["<Down>"] = { "select_next", "fallback" },
 	["<C-p>"] = { "select_prev", "fallback" },
@@ -164,12 +188,19 @@ cmp.setup({
 	},
 	cmdline = {
 		keymap = {
-			preset = "inherit",
+			preset = "none",
 			["<CR>"] = { "fallback" },
+			["<Tab>"] = { "select_and_accept", "fallback" },
+			["<S-Tab>"] = { "fallback" },
+			["<Up>"] = { "select_prev", "fallback" },
+			["<Down>"] = { "select_next", "fallback" },
+			["<C-k>"] = { "select_prev", "fallback" },
+			["<C-j>"] = { "select_next", "fallback" },
+			["<C-p>"] = { "select_prev", "fallback" },
+			["<C-n>"] = { "select_next", "fallback" },
+			["<C-e>"] = { "cancel", "fallback" },
 			["<Esc>"] = false,
 			["<C-c>"] = false,
-			["<Tab>"] = { "select_next", "fallback" },
-			["<S-Tab>"] = { "select_prev", "fallback" },
 		},
 		completion = { menu = { auto_show = true }, ghost_text = { enabled = true } },
 	},
