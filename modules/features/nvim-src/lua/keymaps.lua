@@ -111,29 +111,7 @@ map("n", "]l", "<cmd>lnext<CR>", { desc = "Next location" })
 map("n", "[l", "<cmd>lprevious<CR>", { desc = "Previous location" })
 
 -- ── Diagnostics ──────────────────────────────────────────────────────
-vim.diagnostic.config({
-	virtual_text = {
-		spacing = 4,
-		prefix = "●",
-		severity = { min = vim.diagnostic.severity.WARN },
-		format = function(d)
-			local msg = d.message
-			return msg and msg:gsub("%s+", " "):gsub("\n", " ") or ""
-		end,
-	},
-	underline = true,
-	signs = {
-		text = {
-			[vim.diagnostic.severity.ERROR] = "×",
-			[vim.diagnostic.severity.WARN] = "▲",
-			[vim.diagnostic.severity.HINT] = "•",
-			[vim.diagnostic.severity.INFO] = "•",
-		},
-	},
-	severity_sort = true,
-	float = { border = "rounded", source = "if_many", max_width = 70 },
-	update_in_insert = false,
-})
+
 
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })

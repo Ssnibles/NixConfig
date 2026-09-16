@@ -33,28 +33,7 @@ autocmd("BufWritePre", {
 	end,
 })
 
--- ── LSP attach: keymaps, inlay hints, code lens ──────────────────────
-autocmd("LspAttach", {
-	group = augroup,
-	callback = function(args)
-		if vim.g.attach_lsp_keymaps then
-			pcall(vim.g.attach_lsp_keymaps, args.buf)
-		end
 
-		if vim.lsp.inlay_hint and not vim.lsp.inlay_hint.is_enabled({ bufnr = args.buf }) then
-			pcall(vim.lsp.inlay_hint.enable, true, { bufnr = args.buf })
-		end
-
-		local client = vim.lsp.get_client_by_id(args.data.client_id)
-		if client and client:supports_method("textDocument/codeLens", args.buf) then
-			if vim.lsp.codelens.enable then
-				pcall(vim.lsp.codelens.enable, true, { bufnr = args.buf })
-			else
-				pcall(vim.lsp.codelens.refresh, { bufnr = args.buf })
-			end
-		end
-	end,
-})
 
 -- ── Yank highlight ───────────────────────────────────────────────────
 autocmd("TextYankPost", {

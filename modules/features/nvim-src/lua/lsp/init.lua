@@ -31,9 +31,31 @@ local function first_executable(commands)
 	return nil
 end
 
--- Export helpers for use by other modules (lang.lua, dap.lua)
-vim.g._lsp_executable = executable
-vim.g._lsp_first_executable = first_executable
+-- ── Diagnostics ──────────────────────────────────────────────────────
+
+vim.diagnostic.config({
+	virtual_text = {
+		spacing = 4,
+		prefix = "●",
+		severity = { min = vim.diagnostic.severity.WARN },
+		format = function(d)
+			local msg = d.message
+			return msg and msg:gsub("%s+", " "):gsub("\n", " ") or ""
+		end,
+	},
+	underline = true,
+	signs = {
+		text = {
+			[vim.diagnostic.severity.ERROR] = "×",
+			[vim.diagnostic.severity.WARN] = "▲",
+			[vim.diagnostic.severity.HINT] = "•",
+			[vim.diagnostic.severity.INFO] = "•",
+		},
+	},
+	severity_sort = true,
+	float = { border = CONFIG.border, source = "if_many", max_width = 70 },
+	update_in_insert = false,
+})
 
 -- ── Capabilities ─────────────────────────────────────────────────────
 
@@ -83,15 +105,6 @@ local function attach_lsp_keymaps(bufnr)
 		pcall(lsp.codelens.run)
 	end, "CodeLens action")
 
-	-- Format
-	map("<leader>cf", function()
-		local ok, conform = pcall(require, "conform")
-		if ok then
-			conform.format({ bufnr = bufnr, lsp_format = "fallback" })
-		else
-			lsp.buf.format({ async = true })
-		end
-	end, "Format buffer")
 
 	-- Code outline (Aerial → fzf-lua → built-in)
 	map("<leader>co", function()
@@ -173,22 +186,37 @@ local function attach_lsp_keymaps(bufnr)
 		end
 	end, "LSP Memory/Status")
 
-	-- Inlay hints
-	if lsp.inlay_hint then
-		pcall(lsp.inlay_hint.enable, true, { bufnr = bufnr })
-	end
 end
 
-vim.g.attach_lsp_keymaps = attach_lsp_keymaps
+-- ── LSP Attach Autocommand ───────────────────────────────────────────
+
+vim.api.nvim_create_autocmd("LspAttach", {
+	group = vim.api.nvim_create_augroup("UserLspAttach", { clear = true }),
+	callback = function(args)
+		attach_lsp_keymaps(args.buf)
+
+		local client = lsp.get_client_by_id(args.data.client_id)
+		if not client then return end
+
+		if lsp.inlay_hint and client:supports_method("textDocument/inlayHint", args.buf) then
+			pcall(lsp.inlay_hint.enable, true, { bufnr = args.buf })
+		end
+
+		if client:supports_method("textDocument/codeLens", args.buf) then
+			if lsp.codelens.enable then
+				pcall(lsp.codelens.enable, true, { bufnr = args.buf })
+			else
+				pcall(lsp.codelens.refresh, { bufnr = args.buf })
+			end
+		end
+	end,
+})
 
 -- ── Global LSP defaults ─────────────────────────────────────────────
 
 lsp.config("*", {
 	capabilities = capabilities,
 	flags = { debounce_text_changes = 150 },
-	on_attach = function(_, bufnr)
-		attach_lsp_keymaps(bufnr)
-	end,
 })
 
 -- ── Server registration ──────────────────────────────────────────────
@@ -233,7 +261,6 @@ local function register_server(name, config)
 	end
 end
 
-vim.g.register_lsp_server = register_server
 
 -- Load and register all servers from the data table
 local servers = require("lsp.servers")
@@ -383,3 +410,10 @@ local ok_roslyn, roslyn = pcall(require, "roslyn")
 if ok_roslyn then
 	roslyn.setup({ filewatching = "roslyn" })
 end
+
+return {
+	executable = executable,
+	first_executable = first_executable,
+	register_server = register_server,
+	attach_keymaps = attach_lsp_keymaps,
+}
