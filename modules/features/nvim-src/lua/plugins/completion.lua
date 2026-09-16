@@ -35,17 +35,51 @@ cmp.setup({
 	appearance = {
 		nerd_font_variant = "mono",
 		kind_icons = {
-			Text = "󰉿", Method = "󰆧", Function = "󰊕", Constructor = "",
-			Field = "󰜢", Variable = "󰀫", Class = "󰠱", Interface = "",
-			Module = "", Property = "󰜢", Unit = "󰑭", Value = "󰎠",
-			Enum = "", Keyword = "󰌋", Snippet = "", Color = "󰏘",
-			File = "󰈙", Folder = "󰉋", Reference = "󰈇", EnumMember = "",
-			Constant = "󰏿", Struct = "󰙅", Event = "", Operator = "󰆕",
+			Text = "󰉿",
+			Method = "󰆧",
+			Function = "󰊕",
+			Constructor = "󰒓",
+			Field = "󰜢",
+			Variable = "󰀫",
+			Class = "󰠱",
+			Interface = "󱡠",
+			Module = "󰅩",
+			Property = "󰜢",
+			Unit = "󰑭",
+			Value = "󰎠",
+			Enum = "󰦨",
+			EnumMember = "󰦨",
+			Keyword = "󰌋",
+			Snippet = "󱄽",
+			Color = "󰏘",
+			File = "󰈙",
+			Folder = "󰉋",
+			Reference = "󰈇",
+			Constant = "󰏿",
+			Struct = "󰙅",
+			Event = "󱐋",
+			Operator = "󰆕",
 			TypeParameter = "󰊄",
+			Copilot = "",
 		},
 	},
+	fuzzy = {
+		implementation = "prefer_rust_with_warning",
+		use_proximity = true,
+		sorts = { "exact", "score", "sort_text" },
+	},
 	sources = {
-		default = { "lsp", "copilot", "snippets", "buffer", "path" },
+		-- Context-aware: in comments, suppress LSP symbol noise and favor prose/buffer/spell/copilot
+		default = function()
+			local ok, node = pcall(vim.treesitter.get_node)
+			if ok and node then
+				local node_type = node:type()
+				if node_type:match("comment") then
+					return { "buffer", "copilot", "spell" }
+				end
+			end
+			return { "lsp", "copilot", "snippets", "buffer", "path" }
+		end,
 		per_filetype = {
 			typst = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
 			markdown = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
@@ -53,15 +87,51 @@ cmp.setup({
 			gitcommit = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
 		},
 		providers = {
-			copilot = { name = "copilot", module = "blink-cmp-copilot", score_offset = 100, async = true },
+			lsp = {
+				name = "LSP",
+				module = "blink.cmp.sources.lsp",
+				score_offset = 100,
+				fallbacks = { "buffer" },
+			},
+			copilot = {
+				name = "copilot",
+				module = "blink-cmp-copilot",
+				score_offset = 80,
+				async = true,
+			},
+			snippets = {
+				name = "Snippets",
+				module = "blink.cmp.sources.snippets",
+				min_keyword_length = 2,
+				score_offset = 60,
+				opts = {
+					use_label_description = true,
+				},
+			},
+			path = {
+				name = "Path",
+				module = "blink.cmp.sources.path",
+				min_keyword_length = 2,
+				score_offset = 70,
+				fallbacks = { "buffer" },
+				opts = {
+					show_hidden_files_by_default = true,
+				},
+			},
+			buffer = {
+				name = "Buffer",
+				module = "blink.cmp.sources.buffer",
+				max_items = 5,
+				min_keyword_length = 3,
+				score_offset = -5,
+			},
 			spell = {
-				name = "Spell", module = "blink-cmp-spell",
+				name = "Spell",
+				module = "blink-cmp-spell",
 				enabled = function() return vim.wo.spell end,
 				opts = { max_entries = 8 },
+				score_offset = 10,
 			},
-			buffer = { max_items = 8, min_keyword_length = 3, score_offset = -3 },
-			snippets = { min_keyword_length = 1, score_offset = 10 },
-			path = { min_keyword_length = 2, score_offset = -2 },
 		},
 	},
 	completion = {
@@ -72,17 +142,25 @@ cmp.setup({
 			},
 		},
 		menu = {
-			auto_show = true, direction_priority = { "s", "n" }, border = "rounded", scrollbar = true,
+			auto_show = true,
+			direction_priority = { "s", "n" },
+			border = "rounded",
+			scrollbar = true,
 			draw = {
 				padding = { 1, 1 },
 				columns = { { "kind_icon", gap = 1 }, { "label", "label_description", gap = 1 }, { "kind" } },
 			},
 		},
 		documentation = {
-			auto_show = true, auto_show_delay_ms = 50,
+			auto_show = true,
+			auto_show_delay_ms = 50,
 			window = { border = "rounded", max_width = 80, max_height = 30 },
 		},
-		ghost_text = { enabled = true, show_with_selection = true, show_without_selection = false },
+		ghost_text = {
+			enabled = true,
+			show_with_selection = true,
+			show_without_selection = false,
+		},
 	},
 	cmdline = {
 		keymap = {
