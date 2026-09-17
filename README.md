@@ -81,7 +81,7 @@ The configuration is organized into deferred module groups defined in [`modules/
 +---------------------------------------------------------------------------------+
 |                                   flake.nix                                     |
 |    inputs: nixpkgs (26.05), nixpkgs-unstable, flake-parts, import-tree,         |
-|            hjem, nvf, mangowc, dwl, millennium, zen-browser, devenv ...         |
+|            hjem, nvf, mangowc, millennium, zen-browser, devenv ...              |
 +----------------------------------------+----------------------------------------+
                                          |
                                          | inputs.import-tree ./modules
@@ -143,7 +143,6 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 
 - **Multi-Compositor Choice**: Choose between dynamically tiled, manual, or scrollable Wayland sessions:
   - **Hyprland**: Dynamic Wayland compositor configured through [`hyprland.lua`](file:///home/josh/NixConfig/modules/features/desktop-env/hyprland/hyprland.lua) with theme palette integration.
-  - **DWL (dwm for Wayland)**: Fast, suckless-inspired Wayland compositor equipped with an autostart wrapper and Quickshell status bar support.
   - **MangoWC**: Modern DWM-style compositor with dwindle layouts, special workspace tags, and dynamic border coloration.
   - **Niri**: Scrollable-tiling Wayland compositor with `niri-float-sticky` and `xwayland-satellite` support.
 - **Shikane Display Daemon**: Dynamic multi-monitor profile manager ([`shikane/default.nix`](file:///home/josh/NixConfig/modules/features/desktop-env/shikane/default.nix)) automatically adapting layouts for laptop-only, dual-display, and external monitor setups.
@@ -154,7 +153,7 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 ### Quickshell Desktop Shell
 
 - **Unified QML Shell Framework**: Highly modular desktop shell written in QML, providing consistent widgets and bars across all compositors.
-- **Multi-Compositor Routing**: Abstract `WmService.qml` routing events across DWL, Hyprland, Mango, Niri, and River.
+- **Multi-Compositor Routing**: Abstract `WmService.qml` routing events across Hyprland, Mango, Niri, and River.
 - **Command Center & Lock Screen**: Pull-down system control center with quick toggles, sliders, media controls, and a dedicated lock screen overlay.
 - **Rich Status Bar**: Modular status bar featuring workspaces, active window titles, volume, battery percentage, Bluetooth devices, network telemetry, and clock widgets.
 - **Notification Daemon**: Built-in notification overlay and notification store replacement.
@@ -204,7 +203,7 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 NixConfig/
 ├── flake.nix                          # Flake inputs and dendritic entry point
 ├── build.sh                           # Rebuild script with conventional commit generation
-├── rebuild.sh                         # Fast rebuild helper (DWL override, boot, test)
+├── rebuild.sh                         # Fast rebuild helper (boot, test)
 ├── install.sh                         # Bootstrap installer for NixOS Minimal ISOs
 ├── todo.txt                           # Project task tracking
 │
@@ -223,7 +222,7 @@ NixConfig/
 │       ├── index.md                   # Wiki homepage & reference index
 │       ├── esp32-arduino.md           # ESP32 & Arduino toolchain guide
 │       ├── quickshell.md              # Quickshell QML shell & widget architecture
-│       ├── compositors.md             # Hyprland, DWL, MangoWC, and Niri guide
+│       ├── compositors.md             # Hyprland, MangoWC, and Niri guide
 │       ├── neovim.md                  # NVF declarative Neovim & Lua plugins
 │       ├── firefox.md                 # Firefox userChrome & Sidebery customization
 │       ├── vivado-fpga.md             # AMD Vivado Distrobox container guide
@@ -275,7 +274,6 @@ NixConfig/
     │   ├── desktop-env/               # Graphical environment & window managers
     │   │   ├── cursors.nix            # Bibata Modern Ice cursor configuration
     │   │   ├── fonts.nix              # Typography definitions (SF Pro, Inter, Noto)
-    │   │   ├── dwl/                   # DWL Wayland compositor & autostart wrapper
     │   │   ├── hyprland/              # Hyprland compositor & hyprland.lua
     │   │   ├── mangowc/               # Mango Wayland compositor configuration
     │   │   ├── niri/                  # Niri scrollable compositor configuration
@@ -326,7 +324,7 @@ NixConfig/
 | **Power Management**   | AC performance mode, no throttling                 | TLP battery profiles, ASPM power savings, AMDGPU ABM |
 | **Display Manager**    | Ly TTY Login Manager                               | Ly TTY Login Manager                                 |
 | **Bootloader**         | Limine (EFI) with Plymouth Catppuccin splash       | Limine (EFI) with Plymouth Catppuccin splash         |
-| **Active Compositors** | Hyprland, DWL, MangoWC                             | DWL, MangoWC                                         |
+| **Active Compositors** | Hyprland, MangoWC                                  | MangoWC                                              |
 | **Hardware Quirks**    | ASUS WMI Bluetooth rfkill unblock service          | ELAN ACPI touchpad polling workaround, ath11k Wi-Fi  |
 | **Peripheral Stack**   | Logitech wireless support, DualSense kernel driver | DFU / OpenOCD / Meshtastic serial udev permissions   |
 | **Audio & Media**      | Low-latency PipeWire, Amberol, Spotify             | Low-latency PipeWire, Gowall, Spotify                |
@@ -341,7 +339,7 @@ Comprehensive documentation, architecture references, and step-by-step workflow 
 | :----------------------- | :--------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
 | **ESP32 & Arduino**      | [esp32-arduino.md](docs/wiki/esp32-arduino.md) | ESP32 toolchains, `arduino-cli`, `esptool`, Neovim Clangd LSP compilation database generation (`esp-gen-lsp`), and project templates |
 | **Quickshell UI**        | [quickshell.md](docs/wiki/quickshell.md)       | Quickshell QML framework architecture, status bar widgets, Command Center, Lock Screen, and IPC control                              |
-| **Wayland Compositors**  | [compositors.md](docs/wiki/compositors.md)     | Configuration guide for Hyprland (with Lua), DWL, MangoWC, and Niri tiling compositors                                               |
+| **Wayland Compositors**  | [compositors.md](docs/wiki/compositors.md)     | Configuration guide for Hyprland (with Lua), MangoWC, and Niri tiling compositors                                                    |
 | **Declarative Neovim**   | [neovim.md](docs/wiki/neovim.md)               | NVF Neovim setup, custom Lua plugins in `modules/features/nvim-src/`, language servers, DAPs, and formatting                         |
 | **Firefox & Sidebery**   | [firefox.md](docs/wiki/firefox.md)             | Custom `userChrome.css` styling, Sidebery vertical tab bar setup, startpage WebExtension, and live CSS debugging                     |
 | **AMD Vivado FPGA**      | [vivado-fpga.md](docs/wiki/vivado-fpga.md)     | Distrobox Ubuntu 22.04 container setup, GUI/X11 forwarding, desktop shortcut integration, and high-DPI scaling                       |
@@ -487,9 +485,6 @@ For rapid development cycles or local compositor testing, [`rebuild.sh`](file://
 ```bash
 # Quick switch for the current host
 ./rebuild.sh
-
-# Rebuild NixOS with a local DWL source code override from ~/dwl
-./rebuild.sh --dwl
 
 # Test current session only
 ./rebuild.sh --test

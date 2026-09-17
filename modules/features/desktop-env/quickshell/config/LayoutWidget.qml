@@ -9,8 +9,8 @@ Pill {
   property PanelWindow sharedWindow: null
   property bool horizontal: true
 
-  // Visible when window manager provides layouts (mangowc, dwl)
-  readonly property bool active: wmService !== null && (wmService.wm === "mangowc" || wmService.wm === "dwl")
+  // Visible when window manager provides layouts (mangowc)
+  readonly property bool active: wmService !== null && wmService.wm === "mangowc"
   visible: active
 
   readonly property string currentLayoutSymbol: {
@@ -107,7 +107,7 @@ Pill {
                 font.weight: Font.Bold
               }
               Text {
-                text: (root.wmService && root.wmService.wm === "dwl") ? "DWL Window Tiling Mode" : "MangoWC Window Tiling Mode"
+                text: "MangoWC Window Tiling Mode"
                 color: Colors.fgDim
                 font.family: Config.sansFont
                 font.pixelSize: 10

@@ -18,7 +18,7 @@ modules/features/desktop-env/quickshell/
     ├── Config.qml                # Singleton storing UI layout dimensions & fonts
     ├── Colors.qml                # Nix-generated theme color tokens
     ├── Utils.js                  # Shared JavaScript helper functions
-    ├── bar.qml                   # Top horizontal bar (MangoWC, Hyprland, DWL)
+    ├── bar.qml                   # Top horizontal bar (MangoWC, Hyprland)
     ├── niri-bar.qml              # Vertical side bar (Niri)
     ├── CommandCenter.qml         # Slide-out quick settings dashboard
     ├── LockScreen.qml            # Session locker (WlSessionLock + PAM)

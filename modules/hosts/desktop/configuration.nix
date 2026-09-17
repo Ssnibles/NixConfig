@@ -45,7 +45,6 @@
       networking.firewall.allowedUDPPorts = [ 5353 ];
 
       # ── Desktop Environment Features ───────────────────────────────────────
-      features.dwl.enable = true;
       features.hyprland.enable = true;
       features.mangowc.enable = true;
       features.niri.enable = false;

@@ -35,7 +35,6 @@ Singleton {
     if (envWm !== "") return envWm
 
     var xdg = (Quickshell.env("XDG_CURRENT_DESKTOP") || Quickshell.env("XDG_SESSION_DESKTOP") || "").toLowerCase()
-    if (xdg.indexOf("dwl") !== -1) return "dwl"
     if (xdg.indexOf("hyprland") !== -1) return "hyprland"
     if (xdg.indexOf("river") !== -1) return "river"
     if (xdg.indexOf("niri") !== -1) return "niri"

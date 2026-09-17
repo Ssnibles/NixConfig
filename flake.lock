@@ -79,23 +79,6 @@
         "type": "github"
       }
     },
-    "dwl": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1788330243,
-        "narHash": "sha256-V2ce7dnOdvDsflY1EiCtYYwqhxZhu3a6HH77dQQ4rNM=",
-        "path": "/home/josh/dwl",
-        "type": "path"
-      },
-      "original": {
-        "path": "/home/josh/dwl",
-        "type": "path"
-      }
-    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -664,7 +647,6 @@
     "root": {
       "inputs": {
         "devenv": "devenv",
-        "dwl": "dwl",
         "flake-parts": "flake-parts_2",
         "helium": "helium",
         "hjem": "hjem",

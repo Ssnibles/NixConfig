@@ -14,7 +14,6 @@ Scope {
       switch (root.wm) {
         case "mangowc":  return "MangoService.qml"
         case "river":    return "RiverService.qml"
-        case "dwl":      return "DwlService.qml"
         case "hyprland": return "HyprlandService.qml"
         case "niri":     return "NiriService.qml"
         default:         return "MangoService.qml"
@@ -99,7 +98,6 @@ Scope {
     }
 
     if (root.wm === "river") return activeSvc.getWorkspaces()
-    if (root.wm === "dwl") return activeSvc.getWorkspaces(outputName)
     if (root.wm === "hyprland") return activeSvc.workspacesList || []
     if (root.wm === "niri") return activeSvc.workspacesForOutput(outputName)
     return []
@@ -109,7 +107,6 @@ Scope {
     if (!activeSvc) return
     if (root.wm === "mangowc") activeSvc.focusTag(id)
     else if (root.wm === "river") activeSvc.focusTag(id)
-    else if (root.wm === "dwl") activeSvc.focusTag(id)
     else if (root.wm === "hyprland") activeSvc.focusWorkspace(id)
     else if (root.wm === "niri") activeSvc.focusWorkspace(id)
   }

@@ -49,7 +49,7 @@ Scope {
 }
 ```
 
-- **Status Bar Loading**: Set `QS_BAR=niri` for the vertical Niri bar; defaults to the unified `bar.qml` top bar (which connects to `WmService` for DWL, MangoWC, River, Hyprland, etc.).
+- **Status Bar Loading**: Set `QS_BAR=niri` for the vertical Niri bar; defaults to the unified `bar.qml` top bar (which connects to `WmService` for MangoWC, River, Hyprland, etc.).
 - **Notification Overlay**: Global notification stack present on every display.
 - **Command Center**: Slide-out dashboard overlay controllable via IPC.
 - **Lock Screen**: Wayland session lock (`WlSessionLock`) with PAM authentication.
@@ -153,7 +153,7 @@ Scope {
 - **Features**: `PanelWindow` hugging `Config.barSide`, displaying clock, active window title, workspace list, system control pills, and hosting `SharedTooltipWindow`.
 
 #### `bar.qml`
-- **Role**: Consolidated horizontal top bar for Wayland compositors (DWL, MangoWC, River, Hyprland, etc.).
+- **Role**: Consolidated horizontal top bar for Wayland compositors (MangoWC, River, Hyprland, etc.).
 - **Features**: Powered by `WmService.qml` to render workspace dots, active window titles, system status indicators, clock, and tooltips.
 
 ---
@@ -161,7 +161,7 @@ Scope {
 ### 5.2 Services & Infrastructure
 
 #### `WmService.qml`
-- **Role**: Unified router bridging active compositor backends (`DwlService`, `MangoService`, `RiverService`, `HyprlandService`, `NiriService`) based on `QS_BAR`.
+- **Role**: Unified router bridging active compositor backends (`MangoService`, `RiverService`, `HyprlandService`, `NiriService`) based on `QS_BAR`.
 - **Exposes**: `currentTitle`, `getWorkspaces(outputName)`, `focusWorkspace(id)`.
 
 #### `NiriService.qml`
