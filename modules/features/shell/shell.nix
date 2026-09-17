@@ -212,6 +212,8 @@
           jb = "jj bookmark";
           jp = "jj git push";
           jf = "jj git fetch";
+          jup = "jj new 'trunk()'";
+          jpull = "jj git fetch && jj new 'trunk()'";
           n = "nvim";
           cat = "bat";
           t = "tmux";

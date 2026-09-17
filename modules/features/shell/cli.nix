@@ -85,6 +85,10 @@
               default-command = "log"
               pager = { command = ["less", "-FRX"], env = {} }
               diff-editor = ":builtin"
+
+              [aliases]
+              pull = ["git", "fetch"]
+              up = ["new", "trunk()"]
             '';
           };
 

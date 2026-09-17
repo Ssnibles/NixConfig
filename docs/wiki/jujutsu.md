@@ -134,16 +134,35 @@ jj git push --change @                 # auto-create a bookmark from @'s change-
 ### Pulling from a remote
 
 ```bash
-jj git fetch                           # (alias: jf) — fetch from all remotes
+jj git fetch                           # (alias: jf, jj pull) — fetch all remotes
 jj git fetch --remote origin           # fetch from a specific remote
-jj rebase -d main                      # rebase your current work onto updated main
 ```
+
+> [!IMPORTANT]
+> **Why didn't my working copy (`@`) move after `jj git fetch`?**
+> In Git, `git pull` automatically updates your working tree. In `jj`, fetching only updates repository bookmarks (like `main@origin`); it **never silently moves or mutates your working copy (`@`)**.
+>
+> - **If `@` is empty / clean (you just want to start on the latest fetched commit):**
+>   ```bash
+>   jj new trunk()                     # (or `jj up` / shell alias `jup`)
+>   ```
+>   *This discards the previous empty `@` and creates a fresh working copy on top of the latest trunk/main.*
+>
+> - **In one shot (fetch + update working copy):**
+>   ```bash
+>   jpull                              # shell alias: jj git fetch && jj new 'trunk()'
+>   ```
+>
+> - **If you already have in-progress edits in `@` that you want on top of latest `main`:**
+>   ```bash
+>   jj rebase -d trunk()               # rebase your in-progress work onto updated trunk
+>   ```
 
 ### Typical "pull & rebase" flow
 
 ```bash
-jj git fetch                           # get latest
-jj rebase -d main                      # put your work on top of main
+jj git fetch                           # get latest commits from remote
+jj rebase -d trunk()                   # put your in-progress work on top of latest trunk
 jj git push --bookmark my-feature      # push your updated bookmark
 ```
 
@@ -301,9 +320,11 @@ jj config set --repo snapshot.max-new-file-size 2M    # increase repo limit (e.g
 
 ---
 
-## ⌨️ Your Shell Aliases
+## ⌨️ Your Aliases & Shortcuts
 
-These aliases are configured in [`shell.nix`](../../modules/features/shell/shell.nix):
+### Shell Aliases
+
+Configured in [`shell.nix`](../../modules/features/shell/shell.nix):
 
 | Alias | Command | Description |
 |---|---|---|
@@ -317,6 +338,17 @@ These aliases are configured in [`shell.nix`](../../modules/features/shell/shell
 | `jb` | `jj bookmark` | Bookmark management |
 | `jp` | `jj git push` | Push to remote |
 | `jf` | `jj git fetch` | Fetch from remote |
+| `jup` | `jj new 'trunk()'` | Advance working copy to latest trunk/main |
+| `jpull` | `jj git fetch && jj new 'trunk()'` | Fetch latest and move working copy to trunk in one shot |
+
+### `jj` Built-in Subcommand Aliases
+
+Configured declaratively in [`cli.nix`](../../modules/features/shell/cli.nix) via `~/.config/jj/config.toml`:
+
+| Command | Expansion | Description |
+|---|---|---|
+| `jj pull` | `jj git fetch` | Git-familiar synonym for fetching |
+| `jj up` | `jj new trunk()` | Start fresh working copy on latest trunk/main |
 
 You also have **jjui** available via `Prefix + g` in tmux for a TUI interface.
 
