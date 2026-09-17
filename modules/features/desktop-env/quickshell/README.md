@@ -119,12 +119,34 @@ Scope {
 ### 3.6 Notifications (`NotificationOverlay.qml` & `NotificationStore.qml`)
 | Property | Default | Purpose |
 | --- | --- | --- |
-| `notifPosition` | `"top-left"` | Placement on screen |
-| `notifTimeoutMs` | `5000` | Display duration per popup (ms) |
+| `notifPosition` | `"top-left"` | Placement on screen (`"top-left"`, `"top-right"`, `"bottom-left"`, etc.) |
+| `notifMarginX` | `12` | Horizontal offset margin from screen edge (px) |
+| `notifMarginY` | `12` | Vertical offset margin from screen edge (px) |
+| `notifTimeoutMs` | `5000` | Default display duration per popup (ms) |
+| `notifTimeoutLowMs` | `3000` | Duration for low-urgency notifications (ms) |
+| `notifTimeoutNormalMs` | `5000` | Duration for normal-urgency notifications (ms) |
+| `notifTimeoutCriticalMs` | `0` | Duration for critical notifications (`0` = persistent) |
 | `notifMaxVisible` | `5` | Maximum active popup count on screen |
-| `notifMaxHistory` | `24` | Maximum history items retained in `NotificationStore` |
-| `notifWidth` | `300` | Notification card width (px) |
+| `notifMaxHistory` | `30` | Maximum history items retained in `NotificationStore` |
+| `notifWidth` | `320` | Notification card width (px) |
 | `notifRadius` | `12` | Notification card corner radius |
+| `notifCardMargins` | `12` | Internal card padding (px) |
+| `notifSpacing` | `8` | Spacing between stacked cards (px) |
+| `notifIconSize` | `40` | Icon/avatar dimension for standard notifications (px) |
+| `notifMediaIconSize` | `48` | Icon/avatar dimension for media notifications (px) |
+| `notifIconRadius` | `8` | Corner radius for notification icon/avatar preview |
+| `notifMaxLines` | `5` | Maximum lines of notification body text before eliding |
+| `notifShowActions` | `true` | Display interactive action buttons on cards |
+| `notifDismissOnAction` | `true` | Automatically dismiss card when an action is invoked |
+| `notifShowMediaToasts` | `true` | Show popups for MPRIS media track transitions |
+| `notifAllScreens` | `false` | Display notification overlay across all displays |
+| `notifLeftClickAction` | `"dismiss"` | Action on left-click (`"dismiss"` or `"focus"`) |
+| `notifDefaultFallbackLogo` | `"preferences-desktop-notification"` | System theme fallback icon if app has no icon |
+| `notifDefaultFallbackGlyph` | `"󰂚"` | Fallback Nerd Font glyph |
+| `notifAppIcons` | `({ ... })` | App name/desktop entry to preferred icon/logo/file mapping |
+| `notifAppGlyphs` | `({ ... })` | App/category to Nerd Font glyph mapping |
+| `notifMediaApps` | `[ ... ]` | List of media player app identifiers |
+
 
 ---
 

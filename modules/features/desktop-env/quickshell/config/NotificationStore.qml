@@ -201,24 +201,117 @@ Singleton {
     return cleanU
   }
 
+  function extractNotificationImage(notification) {
+    if (!notification) return ""
+
+    // 1. Quickshell built-in image property (handles image-data and image-path if decoded)
+    if (notification.image) {
+      var imgStr = String(notification.image).trim()
+      if (imgStr.charAt(0) === '"' && imgStr.charAt(imgStr.length - 1) === '"') {
+        imgStr = imgStr.slice(1, -1).trim()
+      }
+      if (imgStr !== "") return imgStr
+    }
+
+    // 2. Check hints dictionary for image-path or sender avatars
+    var hints = notification.hints
+    if (hints) {
+      var p = hints["image-path"] || hints["image_path"] || hints["sender-avatar"] || hints["avatar-url"]
+      if (p) {
+        var str = String(p).trim()
+        if (str.charAt(0) === '"' && str.charAt(str.length - 1) === '"') {
+          str = str.slice(1, -1).trim()
+        }
+        if (str !== "") return str
+      }
+    }
+
+    return ""
+  }
+
+  function cacheNotificationImage(rawUrl) {
+    if (!rawUrl) return ""
+    var clean = Utils.cleanUrl(rawUrl)
+    if (!clean) return ""
+
+    // 1. Local file paths
+    if (clean.startsWith("file://") || clean.startsWith("/")) {
+      var localPath = clean.replace(/^file:\/\//, "")
+      // If image is inside /tmp/, copy it to cacheDir immediately so it persists
+      // even after Electron/Chromium/Discord unlinks the temporary file
+      if (localPath.startsWith("/tmp/") && store.cacheDir !== "") {
+        var ext = ".png"
+        var lLower = localPath.toLowerCase()
+        if (lLower.indexOf(".jpg") !== -1 || lLower.indexOf(".jpeg") !== -1) ext = ".jpg"
+        else if (lLower.indexOf(".webp") !== -1) ext = ".webp"
+        else if (lLower.indexOf(".svg") !== -1) ext = ".svg"
+        var hash = _hashString(localPath + "_" + Date.now())
+        var target = store.cacheDir + "/" + hash + ext
+        Quickshell.execDetached(["cp", localPath, target])
+        return "file://" + target
+      }
+      return clean.startsWith("/") ? ("file://" + clean) : clean
+    }
+
+    // 2. HTTP / HTTPS remote URLs (e.g. Discord CDN avatars)
+    if (clean.startsWith("http://") || clean.startsWith("https://")) {
+      var ext = ".png"
+      var uLower = clean.toLowerCase()
+      if (uLower.indexOf(".jpg") !== -1 || uLower.indexOf(".jpeg") !== -1) ext = ".jpg"
+      else if (uLower.indexOf(".webp") !== -1) ext = ".webp"
+
+      var urlHash = _hashString(clean)
+      var targetPath = store.cacheDir + "/" + urlHash + ext
+      var targetFileUrl = "file://" + targetPath
+
+      if (store.artCache[clean] === targetFileUrl) {
+        return targetFileUrl
+      }
+
+      store.artCache[clean] = clean
+      if (!store._pendingDownloads[clean] && store.cacheDir !== "") {
+        store._pendingDownloads[clean] = true
+        store._downloadQueue.push({
+          url: clean,
+          targetPath: targetPath,
+          targetFileUrl: targetFileUrl,
+          fullKey: clean,
+          titleKey: clean
+        })
+        processNextDownload()
+      }
+      return targetFileUrl
+    }
+
+    return clean
+  }
+
   function updateModelImages(fullKey, titleKey, resolvedUrl) {
     if (!resolvedUrl) return
     for (var i = 0; i < activeModel.count; i++) {
       var item = activeModel.get(i)
-      if (item && item.isMedia) {
-        var k = _makeTrackKey(item.trackTitle, item.trackArtist)
-        var tk = Utils.cleanTrackTitle(item.trackTitle || "").toLowerCase().trim()
-        if (k === fullKey || tk === titleKey || !item.image) {
+      if (item) {
+        if (item.isMedia) {
+          var k = _makeTrackKey(item.trackTitle, item.trackArtist)
+          var tk = Utils.cleanTrackTitle(item.trackTitle || "").toLowerCase().trim()
+          if (k === fullKey || tk === titleKey || !item.image) {
+            activeModel.setProperty(i, "image", resolvedUrl)
+          }
+        } else if (item.image === fullKey || item.image === titleKey || !item.image) {
           activeModel.setProperty(i, "image", resolvedUrl)
         }
       }
     }
     for (var j = 0; j < historyModel.count; j++) {
       var hItem = historyModel.get(j)
-      if (hItem && hItem.isMedia) {
-        var hk = _makeTrackKey(hItem.trackTitle, hItem.trackArtist)
-        var htk = Utils.cleanTrackTitle(hItem.trackTitle || "").toLowerCase().trim()
-        if (hk === fullKey || htk === titleKey || !hItem.image) {
+      if (hItem) {
+        if (hItem.isMedia) {
+          var hk = _makeTrackKey(hItem.trackTitle, hItem.trackArtist)
+          var htk = Utils.cleanTrackTitle(hItem.trackTitle || "").toLowerCase().trim()
+          if (hk === fullKey || htk === titleKey || !hItem.image) {
+            historyModel.setProperty(j, "image", resolvedUrl)
+          }
+        } else if (hItem.image === fullKey || hItem.image === titleKey || !hItem.image) {
           historyModel.setProperty(j, "image", resolvedUrl)
         }
       }
@@ -354,6 +447,15 @@ Singleton {
   NotificationServer {
     id: notificationServer
     bodySupported: true
+    bodyMarkupSupported: true
+    bodyHyperlinksSupported: true
+    bodyImagesSupported: true
+    imageSupported: true
+    actionsSupported: true
+    actionIconsSupported: true
+    persistenceSupported: true
+    inlineReplySupported: true
+    keepOnReload: true
 
     onNotification: function (notification) {
       var appNameLower = (notification.appName || "").toLowerCase()
@@ -363,24 +465,28 @@ Singleton {
       var summaryLower = summaryStr.toLowerCase()
       var bodyLower = bodyStr.toLowerCase()
 
-      var isSpotify = appNameLower.indexOf("spotify") !== -1 || deLower.indexOf("spotify") !== -1
-      var isBrowserOrPlayer = isSpotify ||
-        appNameLower.indexOf("zen") !== -1 || deLower.indexOf("zen") !== -1 ||
-        appNameLower.indexOf("helium") !== -1 || deLower.indexOf("helium") !== -1 ||
-        appNameLower.indexOf("qutebrowser") !== -1 || deLower.indexOf("qutebrowser") !== -1 ||
-        appNameLower.indexOf("firefox") !== -1 || deLower.indexOf("firefox") !== -1 ||
-        appNameLower.indexOf("chrome") !== -1 || deLower.indexOf("chrome") !== -1 ||
-        appNameLower.indexOf("chromium") !== -1 || deLower.indexOf("chromium") !== -1 ||
-        appNameLower.indexOf("brave") !== -1 || deLower.indexOf("brave") !== -1 ||
-        appNameLower.indexOf("vivaldi") !== -1 || deLower.indexOf("vivaldi") !== -1 ||
-        appNameLower.indexOf("librewolf") !== -1 || deLower.indexOf("librewolf") !== -1 ||
-        appNameLower.indexOf("vlc") !== -1 || deLower.indexOf("mpv") !== -1
+      // 1. Extract image (actual avatar / media art)
+      var rawImg = store.extractNotificationImage(notification)
+      var notifImage = rawImg ? store.cacheNotificationImage(rawImg) : ""
 
-      var notifImage = notification.image || notification.appIcon || ""
-      if (notifImage) {
-        notifImage = String(notifImage).trim()
-        if (notifImage.charAt(0) === '"' && notifImage.charAt(notifImage.length - 1) === '"') {
-          notifImage = notifImage.slice(1, -1)
+      // 2. Extract appIcon (app logo) - kept strictly separate from image/avatar
+      var notifAppIcon = ""
+      if (notification.appIcon) {
+        notifAppIcon = String(notification.appIcon).trim()
+        if (notifAppIcon.charAt(0) === '"' && notifAppIcon.charAt(notifAppIcon.length - 1) === '"') {
+          notifAppIcon = notifAppIcon.slice(1, -1).trim()
+        }
+      }
+
+      // Check if media player from Config.notifMediaApps
+      var isSpotify = appNameLower.indexOf("spotify") !== -1 || deLower.indexOf("spotify") !== -1
+      var isBrowserOrPlayer = isSpotify
+      var mediaList = Config.notifMediaApps || []
+      for (var m = 0; m < mediaList.length; m++) {
+        var mKey = String(mediaList[m]).toLowerCase()
+        if (appNameLower.indexOf(mKey) !== -1 || deLower.indexOf(mKey) !== -1) {
+          isBrowserOrPlayer = true
+          break
         }
       }
 
@@ -400,8 +506,8 @@ Singleton {
       if (isMediaNotification) {
         var cleanT = Utils.cleanTrackTitle(notification.summary || (store.mediaPlayer ? store.mediaPlayer.trackTitle : ""))
         var cleanA = notification.body || (store.mediaPlayer ? store.mediaPlayer.trackArtist : "Unknown Artist")
-        var rawImg = notifImage || (store.mediaPlayer ? store.mediaPlayer.trackArtUrl || "" : "")
-        var mediaImage = store.cacheCoverArt(cleanT, cleanA, rawImg) || store.latestMediaImage
+        var rawMediaArt = notifImage || (store.mediaPlayer ? store.mediaPlayer.trackArtUrl || "" : "")
+        var mediaImage = store.cacheCoverArt(cleanT, cleanA, rawMediaArt) || store.latestMediaImage
 
         var mediaItemData = {
           notification: notification,
@@ -409,7 +515,7 @@ Singleton {
           body: "",
           trackTitle: cleanT,
           trackArtist: cleanA,
-          appIcon: notification.appIcon || (store.mediaPlayer ? store.mediaPlayer.desktopEntry || store.mediaPlayer.name : ""),
+          appIcon: notifAppIcon || (store.mediaPlayer ? store.mediaPlayer.desktopEntry || store.mediaPlayer.name : ""),
           image: mediaImage,
           urgency: 0,
           isMedia: true,
@@ -459,7 +565,7 @@ Singleton {
           if (historyModel.count > maxHistory) {
             historyModel.remove(maxHistory)
           }
-          if (!store.dnd) {
+          if (!store.dnd && (Config.notifShowMediaToasts !== false)) {
             while (activeModel.count >= store.maxVisible) {
               store.dismissActiveAt(0, true)
             }
@@ -472,11 +578,11 @@ Singleton {
 
       var normalItemData = {
         notification: notification,
-        summary: notification.summary,
-        body: notification.body,
+        summary: notification.summary || "",
+        body: notification.body || "",
         trackTitle: "",
         trackArtist: "",
-        appIcon: notification.appIcon || "",
+        appIcon: notifAppIcon,
         image: notifImage,
         urgency: notification.urgency !== undefined ? notification.urgency : 1,
         isMedia: false,
@@ -544,7 +650,23 @@ Singleton {
       var now = Date.now()
       for (var i = activeModel.count - 1; i >= 0; i--) {
         var item = activeModel.get(i)
-        if (item && item.urgency !== 2 && item.createdAt && (now - item.createdAt >= store.timeoutMs)) {
+        if (!item || !item.createdAt) continue
+
+        // Urgency-aware and client-requested timeout
+        var itemTimeout = store.timeoutMs
+        if (item.notification && item.notification.expireTimeout > 0) {
+          itemTimeout = item.notification.expireTimeout * 1000
+        } else if (item.urgency === 0 && Config.notifTimeoutLowMs > 0) {
+          itemTimeout = Config.notifTimeoutLowMs
+        } else if (item.urgency === 2) {
+          if (Config.notifTimeoutCriticalMs > 0) {
+            itemTimeout = Config.notifTimeoutCriticalMs
+          } else {
+            continue // Critical urgency notifications are persistent
+          }
+        }
+
+        if (now - item.createdAt >= itemTimeout) {
           if (store.hoveredIndex !== i) {
             store.dismissActiveAt(i, true)
           }

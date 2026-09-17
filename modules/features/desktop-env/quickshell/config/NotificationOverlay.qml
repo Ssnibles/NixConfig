@@ -9,7 +9,7 @@ Scope {
   property string position: Config.notifPosition
 
   Variants {
-    model: Quickshell.screens.length > 0 ? [Quickshell.screens[0]] : []
+    model: Config.notifAllScreens ? Quickshell.screens : (Quickshell.screens.length > 0 ? [Quickshell.screens[0]] : [])
 
     PanelWindow {
       id: panel
@@ -25,6 +25,13 @@ Scope {
       anchors.bottom: onTop ? false : true
       anchors.left: onLeft
       anchors.right: onLeft ? false : true
+
+      margins {
+        top: onTop ? Config.notifMarginY : 0
+        bottom: onTop ? 0 : Config.notifMarginY
+        left: onLeft ? Config.notifMarginX : 0
+        right: onLeft ? 0 : Config.notifMarginX
+      }
 
       implicitWidth: Config.notifWidth + Config.notifCardMargins * 2
       implicitHeight: notifList.contentHeight + Config.notifCardMargins * 2
@@ -73,6 +80,7 @@ Scope {
           trackTitle: model.trackTitle || ""
           trackArtist: model.trackArtist || ""
           isMedia: model.isMedia !== undefined ? model.isMedia : false
+          timeStr: model.timeStr || ""
 
           onIsHoveredChanged: {
             if (card.isHovered) {

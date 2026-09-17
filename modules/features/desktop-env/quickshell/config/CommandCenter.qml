@@ -1082,6 +1082,7 @@ Scope {
                     trackTitle: model.trackTitle || ""
                     trackArtist: model.trackArtist || ""
                     isMedia: model.isMedia !== undefined ? model.isMedia : false
+                    timeStr: model.timeStr || ""
 
                     onDismissed: NotificationStore.removeHistoryAt(index)
                     onActionTriggered: NotificationStore.invokeActionOrFocus(model)

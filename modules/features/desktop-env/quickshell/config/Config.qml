@@ -115,13 +115,139 @@ Singleton {
 
   // --- Notifications ------------------------------------------------------
   readonly property string notifPosition: "top-left"
+  readonly property int notifMarginX: 12
+  readonly property int notifMarginY: 12
   readonly property int notifTimeoutMs: 5000
+  readonly property int notifTimeoutLowMs: 3000
+  readonly property int notifTimeoutNormalMs: 5000
+  readonly property int notifTimeoutCriticalMs: 0 // 0 = persistent, do not auto-dismiss
   readonly property int notifMaxVisible: 5
-  readonly property int notifMaxHistory: 24
-  readonly property int notifWidth: 300
+  readonly property int notifMaxHistory: 30
+  readonly property int notifWidth: 320
   readonly property int notifRadius: 12
   readonly property int notifCardMargins: 12
   readonly property int notifSpacing: 8
+  readonly property int notifIconSize: 40
+  readonly property int notifMediaIconSize: 48
+  readonly property int notifIconRadius: 8
+  readonly property int notifMaxLines: 5
+  readonly property bool notifShowActions: true
+  readonly property bool notifDismissOnAction: true
+  readonly property bool notifShowMediaToasts: true
+  readonly property bool notifAllScreens: false
+  readonly property string notifLeftClickAction: "dismiss" // "dismiss" or "focus"
+  readonly property string notifDefaultFallbackLogo: "preferences-desktop-notification"
+  readonly property string notifDefaultFallbackGlyph: "󰂚"
+
+  // App Name / Desktop Entry -> Preferred System Icon name, custom image path, or fallback logo
+  // When an app sends a notification without a profile picture (or if avatar loading fails),
+  // this map ensures the card accurately falls back to the app's real logo.
+  readonly property var notifAppIcons: ({
+    "discord": "vesktop",
+    "vesktop": "vesktop",
+    "webcord": "vesktop",
+    "com.discordapp.discord": "vesktop",
+    "spotify": "spotify-client",
+    "spotify-client": "spotify-client",
+    "firefox": "firefox-devedition",
+    "firefox-developer-edition": "firefox-devedition",
+    "firefox-devedition": "firefox-devedition",
+    "firefoxdevedition": "firefox-devedition",
+    "zen": "zen-browser",
+    "zen-browser": "zen-browser",
+    "helium": "helium",
+    "helium-browser": "helium",
+    "ghostty": "ghostty",
+    "kitty": "kitty",
+    "foot": "foot",
+    "alacritty": "alacritty",
+    "code": "code",
+    "vscode": "code",
+    "vscodium": "vscodium",
+    "nvim": "nvim",
+    "neovim": "nvim",
+    "steam": "steam",
+    "telegram": "telegram",
+    "telegramdesktop": "telegram",
+    "slack": "slack",
+    "signal": "signal-desktop",
+    "signal-desktop": "signal-desktop",
+    "thunderbird": "thunderbird",
+    "amberol": "io.bassi.Amberol",
+    "boxbuddy": "io.github.dvlv.boxbuddyrs",
+    "pavucontrol": "org.pulseaudio.pavucontrol",
+    "blueman": "blueman",
+    "nix": "nix-snowflake"
+  })
+
+  // Fallback Nerd Font glyphs when no icon or image is available
+  readonly property var notifAppGlyphs: ({
+    "discord": "󰙯",
+    "vesktop": "󰙯",
+    "webcord": "󰙯",
+    "spotify": "󰓇",
+    "music": "󰎈",
+    "amberol": "󰎈",
+    "firefox": "󰈹",
+    "zen": "󰈹",
+    "chrome": "󰊯",
+    "chromium": "󰊯",
+    "brave": "󰊯",
+    "browser": "󰈹",
+    "terminal": "󰅍",
+    "kitty": "󰅍",
+    "ghostty": "󰅍",
+    "foot": "󰅍",
+    "alacritty": "󰅍",
+    "code": "󰨞",
+    "vscode": "󰨞",
+    "vscodium": "󰨞",
+    "editor": "󰨞",
+    "nvim": "󰨞",
+    "neovim": "󰨞",
+    "steam": "󰓓",
+    "telegram": "󰔁",
+    "slack": "󰒱",
+    "signal": "󰍡",
+    "mail": "󰇮",
+    "thunderbird": "󰇮",
+    "volume": "󰕾",
+    "audio": "󰕾",
+    "pipewire": "󰕾",
+    "wireplumber": "󰕾",
+    "network": "󰤨",
+    "wifi": "󰤨",
+    "bluetooth": "󰂯",
+    "battery": "󰂄",
+    "power": "󰂄",
+    "upower": "󰂄",
+    "brightness": "󰃠",
+    "backlight": "󰃠",
+    "screenshot": "󰄄",
+    "grim": "󰄄",
+    "slurp": "󰄄",
+    "package": "󰏗",
+    "nix": "󰏗",
+    "system": "󰍹"
+  })
+
+  // Known browser / media player apps for media detection
+  readonly property var notifMediaApps: [
+    "spotify",
+    "amberol",
+    "zen",
+    "helium",
+    "qutebrowser",
+    "firefox",
+    "chrome",
+    "chromium",
+    "brave",
+    "vivaldi",
+    "librewolf",
+    "vlc",
+    "mpv"
+  ]
+
 
   // --- Lock Screen --------------------------------------------------------
   readonly property string lockAvatarPath: Quickshell.shellDir + "/assets/avatar.png"
