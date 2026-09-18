@@ -106,7 +106,11 @@ Singleton {
   readonly property int popupGraceMs: 700 // generous window so cursor can cross the gap without flicker
 
   // --- Notifications ------------------------------------------------------
-  readonly property string notifPosition: "top-left"
+  // Notification position on screen:
+  //   "top-left", "top-center" (or "top"), "top-right",
+  //   "center-left", "center", "center-right",
+  //   "bottom-left", "bottom-center" (or "bottom"), "bottom-right"
+  property string notifPosition: "top-right"
   readonly property int notifMarginX: 12
   readonly property int notifMarginY: 12
   readonly property int notifTimeoutMs: 5000

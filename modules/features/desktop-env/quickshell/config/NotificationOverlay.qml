@@ -17,20 +17,30 @@ Scope {
       screen: modelData
 
       WlrLayershell.layer: WlrLayer.Overlay
+      exclusionMode: ExclusionMode.Ignore
 
-      readonly property bool onTop: root.position.indexOf("top") !== -1
-      readonly property bool onLeft: root.position.indexOf("left") !== -1
+      readonly property string pos: (root.position || Config.notifPosition || "top-right").toLowerCase().trim()
 
-      anchors.top: onTop
-      anchors.bottom: onTop ? false : true
-      anchors.left: onLeft
-      anchors.right: onLeft ? false : true
+      readonly property bool onTop: pos.startsWith("top") || pos === "top"
+      readonly property bool onBottom: pos.startsWith("bottom") || pos === "bottom"
+      readonly property bool isVertCenter: !onTop && !onBottom
+
+      readonly property bool onLeft: pos.endsWith("left") || pos === "left"
+      readonly property bool onRight: pos.endsWith("right") || pos === "right"
+      readonly property bool isHorizCenter: !onLeft && !onRight
+
+      anchors {
+        top: panel.onTop
+        bottom: panel.onBottom
+        left: panel.onLeft
+        right: panel.onRight
+      }
 
       margins {
-        top: onTop ? Config.notifMarginY : 0
-        bottom: onTop ? 0 : Config.notifMarginY
-        left: onLeft ? Config.notifMarginX : 0
-        right: onLeft ? 0 : Config.notifMarginX
+        top: panel.onTop ? (Config.hasTopBar ? (Config.barHeight + Config.notifMarginY) : Config.notifMarginY) : 0
+        bottom: panel.onBottom ? Config.notifMarginY : 0
+        left: panel.onLeft ? (Config.hasLeftBar ? (Config.barWidth + Config.notifMarginX) : Config.notifMarginX) : 0
+        right: panel.onRight ? (Config.hasRightBar ? (Config.barWidth + Config.notifMarginX) : Config.notifMarginX) : 0
       }
 
       implicitWidth: Config.notifWidth + Config.notifCardMargins * 2
@@ -50,7 +60,8 @@ Scope {
 
         anchors.margins: Config.notifCardMargins
         anchors.top: panel.onTop ? parent.top : undefined
-        anchors.bottom: panel.onTop ? undefined : parent.bottom
+        anchors.bottom: panel.onBottom ? parent.bottom : undefined
+        anchors.verticalCenter: panel.isVertCenter ? parent.verticalCenter : undefined
         anchors.horizontalCenter: parent.horizontalCenter
 
         add: Transition {
