@@ -27,7 +27,8 @@
         boxbuddy
       ];
 
-      # Disable auto-starting podman daemon on boot (starts socket-activated)
+      # Disable auto-starting podman daemon and root system socket on boot
       systemd.services.podman.wantedBy = lib.mkForce [ ];
+      systemd.sockets.podman.wantedBy = lib.mkForce [ ];
     };
 }

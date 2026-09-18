@@ -62,6 +62,7 @@
             "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
           ];
           download-buffer-size = 524288000;
+          auto-optimise-store = true;
         };
 
         # ── Localization & Timezone ──────────────────────────────────────────
@@ -82,6 +83,7 @@
 
         # ── Networking & Firewall ───────────────────────────────────────────
         networking = {
+          modemmanager.enable = false;
           networkmanager = {
             enable = true;
             wifi.backend = "iwd";
@@ -121,7 +123,6 @@
               FallbackDNS = "8.8.8.8#dns.google 8.8.4.4#dns.google";
               DNSSEC = "false";
               DNSOverTLS = "opportunistic";
-              Domains = [ "~." ];
             };
           };
         };
@@ -141,6 +142,7 @@
           grim
           grimblast
           slurp
+          tesseract
           networkmanagerapplet
           adwaita-icon-theme
           self.packages.${pkgs.stdenv.hostPlatform.system}.html-server
@@ -170,7 +172,7 @@
         };
 
         nix.optimise.automatic = true;
-        nix.optimise.dates = [ "03:45" ];
+        nix.optimise.dates = [ "weekly" ];
       };
     };
 }
