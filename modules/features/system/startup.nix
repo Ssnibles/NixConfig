@@ -22,34 +22,21 @@
         after = [ "graphical-session-pre.target" ];
       };
 
-      # ── Clipboard Persistence Daemons ──────────────────────────────────────
-      systemd.user.services.clipboard-persist = {
-        description = "Persist Wayland clipboard after source application exits";
-        wantedBy = [ "graphical-session.target" ];
-        after = [ "graphical-session.target" ];
-        partOf = [ "graphical-session.target" ];
-        path = [ config.system.path ];
-        startLimitBurst = 0;
-        startLimitIntervalSec = 0;
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${pkgs.wl-clip-persist}/bin/wl-clip-persist --clipboard regular";
-          Restart = "on-failure";
-          RestartSec = 2;
-        };
-      };
+      # Disable unused speech-dispatcher socket in user session
+      systemd.user.sockets.speech-dispatcher.enable = false;
 
-      systemd.user.services.clipboard-persist-primary = {
-        description = "Persist Wayland primary selection after source application exits";
-        wantedBy = [ "graphical-session.target" ];
-        after = [ "graphical-session.target" ];
-        partOf = [ "graphical-session.target" ];
+      # ── Clipboard Persistence Daemon ──────────────────────────────────────
+      systemd.user.services.clipboard-persist = {
+        description = "Persist Wayland clipboard (regular and primary) after source application exits";
+        wantedBy = [ "wayland-session.target" ];
+        after = [ "wayland-session.target" ];
+        partOf = [ "wayland-session.target" ];
         path = [ config.system.path ];
         startLimitBurst = 0;
         startLimitIntervalSec = 0;
         serviceConfig = {
           Type = "simple";
-          ExecStart = "${pkgs.wl-clip-persist}/bin/wl-clip-persist --clipboard primary";
+          ExecStart = "${pkgs.wl-clip-persist}/bin/wl-clip-persist --clipboard both";
           Restart = "on-failure";
           RestartSec = 2;
         };
@@ -58,9 +45,9 @@
       # ── Cliphist History Indexing Daemons ──────────────────────────────────
       systemd.user.services.cliphist-store-text = {
         description = "Index text clipboard history with cliphist";
-        wantedBy = [ "graphical-session.target" ];
-        after = [ "graphical-session.target" ];
-        partOf = [ "graphical-session.target" ];
+        wantedBy = [ "wayland-session.target" ];
+        after = [ "wayland-session.target" ];
+        partOf = [ "wayland-session.target" ];
         path = [ config.system.path ];
         startLimitBurst = 0;
         startLimitIntervalSec = 0;
@@ -74,9 +61,9 @@
 
       systemd.user.services.cliphist-store-image = {
         description = "Index image clipboard history with cliphist";
-        wantedBy = [ "graphical-session.target" ];
-        after = [ "graphical-session.target" ];
-        partOf = [ "graphical-session.target" ];
+        wantedBy = [ "wayland-session.target" ];
+        after = [ "wayland-session.target" ];
+        partOf = [ "wayland-session.target" ];
         path = [ config.system.path ];
         startLimitBurst = 0;
         startLimitIntervalSec = 0;

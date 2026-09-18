@@ -20,9 +20,9 @@
 
         systemd.user.services.shikane = {
           description = "Shikane dynamic display configuration daemon";
-          wantedBy = [ "graphical-session.target" ];
-          partOf = [ "graphical-session.target" ];
-          after = [ "graphical-session.target" ];
+          wantedBy = [ "wayland-session.target" ];
+          partOf = [ "wayland-session.target" ];
+          after = [ "wayland-session.target" ];
           startLimitBurst = 0;
           startLimitIntervalSec = 0;
           path = [

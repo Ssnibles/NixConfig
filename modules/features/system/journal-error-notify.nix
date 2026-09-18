@@ -36,8 +36,8 @@
 
       systemd.user.services.check-boot-journal-errors = {
         description = "Check journalctl for boot errors and trigger desktop notification";
-        wantedBy = [ "graphical-session.target" ];
-        after = [ "graphical-session.target" ];
+        wantedBy = [ "wayland-session.target" ];
+        after = [ "wayland-session.target" ];
         serviceConfig = {
           Type = "oneshot";
           ExecStart = "${checkBootJournalErrors}/bin/check-boot-journal-errors";
