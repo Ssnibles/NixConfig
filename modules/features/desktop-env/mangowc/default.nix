@@ -70,6 +70,7 @@
           chown -R ${config.username}:users /home/${config.username}/.config/mango
           ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/mangowc/config.conf /home/${config.username}/.config/mango/config.conf
           ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/mangowc/binds.conf /home/${config.username}/.config/mango/binds.conf
+          ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/mangowc/screenshot.sh /home/${config.username}/.config/mango/screenshot.sh
         '';
 
         hjem.users."${config.username}" = {

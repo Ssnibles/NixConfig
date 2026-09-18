@@ -17,6 +17,7 @@
           zathura
           feh
           spotatui
+          thunar
         ];
 
         hjem.users.${config.username} = {

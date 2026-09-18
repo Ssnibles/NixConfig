@@ -175,10 +175,8 @@ hl.layer_rule({
 })
 
 -- ── Screenshot & OCR Commands ─────────────────────────────────────────
-local screenshotCmd =
-	'pgrep -x slurp >/dev/null && exit 0; GEOM=$(slurp); [ -n "$GEOM" ] && grim -g "$GEOM" - | tee "$HOME/Pictures/Screenshot_$(date +\'%Y-%m-%d_%H-%M-%S\').png" | wl-copy -t image/png'
-local screenshotOcrCmd =
-	"pgrep -x slurp >/dev/null && exit 0; GEOM=$(slurp); [ -n \"$GEOM\" ] && grim -g \"$GEOM\" - | tesseract stdin stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'"
+local screenshotCmd = "$HOME/.config/mango/screenshot.sh"
+local screenshotOcrCmd = "$HOME/.config/mango/screenshot.sh ocr"
 
 -- ── Keybindings (Unified with Mango & Niri) ────────────────────────────
 -- Application Launchers

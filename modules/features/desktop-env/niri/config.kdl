@@ -224,10 +224,10 @@ binds {
 
     // System Utilities
     // Normal screenshot: Saves PNG file and copies image to clipboard
-    Mod+S { spawn "sh" "-c" "pgrep -x slurp >/dev/null && exit 0; GEOM=$(slurp); [ -n \"$GEOM\" ] && grim -g \"$GEOM\" - | tee \"$HOME/Pictures/Screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png\" | wl-copy -t image/png"; }
+    Mod+S { spawn "sh" "-c" "$HOME/.config/mango/screenshot.sh"; }
 
     // OCR screenshot: Runs Tesseract and copies text to clipboard
-    Mod+Shift+S { spawn "sh" "-c" "pgrep -x slurp >/dev/null && exit 0; GEOM=$(slurp); [ -n \"$GEOM\" ] && grim -g \"$GEOM\" - | tesseract stdin stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'"; }
+    Mod+Shift+S { spawn "sh" "-c" "$HOME/.config/mango/screenshot.sh ocr"; }
 
     // Brightness Control
     XF86MonBrightnessDown { spawn "brightnessctl" "set" "5%-"; }

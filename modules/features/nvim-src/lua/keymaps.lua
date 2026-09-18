@@ -14,6 +14,11 @@ map("n", "<leader>qw", "<cmd>wq<CR>", { desc = "Save and quit" })
 map("n", "<leader>qa", "<cmd>qa<CR>", { desc = "Quit all" })
 
 -- ── Insert Mode ──────────────────────────────────────────────────────
+local smart_enter = require("smart_enter")
+map("i", "<CR>", smart_enter.cr, { expr = true, desc = "Smart Enter (continue lists & comments)" })
+map("i", "<S-CR>", smart_enter.shift_cr, { expr = true, desc = "Shift-Enter (newline without continuation)" })
+map("i", "<M-CR>", smart_enter.shift_cr, { expr = true, desc = "Alt-Enter (newline without continuation)" })
+
 map("i", "<C-BS>", "<C-w>", { desc = "Delete previous word" })
 map("i", "<M-BS>", "<C-w>", { desc = "Delete previous word" })
 map("i", "\x1f", "<C-w>", { desc = "Delete previous word (Ctrl+BS)" })

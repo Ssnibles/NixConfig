@@ -261,6 +261,7 @@
             set-environment -g COLORTERM "truecolor"
             set -g update-environment "DISPLAY SSH_AUTH_SOCK SSH_CONNECTION WINDOWID XAUTHORITY SWAYSOCK WAYLAND_DISPLAY PATH COLORTERM"
             set -gw xterm-keys on
+            set -s extended-keys on
             set -g allow-passthrough on
             set -s set-clipboard on
             set -g focus-events on

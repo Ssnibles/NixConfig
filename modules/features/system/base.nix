@@ -143,6 +143,7 @@
           grimblast
           slurp
           tesseract
+          jq
           networkmanagerapplet
           adwaita-icon-theme
           self.packages.${pkgs.stdenv.hostPlatform.system}.html-server

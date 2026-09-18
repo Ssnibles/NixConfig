@@ -74,11 +74,14 @@ autocmd("FileType", {
 -- ── Equalize splits on resize ────────────────────────────────────────
 autocmd("VimResized", { group = augroup, command = "wincmd =" })
 
--- ── Disable auto-comment on new lines ────────────────────────────────
+-- ── Auto-comment formatting ──────────────────────────────────────────
+-- Keep 'r' so <CR> in insert mode continues comments (block comments, doc comments, etc.)
+-- Remove 'o' so 'o' in normal mode doesn't auto-insert comments, and 'c' to prevent textwidth auto-wrapping.
 autocmd("FileType", {
 	group = augroup,
 	callback = function()
-		vim.opt_local.formatoptions:remove({ "c", "r", "o" })
+		vim.opt_local.formatoptions:remove({ "c", "o" })
+		vim.opt_local.formatoptions:append({ "r" })
 	end,
 })
 

@@ -353,8 +353,8 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1789689387,
-        "narHash": "sha256-vq0cBUK9vkyd9LKqzYGKD18CjpM/SvaDX2+5qugPZuo=",
+        "lastModified": 1789713083,
+        "narHash": "sha256-45pog4pX2MmMcD1rHyfJGSuIyZAEyisMUJOmiH9SJ/U=",
         "path": "/home/josh/mango",
         "type": "path"
       },
@@ -825,11 +825,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789584125,
-        "narHash": "sha256-C9BpLH4dNggam12nz/Fx/M0Vlbw8WcT/cpOc37DPQAA=",
+        "lastModified": 1789702344,
+        "narHash": "sha256-DfevaOxGu6NKUF+q5hUAg7kFscWQvuC9Yd/CgR4qpgc=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "a12d482485d877cc066516ea256b435b209a1a8c",
+        "rev": "ef5fe624be04120db77c08c5df6f75a6a4201517",
         "type": "github"
       },
       "original": {
