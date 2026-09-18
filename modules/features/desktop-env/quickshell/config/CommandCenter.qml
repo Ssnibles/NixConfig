@@ -26,7 +26,7 @@ Scope {
       if (ccScope.pendingOpen) {
         ccScope.pendingOpen = false
         if (!Config.targetScreen) {
-          Config.targetScreen = Config.resolveActiveScreen()
+          Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         }
         Config.commandCenterVisible = true
       }
@@ -46,9 +46,9 @@ Scope {
           if (Config.wm === "mangowc") {
             var data = JSON.parse(txt)
             if (data && data.monitor) {
-              foundScreen = Config.screenByName(data.monitor)
+              foundScreen = Utils.screenByName(data.monitor, Quickshell.screens)
             } else if (data && data.x !== undefined && data.y !== undefined) {
-              foundScreen = Config.screenAt(data.x, data.y)
+              foundScreen = Utils.screenAt(data.x, data.y, Quickshell.screens)
             }
           } else if (Config.wm === "hyprland") {
             var parts = txt.split(",")
@@ -56,13 +56,13 @@ Scope {
               var hx = parseInt(parts[0].trim())
               var hy = parseInt(parts[1].trim())
               if (!isNaN(hx) && !isNaN(hy)) {
-                foundScreen = Config.screenAt(hx, hy)
+                foundScreen = Utils.screenAt(hx, hy, Quickshell.screens)
               }
             }
           } else if (Config.wm === "niri") {
             var niriData = JSON.parse(txt)
             if (niriData && niriData.name) {
-              foundScreen = Config.screenByName(niriData.name)
+              foundScreen = Utils.screenByName(niriData.name, Quickshell.screens)
             }
           }
         } catch (e) {}
@@ -75,7 +75,7 @@ Scope {
         ccScope.pendingOpen = false
         openTimeoutTimer.stop()
         if (!Config.targetScreen) {
-          Config.targetScreen = Config.resolveActiveScreen()
+          Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         }
         Config.commandCenterVisible = true
       }
@@ -86,7 +86,7 @@ Scope {
         ccScope.pendingOpen = false
         openTimeoutTimer.stop()
         if (!Config.targetScreen) {
-          Config.targetScreen = Config.resolveActiveScreen()
+          Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         }
         Config.commandCenterVisible = true
       }
@@ -110,7 +110,7 @@ Scope {
       openTimeoutTimer.start()
       cursorQueryProc.exec(cmd)
     } else {
-      Config.targetScreen = Config.resolveActiveScreen()
+      Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
       Config.commandCenterVisible = true
     }
   }
@@ -146,7 +146,7 @@ Scope {
       if (Config.commandCenterVisible) {
         ccScope.closing = false
         if (!Config.targetScreen) {
-          Config.targetScreen = Config.resolveActiveScreen()
+          Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         }
       } else if (ccScope.active) {
         ccScope.closing = true
@@ -180,13 +180,15 @@ Scope {
 
       // State for transition animation
       property bool isTargetScreen: {
-        var target = Config.targetScreen || Config.lastActiveScreen || (Quickshell.screens && Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)
+        var target = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         if (!target) return false
         return panel.modelData === target || (panel.modelData && target && panel.modelData.name === target.name)
       }
       property bool isPrimaryScreen: isTargetScreen
+      readonly property bool isLeft: Config.commandCenterSide === "left"
+      readonly property real slideDistance: isLeft ? -Config.commandCenterSlideOffset : Config.commandCenterSlideOffset
       property real panelOpacity: 0
-      property real panelSlide: 60
+      property real panelSlide: slideDistance
 
       // Brightness state
       property real brightnessPct: 0.5
@@ -220,7 +222,7 @@ Scope {
 
       Component.onCompleted: {
         panelOpacity = 0
-        panelSlide = 60
+        panelSlide = slideDistance
         if (panel.isTargetScreen) {
           outsideDismiss.forceActiveFocus()
           brightnessGetProc.exec(["brightnessctl", "-m"])
@@ -236,6 +238,7 @@ Scope {
             fadeOutAnim.start()
           } else if (Config.commandCenterVisible) {
             fadeOutAnim.stop()
+            panel.panelSlide = panel.slideDistance
             fadeInAnim.start()
             if (panel.isTargetScreen) outsideDismiss.forceActiveFocus()
           }
@@ -246,16 +249,16 @@ Scope {
         id: fadeInAnim
         PauseAnimation { duration: 1 }
         ParallelAnimation {
-          NumberAnimation { target: panel; property: "panelOpacity"; to: 1; duration: 250; easing.type: Easing.OutCubic }
-          NumberAnimation { target: panel; property: "panelSlide"; to: 0; duration: 250; easing.type: Easing.OutCubic }
+          NumberAnimation { target: panel; property: "panelOpacity"; to: 1; duration: Config.commandCenterAnimDuration; easing.type: Easing.OutCubic }
+          NumberAnimation { target: panel; property: "panelSlide"; to: 0; duration: Config.commandCenterAnimDuration; easing.type: Easing.OutCubic }
         }
       }
 
       SequentialAnimation {
         id: fadeOutAnim
         ParallelAnimation {
-          NumberAnimation { target: panel; property: "panelOpacity"; to: 0; duration: 180; easing.type: Easing.OutCubic }
-          NumberAnimation { target: panel; property: "panelSlide"; to: 60; duration: 180; easing.type: Easing.OutCubic }
+          NumberAnimation { target: panel; property: "panelOpacity"; to: 0; duration: Config.commandCenterCloseDuration; easing.type: Easing.OutCubic }
+          NumberAnimation { target: panel; property: "panelSlide"; to: panel.slideDistance; duration: Config.commandCenterCloseDuration; easing.type: Easing.OutCubic }
         }
         onFinished: {
           if (ccScope.closing) {
@@ -323,10 +326,12 @@ Scope {
         width: Config.commandCenterWidth
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        anchors.right: parent.right
+        anchors.left: panel.isLeft ? parent.left : undefined
+        anchors.right: panel.isLeft ? undefined : parent.right
         anchors.topMargin: Config.hasTopBar ? (Config.barHeight + Config.commandCenterMargin) : Config.commandCenterMargin
         anchors.bottomMargin: Config.commandCenterMargin
-        anchors.rightMargin: Config.hasRightBar ? (Config.barWidth + Config.commandCenterMargin) : Config.commandCenterMargin
+        anchors.leftMargin: panel.isLeft ? (Config.hasLeftBar ? (Config.barWidth + Config.commandCenterMargin) : Config.commandCenterMargin) : 0
+        anchors.rightMargin: !panel.isLeft ? (Config.hasRightBar ? (Config.barWidth + Config.commandCenterMargin) : Config.commandCenterMargin) : 0
 
         // Prevent clicks inside mainCard from propagating to outsideDismiss
         MouseArea {
@@ -1099,10 +1104,10 @@ Scope {
             spacing: 10
 
             property var buttonModel: [
-              { icon: "󰌾", label: "Lock", cmd: ["quickshell", "ipc", "call", "lockscreen", "lock"], hoverCol: Colors.accent },
-              { icon: "󰤄", label: "Sleep", cmd: ["systemctl", "suspend"], hoverCol: Colors.accent },
-              { icon: "󰜉", label: "Reboot", cmd: ["systemctl", "reboot"], hoverCol: Colors.orange },
-              { icon: "󰐥", label: "Power", cmd: ["systemctl", "poweroff"], hoverCol: Colors.red }
+              { icon: "󰌾", label: "Lock", cmd: Config.cmdLock, hoverCol: Colors.accent },
+              { icon: "󰤄", label: "Sleep", cmd: Config.cmdSleep, hoverCol: Colors.accent },
+              { icon: "󰜉", label: "Reboot", cmd: Config.cmdReboot, hoverCol: Colors.orange },
+              { icon: "󰐥", label: "Power", cmd: Config.cmdPoweroff, hoverCol: Colors.red }
             ]
 
             Repeater {
