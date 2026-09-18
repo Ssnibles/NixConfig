@@ -328,7 +328,7 @@ Scope {
             visible: surface.isPrimaryScreen
 
             anchors.centerIn: parent
-            width: Math.min(parent.width - 40, 440)
+            width: Math.min(parent.width - 40, Config.lockCardWidth)
             spacing: 24
 
             // --- TIME & DATE HEADER ---
@@ -577,8 +577,8 @@ Scope {
                   // Avatar Box (supports custom image with fallback icon)
                   Rectangle {
                     Layout.alignment: Qt.AlignHCenter
-                    width: 64
-                    height: 64
+                    width: Config.lockAvatarSize
+                    height: Config.lockAvatarSize
                     radius: Config.commandCenterCardRadius
                     color: Colors.bgSubtle
                     border.color: Colors.border

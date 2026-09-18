@@ -16,10 +16,18 @@ Singleton {
   property bool commandCenterVisible: false
   property var targetScreen: null
   property var lastActiveScreen: null
+  property string commandCenterSide: {
+    var envSide = (Quickshell.env("QS_COMMAND_CENTER_SIDE") || "").toLowerCase()
+    if (envSide === "left" || envSide === "right") return envSide
+    return "left" // "left" | "right"
+  }
   readonly property int commandCenterWidth: 500
   readonly property int commandCenterRadius: 16
   readonly property int commandCenterCardRadius: 12
   readonly property int commandCenterMargin: 12
+  readonly property int commandCenterSlideOffset: 60
+  readonly property int commandCenterAnimDuration: 250
+  readonly property int commandCenterCloseDuration: 180
   readonly property string commandCenterClockFormat: "HH:mm"
   readonly property string commandCenterDateFormat: "dddd, MMMM d"
 
@@ -27,6 +35,7 @@ Singleton {
   property bool barVisible: true
   readonly property string barType: wm === "niri" ? "niri" : "bar"
   readonly property bool hasTopBar: barVisible && barType !== "niri"
+  readonly property bool hasLeftBar: barVisible && barType === "niri" && barSide !== "right"
   readonly property bool hasRightBar: barVisible && barType === "niri" && barSide === "right"
 
   // --- Window Manager Detection ------------------------------------------
@@ -71,10 +80,20 @@ Singleton {
   readonly property int workspaceDotSizeFocused: 34
   readonly property int workspaceDotSpacing: 6
 
-  // --- MangoWC top bar (mangowc-bar.qml) --------------------------------
+  // --- Top Bar (bar.qml) -------------------------------------------------
   readonly property int barHeight: 34
+  readonly property int barHorizontalMargin: 12
+  readonly property int barLeftSpacing: 12
+  readonly property int barRightSpacing: 10
   readonly property int mangowcMinWorkspaces: 5
   readonly property string mangowcClockFormat: "HH:mm"
+
+  // --- Audio (VolumeWidget.qml) ------------------------------------------
+  readonly property real volStep: 0.05
+
+  // --- Window Title (WindowTitleWidget.qml) ------------------------------
+  readonly property int windowTitleMaxWidthHorizontal: 350
+  readonly property int windowTitleMaxWidthVertical: 120
 
   // --- Popup / tooltip ---------------------------------------------------
   readonly property int popupGap: 46 // distance from the bar to a popup
@@ -228,8 +247,19 @@ Singleton {
   readonly property string lockWallpaperPath: "file://" + (Quickshell.env("HOME") || "/home/josh") + "/Pictures/wallpaper"
   readonly property string lockClockFormat: "HH:mm"
   readonly property string lockDateFormat: "dddd, MMMM d"
+  readonly property int lockCardWidth: 440
+  readonly property int lockAvatarSize: 64
   readonly property int lockCardRadius: 12
   readonly property int lockInputRadius: 10
   readonly property real lockBackgroundDimming: 0.8
   readonly property real lockBlurPercentage: 0.5
+
+  // --- External App & System Commands ------------------------------------
+  readonly property var cmdMixer: ["pavucontrol"]
+  readonly property var cmdNetworkManager: ["foot", "-e", "nmtui"]
+  readonly property var cmdBluetoothManager: ["blueman-manager"]
+  readonly property var cmdLock: ["quickshell", "ipc", "call", "lockscreen", "lock"]
+  readonly property var cmdSleep: ["systemctl", "suspend"]
+  readonly property var cmdReboot: ["systemctl", "reboot"]
+  readonly property var cmdPoweroff: ["systemctl", "poweroff"]
 }

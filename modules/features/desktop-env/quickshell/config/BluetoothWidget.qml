@@ -137,7 +137,7 @@ Pill {
           Quickshell.execDetached(["bluetoothctl", "power", root.isPowered ? "off" : "on"])
         }
       } else {
-        Quickshell.execDetached(["blueman-manager"])
+        Quickshell.execDetached(Config.cmdBluetoothManager)
       }
     }
   }

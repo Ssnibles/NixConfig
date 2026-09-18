@@ -60,15 +60,15 @@ Scope {
       Item {
         id: barContent
         anchors.fill: parent
-        anchors.leftMargin: 12
-        anchors.rightMargin: 12
+        anchors.leftMargin: Config.barHorizontalMargin
+        anchors.rightMargin: Config.barHorizontalMargin
 
         // Left Section: Clock, Command Center Button, Window Title
         Row {
           id: leftRow
           anchors.left: parent.left
           anchors.verticalCenter: parent.verticalCenter
-          spacing: 12
+          spacing: Config.barLeftSpacing
 
           ClockWidget {
             id: clockWidget
@@ -129,7 +129,7 @@ Scope {
           id: rightRow
           anchors.right: parent.right
           anchors.verticalCenter: parent.verticalCenter
-          spacing: 10
+          spacing: Config.barRightSpacing
 
           MediaWidget {
             id: mediaWidget

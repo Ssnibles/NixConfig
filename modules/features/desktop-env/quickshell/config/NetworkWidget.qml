@@ -101,6 +101,6 @@ Pill {
     anchors.fill: parent
     cursorShape: Qt.PointingHandCursor
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: Quickshell.execDetached(["foot", "-e", "nmtui"])
+    onClicked: Quickshell.execDetached(Config.cmdNetworkManager)
   }
 }

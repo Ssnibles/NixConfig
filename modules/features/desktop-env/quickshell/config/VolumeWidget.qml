@@ -49,14 +49,14 @@ Item {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: function(mouse) {
       if (mouse.button === Qt.RightButton) {
-        Quickshell.execDetached(["pavucontrol"])
+        Quickshell.execDetached(Config.cmdMixer)
       } else if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
         Pipewire.defaultAudioSink.audio.muted = !root.volMuted
       }
     }
     onWheel: function(wheel) {
       if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return
-      var step = 0.05
+      var step = Config.volStep
       var dir = wheel.angleDelta.y > 0 ? 1 : -1
       var newVol = Math.max(0, Math.min(1.5, root.volPct + dir * step))
       Pipewire.defaultAudioSink.audio.volume = newVol

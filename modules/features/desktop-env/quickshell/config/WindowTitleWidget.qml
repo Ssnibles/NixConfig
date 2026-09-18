@@ -9,7 +9,7 @@ Item {
   property int fontSize: 13
   property real targetRotation: horizontal ? 0 : 270
   property bool horizontal: false
-  property int maxText: horizontal ? 350 : 120
+  property int maxText: horizontal ? Config.windowTitleMaxWidthHorizontal : Config.windowTitleMaxWidthVertical
   property bool italic: true
 
   implicitWidth: horizontal ? Math.min(titleLabel.implicitWidth, root.maxText) : 26
