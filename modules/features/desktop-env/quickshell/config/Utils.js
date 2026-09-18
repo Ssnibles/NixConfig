@@ -587,3 +587,69 @@ function findBatteryDevice(upowerDevices, displayDevice) {
   }
   return (displayDevice && displayDevice.ready) ? displayDevice : null
 }
+
+function screenByName(arg1, arg2) {
+  var name = typeof arg1 === "string" ? arg1 : (typeof arg2 === "string" ? arg2 : null)
+  var screens = (arg1 && typeof arg1 !== "string") ? arg1 : ((arg2 && typeof arg2 !== "string") ? arg2 : null)
+  if (screens && screens.screens) screens = screens.screens
+  if (!screens && typeof Quickshell !== "undefined") {
+    screens = Quickshell.screens
+  }
+  if (!name || !screens) return null
+  var len = screens.length !== undefined ? screens.length : (screens.count !== undefined ? screens.count : 0)
+  for (var i = 0; i < len; i++) {
+    var s = screens[i] || (screens.get ? screens.get(i) : null)
+    if (s && s.name === name) return s
+  }
+  return null
+}
+
+function screenAt(x, y, screens) {
+  var list = screens
+  if (list && list.screens) list = list.screens
+  if (!list && typeof Quickshell !== "undefined") {
+    list = Quickshell.screens
+  }
+  if (!list) return null
+  var len = list.length !== undefined ? list.length : (list.count !== undefined ? list.count : 0)
+  for (var i = 0; i < len; i++) {
+    var s = list[i] || (list.get ? list.get(i) : null)
+    if (s && x >= s.x && x < s.x + s.width && y >= s.y && y < s.y + s.height) {
+      return s
+    }
+  }
+  return null
+}
+
+function resolveActiveScreen(targetScreen, lastActiveScreen, screens) {
+  var target = targetScreen || (typeof Config !== "undefined" ? Config.targetScreen : null)
+  if (target) return target
+  var last = lastActiveScreen || (typeof Config !== "undefined" ? Config.lastActiveScreen : null)
+  if (last) return last
+  var list = screens
+  if (list && list.screens) list = list.screens
+  if (!list && typeof Quickshell !== "undefined") {
+    list = Quickshell.screens
+  }
+  if (list) {
+    var len = list.length !== undefined ? list.length : (list.count !== undefined ? list.count : 0)
+    if (len > 0) return list[0] || (list.get ? list.get(0) : null)
+  }
+  return null
+}
+
+function getOrdinalDate(date) {
+  if (!date) return ""
+  var day = date.getDate()
+  var suffix = "th"
+  if (day < 11 || day > 13) {
+    switch (day % 10) {
+      case 1: suffix = "st"; break
+      case 2: suffix = "nd"; break
+      case 3: suffix = "rd"; break
+    }
+  }
+  return day + suffix + " " + Qt.formatDate(date, "of MMMM yyyy")
+}
+
+

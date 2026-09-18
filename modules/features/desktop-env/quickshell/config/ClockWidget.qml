@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import "Utils.js" as Utils
 
 Item {
   id: root
@@ -81,7 +82,7 @@ Item {
     iconColor: Colors.accent
     title: {
       var d = new Date()
-      return Qt.formatDate(d, getOrdinalDate(d))
+      return Qt.formatDate(d, Utils.getOrdinalDate(d))
     }
     contentWidth: 216
     contentComponent: calendarComponent
@@ -305,19 +306,5 @@ Item {
         }
       }
     }
-  }
-
-  function getOrdinalDate(date) {
-    var day = date.getDate();
-    var suffix = "th";
-
-    if (day < 11 || day > 13) {
-      switch (day % 10) {
-        case 1: suffix = "st"; break;
-        case 2: suffix = "nd"; break;
-        case 3: suffix = "rd"; break;
-      }
-    }
-    return day + suffix + " " + Qt.formatDate(date, "of MMMM yyyy");
   }
 }

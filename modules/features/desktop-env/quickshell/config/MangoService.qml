@@ -82,7 +82,7 @@ QtObject {
             root.currentTitle = ""
           }
           if (data && data.monitor) {
-            var sc = Config.screenByName(data.monitor)
+            var sc = Utils.screenByName(data.monitor, Quickshell.screens)
             if (sc) Config.lastActiveScreen = sc
           }
         } catch (e) {

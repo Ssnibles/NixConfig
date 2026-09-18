@@ -43,33 +43,6 @@ Singleton {
     return "mangowc"
   }
 
-  // --- Screen Resolution Helpers ----------------------------------------
-  function screenByName(name) {
-    if (!name || !Quickshell.screens) return null
-    for (var i = 0; i < Quickshell.screens.length; i++) {
-      if (Quickshell.screens[i].name === name) {
-        return Quickshell.screens[i]
-      }
-    }
-    return null
-  }
-
-  function screenAt(x, y) {
-    if (!Quickshell.screens) return null
-    for (var i = 0; i < Quickshell.screens.length; i++) {
-      var s = Quickshell.screens[i]
-      if (x >= s.x && x < s.x + s.width && y >= s.y && y < s.y + s.height) {
-        return s
-      }
-    }
-    return null
-  }
-
-  function resolveActiveScreen() {
-    if (targetScreen) return targetScreen
-    if (lastActiveScreen) return lastActiveScreen
-    return (Quickshell.screens && Quickshell.screens.length > 0) ? Quickshell.screens[0] : null
-  }
 
   // --- Media --------------------------------------------------------------
   // Whether the command center's media card always stays visible, showing

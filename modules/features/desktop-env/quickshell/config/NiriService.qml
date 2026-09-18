@@ -59,7 +59,7 @@ QtObject {
       }
       if (!outputName) return
       if (activated.focused) {
-        var sc = Config.screenByName(outputName)
+        var sc = Utils.screenByName(outputName, Quickshell.screens)
         if (sc) Config.lastActiveScreen = sc
       }
       var updated = []
