@@ -34,6 +34,12 @@
         script = "${pkgs.util-linux}/bin/rfkill unblock bluetooth";
       };
 
+      # Desktop workstation: keep Bluetooth powered on at boot for wireless peripherals
+      hardware.bluetooth.powerOnBoot = true;
+
+      # Desktop workstation CPU governor for low gaming latency and high frame pacing
+      powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
+
       hardware.logitech.wireless.enable = true;
 
       environment.systemPackages = with pkgs.unstable; [

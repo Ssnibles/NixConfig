@@ -32,19 +32,35 @@
       boot.initrd.compressor = "zstd";
       boot.initrd.compressorArgs = [ "-1" ];
 
+      boot.consoleLogLevel = 0;
+      boot.initrd.verbose = false;
       boot.kernelParams = [
         "mitigations=off"
         "8250.nr_uarts=0"
         "nowatchdog"
+        "quiet"
+        "loglevel=3"
+        "rd.systemd.show_status=false"
+        "rd.udev.log_level=3"
+        "udev.log_priority=3"
       ];
       boot.kernel.sysctl = {
         "vm.swappiness" = 10;
-        "vm.vfs_cache_pressure" = 200;
+        "vm.vfs_cache_pressure" = 50;
+      };
+
+      # Force Chromium & Electron applications to run natively under Wayland
+      environment.sessionVariables = {
+        NIXOS_OZONE_WL = "1";
+        ELECTRON_OZONE_PLATFORM_HINT = "auto";
       };
 
       # ── System Journal & Power Management ─────────────────────────────────
       services.journald.extraConfig = ''
-        SystemMaxUse=100M
+        SystemMaxUse=50M
+        SystemMaxFileSize=10M
+        RateLimitIntervalSec=30s
+        RateLimitBurst=1000
       '';
 
       services.upower.enable = true;
@@ -71,12 +87,13 @@
         options = [ "noatime" ];
       };
 
-      swapDevices = [
-        {
-          device = "/swapfile";
-          size = 8192;
-        }
-      ];
+      # Compressed in-memory swap to avoid SSD write wear and NVMe PCIe wakeups
+      zramSwap = {
+        enable = true;
+        algorithm = "zstd";
+        memoryPercent = 50;
+        priority = 100;
+      };
 
       # ── Systemd Boot & Service Optimizations ──────────────────────────────
       systemd.services.NetworkManager-wait-online.enable = false;

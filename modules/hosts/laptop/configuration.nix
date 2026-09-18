@@ -33,17 +33,25 @@
       # NVMe is in availableKernelModules; TPM modules removed from initrd as root is unencrypted
       boot.initrd.kernelModules = [ ];
 
-      # Pre-load Wi-Fi driver & firmware early
-      boot.kernelModules = [
-        "ath11k_pci"
-      ];
+      # Kernel modules: ath11k_pci Wi-Fi driver is auto-loaded asynchronously by udev
+      boot.kernelModules = [ ];
 
-      # Set max PWM brightness for HP elitebook (0x40000), disable PSR (0x10) & Panel Replay (0x400) to fix external monitor flicker/resets, & fix ELAN touchpad spam
+      # Set max PWM brightness for HP elitebook (0x40000), disable PSR (0x10) & Panel Replay (0x400) to fix external monitor flicker/resets, & force PCIe ASPM power saving
       boot.kernelParams = [
         "amdgpu.dcdebugmask=0x40410"
-        "i2c_hid.polling_mode=1"
-        "i2c_hid_acpi.polling_mode=1"
+        "pcie_aspm.policy=powersupersave"
       ];
+
+      # Physical NVMe swap file for laptop (secondary to zramSwap)
+      swapDevices = [
+        {
+          device = "/swapfile";
+          size = 8192;
+        }
+      ];
+
+      # Laptop battery: keep Bluetooth radio powered off at boot until explicitly needed
+      hardware.bluetooth.powerOnBoot = false;
 
       # Lock linux-firmware to known-good 20260810 release to avoid Yellow Carp DMCUB regression in 20260910
       nixpkgs.overlays = [

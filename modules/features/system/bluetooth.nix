@@ -6,11 +6,11 @@
 { ... }:
 {
   nixos.modules.shared =
-    { ... }:
+    { lib, ... }:
     {
       hardware.bluetooth = {
         enable = true;
-        powerOnBoot = true;
+        powerOnBoot = lib.mkDefault true;
         disabledPlugins = [ "bap" ];
       };
 
