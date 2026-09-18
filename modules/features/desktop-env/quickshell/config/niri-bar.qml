@@ -96,6 +96,7 @@ Scope {
         // Center Section: Workspaces Indicators
         WorkspacesWidget {
           id: workspacesWidget
+          anchors.centerIn: parent
           workspaces: niriService.workspacesForOutput(barPanel.modelData.name)
           onFocusRequested: function(workspaceId) {
             niriService.focusWorkspace(workspaceId)

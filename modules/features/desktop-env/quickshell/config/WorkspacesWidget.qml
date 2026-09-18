@@ -125,8 +125,6 @@ Item {
   width: implicitWidth
   height: implicitHeight
 
-  anchors.centerIn: parent ? parent : undefined
-
   Item {
     id: container
     anchors.fill: parent

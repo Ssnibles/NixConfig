@@ -31,11 +31,8 @@ Singleton {
   property alias historyModel: historyModel
 
   // --- MPRIS Track Change Listener ---
-  property var mediaPlayers: Mpris.players.values
-  property var mediaPlayer: Utils.findActivePlayer(store.mediaPlayers, MprisPlaybackState.Paused)
+  readonly property var mediaPlayer: MediaService.player
 
-  property string currentTrackKey: ""
-  property string latestMediaImage: ""
 
   // --- Cover Art Cache System ---
   property int cacheVersion: 0
@@ -68,9 +65,6 @@ Singleton {
           var fileUrl = item.targetFileUrl
           if (item.fullKey) store.artCache[item.fullKey] = fileUrl
           if (item.titleKey) store.artCache[item.titleKey] = fileUrl
-          if (store.latestMediaImage === item.url || !store.latestMediaImage.startsWith("file://")) {
-            store.latestMediaImage = fileUrl
-          }
           store.updateModelImages(item.fullKey, item.titleKey, fileUrl)
           store.cacheVersion++
         }
@@ -142,12 +136,6 @@ Singleton {
       return cleanU
     }
 
-    if (cleanT !== "" || cleanA !== "" || cleanU !== "") {
-      if (store.latestMediaImage !== "") {
-        return store.latestMediaImage
-      }
-    }
-
     return ""
   }
 
@@ -161,8 +149,6 @@ Singleton {
     var titleKey = cleanT ? cleanT.toLowerCase().trim() : ""
 
     if (!cleanU) return ""
-
-    store.latestMediaImage = cleanU
 
     if (cleanU.startsWith("file://") || cleanU.startsWith("/")) {
       var fileUrl = cleanU.startsWith("/") ? ("file://" + cleanU) : cleanU
@@ -294,10 +280,10 @@ Singleton {
         if (item.isMedia) {
           var k = _makeTrackKey(item.trackTitle, item.trackArtist)
           var tk = Utils.cleanTrackTitle(item.trackTitle || "").toLowerCase().trim()
-          if (k === fullKey || tk === titleKey || !item.image) {
+          if ((fullKey && k === fullKey) || (titleKey && tk === titleKey)) {
             activeModel.setProperty(i, "image", resolvedUrl)
           }
-        } else if (item.image === fullKey || item.image === titleKey || !item.image) {
+        } else if (item.image && (item.image === fullKey || item.image === titleKey)) {
           activeModel.setProperty(i, "image", resolvedUrl)
         }
       }
@@ -308,38 +294,14 @@ Singleton {
         if (hItem.isMedia) {
           var hk = _makeTrackKey(hItem.trackTitle, hItem.trackArtist)
           var htk = Utils.cleanTrackTitle(hItem.trackTitle || "").toLowerCase().trim()
-          if (hk === fullKey || htk === titleKey || !hItem.image) {
+          if ((fullKey && hk === fullKey) || (titleKey && htk === titleKey)) {
             historyModel.setProperty(j, "image", resolvedUrl)
           }
-        } else if (hItem.image === fullKey || hItem.image === titleKey || !hItem.image) {
+        } else if (hItem.image && (hItem.image === fullKey || hItem.image === titleKey)) {
           historyModel.setProperty(j, "image", resolvedUrl)
         }
       }
     }
-  }
-
-  Connections {
-    target: store.mediaPlayer
-    function onTrackTitleChanged() { store.updateTrackKey() }
-    function onTrackArtistChanged() { store.updateTrackKey() }
-    function onTrackArtUrlChanged() { store.updateTrackArtUrl() }
-    function onIsPlayingChanged() { store.updateTrackKey() }
-  }
-
-  onMediaPlayerChanged: {
-    updateTrackKey()
-    updateTrackArtUrl()
-  }
-
-  function updateTrackKey() {
-    if (!mediaPlayer) {
-      currentTrackKey = ""
-    } else {
-      var cleanT = Utils.cleanTrackTitle(mediaPlayer.trackTitle || "")
-      var cleanA = mediaPlayer.trackArtist || ""
-      currentTrackKey = cleanT + " — " + cleanA
-    }
-    updateTrackArtUrl()
   }
 
   function updateTrackArtUrl() {
@@ -349,7 +311,6 @@ Singleton {
 
     var resolved = store.cacheCoverArt(title, artist, artUrl)
     if (resolved) {
-      store.latestMediaImage = resolved
       var fullKey = _makeTrackKey(title, artist)
       var titleKey = Utils.cleanTrackTitle(title || "").toLowerCase().trim()
       updateModelImages(fullKey, titleKey, resolved)
@@ -365,81 +326,156 @@ Singleton {
     onTriggered: store._startupFinished = true
   }
 
-  onCurrentTrackKeyChanged: {
+  Timer {
+    id: mediaDebounceTimer
+    interval: 200
+    repeat: false
+    onTriggered: store.handleTrackChange()
+  }
+
+  function scheduleTrackChange() {
     if (!store._startupFinished) return
-    if (currentTrackKey !== "" && mediaPlayer && mediaPlayer.isPlaying) {
-      var rawTitle = mediaPlayer.trackTitle || ""
-      var cleanT = Utils.cleanTrackTitle(rawTitle)
-      var cleanA = mediaPlayer.trackArtist || "Unknown Artist"
-      var rawArt = Utils.cleanUrl(mediaPlayer.trackArtUrl || "")
-      var artUrl = store.cacheCoverArt(cleanT, cleanA, rawArt) || store.latestMediaImage
+    mediaDebounceTimer.restart()
+  }
 
-      var itemData = {
-        notification: null,
-        summary: "Now Playing",
-        body: "",
-        trackTitle: cleanT,
-        trackArtist: cleanA,
-        appIcon: mediaPlayer.desktopEntry || mediaPlayer.name || "",
-        image: artUrl || store.latestMediaImage || "",
-        urgency: 0,
-        isMedia: true,
-        appName: mediaPlayer.name || "",
-        desktopEntry: mediaPlayer.desktopEntry || "",
-        timeStr: Qt.formatDateTime(new Date(), "hh:mm A"),
-        createdAt: Date.now()
+  Connections {
+    target: store.mediaPlayer
+    function onTrackTitleChanged() { store.scheduleTrackChange() }
+    function onTrackArtistChanged() { store.scheduleTrackChange() }
+    function onTrackArtUrlChanged() { store.scheduleTrackChange() }
+    function onIsPlayingChanged() { store.scheduleTrackChange() }
+  }
+
+  onMediaPlayerChanged: {
+    updateTrackArtUrl()
+    scheduleTrackChange()
+  }
+
+  function handleTrackChange() {
+    if (!mediaPlayer || !mediaPlayer.isPlaying) return
+
+    var rawTitle = mediaPlayer.trackTitle || ""
+    var cleanT = Utils.cleanTrackTitle(rawTitle)
+    var cleanA = mediaPlayer.trackArtist || "Unknown Artist"
+
+    // Skip empty or generic placeholder site titles
+    if (!cleanT) return
+    var tLower = cleanT.toLowerCase().trim()
+    var isUnknownArtist = (!cleanA || cleanA === "Unknown Artist" || cleanA.toLowerCase() === "unknown")
+    if (isUnknownArtist && (
+      tLower === "youtube" ||
+      tLower === "soundcloud" ||
+      tLower === "spotify" ||
+      tLower === "netflix" ||
+      tLower === "twitch" ||
+      tLower === "instagram" ||
+      tLower === "facebook" ||
+      tLower === "twitter" ||
+      tLower === "x" ||
+      tLower === "unknown"
+    )) {
+      return
+    }
+
+    var rawArt = Utils.cleanUrl(mediaPlayer.trackArtUrl || "")
+    var artUrl = rawArt ? (store.cacheCoverArt(cleanT, cleanA, rawArt) || "") : ""
+
+    var itemData = {
+      notification: null,
+      summary: "Now Playing",
+      body: "",
+      trackTitle: cleanT,
+      trackArtist: cleanA,
+      appIcon: mediaPlayer.desktopEntry || mediaPlayer.name || "",
+      image: artUrl,
+      urgency: 0,
+      isMedia: true,
+      appName: mediaPlayer.name || "",
+      desktopEntry: mediaPlayer.desktopEntry || "",
+      timeStr: Qt.formatDateTime(new Date(), "hh:mm A"),
+      createdAt: Date.now()
+    }
+
+    store.postMediaItem(itemData)
+  }
+
+  function postMediaItem(itemData) {
+    if (!itemData || !itemData.trackTitle) return
+
+    // 1. Check if an active media toast from the same player/app exists
+    var existingActiveIndex = -1
+    for (var a = 0; a < activeModel.count; a++) {
+      var actItem = activeModel.get(a)
+      if (actItem && actItem.isMedia) {
+        var sameApp = (
+          (itemData.desktopEntry && actItem.desktopEntry === itemData.desktopEntry) ||
+          (itemData.appName && actItem.appName === itemData.appName)
+        )
+        var actClean = Utils.cleanTrackTitle(actItem.trackTitle)
+        if (actClean === itemData.trackTitle || sameApp) {
+          existingActiveIndex = a
+          break
+        }
       }
+    }
 
-      // Deduplicate in activeModel by clean title
-      var alreadyActive = false
-      for (var a = 0; a < activeModel.count; a++) {
-        var actItem = activeModel.get(a)
-        if (actItem && actItem.isMedia) {
-          var actCleanTitle = Utils.cleanTrackTitle(actItem.trackTitle)
-          if (actCleanTitle === cleanT && cleanT !== "") {
-            alreadyActive = true
-            if (actItem.trackArtist === "Unknown Artist" && cleanA !== "Unknown Artist") {
-              activeModel.setProperty(a, "trackArtist", cleanA)
+    if (existingActiveIndex !== -1) {
+      var existing = activeModel.get(existingActiveIndex)
+      var existingClean = Utils.cleanTrackTitle(existing.trackTitle)
+      if (existingClean === itemData.trackTitle) {
+        if (existing.trackArtist === "Unknown Artist" && itemData.trackArtist !== "Unknown Artist") {
+          activeModel.setProperty(existingActiveIndex, "trackArtist", itemData.trackArtist)
+        }
+        if (itemData.image && (!existing.image || existing.image === "")) {
+          activeModel.setProperty(existingActiveIndex, "image", itemData.image)
+        }
+      } else {
+        // Track changed on the same player: replace the active toast in-place
+        activeModel.set(existingActiveIndex, itemData)
+        dismissTimer.restart()
+      }
+    } else {
+      if (!store.dnd && (Config.notifShowMediaToasts !== false)) {
+        while (activeModel.count >= store.maxVisible) {
+          store.dismissActiveAt(0, true)
+        }
+        activeModel.append(itemData)
+        dismissTimer.restart()
+      }
+    }
+
+    // 2. Deduplicate / update in historyModel
+    var histUpdated = false
+    if (historyModel.count > 0) {
+      var topHist = historyModel.get(0)
+      if (topHist && topHist.isMedia) {
+        var sameHistApp = (
+          (itemData.desktopEntry && topHist.desktopEntry === itemData.desktopEntry) ||
+          (itemData.appName && topHist.appName === itemData.appName)
+        )
+        var topHistClean = Utils.cleanTrackTitle(topHist.trackTitle)
+        var isRecent = (Date.now() - (topHist.createdAt || 0)) < 20000
+        if (sameHistApp && isRecent) {
+          if (topHistClean === itemData.trackTitle) {
+            if (topHist.trackArtist === "Unknown Artist" && itemData.trackArtist !== "Unknown Artist") {
+              historyModel.setProperty(0, "trackArtist", itemData.trackArtist)
             }
-            if ((artUrl || store.latestMediaImage) && (!actItem.image || actItem.image === "")) {
-              activeModel.setProperty(a, "image", artUrl || store.latestMediaImage)
+            if (itemData.image && (!topHist.image || topHist.image === "")) {
+              historyModel.setProperty(0, "image", itemData.image)
             }
-            break
+            histUpdated = true
+          } else if (topHistClean.toLowerCase() === "youtube" || topHist.trackArtist === "Unknown Artist") {
+            historyModel.set(0, itemData)
+            histUpdated = true
           }
         }
       }
+    }
 
-      // Also update matching items in historyModel
-      for (var h = 0; h < historyModel.count; h++) {
-        var histItem = historyModel.get(h)
-        if (histItem && histItem.isMedia) {
-          var histCleanTitle = Utils.cleanTrackTitle(histItem.trackTitle)
-          if (histCleanTitle === cleanT && cleanT !== "") {
-            if (histItem.trackArtist === "Unknown Artist" && cleanA !== "Unknown Artist") {
-              historyModel.setProperty(h, "trackArtist", cleanA)
-            }
-            if ((artUrl || store.latestMediaImage) && (!histItem.image || histItem.image === "")) {
-              historyModel.setProperty(h, "image", artUrl || store.latestMediaImage)
-            }
-          }
-        }
-      }
-
-      if (!alreadyActive) {
-        // Record into history
-        historyModel.insert(0, itemData)
-        if (historyModel.count > maxHistory) {
-          historyModel.remove(maxHistory)
-        }
-
-        // If not muted, show active toast
-        if (!store.dnd) {
-          while (activeModel.count >= store.maxVisible) {
-            store.dismissActiveAt(0, true)
-          }
-          activeModel.append(itemData)
-          dismissTimer.restart()
-        }
+    if (!histUpdated) {
+      historyModel.insert(0, itemData)
+      if (historyModel.count > maxHistory) {
+        historyModel.remove(maxHistory)
       }
     }
   }
@@ -490,24 +526,50 @@ Singleton {
         }
       }
 
-      var isMediaNotification = isSpotify
-      if (!isMediaNotification && isBrowserOrPlayer) {
-        if (appNameLower.indexOf("zen") !== -1 || appNameLower.indexOf("qutebrowser") !== -1 ||
-            appNameLower.indexOf("firefox") !== -1 || notification.category === "x-freedesktop.notification.media") {
+      var isMediaNotification = false
+      if (notification.category === "x-freedesktop.notification.media") {
+        isMediaNotification = true
+      } else if (store.mediaPlayer && store.mediaPlayer.trackTitle) {
+        var cTitleLower = Utils.cleanTrackTitle(store.mediaPlayer.trackTitle).toLowerCase().trim()
+        if (cTitleLower !== "" && isBrowserOrPlayer && (summaryLower.indexOf(cTitleLower) !== -1 || bodyLower.indexOf(cTitleLower) !== -1)) {
           isMediaNotification = true
-        } else if (store.mediaPlayer && store.mediaPlayer.trackTitle) {
-          var cTitleLower = Utils.cleanTrackTitle(store.mediaPlayer.trackTitle).toLowerCase()
-          if (cTitleLower !== "" && (summaryLower.indexOf(cTitleLower) !== -1 || bodyLower.indexOf(cTitleLower) !== -1)) {
-            isMediaNotification = true
-          }
         }
+      } else if (isSpotify && notifImage) {
+        isMediaNotification = true
       }
 
       if (isMediaNotification) {
-        var cleanT = Utils.cleanTrackTitle(notification.summary || (store.mediaPlayer ? store.mediaPlayer.trackTitle : ""))
-        var cleanA = notification.body || (store.mediaPlayer ? store.mediaPlayer.trackArtist : "Unknown Artist")
-        var rawMediaArt = notifImage || (store.mediaPlayer ? store.mediaPlayer.trackArtUrl || "" : "")
-        var mediaImage = store.cacheCoverArt(cleanT, cleanA, rawMediaArt) || store.latestMediaImage
+        var isCurrentPlayerTrack = false
+        if (store.mediaPlayer && store.mediaPlayer.trackTitle) {
+          var curCleanT = Utils.cleanTrackTitle(store.mediaPlayer.trackTitle).toLowerCase().trim()
+          if (curCleanT !== "" && (summaryLower.indexOf(curCleanT) !== -1 || bodyLower.indexOf(curCleanT) !== -1)) {
+            isCurrentPlayerTrack = true
+          }
+        }
+
+        var cleanT = Utils.cleanTrackTitle(notification.summary || (isCurrentPlayerTrack && store.mediaPlayer ? store.mediaPlayer.trackTitle : ""))
+        var cleanA = notification.body || (isCurrentPlayerTrack && store.mediaPlayer ? store.mediaPlayer.trackArtist : "Unknown Artist")
+
+        // Skip generic placeholder titles emitted while web player is initializing
+        var tLower = cleanT.toLowerCase().trim()
+        var isUnknownArtist = (!cleanA || cleanA === "Unknown Artist" || cleanA.toLowerCase() === "unknown")
+        if (!cleanT || (isUnknownArtist && (
+          tLower === "youtube" ||
+          tLower === "soundcloud" ||
+          tLower === "spotify" ||
+          tLower === "netflix" ||
+          tLower === "twitch" ||
+          tLower === "instagram" ||
+          tLower === "facebook" ||
+          tLower === "twitter" ||
+          tLower === "x" ||
+          tLower === "unknown"
+        ))) {
+          return
+        }
+
+        var rawMediaArt = notifImage || (isCurrentPlayerTrack && store.mediaPlayer ? Utils.cleanUrl(store.mediaPlayer.trackArtUrl || "") : "")
+        var mediaImage = rawMediaArt ? (store.cacheCoverArt(cleanT, cleanA, rawMediaArt) || "") : ""
 
         var mediaItemData = {
           notification: notification,
@@ -525,54 +587,7 @@ Singleton {
           createdAt: Date.now()
         }
 
-        // Deduplicate in activeModel by clean title
-        var alreadyActive = false
-        for (var a = 0; a < activeModel.count; a++) {
-          var actItem = activeModel.get(a)
-          if (actItem && actItem.isMedia) {
-            var actCleanTitle = Utils.cleanTrackTitle(actItem.trackTitle)
-            if (actCleanTitle === cleanT && cleanT !== "") {
-              alreadyActive = true
-              if (cleanA && cleanA !== "Unknown Artist") {
-                activeModel.setProperty(a, "trackArtist", cleanA)
-              }
-              if (mediaImage && mediaImage !== "") {
-                activeModel.setProperty(a, "image", mediaImage)
-              }
-              break
-            }
-          }
-        }
-
-        // Also update matching items in historyModel
-        for (var h = 0; h < historyModel.count; h++) {
-          var histItem = historyModel.get(h)
-          if (histItem && histItem.isMedia) {
-            var histCleanTitle = Utils.cleanTrackTitle(histItem.trackTitle)
-            if (histCleanTitle === cleanT && cleanT !== "") {
-              if (cleanA && cleanA !== "Unknown Artist") {
-                historyModel.setProperty(h, "trackArtist", cleanA)
-              }
-              if (mediaImage && mediaImage !== "") {
-                historyModel.setProperty(h, "image", mediaImage)
-              }
-            }
-          }
-        }
-
-        if (!alreadyActive && cleanT !== "") {
-          historyModel.insert(0, mediaItemData)
-          if (historyModel.count > maxHistory) {
-            historyModel.remove(maxHistory)
-          }
-          if (!store.dnd && (Config.notifShowMediaToasts !== false)) {
-            while (activeModel.count >= store.maxVisible) {
-              store.dismissActiveAt(0, true)
-            }
-            activeModel.append(mediaItemData)
-            dismissTimer.restart()
-          }
-        }
+        store.postMediaItem(mediaItemData)
         return
       }
 

@@ -66,7 +66,14 @@ QtObject {
   readonly property Connections _hyprConn: Connections {
     target: root.active ? Hyprland : null
     function onFocusedWorkspaceChanged() { root.updateData() }
-    function onRawEvent(name, data) { root.updateData() }
+    function onRawEvent(name, data) {
+      if (name.startsWith("workspace") || name.startsWith("focusedmon") ||
+          name.startsWith("activewindow") || name.startsWith("createworkspace") ||
+          name.startsWith("destroyworkspace") || name.startsWith("movewindow") ||
+          name === "urgent" || name === "openwindow" || name === "closewindow") {
+        root.updateData()
+      }
+    }
   }
 
   function focusWorkspace(id) {

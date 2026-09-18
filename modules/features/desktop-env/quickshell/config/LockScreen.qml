@@ -103,6 +103,7 @@ Scope {
     active: lockScope.active
     sourceComponent: lockComponent
     onActiveChanged: {
+      MediaService.lockActive = lockLoader.active
       if (lockLoader.active) {
         lockScope.errorMessage = ""
         lockScope.authenticating = false
@@ -140,7 +141,26 @@ Scope {
         // Check if this screen is the main interactive screen (first screen in list)
         property bool isPrimaryScreen: surface.screen === undefined || surface.screen === Quickshell.screens[0]
 
+        property string currentTimeStr: Qt.formatDateTime(new Date(), Config.lockClockFormat)
+        property string currentDateStr: Qt.formatDateTime(new Date(), Config.lockDateFormat)
+
+        function updateTime() {
+          var d = new Date()
+          surface.currentTimeStr = Qt.formatDateTime(d, Config.lockClockFormat)
+          surface.currentDateStr = Qt.formatDateTime(d, Config.lockDateFormat)
+          clockTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
+          clockTimer.restart()
+        }
+
+        Timer {
+          id: clockTimer
+          running: lockRoot.locked
+          repeat: false
+          onTriggered: surface.updateTime()
+        }
+
         Component.onCompleted: {
+          surface.updateTime()
           if (surface.isPrimaryScreen) {
             mainBg.forceActiveFocus()
           }
@@ -339,33 +359,17 @@ Scope {
               Text {
                 id: clockText
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: Qt.formatDateTime(new Date(), Config.lockClockFormat)
+                text: surface.currentTimeStr
                 color: Colors.fg
                 font.family: Config.serifFont
                 font.pixelSize: 72
                 font.italic: true
                 font.letterSpacing: 1
-
-                function updateTime() {
-                  var d = new Date()
-                  clockText.text = Qt.formatDateTime(d, Config.lockClockFormat)
-                  clockTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
-                  clockTimer.restart()
-                }
-
-                Timer {
-                  id: clockTimer
-                  running: lockRoot.locked
-                  repeat: false
-                  onTriggered: clockText.updateTime()
-                }
-
-                Component.onCompleted: updateTime()
               }
 
               Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: Qt.formatDateTime(new Date(), Config.lockDateFormat)
+                text: surface.currentDateStr
                 color: Colors.fgMid
                 font.family: Config.sansFont
                 font.pixelSize: 16
@@ -381,15 +385,9 @@ Scope {
               border.color: Colors.border
               border.width: 1
               radius: Config.commandCenterCardRadius
-              visible: !!activePlayer && (activePlayer.isPlaying || (activePlayer.trackTitle !== undefined && activePlayer.trackTitle !== ""))
+              visible: MediaService.hasPlayer && (MediaService.isPlaying || (MediaService.trackTitle !== ""))
 
-              property var mediaPlayers: Mpris.players.values
-              property var activePlayer: Utils.findActivePlayer(lockMediaCard.mediaPlayers, MprisPlaybackState.Paused)
-
-              MediaProgress {
-                id: lockMediaTracker
-                player: lockMediaCard.activePlayer
-              }
+              property var activePlayer: MediaService.player
 
               Column {
                 id: lockMediaCol
@@ -517,10 +515,10 @@ Scope {
                 RowLayout {
                   width: parent.width
                   spacing: 8
-                  visible: lockMediaTracker.lastLength > 0
+                  visible: MediaService.lastLength > 0
 
                   Text {
-                    text: Utils.formatTime(Math.round(lockMediaTracker.estimatedPosition))
+                    text: Utils.formatTime(Math.round(MediaService.estimatedPosition))
                     color: Colors.fgDim
                     font.family: Config.sansFont
                     font.pixelSize: 12
@@ -530,13 +528,13 @@ Scope {
 
                   SliderControl {
                     Layout.fillWidth: true
-                    value: lockMediaTracker.progress
+                    value: MediaService.progress
                     fillColor: Colors.accent
                     enabled: false // Non-interactive: playback position cannot be dragged or clicked
                   }
 
                   Text {
-                    text: Utils.formatTime(Math.round(lockMediaTracker.lastLength))
+                    text: Utils.formatTime(Math.round(MediaService.lastLength))
                     color: Colors.fgDim
                     font.family: Config.sansFont
                     font.pixelSize: 12
@@ -802,9 +800,9 @@ Scope {
               spacing: 10
 
               property var buttonModel: [
-                { icon: "󰤄", label: "Suspend", cmd: ["systemctl", "suspend"], hoverCol: Colors.accent },
-                { icon: "󰜉", label: "Reboot", cmd: ["systemctl", "reboot"], hoverCol: Colors.orange },
-                { icon: "󰐥", label: "Power", cmd: ["systemctl", "poweroff"], hoverCol: Colors.red }
+                { icon: "󰤄", label: "Suspend", cmd: Config.cmdSleep, hoverCol: Colors.accent },
+                { icon: "󰜉", label: "Reboot", cmd: Config.cmdReboot, hoverCol: Colors.orange },
+                { icon: "󰐥", label: "Power", cmd: Config.cmdPoweroff, hoverCol: Colors.red }
               ]
 
               Repeater {
@@ -864,7 +862,7 @@ Scope {
 
             Text {
               anchors.horizontalCenter: parent.horizontalCenter
-              text: Qt.formatDateTime(new Date(), Config.lockClockFormat)
+              text: surface.currentTimeStr
               color: Colors.fg
               font.family: Config.serifFont
               font.pixelSize: 72
@@ -874,7 +872,7 @@ Scope {
 
             Text {
               anchors.horizontalCenter: parent.horizontalCenter
-              text: Qt.formatDateTime(new Date(), Config.lockDateFormat)
+              text: surface.currentDateStr
               color: Colors.fgMid
               font.family: Config.sansFont
               font.pixelSize: 18

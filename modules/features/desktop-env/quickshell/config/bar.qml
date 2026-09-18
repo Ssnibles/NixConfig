@@ -117,6 +117,7 @@ Scope {
         // Center Section: Unified Workspaces Widget
         WorkspacesWidget {
           id: workspacesWidget
+          anchors.centerIn: parent
           horizontal: true
           workspaces: rootWmService.getWorkspaces(barPanel.modelData.name)
           onFocusRequested: function(workspaceId) {

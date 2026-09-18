@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Widgets
+import "Utils.js" as Utils
 
 // Single notification card. Rendered by NotificationOverlay for each queued
 // notification and by CommandCenter for history items.
@@ -96,17 +97,24 @@ Rectangle {
     }
 
     if (root.isMedia) {
-      var cachedArt = NotificationStore.getCoverArt(
-        root.trackTitle || (NotificationStore.mediaPlayer ? NotificationStore.mediaPlayer.trackTitle : ""),
-        root.trackArtist || (NotificationStore.mediaPlayer ? NotificationStore.mediaPlayer.trackArtist : ""),
-        root.image || (NotificationStore.mediaPlayer ? NotificationStore.mediaPlayer.trackArtUrl : "")
-      )
-      addCandidate(cachedArt)
-      if (NotificationStore.mediaPlayer && NotificationStore.mediaPlayer.trackArtUrl) {
-        addCandidate(NotificationStore.mediaPlayer.trackArtUrl)
+      var cachedArt = NotificationStore.getCoverArt(root.trackTitle, root.trackArtist, root.image)
+      if (cachedArt) {
+        addCandidate(cachedArt)
       }
-      if (NotificationStore.latestMediaImage) {
-        addCandidate(NotificationStore.latestMediaImage)
+
+      var isCurrentTrack = false
+      if (NotificationStore.mediaPlayer && NotificationStore.mediaPlayer.trackTitle) {
+        var curTitle = Utils.cleanTrackTitle(NotificationStore.mediaPlayer.trackTitle).toLowerCase()
+        var myTitle = Utils.cleanTrackTitle(root.trackTitle || "").toLowerCase()
+        if (curTitle !== "" && curTitle === myTitle) {
+          isCurrentTrack = true
+        }
+      }
+
+      if (isCurrentTrack) {
+        if (NotificationStore.mediaPlayer && NotificationStore.mediaPlayer.trackArtUrl) {
+          addCandidate(NotificationStore.mediaPlayer.trackArtUrl)
+        }
       }
     }
 
@@ -421,33 +429,5 @@ Rectangle {
       }
     }
   }
-
-  // Quick Dismiss 'X' Button on Card Hover
-  Rectangle {
-    id: closeBtn
-    anchors.top: parent.top
-    anchors.right: parent.right
-    anchors.margins: 6
-    width: 20
-    height: 20
-    radius: 10
-    color: closeHover.containsMouse ? Colors.bgSubtle : "transparent"
-    visible: root.isHovered
-
-    Text {
-      anchors.centerIn: parent
-      text: "󰅖"
-      font.pixelSize: 11
-      font.family: Config.monoFont
-      color: closeHover.containsMouse ? Colors.red : Colors.fgDim
-    }
-
-    MouseArea {
-      id: closeHover
-      anchors.fill: parent
-      hoverEnabled: true
-      cursorShape: Qt.PointingHandCursor
-      onClicked: root.dismissed()
-    }
-  }
 }
+

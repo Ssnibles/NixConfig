@@ -268,8 +268,8 @@ Scope {
         }
       }
 
-      // Audio tracking
-      property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
+      // Audio tracking (only tracked on target screen to save resources)
+      property var volNodes: (panel.isTargetScreen && Pipewire.ready && Pipewire.defaultAudioSink) ? [Pipewire.defaultAudioSink] : []
       PwObjectTracker { objects: panel.volNodes }
       property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
       property real volPct: volInfo ? volInfo.volume : 0
@@ -319,10 +319,11 @@ Scope {
         }
       }
 
-      // Main Card container
-      Rectangle {
-        id: mainCard
-        visible: panel.isTargetScreen
+      // Main Card container (lazily loaded only on the target screen to avoid duplicating across displays)
+      Loader {
+        id: cardLoader
+        active: panel.isTargetScreen
+        sourceComponent: mainCardComponent
         width: Config.commandCenterWidth
         anchors.top: parent.top
         anchors.bottom: parent.bottom
@@ -332,22 +333,30 @@ Scope {
         anchors.bottomMargin: Config.commandCenterMargin
         anchors.leftMargin: panel.isLeft ? (Config.hasLeftBar ? (Config.barWidth + Config.commandCenterMargin) : Config.commandCenterMargin) : 0
         anchors.rightMargin: !panel.isLeft ? (Config.hasRightBar ? (Config.barWidth + Config.commandCenterMargin) : Config.commandCenterMargin) : 0
+      }
 
-        // Prevent clicks inside mainCard from propagating to outsideDismiss
-        MouseArea {
+      Component {
+        id: mainCardComponent
+
+        Rectangle {
+          id: mainCard
           anchors.fill: parent
-          onClicked: function(mouse) { mouse.accepted = true }
-        }
 
-        transform: Translate {
-          x: panel.panelSlide
-        }
-        opacity: panel.panelOpacity
+          // Prevent clicks inside mainCard from propagating to outsideDismiss
+          MouseArea {
+            anchors.fill: parent
+            onClicked: function(mouse) { mouse.accepted = true }
+          }
 
-        color: Colors.bg
-        border.color: Colors.border
-        border.width: 1
-        radius: Config.commandCenterRadius
+          transform: Translate {
+            x: panel.panelSlide
+          }
+          opacity: panel.panelOpacity
+
+          color: Colors.bg
+          border.color: Colors.border
+          border.width: 1
+          radius: Config.commandCenterRadius
 
         ColumnLayout {
           anchors.fill: parent
@@ -563,43 +572,18 @@ Scope {
             border.color: Colors.border
             border.width: 1
             radius: Config.commandCenterCardRadius
-            visible: Config.alwaysShowMediaCard || !!activePlayer
+            visible: Config.alwaysShowMediaCard || MediaService.hasPlayer
 
-            property bool hasPlayer: !!activePlayer
-            property var mediaPlayers: Mpris.players.values
-            property var activePlayer: Utils.findActivePlayer(mediaCard.mediaPlayers, MprisPlaybackState.Paused)
+            property bool hasPlayer: MediaService.hasPlayer
+            property var activePlayer: MediaService.player
 
             MouseArea {
               anchors.fill: parent
               acceptedButtons: Qt.RightButton
               cursorShape: mediaCard.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
               onClicked: function(mouse) {
-                if (mouse.button === Qt.RightButton && mediaCard.activePlayer) {
-                  Utils.goToSource(mediaCard.activePlayer, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
-                }
-              }
-            }
-
-            MediaProgress {
-              id: mediaTracker
-              enabled: panel.panelOpacity > 0
-              player: mediaCard.activePlayer
-            }
-
-            Timer {
-              id: seekTimer
-              interval: Config.mediaSeekDebounceMs
-              repeat: false
-              property real targetProgress: 0
-              onTriggered: {
-                if (mediaCard.activePlayer && mediaCard.activePlayer.canSeek) {
-                  var targetPos = targetProgress * mediaTracker.lastLength
-                  if (mediaCard.activePlayer.positionSupported) {
-                    mediaCard.activePlayer.position = targetPos
-                  } else {
-                    var currentPos = mediaTracker.estimatedPosition
-                    mediaCard.activePlayer.seek(targetPos - currentPos)
-                  }
+                if (mouse.button === Qt.RightButton) {
+                  MediaService.focusSource()
                 }
               }
             }
@@ -835,10 +819,10 @@ Scope {
               RowLayout {
                 width: parent.width
                 spacing: 8
-                visible: mediaCard.hasPlayer ? mediaTracker.lastLength > 0 : Config.alwaysShowMediaCard
+                visible: mediaCard.hasPlayer ? MediaService.lastLength > 0 : Config.alwaysShowMediaCard
 
                 Text {
-                  text: Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
+                  text: Utils.formatTime(Math.round(MediaService.estimatedPosition))
                   color: Colors.fgDim
                   font.family: Config.sansFont
                   font.pixelSize: 12
@@ -848,17 +832,16 @@ Scope {
 
                 SliderControl {
                   Layout.fillWidth: true
-                  value: mediaTracker.progress
+                  value: MediaService.progress
                   fillColor: Colors.accent
                   enabled: mediaCard.hasPlayer
                   onMoved: function(v) {
-                    seekTimer.targetProgress = v
-                    seekTimer.restart()
+                    MediaService.seek(v)
                   }
                 }
 
                 Text {
-                  text: Utils.formatTime(Math.round(mediaTracker.lastLength))
+                  text: Utils.formatTime(Math.round(MediaService.lastLength))
                   color: Colors.fgDim
                   font.family: Config.sansFont
                   font.pixelSize: 12
@@ -1162,4 +1145,5 @@ Scope {
       }
     }
   }
+}
 }

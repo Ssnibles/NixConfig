@@ -91,7 +91,7 @@ Pill {
       var d = []
       if (root.isWifi && root.wifiNet)
         d.push("Signal · " + Math.round(root.wifiNet.signalStrength * 100) + "%")
-      d.push("Right click · nmtui")
+      d.push("Click · nmtui")
       return d
     }
   }

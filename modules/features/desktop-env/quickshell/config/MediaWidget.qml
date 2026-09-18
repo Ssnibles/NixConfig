@@ -28,48 +28,13 @@ Item {
     Behavior on color { ColorAnimation { duration: 100 } }
   }
 
-  // --- MPRIS State ---
-  property var mediaPlayers: Mpris.players.values
-  property var mediaPlayer: Utils.findActivePlayer(root.mediaPlayers, MprisPlaybackState.Paused)
-
-  property string mediaText: root.mediaPlayer
-    ? (root.mediaPlayer.trackArtist
-      ? Utils.cleanTrackTitle(root.mediaPlayer.trackTitle) + " — " + root.mediaPlayer.trackArtist
-      : Utils.cleanTrackTitle(root.mediaPlayer.trackTitle))
-    : ""
-  property bool hasMedia: root.mediaText !== ""
-
-  // --- Position & Progress Estimation ---
-  MediaProgress {
-    id: mediaTracker
-    player: root.mediaPlayer
-    enabled: (!root.horizontal && root.visible) || (mediaTooltip && mediaTooltip.hovered)
-    tickInterval: (mediaTooltip && mediaTooltip.hovered) ? 300 : 1000
-  }
-
-  // Debounced seek — mirrors CommandCenter's seekTimer
-  Timer {
-    id: popoverSeekTimer
-    interval: Config.mediaSeekDebounceMs
-    repeat: false
-    property real targetProgress: 0
-    onTriggered: {
-      if (root.mediaPlayer && root.mediaPlayer.canSeek) {
-        var targetPos = targetProgress * mediaTracker.lastLength
-        if (root.mediaPlayer.positionSupported) {
-          root.mediaPlayer.position = targetPos
-        } else {
-          var currentPos = mediaTracker.estimatedPosition
-          root.mediaPlayer.seek(targetPos - currentPos)
-        }
-      }
-    }
-  }
-
+  // --- Centralized MPRIS State from MediaService ---
+  readonly property var mediaPlayer: MediaService.player
+  readonly property string mediaText: MediaService.mediaText
+  readonly property bool hasMedia: MediaService.hasMedia
 
   function focusMediaPlayer() {
-    if (!root.mediaPlayer) return
-    Utils.goToSource(root.mediaPlayer, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
+    MediaService.focusSource()
   }
 
   // --- UI Layout (Vertical for Sidebar) ---
@@ -118,9 +83,7 @@ Item {
       Text {
         id: elapsedLabel
         anchors.horizontalCenter: parent.horizontalCenter
-        text: root.mediaPlayer && mediaTracker.lastLength > 0
-          ? Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
-          : Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
+        text: Utils.formatTime(Math.round(MediaService.estimatedPosition))
         color: Colors.fgMid
         font.family: root.uiFont
         font.pixelSize: 11
@@ -129,9 +92,9 @@ Item {
 
       Text {
         id: totalLabel
-        visible: root.mediaPlayer && mediaTracker.lastLength > 0
+        visible: root.mediaPlayer && MediaService.lastLength > 0
         anchors.horizontalCenter: parent.horizontalCenter
-        text: Utils.formatTime(Math.round(mediaTracker.lastLength))
+        text: Utils.formatTime(Math.round(MediaService.lastLength))
         color: Colors.fgDim
         font.family: root.uiFont
         font.pixelSize: 11
@@ -211,6 +174,13 @@ Item {
     target: root
     sharedWindow: root.sharedWindow
     contentComponent: mediaPopoverComponent
+    onHoveredChanged: {
+      if (mediaTooltip.hovered) {
+        MediaService.barHoverCount++
+      } else {
+        MediaService.barHoverCount = Math.max(0, MediaService.barHoverCount - 1)
+      }
+    }
   }
 
   Component {
@@ -449,10 +419,10 @@ Item {
         RowLayout {
           width: parent.width
           spacing: 8
-          visible: root.mediaPlayer && mediaTracker.lastLength > 0
+          visible: root.mediaPlayer && MediaService.lastLength > 0
 
           Text {
-            text: Utils.formatTime(Math.round(mediaTracker.estimatedPosition))
+            text: Utils.formatTime(Math.round(MediaService.estimatedPosition))
             color: Colors.fgDim
             font.family: Config.sansFont
             font.pixelSize: 12
@@ -462,16 +432,15 @@ Item {
 
           SliderControl {
             Layout.fillWidth: true
-            value: mediaTracker.progress
+            value: MediaService.progress
             fillColor: Colors.accent
             onMoved: function(v) {
-              popoverSeekTimer.targetProgress = v
-              popoverSeekTimer.restart()
+              MediaService.seek(v)
             }
           }
 
           Text {
-            text: Utils.formatTime(Math.round(mediaTracker.lastLength))
+            text: Utils.formatTime(Math.round(MediaService.lastLength))
             color: Colors.fgDim
             font.family: Config.sansFont
             font.pixelSize: 12

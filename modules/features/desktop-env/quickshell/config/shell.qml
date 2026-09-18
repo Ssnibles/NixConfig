@@ -9,13 +9,6 @@ Scope {
 
   readonly property string barType: Config.barType
 
-  // Bar visibility state (toggled via IPC)
-  property bool barVisible: Config.barVisible
-  onBarVisibleChanged: {
-    if (Config.barVisible !== barVisible) {
-      Config.barVisible = barVisible
-    }
-  }
 
   // Expose bar toggle via IPC
   IpcHandler {

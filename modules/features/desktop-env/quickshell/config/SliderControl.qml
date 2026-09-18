@@ -91,7 +91,6 @@ Item {
         root._pendingValue = root._dragValue
         root.dragEnded()
       }
-      onExited: { if (!dragging) dragging = false }
       onPositionChanged: function(mouse) {
         if (dragging) {
           root._dragValue = _computeValue(mouse.x)

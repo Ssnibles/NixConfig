@@ -569,12 +569,49 @@ function cleanUrl(url) {
 
 function findActivePlayer(players, pausedEnum) {
   if (!players || players.length === 0) return null
-  var playing = findFirst(players, function(p) { return p && p.isPlaying })
+
+  // 1. Actively playing with track title or artist
+  var playingWithMeta = findFirst(players, function(p) {
+    try {
+      return p && p.isPlaying && (p.trackTitle || p.trackArtist)
+    } catch (e) {
+      return false
+    }
+  })
+  if (playingWithMeta) return playingWithMeta
+
+  // 2. Any actively playing player
+  var playing = findFirst(players, function(p) {
+    try {
+      return p && p.isPlaying
+    } catch (e) {
+      return false
+    }
+  })
   if (playing) return playing
+
+  // 3. Paused player with track title or artist (e.g. Spotify, mpv)
+  var pausedWithMeta = findFirst(players, function(p) {
+    if (!p) return false
+    try {
+      if (!p.trackTitle && !p.trackArtist) return false
+      if (pausedEnum !== undefined) return p.playbackState === pausedEnum
+      return p.playbackState === 1 || String(p.playbackState).toLowerCase().indexOf("paused") !== -1
+    } catch (e) {
+      return false
+    }
+  })
+  if (pausedWithMeta) return pausedWithMeta
+
+  // 4. Any paused player
   return findFirst(players, function(p) {
     if (!p) return false
-    if (pausedEnum !== undefined) return p.playbackState === pausedEnum
-    return p.playbackState === 1 || String(p.playbackState).toLowerCase().indexOf("paused") !== -1
+    try {
+      if (pausedEnum !== undefined) return p.playbackState === pausedEnum
+      return p.playbackState === 1 || String(p.playbackState).toLowerCase().indexOf("paused") !== -1
+    } catch (e) {
+      return false
+    }
   })
 }
 

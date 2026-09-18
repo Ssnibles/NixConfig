@@ -80,7 +80,8 @@ Scope {
           maxIdx = Math.max(maxIdx, tags[i].index)
         }
       }
-      var count = Math.max(5, maxIdx)
+      var minCount = (typeof Config !== "undefined" && Config.mangowcMinWorkspaces) ? Config.mangowcMinWorkspaces : 5
+      var count = Math.max(minCount, maxIdx)
       var res = []
       for (var j = 0; j < count; j++) {
         var tData = (tags && j < tags.length) ? tags[j] : null
