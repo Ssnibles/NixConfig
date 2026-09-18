@@ -28,7 +28,7 @@
         # @vicinae.title Clipboard History
         # @vicinae.mode silent
         set -euo pipefail
-        selection=$(${pkgs.cliphist}/bin/cliphist list | ${pkgs.vicinae}/bin/vicinae dmenu -p "Clipboard history")
+        selection=$(${pkgs.unstable.vicinae}/bin/vicinae dmenu -p "Clipboard history")
         [ -n "$selection" ] || exit 0
         printf '%s\n' "$selection" | ${pkgs.cliphist}/bin/cliphist decode | ${pkgs.wl-clipboard}/bin/wl-copy
       '';
@@ -88,6 +88,19 @@
                 },
                 "snippets": {
                   "enabled": false
+                },
+                "fallbacks": [],
+                "providers": {
+                  "files": {
+                    "preferences": {
+                      "autoIndexing": false
+                    },
+                    "entrypoints": {
+                      "search": {
+                        "enabled": false
+                      }
+                    }
+                  }
                 }
               }
             '';
@@ -97,9 +110,9 @@
 
       systemd.user.services.vicinae-server = {
         description = "Vicinae application launcher server";
-        wantedBy = [ "graphical-session.target" ];
-        after = [ "graphical-session.target" ];
-        partOf = [ "graphical-session.target" ];
+        wantedBy = [ "wayland-session.target" ];
+        after = [ "wayland-session.target" ];
+        partOf = [ "wayland-session.target" ];
         path = [ config.system.path ];
         environment = {
           QT_QPA_PLATFORM = "wayland;xcb";
@@ -109,9 +122,8 @@
           Type = "simple";
           ExecStartPre = [
             "${pkgs.coreutils}/bin/mkdir -p %h/.local/share/vicinae/snippets"
-            "${pkgs.coreutils}/bin/sleep 1"
           ];
-          ExecStart = "${pkgs.vicinae}/bin/vicinae server";
+          ExecStart = "${pkgs.unstable.vicinae}/bin/vicinae server";
           Restart = "on-failure";
           RestartSec = 2;
         };
