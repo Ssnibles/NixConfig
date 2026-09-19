@@ -364,7 +364,7 @@ Scope {
                 font.family: Config.serifFont
                 font.pixelSize: 72
                 font.italic: true
-                font.letterSpacing: 1
+                font.letterSpacing: 2
               }
 
               Text {
@@ -411,7 +411,7 @@ Scope {
                     border.width: 1
 
                     Text {
-                      visible: !coverArt.visible
+                      visible: !coverArt.ready
                       text: "󰎇"
                       color: Colors.fgDim
                       font.family: Config.monoFont
@@ -419,36 +419,16 @@ Scope {
                       anchors.centerIn: parent
                     }
 
-                    Item {
-                      id: coverArtMask
-                      anchors.fill: parent
-                      visible: false
-                      layer.enabled: coverArt.visible
-                      Rectangle {
-                        anchors.fill: parent
-                        radius: 8
-                        color: "black"
-                      }
-                    }
-
-                    Image {
+                    RoundedImage {
                       id: coverArt
                       anchors.fill: parent
-                      asynchronous: true
-                      fillMode: Image.PreserveAspectCrop
                       sourceSize: Qt.size(96, 96)
-                      visible: source !== "" && status === Image.Ready
+                      radius: 8
                       source: (lockMediaCard.activePlayer && (lockMediaCard.activePlayer.trackTitle || lockMediaCard.activePlayer.trackArtUrl)) ? NotificationStore.getCoverArt(
                         lockMediaCard.activePlayer.trackTitle || "",
                         lockMediaCard.activePlayer.trackArtist || "",
                         lockMediaCard.activePlayer.trackArtUrl || ""
                       ) : ""
-
-                      layer.enabled: coverArt.visible
-                      layer.effect: MultiEffect {
-                        maskEnabled: true
-                        maskSource: coverArtMask
-                      }
                     }
                   }
 
@@ -512,34 +492,13 @@ Scope {
                 }
 
                 // Non-interactive progress bar & position numbers
-                RowLayout {
+                MediaProgressRow {
                   width: parent.width
-                  spacing: 8
                   visible: MediaService.lastLength > 0
-
-                  Text {
-                    text: Utils.formatTime(Math.round(MediaService.estimatedPosition))
-                    color: Colors.fgDim
-                    font.family: Config.sansFont
-                    font.pixelSize: 12
-                    Layout.preferredWidth: 38
-                    horizontalAlignment: Text.AlignRight
-                  }
-
-                  SliderControl {
-                    Layout.fillWidth: true
-                    value: MediaService.progress
-                    fillColor: Colors.accent
-                    enabled: false // Non-interactive: playback position cannot be dragged or clicked
-                  }
-
-                  Text {
-                    text: Utils.formatTime(Math.round(MediaService.lastLength))
-                    color: Colors.fgDim
-                    font.family: Config.sansFont
-                    font.pixelSize: 12
-                    Layout.preferredWidth: 38
-                  }
+                  position: MediaService.estimatedPosition
+                  length: MediaService.lastLength
+                  progress: MediaService.progress
+                  seekable: false
                 }
               }
             }
@@ -589,37 +548,16 @@ Scope {
                       color: Colors.accent
                       font.family: Config.monoFont
                       font.pixelSize: 32
-                      visible: !avatarImage.visible || avatarImage.status === Image.Error
-                    }
-
-                    // Mask for rounded corners on avatar image
-                    Item {
-                      id: avatarMask
-                      anchors.fill: parent
-                      visible: false
-                      layer.enabled: true
-                      Rectangle {
-                        anchors.fill: parent
-                        radius: Config.commandCenterCardRadius
-                        color: "black"
-                      }
+                      visible: !avatarImage.ready
                     }
 
                     // Avatar Image (loaded from Config.lockAvatarPath)
-                    Image {
+                    RoundedImage {
                       id: avatarImage
                       anchors.fill: parent
                       source: Config.lockAvatarPath
-                      fillMode: Image.PreserveAspectCrop
                       sourceSize: Qt.size(192, 192)
-                      smooth: true
-                      visible: status === Image.Ready
-
-                      layer.enabled: true
-                      layer.effect: MultiEffect {
-                        maskEnabled: true
-                        maskSource: avatarMask
-                      }
+                      radius: Config.commandCenterCardRadius
                     }
                   }
 

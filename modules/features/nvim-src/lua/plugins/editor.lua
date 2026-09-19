@@ -183,7 +183,7 @@ vim.keymap.set("n", "<C-S-l>", splits.resize_right, { desc = "Resize right" })
 
 local ok_ssh, sshinator = pcall(require, "sshinator")
 if ok_ssh then
-	sshinator.setup({ external_terminal = true, terminal_emulator = "foot" })
+	sshinator.setup({ external_terminal = true, terminal_emulator = "ghostty" })
 end
 
 local ok_ind, indentinator = pcall(require, "indentinator")

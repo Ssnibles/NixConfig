@@ -260,7 +260,7 @@ Singleton {
 
   // --- External App & System Commands ------------------------------------
   readonly property var cmdMixer: ["pavucontrol"]
-  readonly property var cmdNetworkManager: ["foot", "-e", "nmtui"]
+  readonly property var cmdNetworkManager: ["ghostty", "-e", "nmtui"]
   readonly property var cmdBluetoothManager: ["blueman-manager"]
   readonly property var cmdLock: ["quickshell", "ipc", "call", "lockscreen", "lock"]
   readonly property var cmdSleep: ["systemctl", "suspend"]

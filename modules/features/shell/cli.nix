@@ -82,13 +82,29 @@
               email = "joshua.breite@gmail.com"
 
               [ui]
+              editor = "nvim"
               default-command = "log"
               pager = { command = ["less", "-FRX"], env = {} }
               diff-editor = ":builtin"
 
+              [snapshot]
+              max-new-file-size = "10MiB"
+
+              [git]
+              # Automatically create local bookmarks when tracking remote branches
+              auto-local-bookmark = true
+
+              [revsets]
+              # Keeps `jj log` fast and clean by default: shows trunk, bookmarks, and recent local work
+              log = "present(@) | ancestors(immutable_heads().., 2) | present(trunk())"
+
               [aliases]
               pull = ["git", "fetch"]
               up = ["new", "trunk()"]
+              # Handy shortcuts
+              l = ["log"]
+              d = ["diff"]
+              s = ["status"]
             '';
           };
 

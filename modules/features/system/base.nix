@@ -10,6 +10,7 @@
     {
       pkgs,
       config,
+      lib,
       ...
     }:
     let
@@ -65,6 +66,26 @@
           auto-optimise-store = true;
         };
 
+        # Allow unfree packages for nix-shell, nix-build, nix-env, and impure commands
+        environment.sessionVariables = {
+          NIXPKGS_ALLOW_UNFREE = "1";
+        };
+
+        hjem.users.${config.username}.files = {
+          ".config/nixpkgs/config.nix" = {
+            clobber = true;
+            text = ''
+              {
+                allowUnfree = true;
+                allowUnfreePredicate = _: true;
+                permittedInsecurePackages = [
+                  ${lib.concatMapStringsSep "\n    " (pkg: ''"${pkg}"'') permittedInsecure}
+                ];
+              }
+            '';
+          };
+        };
+
         # ── Localization & Timezone ──────────────────────────────────────────
         time.timeZone = "Pacific/Auckland";
 
@@ -98,10 +119,6 @@
               EnableNetworkConfiguration = false;
               # Opportunistic Wireless Encryption (Enhanced Open)
               EnableOWE = true;
-            };
-            Scan = {
-              # Prevent periodic 65s off-channel roaming scans on weak signal
-              DisableRoamingScan = true;
             };
           };
 

@@ -59,10 +59,7 @@
       };
 
       # Combined MIME associations for default-apps
-      allDefaultApplications =
-        browserMimeAssociations
-        // fileManagerAssociation
-        // cfg.extraAssociations;
+      allDefaultApplications = browserMimeAssociations // fileManagerAssociation // cfg.extraAssociations;
     in
     {
       options.features.default-apps = {
@@ -84,7 +81,9 @@
               "helium"
             else if (config.features.zen-browser.enable or false) then
               "zen"
-            else if (config.features.firefox.enable or false) && (config.features.firefox.defaultBrowser or false) then
+            else if
+              (config.features.firefox.enable or false) && (config.features.firefox.defaultBrowser or false)
+            then
               "firefox"
             else if (config.features.helium.enable or false) then
               "helium"
@@ -97,7 +96,7 @@
 
         terminal = lib.mkOption {
           type = lib.types.str;
-          default = "foot";
+          default = "ghostty";
           description = "Default terminal emulator executable.";
         };
 

@@ -44,19 +44,16 @@ Scope {
       }
 
       implicitWidth: Config.notifWidth + Config.notifCardMargins * 2
-      implicitHeight: notifList.contentHeight + Config.notifCardMargins * 2
+      implicitHeight: notifColumn.implicitHeight + Config.notifCardMargins * 2
       color: "transparent"
       visible: NotificationStore.activeModel ? NotificationStore.activeModel.count > 0 : false
 
-      mask: Region { item: notifList }
+      mask: Region { item: notifColumn }
 
-      ListView {
-        id: notifList
+      Column {
+        id: notifColumn
         width: parent.width - Config.notifCardMargins * 2
-        height: contentHeight
         spacing: Config.notifSpacing
-        interactive: false
-        model: NotificationStore.activeModel
 
         anchors.margins: Config.notifCardMargins
         anchors.top: panel.onTop ? parent.top : undefined
@@ -69,40 +66,39 @@ Scope {
           NumberAnimation { property: "scale"; from: 0.8; to: 1.0; duration: 250; easing.type: Easing.OutBack }
         }
 
-        remove: Transition {
-          NumberAnimation { property: "opacity"; to: 0; duration: 200; easing.type: Easing.OutCubic }
-          NumberAnimation { property: "scale"; to: 0.8; duration: 200; easing.type: Easing.OutCubic }
+        move: Transition {
+          NumberAnimation { properties: "x,y"; duration: 250; easing.type: Easing.OutCubic }
         }
 
-        displaced: Transition {
-          NumberAnimation { properties: "y"; duration: 250; easing.type: Easing.OutCubic }
-        }
+        Repeater {
+          model: NotificationStore.activeModel
 
-        delegate: NotificationCard {
-          id: card
-          notification: model.notification
-          appName: model.appName || ""
-          desktopEntry: model.desktopEntry || ""
-          summary: model.summary || ""
-          body: model.body || ""
-          appIcon: model.appIcon || ""
-          image: model.image || ""
-          urgency: model.urgency !== undefined ? model.urgency : 1
-          trackTitle: model.trackTitle || ""
-          trackArtist: model.trackArtist || ""
-          isMedia: model.isMedia !== undefined ? model.isMedia : false
-          timeStr: model.timeStr || ""
+          NotificationCard {
+            id: card
+            notification: model.notification
+            appName: model.appName || ""
+            desktopEntry: model.desktopEntry || ""
+            summary: model.summary || ""
+            body: model.body || ""
+            appIcon: model.appIcon || ""
+            image: model.image || ""
+            urgency: model.urgency !== undefined ? model.urgency : 1
+            trackTitle: model.trackTitle || ""
+            trackArtist: model.trackArtist || ""
+            isMedia: model.isMedia !== undefined ? model.isMedia : false
+            timeStr: model.timeStr || ""
 
-          onIsHoveredChanged: {
-            if (card.isHovered) {
-              NotificationStore.hoveredIndex = index
-            } else if (NotificationStore.hoveredIndex === index) {
-              NotificationStore.hoveredIndex = -1
+            onIsHoveredChanged: {
+              if (card.isHovered) {
+                NotificationStore.hoveredIndex = index
+              } else if (NotificationStore.hoveredIndex === index) {
+                NotificationStore.hoveredIndex = -1
+              }
             }
-          }
 
-          onDismissed: NotificationStore.dismissActiveAt(index, false)
-          onActionTriggered: NotificationStore.invokeActionOrFocus(model, index)
+            onDismissed: NotificationStore.dismissActiveAt(index, false)
+            onActionTriggered: NotificationStore.invokeActionOrFocus(model, index)
+          }
         }
       }
     }

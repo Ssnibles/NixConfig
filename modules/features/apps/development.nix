@@ -23,7 +23,8 @@
           with pkgs;
           [
             # Editors & AI tools
-            pkgs.unstable.antigravity-cli
+            # pkgs.unstable.antigravity-cli
+            antigravity
             dbeaver-bin
 
             # Runtimes & Compilers

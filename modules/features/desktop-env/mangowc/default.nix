@@ -4,13 +4,14 @@
 # Enables Mango Wayland compositor, links config & keybindings, and generates
 # theme colors file via Hjem.
 # =============================================================================
-{ inputs, ... }:
+{ ... }:
 {
   nixos.modules.shared =
     {
       pkgs,
       lib,
       config,
+      inputs,
       ...
     }:
     let

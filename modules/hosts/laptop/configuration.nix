@@ -36,6 +36,11 @@
       # Kernel modules: ath11k_pci Wi-Fi driver is auto-loaded asynchronously by udev
       boot.kernelModules = [ ];
 
+      # Blacklist sp5100_tco hardware watchdog: `nowatchdog` only disables the NMI/softlockup
+      # watchdog, not hardware watchdog modules. Without this, sp5100_tco loads and causes
+      # "watchdog did not stop!" errors on every reboot.
+      boot.blacklistedKernelModules = [ "sp5100_tco" ];
+
       # Set max PWM brightness for HP elitebook (0x40000), disable PSR (0x10) & Panel Replay (0x400) to fix external monitor flicker/resets, & force PCIe ASPM power saving
       boot.kernelParams = [
         "amdgpu.dcdebugmask=0x40410"

@@ -113,7 +113,7 @@ hl.config({
 		disable_splash_rendering = true,
 		vrr = 2, -- Adaptive sync / VRR enabled in fullscreen games
 		enable_swallow = true,
-		swallow_regex = "^(foot|footclient|Alacritty|kitty)$",
+		swallow_regex = "^(foot|footclient|ghostty|com.mitchellh.ghostty|Alacritty|kitty)$",
 		focus_on_activate = true,
 	},
 })
@@ -180,11 +180,11 @@ local screenshotOcrCmd = "$HOME/.config/mango/screenshot.sh ocr"
 
 -- ── Keybindings (Unified with Mango & Niri) ────────────────────────────
 -- Application Launchers
-hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("foot"))
+hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("ghostty"))
 hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd("vicinae toggle"))
 hl.bind(mod .. " + D", hl.dsp.exec_cmd("quickshell ipc call command-center toggle"))
 hl.bind(mod .. " + ALT + L", hl.dsp.exec_cmd("quickshell ipc call lockscreen lock"))
-hl.bind(mod .. " + E", hl.dsp.exec_cmd("foot -e yazi"))
+hl.bind(mod .. " + E", hl.dsp.exec_cmd("ghostty -e yazi"))
 
 -- Window Management
 hl.bind(mod .. " + Q", hl.dsp.window.close())

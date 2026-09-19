@@ -23,6 +23,14 @@ Rectangle {
   property bool isMedia: false
   property string timeStr: ""
   readonly property bool isHovered: hoverArea.containsMouse
+  readonly property bool _hasNonDefaultActions: {
+    if (!root.notification || !root.notification.actions) return false
+    var actions = root.notification.actions
+    for (var i = 0; i < actions.length; i++) {
+      if (actions[i].identifier !== "default") return true
+    }
+    return false
+  }
   signal dismissed()
   signal actionTriggered()
 
@@ -386,7 +394,7 @@ Rectangle {
     Row {
       id: actionsRow
       spacing: 6
-      visible: Config.notifShowActions && actionsRepeater.count > 0
+      visible: Config.notifShowActions && root._hasNonDefaultActions
 
       Repeater {
         id: actionsRepeater

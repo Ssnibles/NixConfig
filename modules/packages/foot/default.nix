@@ -53,7 +53,7 @@
           ".config/foot/foot.ini" = {
             text = ''
               include=/home/${config.username}/.config/foot/colors.ini
-              font=JetBrainsMono Nerd Font:size=12
+              font=Maple Mono NR NF:size=12
               pad=10x10
 
               [cursor]
