@@ -244,7 +244,7 @@
 
         gtkSingleInstance = lib.mkOption {
           type = lib.types.bool;
-          default = true;
+          default = false;
           description = "Enable GTK single-instance mode to eliminate cold start latency (parity with foot-server).";
         };
 
@@ -286,7 +286,7 @@
           };
         };
 
-        features.default-apps.terminal = lib.mkIf cfg.defaultTerminal (lib.mkDefault "ghostty");
+        # default terminal is now managed by the kitty module; ghostty no longer overrides it
       };
     };
 }

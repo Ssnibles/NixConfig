@@ -92,7 +92,7 @@
 
               [git]
               # Automatically create local bookmarks when tracking remote branches
-              auto-local-bookmark = true
+              auto-track-bookmarks = true
 
               [revsets]
               # Keeps `jj log` fast and clean by default: shows trunk, bookmarks, and recent local work

@@ -96,7 +96,7 @@
 
         terminal = lib.mkOption {
           type = lib.types.str;
-          default = "ghostty";
+          default = "kitty";
           description = "Default terminal emulator executable.";
         };
 

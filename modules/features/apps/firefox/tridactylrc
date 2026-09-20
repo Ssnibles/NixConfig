@@ -68,7 +68,7 @@ bind <Esc> composite nohlsearch; mode normal
 
 " ── Text Input & External Editor ──────────────────────────────────────────────
 bind gi focusinput -l
-set editorcmd ghostty -e nvim %f
+set editorcmd kitty --single-instance -e nvim %f
 
 " ── Visual Theme & Options ────────────────────────────────────────────────────
 set smoothscroll true

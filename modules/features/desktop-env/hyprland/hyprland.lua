@@ -180,11 +180,11 @@ local screenshotOcrCmd = "$HOME/.config/mango/screenshot.sh ocr"
 
 -- ── Keybindings (Unified with Mango & Niri) ────────────────────────────
 -- Application Launchers
-hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("ghostty"))
+hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("kitty --single-instance"))
 hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd("vicinae toggle"))
 hl.bind(mod .. " + D", hl.dsp.exec_cmd("quickshell ipc call command-center toggle"))
 hl.bind(mod .. " + ALT + L", hl.dsp.exec_cmd("quickshell ipc call lockscreen lock"))
-hl.bind(mod .. " + E", hl.dsp.exec_cmd("ghostty -e yazi"))
+hl.bind(mod .. " + E", hl.dsp.exec_cmd("kitty --single-instance -e yazi"))
 
 -- Window Management
 hl.bind(mod .. " + Q", hl.dsp.window.close())
