@@ -36,6 +36,7 @@
           usbutils
           vim
           wget
+          caligula
           zip
           unzip
           croc
