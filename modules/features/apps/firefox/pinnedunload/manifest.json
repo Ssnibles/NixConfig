@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+  "name": "Pinned Tab Startup Unload",
+  "version": "1.0.0",
+  "description": "Discards all pinned tabs (except the active one) on browser startup to stop Firefox spawning per-site content processes for unloaded pinned tabs (bug 1853047)",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "pinned-unload@nixconfig.local"
+    }
+  },
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  },
+  "permissions": [
+    "tabs"
+  ]
+}

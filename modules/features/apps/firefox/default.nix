@@ -71,61 +71,33 @@
         lib.mapAttrsToList (name: value: ''user_pref("${name}", ${toJsValue value});'') allSettings
       );
 
-      # Known extension mappings (name/slug -> ID & download URL)
-      knownExtensions = {
-        "ublock-origin" = {
-          id = "uBlock0@raymondhill.net";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
-        };
-        "ublock" = {
-          id = "uBlock0@raymondhill.net";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
-        };
-        "uBlock0@raymondhill.net" = {
-          id = "uBlock0@raymondhill.net";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
-        };
-        "sidebery" = {
-          id = "{3c078156-979c-498b-8990-85f7987dd929}";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/sidebery/latest.xpi";
-        };
-        "{3c078156-979c-498b-8990-85f7987dd929}" = {
-          id = "{3c078156-979c-498b-8990-85f7987dd929}";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/sidebery/latest.xpi";
-        };
-        "bitwarden" = {
-          id = "{446900e4-71c2-419f-a6a7-df9c091e268b}";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi";
-        };
-        "{446900e4-71c2-419f-a6a7-df9c091e268b}" = {
-          id = "{446900e4-71c2-419f-a6a7-df9c091e268b}";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi";
-        };
-        "darkreader" = {
-          id = "addon@darkreader.org";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest.xpi";
-        };
-        "sponsorblock" = {
-          id = "sponsorBlocker@ajay.app";
-          url = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
-        };
-        "tridactyl" = {
-          id = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
-          url = "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
-        };
-        "tridactyl-vim" = {
-          id = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
-          url = "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
-        };
-        "tridactyl.vim@cmcaine.co.uk" = {
-          id = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
-          url = "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
-        };
-        "tridactyl.vim.betas.nonewtab@cmcaine.co.uk" = {
-          id = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
-          url = "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
-        };
+      # Canonical extension registrations (id -> download URL)
+      extensionCatalog = {
+        "uBlock0@raymondhill.net" = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
+        "{3c078156-979c-498b-8990-85f7987dd929}" = "https://addons.mozilla.org/firefox/downloads/latest/sidebery/latest.xpi";
+        "{446900e4-71c2-419f-a6a7-df9c091e268b}" = "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi";
+        "addon@darkreader.org" = "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest.xpi";
+        "sponsorBlocker@ajay.app" = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
+        "tridactyl.vim.betas.nonewtab@cmcaine.co.uk" = "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
       };
+
+      # Slug/id aliases resolving to canonical extension IDs
+      extensionAliases = {
+        "ublock-origin" = "uBlock0@raymondhill.net";
+        "ublock" = "uBlock0@raymondhill.net";
+        "sidebery" = "{3c078156-979c-498b-8990-85f7987dd929}";
+        "bitwarden" = "{446900e4-71c2-419f-a6a7-df9c091e268b}";
+        "darkreader" = "addon@darkreader.org";
+        "sponsorblock" = "sponsorBlocker@ajay.app";
+        "tridactyl" = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
+        "tridactyl-vim" = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
+        "tridactyl.vim@cmcaine.co.uk" = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
+      };
+
+      # Known extension mappings (name/slug or id -> id & download URL), resolved from the catalog
+      knownExtensions =
+        lib.mapAttrs' (id: url: lib.nameValuePair id { inherit id url; }) extensionCatalog
+        // lib.mapAttrs' (alias: id: lib.nameValuePair alias { inherit id; url = extensionCatalog.${id}; }) extensionAliases;
 
       # Build custom New Tab WebExtension package (.xpi)
       customNewTabXpi = pkgs.runCommand "custom-newtab.xpi" { buildInputs = [ pkgs.zip ]; } ''
@@ -135,6 +107,18 @@
                 chmod -R +w .
                 cat << 'EOF' > colors.css
         ${colorsCss}EOF
+                zip -r $out ./*
+      '';
+
+      # Build custom "discard pinned tabs on startup" WebExtension (.xpi)
+      # Workaround for Firefox bug 1853047: lazily-restored pinned tabs still
+      # spawn per-site content processes (~20MB each). Discarding them on
+      # startup frees the processes until the tabs are visited.
+      pinnedUnloadXpi = pkgs.runCommand "pinned-unload.xpi" { buildInputs = [ pkgs.zip ]; } ''
+                mkdir -p tmp_ext
+                cp -r ${./pinnedunload}/* tmp_ext/
+                cd tmp_ext
+                chmod -R +w .
                 zip -r $out ./*
       '';
 
@@ -165,6 +149,10 @@
         // {
           "custom-newtab@nixconfig.local" = {
             install_url = "file://${customNewTabXpi}";
+            installation_mode = "force_installed";
+          };
+          "pinned-unload@nixconfig.local" = {
+            install_url = "file://${pinnedUnloadXpi}";
             installation_mode = "force_installed";
           };
           # Block standard AMO Tridactyl so it gets cleanly uninstalled and cannot override newtab
@@ -304,7 +292,7 @@
             searchBarMode = "dynamic";
             searchPanelSwitch = "same_type";
           };
-          description = "Declarative base settings for Sidebery extension managed via Enterprise Policy and storage.js.";
+          description = "Declarative base settings for Sidebery extension managed via Enterprise Policy (managed storage).";
         };
 
         extraSideberySettings = lib.mkOption {
@@ -327,13 +315,10 @@
             "browser.uidensity" = 1;
             "browser.tabs.inTitlebar" = 1;
             "browser.shell.checkDefaultBrowser" = false;
-            "browser.startup.homepage" =
-              "file:///home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/index.html";
             "browser.startup.page" = 3;
             "browser.newtabpage.enabled" = true;
             "browser.urlbar.clickSelectsAll" = true;
             "browser.urlbar.trimHttps" = true;
-            "browser.urlbar.untrimOnUserInteraction.featureGate" = true;
             "browser.bookmarks.openInTabClosesMenu" = false;
             "findbar.highlightAll" = true;
 
@@ -356,9 +341,6 @@
             "gfx.canvas.accelerated.cache-size" = 32;
             "image.mem.decode_bytes_at_a_time" = 32768;
 
-            # Batch content paint notifications — fewer layout reflows
-            "content.notify.interval" = 100000;
-
             # Media cache — better video/audio buffering
             "media.cache_readahead_limit" = 3600;
             "media.cache_resume_threshold" = 1800;
@@ -368,8 +350,6 @@
             "network.buffer.cache.count" = 48;
             "network.http.max-connections" = 900;
             "network.http.max-persistent-connections-per-server" = 6;
-            "network.http.max-urgent-start-excessive-connections-per-host" = 5;
-            "network.http.request.max-start-delay" = 5;
             "network.dnsCacheExpiration" = 3600;
             "dom.ipc.processCount.webIsolated" = 4;
             "accessibility.force_disabled" = 1;
@@ -534,9 +514,6 @@
             # GRAPHICS & HARDWARE ACCELERATION
             # ==============================================================
             "media.ffmpeg.vaapi.enabled" = true;
-            "gfx.webrender.all" = true;
-            "layout.css.backdrop-filter.enabled" = true;
-            "svg.context-properties.content.enabled" = true;
 
             # Smooth scrolling
             "general.smoothScroll" = true;
@@ -612,6 +589,8 @@
 
 
         # Firefox Enterprise Managed Storage Policy for WebExtension Sidebery
+        # Sidebery merges browser.storage.managed over its local storage, so this
+        # is the single declarative channel for its settings (no storage.js seeding).
         environment.etc."firefox/policies/managed/{3c078156-979c-498b-8990-85f7987dd929}.json".text =
           builtins.toJSON
             {
@@ -654,12 +633,6 @@
               Path=${cfg.profileName}
               Default=1
 
-              [Profile1]
-              Name=dev-edition-default
-              IsRelative=1
-              Path=${cfg.profileName}
-              Default=1
-
               [General]
               StartWithLastProfile=1
               Version=2
@@ -673,10 +646,6 @@
 
             # Automatically write preferences to about:config via user.js
             ".mozilla/firefox/${cfg.profileName}/user.js".text = userJsContent;
-
-            # Declaratively seed Sidebery extension settings (discards pinned tabs on startup)
-            ".mozilla/firefox/${cfg.profileName}/browser-extension-data/{3c078156-979c-498b-8990-85f7987dd929}/storage.js".text =
-              builtins.toJSON { settings = allSideberySettings; };
           };
 
           environment.sessionVariables = {

@@ -15,6 +15,17 @@ This guide explains how Firefox UI customization works in this repository, how t
 > [!NOTE]
 > Both `userChrome.css` and `userContent.css` are symlinked directly from your `NixConfig` workspace (`~/NixConfig/modules/features/apps/firefox/`) into your Firefox profile directory (`~/.mozilla/firefox/default/chrome/`). Any changes saved here take effect immediately upon restarting Firefox or reloading the sidebar/page!
 
+## 🧩 Bundled Custom Extensions
+
+Two local WebExtensions are built at `nixos-rebuild` time and `force_installed` through the Firefox enterprise policy (`ExtensionSettings`), no AMO required:
+
+| Extension | Source dir | Purpose |
+| :--- | :--- | :--- |
+| **Custom New Tab** (`custom-newtab@nixconfig.local`) | `./startpage/` | Minimal new-tab page using your theme palette. |
+| **Pinned Tab Startup Unload** (`pinned-unload@nixconfig.local`) | `./pinnedunload/` | Discards every pinned tab except the active one on browser startup. Workaround for [Firefox bug 1853047](https://bugzilla.mozilla.org/show_bug.cgi?id=1853047): lazily-restored pinned tabs otherwise keep one ~15–20 MB content process each until visited. |
+
+To tweak them, edit the files in their source directory and rebuild; both XPI derivations live in `modules/features/apps/firefox/default.nix` (`customNewTabXpi`, `pinnedUnloadXpi`).
+
 ---
 
 ## 🛠️ How to Discover CSS Selectors
