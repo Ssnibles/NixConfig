@@ -183,6 +183,9 @@
     --sb-teal: var(--fx-teal, #b4d4cf);
     --sb-red: var(--fx-red, #d8647e);
 
+    /* Tree indent guide line color */
+    --sb-guide: color-mix(in srgb, var(--sb-fg-dim) 60%, transparent);
+
     /* Highlight border width token (2px across all highlights) */
     --sb-highlight-border-width: 2px;
     --sb-active-border-width: var(--sb-highlight-border-width);
@@ -298,6 +301,26 @@
     border: none !important;
     padding: 4px 6px !important;
     gap: 4px !important;
+  }
+
+  /* Dock the tabs-panel switcher (panel indicators + "add tabs panel" button)
+     at the bottom of the sidebar, just above the bottom tool bar */
+  .top-horizontal-box {
+    position: fixed !important;
+    top: auto !important;
+    right: 0 !important;
+    bottom: var(--bottom-bar-height, 30px) !important;
+    left: 0 !important;
+    width: auto !important;
+    margin: 0 !important;
+    z-index: 3500 !important;
+    background-color: var(--sb-bg) !important;
+    box-shadow: 0 -1px 0 var(--sb-border) !important;
+  }
+
+  /* Hide the settings cog */
+  #nav_bar .nav-item[data-class="btn"][data-type="settings"] {
+    display: none !important;
   }
 
   .NavBtn {
@@ -449,9 +472,15 @@
     box-shadow: none !important;
   }
 
+  /* Sidebery's native tree-level marks are fully disabled — the custom curved
+     guides below replace them (they reuse this pseudo-element otherwise) */
   .Tab .body::before,
   .Tab .body::after {
     box-shadow: none !important;
+  }
+
+  .Tab .body::after {
+    display: none !important;
   }
 
   /* Active tab bolding & smooth transitions */
@@ -482,7 +511,9 @@
     filter: grayscale(0%) opacity(1) !important;
   }
 
-  /* Tree hierarchy guide & branch lines */
+  /* Tree hierarchy guides — fully curved, connected elbows. Each child row
+     draws one rounded elbow at its own indent column (level-aligned), and the
+     verticals chain across sibling rows for a continuous curved tree. */
   .Tab[data-pin="false"]:not([data-lvl="0"]) {
     position: relative !important;
   }
@@ -490,16 +521,26 @@
   .Tab[data-pin="false"]:not([data-lvl="0"])::before {
     content: "" !important;
     position: absolute !important;
-    top: -2px !important;
-    left: calc(var(--tabs-indent) * 0.5 + 2px) !important;
-    width: calc(var(--tabs-indent) * 0.5) !important;
-    height: calc(50% + 2px) !important;
-    border-left: 1px solid var(--sb-border) !important;
-    border-bottom: 1px solid var(--sb-border) !important;
-    border-bottom-left-radius: 4px !important;
-    opacity: 0.7 !important;
+    top: 0 !important;
+    width: calc(var(--tabs-indent) / 2) !important;
+    height: calc(var(--tabs-height) + var(--tabs-margin)) !important;
+    border-left: 1px solid var(--sb-guide) !important;
+    border-bottom: 1px solid var(--sb-guide) !important;
+    border-bottom-left-radius: calc(var(--tabs-indent) / 2) !important;
     pointer-events: none !important;
   }
+
+  /* Elbow column = (level * indent) - indent/2, measured from the tab's left edge */
+  .Tab[data-pin="false"][data-lvl="1"]::before { left: calc(var(--tabs-indent) * 0.5) !important; }
+  .Tab[data-pin="false"][data-lvl="2"]::before { left: calc(var(--tabs-indent) * 1.5) !important; }
+  .Tab[data-pin="false"][data-lvl="3"]::before { left: calc(var(--tabs-indent) * 2.5) !important; }
+  .Tab[data-pin="false"][data-lvl="4"]::before { left: calc(var(--tabs-indent) * 3.5) !important; }
+  .Tab[data-pin="false"][data-lvl="5"]::before { left: calc(var(--tabs-indent) * 4.5) !important; }
+  .Tab[data-pin="false"][data-lvl="6"]::before { left: calc(var(--tabs-indent) * 5.5) !important; }
+  .Tab[data-pin="false"][data-lvl="7"]::before { left: calc(var(--tabs-indent) * 6.5) !important; }
+  .Tab[data-pin="false"][data-lvl="8"]::before { left: calc(var(--tabs-indent) * 7.5) !important; }
+  .Tab[data-pin="false"][data-lvl="9"]::before { left: calc(var(--tabs-indent) * 8.5) !important; }
+  .Tab[data-pin="false"][data-lvl="10"]::before { left: calc(var(--tabs-indent) * 9.5) !important; }
 
   /* Tab close button: only show when tab is hovered */
   .Tab .close {
@@ -567,7 +608,7 @@
   }
 
   .SearchBar .input {
-    background-color: var(--sb-bg-raised) !important;
+    background-color: transparent !important;
     color: var(--sb-fg) !important;
     border: var(--sb-highlight-border-width) solid var(--sb-border) !important;
     border-radius: var(--sb-radius-sm) !important;
