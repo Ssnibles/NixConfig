@@ -117,11 +117,14 @@ map("n", "[l", "<cmd>lprevious<CR>", { desc = "Previous location" })
 
 -- ── Diagnostics ──────────────────────────────────────────────────────
 
-
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
-map("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, { desc = "Next diagnostic" })
-map("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, { desc = "Previous diagnostic" })
+map("n", "]d", function()
+	vim.diagnostic.jump({ count = 1, float = true })
+end, { desc = "Next diagnostic" })
+map("n", "[d", function()
+	vim.diagnostic.jump({ count = -1, float = true })
+end, { desc = "Previous diagnostic" })
 map("n", "]e", function()
 	vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = true })
 end, { desc = "Next error" })
@@ -197,3 +200,4 @@ map("n", "<leader>gF", "<cmd>FzfLua git_stash<CR>", { desc = "Git stash" })
 map("n", "<leader>cd", "<cmd>cd %:p:h<CR>", { desc = "Change to file directory" })
 map("n", "zz", "za", { desc = "Toggle Folds" })
 map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
+map("n", "<C>-.", "@@", { desc = "Dot repeat autocmd" })
