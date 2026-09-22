@@ -119,6 +119,15 @@
       features.hyprland.enable = false;
       features.mangowc.enable = true;
       features.niri.enable = false;
+      features.quickshell.enable = true;
+      features.vicinae.enable = true;
+      features.shikane.enable = true;
+      features.vivado.enable = true;
+      features.hermes.enable = true;
+      features.syncthing.enable = true;
+      features.tailscale.enable = true;
+      features.podman-vm.enable = true;
+      features.bluetooth.enable = true;
       features.zen-browser.enable = false;
       features.helium.enable = false;
 

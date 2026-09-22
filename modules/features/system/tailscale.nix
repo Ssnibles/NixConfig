@@ -8,21 +8,33 @@
   nixos.modules.shared =
     {
       pkgs,
+      lib,
       config,
       ...
     }:
+    let
+      cfg = config.features.tailscale;
+    in
     {
-      services.tailscale = {
-        enable = true;
-        useRoutingFeatures = "client";
+      options.features.tailscale.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the Tailscale mesh VPN client.";
       };
 
-      networking.firewall = {
-        trustedInterfaces = [ "tailscale0" ];
-        allowedUDPPorts = [ config.services.tailscale.port ];
-        checkReversePath = "loose";
-      };
+      config = lib.mkIf cfg.enable {
+        services.tailscale = {
+          enable = true;
+          useRoutingFeatures = "client";
+        };
 
-      environment.systemPackages = [ pkgs.tailscale ];
+        networking.firewall = {
+          trustedInterfaces = [ "tailscale0" ];
+          allowedUDPPorts = [ config.services.tailscale.port ];
+          checkReversePath = "loose";
+        };
+
+        environment.systemPackages = [ pkgs.tailscale ];
+      };
     };
 }

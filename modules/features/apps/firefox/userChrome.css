@@ -74,7 +74,9 @@
    ========================================================================== */
 
 /* Horizontal tab bar (Sidebery replaces this) */
-#TabsToolbar { visibility: collapse !important; }
+#TabsToolbar {
+  visibility: collapse !important;
+}
 
 /* Sidebar header, native vertical tabs & revamp switcher bar */
 #sidebar-header,
@@ -112,7 +114,9 @@
 }
 
 /* Bookmarks toolbar */
-#PersonalToolbar { display: none !important; }
+#PersonalToolbar {
+  display: none !important;
+}
 
 /* ==========================================================================
    §3  SUBTLE UI POLISH — Fade states for identity & nav buttons
@@ -224,7 +228,7 @@
 }
 
 .search-one-offs {
-  background-color: var(--fx-bg-raised) !important;
+  /* background-color: var(--fx-bg-raised) !important; */
   border-top: 1px solid var(--fx-border) !important;
   border-radius: 0 0 var(--fx-radius) var(--fx-radius) !important;
 }
@@ -247,8 +251,9 @@
 
 .toolbarbutton-1 {
   border-radius: var(--fx-radius-sm) !important;
-  transition: background-color var(--fx-transition-fast),
-              color var(--fx-transition-fast) !important;
+  transition:
+    background-color var(--fx-transition-fast),
+    color var(--fx-transition-fast) !important;
 }
 
 .toolbarbutton-1:hover:not([disabled="true"]) {
@@ -305,7 +310,8 @@ browser#sidebar,
 }
 
 #tabbrowser-tabpanels browser[type="content"] {
-  border-radius: calc(var(--fx-radius-lg) - 1px) calc(var(--fx-radius-lg) - 1px) 0 0 !important;
+  border-radius: calc(var(--fx-radius-lg) - 1px) calc(var(--fx-radius-lg) - 1px)
+    0 0 !important;
   overflow: hidden !important;
 }
 

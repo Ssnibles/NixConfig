@@ -76,7 +76,11 @@
     --in-content-item-selected: var(--fx-bg-subtle) !important;
     --in-content-item-hover: var(--fx-bg-raised) !important;
     --in-content-primary-button-background: var(--fx-accent) !important;
-    --in-content-primary-button-background-hover: color-mix(in srgb, var(--fx-accent) 85%, white) !important;
+    --in-content-primary-button-background-hover: color-mix(
+      in srgb,
+      var(--fx-accent) 85%,
+      white
+    ) !important;
     --in-content-primary-button-text-color: var(--fx-bg) !important;
   }
 
@@ -101,12 +105,18 @@
     border: 1px solid var(--fx-border) !important;
     color: var(--fx-fg) !important;
     padding: 5px 12px !important;
-    transition: background-color 0.12s ease, border-color 0.12s ease !important;
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease !important;
   }
 
   button:hover,
   .button:hover {
-    background-color: color-mix(in srgb, var(--fx-bg-subtle) 80%, white 20%) !important;
+    background-color: color-mix(
+      in srgb,
+      var(--fx-bg-subtle) 80%,
+      white 20%
+    ) !important;
   }
 
   button.primary,
@@ -168,8 +178,8 @@
    High-performance native variable overrides & streamlined selectors
    ========================================================================== */
 
-@-moz-document url-prefix("moz-extension://") {
-
+@-moz-document url-prefix("moz-extension://")
+{
   /* ── Local design tokens ── */
   :root {
     --sb-bg: var(--fx-bg, #141415);
@@ -195,8 +205,9 @@
     --sb-transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
     --sb-transition: 0.18s ease;
 
-    --sb-font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      Roboto, sans-serif;
+    --sb-font-ui:
+      system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      sans-serif;
   }
 
   /* ────────────────────────────────────────────────────────────────────────
@@ -325,8 +336,9 @@
 
   .NavBtn {
     border-radius: var(--sb-radius-sm) !important;
-    transition: background-color var(--sb-transition-fast),
-                color var(--sb-transition-fast) !important;
+    transition:
+      background-color var(--sb-transition-fast),
+      color var(--sb-transition-fast) !important;
   }
 
   .NavBtn:hover {
@@ -386,9 +398,10 @@
     justify-content: center !important;
     box-sizing: border-box !important;
     position: relative !important;
-    transition: background-color var(--sb-transition-fast),
-                border-color var(--sb-transition-fast),
-                opacity var(--sb-transition-fast) !important;
+    transition:
+      background-color var(--sb-transition-fast),
+      border-color var(--sb-transition-fast),
+      opacity var(--sb-transition-fast) !important;
   }
 
   .PinnedTabsBar .Tab:hover {
@@ -402,15 +415,31 @@
   }
 
   /* Dim pinned tabs when unloaded, pending restore, or discarded */
-  .PinnedTabsBar .Tab:is([data-discarded="true"], [data-pending="true"], [data-unloaded="true"]) {
+  .PinnedTabsBar
+    .Tab:is(
+      [data-discarded="true"],
+      [data-pending="true"],
+      [data-unloaded="true"]
+    ) {
     opacity: 0.5 !important;
   }
 
-  .PinnedTabsBar .Tab:is([data-discarded="true"], [data-pending="true"], [data-unloaded="true"]):hover {
+  .PinnedTabsBar
+    .Tab:is(
+      [data-discarded="true"],
+      [data-pending="true"],
+      [data-unloaded="true"]
+    ):hover {
     opacity: 0.9 !important;
   }
 
-  .PinnedTabsBar .Tab:is([data-discarded="true"], [data-pending="true"], [data-unloaded="true"]) :is(.fav, .fav-icon) {
+  .PinnedTabsBar
+    .Tab:is(
+      [data-discarded="true"],
+      [data-pending="true"],
+      [data-unloaded="true"]
+    )
+    :is(.fav, .fav-icon) {
     opacity: 0.65 !important;
   }
 
@@ -457,8 +486,9 @@
     border-radius: var(--sb-radius-sm) !important;
     border: var(--sb-highlight-border-width) solid transparent !important;
     box-shadow: none !important;
-    transition: background-color var(--sb-transition-fast),
-                border-color var(--sb-transition-fast) !important;
+    transition:
+      background-color var(--sb-transition-fast),
+      border-color var(--sb-transition-fast) !important;
   }
 
   .Tab:not([data-pin="true"]):hover .body {
@@ -488,26 +518,51 @@
     font-weight: 600 !important;
   }
 
-  .Tab:is([data-discarded="true"], [data-pending="true"], [data-unloaded="true"]) .title {
+  .Tab:is(
+      [data-discarded="true"],
+      [data-pending="true"],
+      [data-unloaded="true"]
+    )
+    .title {
     color: var(--sb-fg-mid) !important;
     opacity: 0.7 !important;
   }
 
-  .Tab:not([data-pin="true"]):is([data-discarded="true"], [data-pending="true"], [data-unloaded="true"]) {
+  .Tab:not([data-pin="true"]):is(
+      [data-discarded="true"],
+      [data-pending="true"],
+      [data-unloaded="true"]
+    ) {
     opacity: 0.75 !important;
   }
 
-  .Tab:not([data-pin="true"]):is([data-discarded="true"], [data-pending="true"], [data-unloaded="true"]):hover {
+  .Tab:not([data-pin="true"]):is(
+      [data-discarded="true"],
+      [data-pending="true"],
+      [data-unloaded="true"]
+    ):hover {
     opacity: 1 !important;
   }
 
   /* Sleeping / Discarded tabs: desaturate favicon & dim */
-  .Tab:is([data-discarded="true"], [data-pending="true"], [data-unloaded="true"]) :is(.fav, .fav-icon) {
+  .Tab:is(
+      [data-discarded="true"],
+      [data-pending="true"],
+      [data-unloaded="true"]
+    )
+    :is(.fav, .fav-icon) {
     filter: grayscale(100%) opacity(0.55) !important;
-    transition: filter var(--sb-transition-fast), opacity var(--sb-transition-fast) !important;
+    transition:
+      filter var(--sb-transition-fast),
+      opacity var(--sb-transition-fast) !important;
   }
 
-  .Tab:is([data-discarded="true"], [data-pending="true"], [data-unloaded="true"]):hover :is(.fav, .fav-icon) {
+  .Tab:is(
+      [data-discarded="true"],
+      [data-pending="true"],
+      [data-unloaded="true"]
+    ):hover
+    :is(.fav, .fav-icon) {
     filter: grayscale(0%) opacity(1) !important;
   }
 
@@ -531,16 +586,36 @@
   }
 
   /* Elbow column = (level * indent) - indent/2, measured from the tab's left edge */
-  .Tab[data-pin="false"][data-lvl="1"]::before { left: calc(var(--tabs-indent) * 0.5) !important; }
-  .Tab[data-pin="false"][data-lvl="2"]::before { left: calc(var(--tabs-indent) * 1.5) !important; }
-  .Tab[data-pin="false"][data-lvl="3"]::before { left: calc(var(--tabs-indent) * 2.5) !important; }
-  .Tab[data-pin="false"][data-lvl="4"]::before { left: calc(var(--tabs-indent) * 3.5) !important; }
-  .Tab[data-pin="false"][data-lvl="5"]::before { left: calc(var(--tabs-indent) * 4.5) !important; }
-  .Tab[data-pin="false"][data-lvl="6"]::before { left: calc(var(--tabs-indent) * 5.5) !important; }
-  .Tab[data-pin="false"][data-lvl="7"]::before { left: calc(var(--tabs-indent) * 6.5) !important; }
-  .Tab[data-pin="false"][data-lvl="8"]::before { left: calc(var(--tabs-indent) * 7.5) !important; }
-  .Tab[data-pin="false"][data-lvl="9"]::before { left: calc(var(--tabs-indent) * 8.5) !important; }
-  .Tab[data-pin="false"][data-lvl="10"]::before { left: calc(var(--tabs-indent) * 9.5) !important; }
+  .Tab[data-pin="false"][data-lvl="1"]::before {
+    left: calc(var(--tabs-indent) * 0.5) !important;
+  }
+  .Tab[data-pin="false"][data-lvl="2"]::before {
+    left: calc(var(--tabs-indent) * 1.5) !important;
+  }
+  .Tab[data-pin="false"][data-lvl="3"]::before {
+    left: calc(var(--tabs-indent) * 2.5) !important;
+  }
+  .Tab[data-pin="false"][data-lvl="4"]::before {
+    left: calc(var(--tabs-indent) * 3.5) !important;
+  }
+  .Tab[data-pin="false"][data-lvl="5"]::before {
+    left: calc(var(--tabs-indent) * 4.5) !important;
+  }
+  .Tab[data-pin="false"][data-lvl="6"]::before {
+    left: calc(var(--tabs-indent) * 5.5) !important;
+  }
+  .Tab[data-pin="false"][data-lvl="7"]::before {
+    left: calc(var(--tabs-indent) * 6.5) !important;
+  }
+  .Tab[data-pin="false"][data-lvl="8"]::before {
+    left: calc(var(--tabs-indent) * 7.5) !important;
+  }
+  .Tab[data-pin="false"][data-lvl="9"]::before {
+    left: calc(var(--tabs-indent) * 8.5) !important;
+  }
+  .Tab[data-pin="false"][data-lvl="10"]::before {
+    left: calc(var(--tabs-indent) * 9.5) !important;
+  }
 
   /* Tab close button: only show when tab is hovered */
   .Tab .close {
@@ -548,9 +623,10 @@
     border-radius: 4px !important;
     opacity: 0 !important;
     pointer-events: none !important;
-    transition: opacity var(--sb-transition-fast),
-                background-color var(--sb-transition-fast),
-                color var(--sb-transition-fast) !important;
+    transition:
+      opacity var(--sb-transition-fast),
+      background-color var(--sb-transition-fast),
+      color var(--sb-transition-fast) !important;
   }
 
   .Tab:hover .close {
@@ -587,7 +663,8 @@
   }
 
   @keyframes sb-audio-pulse {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
       opacity: 0.8;
     }
@@ -603,7 +680,7 @@
      ──────────────────────────────────────────────────────────────────────── */
 
   .SearchBar {
-    background-color: var(--sb-bg) !important;
+    /* background-color: var(--sb-bg) !important; */
     padding: 4px 6px !important;
   }
 
@@ -639,8 +716,9 @@
     color: var(--sb-fg-mid) !important;
     fill: var(--sb-fg-mid) !important;
     border-radius: var(--sb-radius-sm) !important;
-    transition: background-color var(--sb-transition-fast),
-                color var(--sb-transition-fast) !important;
+    transition:
+      background-color var(--sb-transition-fast),
+      color var(--sb-transition-fast) !important;
   }
 
   .BottomBar .btn:hover {
@@ -689,8 +767,9 @@
     border: var(--sb-highlight-border-width) solid transparent !important;
     box-shadow: none !important;
     color: var(--sb-fg) !important;
-    transition: background-color var(--sb-transition-fast),
-                border-color var(--sb-transition-fast) !important;
+    transition:
+      background-color var(--sb-transition-fast),
+      border-color var(--sb-transition-fast) !important;
   }
 
   .Node:hover,

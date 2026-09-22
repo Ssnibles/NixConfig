@@ -6,8 +6,10 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, ... }:
+    { pkgs, lib, config, ... }:
     let
+      cfg = config.features.vivado;
+
       vivado-script = pkgs.writeShellScriptBin "vivado" ''
         exec ${pkgs.distrobox}/bin/distrobox enter vivado -- vivado "$@"
       '';
@@ -22,9 +24,17 @@
       };
     in
     {
-      environment.systemPackages = [
-        vivado-script
-        vivado-desktop
-      ];
+      options.features.vivado.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable AMD Vivado FPGA distrobox launcher and desktop entry.";
+      };
+
+      config = lib.mkIf cfg.enable {
+        environment.systemPackages = [
+          vivado-script
+          vivado-desktop
+        ];
+      };
     };
 }

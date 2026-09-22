@@ -7,8 +7,10 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, config, ... }:
+    { pkgs, lib, config, ... }:
     let
+      cfg = config.features.quickshell;
+
       inherit (config.theme.colors)
         bg
         bgRaised
@@ -27,7 +29,13 @@
         ;
     in
     {
-      config = {
+      options.features.quickshell.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the Quickshell UI engine (bars, command center, lock screen, notifications).";
+      };
+
+      config = lib.mkIf cfg.enable {
         environment.systemPackages = with pkgs.unstable; [
           quickshell
         ];

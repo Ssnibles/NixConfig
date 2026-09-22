@@ -9,11 +9,21 @@
   nixos.modules.shared =
     {
       pkgs,
+      lib,
       config,
       ...
     }:
+    let
+      cfg = config.features.shikane;
+    in
     {
-      config = {
+      options.features.shikane.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the Shikane dynamic display profile daemon.";
+      };
+
+      config = lib.mkIf cfg.enable {
         environment.systemPackages = with pkgs; [
           shikane
         ];

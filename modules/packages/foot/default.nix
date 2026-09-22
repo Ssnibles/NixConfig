@@ -7,10 +7,13 @@
   nixos.modules.shared =
     {
       pkgs,
+      lib,
       config,
       ...
     }:
     let
+      cfg = config.features.foot;
+
       inherit (config.theme.colors)
         bg
         bgRaised
@@ -27,66 +30,76 @@
         ;
     in
     {
-      environment.systemPackages = [ pkgs.foot ];
-
-      systemd.user.services.foot-server = {
-        description = "Foot terminal server";
-        documentation = [ "man:foot(1)" ];
-        wantedBy = [ "graphical-session.target" ];
-        partOf = [ "graphical-session.target" ];
-        after = [ "graphical-session.target" ];
-        aliases = [ "foot.service" ];
-        unitConfig = {
-          ConditionEnvironment = "WAYLAND_DISPLAY";
-        };
-        path = [ config.system.path ];
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${pkgs.foot}/bin/foot --server";
-          Restart = "on-failure";
-          RestartSec = 2;
+      options.features.foot = {
+        enable = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = "Enable Foot terminal emulator with the foot-server systemd service.";
         };
       };
 
-      hjem.users."${config.username}" = {
-        files = {
-          ".config/foot/foot.ini" = {
-            text = ''
-              include=/home/${config.username}/.config/foot/colors.ini
-              font=Maple Mono NR NF:size=12
-              pad=10x10
+      config = lib.mkIf cfg.enable {
+        environment.systemPackages = [ pkgs.foot ];
 
-              [cursor]
-              style=block
-
-              [text-bindings]
-              \x1f = Control+BackSpace
-            '';
+        systemd.user.services.foot-server = {
+          description = "Foot terminal server";
+          documentation = [ "man:foot(1)" ];
+          wantedBy = [ "graphical-session.target" ];
+          partOf = [ "graphical-session.target" ];
+          after = [ "graphical-session.target" ];
+          aliases = [ "foot.service" ];
+          unitConfig = {
+            ConditionEnvironment = "WAYLAND_DISPLAY";
           };
-          ".config/foot/colors.ini" = {
-            text = ''
-              [colors-dark]
-              background=${bg}
-              foreground=${fg}
-              selection-foreground=${bg}
-              selection-background=${accent}
-              regular0=${bgSubtle}
-              regular1=${red}
-              regular2=${green}
-              regular3=${yellow}
-              regular4=${accent}
-              regular5=${purple}
-              regular6=${teal}
-              regular7=${fg}
-              bright0=${fgDim}
-              bright1=${orange}
-              bright2=${green}
-              bright3=${yellow}
-              bright4=${accent}
-              bright5=${purple}
-              bright6=${teal}
-              bright7=${fg}
-            '';
+          path = [ config.system.path ];
+          serviceConfig = {
+            Type = "simple";
+            ExecStart = "${pkgs.foot}/bin/foot --server";
+            Restart = "on-failure";
+            RestartSec = 2;
+          };
+        };
+
+        hjem.users."${config.username}" = {
+          files = {
+            ".config/foot/foot.ini" = {
+              text = ''
+                include=/home/${config.username}/.config/foot/colors.ini
+                font=Maple Mono NR NF:size=12
+                pad=10x10
+
+                [cursor]
+                style=block
+
+                [text-bindings]
+                \x1f = Control+BackSpace
+              '';
+            };
+            ".config/foot/colors.ini" = {
+              text = ''
+                [colors-dark]
+                background=${bg}
+                foreground=${fg}
+                selection-foreground=${bg}
+                selection-background=${accent}
+                regular0=${bgSubtle}
+                regular1=${red}
+                regular2=${green}
+                regular3=${yellow}
+                regular4=${accent}
+                regular5=${purple}
+                regular6=${teal}
+                regular7=${fg}
+                bright0=${fgDim}
+                bright1=${orange}
+                bright2=${green}
+                bright3=${yellow}
+                bright4=${accent}
+                bright5=${purple}
+                bright6=${teal}
+                bright7=${fg}
+              '';
+            };
           };
         };
       };

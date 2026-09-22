@@ -10,10 +10,13 @@
   nixos.modules.shared =
     {
       pkgs,
+      lib,
       config,
       ...
     }:
     let
+      cfg = config.features.hermes;
+
       model = "qwen2.5:7b";
       ollamaHost = "100.124.73.101"; # Homeserver Tailscale IP
       ollamaPort = 11434;
@@ -42,7 +45,13 @@
       '';
     in
     {
-      config = {
+      options.features.hermes.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the Hermes AI agent with local homeserver Ollama integration.";
+      };
+
+      config = lib.mkIf cfg.enable {
         environment.systemPackages = [
           hermesLauncher
           hermesAgentLauncher

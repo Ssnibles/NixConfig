@@ -32,6 +32,13 @@
             ".config/mpv/mpv.conf" = {
               text = ''
                 osc=no
+                osd-bar=no
+
+                # Hardware decoding + Vulkan GPU pipeline (NVIDIA Wayland)
+                hwdec=auto-safe
+                vo=gpu-next
+                gpu-api=vulkan
+                hwdec-codecs=all
               '';
             };
 
