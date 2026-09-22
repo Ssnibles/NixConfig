@@ -628,7 +628,13 @@
             # Profile initialization config
             ".mozilla/firefox/profiles.ini".text = ''
               [Profile0]
-              Name=${cfg.profileName}
+              Name=default
+              IsRelative=1
+              Path=${cfg.profileName}
+              Default=1
+
+              [Profile1]
+              Name=dev-edition-default
               IsRelative=1
               Path=${cfg.profileName}
               Default=1
