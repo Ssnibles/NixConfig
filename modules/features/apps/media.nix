@@ -16,13 +16,35 @@
         environment.systemPackages = with pkgs.unstable; [
           zathura
           imv
-          mpv
+          (mpv.override {
+            scripts = [
+              mpvScripts.mpris
+              mpvScripts.modernz
+              mpvScripts.thumbfast
+            ];
+          })
           spotatui
           thunar
         ];
 
         hjem.users.${config.username} = {
           files = {
+            ".config/mpv/mpv.conf" = {
+              text = ''
+                osc=no
+              '';
+            };
+
+            ".config/mpv/input.conf" = {
+              text = ''
+                # Vim-style seeking
+                h seek -5
+                j seek -10
+                k seek +10
+                l seek +5
+              '';
+            };
+
             ".config/imv/config" = {
               text = ''
                 [options]
@@ -99,6 +121,26 @@
             "image/jpg" = [ "imv.desktop" ];
             "image/webp" = [ "imv.desktop" ];
             "image/gif" = [ "imv.desktop" ];
+            "video/mp4" = [ "mpv.desktop" ];
+            "video/webm" = [ "mpv.desktop" ];
+            "video/x-matroska" = [ "mpv.desktop" ];
+            "video/avi" = [ "mpv.desktop" ];
+            "video/x-msvideo" = [ "mpv.desktop" ];
+            "video/mpeg" = [ "mpv.desktop" ];
+            "video/mp2t" = [ "mpv.desktop" ];
+            "video/quicktime" = [ "mpv.desktop" ];
+            "video/x-flv" = [ "mpv.desktop" ];
+            "video/x-ms-wmv" = [ "mpv.desktop" ];
+            "video/x-m4v" = [ "mpv.desktop" ];
+            "video/3gpp" = [ "mpv.desktop" ];
+            "video/3gpp2" = [ "mpv.desktop" ];
+            "video/x-ogm+ogg" = [ "mpv.desktop" ];
+            "video/x-theora+ogg" = [ "mpv.desktop" ];
+            "video/x-mng" = [ "mpv.desktop" ];
+            "application/vnd.apple.mpegurl" = [ "mpv.desktop" ];
+            "application/x-mpegURL" = [ "mpv.desktop" ];
+            "application/mp4" = [ "mpv.desktop" ];
+            "application/ogg" = [ "mpv.desktop" ];
           };
         };
 
@@ -112,6 +154,26 @@
             "image/jpg" = [ "imv.desktop" ];
             "image/webp" = [ "imv.desktop" ];
             "image/gif" = [ "imv.desktop" ];
+            "video/mp4" = [ "mpv.desktop" ];
+            "video/webm" = [ "mpv.desktop" ];
+            "video/x-matroska" = [ "mpv.desktop" ];
+            "video/avi" = [ "mpv.desktop" ];
+            "video/x-msvideo" = [ "mpv.desktop" ];
+            "video/mpeg" = [ "mpv.desktop" ];
+            "video/mp2t" = [ "mpv.desktop" ];
+            "video/quicktime" = [ "mpv.desktop" ];
+            "video/x-flv" = [ "mpv.desktop" ];
+            "video/x-ms-wmv" = [ "mpv.desktop" ];
+            "video/x-m4v" = [ "mpv.desktop" ];
+            "video/3gpp" = [ "mpv.desktop" ];
+            "video/3gpp2" = [ "mpv.desktop" ];
+            "video/x-ogm+ogg" = [ "mpv.desktop" ];
+            "video/x-theora+ogg" = [ "mpv.desktop" ];
+            "video/x-mng" = [ "mpv.desktop" ];
+            "application/vnd.apple.mpegurl" = [ "mpv.desktop" ];
+            "application/x-mpegURL" = [ "mpv.desktop" ];
+            "application/mp4" = [ "mpv.desktop" ];
+            "application/ogg" = [ "mpv.desktop" ];
           };
         };
       };
