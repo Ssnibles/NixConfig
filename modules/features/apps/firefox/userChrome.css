@@ -228,7 +228,6 @@
 }
 
 .search-one-offs {
-  /* background-color: var(--fx-bg-raised) !important; */
   border-top: 1px solid var(--fx-border) !important;
   border-radius: 0 0 var(--fx-radius) var(--fx-radius) !important;
 }

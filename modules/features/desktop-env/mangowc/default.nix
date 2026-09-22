@@ -20,6 +20,42 @@
         accent
         border
         ;
+
+      # Uses the pinned upstream input by default, or the local development
+      # input (path:/home/josh/mango) when features.mangowc.local is enabled.
+      # Note: the programs.mango module itself is imported unconditionally — the
+      # two inputs ship the same module — only the package source differs.
+      mango-base =
+        (if cfg.local then inputs.mangowc-local else inputs.mangowc)
+        .packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+      # Development wrapper: at runtime it prefers a freshly built binary from
+      # /home/${config.username}/mango/result, so local changes can be tested
+      # with just `nix build` in ~/mango followed by a session restart, without
+      # a full nixos-rebuild. If no local build is present it falls back to the
+      # packaged binary and logs the fallback so it is never silent.
+      mango-dev = pkgs.symlinkJoin {
+        name = "mango-dev";
+        paths = [ mango-base ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          wrap_mango() {
+            local bin="$1"
+            rm "$out/bin/$bin"
+            makeWrapper ${mango-base}/bin/$bin "$out/bin/$bin" \
+              --run 'if [ -x /home/${config.username}/mango/result/bin/'"$bin"' ]; then exec /home/${config.username}/mango/result/bin/'"$bin"' "$@"; fi
+                     echo "[mango-dev] $(date +%Y-%m-%d_%H:%M:%S) local build missing, using packaged '"$bin"'" >> "''${XDG_CACHE_HOME:-$HOME/.cache}/mango-dev.log"'
+          }
+          wrap_mango mango
+          if [ -f "$out/bin/mmsg" ]; then
+            wrap_mango mmsg
+          fi
+        '';
+        meta.mainProgram = "mango";
+        passthru = (mango-base.passthru or { }) // {
+          inherit (mango-base) providedSessions;
+        };
+      };
     in
     {
       imports = [
@@ -32,39 +68,21 @@
         description = "Enable MangoWC Wayland compositor feature.";
       };
 
+      options.features.mangowc.local = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Build from the local path input and wrap binaries to prefer ~/mango/result.";
+      };
+
       config = lib.mkIf cfg.enable {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
 
         programs.mango.enable = true;
 
-        # Development wrapper: dynamically executes the local build from
-        # /home/${config.username}/mango/result/bin/mango if it exists.
-        # This allows rapid local development: simply run `nix build` in ~/mango,
-        # and on the next session start it automatically runs the new binary
-        # without needing a full `nixos-rebuild switch`.
+        # The upstream package ships its binaries as-is; the dev wrapper is only
+        # used when iterating on the local input.
         programs.mango.package =
-          let
-            mango-base = inputs.mangowc.packages.${pkgs.stdenv.hostPlatform.system}.default;
-          in
-          pkgs.symlinkJoin {
-            name = "mango-dev";
-            paths = [ mango-base ];
-            nativeBuildInputs = [ pkgs.makeWrapper ];
-            postBuild = ''
-              rm $out/bin/mango
-              makeWrapper ${mango-base}/bin/mango $out/bin/mango \
-                --run 'if [ -x /home/${config.username}/mango/result/bin/mango ]; then exec /home/${config.username}/mango/result/bin/mango "$@"; fi'
-              if [ -f $out/bin/mmsg ]; then
-                rm $out/bin/mmsg
-                makeWrapper ${mango-base}/bin/mmsg $out/bin/mmsg \
-                  --run 'if [ -x /home/${config.username}/mango/result/bin/mmsg ]; then exec /home/${config.username}/mango/result/bin/mmsg "$@"; fi'
-              fi
-            '';
-            meta.mainProgram = "mango";
-            passthru = (mango-base.passthru or { }) // {
-              inherit (mango-base) providedSessions;
-            };
-          };
+          if cfg.local then mango-dev else mango-base;
 
         system.activationScripts.mango-config = ''
           mkdir -p /home/${config.username}/.config/mango

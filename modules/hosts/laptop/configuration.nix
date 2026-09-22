@@ -118,6 +118,7 @@
       # ── Desktop Environment Features ───────────────────────────────────────
       features.hyprland.enable = false;
       features.mangowc.enable = true;
+      features.mangowc.local = true;
       features.niri.enable = false;
       features.quickshell.enable = true;
       features.vicinae.enable = true;

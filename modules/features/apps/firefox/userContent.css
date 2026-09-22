@@ -502,8 +502,9 @@
     box-shadow: none !important;
   }
 
-  /* Sidebery's native tree-level marks are fully disabled — the custom curved
-     guides below replace them (they reuse this pseudo-element otherwise) */
+  /* Sidebery's native tree-level marks (box-shadow columns drawn on
+     .body::after) are fully disabled — the custom curved guides below
+     replace them */
   .Tab .body::before,
   .Tab .body::after {
     box-shadow: none !important;
@@ -680,19 +681,47 @@
      ──────────────────────────────────────────────────────────────────────── */
 
   .SearchBar {
-    /* background-color: var(--sb-bg) !important; */
     padding: 4px 6px !important;
+  }
+
+  /* The native filled pill layer (::before) is what ghosts on the canvas when
+     the search collapses — this design only wants the bordered input pill */
+  .SearchBar::before {
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Hide the collapsed bar completely — opacity/height fades can still leave
+     a composited ghost of the pill background painted where the bar was */
+  .SearchBar[data-showed="false"] {
+    display: none !important;
+    padding: 0 !important;
+    background-color: transparent !important;
+  }
+
+  .SearchBar[data-showed="false"]::before {
+    opacity: 0 !important;
   }
 
   .SearchBar .input {
     background-color: transparent !important;
     color: var(--sb-fg) !important;
-    border: var(--sb-highlight-border-width) solid var(--sb-border) !important;
+    border: var(--sb-highlight-border-width) solid transparent !important;
     border-radius: var(--sb-radius-sm) !important;
     padding: 5px 8px !important;
     font-size: 13px !important;
     box-shadow: none !important;
     transition: border-color var(--sb-transition) !important;
+  }
+
+  /* The pill only renders while the search is in use (focused/active or has a
+     query) — an idle, empty bar paints nothing so no outline is left behind */
+  .SearchBar .input:focus,
+  .SearchBar[data-active="true"] .input,
+  .SearchBar[data-filled="true"] .input {
+    border-color: var(--sb-border) !important;
+    box-shadow: none !important;
+    outline: none !important;
   }
 
   .SearchBar .input:focus,

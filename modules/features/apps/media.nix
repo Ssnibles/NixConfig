@@ -18,9 +18,14 @@
           imv
           (mpv.override {
             scripts = [
+              mpvScripts.autoload
               mpvScripts.mpris
               mpvScripts.modernz
+              mpvScripts.quality-menu
+              mpvScripts.smartskip
               mpvScripts.thumbfast
+              mpvScripts.visualizer
+              mpvScripts.webtorrent-mpv-hook
             ];
           })
           spotatui
@@ -39,6 +44,18 @@
                 vo=gpu-next
                 gpu-api=vulkan
                 hwdec-codecs=all
+
+                # YouTube AV1 adaptive streams ("Invalid OBU length",
+                # "Packet corrupt") fail to demux cleanly while streamed via
+                # ffmpeg http. Prefer the more robust VP9 stream for web video
+                # and buffer aggressively so fragments arrive whole.
+                ytdl-format=bestvideo[vcodec^=vp9]+bestaudio/best
+                demuxer-readahead-secs=60
+                demuxer-max-bytes=512MiB
+
+                # Modernz (OSC) conflicts with watch-later restoring sub-pos;
+                # drop it from the saved options set (modernz manages sub margins itself).
+                watch-later-options-remove=sub-pos
               '';
             };
 
@@ -49,6 +66,41 @@
                 j seek -10
                 k seek +10
                 l seek +5
+              '';
+            };
+
+            ".config/mpv/script-opts/modernz.conf" = {
+              text = ''
+                # Disable built-in window control buttons
+                window_controls=no
+
+                # Theme colors
+                osc_color=#${c.bgRaised}
+                window_title_color=#${c.fg}
+                window_controls_color=#${c.fg}
+                windowcontrols_close_hover=#${c.red}
+                windowcontrols_max_hover=#${c.yellow}
+                windowcontrols_min_hover=#${c.green}
+                title_color=#${c.fg}
+                cache_info_color=#${c.fgMid}
+                seekbar_cache_color=#${c.fgDim}
+                seekbarfg_color=#${c.accent}
+                seekbarbg_color=#${c.bgSubtle}
+                seek_handle_color=#${c.accent}
+                seek_handle_border_color=#${c.accent}
+                volumebar_match_seek_color=yes
+                time_color=#${c.fg}
+                chapter_title_color=#${c.fg}
+                side_buttons_color=#${c.fg}
+                middle_buttons_color=#${c.fg}
+                playpause_color=#${c.fg}
+                held_element_color=#${c.fgMid}
+                hover_effect_color=#${c.accent}
+                thumbnail_box_color=#${c.bg}
+                thumbnail_box_outline=#${c.border}
+                nibble_color=#${c.accent}
+                nibble_current_color=#${c.fg}
+                ab_loop_color=#${c.purple}
               '';
             };
 
