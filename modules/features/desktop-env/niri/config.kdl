@@ -102,7 +102,7 @@ window-rule {
 }
 
 window-rule {
-  match app-id="feh"
+  match app-id="imv"
   open-maximized false
   open-fullscreen false
   default-column-width { proportion 0.5; }

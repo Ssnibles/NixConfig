@@ -1,7 +1,7 @@
 # =============================================================================
 # Media & Document Applications Feature
 # =============================================================================
-# Media viewer (Feh) and Zathura PDF reader with dark mode recoloring
+# Media viewer (imv) and Zathura PDF reader with dark mode recoloring
 # matching active theme colors and inverse search settings.
 # =============================================================================
 { ... }:
@@ -15,16 +15,17 @@
       config = {
         environment.systemPackages = with pkgs.unstable; [
           zathura
-          feh
+          imv
           spotatui
           thunar
         ];
 
         hjem.users.${config.username} = {
           files = {
-            ".config/feh/themes" = {
+            ".config/imv/config" = {
               text = ''
-                feh --auto-zoom --scale-down --geometry 50%x50%
+                [options]
+                scaling_mode = shrink
               '';
             };
 
@@ -92,11 +93,11 @@
           xdg.mime-apps.default-applications = {
             "application/pdf" = [ "org.pwmt.zathura.desktop" ];
             "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
-            "image/png" = [ "feh.desktop" ];
-            "image/jpeg" = [ "feh.desktop" ];
-            "image/jpg" = [ "feh.desktop" ];
-            "image/webp" = [ "feh.desktop" ];
-            "image/gif" = [ "feh.desktop" ];
+            "image/png" = [ "imv.desktop" ];
+            "image/jpeg" = [ "imv.desktop" ];
+            "image/jpg" = [ "imv.desktop" ];
+            "image/webp" = [ "imv.desktop" ];
+            "image/gif" = [ "imv.desktop" ];
           };
         };
 
@@ -105,11 +106,11 @@
           defaultApplications = {
             "application/pdf" = [ "org.pwmt.zathura.desktop" ];
             "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
-            "image/png" = [ "feh.desktop" ];
-            "image/jpeg" = [ "feh.desktop" ];
-            "image/jpg" = [ "feh.desktop" ];
-            "image/webp" = [ "feh.desktop" ];
-            "image/gif" = [ "feh.desktop" ];
+            "image/png" = [ "imv.desktop" ];
+            "image/jpeg" = [ "imv.desktop" ];
+            "image/jpg" = [ "imv.desktop" ];
+            "image/webp" = [ "imv.desktop" ];
+            "image/gif" = [ "imv.desktop" ];
           };
         };
       };
