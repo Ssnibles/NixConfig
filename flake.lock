@@ -740,6 +740,7 @@
         "pomodoro": "pomodoro",
         "spicetify-nix": "spicetify-nix",
         "tuxedo": "tuxedo",
+        "ytplay": "ytplay",
         "zen-browser": "zen-browser"
       }
     },
@@ -932,6 +933,23 @@
         "owner": "webstonehq",
         "repo": "tuxedo",
         "type": "github"
+      }
+    },
+    "ytplay": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790129438,
+        "narHash": "sha256-J5M8iqMv5rQVZwMq3TL+CB+/toXKBETptS/5gvRZcaI=",
+        "path": "/home/josh/ytplay",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/josh/ytplay",
+        "type": "path"
       }
     },
     "zen-browser": {

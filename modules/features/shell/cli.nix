@@ -29,6 +29,7 @@
           fzf
           git
           gh
+          gh-dash
           gnupg
           libnotify
           libsecret

@@ -165,7 +165,7 @@
           adwaita-icon-theme
           self.packages.${pkgs.stdenv.hostPlatform.system}.html-server
           self.packages.${pkgs.stdenv.hostPlatform.system}.boilerplate
-          self.packages.${pkgs.stdenv.hostPlatform.system}.ytplay
+          inputs.ytplay.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
 
         # ── XDG Portals ─────────────────────────────────────────────────────
