@@ -95,12 +95,6 @@
               output = ""
 
               [[snippets]]
-              description = "Check SSL cert expiry"
-              command = "echo | openssl s_client -connect <host=example.com>:443 2>/dev/null | openssl x509 -noout -dates"
-              tag = ["network", "ssl", "debug"]
-              output = ""
-
-              [[snippets]]
               description = "List top 20 largest files"
               command = "du -ah <path=.> | sort -hr | head -n <n=20>"
               tag = ["disk", "debug"]
@@ -110,18 +104,6 @@
               description = "Extract archive by extension"
               command = "file=<archive=archive.tar.gz>; case \"''$file\" in *.tar.gz|*.tgz) tar -xzf \"''$file\" ;; *.tar.xz) tar -xJf \"''$file\" ;; *.zip) unzip \"''$file\" ;; *) echo 'unsupported archive' >&2; exit 1 ;; esac"
               tag = ["archive", "utility"]
-              output = ""
-
-              [[snippets]]
-              description = "Docker clean stopped and dangling"
-              command = "docker container prune -f && docker image prune -f"
-              tag = ["docker", "cleanup"]
-              output = ""
-
-              [[snippets]]
-              description = "Kubernetes watch pods in namespace"
-              command = "kubectl get pods -n <namespace=default> -w"
-              tag = ["k8s", "ops"]
               output = ""
 
               [[snippets]]
@@ -281,12 +263,6 @@
               output = ""
 
               [[snippets]]
-              description = "Rsync with progress"
-              command = "rsync -avh --progress <source=~/files/> <dest=user@host:/path/>"
-              tag = ["rsync", "transfer", "utility"]
-              output = ""
-
-              [[snippets]]
               description = "Compress directory to tar.gz"
               command = "tar -czf <output=archive.tar.gz> -C <dir=.> ."
               tag = ["archive", "compress", "utility"]
@@ -294,32 +270,14 @@
 
               [[snippets]]
               description = "Count lines of code (excl. blank/comments)"
-              command = "tokei <path=.>"
+              command = "nix-shell -p tokei --run 'tokei <path=.>'"
               tag = ["code", "stats", "utility"]
-              output = ""
-
-              [[snippets]]
-              description = "Watch command with interval"
-              command = "watch -n <interval=2> '<command=free -h>'"
-              tag = ["monitor", "utility"]
               output = ""
 
               [[snippets]]
               description = "Journalctl for service since boot"
               command = "journalctl -u <service=ssh> -b --no-pager -n <lines=50>"
               tag = ["systemd", "log", "debug"]
-              output = ""
-
-              [[snippets]]
-              description = "Generate random password"
-              command = "openssl rand -base64 <length=24>"
-              tag = ["security", "password", "utility"]
-              output = ""
-
-              [[snippets]]
-              description = "Check if port is reachable"
-              command = "nc -zv <host=example.com> <port=443> 2>&1"
-              tag = ["network", "port", "debug"]
               output = ""
 
               [[snippets]]
@@ -356,6 +314,42 @@
               description = "Mango get all layers"
               command = "nix-shell -p jq --run 'mmsg get all-layers | jq'"
               tag = ["mango", "api", "layers"]
+              output = ""
+
+              [[snippets]]
+              description = "Flash a USB/ISO image (on-demand)"
+              command = "nix-shell -p caligula --run 'caligula'"
+              tag = ["nix", "on-demand", "usb", "flash"]
+              output = ""
+
+              [[snippets]]
+              description = "Send files between machines (on-demand)"
+              command = "nix-shell -p croc --run 'croc'"
+              tag = ["nix", "on-demand", "file", "transfer"]
+              output = ""
+
+              [[snippets]]
+              description = "Render mermaid diagrams (on-demand)"
+              command = "nix-shell -p mermaid-cli --run 'mmdc'"
+              tag = ["nix", "on-demand", "diagram", "mermaid"]
+              output = ""
+
+              [[snippets]]
+              description = "Convert wallpaper image format (on-demand)"
+              command = "nix-shell -p gowall --run 'gowall'"
+              tag = ["nix", "on-demand", "wallpaper", "image"]
+              output = ""
+
+              [[snippets]]
+              description = "Update / install Proton-GE for Steam (on-demand)"
+              command = "nix-shell -p protonup-ng --run 'protonup'"
+              tag = ["nix", "on-demand", "gaming", "steam", "proton"]
+              output = ""
+
+              [[snippets]]
+              description = "Flash / query USB DFU device firmware (on-demand)"
+              command = "nix-shell -p dfu-util --run 'dfu-util <args=-l>'"
+              tag = ["nix", "on-demand", "firmware", "usb", "flash"]
               output = ""
             '';
           };

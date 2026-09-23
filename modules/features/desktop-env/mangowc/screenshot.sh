@@ -9,6 +9,33 @@
 # Prevent concurrent slurp sessions
 pgrep -x slurp >/dev/null && exit 0
 
+# Detect if running under MangoWC
+IS_MANGO=false
+if command -v mmsg >/dev/null 2>&1 && { [ -n "$MANGO_INSTANCE_SIGNATURE" ] || [ "$XDG_CURRENT_DESKTOP" = "mango" ] || mmsg get version >/dev/null 2>&1; }; then
+  IS_MANGO=true
+fi
+
+# MangoWC border management: remove borders & radius before capture, restore on exit or cancel
+MANGO_RESTORED=false
+restore_mango() {
+  if [ "$IS_MANGO" = true ] && [ "$MANGO_RESTORED" = false ]; then
+    MANGO_RESTORED=true
+    mmsg dispatch setoption,borderpx,3 >/dev/null 2>&1
+    mmsg dispatch setoption,border_radius,8 >/dev/null 2>&1
+  fi
+}
+
+cleanup() {
+  restore_mango
+  [ -n "$TMP_IMG" ] && rm -f "$TMP_IMG"
+}
+trap cleanup EXIT INT TERM HUP
+
+if [ "$IS_MANGO" = true ]; then
+  mmsg dispatch setoption,borderpx,0 >/dev/null 2>&1
+  mmsg dispatch setoption,border_radius,0 >/dev/null 2>&1
+fi
+
 # Determine accent color from theme configuration
 ACCENT="6e94b2"
 if [ -f "$HOME/.config/mango/colours.conf" ]; then
@@ -22,7 +49,7 @@ fi
 # Query window bounding boxes (<x>,<y> <width>x<height>) from the active compositor
 get_windows() {
   # MangoWC
-  if [ -n "$MANGO_INSTANCE_SIGNATURE" ] || [ "$XDG_CURRENT_DESKTOP" = "mango" ] || command -v mmsg >/dev/null 2>&1; then
+  if [ "$IS_MANGO" = true ]; then
     if command -v jq >/dev/null 2>&1; then
       mmsg get all-clients 2>/dev/null | jq -r '.clients[] | select(.is_visible and (.is_swallowedby | not) and (.is_minimized | not) and .width > 0 and .height > 0) | "\(.x),\(.y) \(.width)x\(.height)"'
     elif command -v perl >/dev/null 2>&1; then
@@ -89,9 +116,14 @@ fi
 
 # Execute action: OCR text extraction or image save & copy
 if [ "$1" = "ocr" ]; then
-  grim -g "$GEOM" - | tesseract stdin stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'
+  TMP_IMG=$(mktemp /tmp/screenshot_ocr.XXXXXX.png)
+  grim -g "$GEOM" "$TMP_IMG"
+  restore_mango
+  tesseract "$TMP_IMG" stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'
+  rm -f "$TMP_IMG"
 else
   mkdir -p "$HOME/Pictures"
   FILENAME="$HOME/Pictures/Screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png"
   grim -g "$GEOM" - | tee "$FILENAME" | wl-copy -t image/png
+  restore_mango
 fi

@@ -53,7 +53,7 @@
       # ── Desktop Environment Features ───────────────────────────────────────
       features.hyprland.enable = true;
       features.mangowc.enable = true;
-      features.mangowc.local = true;
+      features.mangowc.local = false;
       features.niri.enable = false;
       features.quickshell.enable = true;
       features.vicinae.enable = true;
@@ -64,7 +64,6 @@
       features.tailscale.enable = true;
       features.podman-vm.enable = true;
       features.bluetooth.enable = true;
-      features.zen-browser.enable = false;
       features.helium.enable = true;
 
       system.stateVersion = "26.05";

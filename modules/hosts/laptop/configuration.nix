@@ -98,10 +98,8 @@
         };
       };
 
-      # Hardware tools & microcontrollers (OpenOCD, DFU utilities)
+      # Hardware tools & microcontrollers (OpenOCD)
       environment.systemPackages = with pkgs.unstable; [
-        dfu-util
-        gowall
         openocd
       ];
 
@@ -129,7 +127,6 @@
       features.tailscale.enable = true;
       features.podman-vm.enable = true;
       features.bluetooth.enable = true;
-      features.zen-browser.enable = false;
       features.helium.enable = false;
 
       system.stateVersion = "26.05";

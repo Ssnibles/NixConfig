@@ -22,7 +22,6 @@
 
       environment.systemPackages = with pkgs; [
         mangohud
-        protonup-ng
         dualsensectl
         via
         self.packages.${pkgs.stdenv.hostPlatform.system}.dualsense-pair

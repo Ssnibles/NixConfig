@@ -44,14 +44,17 @@
                 vo=gpu-next
                 gpu-api=vulkan
                 hwdec-codecs=all
+                # Zero-copy decode where supported (avoids an extra NV buffer copy)
+                vd-lavc-dr=yes
 
                 # YouTube AV1 adaptive streams ("Invalid OBU length",
                 # "Packet corrupt") fail to demux cleanly while streamed via
                 # ffmpeg http. Prefer the more robust VP9 stream for web video
-                # and buffer aggressively so fragments arrive whole.
+                # and buffer enough so fragments arrive whole (halved from the
+                # original 512MiB / 60s to reduce RAM footprint).
                 ytdl-format=bestvideo[vcodec^=vp9]+bestaudio/best
-                demuxer-readahead-secs=60
-                demuxer-max-bytes=512MiB
+                demuxer-readahead-secs=30
+                demuxer-max-bytes=256MiB
 
                 # Modernz (OSC) conflicts with watch-later restoring sub-pos;
                 # drop it from the saved options set (modernz manages sub margins itself).
@@ -66,6 +69,20 @@
                 j seek -10
                 k seek +10
                 l seek +5
+              '';
+            };
+
+            ".config/mpv/script-opts/thumbfast.conf" = {
+              text = ''
+                # Enable thumbnails for YouTube / remote streams (disabled by default)
+                network=yes
+                spawn_first=yes
+
+                # Use hardware decode in the thumbnailer process to cut CPU load
+                hwdec=yes
+
+                # Reap the background thumbnailer process when idle to free RAM/CPU
+                quit_after_inactivity=60
               '';
             };
 

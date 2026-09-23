@@ -28,7 +28,6 @@
         programs.niri.enable = true;
 
         environment.systemPackages = with pkgs; [
-          tesseract
           xwayland-satellite
           inputs.niri-float-sticky.packages.${pkgs.stdenv.hostPlatform.system}.niri-float-sticky
         ];

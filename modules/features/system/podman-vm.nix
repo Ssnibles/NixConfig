@@ -19,7 +19,7 @@
       options.features.podman-vm.enable = lib.mkOption {
         type = lib.types.bool;
         default = false;
-        description = "Enable the Podman container and virtualization stack with Distrobox and BoxBuddy.";
+        description = "Enable the Podman container and virtualization stack with Distrobox.";
       };
 
       config = lib.mkIf cfg.enable {
@@ -35,7 +35,6 @@
         environment.systemPackages = with pkgs; [
           podman-compose
           distrobox
-          boxbuddy
         ];
 
         # Disable auto-starting podman daemon and root system socket on boot

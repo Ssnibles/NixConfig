@@ -56,7 +56,6 @@
       };
 
       # ── System Journal & Power Management ─────────────────────────────────
-      features.ghostty.enable = false;
       features.foot.enable = false;
 
       services.journald.extraConfig = ''

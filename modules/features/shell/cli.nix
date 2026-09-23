@@ -35,13 +35,9 @@
           libsecret
           ripgrep
           usbutils
-          vim
           wget
-          caligula
           zip
           unzip
-          croc
-          mermaid-cli
         ];
 
         programs.git.enable = true;

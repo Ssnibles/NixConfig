@@ -10,8 +10,6 @@
     { pkgs, ... }:
     {
       environment.systemPackages = with pkgs; [
-        pulseaudio # Provides pactl CLI tool
-        wireplumber
         pavucontrol
       ];
 

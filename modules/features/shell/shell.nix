@@ -1,5 +1,5 @@
 # =============================================================================
-# Interactive Shell Environment (Fish, Zsh, Starship, Direnv)
+# Interactive Shell Environment (Fish, Starship, Direnv)
 # =============================================================================
 { ... }:
 {
@@ -20,25 +20,15 @@
         fishPlugins.fzf-fish
         fishPlugins.autopair
         fishPlugins.bass
-        fzf
-        fd
-        bat
-        chafa
       ];
 
       programs.zoxide = {
         enable = true;
-        enableZshIntegration = true;
         enableFishIntegration = true;
       };
 
       # ── Hjem Dotfiles for Shell Configuration ────────────────────────────
       hjem.users.${config.username}.files = {
-        ".zshrc" = {
-          text = ''
-            ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#${c.bgSubtle}"
-          '';
-        };
 
         ".config/fish/config.fish" = {
           clobber = true;
@@ -191,26 +181,6 @@
             end
           '';
         };
-      };
-
-      # ── Zsh Configuration ────────────────────────────────────────────────
-      programs.zsh = {
-        enable = true;
-        enableCompletion = true;
-        autosuggestions.enable = true;
-        syntaxHighlighting.enable = true;
-
-        ohMyZsh = {
-          enable = true;
-          plugins = [
-            "git"
-            "direnv"
-            "z"
-          ];
-          theme = "robbyrussell";
-        };
-
-        histSize = 10000;
       };
 
       environment.shellAliases = {

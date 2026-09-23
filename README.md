@@ -81,7 +81,7 @@ The configuration is organized into deferred module groups defined in [`modules/
 +---------------------------------------------------------------------------------+
 |                                   flake.nix                                     |
 |    inputs: nixpkgs (26.05), nixpkgs-unstable, flake-parts, import-tree,         |
-|            hjem, nvf, mangowc, millennium, zen-browser, devenv ...              |
+|            hjem, nvf, mangowc, millennium, devenv ...                          |
 +----------------------------------------+----------------------------------------+
                                          |
                                          | inputs.import-tree ./modules
@@ -163,7 +163,6 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 - **Fish Shell 4+**: Bleeding-edge Fish shell as the default login shell, featuring auto-pairing, Bass script runner, and custom shortcuts.
 - **Cached FZF File & Directory Navigation**: Custom Fish caching engine (`__fzf_cache_fd`) that caches `fd` traversal per directory for 5 minutes, making file and directory searches instantaneous even in large codebases.
 - **Starship Prompt**: Custom Starship configuration with runtime language indicators (Rust, Python, Node.js, Nix shell), Git status indicators, and clean transient execution (`>>`).
-- **Zsh Fallback**: Configured with Oh-My-Zsh plugins (`git`, `direnv`, `z`) and syntax highlighting.
 - **Advanced Tmux Multiplexer**:
   - Interactive FZF window switcher (`tmux-window-picker`) with live pane previews.
   - Smart pane path formatter (`tmux-path-formatter`) that truncates long paths.
@@ -190,7 +189,6 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 ### Browsers, Media & Gaming
 
 - **Firefox Developer Edition**: High-performance browser setup with FastFox optimizations, custom `userChrome.css` and `userContent.css`, Sidebery vertical tab bar integration, and an embedded offline startpage WebExtension.
-- **Zen Browser**: Configured with enterprise privacy policies (telemetry disabled, tracking protection enabled) and XDG MIME associations.
 - **Gaming Suite**: Steam with the Millennium skinning framework, Gamescope session integration, GameMode daemon, and MangoHud performance overlay.
 - **PlayStation 5 DualSense Controllers**: Full kernel driver support via `hid-playstation` and a custom Bluetooth pairing utility script (`dualsense-pair`).
 - **Media & Documents**: Spotify (themed and enhanced via Spicetify), Feh image viewer, and Zathura PDF reader configured with theme colors and SyncTeX Neovim reverse jumping (`nvr --remote-silent`).
@@ -261,7 +259,7 @@ NixConfig/
     │   │   ├── nvidia.nix             # Proprietary NVIDIA GPU drivers & Wayland flags
     │   │   ├── pipewire.nix           # Low-latency PipeWire & WirePlumber audio
     │   │   ├── plymouth.nix           # Catppuccin Mocha boot splash screen
-    │   │   ├── podman-vm.nix          # Podman, Distrobox, and Boxbuddy containers
+    │   │   ├── podman-vm.nix          # Podman and Distrobox container virtualization
     │   │   ├── startup.nix            # Clipboard persistence & session targets
     │   │   ├── user.nix               # User account definition & Hjem setup
     │   │   └── wallpapers.nix         # Declarative wallpaper symlinking via Hjem
@@ -283,7 +281,7 @@ NixConfig/
     │   │
     │   ├── apps/                      # User applications & development tools
     │   │   ├── communications.nix     # Vesktop / Discord client
-    │   │   ├── content-creation.nix   # Audacity, FFmpeg, FLAC, GIMP 3
+    │   │   ├── content-creation.nix   # FFmpeg and FLAC audio/video tools
     │   │   ├── development.nix        # Runtimes, Antigravity CLI, compilers, Android Studio
     │   │   ├── firefox/               # Firefox Developer Edition, CSS, Sidebery
     │   │   ├── gaming.nix             # Steam, Millennium, Gamescope, MangoHud
@@ -291,7 +289,6 @@ NixConfig/
     │   │   ├── neovim.nix             # NVF Neovim configuration & packages
     │   │   ├── spotify.nix            # Spotify music player configured with Spicetify
     │   │   ├── vivado.nix             # AMD Vivado Distrobox integration
-    │   │   └── zen/                   # Zen Browser with enterprise privacy policies & live CSS
     │   │
     │   └── nvim-src/                  # Modular Lua source tree for Neovim
     │       ├── init.lua               # Neovim entry point
@@ -500,7 +497,6 @@ Defined in [`modules/features/shell/shell.nix`](file:///home/josh/NixConfig/modu
 | `update`     | Alias        | `sudo nixos-rebuild switch --flake ~/NixConfig#<host> --upgrade` |
 | `clean`      | Alias        | `nh clean all` (Automated generation cleanup)                    |
 | `nixclean`   | Abbreviation | `sudo nix-collect-garbage --delete-older-than 30d`               |
-| `lg`         | Abbreviation | `lazygit` (Git TUI client)                                       |
 | `y`          | Abbreviation | `yazi` (Terminal file manager)                                   |
 | `nixconf`    | Function     | Jump to `~/NixConfig` directory and print Git branch status      |
 | `nixup`      | Function     | Pull upstream Git changes and rebuild using `nh os switch`       |

@@ -41,10 +41,6 @@
           "firefox-devedition.desktop"
           "firefox.desktop"
         ];
-        zen = [
-          "zen-twilight.desktop"
-          "zen.desktop"
-        ];
         helium = [ "helium.desktop" ];
       };
 
@@ -72,15 +68,12 @@
         browser = lib.mkOption {
           type = lib.types.enum [
             "firefox"
-            "zen"
             "helium"
             "none"
           ];
           default =
             if (config.features.helium.enable or false) && (config.features.helium.defaultBrowser or false) then
               "helium"
-            else if (config.features.zen-browser.enable or false) then
-              "zen"
             else if
               (config.features.firefox.enable or false) && (config.features.firefox.defaultBrowser or false)
             then

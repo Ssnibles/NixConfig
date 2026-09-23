@@ -37,11 +37,6 @@
         wallpaper-destinations = [ "Pictures/wallpaper" ];
         programs.hyprland.enable = true;
 
-        environment.systemPackages = with pkgs; [
-          hyprpaper
-          hyprshot
-        ];
-
         programs.seahorse.enable = true;
 
         environment.sessionVariables = {

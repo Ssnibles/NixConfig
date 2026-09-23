@@ -15,10 +15,7 @@
     }:
     let
       # Packages permitted despite upstream deprecation/security warnings
-      permittedInsecure = [
-        "pnpm-10.29.2"
-        "electron-40.10.5"
-      ];
+      permittedInsecure = [ ];
     in
     {
       imports = [
@@ -157,7 +154,6 @@
           brightnessctl
           playerctl
           grim
-          grimblast
           slurp
           tesseract
           jq

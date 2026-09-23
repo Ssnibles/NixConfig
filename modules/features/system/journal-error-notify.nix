@@ -31,7 +31,6 @@
     {
       environment.systemPackages = [
         checkBootJournalErrors
-        pkgs.libnotify
       ];
 
       systemd.user.services.check-boot-journal-errors = {
