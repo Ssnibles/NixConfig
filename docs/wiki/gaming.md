@@ -1,6 +1,6 @@
 # Gaming, Steam & DualSense Controllers Guide
 
-This document details the Linux gaming stack, Steam customization with Millennium, display compositing with Gamescope, performance monitoring with MangoHud, and PlayStation 5 controller support in NixConfig.
+This document details the Linux gaming stack, Steam customisation with Millennium, display compositing with Gamescope, performance monitoring with MangoHud, and PlayStation 5 controller support in NixConfig.
 
 ---
 
@@ -30,7 +30,7 @@ nixpkgs.overlays = [
 ```
 
 ### What Millennium Enables
-Millennium injects CSS and JavaScript customization directly into Steam's Chromium-based interface without breaking across client updates. This allows installing custom dark themes, minimal navigation bars, and custom library views.
+Millennium injects CSS and JavaScript customisation directly into Steam's Chromium-based interface without breaking across client updates. This allows installing custom dark themes, minimal navigation bars, and custom library views.
 
 ### Managing Compatibility Tools (Proton-GE)
 For titles requiring non-standard Proton builds, you can invoke `protonup` on-demand (also available via Pet snippets):
@@ -49,6 +49,7 @@ Gamescope isolates the game window inside its own lightweight Wayland compositor
 - **Resolution Upscaling**: Run games at 1080p and upscale to 1440p using AMD FidelityFX Super Resolution (FSR).
 - **Aspect Ratio Emulation**: Lock ultrawide or non-standard resolutions with clean black letterboxing.
 - **Input Isolation**: Prevents cursor escape or multi-monitor focus loss in fullscreen games.
+- **Colour Adjustments**: Apply custom colour saturation and gamma curves.
 
 ### Steam Launch Options Example
 
@@ -66,10 +67,10 @@ gamemoderun mangohud gamescope -W 1920 -H 1080 -r 144 -- %command%
 
 ## MangoHud Performance Overlay
 
-MangoHud provides a clean, customizable heads-up display tracking system metrics:
+MangoHud provides a clean, customisable heads-up display tracking system metrics:
 - Real-time FPS and frame time graph
 - GPU clock speeds, temperature, VRAM usage
-- CPU utilization per core and temperature
+- CPU utilisation per core and temperature
 - Battery discharge rate (on laptop)
 
 Launch any game or Vulkan application with MangoHud:

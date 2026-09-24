@@ -58,7 +58,7 @@ esp-compile
 
 ### 5. Generate LSP Compilation Database for Neovim / Clangd
 
-Generate `compile_commands.json` in your workspace root so Neovim LSP immediately recognizes ESP32 Arduino libraries, includes, and pins:
+Generate `compile_commands.json` in your workspace root so Neovim LSP immediately recognises ESP32 Arduino libraries, includes, and pins:
 
 ```bash
 esp-gen-lsp

@@ -30,7 +30,7 @@ modules/features/nvim-src/
     ├── autocmds.lua                    # Auto-commands (highlight on yank, cursor recall)
     ├── keymaps.lua                     # Global keybindings (<leader> = Space)
     ├── smart_enter.lua                 # Context-aware Enter key handling
-    ├── theme.lua                       # Dynamic color overrides matching system palette
+    ├── theme.lua                       # Dynamic colour overrides matching system palette
     │
     ├── lsp/
     │   ├── init.lua                    # LSP client configuration & diagnostic handlers
@@ -54,7 +54,7 @@ modules/features/nvim-src/
 
 ---
 
-## Specialized Language Server Wrappers
+## Specialised Language Server Wrappers
 
 Standard language servers often struggle with Nix store paths, Wayland system headers, or custom Qt modules. NixConfig wraps these language servers in `modules/features/apps/neovim.nix`:
 
@@ -80,7 +80,7 @@ Defined in `lua/plugins/lang.lua`. When opening a C project without a CMake comp
 This inspects the active development shell environment (`CPATH`, `NIX_CFLAGS_COMPILE`, and `pkg-config`), constructs a project-local `compile_flags.txt`, and reloads Clangd.
 
 ### 2. Oil File Manager & Clipboard Image Pasting
-- **`<leader>e`**: Opens Oil in a floating modal centered on the screen.
+- **`<leader>e`**: Opens Oil in a floating modal centred on the screen.
 - **`<leader>p`** or **`:OilPasteImage`**: Automatically reads image data from the Wayland clipboard (`wl-paste -t image/png`) and prompts for a filename to save the image directly into the active Oil directory.
 
 ### 3. Jujutsu VCS Integration (`<leader>gg`)

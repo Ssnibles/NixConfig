@@ -6,7 +6,7 @@ This document details the [Quickshell](https://quickshell.outfoxxed.me/) QML des
 
 ## Architecture Overview
 
-Quickshell powers the horizontal top status bar (`bar.qml`), the vertical Niri status bar (`niri-bar.qml`), the **Command Center** quick-settings dashboard, the Wayland **Lock Screen**, the desktop **Notification daemon and overlay**, and shared UI primitives.
+Quickshell powers the horizontal top status bar (`bar.qml`), the vertical Niri status bar (`niri-bar.qml`), the **Command Centre** quick-settings dashboard, the Wayland **Lock Screen**, the desktop **Notification daemon and overlay**, and shared UI primitives.
 
 All QML source files live in `modules/features/desktop-env/quickshell/config/` and are symlinked directly to `~/.config/quickshell/` by NixOS activation scripts:
 
@@ -16,7 +16,7 @@ modules/features/desktop-env/quickshell/
 └── config/                       # Live QML source code (symlinked to ~/.config/quickshell/)
     ├── shell.qml                 # Root application entry point (Scope)
     ├── Config.qml                # Singleton storing UI layout dimensions & fonts
-    ├── Colors.qml                # Nix-generated theme color tokens
+    ├── Colors.qml                # Nix-generated theme colour tokens
     ├── Utils.js                  # Shared JavaScript helper functions
     │
     ├── bar.qml                   # Top horizontal bar (MangoWC, Hyprland)
@@ -56,12 +56,12 @@ modules/features/desktop-env/quickshell/
 Holds global layout dimensions, fonts, timings, and component parameters:
 - **Fonts**: `monoFont` ("JetBrainsMono Nerd Font"), `sansFont` ("SF Pro Text"), `serifFont` ("Instrument Serif").
 - **Bar Dimensions**: `barWidth` (42px vertical bar), `barHeight` (34px top bar).
-- **Command Center**: `commandCenterWidth` (500px), `commandCenterRadius` (16px).
+- **Command Centre**: `commandCenterWidth` (500px), `commandCenterRadius` (16px).
 
-### `Colors.qml` (Nix-Generated Color Tokens)
+### `Colors.qml` (Nix-Generated Colour Tokens)
 Generated automatically by Nix based on `config.theme.colors`:
-- **Surface Colors**: `Colors.bg`, `Colors.bgRaised`, `Colors.bgSubtle`, `Colors.border`
-- **Text Colors**: `Colors.fg`, `Colors.fgMid`, `Colors.fgDim`
+- **Surface Colours**: `Colors.bg`, `Colors.bgRaised`, `Colors.bgSubtle`, `Colors.border`
+- **Text Colours**: `Colors.fg`, `Colors.fgMid`, `Colors.fgDim`
 - **Accents**: `Colors.accent`, `Colors.teal`, `Colors.purple`, `Colors.green`, `Colors.yellow`, `Colors.red`, `Colors.orange`
 
 ---
@@ -74,20 +74,20 @@ Quickshell does not hardcode compositor dependencies into individual UI widgets.
 - In Niri, it parses the JSON stream from `NiriService.qml` (`niri msg --json event-stream`).
 - In River, it hooks into `RiverService.qml`.
 
-This enables swapping between Wayland compositors while keeping the exact same status bar, notification center, lock screen, and styling.
+This enables swapping between Wayland compositors while keeping the exact same status bar, notification centre, lock screen, and styling.
 
 ---
 
-## Command Center & Lock Screen
+## Command Centre & Lock Screen
 
-### Command Center Dashboard
-- Toggled via **`SUPER + d`** or clicking the Command Center button in the bar.
+### Command Centre Dashboard
+- Toggled via **`SUPER + d`** or clicking the Command Centre button in the bar.
 - Provides quick toggles for Wi-Fi, Bluetooth, Audio sinks, Display brightness, and media playback.
 - Displays volume sliders, battery health telemetry, and system resource monitors.
 
 ### Session Lock Screen (`LockScreen.qml`)
 - Toggled via **`SUPER + Alt + L`** or `quickshell ipc call lockscreen lock`.
-- Utilizes the Wayland `ext-session-lock-v1` protocol, guaranteeing that no windows or notifications leak while locked.
+- Utilises the Wayland `ext-session-lock-v1` protocol, guaranteeing that no windows or notifications leak while locked.
 - Authenticates directly against system PAM for password validation.
 
 ---
@@ -106,7 +106,7 @@ Quickshell includes a built-in Freedesktop notification daemon replacement:
 You can trigger Quickshell overlays programmatically or via keybindings using `quickshell ipc`:
 
 ```bash
-# Toggle Command Center overlay
+# Toggle Command Centre overlay
 quickshell ipc call command-center toggle
 
 # Lock screen immediately

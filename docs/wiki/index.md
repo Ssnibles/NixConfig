@@ -10,13 +10,13 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 - **[Wayland Compositors Guide](compositors.md)**  
   Architecture and configuration for MangoWC (DWM-style tiling, gestures, OCR screenshots), Niri (infinite scrollable tiling), Hyprland (Lua configuration), Shikane multi-monitor display daemon, and Vicinae application launcher.
 - **[Quickshell Desktop Shell Bar](quickshell.md)**  
-  Modular QML desktop shell architecture: singletons (`Colors.qml`, `Config.qml`), status bars (`bar.qml`, `niri-bar.qml`), multi-compositor routing (`WmService.qml`), Command Center dashboard, session lock screen, and notification daemon.
+  Modular QML desktop shell architecture: singletons (`Colors.qml`, `Config.qml`), status bars (`bar.qml`, `niri-bar.qml`), multi-compositor routing (`WmService.qml`), Command Centre dashboard, session lock screen, and notification daemon.
 - **[Terminal Workflow: Kitty, Tmux, Yazi & Pet](terminal-workflow.md)**  
-  Terminal stack optimizations: Kitty in single-instance shared GPU memory mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Pet fuzzy snippet picker (`Ctrl+P`), and Fish shell with cached FZF directory indexing.
+  Terminal stack optimisations: Kitty in single-instance shared GPU memory mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Pet fuzzy snippet picker (`Ctrl+P`), and Fish shell with cached FZF directory indexing.
 
 ### Developer Toolchains & Editors
 - **[Declarative Neovim & Lua Plugins](neovim.md)**  
-  Declarative Neovim built with `nvf` and customized via modular Lua plugins in `modules/features/nvim-src/`. Covers language servers (`qmlls` and `zls` wrappers), Blink.cmp, Conform formatters, Gitsigns, Oil image pasting, and floating `jjui` integration.
+  Declarative Neovim built with `nvf` and customised via modular Lua plugins in `modules/features/nvim-src/`. Covers language servers (`qmlls` and `zls` wrappers), Blink.cmp, Conform formatters, Gitsigns, Oil image pasting, and floating `jjui` integration.
 - **[Jujutsu (jj) Cheat Sheet](jujutsu.md)**  
   Complete reference for the Git-compatible Jujutsu VCS: Git vs jj mental models, daily workflows, bookmarks, remote push/pull flows, history rewriting, conflict resolution, and shell aliases.
 
@@ -28,19 +28,19 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 - **[ESP32 & Arduino Development](esp32-arduino.md)**  
   Toolchain and workflow for programming Espressif ESP32 microcontrollers using `arduino-cli`, `esptool`, workflow scripts (`esp-init`, `esp-compile`, `esp-upload`, `esp-monitor`), and automatic Neovim / Clangd LSP compilation database generation (`esp-gen-lsp`).
 - **[AMD Vivado FPGA Container Environment](vivado-fpga.md)**  
-  Containerized workflow for running AMD Vivado Design Suite inside an isolated Ubuntu 22.04 Distrobox container with full Wayland/X11 GUI passthrough and JTAG USB programming permissions.
+  Containerised workflow for running AMD Vivado Design Suite inside an isolated Ubuntu 22.04 Distrobox container with full Wayland/X11 GUI passthrough and JTAG USB programming permissions.
 
 ### Media, Audio & Applications
 - **[Media, Document Viewer & Audio Stack](media-audio.md)**  
   High-performance media tools: MPV video player with Vulkan `gpu-next` pipeline and custom scripts (`modernz`, `thumbfast`), Zathura PDF reader with theme-aware dark mode and SyncTeX Neovim jumping, PipeWire low-latency audio, and `ytplay`.
-- **[Firefox & Sidebery Customization](firefox.md)**  
-  Guide for customizing Firefox Developer Edition native UI (`userChrome.css`), Sidebery vertical tab bar (`userContent.css`), offline startpage WebExtension, and Helium browser alternative.
+- **[Firefox & Sidebery Customisation](firefox.md)**  
+  Guide for customising Firefox Developer Edition native UI (`userChrome.css`), Sidebery vertical tab bar (`userContent.css`), offline startpage WebExtension, and Helium browser alternative.
 - **[Gaming, Steam & DualSense Controllers](gaming.md)**  
   Gaming configuration on NixOS: Steam with Millennium UI skinning overlay, Gamescope sandboxed micro-compositor sessions, MangoHud performance overlay, and PlayStation 5 DualSense controller pairing via `dualsense-pair`.
 
-### Networking & Synchronization
-- **[Networking, Tailscale & Syncthing Synchronization](networking-sync.md)**  
-  Encrypted mesh networking with Tailscale, battery-optimized peer-to-peer folder synchronization with Syncthing, systemd-resolved DNS-over-TLS, and iwd wireless configuration with Opportunistic Wireless Encryption.
+### Networking & Synchronisation
+- **[Networking, Tailscale & Syncthing Synchronisation](networking-sync.md)**  
+  Encrypted mesh networking with Tailscale, battery-optimised peer-to-peer folder synchronisation with Syncthing, systemd-resolved DNS-over-TLS, and iwd wireless configuration with Opportunistic Wireless Encryption.
 
 ---
 

@@ -38,7 +38,7 @@ features.pi-agent = {
   gitCheckpoint = true;     # Automatic Git stash checkpoints per turn for rollback
   protectedPaths = true;    # Blocks writes to sensitive paths (.env, .git/, node_modules/)
   permissionGate = false;   # Prompts for confirmation before destructive shell commands
-  subagent = false;         # Delegates tasks to specialized subagents with isolated context
+  subagent = false;         # Delegates tasks to specialised subagents with isolated context
 
   # Custom extensions, skills, and rules
   extensions = [ ];         # Paths or TypeScript files passed via --extension
@@ -93,14 +93,31 @@ Running local large language models (LLMs) on a laptop rapidly drains battery an
 3. **Dedicated Model**: Configured for `qwen2.5:7b` (Qwen 2.5 Coder 7B) with an expanded context window of 65,536 tokens (`ollama_num_ctx: 65536`).
 4. **Zero Local Daemon Overhead**: `services.ollama.enable = false` ensures no local GPU or CPU inference daemons idle in the background.
 
-```
-+------------------------------------+          +------------------------------------+
-|  Workstation / Laptop              |          |  Homeserver                        |
-|  - CLI: hermes / hermes-agent      |          |  - Ollama Daemon (Port 11434)      |
-|  - ~/.hermes/config.yaml           |  ======> |  - Model: qwen2.5:7b               |
-|  - Session: OPENAI_BASE_URL        | Tailscale|  - Context: 65,536 tokens          |
-|  - Zero local inference overhead   |          |  - High-RAM / Dedicated Compute    |
-+------------------------------------+          +------------------------------------+
+```mermaid
+flowchart LR
+    subgraph Client["Workstation / Laptop (Client)"]
+        direction TB
+        CLI["CLI: hermes / hermes-agent"]
+        Config["~/.hermes/config.yaml"]
+        Env["OPENAI_BASE_URL & OLLAMA_HOST"]
+        Battery["Zero Local Inference Overhead<br/>Preserves Battery & CPU/GPU"]
+        CLI --- Config --- Env --- Battery
+    end
+
+    subgraph Network["Encrypted WireGuard Mesh"]
+        Tailnet["Tailscale Mesh VPN<br/>(100.124.73.101:11434)"]
+    end
+
+    subgraph Server["Homeserver (Remote Inference Host)"]
+        direction TB
+        Ollama["Ollama Service Daemon (Port 11434)"]
+        Model["Model: qwen2.5:7b (Qwen 2.5 Coder)"]
+        Context["Context Window: 65,536 tokens"]
+        Compute["High-RAM / Dedicated Compute"]
+        Ollama --- Model --- Context --- Compute
+    end
+
+    Client == "Encrypted API Requests" ==> Tailnet == "Forwarded to Daemon" ==> Server
 ```
 
 ### Declarative Config Generation

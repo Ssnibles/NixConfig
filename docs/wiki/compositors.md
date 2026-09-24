@@ -32,7 +32,7 @@ MangoWC is a lightweight, DWM-inspired Wayland compositor built on wlroots. It i
 #### Application Launching & Shell Controls
 - **`SUPER + Return`**: Launch Kitty terminal in shared single-instance mode (`kitty --single-instance`)
 - **`SUPER + Space`**: Toggle Vicinae application launcher (`vicinae toggle`)
-- **`SUPER + d`**: Toggle Quickshell Command Center dashboard
+- **`SUPER + d`**: Toggle Quickshell Command Centre dashboard
 - **`SUPER + Alt + L`**: Lock screen via Quickshell lockscreen
 - **`SUPER + e`**: Open Yazi file manager in Kitty
 - **`SUPER + g`**: Toggle Quickshell top status bar
@@ -63,8 +63,8 @@ MangoWC is a lightweight, DWM-inspired Wayland compositor built on wlroots. It i
 - **`SUPER + w`**: Toggle special scratchpad tag
 - **`SUPER + Shift + w`**: Move window to special scratchpad tag
 - **`SUPER + Ctrl + w`**: Move window to special tag silently
-- **`SUPER + i`**: Minimize window to scratchpad
-- **`SUPER + Shift + i`**: Restore minimized window
+- **`SUPER + i`**: Minimise window to scratchpad
+- **`SUPER + Shift + i`**: Restore minimised window
 - **`Alt + z`**: Toggle floating scratchpad
 
 #### Trackpad Gestures
@@ -78,7 +78,7 @@ Triggered via keybindings:
 - **`SUPER + s`**: Interactive area screenshot
 - **`SUPER + Shift + s`**: Interactive area screenshot with instant OCR text recognition
 
-The custom script (`modules/features/desktop-env/mangowc/screenshot.sh`) includes several advanced behaviors:
+The custom script (`modules/features/desktop-env/mangowc/screenshot.sh`) includes several advanced behaviours:
 1. **Zero-Border Capture**: Queries MangoWC options via `mmsg`, temporarily sets `borderpx` and `border_radius` to 0, and restores them immediately upon completion.
 2. **Window Snapping**: Queries visible client geometry via `mmsg get all-clients` and passes coordinates to `slurp` for one-click window boundary selection.
 3. **Cursor Warping**: Uses `wlrctl pointer move` to temporarily warp the mouse pointer off-screen, preventing software cursor artifacts from appearing in screenshots.
@@ -110,7 +110,7 @@ Hyprland (`modules/features/desktop-env/hyprland/`) is configured primarily on t
 ### Architecture
 
 - **`hyprland.lua`**: The compositor configuration is defined in Lua, leveraging modular tables for input, general layout, decorations, animations, and window rules.
-- **Dynamic Theming**: Color variables from `config.theme.colors` are passed directly into Hyprland's border and gradient options.
+- **Dynamic Theming**: Colour variables from `config.theme.colors` are passed directly into Hyprland's border and gradient options.
 - **Display Server**: Runs with full DRM kernel modesetting and Wayland flags configured for NVIDIA GPUs (`nvidia.nix`).
 
 ---
@@ -140,5 +140,5 @@ Application launching is handled by **Vicinae** (`modules/features/desktop-env/v
 
 - **Daemon Architecture**: Runs as a background systemd user service (`vicinae-server.service`) on `wayland-session.target`.
 - **Instant Launch**: Pressing **`SUPER + Space`** executes `vicinae toggle`, instantly raising the layer-shell overlay without process startup latency.
-- **Theme Matching**: The launcher theme (`~/.local/share/vicinae/themes/nixconfig.toml`) is generated declaratively with background, border, and accent colors from the active theme.
+- **Theme Matching**: The launcher theme (`~/.local/share/vicinae/themes/nixconfig.toml`) is generated declaratively with background, border, and accent colours from the active theme.
 - **Clipboard History Extension**: A custom script (`vicinae-clipboard-history`) wraps `cliphist` to allow fuzzy searching through clipboard history directly from the launcher.

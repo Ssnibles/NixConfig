@@ -6,12 +6,12 @@ This guide details the media playback engine (MPV), document viewer (Zathura), i
 
 ## Overview
 
-The media stack is optimized for hardware acceleration, low latency, and aesthetic unity with the system color palette:
+The media stack is optimised for hardware acceleration, low latency, and aesthetic unity with the system colour palette:
 
 | Application / Layer | Technology | Key Capabilities | Configuration Location |
 | :--- | :--- | :--- | :--- |
 | **Video Player** | **MPV** | Vulkan `gpu-next` pipeline, hardware decode, themed Modernz OSC, Thumbfast | `modules/features/apps/media.nix` |
-| **PDF & Documents** | **Zathura** | Dynamic dark mode recoloring, Neovim SyncTeX reverse search | `modules/features/apps/media.nix` |
+| **PDF & Documents** | **Zathura** | Dynamic dark mode recolouring, Neovim SyncTeX reverse search | `modules/features/apps/media.nix` |
 | **Image Viewer** | **imv** | Fast Wayland image viewer with shrink scaling | `modules/features/apps/media.nix` |
 | **Audio Server** | **PipeWire** | Low-latency audio with WirePlumber, ALSA, PulseAudio, and JACK support | `modules/features/system/pipewire.nix` |
 | **Streaming CLI** | **ytplay** | Terminal command for direct YouTube playback in MPV | `modules/features/system/base.nix` |
@@ -30,9 +30,9 @@ Configured in `~/.config/mpv/mpv.conf`:
 - **Hardware Decoding**: `hwdec=auto-safe` with `hwdec-codecs=all` offloading decoding to GPU hardware (NVIDIA NVDEC on desktop, AMD VCN on laptop).
 - **Direct Rendering**: `vd-lavc-dr=yes` enables zero-copy video decode, avoiding extra memory copies between GPU and system RAM.
 
-### Web Video & YouTube Streaming Optimization
+### Web Video & YouTube Streaming Optimisation
 
-YouTube adaptive AV1 streams frequently cause packet demuxing errors over FFmpeg HTTP streams. NixConfig optimizes web streaming:
+YouTube adaptive AV1 streams frequently cause packet demuxing errors over FFmpeg HTTP streams. NixConfig optimises web streaming:
 - **VP9 Stream Preference**: `ytdl-format=bestvideo[vcodec^=vp9]+bestaudio/best` selects robust VP9 streams over brittle AV1 streams.
 - **Buffer Management**: `demuxer-readahead-secs=30` and `demuxer-max-bytes=256MiB` ensure video fragments arrive whole while preventing runaway memory consumption.
 
@@ -46,7 +46,7 @@ Seeking controls follow standard Vim home-row navigation:
 
 ### Bundled Scripts & Theming
 
-- **Modernz OSC (`modernz.conf`)**: Replaces the default on-screen controller with a clean, modern interface. Nix injects the active system color palette (`bgRaised`, `accent`, `red`, `yellow`, `green`) into the seekbars, volume sliders, and hover effects. Window controls are disabled to match tiling compositor aesthetics.
+- **Modernz OSC (`modernz.conf`)**: Replaces the default on-screen controller with a clean, modern interface. Nix injects the active system colour palette (`bgRaised`, `accent`, `red`, `yellow`, `green`) into the seekbars, volume sliders, and hover effects. Window controls are disabled to match tiling compositor aesthetics.
 - **Thumbfast (`thumbfast.conf`)**: Generates instant thumbnail previews while hovering over the seekbar. Configured with hardware decoding (`hwdec=yes`), remote network stream support (`network=yes`), and an automatic idle timeout (60 seconds) that reaps the background process to free system memory.
 - **Autoload**: Automatically loads all adjacent media files in the active directory into the playlist.
 - **MPRIS**: Exposes playback state and track metadata to Quickshell status widgets and media control keys (`playerctl`).
@@ -60,15 +60,15 @@ Seeking controls follow standard Vim home-row navigation:
 
 Zathura provides keyboard-driven document reading configured in `modules/features/apps/media.nix`.
 
-### Dynamic Theme Recoloring
+### Dynamic Theme Recolouring
 
-Zathura automatically adapts to your system color palette:
-- **`recolor true`** and **`recolor-keephue true`**: Inverts document pages into an eye-friendly dark mode while preserving syntax highlighting and image color fidelity.
-- Background and foreground colors are populated dynamically from `config.theme.colors` (`default-bg`, `default-fg`, `statusbar-bg`, `statusbar-fg`).
+Zathura automatically adapts to your system colour palette:
+- **`recolor true`** and **`recolor-keephue true`**: Inverts document pages into an eye-friendly dark mode while preserving syntax highlighting and image colour fidelity.
+- Background and foreground colours are populated dynamically from `config.theme.colors` (`default-bg`, `default-fg`, `statusbar-bg`, `statusbar-fg`).
 
 ### Neovim Inverse Search via SyncTeX
 
-For academic writing, Typst, and LaTeX documents, Zathura is configured for two-way synchronization:
+For academic writing, Typst, and LaTeX documents, Zathura is configured for two-way synchronisation:
 ```ini
 set synctex-editor-command "nvr --remote-silent +%{line} %{input}"
 ```

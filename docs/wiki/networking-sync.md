@@ -1,12 +1,12 @@
-# Networking, Tailscale & Syncthing Synchronization
+# Networking, Tailscale & Syncthing Synchronisation
 
-This guide documents the networking stack, Tailscale mesh VPN, Syncthing peer-to-peer file synchronization, and encrypted DNS configurations in NixConfig.
+This guide documents the networking stack, Tailscale mesh VPN, Syncthing peer-to-peer file synchronisation, and encrypted DNS configurations in NixConfig.
 
 ---
 
 ## Overview
 
-The network architecture is designed for secure inter-device connectivity, private AI model communication, and background synchronization that preserves laptop battery life:
+The network architecture is designed for secure inter-device connectivity, private AI model communication, and background synchronisation that preserves laptop battery life:
 
 | Subsystem | Technology | Purpose | Configuration Module |
 | :--- | :--- | :--- | :--- |
@@ -57,28 +57,28 @@ tailscale ping homeserver
 
 ---
 
-## Syncthing Peer-to-Peer File Synchronization
+## Syncthing Peer-to-Peer File Synchronisation
 
-Syncthing is configured in `modules/features/system/syncthing.nix` to synchronize essential directories between workstations, laptops, and the central homeserver without third-party cloud reliance.
+Syncthing is configured in `modules/features/system/syncthing.nix` to synchronise essential directories between workstations, laptops, and the central homeserver without third-party cloud reliance.
 
-### Synchronized Folders
+### Synchronised Folders
 
 | Folder Label | Path | Sync ID | Target Device |
 | :--- | :--- | :--- | :--- |
 | **Documents** | `~/Documents` | `pfqwn-dke5x` | `homeserver` |
 | **Hermes** | `~/Hermes` | `tuyqy-adrau` | `homeserver` |
 
-### Battery & Mobile Optimizations
+### Battery & Mobile Optimisations
 
 Standard Syncthing defaults maintain continuous internet relay connections and global discovery broadcasts, which consume background CPU cycles and drain laptop battery. NixConfig applies aggressive power-saving constraints:
 
 - **Global Discovery Disabled** (`globalAnnounceEnabled = false`): Stops sending broadcast packets to public internet discovery servers.
 - **Relays Disabled** (`relaysEnabled = false`): Prevents routing traffic through high-latency public relay nodes.
 - **NAT Traversal Disabled** (`natEnabled = false`): Avoids UPnP port mapping overhead.
-- **Local Wi-Fi Discovery** (`localAnnounceEnabled = true`): Retains direct, high-speed synchronization whenever devices share a local network.
+- **Local Wi-Fi Discovery** (`localAnnounceEnabled = true`): Retains direct, high-speed synchronisation whenever devices share a local network.
 - **Anonymous Metrics Disabled** (`urAccepted = -1`): Eliminates background telemetry pings.
 
-### Boot Latency Optimization
+### Boot Latency Optimisation
 
 By default, the upstream NixOS Syncthing service is ordered into `multi-user.target`, which can introduce a 1.5 to 2.0 second blocking delay during early system boot.
 
@@ -87,7 +87,7 @@ NixConfig overrides service ordering:
 systemd.services.syncthing.wantedBy = lib.mkForce [ "graphical.target" ];
 systemd.services.syncthing-init.wantedBy = lib.mkForce [ "graphical.target" ];
 ```
-This defers Syncthing startup until after the graphical environment has initialized, ensuring instantaneous boot to desktop.
+This defers Syncthing startup until after the graphical environment has initialised, ensuring instantaneous boot to desktop.
 
 ### Web GUI Access
 

@@ -21,7 +21,7 @@ The terminal environment is engineered for low latency, memory efficiency, and f
 
 ## Kitty Terminal Emulator
 
-Kitty is the default terminal emulator across all hosts, configured with optimizations for memory conservation and Wayland integration.
+Kitty is the default terminal emulator across all hosts, configured with optimisations for memory conservation and Wayland integration.
 
 ### Single-Instance Server Mode
 
@@ -40,7 +40,7 @@ By default, opening multiple terminal windows typically spawns separate processe
 ### Styling & Typography
 
 - **Font**: Maple Mono (`Maple Mono NR NF`) at 12pt, with block cursor and 10px horizontal/vertical padding.
-- **Palette Tokens**: All 16 ANSI colors and window backgrounds (`bg`, `fg`, `accent`, `border`, `selection`) are generated dynamically from the active theme palette (`config.theme.colors`).
+- **Palette Tokens**: All 16 ANSI colours and window backgrounds (`bg`, `fg`, `accent`, `border`, `selection`) are generated dynamically from the active theme palette (`config.theme.colors`).
 
 ---
 
@@ -115,10 +115,10 @@ prepend_rules = [
 ]
 ```
 
-### Keybindings & Behavior
+### Keybindings & Behaviour
 
 - **`.`**: Toggle hidden files and directories.
-- **`T`**: Maximize or restore the preview pane (`plugin toggle-pane --args=max-preview`).
+- **`T`**: Maximise or restore the preview pane (`plugin toggle-pane --args=max-preview`).
 - **`e`**: Open the current directory inside Neovim (`shell 'nvim .' --block`).
 - **`y`**: Fish shell abbreviation expanding to `yazi`.
 - **SUPER + e**: Compositor keybinding launching `kitty --single-instance -e yazi`.
@@ -135,7 +135,7 @@ Pressing `Ctrl + P` in any interactive Fish session opens `pet search` inside FZ
 
 ### Pre-Configured Snippet Library (`~/.config/pet/snippet.toml`)
 
-Includes dozens of tested snippets categorized by tags:
+Includes dozens of tested snippets categorised by tags:
 - **NixOS Rebuilds & Flakes**:
   - `nh os switch` - Fast system switch
   - `cd ~/NixConfig && nix flake lock --update-input <input>` - Update single input

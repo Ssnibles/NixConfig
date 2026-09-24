@@ -37,7 +37,7 @@ User environments and dotfiles are managed declaratively using **[hjem](https://
 - [System Architecture](#system-architecture)
 - [Key Features](#key-features)
   - [Core System, Boot & Security](#core-system-boot--security)
-  - [Networking, Mesh VPN & File Synchronization](#networking-mesh-vpn--file-synchronization)
+  - [Networking, Mesh VPN & File Synchronisation](#networking-mesh-vpn--file-synchronisation)
   - [Wayland Desktop & Compositors](#wayland-desktop--compositors)
   - [Quickshell Desktop Shell](#quickshell-desktop-shell)
   - [Terminal, Shell & Multiplexer](#terminal-shell--multiplexer)
@@ -59,8 +59,9 @@ User environments and dotfiles are managed declaratively using **[hjem](https://
   - [Conventional Commit Builder (`build.sh`)](#conventional-commit-builder-buildsh)
   - [Fast Rebuild Helper (`rebuild.sh`)](#fast-rebuild-helper-rebuildsh)
   - [Fish Abbreviations & Functions](#fish-abbreviations--functions)
+  - [Architecture Diagram Generator (`update_diagram.sh`)](#architecture-diagram-generator-updatediagramsh)
 - [Themes & Wallpaper Management](#themes--wallpaper-management)
-  - [Color Palettes](#color-palettes)
+  - [Colour Palettes](#colour-palettes)
   - [Typography](#typography)
   - [Wallpapers](#wallpapers)
 - [Custom Flake Packages](#custom-flake-packages)
@@ -76,55 +77,59 @@ User environments and dotfiles are managed declaratively using **[hjem](https://
 
 ## System Architecture
 
-The configuration is organized into deferred module groups defined in [`modules/core/module-groups.nix`](file:///home/josh/NixConfig/modules/core/module-groups.nix):
+The configuration is organised into deferred module groups defined in [`modules/core/module-groups.nix`](file:///home/josh/NixConfig/modules/core/module-groups.nix):
 
-- **`config.nixos.modules.shared`**: Common base configuration, kernel optimizations, systemd services, shell environment, and desktop applications applied to all hosts.
+- **`config.nixos.modules.shared`**: Common base configuration, kernel optimisations, systemd services, shell environment, and desktop applications applied to all hosts.
 - **`config.nixos.modules.desktop`**: Workstation-specific hardware configuration (NVIDIA proprietary drivers, ASUS WMI rfkill unblocking, gaming stack, and workstation compositors).
-- **`config.nixos.modules.laptop`**: Laptop-specific hardware configuration (AMD graphics, TLP battery optimization profiles, ELAN ACPI touchpad fixes, and ath11k Wi-Fi modules).
+- **`config.nixos.modules.laptop`**: Laptop-specific hardware configuration (AMD graphics, TLP battery optimisation profiles, ELAN ACPI touchpad fixes, and ath11k Wi-Fi modules).
 
+<!-- DIAGRAM:START -->
+```mermaid
+flowchart TD
+    subgraph Flake["flake.nix (Flake-Parts Entry Point)"]
+        Inputs["Inputs: nixpkgs (26.05), unstable, flake-parts, import-tree, hjem, nvf, mangowc, pi-agent..."]
+    end
+
+    Tree["inputs.import-tree ./modules<br/>(Filesystem Auto-Discovery)"]
+    Flake --> Tree
+
+    subgraph Modules["Dendritic Modules Structure"]
+        Core["modules/core/<br/>module-groups, options, parts, devshell, templates"]
+        Features["modules/features/<br/>apps, desktop-env, nvim-src, shell, system"]
+        Packages["modules/packages/<br/>boilerplate, dualsense-pair, foot, html-server, instrument-serif, maple-mono, pet, plsfail, sf-pro, tuxedo"]
+    end
+
+    Tree --> Core
+    Tree --> Features
+    Tree --> Packages
+
+    subgraph Composition["Deferred Module Groups"]
+        Shared["nixos.modules.shared<br/>(Base OS, Shell, Audio, Networking, Maintenance)"]
+        DesktopGroup["nixos.modules.desktop<br/>(NVIDIA, Workstation Daemons, Hyprland, MangoWC)"]
+        LaptopGroup["nixos.modules.laptop<br/>(AMD Radeon, TLP Battery Profiles, MangoWC)"]
+    end
+
+    Core --> Composition
+    Features --> Composition
+    Packages --> Composition
+
+    subgraph Hosts["Target Machine Configurations"]
+        DesktopHost["nixosConfigurations.desktop<br/>Workstation & Gaming Host"]
+        LaptopHost["nixosConfigurations.laptop<br/>Ultraportable Productivity Host"]
+    end
+
+    Shared --> DesktopHost
+    DesktopGroup --> DesktopHost
+    Shared --> LaptopHost
+    LaptopGroup --> LaptopHost
+
+    click Core href "modules/core" "Open core modules"
+    click Features href "modules/features" "Open features modules"
+    click Packages href "modules/packages" "Open custom packages"
+    click DesktopHost href "modules/hosts/desktop" "Open desktop host configuration"
+    click LaptopHost href "modules/hosts/laptop" "Open laptop host configuration"
 ```
-+---------------------------------------------------------------------------------+
-|                                   flake.nix                                     |
-|    inputs: nixpkgs (26.05), nixpkgs-unstable, flake-parts, import-tree,         |
-|            hjem, nvf, mangowc, millennium, pi-agent, helium, devenv ...         |
-+----------------------------------------+----------------------------------------+
-                                         |
-                                         | inputs.import-tree ./modules
-                                         v
-                         +-------------------------------+
-                         |     modules/ (Auto-Discovery) |
-                         +---------------+---------------+
-                                         |
-         +-------------------------------+-------------------------------+
-         |                               |                               |
-         v                               v                               v
-+------------------+           +--------------------+          +--------------------+
-|  modules/core/   |           | modules/features/  |          | modules/packages/  |
-|  - module-groups |           | - system/          |          | - boilerplate      |
-|  - options       |           | - shell/           |          | - dualsense-pair   |
-|  - parts         |           | - desktop-env/     |          | - foot             |
-|  - devshell      |           | - apps/            |          | - html-server      |
-|  - templates     |           | - nvim-src/        |          | - pet, plsfail ... |
-+--------+---------+           +---------+----------+          +---------+----------+
-         |                               |                               |
-         +-------------------------------+-------------------------------+
-                                         |
-                                         v
-                   +--------------------------------------------+
-                   |          Module Group Composition          |
-                   |  nixos.modules.shared                      |
-                   |  nixos.modules.desktop / laptop            |
-                   +---------------------+----------------------+
-                                         |
-                    +--------------------+--------------------+
-                    |                                         |
-                    v                                         v
-         +----------------------+                  +----------------------+
-         | flake.nixos          |                  | flake.nixos          |
-         | Configurations       |                  | Configurations       |
-         | .desktop             |                  | .laptop              |
-         +----------------------+                  +----------------------+
-```
+<!-- DIAGRAM:END -->
 
 Every module declares its settings inside `nixos.modules.shared`, `nixos.modules.desktop`, or `nixos.modules.laptop`, eliminating cross-file imports and cyclic dependencies.
 
@@ -142,12 +147,12 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 - **Boot Error Notifier**: Custom daemon ([`journal-error-notify.nix`](file:///home/josh/NixConfig/modules/features/system/journal-error-notify.nix)) that scans boot logs for critical errors, filters out benign noise, and dispatches a desktop notification upon login.
 - **Automated Maintenance**: Fast builds via `nh os switch`, automatic store deduplication (`nix.optimise`), and automated garbage collection keeping the latest 3 generations / 30 days.
 
-### Networking, Mesh VPN & File Synchronization
+### Networking, Mesh VPN & File Synchronisation
 
-For in-depth details on mesh routing, battery preservation, and encrypted DNS, refer to the **[Networking, Tailscale & Syncthing Synchronization Guide](docs/wiki/networking-sync.md)**:
+For in-depth details on mesh routing, battery preservation, and encrypted DNS, refer to the **[Networking, Tailscale & Syncthing Synchronisation Guide](docs/wiki/networking-sync.md)**:
 
 - **Tailscale Mesh VPN**: Zero-config WireGuard mesh network client ([`tailscale.nix`](file:///home/josh/NixConfig/modules/features/system/tailscale.nix)) with trusted `tailscale0` firewall interface, providing private connectivity to the local homeserver and remote hosts.
-- **Syncthing Peer-to-Peer File Sync**: Continuous decentralized file synchronization ([`syncthing.nix`](file:///home/josh/NixConfig/modules/features/system/syncthing.nix)) syncing `Documents` and `Hermes` workspaces with the homeserver. Features mobile battery optimizations (disabled relays, NAT traversal, and global discovery) and deferred startup to `graphical.target` to eliminate early boot latency.
+- **Syncthing Peer-to-Peer File Sync**: Continuous decentralised file synchronisation ([`syncthing.nix`](file:///home/josh/NixConfig/modules/features/system/syncthing.nix)) syncing `Documents` and `Hermes` workspaces with the homeserver. Features mobile battery optimisations (disabled relays, NAT traversal, and global discovery) and deferred startup to `graphical.target` to eliminate early boot latency.
 - **DNS-over-TLS (DoT)**: Encrypted `systemd-resolved` DNS using Cloudflare (`1.1.1.1`, `1.0.0.1`) with Google DNS fallback (`8.8.8.8`).
 - **High-Performance Wi-Fi**: NetworkManager paired with Intel Wireless Daemon (`iwd`) backend supporting Opportunistic Wireless Encryption (OWE / Enhanced Open) and TCP MTU probing.
 
@@ -168,7 +173,7 @@ For architecture diagrams, singletons, widgets, and IPC commands, refer to the *
 
 - **Modular QML Architecture**: Unified desktop shell framework written in QML, symlinked from `modules/features/desktop-env/quickshell/config/` to `~/.config/quickshell/`.
 - **Multi-Compositor Routing**: Abstract `WmService.qml` routing events and workspace states across MangoWC, Hyprland, Niri, and River.
-- **Command Center Dashboard**: Slide-out quick settings dashboard (`SUPER + d`) with quick toggles, sliders, media controls, and hardware telemetry.
+- **Command Centre Dashboard**: Slide-out quick settings dashboard (`SUPER + d`) with quick toggles, sliders, media controls, and hardware telemetry.
 - **Wayland Session Locker**: Lock screen (`LockScreen.qml`) leveraging `ext-session-lock-v1` and system PAM for secure authentication.
 - **Notification Daemon & Toast Overlay**: Built-in Freedesktop notification daemon (`NotificationStore.qml`) and toast overlay (`NotificationOverlay.qml`).
 
@@ -176,7 +181,7 @@ For architecture diagrams, singletons, widgets, and IPC commands, refer to the *
 
 For single-instance terminal performance, Tmux session management, Yazi openers, and Pet shortcuts, refer to the **[Terminal Workflow Guide](docs/wiki/terminal-workflow.md)**:
 
-- **Kitty in Single-Instance Mode**: GPU-accelerated terminal emulator ([`kitty.nix`](file:///home/josh/NixConfig/modules/features/apps/kitty.nix)) running in shared server mode (`kitty --single-instance`), drastically reducing per-window RAM by sharing GPU texture caches. Features Maple Mono font, capped scrollback, and dynamic theme palette colors.
+- **Kitty in Single-Instance Mode**: GPU-accelerated terminal emulator ([`kitty.nix`](file:///home/josh/NixConfig/modules/features/apps/kitty.nix)) running in shared server mode (`kitty --single-instance`), drastically reducing per-window RAM by sharing GPU texture caches. Features Maple Mono font, capped scrollback, and dynamic theme palette colours.
 - **Foot Terminal Alternative**: Lightweight Wayland terminal emulator ([`modules/packages/foot/default.nix`](file:///home/josh/NixConfig/modules/packages/foot/default.nix)) pre-configured with theme palette integration.
 - **Tmux Multiplexer & Sesh**: Advanced terminal multiplexer ([`tmux.nix`](file:///home/josh/NixConfig/modules/features/shell/tmux.nix)) with backtick prefix, running as a systemd user daemon:
   - Sesh session manager (`Prefix + K`) with interactive FZF filtering across sessions, configs, and Git repos.
@@ -185,7 +190,7 @@ For single-instance terminal performance, Tmux session management, Yazi openers,
   - Floating scratchpad terminal (`Prefix + P` via floax).
   - Resurrect store path sanitizer (`tmux-resurrect-save`) stripping transient Nix store hashes from saved sessions so sessions restore reliably across updates.
   - Alt-passthrough mode (`Prefix + a`) for Neovim line shifting.
-- **Yazi File Manager**: Async terminal file manager configured with custom image and text openers, hidden file toggles, preview maximization, and Neovim directory opening.
+- **Yazi File Manager**: Async terminal file manager configured with custom image and text openers, hidden file toggles, preview maximisation, and Neovim directory opening.
 - **Pet Snippet Manager**: Interactive snippet fuzzy search bound to `Ctrl + P` in Fish (`pet-pick`), pre-populated with NixOS rebuild, Git, Tmux, and system commands.
 - **Fish Shell 4+ & Cached FZF Traversal**: Fast Fish shell with a custom caching engine (`__fzf_cache_fd`) that caches `fd` traversal per directory for 5 minutes, making file lookups instantaneous in large repositories.
 - **Starship Prompt**: Transient prompt (`>>`) with indicators for Git status, Nix shell, Node.js, Rust, Python, battery levels, and command execution duration.
@@ -195,12 +200,12 @@ For single-instance terminal performance, Tmux session management, Yazi openers,
 For language server wrappers, completion, DAP, and `:GenerateCompileFlags`, refer to the **[Declarative Neovim Guide](docs/wiki/neovim.md)**:
 
 - **Declarative NVF Architecture**: Neovim managed via [nvf](https://github.com/NotAShelf/nvf), linked directly to a modular Lua source tree under [`modules/features/nvim-src/`](file:///home/josh/NixConfig/modules/features/nvim-src/).
-- **Specialized LSP Wrappers**:
+- **Specialised LSP Wrappers**:
   - `qmlls`: Wrapped with QtQuick 6 and Quickshell include flags for real-time QML type checking.
   - `zls`: Wrapped with Wayland, wlroots, libxkbcommon, and libinput system headers for Wayland compositor development.
 - **C/C++ Tooling & `:GenerateCompileFlags`**: Custom command generating project-local `compile_flags.txt` from active Nix shell flags (`CPATH`, `pkg-config`) for Clangd autocomplete.
 - **Neovim Plugins**: Blink.cmp completion, Treesitter, FZF-Lua, Oil with clipboard image pasting (`OilPasteImage` / `<leader>p`), Gitsigns with diagnostic collision prevention, Grug-far find/replace, Flash jump motions, Rustaceanvim, Tiny Inline Diagnostics, and custom plugins (`sshinator`, `indentinator`, `zline`).
-- **Floating Jujutsu TUI (`<leader>gg`)**: Direct invocation of `jjui` inside a centered Neovim floating modal.
+- **Floating Jujutsu TUI (`<leader>gg`)**: Direct invocation of `jjui` inside a centred Neovim floating modal.
 
 ### Artificial Intelligence & Autonomous Agents
 
@@ -224,7 +229,7 @@ For mental model comparisons, daily workflows, bookmarks, and rebase commands, r
 For flashing workflows, compilation databases, and Vivado containers, refer to the **[ESP32 & Arduino Guide](docs/wiki/esp32-arduino.md)** and **[AMD Vivado FPGA Guide](docs/wiki/vivado-fpga.md)**:
 
 - **ESP32 & Arduino Toolchain**: Embedded developer workflow with `arduino-cli`, `esptool`, automated Neovim / Clangd compilation database generation (`esp-gen-lsp`), and helper scripts (`esp-init`, `esp-compile`, `esp-upload`, `esp-monitor`).
-- **AMD Vivado Design Suite 2024.1**: Containerized FPGA workflow running inside an isolated Ubuntu 22.04 Distrobox container with full Wayland/X11 GUI passthrough and desktop launcher integration.
+- **AMD Vivado Design Suite 2024.1**: Containerised FPGA workflow running inside an isolated Ubuntu 22.04 Distrobox container with full Wayland/X11 GUI passthrough and desktop launcher integration.
 - **Hardware Permissions & Udev Rules**: OpenOCD, DFU utilities (`dfu-util`), and udev rules for CP210x, CH340, FTDI FT2232, and Meshtastic hardware with non-root user access.
 
 ### Media, Documents & Audio Stack
@@ -232,18 +237,18 @@ For flashing workflows, compilation databases, and Vivado containers, refer to t
 For hardware acceleration parameters, Modernz theming, SyncTeX setup, and audio routing, refer to the **[Media, Document Viewer & Audio Stack Guide](docs/wiki/media-audio.md)**:
 
 - **MPV Video Player**: Hardware-accelerated video player ([`media.nix`](file:///home/josh/NixConfig/modules/features/apps/media.nix)) using Vulkan `gpu-next` pipeline, zero-copy decode (`vd-lavc-dr=yes`), VP9 YouTube streaming preferences, Vim-style seeking (`h/j/k/l`), and bundled scripts (themed Modernz OSC, idle-reaped Thumbfast thumbnailer, Quality Menu, Smartskip, MPRIS).
-- **Zathura PDF Reader**: Keyboard-driven document viewer with automatic dark mode recoloring matching system theme colors and SyncTeX reverse jumping (`Ctrl + Click` opens Neovim at source line).
+- **Zathura PDF Reader**: Keyboard-driven document viewer with automatic dark mode recolouring matching system theme colours and SyncTeX reverse jumping (`Ctrl + Click` opens Neovim at source line).
 - **PipeWire Low-Latency Audio**: Pro-audio ready PipeWire sound server ([`pipewire.nix`](file:///home/josh/NixConfig/modules/features/system/pipewire.nix)) with WirePlumber, ALSA, PulseAudio, and JACK support.
 - **YouTube Playback CLI (`ytplay`)**: Dedicated CLI utility for playing YouTube videos or music directly into MPV.
 - **Image Viewing & Spotify**: `imv` image viewer, desktop Spotify enhanced with Spicetify, and `spotatui` Spotify terminal UI.
 
 ### Browsers & Web Tools
 
-For stylesheet architecture, Sidebery selectors, and browser policies, refer to the **[Firefox & Sidebery Customization Guide](docs/wiki/firefox.md)**:
+For stylesheet architecture, Sidebery selectors, and browser policies, refer to the **[Firefox & Sidebery Customisation Guide](docs/wiki/firefox.md)**:
 
-- **Firefox Developer Edition**: Browser configuration with FastFox optimizations, custom `userChrome.css` and `userContent.css`, Sidebery vertical tab bar integration, and an embedded offline startpage WebExtension.
+- **Firefox Developer Edition**: Browser configuration with FastFox optimisations, custom `userChrome.css` and `userContent.css`, Sidebery vertical tab bar integration, and an embedded offline startpage WebExtension.
 - **Helium Browser**: Chromium-based Helium browser alternative ([`helium.nix`](file:///home/josh/NixConfig/modules/features/apps/helium.nix)) with declarative enterprise policies and Wayland ozone acceleration.
-- **Centralized Default Applications**: Single source of truth ([`default-apps.nix`](file:///home/josh/NixConfig/modules/features/desktop-env/default-apps.nix)) managing systemwide MIME associations and default application preferences.
+- **Centralised Default Applications**: Single source of truth ([`default-apps.nix`](file:///home/josh/NixConfig/modules/features/desktop-env/default-apps.nix)) managing systemwide MIME associations and default application preferences.
 
 ### Gaming Suite
 
@@ -325,9 +330,9 @@ NixConfig/
     │   │   ├── nvidia.nix             # Proprietary NVIDIA GPU drivers & Wayland flags
     │   │   ├── pipewire.nix           # Low-latency PipeWire & WirePlumber audio
     │   │   ├── plymouth.nix           # Catppuccin Mocha boot splash screen
-    │   │   ├── podman-vm.nix          # Podman and Distrobox container virtualization
+    │   │   ├── podman-vm.nix          # Podman and Distrobox container virtualisation
     │   │   ├── startup.nix            # Clipboard persistence & session targets
-    │   │   ├── syncthing.nix          # Battery-optimized Syncthing P2P folder sync
+    │   │   ├── syncthing.nix          # Battery-optimised Syncthing P2P folder sync
     │   │   ├── tailscale.nix          # Zero-config Tailscale mesh VPN client
     │   │   ├── user.nix               # User account definition & Hjem setup
     │   │   └── wallpapers.nix         # Declarative wallpaper symlinking via Hjem
@@ -339,7 +344,7 @@ NixConfig/
     │   │
     │   ├── desktop-env/               # Graphical environment & window managers
     │   │   ├── cursors.nix            # Bibata Modern Ice cursor configuration
-    │   │   ├── default-apps.nix       # Centralized MIME & default applications handler
+    │   │   ├── default-apps.nix       # Centralised MIME & default applications handler
     │   │   ├── fonts.nix              # Typography definitions (SF Pro, Inter, Noto)
     │   │   ├── hyprland/              # Hyprland compositor & hyprland.lua
     │   │   ├── mangowc/               # MangoWC config, binds, and OCR screenshot helper
@@ -381,7 +386,7 @@ NixConfig/
     │
     └── themes/                        # Dynamic styling engine
         ├── default.nix                # Theme schema options (config.theme.active)
-        └── palette.nix                # Curated color palettes (11 schemes)
+        └── palette.nix                # Curated colour palettes (11 schemes)
 ```
 
 ---
@@ -400,7 +405,7 @@ NixConfig/
 | **Hardware Quirks** | ASUS WMI Bluetooth rfkill unblock service | ELAN ACPI touchpad polling workaround, ath11k Wi-Fi |
 | **AI Tooling** | Pi Agent (with safety extensions), Hermes | Pi Agent (with safety extensions), Hermes |
 | **Inference Strategy** | Dedicated GPU or homeserver offload | Zero local inference (homeserver Ollama over Tailscale) |
-| **Networking & Sync** | Tailscale mesh VPN, Syncthing (Documents, Hermes) | Tailscale mesh VPN, Syncthing (Battery-optimized) |
+| **Networking & Sync** | Tailscale mesh VPN, Syncthing (Documents, Hermes) | Tailscale mesh VPN, Syncthing (Battery-optimised) |
 | **Peripheral Stack** | Logitech wireless support, DualSense PS5 driver | DFU / OpenOCD / Meshtastic serial udev permissions |
 | **Audio & Media** | Low-latency PipeWire, Amberol, MPV, Spotify | Low-latency PipeWire, MPV, Spotify, Gowall |
 
@@ -413,12 +418,12 @@ Comprehensive documentation, architecture references, and step-by-step workflow 
 | Feature / Subsystem | Guide Link | Description |
 | :--- | :--- | :--- |
 | **Wayland Compositors** | [compositors.md](docs/wiki/compositors.md) | Configuration guide for MangoWC (layouts, binds, OCR screenshot helper), Niri, Hyprland, Shikane display daemon, and Vicinae launcher |
-| **Quickshell UI** | [quickshell.md](docs/wiki/quickshell.md) | Quickshell QML framework architecture, status bar widgets, multi-compositor routing, Command Center, Lock Screen, and notification daemon |
+| **Quickshell UI** | [quickshell.md](docs/wiki/quickshell.md) | Quickshell QML framework architecture, status bar widgets, multi-compositor routing, Command Centre, Lock Screen, and notification daemon |
 | **Terminal Workflow** | [terminal-workflow.md](docs/wiki/terminal-workflow.md) | Kitty single-instance server mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Pet fuzzy snippets (`Ctrl+P`), and Fish shell |
 | **Declarative Neovim** | [neovim.md](docs/wiki/neovim.md) | NVF Neovim setup, modular Lua plugins in `nvim-src/`, language servers (`qmlls`, `zls`), Blink.cmp, formatters, and `:GenerateCompileFlags` |
 | **AI Development Tools** | [ai-tools.md](docs/wiki/ai-tools.md) | Pi coding agent harness (`pi.nix`) with safety extensions and Bubblewrap jail, Hermes AI agent with homeserver Ollama inference offloading |
 | **Jujutsu Version Control** | [jujutsu.md](docs/wiki/jujutsu.md) | Quick reference for the Jujutsu VCS: Git vs jj mental models, daily workflow, bookmarks, pushing/pulling, conflict resolution, and shell aliases |
-| **Networking & Sync** | [networking-sync.md](docs/wiki/networking-sync.md) | Tailscale mesh VPN, battery-optimized peer-to-peer folder synchronization with Syncthing, systemd-resolved DNS-over-TLS, and iwd Wi-Fi |
+| **Networking & Sync** | [networking-sync.md](docs/wiki/networking-sync.md) | Tailscale mesh VPN, battery-optimised peer-to-peer folder synchronisation with Syncthing, systemd-resolved DNS-over-TLS, and iwd Wi-Fi |
 | **Media & Audio Stack** | [media-audio.md](docs/wiki/media-audio.md) | MPV with Vulkan `gpu-next` pipeline and custom scripts, Zathura PDF reader with dark mode and SyncTeX Neovim jumping, PipeWire audio, and `ytplay` |
 | **Firefox & Helium** | [firefox.md](docs/wiki/firefox.md) | Custom `userChrome.css` styling, Sidebery vertical tab bar setup, startpage WebExtension, live CSS debugging, and Helium browser alternative |
 | **ESP32 & Arduino** | [esp32-arduino.md](docs/wiki/esp32-arduino.md) | ESP32 toolchains, `arduino-cli`, `esptool`, Neovim Clangd LSP compilation database generation (`esp-gen-lsp`), and project templates |
@@ -586,13 +591,25 @@ Defined in [`modules/features/shell/shell.nix`](file:///home/josh/NixConfig/modu
 | `mkcd <dir>` | Function | Create directory `<dir>` and `cd` into it immediately |
 | `ta` | Function | Connect to or switch sessions using Sesh |
 
+### Architecture Diagram Generator (`update_diagram.sh`)
+
+Keep the interactive Mermaid system architecture diagram in sync with the filesystem automatically:
+
+```bash
+# Scan modules/ and update the Mermaid diagram in README.md
+./assets/update_diagram.sh
+
+# Verify whether the diagram is up to date (useful in CI / pre-commit)
+./assets/update_diagram.sh --check
+```
+
 ---
 
 ## Themes & Wallpaper Management
 
-System styling is controlled centrally in [`modules/themes/`](file:///home/josh/NixConfig/modules/themes/). Selecting an active palette automatically propagates color variables (`bg`, `fg`, `accent`, `border`, `teal`, `purple`, etc.) into Quickshell, Vicinae, Neovim, Kitty, Foot, Tmux, MPV, Firefox, and Zathura.
+System styling is controlled centrally in [`modules/themes/`](file:///home/josh/NixConfig/modules/themes/). Selecting an active palette automatically propagates colour variables (`bg`, `fg`, `accent`, `border`, `teal`, `purple`, etc.) into Quickshell, Vicinae, Neovim, Kitty, Foot, Tmux, MPV, Firefox, and Zathura.
 
-### Color Palettes
+### Colour Palettes
 
 Change the global palette in [`modules/themes/default.nix`](file:///home/josh/NixConfig/modules/themes/default.nix):
 
@@ -641,7 +658,7 @@ This repository exports custom packages under `self.packages.${system}`:
 
 - **`boilerplate`**: Python CLI utility for rapid scaffolding of layers, features, hosts, and packages.
 - **`dualsense-pair`**: Bluetooth helper script to scan, pair, trust, and configure Sony PlayStation 5 DualSense controllers. See [Gaming Guide](docs/wiki/gaming.md).
-- **`foot`**: Pre-configured Foot terminal emulator with active palette color schemes. See [Terminal Workflow Guide](docs/wiki/terminal-workflow.md).
+- **`foot`**: Pre-configured Foot terminal emulator with active palette colour schemes. See [Terminal Workflow Guide](docs/wiki/terminal-workflow.md).
 - **`html-server`**: High-performance Go web server with live reloading for quick local HTML/CSS previews.
 - **`instrument-serif`**: Custom font derivation packaging Google's Instrument Serif.
 - **`maple-mono`**: Custom font derivation packaging Maple Mono.
@@ -675,14 +692,14 @@ direnv allow
 
 ### ESP32 Arduino Template (`esp32-arduino`)
 
-Initialize an embedded microcontroller project anywhere:
+Initialise an embedded microcontroller project anywhere:
 
 ```bash
 mkdir my-project && cd my-project
 nix flake init -t github:Ssnibles/NixConfig#esp32-arduino
 direnv allow
 
-# Initialize Espressif board core & indices
+# Initialise Espressif board core & indices
 esp-init
 
 # Build and flash sketch
@@ -766,7 +783,7 @@ journalctl --user -u vicinae-server -f
 # View Shikane display manager daemon logs
 journalctl --user -u shikane -f
 
-# View Syncthing synchronization logs
+# View Syncthing synchronisation logs
 journalctl --user -u syncthing -f
 
 # Follow Wayland session output

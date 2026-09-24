@@ -1,6 +1,6 @@
 # AMD Vivado FPGA Container Environment Guide
 
-This document explains how AMD Vivado Design Suite 2024.1 is integrated into NixConfig using Distrobox and Ubuntu 22.04 container virtualization.
+This document explains how AMD Vivado Design Suite 2024.1 is integrated into NixConfig using Distrobox and Ubuntu 22.04 container virtualisation.
 
 ---
 

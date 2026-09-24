@@ -1,6 +1,6 @@
-# Firefox & Sidebery Customization Guide
+# Firefox & Sidebery Customisation Guide
 
-This guide explains how Firefox Developer Edition UI customization works in NixConfig, how CSS stylesheets are linked, and how to inspect elements for styling both Firefox (`userChrome.css`) and WebExtensions like Sidebery (`userContent.css`).
+This guide explains how Firefox Developer Edition UI customisation works in NixConfig, how CSS stylesheets are linked, and how to inspect elements for styling both Firefox (`userChrome.css`) and WebExtensions like Sidebery (`userContent.css`).
 
 ---
 
@@ -10,7 +10,7 @@ This guide explains how Firefox Developer Edition UI customization works in NixC
 | :--- | :--- | :--- |
 | **`userChrome.css`** | **Firefox Native UI** | Toolbar, URL bar, sidebars, context menus, navbar buttons, window frame. |
 | **`userContent.css`** | **Web Content & Extensions** | Extension sidebars (e.g. Sidebery), `about:config`, `about:blank`, `about:newtab`. |
-| **`colors.css`** | **Theme System** | Dynamic CSS variables generated from your system color palette (`--fx-bg`, `--fx-accent`, etc.). |
+| **`colors.css`** | **Theme System** | Dynamic CSS variables generated from your system colour palette (`--fx-bg`, `--fx-accent`, etc.). |
 | **`startpage/`** | **Offline New Tab Extension** | Local embedded offline startpage WebExtension loaded into Firefox. |
 
 > [!NOTE]
