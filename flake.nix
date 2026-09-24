@@ -57,6 +57,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    pi-agent = {
+      url = "github:lukasl-dev/pi.nix";
+      inputs.nixpkgs.follow = "nixpkgs";
+    };
+
     # pomodoro.url = "github:Ssnibles/pomodoro";
     # pomodoro.inputs.nixpkgs.follows = "nixpkgs";
     # For local development without pushing every change, swap in:
