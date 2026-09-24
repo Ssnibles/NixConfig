@@ -202,6 +202,7 @@
         n = "nvim";
         cat = "bat";
         t = "tmux";
+        imv = "imv-dir";
         build-nixconf = "$HOME/NixConfig/build.sh";
       };
 
