@@ -155,6 +155,7 @@
           playerctl
           grim
           slurp
+          wlrctl
           tesseract
           jq
           networkmanagerapplet
