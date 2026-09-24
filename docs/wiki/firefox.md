@@ -1,23 +1,24 @@
 # Firefox & Sidebery Customization Guide
 
-This guide explains how Firefox UI customization works in `NixConfig`, how CSS stylesheets are linked, and how to inspect elements for styling both Firefox (`userChrome.css`) and WebExtensions like Sidebery (`userContent.css`).
+This guide explains how Firefox Developer Edition UI customization works in NixConfig, how CSS stylesheets are linked, and how to inspect elements for styling both Firefox (`userChrome.css`) and WebExtensions like Sidebery (`userContent.css`).
 
 ---
 
-## 📁 Architecture Overview
+## Architecture Overview
 
 | File | Scope | Target Elements |
 | :--- | :--- | :--- |
 | **`userChrome.css`** | **Firefox Native UI** | Toolbar, URL bar, sidebars, context menus, navbar buttons, window frame. |
 | **`userContent.css`** | **Web Content & Extensions** | Extension sidebars (e.g. Sidebery), `about:config`, `about:blank`, `about:newtab`. |
 | **`colors.css`** | **Theme System** | Dynamic CSS variables generated from your system color palette (`--fx-bg`, `--fx-accent`, etc.). |
+| **`startpage/`** | **Offline New Tab Extension** | Local embedded offline startpage WebExtension loaded into Firefox. |
 
 > [!NOTE]
-> Both `userChrome.css` and `userContent.css` are symlinked directly from your `NixConfig` workspace (`~/NixConfig/modules/features/apps/firefox/`) into your Firefox profile directory (`~/.mozilla/firefox/default/chrome/`). Any changes saved take effect immediately upon restarting Firefox!
+> Both `userChrome.css` and `userContent.css` are symlinked directly from your NixConfig workspace (`~/NixConfig/modules/features/apps/firefox/`) into your Firefox profile directory (`~/.mozilla/firefox/default/chrome/`). Any changes saved take effect immediately upon restarting Firefox.
 
 ---
 
-## 🛠️ Inspecting UI Elements with Browser Toolbox
+## Inspecting UI Elements with Browser Toolbox
 
 To discover CSS selectors for Firefox UI components:
 
@@ -34,7 +35,7 @@ To discover CSS selectors for Firefox UI components:
 
 ---
 
-## 📑 Styling Sidebery (`userContent.css`)
+## Styling Sidebery (`userContent.css`)
 
 Sidebery runs inside an extension frame (`moz-extension://`). Scope rules inside `userContent.css`:
 
@@ -46,3 +47,13 @@ Sidebery runs inside an extension frame (`moz-extension://`). Scope rules inside
   }
 }
 ```
+
+---
+
+## Helium Browser Alternative
+
+In addition to Firefox Developer Edition, NixConfig packages the Chromium-based **Helium Browser** via `modules/features/apps/helium.nix`:
+- Packaged from `inputs.helium`.
+- Declarative Chrome Enterprise policies written to `/etc/chromium/policies/managed/helium-nixos.json`.
+- Configured with Wayland ozone flags (`--ozone-platform-hint=auto`).
+- Integrated into `modules/features/desktop-env/default-apps.nix` as a selectable default browser.

@@ -4,39 +4,39 @@ Quick reference for `jj` — the Git-compatible VCS used in this repo. Jujutsu w
 
 ---
 
-## 🧠 Key Mental Model Differences from Git
+## Key Mental Model Differences from Git
 
 | Git concept | jj equivalent | Notes |
-|---|---|---|
+| :--- | :--- | :--- |
 | Branch | **Bookmark** | `jj bookmark` — just a movable label on a commit |
 | `HEAD` | **Working copy (`@`)** | Always a real commit that auto-updates as you edit files |
 | Staging / `git add` | *None* | Every file change is **automatically recorded** into `@` |
 | `git commit` | `jj commit` / `jj new` | `jj commit` = describe `@` and create a new empty child; `jj new` = just create a new child |
 | `git stash` | *Not needed* | Just `jj new` to start fresh — your old work stays as a commit |
 | `git rebase -i` | `jj rebase` / `jj squash` | Much simpler — no interactive editor needed |
-| Published / Pushed history | **Immutable commits (`◆`)** | Pushed commits lock (`◆` vs `○`) to prevent accidental history rewriting |
+| Published / Pushed history | **Immutable commits** | Pushed commits lock to prevent accidental history rewriting |
 
 > [!IMPORTANT]
 > There is **no staging area**. Every save you make is instantly part of the working-copy commit `@`. To split changes out, use `jj split`.
 
 ---
 
-## 📋 Daily Workflow
+## Daily Workflow
 
-### Seeing what's going on
+### Seeing what is going on
 
 ```bash
-jj status          # (alias: js) — what files changed in @
-jj log             # (alias: jl) — commit graph
-jj diff            # (alias: jd) — diff of current changes in @
+jj status          # (alias: js) - what files changed in @
+jj log             # (alias: jl) - commit graph
+jj diff            # (alias: jd) - diff of current changes in @
 jj log -r 'all()'  # show the entire commit graph
 ```
 
 ### Making commits
 
 ```bash
-# You've been editing files — they're already in @.
-jj commit -m "feat: add new module"    # (alias: jc) — describe @ and start a new empty @ on top
+# You've been editing files - they are already in @.
+jj commit -m "feat: add new module"    # (alias: jc) - describe @ and start a new empty @ on top
 jj describe -m "fix: typo"            # change the description of @ without creating a new commit
 ```
 
@@ -62,7 +62,7 @@ jj commit -i -m "feat: description"
 ### Starting new work
 
 ```bash
-jj new              # (alias: jn) — create a new empty commit on top of @
+jj new              # (alias: jn) - create a new empty commit on top of @
 jj new -m "wip: experimenting"         # new commit with a message
 jj new main         # new commit branching off of bookmark "main"
 ```
@@ -70,7 +70,7 @@ jj new main         # new commit branching off of bookmark "main"
 ### Editing an older commit
 
 ```bash
-jj edit <change-id>   # (alias: je) — jump @ to that commit so edits go there
+jj edit <change-id>   # (alias: je) - jump @ to that commit so edits go there
 jj new <change-id>    # create a new child of that commit instead
 ```
 
@@ -79,7 +79,7 @@ jj new <change-id>    # create a new child of that commit instead
 
 ---
 
-## 🔖 Bookmarks (Branches)
+## Bookmarks (Branches)
 
 jj calls branches **bookmarks** — they're just labels pointing at commits.
 
@@ -90,7 +90,7 @@ jj bookmark create my-feature         # create bookmark pointing at @
 jj bookmark create my-feature -r <rev> # create bookmark pointing at a specific revision
 jj bookmark set my-feature            # move existing bookmark to @
 jj bookmark set my-feature -r <rev>   # move bookmark to a specific revision
-jj bookmark list                      # (alias: jb list) — list all bookmarks
+jj bookmark list                      # (alias: jb list) - list all bookmarks
 ```
 
 ### Deleting bookmarks
@@ -105,7 +105,7 @@ jj git push --bookmark my-feature --deleted  # push the deletion to the remote
 ```bash
 jj bookmark track main --remote origin          # track remote bookmark locally
 jj bookmark track my-feature --remote origin    # track a feature branch from origin
-jj git fetch                                    # (alias: jf) — fetch all remote changes
+jj git fetch                                    # (alias: jf) - fetch all remote changes
 ```
 
 > [!TIP]
@@ -117,12 +117,12 @@ jj git fetch                                    # (alias: jf) — fetch all remo
 
 ---
 
-## 🚀 Pushing & Pulling
+## Pushing & Pulling
 
 ### Pushing to a remote
 
 ```bash
-jj git push                            # (alias: jp) — push all locally-changed bookmarks
+jj git push                            # (alias: jp) - push all locally-changed bookmarks
 jj git push --bookmark my-feature      # push only a specific bookmark
 jj git push --all                      # push all bookmarks
 jj git push --change @                 # auto-create a bookmark from @'s change-id and push it
@@ -134,7 +134,7 @@ jj git push --change @                 # auto-create a bookmark from @'s change-
 ### Pulling from a remote
 
 ```bash
-jj git fetch                           # (alias: jf, jj pull) — fetch all remotes
+jj git fetch                           # (alias: jf, jj pull) - fetch all remotes
 jj git fetch --remote origin           # fetch from a specific remote
 ```
 
@@ -186,23 +186,23 @@ jj git push --bookmark main           # push it
 ### Safe push-to-main flow
 
 ```bash
-jj git fetch                           # (alias: jf) — get latest remote changes
+jj git fetch                           # (alias: jf) - get latest remote changes
 jj rebase -d main                      # rebase your work onto latest main
 jj bookmark set main -r @-             # advance main to your commit (@- if committed, @ if working copy)
-jj git push --bookmark main           # (alias: jp --bookmark main) — push
+jj git push --bookmark main           # (alias: jp --bookmark main) - push
 ```
 
-### 🔒 Immutable Commits (`◆` vs `○`)
+### Immutable Commits
 
 In `jj log`, commit symbols indicate whether a commit can be modified:
-- `○` (open circle): **Mutable** draft commit (can be freely amended, rebased, or squashed).
-- `◆` (filled diamond): **Immutable** commit (locked against accidental changes).
+- Open circle: **Mutable** draft commit (can be freely amended, rebased, or squashed).
+- Filled diamond: **Immutable** commit (locked against accidental changes).
 - `@`: Your current active working copy.
 
 #### Why did a commit become immutable after pushing?
 By default, any commit that has been pushed to a tracked remote bookmark (like `main@origin`) or is part of `trunk()` automatically becomes **immutable**. This is a safety feature so you don't accidentally rewrite published history.
 
-If you push `@` directly (e.g. `jj bookmark set main -r @` followed by push), that commit becomes immutable (`◆`). Because your working copy `@` must always remain mutable for editing files, `jj` automatically creates a new empty working copy commit on top of it.
+If you push `@` directly (e.g. `jj bookmark set main -r @` followed by push), that commit becomes immutable. Because your working copy `@` must always remain mutable for editing files, `jj` automatically creates a new empty working copy commit on top of it.
 
 #### Modifying an immutable commit (override)
 If you truly need to amend or rebase an immutable commit:
@@ -213,7 +213,7 @@ jj rebase --ignore-immutable -r <rev> -d <destination>
 
 ---
 
-## ✂️ Rewriting History
+## Rewriting History
 
 ### Squash (consolidating commits & changes)
 
@@ -263,7 +263,7 @@ jj abandon <rev>                       # abandon a specific commit
 
 ---
 
-## 💥 Conflict Resolution
+## Conflict Resolution
 
 jj handles conflicts **as first-class data** — you can rebase on top of conflicts and resolve them later.
 
@@ -280,7 +280,7 @@ Alternatively, just edit the conflict markers in the file directly (they look li
 
 ---
 
-## 🔧 Useful Extras
+## Useful Extras
 
 ### Undo anything
 
@@ -320,14 +320,14 @@ jj config set --repo snapshot.max-new-file-size 2M    # increase repo limit (e.g
 
 ---
 
-## ⌨️ Your Aliases & Shortcuts
+## Your Aliases & Shortcuts
 
 ### Shell Aliases
 
-Configured in [`shell.nix`](../../modules/features/shell/shell.nix):
+Configured in `modules/features/shell/shell.nix`:
 
 | Alias | Command | Description |
-|---|---|---|
+| :--- | :--- | :--- |
 | `j` | `jj` | Shorthand |
 | `jl` | `jj log` | View commit graph |
 | `jd` | `jj diff` | Diff working copy |
@@ -343,18 +343,18 @@ Configured in [`shell.nix`](../../modules/features/shell/shell.nix):
 
 ### `jj` Built-in Subcommand Aliases
 
-Configured declaratively in [`cli.nix`](../../modules/features/shell/cli.nix) via `~/.config/jj/config.toml`:
+Configured declaratively in `modules/features/shell/cli.nix` via `~/.config/jj/config.toml`:
 
 | Command | Expansion | Description |
-|---|---|---|
+| :--- | :--- | :--- |
 | `jj pull` | `jj git fetch` | Git-familiar synonym for fetching |
 | `jj up` | `jj new trunk()` | Start fresh working copy on latest trunk/main |
 
-You also have **jjui** available via `Prefix + g` in tmux for a TUI interface.
+You also have **jjui** available via `Prefix + g` in Tmux, or `<leader>gg` in Neovim for a fast TUI interface.
 
 ---
 
-## 📖 Further Reading
+## Further Reading
 
 - [Jujutsu Official Docs](https://jj-vcs.github.io/jj/latest/)
 - [Steve's jj Tutorial](https://steveklabnik.github.io/jujutsu-tutorial/)

@@ -1,12 +1,12 @@
 # AMD Vivado FPGA Container Environment Guide
 
-This document explains how AMD Vivado Design Suite 2024.1 is integrated into `NixConfig` using Distrobox and Ubuntu 22.04 container virtualization.
+This document explains how AMD Vivado Design Suite 2024.1 is integrated into NixConfig using Distrobox and Ubuntu 22.04 container virtualization.
 
 ---
 
-## 🛠️ Motivation & Architecture
+## Motivation & Architecture
 
-Vivado relies on legacy Linux dependencies and dynamic libraries incompatible with pure NixOS store paths. In `NixConfig`, Vivado runs inside an isolated Ubuntu 22.04 container managed by **Distrobox** and **Podman**:
+Vivado relies on legacy Linux dependencies and dynamic libraries incompatible with pure NixOS store paths. In NixConfig, Vivado runs inside an isolated Ubuntu 22.04 container managed by **Distrobox** and **Podman**:
 
 - Container name: `vivado-2024.1`
 - Display forwarding: Shared X11 socket + Wayland XWayland bridge (`$DISPLAY`).
@@ -15,7 +15,7 @@ Vivado relies on legacy Linux dependencies and dynamic libraries incompatible wi
 
 ---
 
-## 🚀 Setup & Launch Instructions
+## Setup & Launch Instructions
 
 ### 1. Run Setup Script (One-Time Setup)
 ```bash
@@ -31,7 +31,7 @@ vivado
 
 ---
 
-## 🔌 Hardware Programming & USB Passthrough
+## Hardware Programming & USB Passthrough
 
 For JTAG cable detection inside the container, place udev rules on your NixOS system:
 ```nix
