@@ -128,6 +128,12 @@
       features.podman-vm.enable = true;
       features.bluetooth.enable = true;
       features.helium.enable = false;
+      features.pi-agent = {
+        enable = true;
+        interactiveChoice = true;
+        gitCheckpoint = true;
+        protectedPaths = true;
+      };
 
       system.stateVersion = "26.05";
     };

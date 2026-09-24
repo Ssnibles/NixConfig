@@ -39,6 +39,9 @@
                 osc=no
                 osd-bar=no
 
+                keepaspect=yes
+                keepaspect-window=yes
+
                 # Hardware decoding + Vulkan GPU pipeline (NVIDIA Wayland)
                 hwdec=auto-safe
                 vo=gpu-next

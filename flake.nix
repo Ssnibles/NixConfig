@@ -59,7 +59,7 @@
 
     pi-agent = {
       url = "github:lukasl-dev/pi.nix";
-      inputs.nixpkgs.follow = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # pomodoro.url = "github:Ssnibles/pomodoro";
