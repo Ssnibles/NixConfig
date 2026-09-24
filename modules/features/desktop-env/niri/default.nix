@@ -2,7 +2,7 @@
 # Niri Scrollable-Tiling Compositor Feature
 # =============================================================================
 # Enables Niri window manager, links config.kdl, and installs helper utilities
-# like niri-float-sticky and xwayland-satellite.
+# like xwayland-satellite.
 # =============================================================================
 { inputs, ... }:
 {
@@ -29,7 +29,6 @@
 
         environment.systemPackages = with pkgs; [
           xwayland-satellite
-          inputs.niri-float-sticky.packages.${pkgs.stdenv.hostPlatform.system}.niri-float-sticky
         ];
 
         system.activationScripts.niri-config = ''

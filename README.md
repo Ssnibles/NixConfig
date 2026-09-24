@@ -144,7 +144,7 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 - **Multi-Compositor Choice**: Choose between dynamically tiled, manual, or scrollable Wayland sessions:
   - **Hyprland**: Dynamic Wayland compositor configured through [`hyprland.lua`](file:///home/josh/NixConfig/modules/features/desktop-env/hyprland/hyprland.lua) with theme palette integration.
   - **MangoWC**: Modern DWM-style compositor with dwindle layouts, special workspace tags, and dynamic border coloration.
-  - **Niri**: Scrollable-tiling Wayland compositor with `niri-float-sticky` and `xwayland-satellite` support.
+  - **Niri**: Scrollable-tiling Wayland compositor and `xwayland-satellite` support.
 - **Shikane Display Daemon**: Dynamic multi-monitor profile manager ([`shikane/default.nix`](file:///home/josh/NixConfig/modules/features/desktop-env/shikane/default.nix)) automatically adapting layouts for laptop-only, dual-display, and external monitor setups.
 - **Vicinae Application Launcher**: Fast layer-shell launcher running as a systemd user daemon with custom theme styling and integrated fuzzy clipboard history search.
 - **Wayland Clipboard Suite**: Session persistence via `wl-clip-persist` (for both regular and primary selections) and text/image history powered by `cliphist`.

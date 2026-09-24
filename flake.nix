@@ -57,14 +57,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    pomodoro.url = "github:Ssnibles/pomodoro";
-    pomodoro.inputs.nixpkgs.follows = "nixpkgs";
+    # pomodoro.url = "github:Ssnibles/pomodoro";
+    # pomodoro.inputs.nixpkgs.follows = "nixpkgs";
     # For local development without pushing every change, swap in:
     # pomodoro.url = "path:/home/josh/pomodoro";
     # pomodoro.inputs.nixpkgs.follows = "nixpkgs";
-
-    niri-float-sticky.url = "github:probeldev/niri-float-sticky";
-    niri-float-sticky.inputs.nixpkgs.follows = "nixpkgs";
 
     devenv = {
       url = "github:cachix/devenv";
