@@ -25,6 +25,27 @@ else
   done
 fi
 
+# MangoWC borders: query defaults from config or fallback to standard values
+BORDERPX=2
+BORDER_RADIUS=8
+mango_conf="$HOME/.config/mango/config.conf"
+if [ -f "$mango_conf" ]; then
+  b_px=$(sed -nE 's/^[[:space:]]*borderpx[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$mango_conf" | head -n1)
+  b_rad=$(sed -nE 's/^[[:space:]]*border_radius[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$mango_conf" | head -n1)
+  [ -n "$b_px" ] && BORDERPX="$b_px"
+  [ -n "$b_rad" ] && BORDER_RADIUS="$b_rad"
+fi
+
+# MangoWC border restoration & cleanup trap
+MANGO_RESTORED=false
+restore_mango() {
+  if [ "$IS_MANGO" = true ] && [ "$MANGO_RESTORED" = false ]; then
+    MANGO_RESTORED=true
+    mmsg dispatch setoption,borderpx,"$BORDERPX" >/dev/null 2>&1
+    mmsg dispatch setoption,border_radius,"$BORDER_RADIUS" >/dev/null 2>&1
+  fi
+}
+
 ORIG_X=""
 ORIG_Y=""
 restore_cursor() {
@@ -36,11 +57,21 @@ restore_cursor() {
   fi
 }
 
-cleanup() {
+restore_all() {
   restore_cursor
+  restore_mango
+}
+
+cleanup() {
+  restore_all
   [ -n "${TMP_IMG:-}" ] && rm -f "$TMP_IMG"
 }
 trap cleanup EXIT INT TERM HUP
+
+if [ "$IS_MANGO" = true ]; then
+  mmsg dispatch setoption,borderpx,0 >/dev/null 2>&1
+  mmsg dispatch setoption,border_radius,0 >/dev/null 2>&1
+fi
 
 # Resolve accent color
 ACCENT="6e94b2"
@@ -50,14 +81,14 @@ if [ -f "$mango_colours" ]; then
   [ -n "$col" ] && ACCENT="$col"
 fi
 
-# Query window bounding boxes (<x>,<y> <width>x<height> [foreign_toplevel_id])
+# Query window bounding boxes (<x>,<y> <width>x<height>)
 get_windows() {
   if [ "$IS_MANGO" = true ]; then
     if command -v jq >/dev/null 2>&1; then
       mmsg get all-clients 2>/dev/null | jq -r '
         .clients[]
         | select(.is_visible and (.is_swallowedby | not) and (.is_minimized | not) and .width > 0 and .height > 0)
-        | "\(.x),\(.y) \(.width)x\(.height) \(.foreign_toplevel_id // "")"
+        | "\(.x),\(.y) \(.width)x\(.height)"
       '
     elif command -v perl >/dev/null 2>&1; then
       mmsg get all-clients 2>/dev/null | perl -MJSON::PP -e '
@@ -65,8 +96,7 @@ get_windows() {
         if ($d && $d->{clients}) {
           for my $c (@{$d->{clients}}) {
             if ($c->{is_visible} && !$c->{is_swallowedby} && !$c->{is_minimized} && $c->{width} > 0 && $c->{height} > 0) {
-              my $fid = $c->{foreign_toplevel_id} // "";
-              print "$c->{x},$c->{y} $c->{width}x$c->{height} $fid\n";
+              print "$c->{x},$c->{y} $c->{width}x$c->{height}\n";
             }
           }
         }
@@ -82,53 +112,42 @@ get_windows() {
 
 windows=$(get_windows 2>/dev/null)
 
-# Slurp styling with label passthrough for foreign-toplevel ID
-slurp_flags=(-c "#${ACCENT}ff" -s "#${ACCENT}25" -b "#00000080" -d -f "%x,%y %wx%h %l")
+# Slurp styling
+slurp_flags=(-c "#${ACCENT}ff" -s "#${ACCENT}25" -b "#00000080" -d)
 
 # Selection
 if [ -n "$windows" ]; then
-  selection=$(printf '%s\n' "$windows" | slurp "${slurp_flags[@]}")
+  GEOM=$(printf '%s\n' "$windows" | slurp "${slurp_flags[@]}")
 else
-  selection=$(slurp "${slurp_flags[@]}")
+  GEOM=$(slurp "${slurp_flags[@]}")
 fi
 
-[ -z "$selection" ] && exit 0
+[ -z "$GEOM" ] && exit 0
 
-read -r geom_xy geom_wh toplevel_id <<< "$selection"
-GEOM="$geom_xy $geom_wh"
-
-# Choose capture method:
-# 1. Native foreign-toplevel capture (grim -T) for window clicks: captures the clean window
-#    surface directly via ext-foreign-toplevel-image-capture, completely bypassing cursor & borders.
-# 2. Geometry capture (grim -g) with pointer warp for freeform dragged regions.
-if [ -n "$toplevel_id" ]; then
-  capture_args=(-T "$toplevel_id")
-else
-  if [ -n "$WLRCTL" ]; then
-    if [ "$IS_MANGO" = true ]; then
-      pos=$(mmsg get cursorpos 2>/dev/null)
-      if [ -n "$pos" ]; then
-        ORIG_X=$(sed -nE 's/.*"x":[[:space:]]*([0-9]+).*/\1/p' <<<"$pos")
-        ORIG_Y=$(sed -nE 's/.*"y":[[:space:]]*([0-9]+).*/\1/p' <<<"$pos")
-      fi
+# Warp cursor away from selection to avoid capturing software cursor
+if [ -n "$WLRCTL" ]; then
+  if [ "$IS_MANGO" = true ]; then
+    pos=$(mmsg get cursorpos 2>/dev/null)
+    if [ -n "$pos" ]; then
+      ORIG_X=$(sed -nE 's/.*"x":[[:space:]]*([0-9]+).*/\1/p' <<<"$pos")
+      ORIG_Y=$(sed -nE 's/.*"y":[[:space:]]*([0-9]+).*/\1/p' <<<"$pos")
     fi
-    "$WLRCTL" pointer move 10000 10000 >/dev/null 2>&1
-    sleep 0.08
   fi
-  capture_args=(-g "$GEOM")
+  "$WLRCTL" pointer move 10000 10000 >/dev/null 2>&1
+  sleep 0.08
 fi
 
 # Action execution
 if [ "${1:-}" = "ocr" ]; then
   TMP_IMG=$(mktemp --suffix=.png /tmp/screenshot_ocr.XXXXXX)
-  grim "${capture_args[@]}" "$TMP_IMG"
-  restore_cursor
+  grim -g "$GEOM" "$TMP_IMG"
+  restore_all
   tesseract "$TMP_IMG" stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'
 else
   target_dir="${XDG_PICTURES_DIR:-$HOME/Pictures}"
   mkdir -p "$target_dir"
   filename="$target_dir/screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png"
 
-  grim "${capture_args[@]}" - | tee "$filename" | wl-copy -t image/png
-  restore_cursor
+  grim -g "$GEOM" - | tee "$filename" | wl-copy -t image/png
+  restore_all
 fi
