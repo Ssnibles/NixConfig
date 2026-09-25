@@ -38,6 +38,20 @@
 
       allExtensions = enabledBuiltinExtensions ++ headerExtension ++ cfg.extensions;
 
+      # Skill bundling the user's canonical Typst snippet library. The LuaSnip
+      # source of truth lives in the Neovim config; copy it in at build time so
+      # the skill can never drift from the snippets.
+      typstSnippetsSkill = pkgs.runCommand "pi-skill-typst-snippets" { } ''
+        mkdir -p $out/references
+        install -m 0444 ${./pi-agent/skills/typst-snippets/SKILL.md} $out/SKILL.md
+        install -m 0444 ${./pi-agent/skills/typst-snippets/references/document-conventions.md} $out/references/document-conventions.md
+        install -m 0444 ${../nvim-src/lua/snippets/typst.lua} $out/references/typst.lua
+      '';
+
+      bundledSkills =
+        lib.optional cfg.typstSnippets typstSnippetsSkill
+        ++ lib.optional cfg.lectureNotes ./pi-agent/skills/lecture-notes;
+
       defaultSettings = {
         defaultProvider = cfg.defaultProvider;
         defaultModel = cfg.defaultModel;
@@ -170,6 +184,26 @@
           default = [ ];
           description = "List of skill directories passed to pi via --skill.";
         };
+
+        typstSnippets = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Bundle the typst-snippets skill, which teaches pi the canonical
+            Typst conventions from the Neovim LuaSnip library so generated
+            .typ files match the user's established style.
+          '';
+        };
+
+        lectureNotes = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Bundle the lecture-notes skill, which turns lecture slides or
+            recordings into high-yield study notes instead of re-typed copies
+            of the slides.
+          '';
+        };
       };
 
       config = lib.mkIf cfg.enable {
@@ -179,7 +213,7 @@
           jail.enable = lib.mkIf cfg.jail.enable (lib.mkDefault true);
           settings = lib.mkDefault (defaultSettings // cfg.settings);
           rules = lib.mkIf (cfg.rules != null) (lib.mkDefault cfg.rules);
-          skills = lib.mkIf (cfg.skills != [ ]) (lib.mkDefault cfg.skills);
+          skills = lib.mkIf (cfg.skills != [ ] || bundledSkills != [ ]) (lib.mkDefault (bundledSkills ++ cfg.skills));
           extensions = lib.mkIf (allExtensions != [ ]) (lib.mkDefault allExtensions);
         };
 

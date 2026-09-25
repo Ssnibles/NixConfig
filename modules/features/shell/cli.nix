@@ -38,6 +38,7 @@
           wget
           zip
           unzip
+          typst
         ];
 
         programs.git.enable = true;

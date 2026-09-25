@@ -126,11 +126,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1790279626,
-        "narHash": "sha256-HiuRv/FmNJ6V1A2QhqA5ruV8E5rh0f/vRGMHCWXcWO8=",
+        "lastModified": 1790321541,
+        "narHash": "sha256-KKg7UInUjwijiB3Onu/a4QR2Ho8SR+eshB8WV2MUc5M=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "37be4a21c35e3baa56abb00d1721c2e87e6e93d1",
+        "rev": "4c1ba7d6b3e5f39fa5a2b2be7ab6444f0b030ce1",
         "type": "github"
       },
       "original": {
@@ -468,11 +468,11 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1790294122,
-        "narHash": "sha256-AzyFf0o6WPy9xJ6DoH9duiEMPT8mVaqJ2RpZ6X0LYXg=",
+        "lastModified": 1790333315,
+        "narHash": "sha256-oYH3cYTLz1SC2DEsUPglPs7LeSlUuaJ/Z69vrGGaFQE=",
         "owner": "mangowm",
         "repo": "mango",
-        "rev": "f014971000ea1e6124c6bb120b8aa4062460d2e4",
+        "rev": "448899edec434d0fe5abd4ecaf0cea981b4b1fbf",
         "type": "github"
       },
       "original": {
@@ -799,11 +799,11 @@
         "nixpkgs-x86_64-darwin": "nixpkgs-x86_64-darwin"
       },
       "locked": {
-        "lastModified": 1790241721,
-        "narHash": "sha256-LFMg+Fy68e2UpyDJuYMmQnKFmHftTCpiM74cxt14vPI=",
+        "lastModified": 1790329212,
+        "narHash": "sha256-RhKbz9LFACQcEwLN8zmNDsp9uPyvwrD2wDZUzQVa+ng=",
         "owner": "lukasl-dev",
         "repo": "pi.nix",
-        "rev": "0353d192f8f0ef05fea3ca40c37a9263fa009a4d",
+        "rev": "fa0355f8960ebd7f4c3f0a720194c1d42b177e3e",
         "type": "github"
       },
       "original": {

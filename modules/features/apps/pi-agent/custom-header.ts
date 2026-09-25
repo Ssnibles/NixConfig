@@ -40,6 +40,30 @@ function shortenPath(path: string, max = 48): string {
 	return pretty;
 }
 
+// --- LAYOUT HELPERS ------------------------------------------------------------
+const ANSI_PATTERN = /\x1b\[[0-9;]*m/g;
+
+// Visible width of a string, ignoring ANSI colour codes.
+function displayWidth(text: string): number {
+	return [...text.replace(ANSI_PATTERN, "")].length;
+}
+
+// Pad a string with spaces so its visible width reaches `width`.
+function padTo(text: string, width: number): string {
+	return text + " ".repeat(Math.max(0, width - displayWidth(text)));
+}
+
+// Merge two line arrays side by side, keeping the right column aligned to the
+// widest left-hand line. Empty right-hand cells leave the line untouched.
+function mergeColumns(left: string[], right: string[], gap = 3): string[] {
+	const width = Math.max(...left.map(displayWidth));
+	const separator = " ".repeat(gap);
+	return left.map((line, i) => {
+		const tail = right[i] ?? "";
+		return tail === "" ? line : `${padTo(line, width)}${separator}${tail}`;
+	});
+}
+
 export default function (pi: ExtensionAPI) {
 	pi.on("session_start", async (_event, ctx) => {
 		if (ctx.mode !== "tui") return;
@@ -63,13 +87,15 @@ export default function (pi: ExtensionAPI) {
 						`${theme.fg("text", "/")} commands  ·  ${theme.fg("text", "!")} bash  ·  ${theme.fg("text", "ctrl+c")} interrupt`,
 					);
 
-					return [
-						...getPiMascot(theme),
-						`  ${title}`,
-						...details.map((line) => `  ${line}`),
-						"",
-						`  ${hints}`,
-					];
+					// Right-hand column, aligned to the mascot rows: title beside the
+					// eyes, model/cwd beside the bar and first leg, hints on the last leg.
+					const info: string[] = [];
+					info[1] = title;
+					info[2] = details[0];
+					info[3] = details[1];
+					info[5] = hints;
+
+					return mergeColumns(getPiMascot(theme), info);
 				},
 				invalidate() {},
 			};

@@ -165,7 +165,6 @@
             wlroots
             wayland-protocols
             tinymist
-            typst
             typstyle
             neovim-remote
 
