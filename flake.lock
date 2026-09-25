@@ -468,11 +468,11 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1790245585,
-        "narHash": "sha256-uY03eR6IAz6/LEJn7tkwWRqZYoxDGal1ZUGOrCvTsZk=",
+        "lastModified": 1790294122,
+        "narHash": "sha256-AzyFf0o6WPy9xJ6DoH9duiEMPT8mVaqJ2RpZ6X0LYXg=",
         "owner": "mangowm",
         "repo": "mango",
-        "rev": "06ca6477c6a20df587b2d89f5e0d7c22679392ff",
+        "rev": "f014971000ea1e6124c6bb120b8aa4062460d2e4",
         "type": "github"
       },
       "original": {
@@ -491,8 +491,8 @@
         "scenefx": "scenefx_2"
       },
       "locked": {
-        "lastModified": 1790204982,
-        "narHash": "sha256-bA/7WXFg1RXR+2Wfr0QGtFExo9yIkgc40xqDfKIHrdU=",
+        "lastModified": 1790204367,
+        "narHash": "sha256-R1C93CMAVxrDwBbed+MgLP0JQkvzB8/bieWnBgBT+ac=",
         "path": "/home/josh/mango",
         "type": "path"
       },
@@ -1112,8 +1112,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1790290551,
-        "narHash": "sha256-x8jL+tdwHKntdDboH04Fz6cC7OTD/tWGmD0z6YjSCQY=",
+        "lastModified": 1790136021,
+        "narHash": "sha256-u7DIPaEtpRBZsA+yn91OV7JnUigmEyoVwqBpstH/gSs=",
         "path": "/home/josh/ytplay",
         "type": "path"
       },
