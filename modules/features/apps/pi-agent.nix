@@ -34,7 +34,14 @@
         ++ lib.optional cfg.permissionGate "${extDir}/permission-gate.ts"
         ++ lib.optional cfg.subagent "${extDir}/subagent/index.ts";
 
-      allExtensions = enabledBuiltinExtensions ++ cfg.extensions;
+      headerExtension = lib.optional cfg.header ./pi-agent/custom-header.ts;
+
+      allExtensions = enabledBuiltinExtensions ++ headerExtension ++ cfg.extensions;
+
+      defaultSettings = {
+        defaultProvider = cfg.defaultProvider;
+        defaultModel = cfg.defaultModel;
+      };
     in
     {
       imports = [
@@ -120,6 +127,24 @@
           description = "List of custom extension paths or TypeScript files passed to pi via --extension.";
         };
 
+        header = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = "Replace the default startup header with a custom pi mascot header (ASCII art + session info).";
+        };
+
+        defaultProvider = lib.mkOption {
+          type = lib.types.str;
+          default = "deepseek";
+          description = "Default model provider written to pi settings.json.";
+        };
+
+        defaultModel = lib.mkOption {
+          type = lib.types.str;
+          default = "deepseek-flash";
+          description = "Default model written to pi settings.json.";
+        };
+
         settings = lib.mkOption {
           type = lib.types.attrs;
           default = { };
@@ -152,7 +177,7 @@
           enable = true;
           package = lib.mkDefault effectivePackage;
           jail.enable = lib.mkIf cfg.jail.enable (lib.mkDefault true);
-          settings = lib.mkIf (cfg.settings != { }) (lib.mkDefault cfg.settings);
+          settings = lib.mkDefault (defaultSettings // cfg.settings);
           rules = lib.mkIf (cfg.rules != null) (lib.mkDefault cfg.rules);
           skills = lib.mkIf (cfg.skills != [ ]) (lib.mkDefault cfg.skills);
           extensions = lib.mkIf (allExtensions != [ ]) (lib.mkDefault allExtensions);
