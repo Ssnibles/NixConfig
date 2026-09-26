@@ -63,8 +63,21 @@ Zathura provides keyboard-driven document reading configured in `modules/feature
 ### Dynamic Theme Recolouring
 
 Zathura automatically adapts to your system colour palette:
-- **`recolor true`** and **`recolor-keephue true`**: Inverts document pages into an eye-friendly dark mode while preserving syntax highlighting and image colour fidelity.
-- Background and foreground colours are populated dynamically from `config.theme.colors` (`default-bg`, `default-fg`, `statusbar-bg`, `statusbar-fg`).
+- **`recolor true`**, **`recolor-keephue true`**, and **`recolor-reverse-video true`**: Inverts document pages into an eye-friendly dark mode while preserving syntax highlighting and preventing images/diagrams from being inverted into negatives.
+- **Full Theme Palette Integration**: Statusbar, input bar, `:command` completion menu (`c.bgRaised`, `c.accent`), and notification banners dynamically follow `config.theme.colors`.
+- **Reading Ergonomics**: `scroll-page-aware` prevents awkward split page boundaries, `scroll-full-overlap 0.1` maintains context across page jumps, `link-zoom false` prevents citation links from resetting custom zoom levels, and `render-loading false` avoids white flashes during page rendering.
+
+### Keybindings & Controls
+
+| Key | Action | Description |
+|---|---|---|
+| **`t`** / **`Ctrl+r`** | `recolor` | Toggle custom recoloured dark mode |
+| **`Y`** | `copy_filepath` | Copy full path of current document to system clipboard |
+| **`b`** | `toggle_statusbar` | Toggle statusbar for distraction-free reading |
+| **`f`** | `follow` | Link hints (Vimium-style letter labels on links and citations) |
+| **`d`** | `toggle_page_mode` | Toggle dual-page (spread) reading view |
+| **`a`** / **`s`** | `adjust_window` | Adjust page zoom to best-fit or full width |
+| **`Ctrl+o`** / **`Ctrl+i`** | `jumplist` | Jump backward / forward through navigation history |
 
 ### Neovim Inverse Search via SyncTeX
 

@@ -153,9 +153,30 @@
                 set window-title-home-tilde true
                 set selection-clipboard clipboard
 
+                # Reading ergonomics
+                set scroll-page-aware true
+                set scroll-full-overlap 0.1
+                set link-zoom false
+                set abort-clear-search true
+
+                # Statusbar formatting
+                set statusbar-page-percent true
+                set statusbar-home-tilde true
+
+                # Prevent white flash on page load
+                set render-loading false
+                set render-loading-bg "#${c.bg}"
+                set render-loading-fg "#${c.fg}"
+
                 # Enable dark mode recoloring by default
                 set recolor true
                 set recolor-keephue true
+                set recolor-reverse-video true
+
+                # Keybindings
+                map t recolor
+                map Y copy_filepath
+                map b toggle_statusbar
 
                 # Core layout colors
                 set default-bg "#${c.bg}"
@@ -171,22 +192,31 @@
                 set inputbar-bg "#${c.bg}"
                 set inputbar-fg "#${c.fg}"
 
+                # Completion menu palette
+                set completion-bg "#${c.bgRaised}"
+                set completion-fg "#${c.fg}"
+                set completion-highlight-bg "#${c.accent}"
+                set completion-highlight-fg "#${c.bg}"
+                set completion-group-bg "#${c.bg}"
+                set completion-group-fg "#${c.fgDim}"
+
                 # Notification and error styling
-                set notification-bg "#${c.bg}"
+                set notification-bg "#${c.bgRaised}"
                 set notification-fg "#${c.fg}"
-                set notification-error-bg "#${c.bg}"
-                set notification-error-fg "#${c.fg}"
-                set notification-warning-bg "#${c.bg}"
-                set notification-warning-fg "#${c.fg}"
+                set notification-error-bg "#${c.bgRaised}"
+                set notification-error-fg "#${c.red}"
+                set notification-warning-bg "#${c.bgRaised}"
+                set notification-warning-fg "#${c.yellow}"
 
                 # Highlight and selection colors
                 set highlight-color "#${c.yellow}"
                 set highlight-active-color "#${c.orange}"
+                set highlight-fg "#${c.bg}"
 
                 # Index (Table of Contents) colors
                 set index-bg "#${c.bg}"
                 set index-fg "#${c.fg}"
-                set index-active-bg "#${c.fg}"
+                set index-active-bg "#${c.accent}"
                 set index-active-fg "#${c.bg}"
               '';
             };
