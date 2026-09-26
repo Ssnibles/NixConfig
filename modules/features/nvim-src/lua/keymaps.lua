@@ -63,6 +63,15 @@ map("n", "<leader>wv", "<C-w>v", { desc = "Split vertical" })
 map("n", "<leader>ws", "<C-w>s", { desc = "Split horizontal" })
 map("n", "<leader>wq", "<C-w>c", { desc = "Close window" })
 map("n", "<leader>wo", "<C-w>o", { desc = "Only window" })
+map("n", "<leader>wz", function()
+	if vim.t.zoomed then
+		vim.cmd("tabclose")
+		vim.t.zoomed = false
+	else
+		vim.cmd("tab split")
+		vim.t.zoomed = true
+	end
+end, { desc = "Toggle maximize/zoom window" })
 map("n", "<leader>w=", "<C-w>=", { desc = "Equalize windows" })
 map("n", "<leader>wh", "<C-w>H", { desc = "Move window left" })
 map("n", "<leader>wl", "<C-w>L", { desc = "Move window right" })
@@ -89,6 +98,8 @@ map("n", "<leader>bo", function()
 end, { desc = "Close other buffers" })
 
 map("n", "<leader>`", "<cmd>b#<CR>", { desc = "Alternate buffer" })
+map("n", "]b", "<cmd>bnext<CR>", { desc = "Next buffer" })
+map("n", "[b", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 map("n", "<C-Tab>", "<cmd>bnext<CR>", { desc = "Next buffer" })
 map("n", "<C-S-Tab>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 map("n", "]t", "<cmd>tabnext<CR>", { desc = "Next tab" })
@@ -200,4 +211,4 @@ map("n", "<leader>gF", "<cmd>FzfLua git_stash<CR>", { desc = "Git stash" })
 map("n", "<leader>cd", "<cmd>cd %:p:h<CR>", { desc = "Change to file directory" })
 map("n", "zz", "za", { desc = "Toggle Folds" })
 map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
-map("n", "<C>-.", "@@", { desc = "Dot repeat autocmd" })
+map("n", "<C-.>", "@@", { desc = "Repeat last macro" })

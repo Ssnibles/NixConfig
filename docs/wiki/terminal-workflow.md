@@ -66,19 +66,29 @@ Tmux integrates with [Sesh](https://github.com/joshmedeski/sesh) for smart sessi
   - `Ctrl+X`: Show Zoxide directory history
   - `Ctrl+F`: Find Git repositories under home directory
   - `Ctrl+D`: Kill selected session or remove Zoxide entry
-- **`Prefix + L`**: Instantly toggles to the previous session via `sesh last`.
+- **`Prefix + Shift+Tab` (`BTab`)**: Instantly toggles to the previous session via `sesh last` (symmetrical with `Prefix + Tab` for `last-window`).
 - **Fish Helper `ta`**: Terminal command running `sesh connect` with interactive fuzzy search.
 
 ### Interactive Navigation & Popups
 
+- **`Prefix + e`**: Toggles a floating **Yazi** file manager popup at the current pane's path (press `Prefix + e` again to close/dismiss, or `q` to quit). Matches `<leader>e` in Neovim and `Super+e` in desktop compositors.
+- **`Prefix + g`**: Toggles a floating Jujutsu TUI (`jjui`) popup taking 85% of the screen (press `Prefix + g` again to close/dismiss, or `q` to quit). Matches `<leader>gg` in Neovim.
+- **`Prefix + t`** (or `Prefix + P`): Opens `floax`, a floating terminal scratchpad (matches `<leader>t` in Neovim).
+- **`Prefix + /`**: Instantly begins reverse incremental search in scrollback history (`?` in copy mode).
 - **`Prefix + o`**: Opens `tmux-window-picker`, a floating interactive FZF popup listing all windows across all sessions with a live preview pane.
-- **`Prefix + g`**: Opens a floating Jujutsu TUI (`jjui`) popup taking 85% of the screen.
-- **`Prefix + P`**: Opens `floax`, a floating scratchpad terminal.
 - **`Prefix + u`**: Triggers `extrakto` to search and copy URLs, file paths, and hashes from the screen.
-- **`Prefix + Space`**: Activates `jump` (flash/easymotion style jump motion across visible text).
+- **`Prefix + q`**: Display pane numbers overlay in accent colors for 3 seconds (type number to jump directly to pane).
+- **`Prefix + x`**: Kill current pane without confirmation prompt.
+- **`Prefix + X`**: Kill current session with confirmation (smoothly jumps to next session).
+- **`Prefix + v` / `Prefix + s`**: Split horizontally / vertically preserving current path.
+- **`Prefix + _` / `Prefix + \`**: Full-span horizontal split across entire window width / full-span vertical split across entire height.
+- **`Prefix + J` / `Prefix + j`**: Interactively select and join a window horizontally / vertically.
+- **`Prefix + C-k`**: Hard terminal reset and scrollback history wipe.
+- **`Prefix + H / L`** (or `Prefix + Alt + h/j/k/l`): Resize active pane split (repeatable).
 - **`Alt + 1..9`**: Directly jump to windows 1 through 9.
 - **`Alt + h/j/k/l`**: Move between panes without pressing the prefix key.
 - **`Prefix + a`**: Toggles Alt-Passthrough mode, letting `Alt + h/j/k/l` pass through to Neovim (for `mini.move` line shifting).
+- **Mouse & Selection**: Double-click selects word (with path/kebab awareness) and copies directly to Wayland clipboard; Triple-click copies line; Drag copies without closing copy-mode.
 
 ### Resurrect Store Path Sanitizer (`tmux-resurrect-save`)
 

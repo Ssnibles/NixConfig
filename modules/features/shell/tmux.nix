@@ -19,7 +19,7 @@
         set -euo pipefail
 
         current_win="$(${pkgs.tmux}/bin/tmux display-message -p '#S:#I' 2>/dev/null || echo "")"
-        windows="$(${pkgs.tmux}/bin/tmux list-windows -a -F '#S:#I - #W (#{pane_current_command})' 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E -v "^''${current_win} " || true)"
+        windows="$(${pkgs.tmux}/bin/tmux list-windows -a -F '#S:#I - #W (#{pane_current_command})' 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E -v "^(''${current_win}|popup-[^:]+|scratch):" || true)"
 
         if [ -z "$windows" ]; then
           ${pkgs.tmux}/bin/tmux display-message "No other windows to switch to"
@@ -89,6 +89,7 @@
           -e 's|\.nvim-wrapped|nvim|g' \
           -e 's|\.vi-wrapped|vi|g' \
           -e 's|\.bat-wrapped|bat|g' \
+          -e '/\t(popup-[^\t]+|scratch)\t/d' \
           "$last_target" 2>/dev/null || true
 
         current_size=$(${pkgs.coreutils}/bin/stat -c %s "$last_target" 2>/dev/null || echo 0)
@@ -121,7 +122,7 @@
       tmuxSeshPicker = pkgs.writeShellScriptBin "tmux-sesh-picker" ''
         set -u
 
-        session=$(${pkgs.sesh}/bin/sesh list --icons 2>/dev/null | ${pkgs.fzf}/bin/fzf \
+        session=$(${pkgs.sesh}/bin/sesh list --icons 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E -v '(popup-[a-z0-9_-]+|scratch)' | ${pkgs.fzf}/bin/fzf \
           --height=100% \
           --reverse \
           --border=none \
@@ -129,12 +130,12 @@
           --prompt='⚡ ' \
           --header='  ^a all  ^t tmux  ^g configs  ^x zoxide  ^d kill/remove  ^f find' \
           --bind 'tab:down,btab:up' \
-          --bind 'ctrl-a:change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons)' \
-          --bind 'ctrl-t:change-prompt(🪟 )+reload(${pkgs.sesh}/bin/sesh list -t --icons)' \
+          --bind 'ctrl-a:change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E -v "(popup-[a-z0-9_-]+|scratch)")' \
+          --bind 'ctrl-t:change-prompt(🪟 )+reload(${pkgs.sesh}/bin/sesh list -t --icons 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E -v "(popup-[a-z0-9_-]+|scratch)")' \
           --bind 'ctrl-g:change-prompt(⚙️ )+reload(${pkgs.sesh}/bin/sesh list -c --icons)' \
           --bind 'ctrl-x:change-prompt(📁 )+reload(${pkgs.sesh}/bin/sesh list -z --icons)' \
           --bind 'ctrl-f:change-prompt(🔎 )+reload(${pkgs.findutils}/bin/find ~ -maxdepth 3 -type d -name .git 2>/dev/null | ${pkgs.gnused}/bin/sed s:/.git::)' \
-          --bind 'ctrl-d:execute(${tmuxSeshKiller}/bin/tmux-sesh-killer {})+change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons)' \
+          --bind 'ctrl-d:execute(${tmuxSeshKiller}/bin/tmux-sesh-killer {})+change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E -v "(popup-[a-z0-9_-]+|scratch)")' \
           --preview-window='right:55%' \
           --preview='${pkgs.sesh}/bin/sesh preview {}' \
         2>/dev/null || echo "")
@@ -142,6 +143,26 @@
         if [ -n "$session" ]; then
           ${pkgs.sesh}/bin/sesh connect "$session"
         fi
+      '';
+
+      tmuxYaziPopup = pkgs.writeShellScriptBin "tmux-yazi-popup" ''
+        set -eu
+        target_dir="''${1:-$PWD}"
+
+        ${pkgs.tmux}/bin/tmux kill-session -t popup-yazi 2>/dev/null || true
+        ${pkgs.tmux}/bin/tmux new-session -s popup-yazi -c "$target_dir" \
+          "${pkgs.tmux}/bin/tmux set status off; exec ${pkgs.yazi}/bin/yazi"
+        ${pkgs.tmux}/bin/tmux kill-session -t popup-yazi 2>/dev/null || true
+      '';
+
+      tmuxJjuiPopup = pkgs.writeShellScriptBin "tmux-jjui-popup" ''
+        set -eu
+        target_dir="''${1:-$PWD}"
+
+        ${pkgs.tmux}/bin/tmux kill-session -t popup-jjui 2>/dev/null || true
+        ${pkgs.tmux}/bin/tmux new-session -s popup-jjui -c "$target_dir" \
+          "${pkgs.tmux}/bin/tmux set status off; exec ${pkgs.jjui}/bin/jjui"
+        ${pkgs.tmux}/bin/tmux kill-session -t popup-jjui 2>/dev/null || true
       '';
 
     in
@@ -152,12 +173,15 @@
           tmuxResurrectSave
           tmuxSeshPicker
           tmuxSeshKiller
+          tmuxYaziPopup
+          tmuxJjuiPopup
           pkgs.tmuxPlugins.yank
           pkgs.tmuxPlugins.resurrect
           pkgs.tmuxPlugins.extrakto
           pkgs.tmuxPlugins.tmux-fzf
           pkgs.tmuxPlugins.tmux-floax
           pkgs.tmuxPlugins.jump
+          pkgs.yazi
         ];
 
         programs.tmux = {
@@ -208,12 +232,14 @@
             set -g @tmux-fzf-preview '0'
             set -g @tmux-fzf-order 'command:session:window:pane:keybinding:clipboard:process'
 
-            # tmux-floax configuration
+            # tmux-floax configuration (Prefix + t to toggle scratchpad terminal)
+            unbind t
             set -g @floax-width '80%'
             set -g @floax-height '80%'
             set -g @floax-border-color "#${c.border}"
             set -g @floax-text-color "#${c.fg}"
-            set -g @floax-bind 'P'
+            set -g @floax-bind 't'
+            set -g @floax-bind-menu 'P'
             set -g @floax-change-path 'true'
 
             # ─── Load Plugins (Async -b prevents startup deadlocks in tmux 3.6+) ──
@@ -227,8 +253,8 @@
             # ─── Sesh Session Manager (Prefix + K) ──────────────────────────
             bind-key K display-popup -E -w 80% -h 70% "${tmuxSeshPicker}/bin/tmux-sesh-picker"
 
-            # Last session toggle (Prefix + L via sesh, preserves history across kills)
-            bind -N "last-session (via sesh)" L run-shell "${pkgs.sesh}/bin/sesh last"
+            # Last session toggle (Prefix + BTab via sesh, preserves history across kills)
+            bind -N "last-session (via sesh)" BTab run-shell "${pkgs.sesh}/bin/sesh last"
 
             # Explicit manual session save & restore bindings using safe wrapper
             bind-key S run-shell "${tmuxResurrectSave}/bin/tmux-resurrect-save run"
@@ -247,8 +273,10 @@
             bind-key : command-prompt -T command
             bind-key \; run-shell -b "TMUX_FZF_OPTIONS='-p -w 80% -h 60% --no-preview' TMUX_FZF_PREVIEW=0 TMUX_FZF_CLIENT='#{client_tty}' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
 
-            # Native Floating jjui Popup (Prefix + g)
-            bind g display-popup -d "#{pane_current_path}" -w 85% -h 85% -E "${pkgs.jjui}/bin/jjui"
+            # Native Floating jjui Popup (Prefix + g) - toggleable
+            bind g if-shell -F '#{==:#{session_name},popup-jjui}' \
+              'detach-client' \
+              'if-shell -F "#{m/r:^(popup-|scratch),#{session_name}}" "detach-client" "display-popup -d \"#{pane_current_path}\" -w 85% -h 85% -E \"${tmuxJjuiPopup}/bin/tmux-jjui-popup \\\"#{pane_current_path}\\\"\""'
 
             # ─── Terminal & True Color support ───────────────────────────────
             set-option -a terminal-features ",xterm-256color:RGB,xterm-kitty:RGB,ghostty:RGB,foot:RGB,alacritty:RGB,tmux-256color:RGB,*:RGB"
@@ -259,10 +287,10 @@
 
             # Ensure COLORTERM=truecolor is always exported to all Tmux windows/panes
             set-environment -g COLORTERM "truecolor"
-            set -g update-environment "DISPLAY SSH_AUTH_SOCK SSH_CONNECTION WINDOWID XAUTHORITY SWAYSOCK WAYLAND_DISPLAY PATH COLORTERM"
+            set -g update-environment "DISPLAY SSH_AUTH_SOCK SSH_CONNECTION WINDOWID XAUTHORITY SWAYSOCK WAYLAND_DISPLAY PATH COLORTERM TERM TERM_PROGRAM KITTY_WINDOW_ID KITTY_PID"
             set -gw xterm-keys on
             set -s extended-keys on
-            set -g allow-passthrough on
+            set -g allow-passthrough all
             set -s set-clipboard on
             set -g focus-events on
             set -g mouse on
@@ -277,24 +305,29 @@
             setw -g automatic-rename-format '#{b:pane_current_command}'
 
             # ─── Window & Pane splitting ─────────────────────────────────────
-            # Neovim-style: v=side-by-side, s=top/bottom
+            # Neovim-style: v=side-by-side, s=top/bottom, _/\=full-span
             unbind '"'
             unbind %
             bind v split-window -h -c "#{pane_current_path}"
             bind | split-window -h -c "#{pane_current_path}"
             bind s split-window -v -c "#{pane_current_path}"
             bind - split-window -v -c "#{pane_current_path}"
+            bind _ split-window -f -v -c "#{pane_current_path}"
+            bind \\ split-window -f -h -c "#{pane_current_path}"
             bind c new-window -c "#{pane_current_path}"
             bind n new-window -c "#{pane_current_path}"
 
             # ─── Pane lifecycle & zooming ────────────────────────────────────
-            bind q kill-pane
+            bind q display-panes
             bind Q kill-window
+            bind X confirm-before -p "Kill session #S? (y/n)" kill-session
             bind x kill-pane
             bind z resize-pane -Z
             bind = select-layout tiled
             bind y setw synchronize-panes \; display-message "Pane synchronization: #{?pane_synchronized,ON,OFF}"
-            bind e choose-window
+            bind e if-shell -F '#{==:#{session_name},popup-yazi}' \
+              'detach-client' \
+              'if-shell -F "#{m/r:^(popup-|scratch),#{session_name}}" "detach-client" "display-popup -d \"#{pane_current_path}\" -w 85% -h 85% -E \"${tmuxYaziPopup}/bin/tmux-yazi-popup \\\"#{pane_current_path}\\\"\""'
             bind B break-pane
             bind b set -g status \; display-message "Status bar toggled"
             bind TAB last-window
@@ -306,11 +339,14 @@
 
             # Pane joining & fast pane swapping
             bind J choose-window 'join-pane -h -s "%%"'
+            bind j choose-window 'join-pane -v -s "%%"'
             bind -r '{' swap-pane -U
             bind -r '}' swap-pane -D
 
-            # ─── Pane resizing (Capital H, J, K, L) ──────────────────────────
+            # ─── Pane resizing (Capital H/L and Alt-hjkl) ────────────────────
             bind -r H resize-pane -L 5
+            bind -r L resize-pane -R 5
+            bind -r M-h resize-pane -L 5
             bind -r M-j resize-pane -D 5
             bind -r M-k resize-pane -U 5
             bind -r M-l resize-pane -R 5
@@ -343,6 +379,10 @@
               'switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"' \
               'switch-client -T passthrough \; display-message "ALT PASSTHROUGH: ON (Leader+a or Esc to exit)"'
 
+            bind -T passthrough M-h send-keys M-h \; switch-client -T passthrough
+            bind -T passthrough M-j send-keys M-j \; switch-client -T passthrough
+            bind -T passthrough M-k send-keys M-k \; switch-client -T passthrough
+            bind -T passthrough M-l send-keys M-l \; switch-client -T passthrough
             bind -T passthrough Escape switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"
             bind -T passthrough ` switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"
             bind -T passthrough a switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"
@@ -350,24 +390,32 @@
             # ─── Utility ─────────────────────────────────────────────────────
             # Quick config reload
             bind-key r run-shell 'if [ -f ~/.config/tmux/tmux.conf ]; then tmux source-file ~/.config/tmux/tmux.conf && tmux display-message "Reloaded ~/.config/tmux/tmux.conf"; elif [ -f ~/.tmux.conf ]; then tmux source-file ~/.tmux.conf && tmux display-message "Reloaded ~/.tmux.conf"; elif [ -f /etc/tmux.conf ]; then tmux source-file /etc/tmux.conf && tmux display-message "Reloaded /etc/tmux.conf"; else tmux display-message "Failed to reload tmux config"; fi'
-            # Clear scrollback history
-            bind C-k clear-history
+            # Clear scrollback history & terminal screen
+            bind C-k send-keys -R \; send-keys C-l \; clear-history
 
-            # ─── Vi Copy Mode ────────────────────────────────────────────────
+            # ─── Vi Copy Mode & Scrollback Search ────────────────────────────
+            set -g word-separators " @()[]{}':\""
             bind-key V copy-mode
+            bind / copy-mode \; send-keys ?
+            bind-key -T copy-mode-vi / command-prompt -i -I "#{pane_search_string}" -p "(search down)" { send-keys -X search-forward-incremental "%%%" }
+            bind-key -T copy-mode-vi ? command-prompt -i -I "#{pane_search_string}" -p "(search up)" { send-keys -X search-backward-incremental "%%%" }
             bind-key -T copy-mode-vi v send-keys -X begin-selection
             bind-key -T copy-mode-vi V send-keys -X select-line
             bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
             bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy 2>/dev/null || true"
+            bind-key -T copy-mode-vi Y send-keys -X copy-pipe-line-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy 2>/dev/null || true"
             bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe "${pkgs.wl-clipboard}/bin/wl-copy 2>/dev/null || true"
+            bind-key -T copy-mode-vi DoubleClick1Pane select-pane \; send-keys -X select-word \; run-shell -d 0.3 \; send-keys -X copy-pipe-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy 2>/dev/null || true"
+            bind-key -T copy-mode-vi TripleClick1Pane select-pane \; send-keys -X select-line \; run-shell -d 0.3 \; send-keys -X copy-pipe-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy 2>/dev/null || true"
+            bind-key -T root DoubleClick1Pane select-pane -t = \; if-shell -F "#{||:#{pane_in_mode},#{mouse_any_flag}}" "send-keys -M" "copy-mode -H ; send-keys -X select-word ; run-shell -d 0.3 ; send-keys -X copy-pipe-and-cancel '${pkgs.wl-clipboard}/bin/wl-copy 2>/dev/null || true'"
+            bind-key -T root TripleClick1Pane select-pane -t = \; if-shell -F "#{||:#{pane_in_mode},#{mouse_any_flag}}" "send-keys -M" "copy-mode -H ; send-keys -X select-line ; run-shell -d 0.3 ; send-keys -X copy-pipe-and-cancel '${pkgs.wl-clipboard}/bin/wl-copy 2>/dev/null || true'"
             bind-key -T copy-mode-vi WheelUpPane send-keys -X -N 2 scroll-up
             bind-key -T copy-mode-vi WheelDownPane send-keys -X -N 2 scroll-down
             bind p paste-buffer -p
-            # bind P choose-buffer  # Kept free for Floax floating scratchpad popup (Leader + P)
 
             # ─── Status Bar Styling ──────────────────────────────────────────
             set -g status-position top
-            set -g status-interval 1
+            set -g status-interval 5
             set -g status-justify left
             set -g status-style "fg=#${c.fg},bg=#${c.bg}"
 
@@ -383,10 +431,19 @@
             set -g status-right-length 100
             set -g status-right "#{?window_zoomed_flag,#[fg=#${c.bg},bg=#${c.yellow},bold] ZOOM #[default] ,}#[fg=#${c.teal},bold]#(${tmuxPathFormatter} '#{pane_current_path}') "
 
-            # Solid pane split borders
+            # Solid pane split borders & rounded popup borders
             set -g pane-border-lines single
             set -g pane-border-style "fg=#${c.border}"
             set -g pane-active-border-style "fg=#${c.accent}"
+            set -g popup-border-lines rounded
+            set -g popup-border-style "fg=#${c.border}"
+
+            # Copy-mode selection styling & pane overlay styling
+            set -g mode-style "fg=#${c.bg},bg=#${c.accent},bold"
+            set -g display-panes-colour "#${c.fgMid}"
+            set -g display-panes-active-colour "#${c.accent}"
+            set -g display-panes-time 3000
+            set -g display-time 2500
 
             set -g message-style "fg=#${c.accent},bg=#${c.bgSubtle},bold"
             set -g message-command-style "fg=#${c.accent},bg=#${c.bgSubtle},bold"
@@ -437,26 +494,7 @@
                   if test (count $argv) -gt 0
                       ${pkgs.sesh}/bin/sesh connect $argv[1]
                   else
-                      set -l session (${pkgs.sesh}/bin/sesh list --icons | ${pkgs.fzf}/bin/fzf \
-                          --height 70% \
-                          --reverse \
-                          --border rounded \
-                          --no-sort \
-                          --ansi \
-                          --prompt '⚡ ' \
-                          --header '  ^a all  ^t tmux  ^g configs  ^x zoxide  ^d kill/remove  ^f find' \
-                          --bind 'tab:down,btab:up' \
-                          --bind 'ctrl-a:change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons)' \
-                          --bind 'ctrl-t:change-prompt(🪟 )+reload(${pkgs.sesh}/bin/sesh list -t --icons)' \
-                          --bind 'ctrl-g:change-prompt(⚙️ )+reload(${pkgs.sesh}/bin/sesh list -c --icons)' \
-                          --bind 'ctrl-x:change-prompt(📁 )+reload(${pkgs.sesh}/bin/sesh list -z --icons)' \
-                          --bind 'ctrl-f:change-prompt(🔎 )+reload(${pkgs.findutils}/bin/find ~ -maxdepth 3 -type d -name .git 2>/dev/null | ${pkgs.gnused}/bin/sed s:/.git::)' \
-                          --bind 'ctrl-d:execute(${tmuxSeshKiller}/bin/tmux-sesh-killer {})+change-prompt(⚡ )+reload(${pkgs.sesh}/bin/sesh list --icons)' \
-                          --preview-window 'right:55%' \
-                          --preview '${pkgs.sesh}/bin/sesh preview {}')
-                      if test -n "$session"
-                          ${pkgs.sesh}/bin/sesh connect $session
-                      end
+                      ${tmuxSeshPicker}/bin/tmux-sesh-picker
                   end
               end
             '';

@@ -41,6 +41,7 @@ clue.setup({
 		{ mode = "n", keys = "<Leader>g", desc = "+git" },
 		{ mode = "n", keys = "<Leader>l", desc = "+lsp" },
 		{ mode = "n", keys = "<Leader>m", desc = "+dap" },
+		{ mode = "n", keys = "<Leader>r", desc = "+refactor/rename" },
 		{ mode = "n", keys = "<Leader>q", desc = "+quit/lists" },
 		{ mode = "n", keys = "<Leader>t", desc = "+toggles/terminal" },
 		{ mode = "n", keys = "<Leader>T", desc = "+tabs" },

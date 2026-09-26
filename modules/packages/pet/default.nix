@@ -299,12 +299,6 @@
               output = ""
 
               [[snippets]]
-              description = "Copy files modified on a custom day"
-              command = "target='<date=2026-09-15>'; next=''$(date -I -d \"''$target + 1 day\"); fd -e <ext=jpg> --changed-after \"''$target\" --changed-before \"''$next\" <dir=.> -x cp -t <dest=~/Pictures/Car\\ Show>"
-              tag = ["fd", "file", "copy", "date"]
-              output = ""
-
-              [[snippets]]
               description = "Mango get all clients"
               command = "nix-shell -p jq --run 'mmsg get all-clients | jq'"
               tag = ["mango", "api", "clients"]
