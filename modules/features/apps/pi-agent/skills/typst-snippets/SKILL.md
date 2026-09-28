@@ -42,6 +42,30 @@ Snippets built through the helpers `make_callout`, `make_codeblock`, and `wrap`
 do not have the trigger text inline; their triggers are the first string argument
 of each helper call. Grep for `make_callout(`, `make_codeblock(`, and `wrap(` too.
 
+## Reading the snippet library
+
+`references/typst.lua` is LuaSnip, not raw Typst. To reproduce a snippet, expand
+its nodes **in order, with no separator between them**:
+
+| Node | Meaning | Expansion |
+|---|---|---|
+| `t("…")` / `t({ "a", "b" })` | text | the string, or its lines joined by `\n` (an empty `""` is a blank line) |
+| `i(n, default)` | tab stop | the `default` text (or `""`), inserted exactly where it appears |
+| `c(n, { sn(…), … })` | choice | the **first** choice |
+| `sn(n, { … })` | nested snippet | expand its nodes in place |
+
+A snippet is `s({ trig = "…", desc = "…" }, { nodes… })`. So
+`t('#let theme = "')` + `c(1, { sn(nil, { t("dark") }), … })` + `t('"')` becomes
+`#let theme = "dark"`.
+
+For the `page` preamble you do **not** need to expand by hand: copy
+`references/page-preamble.typ`, which is the exact expanded output of the `page`
+snippet.
+
+For a worked body in this style, read `references/example.typ`: a definition
+callout, a Big-O card, display math, a code block, a table, and a themed diagram
+in one place.
+
 ## Always start from the page preamble
 
 Most snippets assume the document preamble defined by the `page` snippet. It sets
@@ -65,9 +89,9 @@ bar, but now share the same 6pt radius, 0.5pt base border, and 12pt/10pt inset a
 the other containers.
 
 **If a Typst document does not already contain this preamble, insert it first** by
-reproducing the `page` snippet expansion from `references/typst.lua` exactly.
-Callouts, cards, boxes, tables, code blocks, `cbf`, and `bigo` reference the
-`theme`/`ui-*` variables, so they render incorrectly (or fail) without it.
+copying `references/page-preamble.typ` verbatim. Callouts, cards, boxes, tables,
+code blocks, `cbf`, and `bigo` reference the `theme`/`ui-*` variables, so they
+render incorrectly (or fail) without it.
 
 ## Palette
 
@@ -97,10 +121,8 @@ faint border and `rgb("<hex>15")` for the fill.
 
 ## Callout boxes (canonical pattern)
 
-Every callout (`note`, `info`, `tip`, `warn`/`warning`, `caution`, `danger`,
-`important`, `def`/`definition`, `thm`/`theorem`, `lem`/`lemma`, `cor`/`corollary`,
-`prop`, `ex`/`example`, `question`, `prob`, `sol`, `rem`/`remark`, `key`/`takeaway`)
-expands to exactly:
+Every callout expands to this shape. Substitute the colour, icon, and title from
+the table below:
 
 ```typst
 #block(
@@ -117,13 +139,29 @@ expands to exactly:
 )
 ```
 
-Substitute the accent color and the icon/title/label per the trigger. Icon + title
-pairs: 📝 Note, ℹ Info, 💡 Tip, ⚠ Warning, 🚨 Caution, 🛑 Danger, ❗ Important,
-📖 Definition, 📐 Theorem, 🧩 Lemma, 📎 Corollary, 💡 Proposition, ✏ Example,
-❓ Question, ❓ Problem, 💡 Solution, 💬 Remark, 📌 Key Takeaway.
+| Trigger | Colour | Icon | Title |
+|---|---|---|---|
+| `note` | blue `#3182ce` | 📝 | Note |
+| `info` | blue | ℹ | Info |
+| `tip` | green `#38a169` | 💡 | Tip |
+| `warn` / `warning` | orange `#dd6b20` | ⚠ | Warning |
+| `caution` | red `#e53e3e` | 🚨 | Caution |
+| `danger` | red | 🛑 | Danger |
+| `important` | red | ❗ | Important |
+| `def` / `definition` | blue | 📖 | Definition |
+| `thm` / `theorem` | green | 📐 | Theorem |
+| `lem` / `lemma` | purple `#805ad5` | 🧩 | Lemma |
+| `cor` / `corollary` | blue | 📎 | Corollary |
+| `prop` | blue | 💡 | Proposition |
+| `ex` / `example` | orange | ✏ | Example |
+| `question` | purple | ❓ | Question |
+| `prob` | purple | ❓ | Problem |
+| `sol` | green | 💡 | Solution |
+| `rem` / `remark` | grey `#718096` | 💬 | Remark |
+| `key` / `takeaway` | orange | 📌 | Key Takeaway |
 
-The generic `callout` snippet is the same pattern with a color `choice_node`
-(blue → green → orange → red → purple).
+`proof` is a separate grey block (see below). The generic `callout` snippet is the
+same pattern with a colour `choice_node` (blue → green → orange → red → purple).
 
 ## Proof
 
@@ -144,10 +182,14 @@ The generic `callout` snippet is the same pattern with a color `choice_node`
 
 ## Code blocks and raw styling
 
-- `codeshow` / `rawshow` insert the `lang-meta` map plus the `#show raw.where(block: true)`
-  rule (background, radius, stroke, header bar with Nerd Font devicon + filename/lang)
-  and the `#show raw.where(block: false)` inline-code rule. Drop the full block in
-  verbatim; do not simplify it.
+- The `page` preamble already installs all shared code styling: the `lang-meta` map,
+  the `#show raw.where(block: true)` rule (background, radius, stroke, header bar
+  with Nerd Font devicon + filename/lang), **and** the
+  `#show raw.where(block: false)` inline-code rule. Do not re-insert any of them.
+- `codeshow` / `rawshow` are only for documents that do **not** use the `page`
+  preamble; they insert the `lang-meta` map plus the block `raw` rule. Do not apply
+  them on top of `page` — the rules are redundant. `codeshow` used to also re-emit
+  the inline rule, which applied twice and produced a double border on inline code.
 - `cb <lang>` / `raw` / ` ``` ` and the language-specific `cbpy`, `cbsql`, `cbv`/`cbverilog`,
   `cbjava`, `cbc`, `cbcpp`, `cbrs`, `cbjs`, `cbts`, `cbsh`/`cbbash`, `cbnix`, `cblua`,
   `cbtyp`, `cbasm`, `cbhtml`, `cbcss`, `cbjson`, `cbgo`, `cbhs` produce fenced code
@@ -159,8 +201,8 @@ The generic `callout` snippet is the same pattern with a color `choice_node`
 - `ic` is inline code: `` `code` `` (a `ui-surface` box with `ui-radius-sm` and a
   `0.5pt + ui-border` stroke).
 
-If a document uses code blocks, make sure `codeshow`/`rawshow` has been applied so
-they render with the header bar; otherwise the fenced block falls back to plain raw.
+Because the `page` preamble installs the block `raw` rule, fenced code in a
+page-based document renders with the header bar automatically.
 
 ## Tables
 
@@ -191,7 +233,7 @@ full-width `table.hline(stroke: 0.5pt + ui-border)` after the `A`/`B` row. Use
 Keep the wrapper, neutral header fill, and `ui-border` separator exactly as
 templated; do not reintroduce `stroke-color` or the accent-tinted header.
 
-## Figures, media, and diagrams
+## Figures and diagrams
 
 - `fig` → `#figure(image("path", width: 80%), caption: [...])`.
 - `img` → `#image("path", width: 100%)`.
@@ -203,178 +245,11 @@ templated; do not reintroduce `stroke-color` or the accent-tinted header.
   structure as a callout (`left: 3pt + rgb("#3182ce")`, `rest: 0.5pt + rgb("#3182ce35")`,
   `fill: rgb("#3182ce15")`, `radius: ui-radius`) plus a bold title and 2-column grid.
 
-## Diagrams (CeTZ, Zap, and mmdr)
-
-**Every diagram is code-generated — never a screenshot or photo** (unless the
-figure is inherently an image, e.g. a software UI or a scan). Use one of three
-tools:
-
-- **Zap** for digital-logic circuits.
-- **CeTZ** for anything geometric: automata, graphs, trees, block/architecture
-  diagrams, coordinate sketches.
-- **mmdr** for anything Mermaid models well: flowcharts, sequence, state, class,
-  ER, Gantt, pie, git graphs. Prefer mmdr when it fits — it is far less
-  error-prone than placing CeTZ coordinates by hand.
-
-Diagrams are the number-one source of failed compiles. The two rules that fix
-almost all of them:
-
-1. **Import the package(s) at the very top of the file.** The `page` preamble does
-   *not* import them, and `#cetz`/`#zap`/`mermaid` are unknown without this (the
-   `cetzsetup` and `mmdsetup` snippets emit these lines):
-
-   ```typst
-   #import "@preview/cetz:0.5.2"
-   #import "@preview/zap:0.6.0"   // only needed for digital-logic circuits
-   #import "@preview/mmdr:0.2.2": mermaid
-   ```
-
-   These are the versions installed on this machine. Keep them pinned and do not
-   paste examples written for other versions — the CeTZ API changed across 0.3,
-   0.4, and 0.5 (for example, `..bezier` spreads and some old helpers no longer
-   exist). If a function is "unknown" or an argument "cannot be spread", the
-   example you copied is for the wrong version.
-
-2. **Compile after every diagram you add.** A broken canvas can take down the
-   whole document; catching it immediately tells you exactly which block is at
-   fault.
-
-Pick the right tool:
-
-| Diagram | Use |
-|---|---|
-| Logic gates / digital circuits | Zap `#zap.circuit(...)` |
-| Automata, graphs, trees, block/architecture diagrams, coordinate sketches | CeTZ `#cetz.canvas(...)` |
-| Flowcharts, sequence, ER, Gantt, class diagrams | Mermaid (`mmd`, `erd`, `gantt`) |
-
-Unlike the text snippets, diagrams are **composed, not copied** — use the
-templates below as starting points and build the specific figure you need.
-
-### Zap: digital logic circuits
-
-Importing `zap: *` also brings `cetz` into scope, which is why the style call is
-`cetz.draw.set-style(...)`.
-
-```typst
-#zap.circuit({
-  import zap: *
-  cetz.draw.set-style(zap: (variant: "ieee"))
-  node("A", (0, 0.2), label: (content: "A", anchor: "west", distance: 2pt))
-  node("B", (0, -0.2), label: (content: "B", anchor: "west", distance: 2pt))
-  node("C", (2.5, 0), label: (content: "C", anchor: "east", distance: 2pt))
-  land("g1", (1.25, 0), label: "AND")
-  wire("A", "g1.in1", anchor: "east")
-  wire("B", "g1.in2", anchor: "east")
-  wire("g1.out", "C", anchor: "west")
-})
-```
-
-Gate functions (all take `(name, position, label: ...)` and expose `.in1`,
-`.in2`, `.out` anchors):
-
-| Function | Gate | Function | Gate |
-|---|---|---|---|
-| `land` | AND | `lnand` | NAND |
-| `lor` | OR | `lnor` | NOR |
-| `lxor` | XOR | `lxnor` | XNOR |
-| `lnot` | NOT (use `.in1` → `.out`) | | |
-
-`node(name, pos, label: ...)` creates a labeled endpoint; `wire(from, to,
-anchor: "east"/"west")` draws the connection. Use `import zap: *` for the gate,
-node, and wire functions, and `cetz.draw.*` for anything else (arrows, text,
-groups).
-
-### CeTZ: general diagrams
-
-The `cetz.draw` functions are available after `import cetz.draw: *` inside the
-canvas. Coordinates are in centimetres. Use the theme's `text-color` for strokes
-so diagrams match the page.
-
-```typst
-#cetz.canvas({
-  import cetz.draw: *
-  set-style(stroke: (paint: text-color, thickness: 0.8pt), fill: none)
-  // shapes
-  rect((0, 0), (1.2, 1))
-  circle((3, 0.5), radius: 0.5)
-  // arrow
-  line((1.2, 0.5), (2.5, 0.5), mark: (end: ">"))
-  // labels (Typst content, so math works)
-  content((0.6, 0.5), [Block])
-  content((3, 0.5), [$q_0$])
-})
-```
-
-Useful primitives: `line`, `rect`, `circle`, `bezier(start, end, control,
-mark: (end: ">"))`, `content(pos, [label])`, `grid`, `arc`, `polygon`. Give an
-element `name: "x"` and connect it later with `line("x.east", "y.west")`.
-
-Automaton / state machine:
-
-```typst
-#cetz.canvas({
-  import cetz.draw: *
-  set-style(stroke: (paint: text-color, thickness: 0.8pt), fill: none)
-  circle((0, 0), radius: 0.35)
-  content((0, 0), [$q_0$])
-  circle((1.5, 0), radius: 0.35)
-  content((1.5, 0), [$q_1$])
-  line((0.35, 0), (1.15, 0), mark: (end: ">"))
-  content((0.75, 0.2), [a])
-  // curved return edge: bezier(start, end, control-point)
-  bezier((1.5, 0.35), (0, 0.35), (0.75, 0.95), mark: (end: ">"))
-  content((0.75, 0.55), [b])
-})
-```
-
-### mmdr: Mermaid diagrams
-
-Always pass `theme: mmdr-theme` (defined in the `page` preamble) so the diagram
-matches the dark page instead of rendering a white box. The diagram source is a
-multiline string and must be followed by a comma before any named argument.
-
-```typst
-#mermaid(
-  "graph LR; A[Start]-->B{Decision}; B-->|yes|C[Do]; B-->|no|D[Stop];",
-  theme: mmdr-theme,
-)
-```
-
-Supported diagram types: `graph`/`flowchart` (LR/TD), `sequenceDiagram`,
-`stateDiagram-v2`, `classDiagram`, `erDiagram`, `gantt`, `pie`, `gitGraph`. The
-renderer does **not** implement all of Mermaid JS — if a diagram errors, simplify
-the syntax or fall back to CeTZ. Keep node labels short, and wrap it in a figure:
-
-```typst
-#figure(caption: [Light controller state machine])[
-  #mermaid(
-    "stateDiagram-v2
-      [*] --> Off
-      Off --> On: press
-      On --> Off: press",
-    theme: mmdr-theme,
-  )
-]
-```
-
-### Diagram debugging checklist
-
-- Missing `#import` → `unknown variable: cetz` / `unknown variable: zap` /
-  `unknown variable: mermaid`. Add the import at the top (rule 1).
-- Mermaid renders a white box on the dark page → you forgot
-  `theme: mmdr-theme`.
-- "expected comma" on a Mermaid string → add a `,` after the closing quote
-  before `theme:`.
-- Keep every drawing call inside `#zap.circuit({ ... })` or
-  `#cetz.canvas({ ... })`, with `import cetz.draw: *` as the first line inside a
-  `cetz.canvas` block.
-- `set-style(...)` before drawing, not after, or the first shapes use defaults.
-- Overlapping/overflowing shapes usually mean the coordinates are too close or
-  the diagram is too wide. Spread coordinates out and wrap the canvas in
-  `#figure(caption: [...])[...]`; for side-by-side layouts use
-  `#grid(columns: (1fr, 1fr), align: center + horizon, ...)`.
-- If a diagram is proving hard to generate correctly, fall back to Mermaid or a
-  short prose description rather than shipping a broken canvas.
+Diagrams are the number-one source of failed compiles and are **composed, not
+copied**. Before drawing one, read `references/diagrams.md` for the import lines,
+the tool-choice table, the Zap/CeTZ/mmdr templates, and the debugging checklist.
+The essentials: import the package at the top of the file, and compile after
+every diagram you add.
 
 ## Headings and layout
 
@@ -407,19 +282,10 @@ the syntax or fall back to CeTZ. Keep node labels short, and wrap it in a figure
 
 ## Mathematics
 
-Inline `$...$`, display `$ ... $`; multi-line `eq`, aligned `eqalign` (`&=`).
-Symbols map to Typst math names (not LaTeX): `frac (a)/(b)`, `sum_(i=0)^(n)`,
-`prod_...`, `integral_(a)^(b)` (trigger `int`), `lim_(x -> inf)`, `sqrt`, `root(n, x)`,
-`abs |x|`, `norm ||x||`, `(diff f)/(diff x)` (`pdiff`), `(d f)/(d x)` (`diff`),
-`binom`, `ceil`, `floor`, `cases`, `vec`, `mat`/`mat2`/`mat3`, `det`, `tr` (`trace`),
-`^T` (`transpose`), `^(-1)` (`inv`), `conj`, `hat`, `overline` (`bar`), `tilde`,
-`dot`, `dot.double` (`ddot`), `lr(...)`, `lr([...])`, `lr({...})`, set literals,
-`infinity`, `nabla`, `arrow`/`arrow.r`/`arrow.l`/`arrow.t`/`arrow.b`,
-`<==>` (`iff`), `==>`, `therefore`, `because`, `forall`, `exists`, `in`, `in.not`,
-`subset`, `union`, `intersection`, `nothing`, `!=`, `<=`, `>=`, `approx`, `times`,
-`dot.c`, `RR`, `NN`, `ZZ`, `QQ`, `CC`, and Greek names (`alpha`, `beta`, `gamma`,
-`delta`, `epsilon`, `theta`, `lambda`, `mu`, `pi`, `sigma`, `omega`, `phi`, `psi`,
-`rho`, `tau`).
+Inline math is `$...$`; display math is `$ ... $` on its own line. Use **Typst math
+names, never LaTeX**, and define each symbol on first use. The full trigger →
+expansion tables (delimiters, operators, matrices, relations, sets, Greek letters)
+are in `references/math.md`.
 
 ## Trigger quick index
 
@@ -450,5 +316,10 @@ Math: `$` `$$` `eq` `eqalign` `frac` `sum` `prod` `int` `lim` `sqrt` `root` `abs
 
 `references/typst.lua` is copied at build time from
 `modules/features/nvim-src/lua/snippets/typst.lua`, which is the single source of
-truth. Edit that file (not the copy) when snippets change; the bundled copy refreshes
-on the next rebuild.
+truth. Edit that file (not the copy) when snippets change; the bundled copy
+refreshes on the next rebuild.
+
+`references/page-preamble.typ` is the expanded `page` snippet; `references/diagrams.md`,
+`references/math.md`, and `references/example.typ` are hand-written. If the `page`
+snippet changes, regenerate `page-preamble.typ` and keep the hand-written
+references in sync.

@@ -2,11 +2,13 @@
 
 The checklist for any Typst document written for this user. Read it before
 writing or restructuring a document. `SKILL.md` covers the snippet mechanics;
-this file covers the choices around them.
+this file covers the choices around them. For a short worked body that follows
+these rules, see `references/example.typ`.
 
 ## 1. Always start from the `page` preamble
 
-- Reproduce the `page` snippet verbatim and do not reorder or trim it.
+- Start from `references/page-preamble.typ` (the expanded `page` snippet) verbatim;
+  do not reorder or trim it.
 - It defines `theme`, `page-type`, `course`, `date`, the colours (`text-color`,
   `stroke-color`, `bg-color`), the UI tokens (`ui-radius`, `ui-radius-sm`,
   `ui-border`, `ui-surface`, `ui-surface-raised`), `mmdr-theme`, and the `#show`
@@ -54,7 +56,7 @@ this file covers the choices around them.
 | Term + definition line | `kv` / `term` |
 | Comparison / truth table | `tbl` / `tbl3` / `tbl4` / `truthtable` |
 | Algorithm cost | `bigo` |
-| Code | `cb*` / `codeshow` / `ic` |
+| Code | `cb*` / `ic` |
 | Diagram | see §7 |
 | Callout of any colour | `callout` |
 | Tag / label | `badge` |
@@ -76,15 +78,16 @@ For a full listing of every trigger, grep the bundled `references/typst.lua`
 ## 6. Code
 
 - Fence code with the language tag (`cbpy`, `cbnix`, …). Put the filename on the
-  first line of the block when a header is wanted; the `codeshow`/`rawshow` rule
-  treats a first line without spaces as a filename.
-- Apply `codeshow` (or `rawshow`) once per document if the document contains
-  code, otherwise blocks render as plain raw.
+  first line of the block when a header is wanted; the block `raw` show rule
+  (installed by `page`) treats a first line without spaces as a filename.
+- The `page` preamble already installs the block- and inline-`raw` show rules, so
+  do **not** apply `codeshow`/`rawshow` on top of it. Those snippets are only for
+  documents that do not use the `page` preamble.
 - Inline identifiers use `ic` (`` `code` ``).
 
 ## 7. Diagrams
 
-See `SKILL.md` → "Diagrams" for the tools, imports, and templates. The rules:
+See `references/diagrams.md` for the tools, imports, and templates. The rules:
 
 - **All diagrams are code-generated.** Never paste a screenshot or photo unless
   the figure is inherently an image (software UI, a photograph, a scan).
@@ -119,7 +122,7 @@ See `SKILL.md` → "Diagrams" for the tools, imports, and templates. The rules:
 
 - Never hardcode page/font/colour settings. Use `theme`, `text-color`,
   `ui-*`, and `mmdr-theme`.
-- Callout accents come from the fixed palette (`#3182ce`, `#38a169`, `#db6b20`,
+- Callout accents come from the fixed palette (`#3182ce`, `#38a169`, `#dd6b20`,
   `#e53e3e`, `#805ad5`, `#718096`); do not invent new ones.
 
 ## 11. Prohibited
@@ -142,7 +145,7 @@ See `SKILL.md` → "Diagrams" for the tools, imports, and templates. The rules:
 
 - [ ] `page` preamble present and untouched.
 - [ ] One h1; heading levels not skipped.
-- [ ] Every code block has a language tag; `codeshow` applied if needed.
+- [ ] Every code block has a language tag (no stray `codeshow`/`rawshow` on top of `page`).
 - [ ] Every diagram imported, themed, captioned, and code-generated.
 - [ ] Math uses Typst names; symbols defined.
 - [ ] No hardcoded colours/fonts; no new packages.

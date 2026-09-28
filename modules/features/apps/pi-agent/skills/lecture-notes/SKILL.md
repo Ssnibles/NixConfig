@@ -72,8 +72,9 @@ evidence behind them for durable learning.
 
 ## Suggested structure
 
-Use the user's snippet library for all styling (see the `typst-snippets` skill);
-do not invent markup. A typical set of notes:
+Use the user's snippet library for all styling (see the `typst-snippets` skill
+and its `references/example.typ` for a worked body); do not invent markup. A
+typical set of notes:
 
 1. Page preamble (`page` snippet), title block, course, date.
 2. **Big picture** — one short paragraph: the mental model for the topic.
@@ -95,19 +96,16 @@ systems topic on `circuit`/`cetz`; an algorithms topic on `bigo` + `cbsql`/`cbpy
 ## Quality bar (check before finishing)
 
 - Could a student who missed the lecture learn the topic from this alone?
-- Is every claim explained, or merely asserted?
-- Is there at least one example per abstract idea?
-- Is there at least one self-test per concept?
-- Could you cut 20% without losing meaning? If so, cut it.
-- Does it read as a coherent explanation, or as disconnected slide bullets?
+- Is every claim explained, or merely asserted? Definitions need an example;
+  formulas need an interpretation.
+- Is there at least one example per abstract idea, and one self-test per concept?
+- Is the structure conceptual rather than slide-per-section? No verbatim bullets,
+  "Agenda"/"Recap" filler, or outside material presented as the lecture's.
+- No decorative diagrams, and no screenshots where a clean `cetz`/`mmd` diagram
+  belongs.
+- Does it read as a coherent explanation, or as disconnected bullets and walls of
+  prose that can't be skimmed?
+- Could you cut 20% without losing meaning? If so, cut it — length is not effort;
+  density of meaning is.
 - Are the facts faithful to the source? Never invent content; mark genuine
   uncertainty as an open question instead.
-
-## Anti-patterns
-
-- Slide-per-section, verbatim bullets, "Agenda" and "Recap" filler.
-- Definitions with no example; formulas with no interpretation.
-- Decorative diagrams, or screenshots where a clean `cetz`/`mmd` diagram belongs.
-- Walls of prose that can't be skimmed, or bullet lists that can't be read as prose.
-- Presenting outside material as if it were in the lecture.
-- Padding: length is not effort; density of meaning is.

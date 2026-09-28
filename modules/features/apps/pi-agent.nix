@@ -45,6 +45,10 @@
         mkdir -p $out/references
         install -m 0444 ${./pi-agent/skills/typst-snippets/SKILL.md} $out/SKILL.md
         install -m 0444 ${./pi-agent/skills/typst-snippets/references/document-conventions.md} $out/references/document-conventions.md
+        install -m 0444 ${./pi-agent/skills/typst-snippets/references/diagrams.md} $out/references/diagrams.md
+        install -m 0444 ${./pi-agent/skills/typst-snippets/references/math.md} $out/references/math.md
+        install -m 0444 ${./pi-agent/skills/typst-snippets/references/page-preamble.typ} $out/references/page-preamble.typ
+        install -m 0444 ${./pi-agent/skills/typst-snippets/references/example.typ} $out/references/example.typ
         install -m 0444 ${../nvim-src/lua/snippets/typst.lua} $out/references/typst.lua
       '';
 
