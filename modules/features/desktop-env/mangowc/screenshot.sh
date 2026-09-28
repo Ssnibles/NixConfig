@@ -37,12 +37,38 @@ if [ -f "$mango_conf" ]; then
 fi
 
 # MangoWC border restoration & cleanup trap
+#
+# setoption is the only way to change borderpx/border_radius at runtime, but
+# every setoption call ends up re-applying the tagrules (reset_option ->
+# reapply_tagrule), which forces the configured default layout on every tag.
+# Snapshot the focused tag's layout first so it can be put back afterwards.
+#
+# NOTE: temporarily disabled to test the compositor-side fix (PR #1451); the
+# snapshot/restore calls below are commented out. Re-enable if running an
+# unpatched mango.
+MANGO_LAYOUT=""
+mango_snapshot_layout() {
+  if [ "$IS_MANGO" != true ]; then
+    return
+  fi
+  local mon sym
+  mon=$(mmsg get all-monitors 2>/dev/null) || return
+  sym=$(printf '%s\n' "$mon" | grep -o '"active":true[^}]*' \
+    | grep -o '"layout_symbol":"[^"]*"' | head -n1 \
+    | sed -E 's/.*"layout_symbol":"([^"]*)".*/\1/')
+  [ -n "$sym" ] || return
+  MANGO_LAYOUT=$(mmsg get layouts 2>/dev/null \
+    | grep -o "{[^{}]*\"symbol\":\"$sym\"[^{}]*}" | head -n1 \
+    | sed -E 's/.*"name":"([^"]*)".*/\1/')
+}
+
 MANGO_RESTORED=false
 restore_mango() {
   if [ "$IS_MANGO" = true ] && [ "$MANGO_RESTORED" = false ]; then
     MANGO_RESTORED=true
     mmsg dispatch setoption,borderpx,"$BORDERPX" >/dev/null 2>&1
     mmsg dispatch setoption,border_radius,"$BORDER_RADIUS" >/dev/null 2>&1
+    # [ -n "$MANGO_LAYOUT" ] && mmsg dispatch setlayout,"$MANGO_LAYOUT" >/dev/null 2>&1
   fi
 }
 
@@ -69,8 +95,12 @@ cleanup() {
 trap cleanup EXIT INT TERM HUP
 
 if [ "$IS_MANGO" = true ]; then
+  # mango_snapshot_layout
   mmsg dispatch setoption,borderpx,0 >/dev/null 2>&1
   mmsg dispatch setoption,border_radius,0 >/dev/null 2>&1
+  # Workaround for unpatched mango: setoption re-applies tagrules and resets
+  # the layout. Disabled while testing the compositor-side fix (PR #1451).
+  # [ -n "$MANGO_LAYOUT" ] && mmsg dispatch setlayout,"$MANGO_LAYOUT" >/dev/null 2>&1
 fi
 
 # Resolve accent color
