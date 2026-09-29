@@ -374,8 +374,17 @@
         # first launch shows zellij's plugin permission prompt, which is awkward
         # to answer for a top-bar plugin (the bar must be focused first). zellij
         # keys the cache by the plugin's absolute path.
+        #
+        # `type = "copy"` (rather than hjem's default symlink) is important:
+        # this file is zellij's *writable* permission cache. As a symlink into
+        # the read-only /nix/store, zellij cannot persist permissions it grants
+        # at runtime, so prompts for plugins that aren't pre-granted come back
+        # forever. A real copy is writable; hjem refreshes it (with the current
+        # plugin paths) on each activation.
         ".cache/zellij/permissions.kdl" = {
           clobber = true;
+          type = "copy";
+          permissions = "644";
           text = ''
             "${zjbar}/bin/zjbar.wasm" {
                 ReadApplicationState
