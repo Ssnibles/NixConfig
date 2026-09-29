@@ -193,9 +193,10 @@
               SwitchToMode "Locked"
             }
 
-            // copy / search
+            // copy / search. tmux parity: `V` enters copy (Scroll) mode,
+            // and `/` / `?` start a search prompt.
             bind "V" { SwitchToMode "Scroll"; }
-            bind "/" { SwitchToMode "EnterSearch"; SearchInput 0; }
+            bind "/" "?" { SwitchToMode "EnterSearch"; SearchInput 0; }
 
             // sessions
             // (tmux also binds `K` to the sesh picker, but zellij keeps the
@@ -212,7 +213,16 @@
             }
           }
 
-          // Scrollback / copy mode (leader + V).
+          // Scrollback / copy mode (leader + V), modelled on tmux copy-mode-vi.
+          //
+          // NOTE: zellij has no keyboard text selection. There is no
+          // BeginSelection / SelectLine / block-select action and therefore no
+          // `v`, `V` or `Ctrl v` keybind (zellij-org/zellij#1486, #2840). Text
+          // is selected with the mouse -- double-click = word, triple-click =
+          // line, drag = range -- and copied automatically because of
+          // `copy_on_select true`; `y` below re-copies the active selection.
+          // For pure-keyboard selection use `e` (EditScrollback) and copy out
+          // of $EDITOR.
           scroll {
             bind "Ctrl c" "Ctrl s" "Esc" "q" { ScrollToBottom; SwitchToMode "Locked"; }
             bind "j" "Down" { ScrollDown; }
@@ -223,6 +233,13 @@
             bind "u" { HalfPageScrollUp; }
             bind "Ctrl f" "PageDown" "Right" "l" { PageScrollDown; }
             bind "Ctrl b" "PageUp" "Left" "h" { PageScrollUp; }
+            // tmux copy-mode-vi search: `/` forward, `?` backward, `n` next,
+            // `N` previous. Direction is picked with n/N after the query.
+            bind "/" "?" { SwitchToMode "EnterSearch"; SearchInput 0; }
+            bind "n" { Search "down"; }
+            bind "N" { Search "up"; }
+            // tmux `y` (copy-pipe-and-cancel). Safe no-op without a selection.
+            bind "y" { Copy; SwitchToMode "Locked"; }
             bind "e" { EditScrollback; SwitchToMode "Locked"; }
             bind "s" { SwitchToMode "EnterSearch"; SearchInput 0; }
             bind "[" { ScrollToPreviousPrompt; }
@@ -231,13 +248,15 @@
             bind "c" { CopyLastCommandOutput; SwitchToMode "Locked"; }
           }
 
-          // Search (leader + /).
+          // Search (leader + /). `n`/`N` mirror tmux copy-mode-vi next/prev;
+          // `p` is kept as zellij's native "up" alias, `/`/`?` re-prompt.
           search {
-            bind "Ctrl c" "Esc" { ScrollToBottom; SwitchToMode "Locked"; }
+            bind "Ctrl c" "Esc" "q" { ScrollToBottom; SwitchToMode "Locked"; }
             bind "j" "Down" { ScrollDown; }
             bind "k" "Up" { ScrollUp; }
             bind "n" { Search "down"; }
-            bind "p" { Search "up"; }
+            bind "N" "p" { Search "up"; }
+            bind "/" "?" { SwitchToMode "EnterSearch"; SearchInput 0; }
             bind "c" { SearchToggleOption "CaseSensitivity"; }
             bind "w" { SearchToggleOption "Wrap"; }
             bind "o" { SearchToggleOption "WholeWord"; }

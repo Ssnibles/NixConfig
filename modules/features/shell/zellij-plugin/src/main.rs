@@ -115,7 +115,7 @@ impl ZellijPlugin for State {
                 left.push_str(&gap);
                 left_w += 1;
             }
-            let label = format!(" {session} ");
+            let label = format!(" {} ", session.to_uppercase());
             left.push_str(&seg(&label, bg, accent, true));
             left_w += label.chars().count();
             first = false;
@@ -138,7 +138,7 @@ impl ZellijPlugin for State {
             let name = if stored_name.is_empty() || is_default_tab_name(stored_name) {
                 String::new()
             } else {
-                format!(" {stored_name}")
+                format!(" {}", stored_name.to_uppercase())
             };
             // The focused tab gets extra left/right margin around its number.
             let label = if tab.active {
@@ -167,6 +167,7 @@ impl ZellijPlugin for State {
 
         let pad = cols.saturating_sub(left_w + right_w);
         let mut out = String::new();
+        out.push_str(reset_code());
         out.push_str(&bg_code(bg));
         out.push_str(&left);
         if pad > 0 {
@@ -226,14 +227,20 @@ impl State {
     }
 }
 
-/// Builds an ANSI-styled run. Every segment sets both fg and bg so adjacent
-/// segments can't bleed into each other.
+/// Builds an ANSI-styled run. Every segment resets attributes first and then
+/// sets both fg and bg, so neither colours nor bold can bleed into the next
+/// segment (and `bold: false` truly means regular weight).
 fn seg(text: &str, fg: Rgb, bg: Rgb, bold: bool) -> String {
     let bold = if bold { "\x1b[1m" } else { "" };
     format!(
-        "{bold}\x1b[38;2;{};{};{}m\x1b[48;2;{};{};{}m{text}",
+        "{}{bold}\x1b[38;2;{};{};{}m\x1b[48;2;{};{};{}m{text}",
+        reset_code(),
         fg.0, fg.1, fg.2, bg.0, bg.1, bg.2
     )
+}
+
+fn reset_code() -> &'static str {
+    "\x1b[0m"
 }
 
 fn bg_code((r, g, b): Rgb) -> String {

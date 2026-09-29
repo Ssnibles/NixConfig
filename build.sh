@@ -16,7 +16,7 @@
 #   ./build.sh -n                    rebuild without committing
 #   ./build.sh -m "fix: wifi drops"  rebuild + commit with a message
 #   ./build.sh laptop boot -t feat -s niri -m "add sticky rules"
-#   ./build.sh -b -m "docs: ..."     commit staged changes, no rebuild
+#   ./build.sh -b -m "docs: ..."     commit without rebuilding
 #
 # Host defaults to the current hostname and action to "switch". If -m is
 # omitted on an interactive terminal, you're prompted for the commit message.
@@ -50,9 +50,9 @@ Options:
   -t, --type <type>     Conventional commit type (default: build)
   -s, --scope <scope>   Conventional commit scope
   -n, --no-commit       Rebuild but do not commit
-  -b, --no-build        Commit staged changes without rebuilding
+  -b, --no-build        Commit without rebuilding
   -e, --edit            Edit the commit message in $EDITOR
-  -y, --yes             Skip confirmation and use the default message
+  -y, --yes             Skip the proceed confirmation
   -h, --help            Show this help
 
 Uses jj + nh when available, otherwise git + nixos-rebuild.
@@ -100,6 +100,7 @@ done
 for p in ${positionals[@]+"${positionals[@]}"}; do
   if [[ -z "$HOST" ]] && contains "$p" ${HOSTS[@]+"${HOSTS[@]}"}; then
     HOST="$p"
+    contains "$p" "${ACTIONS[@]}" && warn "'$p' is both a host and an action; treating it as the host"
   elif contains "$p" "${ACTIONS[@]}"; then
     ACTION="$p"
   else
@@ -141,6 +142,13 @@ fi
 if [[ "$DO_BUILD" == false && "$DO_COMMIT" == false ]]; then
   die "nothing to do (--no-build and --no-commit)"
 fi
+if [[ "$DO_BUILD" == true && "$HOST" != "$LOCAL_HOST" && "$ACTION" != build ]]; then
+  die "'$ACTION' would activate $HOST's config on $LOCAL_HOST; use the 'build' action, or run this on $HOST"
+fi
+if [[ "$DO_COMMIT" == false ]] \
+  && [[ "$TYPE" != build || -n "$SCOPE" || -n "$MESSAGE" || "$EDIT_MESSAGE" == true ]]; then
+  warn "commit options (-t/-s/-m/-e) are ignored with --no-commit"
+fi
 if [[ "$EDIT_MESSAGE" == true && ! -t 0 ]]; then
   die "-e/--edit requires an interactive terminal"
 fi
@@ -152,7 +160,11 @@ if [[ "$ASSUME_YES" != true && -t 0 ]]; then
   step "Review"
   info "host:   $HOST"
   info "action: $ACTION"
-  info "build:  $(if [[ "$USE_NH" == true ]]; then echo "nh os $ACTION"; else echo "nixos-rebuild $ACTION"; fi)"
+  if [[ "$DO_BUILD" == true ]]; then
+    info "build:  $(if [[ "$USE_NH" == true ]]; then echo "nh os $ACTION"; else echo "nixos-rebuild $ACTION"; fi)"
+  else
+    info "build:  skipped (--no-build)"
+  fi
   info "vcs:    $(if [[ "$USE_JJ" == true ]]; then echo jj; else echo git; fi)"
   if [[ "$DO_COMMIT" == true ]]; then
     if [[ "$USE_JJ" == true ]]; then
@@ -250,21 +262,38 @@ make_subject() {
   fi
 }
 
-if [[ -z "$MESSAGE" && "$ASSUME_YES" != true && -t 0 ]]; then
-  read -r -e -i "$(make_subject "$GEN" "$HOST $ACTION")" -p 'Commit message: ' MESSAGE || true
+# Prompt for the user's own subject; the generation is appended afterwards and
+# the build details go in the body. Starts blank so the auto-generated fallback
+# isn't mistaken for the intended message. Skipped with --edit, which opens the
+# full message in $EDITOR instead.
+if [[ -z "$MESSAGE" && "$EDIT_MESSAGE" != true && -t 0 ]]; then
+  read -r -e -p 'Commit message: ' MESSAGE || true
 fi
 [[ -n "$MESSAGE" ]] || MESSAGE="$HOST $ACTION"
 
+if [[ "$DO_BUILD" == true ]]; then
+  body_head="NixOS configuration rebuild for $HOST."
+  action_line="nixos-rebuild $ACTION"
+  stamp_line="Built:      $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+  gen_line="$GEN"
+else
+  body_head="NixOS configuration changes for $HOST (no rebuild)."
+  action_line="none (--no-build)"
+  stamp_line="Committed:  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+  gen_line="$GEN"
+  [[ "$GEN" != unknown ]] && gen_line="$GEN (current)"
+fi
+
 SUBJECT="$(make_subject "$GEN" "$MESSAGE")"
 BODY="$(cat <<EOF
-NixOS configuration rebuild for $HOST.
+$body_head
 
 Host:       $HOST
-Action:     nixos-rebuild $ACTION
-Generation: $GEN
+Action:     $action_line
+Generation: $gen_line
 NixOS:      $(nixos-version 2>/dev/null || echo unknown)
 Kernel:     $(uname -r)
-Built:      $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+$stamp_line
 
 Changed files:
 $changed_stat
