@@ -1,6 +1,6 @@
 # =============================================================================
 # GitHub Actions - Nix Flake Validation
-# Runs on every push and pull request to catch configuration errors early
+# Runs on every push and pull request to catch configuration errors early.
 # =============================================================================
 name: Validate Nix Flake
 
@@ -15,74 +15,64 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Job 1: Check flake syntax and evaluate configurations
+  # Job 1: Check flake syntax and evaluate both host configurations.
   validate:
+    name: Evaluate hosts
     runs-on: ubuntu-latest
     steps:
-      # Checkout the repository code
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      # Install Nix package manager
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
 
-      # Enable Nix flakes and caching
-      - name: Enable Nix flakes
-        uses: DeterminateSystems/magic-nix-cache-action@main
-
-      # Check flake syntax without building
-      - name: Check flake syntax
+      # Parse every Nix file. This is fast and catches syntax errors without
+      # needing any flake inputs.
+      - name: Check Nix syntax
         run: |
-          # Note: pomodoro input is a local path that doesn't exist in CI
-          # We only check syntax, not full evaluation
           nix-instantiate --parse flake.nix > /dev/null
-          echo "✓ Flake syntax is valid"
+          find . -name '*.nix' -not -path './.git/*' -print0 \
+            | xargs -0 -n1 nix-instantiate --parse > /dev/null
+          echo "✓ Nix syntax is valid"
 
-          find . -name "*.nix" -not -path "./.git/*" -exec nix-instantiate --parse {} \; > /dev/null 2>&1 || true
-          echo "✓ Nix file syntax check completed"
-
-      # Evaluate NixOS configurations (catches type errors)
-      - name: Evaluate NixOS configurations
-        continue-on-error: true
+      # The flake consumes two local `path:` inputs for development:
+      #   mangowc-local -> /home/josh/mango  (fork of mangowm/mango)
+      #   ytplay        -> /home/josh/ytplay
+      # They don't exist on CI runners, so override them with the public forks
+      # of the same projects. This evaluates the real host configurations and
+      # is the gating check for the workflow.
+      - name: Evaluate desktop and laptop
         run: |
-          # Note: These may fail if pomodoro input is missing, which is expected in CI
-          nix eval .#nixosConfigurations.desktop.config.system.build.toplevel
-          nix eval .#nixosConfigurations.laptop.config.system.build.toplevel
+          overrides=(
+            --override-input mangowc-local github:Ssnibles/mango
+            --override-input ytplay github:Ssnibles/ytplay
+          )
+          nix eval --raw ".#nixosConfigurations.desktop.config.system.build.toplevel.drvPath" "${overrides[@]}"
+          nix eval --raw ".#nixosConfigurations.laptop.config.system.build.toplevel.drvPath" "${overrides[@]}"
+          echo "✓ Both host configurations evaluate"
 
-      # Check for common issues (unused inputs, formatting)
-      - name: Run nix flake show
-        continue-on-error: true
-        run: |
-          # Note: This may show warnings about missing pomodoro input, which is expected
-          nix flake show
-
-  # Job 2: Build configurations (optional - slower but catches more issues)
+  # Job 2: Build the full system closures. This is advisory because building an
+  # entire NixOS closure on free runners is slow and can time out for reasons
+  # unrelated to the configuration; the evaluation above is the hard gate.
   build:
-    runs-on: ubuntu-latest
+    name: Build hosts (advisory)
     needs: validate
-    # Only run on main branch pushes, not PRs (saves CI time)
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 180
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
 
-      - name: Enable Nix flakes
-        uses: DeterminateSystems/magic-nix-cache-action@main
-
-      # Build desktop configuration (doesn't deploy, just verifies build)
-      - name: Build desktop configuration
-        continue-on-error: true
+      - name: Build desktop and laptop
         run: |
-          # Note: This may fail if pomodoro input is missing, which is expected in CI
-          nix build .#nixosConfigurations.desktop.config.system.build.toplevel
-
-      # Build laptop configuration
-      - name: Build laptop configuration
-        continue-on-error: true
-        run: |
-          # Note: This may fail if pomodoro input is missing, which is expected in CI
-          nix build .#nixosConfigurations.laptop.config.system.build.toplevel
+          overrides=(
+            --override-input mangowc-local github:Ssnibles/mango
+            --override-input ytplay github:Ssnibles/ytplay
+          )
+          nix build ".#nixosConfigurations.desktop.config.system.build.toplevel" "${overrides[@]}"
+          nix build ".#nixosConfigurations.laptop.config.system.build.toplevel" "${overrides[@]}"
