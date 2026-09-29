@@ -1,8 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Wayland
-import Quickshell.Services.Mpris
 import "Utils.js" as Utils
 
 Item {
@@ -317,6 +315,7 @@ Item {
           position: MediaService.estimatedPosition
           length: MediaService.lastLength
           progress: MediaService.progress
+          seekable: MediaService.canSeek
           onSeekRequested: function(v) { MediaService.seek(v) }
         }
       }

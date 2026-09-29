@@ -1,6 +1,6 @@
 # Quickshell — Module Reference & Development Guide
 
-This directory contains the [Quickshell](https://quickshell.outfoxxed.me/) configuration for status bars (`niri-bar.qml` and `mangowc-bar.qml`), the **Command Center** dashboard, the Wayland **Lock Screen**, the **Notification system**, and shared UI primitives (pills, tooltips, sliders).
+This directory contains the [Quickshell](https://quickshell.outfoxxed.me/) configuration for status bars (`niri-bar.qml` and `bar.qml`), the **Command Center** dashboard, the Wayland **Lock Screen**, the **Notification system**, and shared UI primitives (pills, tooltips, sliders).
 
 All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by Nix activation scripts. **QML edits apply immediately on the next quickshell restart** — no Nix rebuild needed for standard QML modifications. Only `Colors.qml` is generated directly by Nix from system theme tokens and requires a rebuild to update.
 
@@ -98,9 +98,9 @@ Scope {
 | `lockAvatarPath` | `Quickshell.shellDir + "/assets/avatar.png"` | Path to user avatar image |
 | `lockFallbackIcon` | `"󰀉"` | Fallback glyph when avatar image is absent |
 | `lockWallpaperPath` | `"file://" + $HOME + "/Pictures/wallpaper"` | Lock screen wallpaper image |
-| `lockClockFormat` | `"hh:mm"` | Time display format |
+| `lockClockFormat` | `"HH:mm"` | Time display format |
 | `lockDateFormat` | `"dddd, MMMM d"` | Date display format |
-| `lockCardRadius` | `12` | Authentication card corner radius |
+| `commandCenterCardRadius` | `12` | Authentication card corner radius (also used by the lock screen) |
 | `lockInputRadius` | `10` | Password input box radius |
 | `lockBackgroundDimming` | `0.8` | Dark background overlay opacity (0.0–1.0) |
 | `lockBlurPercentage` | `0.5` | Wallpaper GPU blur amount (0.0–1.0) |
@@ -119,12 +119,11 @@ Scope {
 ### 3.6 Notifications (`NotificationOverlay.qml` & `NotificationStore.qml`)
 | Property | Default | Purpose |
 | --- | --- | --- |
-| `notifPosition` | `"top-left"` | Placement on screen (`"top-left"`, `"top-right"`, `"bottom-left"`, etc.) |
+| `notifPosition` | `"top-right"` | Placement on screen (`"top-left"`, `"top-right"`, `"bottom-left"`, etc.) |
 | `notifMarginX` | `12` | Horizontal offset margin from screen edge (px) |
 | `notifMarginY` | `12` | Vertical offset margin from screen edge (px) |
 | `notifTimeoutMs` | `5000` | Default display duration per popup (ms) |
 | `notifTimeoutLowMs` | `3000` | Duration for low-urgency notifications (ms) |
-| `notifTimeoutNormalMs` | `5000` | Duration for normal-urgency notifications (ms) |
 | `notifTimeoutCriticalMs` | `0` | Duration for critical notifications (`0` = persistent) |
 | `notifMaxVisible` | `5` | Maximum active popup count on screen |
 | `notifMaxHistory` | `30` | Maximum history items retained in `NotificationStore` |
@@ -192,15 +191,11 @@ Scope {
 
 #### `NotificationStore.qml`
 - **Role**: Central notification daemon state & disk cache manager.
-- **Features**: Subscribes to `Quickshell.Services.Notifications`, manages active stack and history log up to `Config.notifMaxHistory`, auto-dismiss timers, and cover art disk caching (`~/.cache/quickshell/cover_art/`).
-
-#### `MediaProgress.qml`
-- **Role**: High-precision MPRIS position & playback progress estimator.
-- **Features**: Pure `QtObject` tracking wall-clock drift, handling pause/resume position synchronization, and outputting `estimatedPosition` (seconds) and `progress` (0.0 to 1.0).
+- **Features**: Subscribes to `Quickshell.Services.Notifications`, manages active stack and history log up to `Config.notifMaxHistory`, auto-dismiss timers, removes toasts when the sender closes them, and cover art disk caching (`~/.cache/quickshell/coverart/`).
 
 #### `Utils.js`
 - **Role**: Shared JavaScript utility library (`.pragma library`).
-- **Features**: `findFirst`, `findBatteryDevice`, `findActivePlayer`, `clamp`, `pad2`, `formatTime`, `escapeRegex`, `stripMarkup`, `cleanTrackTitle`, `prettifyAppName`, `formatActiveTitle`, and icon helpers (`volumeIcon`, `batteryIcon`, `wifiIcon`).
+- **Features**: `findFirst`, `findBatteryDevice`, `findActivePlayer`, `pad2`, `formatTime`, `cleanTrackTitle`, `prettifyAppName`, `formatActiveTitle`, and icon helpers (`volumeIcon`, `batteryIcon`).
 
 ---
 
@@ -275,7 +270,7 @@ A single layer window per display hugging `Config.barSide`. Handles popup positi
 Follow these steps to create and register a new status bar widget or overlay component:
 
 ### Step 1: Create the Component File
-Create a new QML file in `modules/features/quickshell/config/`, e.g., `CpuWidget.qml`:
+Create a new QML file in `modules/features/desktop-env/quickshell/config/`, e.g., `CpuWidget.qml`:
 
 ```qml
 import Quickshell
@@ -333,7 +328,7 @@ readonly property int cpuPollIntervalMs: 2000
 ```
 
 ### Step 3: Insert into the Status Bar
-Open `niri-bar.qml` (or `mangowc-bar.qml`) and instantiate your component inside `bottomCol` or `topCol`:
+Open `niri-bar.qml` (or `bar.qml`) and instantiate your component inside `bottomCol` or `topCol`:
 
 ```qml
 CpuWidget {
@@ -344,7 +339,7 @@ CpuWidget {
 ### Step 4: Symlink & Test
 Because activation scripts symlink `config/*` into `~/.config/quickshell/`, newly created QML files must be symlinked before Quickshell can see them:
 
-- Run `sudo nixos-rebuild switch` (or manually symlink the file: `ln -s ~/NixConfig/modules/features/quickshell/config/CpuWidget.qml ~/.config/quickshell/`).
+- Run `sudo nixos-rebuild switch` (or manually symlink the file: `ln -s ~/NixConfig/modules/features/desktop-env/quickshell/config/CpuWidget.qml ~/.config/quickshell/`).
 - Restart Quickshell to load the new widget!
 
 ---

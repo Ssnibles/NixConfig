@@ -60,6 +60,7 @@ Item {
       var dir = wheel.angleDelta.y > 0 ? 1 : -1
       var newVol = Math.max(0, Math.min(1.5, root.volPct + dir * step))
       Pipewire.defaultAudioSink.audio.volume = newVol
+      wheel.accepted = true
     }
   }
 

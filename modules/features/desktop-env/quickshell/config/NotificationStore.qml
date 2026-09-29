@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
 import Quickshell.Services.Notifications
-import Quickshell.Services.Mpris
 import QtQuick
 import "Utils.js" as Utils
 
@@ -40,6 +39,7 @@ Singleton {
   property var _pendingDownloads: ({})
   property var _downloadQueue: []
   property var _currentDownloadItem: null
+  property var _hookedNotifications: []
   property string cacheDir: ""
 
   Component.onCompleted: {
@@ -53,6 +53,9 @@ Singleton {
       store.cacheDir = "/tmp/quickshell-coverart"
     }
     Quickshell.execDetached(["mkdir", "-p", store.cacheDir])
+    // Prune cover art that hasn't been touched in 30 days so the cache can't
+    // grow without bound.
+    Quickshell.execDetached(["sh", "-c", 'find "$1" -type f -mtime +30 -delete', "sh", store.cacheDir])
   }
 
   Process {
@@ -63,35 +66,61 @@ Singleton {
         var item = store._currentDownloadItem
         if (exitCode === 0) {
           var fileUrl = item.targetFileUrl
+          if (item.cacheKey) store.artCache[item.cacheKey] = fileUrl
           if (item.fullKey) store.artCache[item.fullKey] = fileUrl
           if (item.titleKey) store.artCache[item.titleKey] = fileUrl
+          // Callers receive the original URL immediately; rewrite any model rows
+          // that still point at it once the local file is actually on disk.
           store.updateModelImages(item.fullKey, item.titleKey, fileUrl)
+          if (item.cacheKey && item.cacheKey !== item.fullKey && item.cacheKey !== item.titleKey) {
+            store.updateModelImages(item.cacheKey, item.cacheKey, fileUrl)
+          }
           store.cacheVersion++
         }
-        delete store._pendingDownloads[item.url]
+        delete store._pendingDownloads[item.pendingKey || item.url]
         store._currentDownloadItem = null
       }
       store.processNextDownload()
     }
   }
 
+  function enqueueDownload(job) {
+    job.targetFileUrl = "file://" + job.targetPath
+    job.pendingKey = job.pendingKey || job.url
+    store._downloadQueue.push(job)
+    processNextDownload()
+  }
+
   function downloadCoverArt(url, targetPath, fullKey, titleKey) {
-    store._downloadQueue.push({
+    enqueueDownload({
       url: url,
       targetPath: targetPath,
-      targetFileUrl: "file://" + targetPath,
       fullKey: fullKey,
-      titleKey: titleKey
+      titleKey: titleKey,
+      pendingKey: url
     })
-    processNextDownload()
   }
 
   function processNextDownload() {
     if (downloadProc.running || store._downloadQueue.length === 0) return
     store._currentDownloadItem = store._downloadQueue.shift()
     var item = store._currentDownloadItem
-    var script = 'if [ -f "$2" ]; then exit 0; fi; mkdir -p "$1" && curl -s -L -f "$3" -o "$2"'
-    downloadProc.exec(["sh", "-c", script, "sh", store.cacheDir, item.targetPath, item.url])
+    if (item.localSource) {
+      downloadProc.exec(["sh", "-c", 'mkdir -p "$1" && cp -f "$2" "$3"', "sh", store.cacheDir, item.localSource, item.targetPath])
+    } else {
+      var script = 'if [ -f "$2" ]; then exit 0; fi; mkdir -p "$1" && curl -s -L -f --max-time 30 "$3" -o "$2"'
+      downloadProc.exec(["sh", "-c", script, "sh", store.cacheDir, item.targetPath, item.url])
+    }
+  }
+
+  // Bound the in-memory cover-art map so it can't grow without limit over a
+  // long session. Object keys preserve insertion order, so drop the oldest.
+  function maybeTrimArtCache() {
+    var keys = Object.keys(store.artCache)
+    if (keys.length <= 400) return
+    for (var i = 0; i < 200; i++) {
+      delete store.artCache[keys[i]]
+    }
   }
 
   function _hashString(str) {
@@ -140,6 +169,7 @@ Singleton {
   }
 
   function cacheCoverArt(title, artist, rawArtUrl) {
+    store.maybeTrimArtCache()
     var cleanT = Utils.cleanTrackTitle(title || "")
     var cleanA = (artist || "").trim()
     if (cleanA === "Unknown Artist") cleanA = ""
@@ -217,6 +247,7 @@ Singleton {
 
   function cacheNotificationImage(rawUrl) {
     if (!rawUrl) return ""
+    store.maybeTrimArtCache()
     var clean = Utils.cleanUrl(rawUrl)
     if (!clean) return ""
 
@@ -231,10 +262,23 @@ Singleton {
         if (lLower.indexOf(".jpg") !== -1 || lLower.indexOf(".jpeg") !== -1) ext = ".jpg"
         else if (lLower.indexOf(".webp") !== -1) ext = ".webp"
         else if (lLower.indexOf(".svg") !== -1) ext = ".svg"
-        var hash = _hashString(localPath + "_" + Date.now())
+        var hash = _hashString(localPath)
         var target = store.cacheDir + "/" + hash + ext
-        Quickshell.execDetached(["cp", localPath, target])
-        return "file://" + target
+        var originalUrl = "file://" + localPath
+        if (!store._pendingDownloads[localPath]) {
+          store._pendingDownloads[localPath] = true
+          enqueueDownload({
+            localSource: localPath,
+            targetPath: target,
+            cacheKey: originalUrl,
+            fullKey: originalUrl,
+            titleKey: "",
+            pendingKey: localPath
+          })
+        }
+        // Return the still-valid original straight away so the image can render;
+        // the queued copy rewrites it to the persistent cache once complete.
+        return originalUrl
       }
       return clean.startsWith("/") ? ("file://" + clean) : clean
     }
@@ -254,22 +298,46 @@ Singleton {
         return targetFileUrl
       }
 
+      // Return the remote URL immediately so the image can load without waiting
+      // for the download; the queue rewrites it to the local cache when done.
       store.artCache[clean] = clean
       if (!store._pendingDownloads[clean] && store.cacheDir !== "") {
         store._pendingDownloads[clean] = true
-        store._downloadQueue.push({
+        enqueueDownload({
           url: clean,
           targetPath: targetPath,
-          targetFileUrl: targetFileUrl,
+          cacheKey: clean,
           fullKey: clean,
-          titleKey: clean
+          titleKey: "",
+          pendingKey: clean
         })
-        processNextDownload()
       }
-      return targetFileUrl
+      return clean
     }
 
     return clean
+  }
+
+  function hookNotificationClosed(notification) {
+    if (!notification || !notification.closed) return
+    if (store._hookedNotifications.indexOf(notification) !== -1) return
+    store._hookedNotifications.push(notification)
+    notification.closed.connect(function(reason) {
+      store.removeActiveByNotification(notification)
+      var idx = store._hookedNotifications.indexOf(notification)
+      if (idx !== -1) store._hookedNotifications.splice(idx, 1)
+    })
+  }
+
+  function removeActiveByNotification(notification) {
+    for (var i = activeModel.count - 1; i >= 0; i--) {
+      var item = activeModel.get(i)
+      if (item && item.notification === notification) {
+        activeModel.remove(i)
+        if (store.hoveredIndex === i) store.hoveredIndex = -1
+        else if (store.hoveredIndex > i) store.hoveredIndex--
+      }
+    }
   }
 
   function updateModelImages(fullKey, titleKey, resolvedUrl) {
@@ -494,6 +562,7 @@ Singleton {
     keepOnReload: true
 
     onNotification: function (notification) {
+      store.hookNotificationClosed(notification)
       var appNameLower = (notification.appName || "").toLowerCase()
       var deLower = (notification.desktopEntry || "").toLowerCase()
       var summaryStr = notification.summary || ""
@@ -527,9 +596,7 @@ Singleton {
       }
 
       var isMediaNotification = false
-      if (notification.category === "x-freedesktop.notification.media") {
-        isMediaNotification = true
-      } else if (store.mediaPlayer && store.mediaPlayer.trackTitle) {
+      if (store.mediaPlayer && store.mediaPlayer.trackTitle) {
         var cTitleLower = Utils.cleanTrackTitle(store.mediaPlayer.trackTitle).toLowerCase().trim()
         if (cTitleLower !== "" && isBrowserOrPlayer && (summaryLower.indexOf(cTitleLower) !== -1 || bodyLower.indexOf(cTitleLower) !== -1)) {
           isMediaNotification = true
@@ -658,7 +725,7 @@ Singleton {
 
   Timer {
     id: dismissTimer
-    interval: 500
+    interval: 1000
     repeat: true
     running: activeModel.count > 0
     onTriggered: {
@@ -667,10 +734,12 @@ Singleton {
         var item = activeModel.get(i)
         if (!item || !item.createdAt) continue
 
-        // Urgency-aware and client-requested timeout
+        // Urgency-aware and client-requested timeout.
+        // Quickshell's `Notification.expireTimeout` is already in milliseconds
+        // (raw freedesktop `expire_timeout`), so it must not be scaled again.
         var itemTimeout = store.timeoutMs
         if (item.notification && item.notification.expireTimeout > 0) {
-          itemTimeout = item.notification.expireTimeout * 1000
+          itemTimeout = item.notification.expireTimeout
         } else if (item.urgency === 0 && Config.notifTimeoutLowMs > 0) {
           itemTimeout = Config.notifTimeoutLowMs
         } else if (item.urgency === 2) {

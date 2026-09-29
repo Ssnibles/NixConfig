@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell
 
 Pill {
   id: root
@@ -16,6 +15,7 @@ Pill {
     font.family: Config.monoFont
     font.pixelSize: 16
     anchors.verticalCenter: parent.verticalCenter
+    anchors.horizontalCenter: parent.horizontalCenter
   }
 
   MouseArea {

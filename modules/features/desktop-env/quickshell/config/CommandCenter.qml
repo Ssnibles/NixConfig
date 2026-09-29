@@ -1,14 +1,9 @@
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
-import Quickshell.Widgets
-import Quickshell.Networking
-import Quickshell.Services.UPower
 import Quickshell.Services.Pipewire
-import Quickshell.Services.Mpris
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Effects
 import "Utils.js" as Utils
 
 Scope {
@@ -303,7 +298,9 @@ Scope {
       MouseArea {
         id: outsideDismiss
         anchors.fill: parent
-        hoverEnabled: true
+        // Only the target screen needs hover tracking (to update the active
+        // screen); every other overlay only needs to catch clicks.
+        hoverEnabled: panel.isTargetScreen
         focus: panel.isTargetScreen
         onEntered: {
           Config.lastActiveScreen = panel.modelData
@@ -707,7 +704,7 @@ Scope {
                 position: MediaService.estimatedPosition
                 length: MediaService.lastLength
                 progress: MediaService.progress
-                seekable: mediaCard.hasPlayer
+                seekable: MediaService.canSeek
                 onSeekRequested: function(v) { MediaService.seek(v) }
               }
             }

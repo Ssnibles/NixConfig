@@ -1,5 +1,4 @@
 import Quickshell
-import Quickshell.Wayland
 import QtQuick
 
 Scope {
@@ -18,7 +17,6 @@ Scope {
 
     PanelWindow {
       id: barPanel
-      WlrLayershell.layer: WlrLayer.Bottom
       required property var modelData
       screen: barPanel.modelData
       visible: root.barVisible
@@ -110,6 +108,7 @@ Scope {
               horizontal: true
               titleText: rootWmService.currentTitle
               anchors.verticalCenter: parent.verticalCenter
+              anchors.horizontalCenter: parent.horizontalCenter
             }
           }
         }

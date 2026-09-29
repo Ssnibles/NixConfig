@@ -22,7 +22,7 @@ Rectangle {
   Behavior on pillColor { ColorAnimation { duration: 120 } }
   Behavior on border.color { ColorAnimation { duration: 120 } }
 
-  default property alias data: contentItem.data
+  default property alias contentData: contentItem.data
 
   // Intrinsic visual width of visible children (ignoring non-layout overlays like MouseArea)
   readonly property real contentWidth: {
@@ -63,10 +63,10 @@ Rectangle {
     ? Math.max(root.contentHeight + root.padding * 2, root.pillHeight)
     : root.pillHeight
 
+  // Fills the whole pill so overlay MouseAreas/Handlers (including the padding)
+  // are interactive; visual children centre themselves within it.
   Item {
     id: contentItem
-    anchors.centerIn: parent
-    width: root.contentWidth
-    height: root.contentHeight
+    anchors.fill: parent
   }
 }

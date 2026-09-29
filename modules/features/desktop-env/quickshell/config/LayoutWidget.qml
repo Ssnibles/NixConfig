@@ -15,7 +15,8 @@ Pill {
 
   readonly property string currentLayoutSymbol: {
     if (!wmService) return ""
-    var _ = wmService.currentLayoutSymbol
+    // Depend on the raw tag list so per-output layout changes re-evaluate.
+    var _tags = wmService.allTags
     var screenName = root.screen ? root.screen.name : ""
     return wmService.getLayoutSymbol(screenName)
   }

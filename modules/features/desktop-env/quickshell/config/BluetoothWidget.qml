@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
-import "Utils.js" as Utils
 
 Pill {
   id: root
@@ -66,6 +65,7 @@ Pill {
   Text {
     visible: !root.showLabel
     anchors.verticalCenter: parent.verticalCenter
+    anchors.horizontalCenter: parent.horizontalCenter
     text: root.btIcon
     color: root.btColor
     font.family: root.uiFont
@@ -77,6 +77,7 @@ Pill {
     id: labelRow
     visible: root.showLabel
     anchors.verticalCenter: parent.verticalCenter
+    anchors.horizontalCenter: parent.horizontalCenter
     spacing: 4
 
     Text {

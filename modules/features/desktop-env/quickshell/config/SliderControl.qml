@@ -27,7 +27,17 @@ Item {
   onValueChanged: {
     if (mouse && !mouse.dragging && _pendingValue >= 0 && Math.abs(value - _pendingValue) < 0.001) {
       _pendingValue = -1
+      pendingClearTimer.stop()
     }
+  }
+
+  // Safety net: never latch on a pending value if the external source never
+  // converges exactly (rounding, snapping, clamping, ...).
+  Timer {
+    id: pendingClearTimer
+    interval: 1500
+    repeat: false
+    onTriggered: root._pendingValue = -1
   }
 
   Item {
@@ -79,6 +89,8 @@ Item {
       onPressed: function(mouse) {
         if (!root.enabled) return
         if (!dragging) {
+          root._pendingValue = -1
+          pendingClearTimer.stop()
           dragging = true
           root.dragStarted()
         }
@@ -89,6 +101,7 @@ Item {
         if (!dragging) return
         dragging = false
         root._pendingValue = root._dragValue
+        pendingClearTimer.restart()
         root.dragEnded()
       }
       onPositionChanged: function(mouse) {

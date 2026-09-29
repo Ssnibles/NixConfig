@@ -1,14 +1,9 @@
 import Quickshell
 import Quickshell.Io
-import Quickshell.Services.Notifications
 import QtQuick
-import Quickshell.Wayland
 
 Scope {
   id: root
-
-  readonly property string barType: Config.barType
-
 
   // Expose bar toggle via IPC
   IpcHandler {

@@ -1,6 +1,5 @@
 import QtQuick
 import QtQml
-import Quickshell
 
 Item {
   id: root
@@ -15,7 +14,7 @@ Item {
   property int contentWidth: 0
   property Component contentComponent: null
   property real topOffset: 0
-  property PanelWindow sharedWindow: null
+  property var sharedWindow: null
 
   readonly property bool hovered: _hoverHandler.hovered
   readonly property bool tipVisible: _hoverHandler.hovered && _ready

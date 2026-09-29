@@ -97,6 +97,10 @@ Item {
       return
     }
 
+    // Nothing moved: don't restart the morph animation (and its bindings) when a
+    // workspace update left the focused slot where it was.
+    if (targetS === pillStart && targetE === pillEnd) return
+
     // Stop current morph if in-flight
     morphAnim.stop()
 
@@ -146,17 +150,22 @@ Item {
     // Workspace Slots (Background Dots)
     Repeater {
       id: gridRepeater
-      model: root.workspaces
+      // Model on the count so delegates survive updates that keep the same number
+      // of workspaces; each delegate binds its element out of the array instead
+      // of the Repeater tearing down and rebuilding every dot on each change.
+      model: root.workspaces ? root.workspaces.length : 0
 
       delegate: Item {
         id: dotItem
-        required property var modelData
         required property int index
+        // Bind the element out of the array under a local name so it doesn't
+        // shadow the Repeater's context properties.
+        readonly property var ws: (root.workspaces && index < root.workspaces.length) ? root.workspaces[index] : null
 
         readonly property bool isFocused: index === root.focusedIndex
-        readonly property bool isActive: modelData ? (modelData.is_active || modelData.isActive || false) : false
-        readonly property bool isUrgent: modelData ? (modelData.is_urgent || modelData.isUrgent || false) : false
-        readonly property bool isOccupied: modelData ? (modelData.is_occupied || modelData.isOccupied || (modelData.client_count !== undefined && modelData.client_count > 0) || false) : false
+        readonly property bool isActive: ws ? (ws.is_active || ws.isActive || false) : false
+        readonly property bool isUrgent: ws ? (ws.is_urgent || ws.isUrgent || false) : false
+        readonly property bool isOccupied: ws ? (ws.is_occupied || ws.isOccupied || (ws.client_count !== undefined && ws.client_count > 0) || false) : false
 
         readonly property real targetPos: {
           var step = root.dotSize + root.dotSpacing
@@ -215,7 +224,7 @@ Item {
           anchors.fill: parent
           cursorShape: Qt.PointingHandCursor
           onClicked: {
-            var wsId = dotItem.modelData ? (dotItem.modelData.id || (dotItem.index + 1)) : (dotItem.index + 1)
+            var wsId = dotItem.ws ? (dotItem.ws.id || (dotItem.index + 1)) : (dotItem.index + 1)
             root.focusRequested(wsId)
           }
         }

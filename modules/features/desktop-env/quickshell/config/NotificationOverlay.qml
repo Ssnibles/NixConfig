@@ -1,15 +1,36 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
-import "Utils.js" as Utils
 
 Scope {
   id: root
 
-  property string position: Config.notifPosition
+  readonly property string position: Config.notifPosition
+
+  // Non-all-screens mode: freeze onto the active screen when a toast appears so
+  // notifications follow the user without jumping around while they are shown.
+  property var _screen: null
+  readonly property int activeCount: NotificationStore.activeModel ? NotificationStore.activeModel.count : 0
+
+  onActiveCountChanged: {
+    if (activeCount > 0) {
+      if (!root._screen) {
+        root._screen = Config.lastActiveScreen || (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)
+      }
+    } else {
+      root._screen = null
+    }
+  }
+
+  readonly property var targetScreens: {
+    if (Config.notifAllScreens) return Quickshell.screens
+    if (activeCount === 0) return []
+    var s = root._screen || Config.lastActiveScreen || (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)
+    return s ? [s] : []
+  }
 
   Variants {
-    model: Config.notifAllScreens ? Quickshell.screens : (Quickshell.screens.length > 0 ? [Quickshell.screens[0]] : [])
+    model: root.targetScreens
 
     PanelWindow {
       id: panel

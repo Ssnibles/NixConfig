@@ -15,6 +15,7 @@ QtObject {
   readonly property Process _tagsWatcher: Process {
     command: ["mmsg", "watch", "all-tags"]
     running: root.active
+    onExited: if (root.active) root.tagsRestartTimer.restart()
 
     stdout: SplitParser {
       onRead: line => {
@@ -61,6 +62,7 @@ QtObject {
   readonly property Process _titleWatcher: Process {
     command: ["mmsg", "watch", "focusing-client"]
     running: root.active
+    onExited: if (root.active) root.titleRestartTimer.restart()
 
     stdout: SplitParser {
       onRead: line => {
@@ -74,9 +76,9 @@ QtObject {
 
         try {
           var data = JSON.parse(cleanLine)
-          if (data && (data.title || data.app_id || data.appId || data.class || data.name)) {
+          if (data && (data.title || data.appid || data.app_id || data.appId || data.class || data.name)) {
             var title = data.title || data.name || ""
-            var appId = data.app_id || data.appId || data.class || data.instance || ""
+            var appId = data.appid || data.app_id || data.appId || data.class || data.instance || ""
             root.currentTitle = Utils.formatActiveTitle(title, appId)
           } else {
             root.currentTitle = ""
@@ -90,6 +92,20 @@ QtObject {
         }
       }
     }
+  }
+
+  // Restart the IPC streams if the compositor connection drops.
+  // (QtObject has no default property, so these must be named properties.)
+  readonly property Timer tagsRestartTimer: Timer {
+    interval: 2000
+    repeat: false
+    onTriggered: if (root.active) root._tagsWatcher.running = true
+  }
+
+  readonly property Timer titleRestartTimer: Timer {
+    interval: 2000
+    repeat: false
+    onTriggered: if (root.active) root._titleWatcher.running = true
   }
 
   readonly property var availableLayouts: [
@@ -168,7 +184,8 @@ QtObject {
   }
 
   function focusTag(tagNum) {
-    Quickshell.execDetached(["mmsg", "tag", tagNum.toString()])
+    // MangoWC switches tags with `view,<n>`; there is no bare `mmsg tag` command.
+    Quickshell.execDetached(["mmsg", "dispatch", "view," + tagNum.toString()])
   }
 
   function tagsForOutput(outputName) {

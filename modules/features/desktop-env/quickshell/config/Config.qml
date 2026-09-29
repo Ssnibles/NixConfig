@@ -9,7 +9,7 @@ import QtQuick
 Singleton {
   // --- Fonts ------------------------------------------------------------
   readonly property string monoFont: Colors.monoFont !== undefined ? Colors.monoFont : "JetBrainsMono Nerd Font"
-  readonly property string sansFont: "SF Pro Text"
+  readonly property string sansFont: Colors.sansFont !== undefined ? Colors.sansFont : "SF Pro Text"
   readonly property string serifFont: Colors.serifFont !== undefined ? Colors.serifFont : "Instrument Serif"
 
   // --- Command Center State & Geometry ----------------------------------
@@ -86,7 +86,6 @@ Singleton {
   readonly property int barLeftSpacing: 12
   readonly property int barRightSpacing: 10
   readonly property int mangowcMinWorkspaces: 5
-  readonly property string mangowcClockFormat: "HH:mm"
 
   // --- Audio (VolumeWidget.qml) ------------------------------------------
   readonly property real volStep: 0.05
@@ -115,7 +114,6 @@ Singleton {
   readonly property int notifMarginY: 12
   readonly property int notifTimeoutMs: 5000
   readonly property int notifTimeoutLowMs: 3000
-  readonly property int notifTimeoutNormalMs: 5000
   readonly property int notifTimeoutCriticalMs: 0 // 0 = persistent, do not auto-dismiss
   readonly property int notifMaxVisible: 5
   readonly property int notifMaxHistory: 30
@@ -248,7 +246,6 @@ Singleton {
   readonly property string lockDateFormat: "dddd, MMMM d"
   readonly property int lockCardWidth: 440
   readonly property int lockAvatarSize: 64
-  readonly property int lockCardRadius: 12
   readonly property int lockInputRadius: 10
   readonly property real lockBackgroundDimming: 0.8
   readonly property real lockBlurPercentage: 0.5

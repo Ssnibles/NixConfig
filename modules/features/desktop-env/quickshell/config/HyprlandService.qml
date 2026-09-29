@@ -18,10 +18,13 @@ QtObject {
     }
     root.currentFocusedId = focusedId
 
-    if (Hyprland.focusedWindow && Hyprland.focusedWindow.title) {
-      root.currentTitle = Utils.formatActiveTitle(Hyprland.focusedWindow.title, Hyprland.focusedWindow.class || "")
-    } else if (Hyprland.activeWindow && Hyprland.activeWindow.title) {
-      root.currentTitle = Utils.formatActiveTitle(Hyprland.activeWindow.title, Hyprland.activeWindow.class || "")
+    // Quickshell exposes the focused window through `activeToplevel`; the app
+    // class lives on its raw IPC object (`class` / `initialClass`).
+    var toplevel = Hyprland.activeToplevel
+    if (toplevel && toplevel.title) {
+      var obj = toplevel.lastIpcObject || {}
+      var appId = obj.class || obj.initialClass || ""
+      root.currentTitle = Utils.formatActiveTitle(toplevel.title, appId)
     } else {
       root.currentTitle = ""
     }
@@ -34,15 +37,15 @@ QtObject {
     var highestId = focusedId
     var occupiedMap = {}
 
-    if (Hyprland.workspaces) {
-      var keys = Object.keys(Hyprland.workspaces)
-      for (var k = 0; k < keys.length; k++) {
-        var wsObj = Hyprland.workspaces[keys[k]]
-        if (wsObj) {
-          if (wsObj.id > highestId) highestId = wsObj.id
-          if (wsObj.windows > 0) occupiedMap[wsObj.id] = true
-        }
-      }
+    // `Hyprland.workspaces` is an UntypedObjectModel: iterate its `values`
+    // rather than using Object.keys (which does not enumerate model entries).
+    var wsList = (Hyprland.workspaces && Hyprland.workspaces.values) ? Hyprland.workspaces.values : []
+    for (var k = 0; k < wsList.length; k++) {
+      var wsObj = wsList[k]
+      if (!wsObj) continue
+      if (wsObj.id > highestId) highestId = wsObj.id
+      var topl = (wsObj.toplevels && wsObj.toplevels.values) ? wsObj.toplevels.values : []
+      if (topl.length > 0) occupiedMap[wsObj.id] = true
     }
 
     var totalCount = Math.max(5, highestId)
@@ -62,16 +65,32 @@ QtObject {
     root.workspacesList = result
   }
 
+  // Hyprland can emit several raw events for a single action; coalesce them into
+  // one recompute per event-loop turn instead of running updateData() repeatedly.
+  property bool _updatePending: false
+
+  function scheduleUpdate() {
+    if (root._updatePending) return
+    root._updatePending = true
+    Qt.callLater(root.runUpdate)
+  }
+
+  function runUpdate() {
+    root._updatePending = false
+    root.updateData()
+  }
+
   // Native zero-latency Quickshell.Hyprland IPC signal handlers
   readonly property Connections _hyprConn: Connections {
     target: root.active ? Hyprland : null
-    function onFocusedWorkspaceChanged() { root.updateData() }
+    function onFocusedWorkspaceChanged() { root.scheduleUpdate() }
+    function onActiveToplevelChanged() { root.scheduleUpdate() }
     function onRawEvent(name, data) {
       if (name.startsWith("workspace") || name.startsWith("focusedmon") ||
           name.startsWith("activewindow") || name.startsWith("createworkspace") ||
           name.startsWith("destroyworkspace") || name.startsWith("movewindow") ||
           name === "urgent" || name === "openwindow" || name === "closewindow") {
-        root.updateData()
+        root.scheduleUpdate()
       }
     }
   }
@@ -79,7 +98,7 @@ QtObject {
   function focusWorkspace(id) {
     root.currentFocusedId = id
     Hyprland.dispatch("workspace " + id)
-    root.updateData()
+    root.scheduleUpdate()
   }
 
   Component.onCompleted: root.updateData()

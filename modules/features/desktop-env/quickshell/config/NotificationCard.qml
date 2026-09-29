@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Effects
 import Quickshell
-import Quickshell.Widgets
 import "Utils.js" as Utils
 
 // Single notification card. Rendered by NotificationOverlay for each queued

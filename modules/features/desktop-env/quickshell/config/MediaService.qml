@@ -1,6 +1,7 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Services.Mpris
 import QtQuick
 import "Utils.js" as Utils
@@ -185,11 +186,15 @@ Singleton {
   }
 
   function seek(progressFraction) {
+    if (!root.player || !root.canSeek) return
     var p = Math.max(0, Math.min(1, progressFraction))
     seekDebounceTimer.targetProgress = p
     seekDebounceTimer.restart()
-    root.estimatedPosition = p * root.lastLength
-    root.progress = p
+    // Move the estimate immediately so the position tick can't rewind it before
+    // the debounced MPRIS seek lands.
+    root.lastPosition = p * root.lastLength
+    root.wallClock = Date.now() / 1000
+    root.updateEstimatedPosition()
   }
 
   // --- Common Playback Actions ---

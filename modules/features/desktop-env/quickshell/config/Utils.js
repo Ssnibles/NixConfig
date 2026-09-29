@@ -1,5 +1,9 @@
 .pragma library
 
+// Static helper script used by focusWindow() when the native ToplevelManager path
+// is unavailable. Built lazily once instead of on every focus request.
+var _focusNodeScriptCache = ""
+
 function findFirst(list, predicate) {
   for (var i = 0; i < list.length; i++) {
     if (predicate(list[i])) return list[i]
@@ -17,10 +21,6 @@ function cleanTrackTitle(title) {
   return str.trim()
 }
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value))
-}
-
 function pad2(n) {
   return n < 10 ? "0" + n : "" + n
 }
@@ -31,11 +31,6 @@ function formatTime(seconds) {
   var m = Math.floor(s / 60)
   s = s % 60
   return m + ":" + pad2(s)
-}
-
-function stripMarkup(text) {
-  if (!text) return ""
-  return String(text).replace(/<[^>]*>/g, "")
 }
 
 var _appNameOverrides = {
@@ -259,14 +254,6 @@ function batteryIcon(pct, charging, plugged, present) {
   return _batteryGlyphs[idx]
 }
 
-function wifiIcon(signalStrength, connected) {
-  if (!connected) return "\u{F092F}"
-  if (signalStrength < 0.2) return "\u{F091F}"
-  if (signalStrength < 0.4) return "\u{F0922}"
-  if (signalStrength < 0.6) return "\u{F0925}"
-  return "\u{F0928}"
-}
-
 function focusWindow(patterns, quickshellObj, toplevelManagerObj) {
   if (!patterns) return false
   var targets = Array.isArray(patterns) ? patterns : [patterns]
@@ -283,14 +270,18 @@ function focusWindow(patterns, quickshellObj, toplevelManagerObj) {
   var manager = toplevelManagerObj || null
   if (!manager && typeof ToplevelManager !== "undefined") {
     manager = ToplevelManager
-  } else if (!manager && quickshellObj && typeof quickshellObj.ToplevelManager !== "undefined") {
-    manager = quickshellObj.ToplevelManager
   }
 
+  var activated = false
   if (manager && manager.toplevels) {
     var list = manager.toplevels.values || manager.toplevels
     var count = list.length !== undefined ? list.length : (list.count !== undefined ? list.count : 0)
 
+    // Score matches the same way as the IPC fallback (exact appId > exact title >
+    // appId substring > title substring, earlier patterns preferred) and only
+    // activate the best one, rather than every window that happens to match.
+    var bestWin = null
+    var bestScore = 0
     for (var j = 0; j < cleanTargets.length; j++) {
       var pat = cleanTargets[j]
       for (var k = 0; k < count; k++) {
@@ -299,21 +290,31 @@ function focusWindow(patterns, quickshellObj, toplevelManagerObj) {
 
         var appId = win.appId ? String(win.appId).toLowerCase() : ""
         var title = win.title ? String(win.title).toLowerCase() : ""
+        var score = 0
+        if (appId && appId === pat) score = 100 - j
+        else if (title && title === pat) score = 90 - j
+        else if (appId && appId.indexOf(pat) !== -1) score = 80 - j
+        else if (title && title.indexOf(pat) !== -1) score = 70 - j
 
-        if ((appId && appId.indexOf(pat) !== -1) || (title && title.indexOf(pat) !== -1)) {
-          if (typeof win.activate === "function") {
-            win.activate()
-          }
-        }
+        if (score > bestScore) { bestScore = score; bestWin = win }
       }
     }
+
+    if (bestWin && typeof bestWin.activate === "function") {
+      bestWin.activate()
+      activated = true
+    }
   }
+
+  // If the native compositor protocol handled activation, skip the heavyweight
+  // Node fallback entirely.
+  if (activated) return true
 
   // 2. Compositor IPC focus action (MangoWC, Niri, Hyprland, etc.)
   var qs = quickshellObj
   if (!qs && typeof Quickshell !== "undefined") qs = Quickshell
   if (qs && typeof qs.execDetached === "function") {
-    var nodeScript = [
+    if (_focusNodeScriptCache === "") _focusNodeScriptCache = [
       'const cp = require("child_process");',
       'const pats = process.argv.slice(2).map(p => p.toLowerCase());',
       'if (!pats.length) process.exit(0);',
@@ -419,7 +420,7 @@ function focusWindow(patterns, quickshellObj, toplevelManagerObj) {
       '} catch (e) {}'
     ].join('\n')
 
-    qs.execDetached(["node", "-e", nodeScript, "node"].concat(cleanTargets))
+    qs.execDetached(["node", "-e", _focusNodeScriptCache, "node"].concat(cleanTargets))
     return true
   }
 

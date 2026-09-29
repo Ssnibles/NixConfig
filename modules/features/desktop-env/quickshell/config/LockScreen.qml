@@ -2,7 +2,6 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Pam
 import Quickshell.Services.UPower
-import Quickshell.Services.Mpris
 import Quickshell.Networking
 import Quickshell.Io
 import QtQuick
@@ -197,6 +196,9 @@ Scope {
 
           Keys.onPressed: function(event) {
             surface.capsLockOn = (event.modifiers & Qt.CapsLockModifier) !== 0
+
+            // Don't queue keystrokes in the disabled field while PAM is busy.
+            if (surface.authenticating) return
 
             if (event.key === Qt.Key_Escape) {
               passInput.focus = false
@@ -630,8 +632,8 @@ Scope {
                       cursorVisible: activeFocus
 
                       onTextChanged: {
-                        if (passInput.text.length > 0 && surface.errorMessage !== "") {
-                          surface.errorMessage = ""
+                        if (passInput.text.length > 0 && lockScope.errorMessage !== "") {
+                          lockScope.errorMessage = ""
                         }
                       }
 
@@ -709,6 +711,7 @@ Scope {
                   padding: 8
 
                   Row {
+                    anchors.centerIn: parent
                     spacing: 6
 
                     Text {
@@ -823,6 +826,7 @@ Scope {
               padding: 10
 
               Row {
+                anchors.centerIn: parent
                 spacing: 8
 
                 Text {

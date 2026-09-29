@@ -26,6 +26,10 @@ Scope {
 
   readonly property var activeSvc: backendLoader.item
 
+  // Bumps whenever the backend's tag/workspace list changes so per-output
+  // layout bindings re-evaluate (method calls alone are not reactive).
+  readonly property var allTags: (activeSvc && activeSvc.allMonitorsTags !== undefined) ? activeSvc.allMonitorsTags : []
+
   readonly property string currentTitle: activeSvc ? (activeSvc.currentTitle || "") : ""
 
   readonly property string currentLayoutSymbol: {
@@ -85,14 +89,15 @@ Scope {
       var res = []
       for (var j = 0; j < count; j++) {
         var tData = (tags && j < tags.length) ? tags[j] : null
-        var active = tData ? tData.is_active : (j === 0)
+        var active = tData ? tData.is_active : false
         var countClients = tData ? (tData.client_count > 0) : false
+        var urgent = tData ? (tData.is_urgent === true) : false
         res.push({
           id: j + 1,
           is_focused: active,
           is_active: active,
           is_occupied: countClients,
-          is_urgent: false
+          is_urgent: urgent
         })
       }
       return res

@@ -10,6 +10,9 @@ QtObject {
   property bool active: false
   property var allWorkspaces: []
   property string currentTitle: ""
+  // Niri may send only a window id in `WindowFocusChanged`; track it so
+  // follow-up `WindowOpenedOrChanged`/`WindowClosed` events can be correlated.
+  property var focusedWindowId: null
 
   readonly property Process _niriInitWs: Process {
     command: ["niri", "msg", "--json", "workspaces"]
@@ -30,6 +33,7 @@ QtObject {
   readonly property Process _niriEvents: Process {
     command: ["niri", "msg", "--json", "event-stream"]
     running: root.active
+    onExited: if (root.active) root.eventsRestartTimer.restart()
 
     stdout: SplitParser {
       onRead: line => {
@@ -41,6 +45,14 @@ QtObject {
         } catch (e) {}
       }
     }
+  }
+
+  // Restart the event stream if the compositor connection drops.
+  // (QtObject has no default property, so this must be a named property.)
+  readonly property Timer eventsRestartTimer: Timer {
+    interval: 2000
+    repeat: false
+    onTriggered: if (root.active) root._niriEvents.running = true
   }
 
   function handleEvent(event) {
@@ -77,14 +89,44 @@ QtObject {
         })
       }
       root.allWorkspaces = updated
-    }
- else if (event.WindowFocused !== undefined) {
-      var focus = event.WindowFocused
-      if (focus) {
-        root.currentTitle = root.formatActiveTitle(focus.title, focus.app_id)
-      } else {
-        root.currentTitle = ""
+    } else if (event.WindowsChanged !== undefined) {
+      // Full window list; seed the title from the currently focused window.
+      var wins = event.WindowsChanged.windows || []
+      var focusedWin = null
+      for (var w = 0; w < wins.length; w++) {
+        if (wins[w] && wins[w].is_focused) { focusedWin = wins[w]; break }
       }
+      root.applyFocusedWindow(focusedWin)
+    } else if (event.WindowOpenedOrChanged !== undefined) {
+      // Metadata update for one window; only refresh if it is focused.
+      var opened = event.WindowOpenedOrChanged.window || event.WindowOpenedOrChanged
+      if (opened && root.focusedWindowId !== null && opened.id === root.focusedWindowId) {
+        root.applyFocusedWindow(opened)
+      }
+    } else if (event.WindowFocusChanged !== undefined) {
+      var wf = event.WindowFocusChanged
+      var win = wf ? (wf.window || (wf.title !== undefined ? wf : null)) : null
+      if (win) {
+        root.applyFocusedWindow(win)
+      } else if (!wf || wf.id === null || wf.id === undefined) {
+        root.applyFocusedWindow(null)
+      } else {
+        root.focusedWindowId = wf.id
+      }
+    } else if (event.WindowClosed !== undefined) {
+      if (event.WindowClosed.id === root.focusedWindowId) {
+        root.applyFocusedWindow(null)
+      }
+    }
+  }
+
+  function applyFocusedWindow(win) {
+    if (win && win.title !== undefined) {
+      if (win.id !== undefined) root.focusedWindowId = win.id
+      root.currentTitle = root.formatActiveTitle(win.title, win.app_id || win.appId || "")
+    } else {
+      root.focusedWindowId = null
+      root.currentTitle = ""
     }
   }
 
