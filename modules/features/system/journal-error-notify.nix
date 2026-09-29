@@ -24,7 +24,10 @@
             -i dialog-error \
             -a "Boot Error Checker" \
             "Boot Errors Detected ($ERROR_COUNT)" \
-            "Found $ERROR_COUNT error(s) in journalctl during boot. Check 'journalctl -b -p err' for details.\n\nSample errors:\n$ERRORS"
+            "Found $ERROR_COUNT error(s) in journalctl during boot. Check 'journalctl -b -p err' for details.
+
+Sample errors:
+$ERRORS"
         fi
       '';
     in
