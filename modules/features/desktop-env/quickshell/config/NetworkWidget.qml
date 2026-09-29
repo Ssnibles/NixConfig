@@ -10,6 +10,9 @@ Pill {
   property string uiFont: Config.monoFont
   property int maxTextWidth: Config.wifiMaxTextLength
   property bool horizontal: false
+  // Disable pointer interaction (used on the lock screen, where the pill is
+  // purely informational and must not launch nmtui).
+  property bool interactive: true
 
   // Networking state
   property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
@@ -41,7 +44,7 @@ Pill {
   orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
   anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
 
-  pillColor: netTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised
+  pillColor: (root.interactive && netTooltip.hovered) ? Colors.bgSubtle : Colors.bgRaised
   border.width: 1
   border.color: Colors.border
 
@@ -99,7 +102,8 @@ Pill {
   MouseArea {
     id: mouseArea
     anchors.fill: parent
-    cursorShape: Qt.PointingHandCursor
+    enabled: root.interactive
+    cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: Quickshell.execDetached(Config.cmdNetworkManager)
   }

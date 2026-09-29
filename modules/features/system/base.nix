@@ -33,7 +33,20 @@
           overlays = [
             inputs.millennium.overlays.default
             (_: prev: {
+              # Rolling channel escape hatch (also the system default while
+              # flake.nix's nixpkgs follows "nixpkgs-unstable").
               unstable = import inputs.nixpkgs-unstable {
+                inherit (prev.stdenv.hostPlatform) system;
+                config = {
+                  allowUnfree = true;
+                  allowUnfreePredicate = _: true;
+                  permittedInsecurePackages = permittedInsecure;
+                };
+              };
+              # Stable channel escape hatch: use pkgs.stable.<pkg> if something
+              # breaks on the rolling channel (and the system default when
+              # flake.nix's nixpkgs follows "nixpkgs-stable").
+              stable = import inputs.nixpkgs-stable {
                 inherit (prev.stdenv.hostPlatform) system;
                 config = {
                   allowUnfree = true;

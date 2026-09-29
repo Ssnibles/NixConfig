@@ -210,7 +210,7 @@ Scope {
 #### `LockScreen.qml`
 - **Role**: Wayland session screen locker built on `WlSessionLock` and `WlSessionLockSurface`.
 - **IPC Target**: `"lockscreen"` (functions: `lock()`, `unlock()`, `toggle()`).
-- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt with Caps Lock warning & error shake animation, secondary screen display lock graphics, background wallpaper with customizable GPU blur (`MultiEffect`) and dimming, and system power actions (Suspend, Reboot, Power Off).
+- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt with Caps Lock warning & error shake animation, secondary screen display lock graphics, background wallpaper with customizable GPU blur (`MultiEffect`) and dimming, read-only `NetworkWidget`/`BatteryWidget` status pills, and system power actions (Sleep/Suspend, Reboot, Power Off).
 
 #### `NotificationOverlay.qml` & `NotificationCard.qml`
 - **Role**: Screen overlay rendering active notification toasts.
@@ -238,9 +238,9 @@ Scope {
 - **`WorkspacesWidget.qml`**: Interactive workspace indicators connected to `NiriService`.
 - **`MediaWidget.qml`**: MPRIS playback bar button with progress indicator and play/pause controls.
 - **`VolumeWidget.qml`**: PipeWire volume control widget with mute toggle, scroll adjustments, and popup control.
-- **`NetworkWidget.qml`**: Network connection monitor displaying Wi-Fi SSID and signal strength. Right-click launches `nmtui`.
+- **`NetworkWidget.qml`**: Network connection monitor displaying Wi-Fi SSID and signal strength. Right-click launches `nmtui`. Set `interactive: false` to render it as a read-only pill (used on the lock screen).
 - **`BluetoothWidget.qml`**: Bluetooth adapter status and device indicator. Right-click launches `blueman-manager`.
-- **`BatteryWidget.qml`**: Laptop battery charge state and status indicator powered by UPower. Auto-hides on desktop systems without batteries.
+- **`BatteryWidget.qml`**: Laptop battery charge state and status indicator powered by UPower. Auto-hides on desktop systems without batteries. Set `interactive: false` to render it as a read-only pill (used on the lock screen).
 
 ---
 

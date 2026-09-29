@@ -491,8 +491,8 @@
         "scenefx": "scenefx_2"
       },
       "locked": {
-        "lastModified": 1790204367,
-        "narHash": "sha256-R1C93CMAVxrDwBbed+MgLP0JQkvzB8/bieWnBgBT+ac=",
+        "lastModified": 1790565306,
+        "narHash": "sha256-baUJgiVthZO2qqLljQg7A+O8vTxRkZ/6kiOUWfeLE9s=",
         "path": "/home/josh/mango",
         "type": "path"
       },
@@ -642,22 +642,6 @@
         "type": "github"
       }
     },
-    "nixpkgs": {
-      "locked": {
-        "lastModified": 1790533781,
-        "narHash": "sha256-F+b8u43BVF5DlM0pz7JQSbtbwKy5PrHIT5zQUekXsD0=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "cf5e76507c6e23b59f7e0ffcc7baa2a39ddd8442",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-26.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs-lib": {
       "locked": {
         "lastModified": 1788057806,
@@ -730,6 +714,22 @@
       "original": {
         "owner": "nix-community",
         "repo": "nixpkgs.lib",
+        "type": "github"
+      }
+    },
+    "nixpkgs-stable": {
+      "locked": {
+        "lastModified": 1790533781,
+        "narHash": "sha256-F+b8u43BVF5DlM0pz7JQSbtbwKy5PrHIT5zQUekXsD0=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "cf5e76507c6e23b59f7e0ffcc7baa2a39ddd8442",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-26.05",
+        "repo": "nixpkgs",
         "type": "github"
       }
     },
@@ -823,7 +823,10 @@
         "mangowc-local": "mangowc-local",
         "millennium": "millennium",
         "nix-index-database": "nix-index-database",
-        "nixpkgs": "nixpkgs",
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ],
+        "nixpkgs-stable": "nixpkgs-stable",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nvf": "nvf",
         "pi-agent": "pi-agent",
@@ -1112,8 +1115,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1790296199,
-        "narHash": "sha256-qvd+U2Rx4aW3+UA/ys2TYMBi9TuQRu8aUzKVmxrDU0s=",
+        "lastModified": 1790290551,
+        "narHash": "sha256-x8jL+tdwHKntdDboH04Fz6cC7OTD/tWGmD0z6YjSCQY=",
         "path": "/home/josh/ytplay",
         "type": "path"
       },

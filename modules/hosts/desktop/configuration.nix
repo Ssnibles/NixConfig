@@ -50,10 +50,18 @@
       networking.firewall.allowedTCPPorts = [ 5353 ];
       networking.firewall.allowedUDPPorts = [ 5353 ];
 
+      # ── Wi-Fi tuning ───────────────────────────────────────────────────────
+      # The only in-range AP for this SSID sits at ~-79 dBm, below iwd's
+      # default RoamThreshold5G (-76), so iwd roam-scans every ~60s looking
+      # for a better BSSID that doesn't exist. That spikes latency. This is a
+      # stationary desktop, so disable roaming scans. (The laptop, which
+      # actually roams, keeps the default.)
+      networking.wireless.iwd.settings.Scan.DisableRoamingScan = true;
+
       # ── Desktop Environment Features ───────────────────────────────────────
       features.hyprland.enable = true;
       features.mangowc.enable = true;
-      features.mangowc.local = true;
+      features.mangowc.local = false;
       features.niri.enable = false;
       features.quickshell.enable = true;
       features.vicinae.enable = true;

@@ -9,6 +9,9 @@ Pill {
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
   property bool horizontal: false
+  // Disable pointer interaction (used on the lock screen, where the pill is
+  // purely informational).
+  property bool interactive: true
 
   visible: root.batPresent
   pillHeight: root.horizontal ? 24 : 30
@@ -16,7 +19,7 @@ Pill {
   orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
   anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
 
-  pillColor: batTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised
+  pillColor: (root.interactive && batTooltip.hovered) ? Colors.bgSubtle : Colors.bgRaised
   border.width: 1
   border.color: Colors.border
 
@@ -106,5 +109,7 @@ Pill {
   MouseArea {
     id: mouseArea
     anchors.fill: parent
+    enabled: root.interactive
+    cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
   }
 }

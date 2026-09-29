@@ -56,8 +56,7 @@ User environments and dotfiles are managed declaratively using **[hjem](https://
   - [2. Automated Bootstrap (`install.sh`)](#2-automated-bootstrap-installsh)
   - [3. Manual Installation](#3-manual-installation)
 - [Daily Workflow & Rebuilds](#daily-workflow--rebuilds)
-  - [Conventional Commit Builder (`build.sh`)](#conventional-commit-builder-buildsh)
-  - [Fast Rebuild Helper (`rebuild.sh`)](#fast-rebuild-helper-rebuildsh)
+  - [Rebuild Tool (`build.sh`)](#rebuild-tool-buildsh)
   - [Fish Abbreviations & Functions](#fish-abbreviations--functions)
   - [Architecture Diagram Generator (`update_diagram.sh`)](#architecture-diagram-generator-updatediagramsh)
 - [Themes & Wallpaper Management](#themes--wallpaper-management)
@@ -267,7 +266,6 @@ For Steam skinning, Gamescope launch parameters, and controller pairing, refer t
 NixConfig/
 ├── flake.nix                          # Flake inputs and dendritic entry point
 ├── build.sh                           # Rebuild script with conventional commit generation
-├── rebuild.sh                         # Fast rebuild helper (boot, test)
 ├── install.sh                         # Bootstrap installer for NixOS Minimal ISOs
 ├── todo.txt                           # Project task tracking
 │
@@ -540,40 +538,31 @@ reboot
 
 ## Daily Workflow & Rebuilds
 
-### Conventional Commit Builder (`build.sh`)
+### Rebuild Tool (`build.sh`)
 
-The repository includes a comprehensive rebuild tool ([`build.sh`](file:///home/josh/NixConfig/build.sh)) that automates system rebuilds, tracks system generations, captures kernel and flake lock changes, and creates conventional Git commits:
+[`build.sh`](file:///home/josh/NixConfig/build.sh) rebuilds a host and commits the result with a conventional commit message that records the new generation. It prefers `jj` + `nh` when available and falls back to `git` + `nixos-rebuild`.
 
 ```bash
 cd ~/NixConfig
 
-# Rebuild current host and commit changes
-./build.sh desktop switch
+# Rebuild + commit the current host (prompts for a message)
+./build.sh
 
-# Rebuild with a conventional commit type, scope, and message
-./build.sh desktop switch -t feat -s hyprland -m "add custom window workspace rules"
+# Rebuild + commit another host
+./build.sh laptop
 
-# Build for next boot on laptop
+# Rebuild with a conventional type, scope, and message
+./build.sh -t feat -s hyprland -m "add custom workspace rules"
 ./build.sh laptop boot -t fix -s power -m "tune tlp battery thresholds"
 
-# Test build in memory without creating a Git commit
-./build.sh desktop test --no-commit
+# Rebuild for the current session only, without committing
+./build.sh test -n
 
-# Commit staged changes without triggering nixos-rebuild
-./build.sh desktop --no-build -m "docs: update system architecture details"
+# Commit staged changes without rebuilding
+./build.sh -b -m "docs: update system architecture details"
 ```
 
-### Fast Rebuild Helper (`rebuild.sh`)
-
-For rapid development cycles or local compositor testing, [`rebuild.sh`](file:///home/josh/NixConfig/rebuild.sh) stages modified files and initiates rebuilds instantly:
-
-```bash
-# Quick switch for the current host
-./rebuild.sh
-
-# Test current session only
-./rebuild.sh --test
-```
+`host` defaults to the current hostname and `action` to `switch`. When run interactively it shows a short review and asks for confirmation before building — `-y`/`--yes` skips that, and `-e`/`--edit` opens the commit message in `$EDITOR`. `-n`/`--no-commit` skips the commit; `-b`/`--no-build` commits without rebuilding.
 
 ### Fish Abbreviations & Functions
 

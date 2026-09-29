@@ -25,53 +25,6 @@ else
   done
 fi
 
-# MangoWC borders: query defaults from config or fallback to standard values
-BORDERPX=2
-BORDER_RADIUS=8
-mango_conf="$HOME/.config/mango/config.conf"
-if [ -f "$mango_conf" ]; then
-  b_px=$(sed -nE 's/^[[:space:]]*borderpx[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$mango_conf" | head -n1)
-  b_rad=$(sed -nE 's/^[[:space:]]*border_radius[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$mango_conf" | head -n1)
-  [ -n "$b_px" ] && BORDERPX="$b_px"
-  [ -n "$b_rad" ] && BORDER_RADIUS="$b_rad"
-fi
-
-# MangoWC border restoration & cleanup trap
-#
-# setoption is the only way to change borderpx/border_radius at runtime, but
-# every setoption call ends up re-applying the tagrules (reset_option ->
-# reapply_tagrule), which forces the configured default layout on every tag.
-# Snapshot the focused tag's layout first so it can be put back afterwards.
-#
-# NOTE: temporarily disabled to test the compositor-side fix (PR #1451); the
-# snapshot/restore calls below are commented out. Re-enable if running an
-# unpatched mango.
-MANGO_LAYOUT=""
-mango_snapshot_layout() {
-  if [ "$IS_MANGO" != true ]; then
-    return
-  fi
-  local mon sym
-  mon=$(mmsg get all-monitors 2>/dev/null) || return
-  sym=$(printf '%s\n' "$mon" | grep -o '"active":true[^}]*' \
-    | grep -o '"layout_symbol":"[^"]*"' | head -n1 \
-    | sed -E 's/.*"layout_symbol":"([^"]*)".*/\1/')
-  [ -n "$sym" ] || return
-  MANGO_LAYOUT=$(mmsg get layouts 2>/dev/null \
-    | grep -o "{[^{}]*\"symbol\":\"$sym\"[^{}]*}" | head -n1 \
-    | sed -E 's/.*"name":"([^"]*)".*/\1/')
-}
-
-MANGO_RESTORED=false
-restore_mango() {
-  if [ "$IS_MANGO" = true ] && [ "$MANGO_RESTORED" = false ]; then
-    MANGO_RESTORED=true
-    mmsg dispatch setoption,borderpx,"$BORDERPX" >/dev/null 2>&1
-    mmsg dispatch setoption,border_radius,"$BORDER_RADIUS" >/dev/null 2>&1
-    # [ -n "$MANGO_LAYOUT" ] && mmsg dispatch setlayout,"$MANGO_LAYOUT" >/dev/null 2>&1
-  fi
-}
-
 ORIG_X=""
 ORIG_Y=""
 restore_cursor() {
@@ -83,25 +36,11 @@ restore_cursor() {
   fi
 }
 
-restore_all() {
-  restore_cursor
-  restore_mango
-}
-
 cleanup() {
-  restore_all
+  restore_cursor
   [ -n "${TMP_IMG:-}" ] && rm -f "$TMP_IMG"
 }
 trap cleanup EXIT INT TERM HUP
-
-if [ "$IS_MANGO" = true ]; then
-  # mango_snapshot_layout
-  mmsg dispatch setoption,borderpx,0 >/dev/null 2>&1
-  mmsg dispatch setoption,border_radius,0 >/dev/null 2>&1
-  # Workaround for unpatched mango: setoption re-applies tagrules and resets
-  # the layout. Disabled while testing the compositor-side fix (PR #1451).
-  # [ -n "$MANGO_LAYOUT" ] && mmsg dispatch setlayout,"$MANGO_LAYOUT" >/dev/null 2>&1
-fi
 
 # Resolve accent color
 ACCENT="6e94b2"
@@ -171,7 +110,7 @@ fi
 if [ "${1:-}" = "ocr" ]; then
   TMP_IMG=$(mktemp --suffix=.png /tmp/screenshot_ocr.XXXXXX)
   grim -g "$GEOM" "$TMP_IMG"
-  restore_all
+  restore_cursor
   tesseract "$TMP_IMG" stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'
 else
   target_dir="${XDG_PICTURES_DIR:-$HOME/Pictures}"
@@ -179,5 +118,5 @@ else
   filename="$target_dir/screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png"
 
   grim -g "$GEOM" - | tee "$filename" | wl-copy -t image/png
-  restore_all
+  restore_cursor
 fi

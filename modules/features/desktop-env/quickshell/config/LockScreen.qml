@@ -1,8 +1,6 @@
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Pam
-import Quickshell.Services.UPower
-import Quickshell.Networking
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
@@ -256,93 +254,27 @@ Scope {
             onClicked: mainBg.forceActiveFocus()
           }
 
-          // Bottom Left Wi-Fi / Network Status (Text & Icon, No Background)
-          Row {
+          // Bottom Left Wi-Fi / Network Status (shared pill widget)
+          NetworkWidget {
             visible: surface.isPrimaryScreen
+            horizontal: true
+            interactive: false
             anchors.left: mainBg.left
             anchors.bottom: mainBg.bottom
             anchors.margins: 24
-            spacing: 8
             z: 10
-
-            property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
-            property var wifiDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi && d.connected }) || Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
-            property bool isWired: wiredDev && wiredDev.connected
-            property bool isWifi: wifiDev && wifiDev.connected
-            property var wifiNet: Utils.findFirst(wifiDev ? wifiDev.networks.values : [], function(n) { return n.connected })
-            property string wifiSsid: wifiNet ? wifiNet.name : ""
-
-            property string netIcon: {
-              if (isWired) return "󰈀"
-              if (isWifi) return "󰤨"
-              return "󰤮"
-            }
-
-            property string netText: {
-              if (isWired) return "Ethernet"
-              if (isWifi) return wifiSsid !== "" ? wifiSsid : "Wi-Fi"
-              return "Offline"
-            }
-
-            property color netColor: (isWired || isWifi) ? Colors.accent : Colors.fgDim
-
-            Text {
-              text: parent.netIcon
-              color: parent.netColor
-              font.family: Config.monoFont
-              font.pixelSize: 16
-              anchors.verticalCenter: parent.verticalCenter
-            }
-
-            Text {
-              text: parent.netText
-              color: Colors.fgMid
-              font.family: Config.sansFont
-              font.pixelSize: 13
-              anchors.verticalCenter: parent.verticalCenter
-            }
           }
 
-          // Bottom Right Battery Status (Text & Icon, No Background)
-          Row {
-            visible: surface.isPrimaryScreen && batPresent
+          // Bottom Right Battery Status (shared pill widget)
+          BatteryWidget {
+            id: lockBattery
+            visible: surface.isPrimaryScreen && lockBattery.batPresent
+            horizontal: true
+            interactive: false
             anchors.right: mainBg.right
             anchors.bottom: mainBg.bottom
             anchors.margins: 24
-            spacing: 8
             z: 10
-
-            property var batDevice: Utils.findBatteryDevice(UPower.devices, UPower.displayDevice)
-            readonly property bool batPresent: batDevice !== null && batDevice.isLaptopBattery
-            readonly property int batPct: batDevice ? Math.round(batDevice.percentage * 100) : 0
-            readonly property bool batCharging: batDevice && batDevice.state === UPowerDeviceState.Charging
-            readonly property bool batPlugged: batDevice && batDevice.state === UPowerDeviceState.FullyCharged
-
-            property string batIcon: Utils.batteryIcon(batPct, batCharging, batPlugged, batPresent)
-            property color batColor: {
-              if (!batPresent) return Colors.fgMid
-              if (batCharging || batPlugged) return Colors.green
-              if (batPct <= 15) return Colors.red
-              if (batPct <= 30) return Colors.yellow
-              return Colors.fgMid
-            }
-
-            Text {
-              text: parent.batIcon
-              color: parent.batColor
-              font.family: Config.monoFont
-              font.pixelSize: 16
-              anchors.verticalCenter: parent.verticalCenter
-            }
-
-            Text {
-              text: parent.batPct + "%"
-              color: parent.batColor
-              font.family: Config.sansFont
-              font.pixelSize: 13
-              font.bold: true
-              anchors.verticalCenter: parent.verticalCenter
-            }
           }
 
           // Primary Interactive Screen Content
@@ -372,17 +304,17 @@ Scope {
               Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: surface.currentDateStr
-                color: Colors.fgMid
+                color: Colors.fgDim
                 font.family: Config.sansFont
                 font.pixelSize: 16
               }
             }
 
-            // --- MEDIA PLAYER CARD (Taller, play/pause only, non-interactive position bar) ---
+            // --- MEDIA PLAYER CARD (matches the Command Centre media card) ---
             Rectangle {
               id: lockMediaCard
               Layout.fillWidth: true
-              implicitHeight: lockMediaCol.implicitHeight + 28
+              implicitHeight: lockMediaCol.implicitHeight + 24
               color: Colors.bgRaised
               border.color: Colors.border
               border.width: 1
@@ -396,8 +328,8 @@ Scope {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.margins: 14
-                spacing: 10
+                anchors.margins: 12
+                spacing: 8
 
                 RowLayout {
                   width: parent.width
@@ -405,8 +337,8 @@ Scope {
 
                   // Track Art / Icon
                   Rectangle {
-                    width: 44
-                    height: 44
+                    width: 48
+                    height: 48
                     radius: 8
                     color: Colors.bgSubtle
                     border.color: Colors.border
@@ -417,7 +349,8 @@ Scope {
                       text: "󰎇"
                       color: Colors.fgDim
                       font.family: Config.monoFont
-                      font.pixelSize: 20
+                      font.pixelSize: 22
+                      font.bold: true
                       anchors.centerIn: parent
                     }
 
@@ -459,37 +392,15 @@ Scope {
                     }
                   }
 
-                  // Play/Pause Button (ONLY Play/Pause)
-                  Rectangle {
-                    width: 32
-                    height: 32
-                    radius: 16
-                    color: lockPlayHover.containsMouse ? Colors.accent : Colors.bgSubtle
-                    border.color: Colors.border
-                    border.width: 1
-                    Behavior on scale { NumberAnimation { duration: 100 } }
-
-                    Text {
-                      anchors.centerIn: parent
-                      text: (lockMediaCard.activePlayer && lockMediaCard.activePlayer.isPlaying) ? "󰏤" : "󰐊"
-                      color: lockPlayHover.containsMouse ? Colors.bg : Colors.fg
-                      font.family: Config.monoFont
-                      font.pixelSize: 16
-                    }
-
-                    MouseArea {
-                      id: lockPlayHover
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      cursorShape: Qt.PointingHandCursor
-                      onEntered: parent.scale = 0.90
-                      onExited: parent.scale = 1.0
-                      onClicked: {
-                        if (lockMediaCard.activePlayer) {
-                          lockMediaCard.activePlayer.isPlaying = !lockMediaCard.activePlayer.isPlaying
-                        }
-                      }
-                    }
+                  // Playback Controls (shared prev / play-pause / next cluster)
+                  PlaybackControls {
+                    Layout.alignment: Qt.AlignVCenter
+                    canPrevious: !!(lockMediaCard.activePlayer && lockMediaCard.activePlayer.canGoPrevious)
+                    canNext: !!(lockMediaCard.activePlayer && lockMediaCard.activePlayer.canGoNext)
+                    isPlaying: !!(lockMediaCard.activePlayer && lockMediaCard.activePlayer.isPlaying)
+                    onPreviousClicked: lockMediaCard.activePlayer.previous()
+                    onPlayPauseClicked: { if (lockMediaCard.activePlayer) lockMediaCard.activePlayer.isPlaying = !lockMediaCard.activePlayer.isPlaying }
+                    onNextClicked: lockMediaCard.activePlayer.next()
                   }
                 }
 
@@ -741,7 +652,7 @@ Scope {
               spacing: 10
 
               property var buttonModel: [
-                { icon: "󰤄", label: "Suspend", cmd: Config.cmdSleep, hoverCol: Colors.accent },
+                { icon: "󰤄", label: "Sleep", cmd: Config.cmdSleep, hoverCol: Colors.accent },
                 { icon: "󰜉", label: "Reboot", cmd: Config.cmdReboot, hoverCol: Colors.orange },
                 { icon: "󰐥", label: "Power", cmd: Config.cmdPoweroff, hoverCol: Colors.red }
               ]
@@ -814,7 +725,7 @@ Scope {
             Text {
               anchors.horizontalCenter: parent.horizontalCenter
               text: surface.currentDateStr
-              color: Colors.fgMid
+              color: Colors.fgDim
               font.family: Config.sansFont
               font.pixelSize: 18
             }

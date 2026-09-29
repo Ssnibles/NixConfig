@@ -58,12 +58,12 @@
       # ── System Journal & Power Management ─────────────────────────────────
       features.foot.enable = false;
 
-      services.journald.extraConfig = ''
-        SystemMaxUse=50M
-        SystemMaxFileSize=10M
-        RateLimitIntervalSec=30s
-        RateLimitBurst=1000
-      '';
+      services.journald.settings.Journal = {
+        SystemMaxUse = "50M";
+        SystemMaxFileSize = "10M";
+        RateLimitIntervalSec = "30s";
+        RateLimitBurst = 1000;
+      };
 
       services.upower.enable = true;
 

@@ -1,6 +1,12 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
+    # `nixpkgs` is the default for the host systems and for every input that
+    # follows it. Flip the follows between "nixpkgs-unstable" and
+    # "nixpkgs-stable" to move the whole system between channels; both stay
+    # available as pkgs.unstable.* / pkgs.stable.*.
+    nixpkgs.follows = "nixpkgs-unstable";
+
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-26.05";
 
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
