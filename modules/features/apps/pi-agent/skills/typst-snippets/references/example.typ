@@ -1,30 +1,25 @@
 // Golden example — body only.
 //
-// Assume the file already has, in order:
-//   1. the package imports at the very top, e.g.
-//        #import "@preview/mmdr:0.2.2": mermaid
-//   2. the `page` preamble from references/page-preamble.typ.
-// This body then shows a callout, math, code, a table, and a diagram together.
-// Copy its style, not its content.
+// Assume the file already starts with the shared-theme header from
+// references/page-preamble.typ:
+//
+//   #import "/templates/theme.typ": *
+//   #show: theme.with(course: "COMPXxxx")
+//
+// which brings in the helpers (#callout, #card, #qa, #uml-class, #note-title),
+// the `font-sans` / `font-serif` / `font-mono` tokens, and the diagram packages.
+// This body then shows a helper callout, math, code, a table, and a diagram
+// together. Copy its style, not its content.
 
 == Binary search
 
 _Binary search_ halves the search space each step, so its cost grows
 logarithmically. Its running time obeys the recurrence $T(n) = T(n/2) + O(1)$.
 
-#block(
-  width: 100%,
-  stroke: (left: 3pt + rgb("#3182ce"), rest: 0.5pt + rgb("#3182ce35")),
-  fill: rgb("#3182ce15"),
-  inset: (x: 12pt, y: 10pt),
-  radius: ui-radius,
-  [
-    #text(weight: "bold", fill: rgb("#3182ce"))[📖 Definition: Binary search] \
-    #v(2pt)
-    An algorithm that repeatedly halves a *sorted* array, comparing the middle
-    element to the target, until the target is found or the range is empty.
-  ]
-)
+#callout("📖", "Definition: Binary search", "#3182ce")[
+  An algorithm that repeatedly halves a *sorted* array, comparing the middle
+  element to the target, until the target is found or the range is empty.
+]
 
 #block(stroke: (left: 3pt + rgb("#3182ce"), rest: 0.5pt + rgb("#3182ce35")), fill: rgb("#3182ce15"), inset: (x: 12pt, y: 10pt), radius: ui-radius, width: 100%)[
   #text(weight: "bold", size: 12pt, fill: rgb("#3182ce"))[⚡ Big-O: Binary search]
@@ -72,16 +67,9 @@ def binary_search(items, target):
   )
 ]
 
-#block(
-  width: 100%,
-  stroke: (left: 3pt + rgb("#dd6b20"), rest: 0.5pt + rgb("#dd6b2035")),
-  fill: rgb("#dd6b2015"),
-  inset: (x: 12pt, y: 10pt),
-  radius: ui-radius,
-  [
-    #text(weight: "bold", fill: rgb("#dd6b20"))[📌 Key Takeaway: ] \
-    #v(2pt)
-    Halving the input adds only one comparison — logarithmic work, constant
-    extra space.
-  ]
-)
+#callout("📌", "Key Takeaway:", "#dd6b20")[
+  Halving the input adds only one comparison — logarithmic work, constant
+  extra space.
+]
+
+#qa[What is the running time of binary search?][$O(log n)$: each step halves the search space, so the number of steps grows with the logarithm of the input.]

@@ -5,28 +5,48 @@ writing or restructuring a document. `SKILL.md` covers the snippet mechanics;
 this file covers the choices around them. For a short worked body that follows
 these rules, see `references/example.typ`.
 
-## 1. Always start from the `page` preamble
+## 1. Always start from the shared theme
 
-- Start from `references/page-preamble.typ` (the expanded `page` snippet) verbatim;
-  do not reorder or trim it.
-- It defines `theme`, `page-type`, `course`, `date`, the colours (`text-color`,
-  `stroke-color`, `bg-color`), the UI tokens (`ui-radius`, `ui-radius-sm`,
-  `ui-border`, `ui-surface`, `ui-surface-raised`), `mmdr-theme`, and the `#show`
-  rules. Everything else assumes it exists.
+- A note starts with the theme import and `#note-title`, exactly as in
+  `references/page-preamble.typ`:
+
+  ```typst
+  #import "/templates/theme.typ": *
+  #show: theme.with(course: "COMPXxxx")
+
+  #set document(title: "Lecture X — Title")
+  #let date = "Week N"
+
+  #note-title(date, "Lecture X — Title")
+  ```
+
+- The theme (`references/theme.typ`; `templates/theme.typ` in a notes repo)
+  defines `theme`, `note-title`, `page-type`, `course`, the colours
+  (`text-color`, `stroke-color`, `bg-color`), the UI tokens (`ui-radius`,
+  `ui-radius-sm`, `ui-border`, `ui-surface`, `ui-surface-raised`), the font
+  tokens, `mmdr-theme`/`zap-theme`, and the `#show` rules. Everything else
+  assumes it exists.
+- Compile with the repository as the Typst root, e.g.
+  `typst compile --root ~/Uni "<note>.typ"`.
 - Never redefine those variables locally or hardcode their values.
 
 ## 2. Document metadata
 
 - Give the document a title: either `#set document(title: "…")` or exactly one
   `= ` level-1 heading (the running header falls back to it).
-- Set `course` and `date` in the preamble (the `page` snippet provides both).
+- Pass `course` to `theme.with(...)`; set `date` as a local before `#note-title`.
+- Use `#note-title(date, title)` (or the `title` snippet) instead of hand-writing
+  the title: the date sits top-left and the title is centred with hyphenation off,
+  as a real level-1 heading (so it feeds the outline).
 - `page-type: "notes"` = self-study notes (header on every page, level-3
-  headings, date title block). `page-type: "lecture"` = lecture handout
-  (numbered footer, larger title block). Pick one and keep it.
+  headings). `page-type: "lecture"` = lecture handout (numbered footer). Pick one
+  and keep it.
 
 ## 3. Structure
 
-- **One `=` (h1) per document.** It is the topic, not a section.
+- **The title is the one level-1 heading.** `#note-title` emits it; do *not* also
+  write a separate `= ` heading that repeats it — that produces a double title.
+  Section headings start at `==`.
 - `==` (h2) for each major concept; `===` (h3) for sub-points; do not skip
   levels. Use `====`+ only when genuinely needed.
 - Order sections by **concept dependency**, not by the order they appeared in
@@ -38,28 +58,44 @@ these rules, see `references/example.typ`.
 
 ## 4. Content → snippet
 
+The theme defines **helper functions** that emit the canonical markup. They
+arrive with the `#import`; prefer them over hand-writing the raw `#block(...)`
+forms:
+
+- `#callout(icon, title, color, body)` — any callout variant, e.g.
+  `#callout("📖", "Definition — …:", "#3182ce")[…]`.
+- `#card(body)` — a neutral bordered card.
+- `#qa(question, answer)` — the Q/A retrieval pair.
+- `#uml-class(name, fields: (), methods: ())` — a UML class box (arrays).
+- `#proof(body)` — the grey proof block.
+- `#bigo(title, body)` — the blue Big-O complexity card.
+- `#note-title(date, title)` — the title heading.
+
 | Content | Snippet |
 |---|---|
-| Definition | `def` / `definition` |
-| Theorem / lemma / corollary / proposition | `thm` / `lem` / `cor` / `prop` |
-| Proof | `proof` |
-| Worked example | `ex` / `example` |
-| Mistake, trap, caution | `warn` / `warning` / `caution` |
+| Definition | `definition`, or `#callout("📖", …)` |
+| Theorem / lemma / corollary / proposition | `theorem` / `lemma` / `corollary` / `proposition` |
+| Proof | `proof` / `#proof[…]` |
+| Worked example | `example` |
+| Mistake, trap, caution | `warning` / `caution` |
 | Shortcut | `tip` |
 | Aside | `note` / `info` |
 | Emphasis / danger | `important` / `danger` |
-| Summary point | `key` / `takeaway` |
-| Exercise / question / solution | `question` / `prob` / `sol` |
-| Tangential remark | `rem` / `remark` |
-| Answer-and-question recall | `qa` |
+| Summary point | `takeaway` |
+| Exercise / question / solution | `question` / `problem` / `solution` |
+| Tangential remark | `remark` |
+| Answer-and-question recall | `#qa[Q][A]` (`qa` snippet) |
 | Numbered procedure | `step` / `steps` |
-| Term + definition line | `kv` / `term` |
-| Comparison / truth table | `tbl` / `tbl3` / `tbl4` / `truthtable` |
-| Algorithm cost | `bigo` |
-| Code | `cb*` / `ic` |
+| Term + definition line | `key-value` / `term` |
+| Comparison / truth table | `table` / `table-3` / `table-4` / `table-5` / `truthtable` / `truthtable-3` |
+| Algorithm cost | `big-o` |
+| Code | `code-*` / `code-inline` |
 | Diagram | see §7 |
 | Callout of any colour | `callout` |
 | Tag / label | `badge` |
+| Footnote | `footnote` |
+| Table of contents | `table-of-contents` |
+| Cross-referenced figure | `figure-labelled` (`@fig:label`) |
 
 For a full listing of every trigger, grep the bundled `references/typst.lua`
 (`grep -n 'trig = "' ...`).
@@ -68,22 +104,35 @@ For a full listing of every trigger, grep the bundled `references/typst.lua`
 
 - Inline math with `$...$` for symbols inside a sentence; display math with
   `$ ... $` on its own.
-- Use **Typst math names**, never LaTeX: `<=`, `>=`, `!=`, `arrow`, `RR`,
+- Use **Typst math names**, never LaTeX: `<=`, `>=`, `!=`, `arrow`, `real`,
   `infinity`, `in`, `subset`, `union`, `intersection`, `nothing`, `therefore`,
   `because`, `forall`, `exists`, greek names (`alpha`, `theta`, …).
-- Multi-line derivations use the `eq` / `eqalign` snippets, aligned on `&=`.
+- Multi-line derivations use the `equation` / `equation-align` snippets, aligned on `&=`.
 - Define each symbol on first use.
 - Keep display equations on their own line; do not bury them in a paragraph.
 
 ## 6. Code
 
-- Fence code with the language tag (`cbpy`, `cbnix`, …). Put the filename on the
-  first line of the block when a header is wanted; the block `raw` show rule
-  (installed by `page`) treats a first line without spaces as a filename.
-- The `page` preamble already installs the block- and inline-`raw` show rules, so
-  do **not** apply `codeshow`/`rawshow` on top of it. Those snippets are only for
-  documents that do not use the `page` preamble.
-- Inline identifiers use `ic` (`` `code` ``).
+- Fence code with the language tag (`code-python`, `code-nix`, `code-php`, `code-xml`, `code-verilog`, …).
+  Put the filename on the first line of the block when a header is wanted; the
+  block `code-raw` show rule (installed by the theme) treats a first line without
+  spaces as a filename. The `lang-meta` map supplies the Nerd Font devicon and file
+  extension for common languages; unknown tags fall back to a generic icon.
+- The theme already installs the block- and inline-`code-raw` show rules, so do **not**
+  apply `code-show-rule`/`raw-show-rule` on top of it. Those snippets are only for documents
+  that do not use the theme.
+- Only the **first line** is a filename, and only if it looks like one
+  (`main.rs`, `schema.sql`). Code such as `<?php` or `<div>` is left as code.
+- **Line numbers are on by default.** Toggle a whole document with
+  `#code-line-numbers.update(false)`/`(true)` (the `line-numbers` snippet), or a
+  single block with the `no-line-numbers` / `with-line-numbers` snippets: `#noln[```py … ```]` /
+  `#ln[```py … ```]`.
+- **PHP highlights even without `<?php`** — write the snippet as you want it shown.
+- Inline identifiers use `code-inline` (`` `code` ``) — a **single** backtick pair.
+  Never wrap inline code in doubled backticks (`` `` `code` `` ``): Typst parses
+  that as *two* raw elements, so the pill/box is drawn twice (the classic
+  "double-stacked inline code" bug). Angle brackets need no escaping inside
+  single backticks: `` `<div>` `` renders fine.
 
 ## 7. Diagrams
 
@@ -95,10 +144,13 @@ See `references/diagrams.md` for the tools, imports, and templates. The rules:
   pie, git graphs). Less error-prone than hand-placing coordinates.
 - **Everything else → CeTZ**, and **logic circuits → Zap**.
 - Add the import for the tool you use at the very top of the file
-  (`cetzsetup` / `mmdsetup` snippets). `mmdr` diagrams must pass
+  (`cetz-setup` / `mermaid-setup` snippets). `mmdr` diagrams must pass
   `theme: mmdr-theme`.
 - Wrap each diagram in `#figure(caption: [...])[...]`, centre it, and refer to it
   in the surrounding text.
+- Figure captions are styled globally by the theme (smaller, italic, muted
+  grey `#718096`); write the caption as plain content and do not wrap it in your
+  own `#text(...)`.
 - Keep diagrams small and readable; prefer left-to-right flow.
 
 ## 8. Text and emphasis
@@ -106,7 +158,7 @@ See `references/diagrams.md` for the tools, imports, and templates. The rules:
 - `*bold*` marks a key term on first use.
 - `_italic_` for emphasis or foreign terms.
 - `` `code` `` for identifiers, file paths, and commands.
-- `-` for unordered lists; `+` for ordered steps; `kv`/`term` for term lists.
+- `-` for unordered lists; `+` for ordered steps; `key-value`/`term` for term lists.
 - Do not manually indent or add blank lines to fake spacing; the `#show` rules
   and `par` settings handle it.
 
@@ -127,7 +179,7 @@ See `references/diagrams.md` for the tools, imports, and templates. The rules:
   handles this, so do not set a body font yourself.
 - **Headings and heading-like furniture are serif** (`font-serif`): h1–h5, the
   lecture title block, and the running header/footer. This is already wired up
-  by the preamble's `#show heading` rules and explicit overrides.
+  by the theme's `#show heading` rules and explicit overrides.
 - Math is rendered in `New Computer Modern Math` regardless of the text font, so
   italic variables and display equations keep their conventional look.
 - Callout accents come from the fixed palette (`#3182ce`, `#38a169`, `#dd6b20`,
@@ -137,11 +189,11 @@ See `references/diagrams.md` for the tools, imports, and templates. The rules:
 
 - Adding third-party packages beyond `cetz`, `zap`, and `mmdr`.
 - Overriding the font (`font-sans`/`font-serif`), page size, margins, or colours
-  set by the preamble.
-- Reordering or rewriting the preamble.
+  set by the theme.
+- Reordering or rewriting the theme or the note header.
 - LaTeX syntax (`\frac`, `\begin{…}`) or Markdown syntax (`###`, `**bold**`,
   pipe tables) in `.typ` files.
-- Screenshots where a `cetz` / `mmd` diagram belongs.
+- Screenshots where a `cetz` / `mermaid` diagram belongs.
 - Inventing content that was not in the source (see the `lecture-notes` skill).
 
 ## 12. Continuity
@@ -152,9 +204,9 @@ See `references/diagrams.md` for the tools, imports, and templates. The rules:
 
 ## Pre-delivery checklist
 
-- [ ] `page` preamble present and untouched.
-- [ ] One h1; heading levels not skipped.
-- [ ] Every code block has a language tag (no stray `codeshow`/`rawshow` on top of `page`).
+- [ ] Theme imported and applied (`#show: theme.with(course: …)`); title via `#note-title`.
+- [ ] One h1 (the title); heading levels not skipped.
+- [ ] Every code block has a language tag (no stray `code-show-rule`/`raw-show-rule` on top of the theme).
 - [ ] Every diagram imported, themed, captioned, and code-generated.
 - [ ] Math uses Typst names; symbols defined.
 - [ ] No hardcoded colours/fonts; no new packages.

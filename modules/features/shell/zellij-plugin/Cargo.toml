@@ -1,0 +1,19 @@
+[package]
+name = "zjbar"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "zjbar"
+path = "src/main.rs"
+
+[[bin]]
+name = "zjcmd"
+path = "src/bin/zjcmd.rs"
+
+[dependencies]
+zellij-tile = "0.45.1"
+
+[profile.release]
+lto = true
+opt-level = "s"

@@ -10,12 +10,12 @@ mirror the expansion, not a LaTeX equivalent.
 |---|---|
 | `$` | inline `$…$` |
 | `$$` | display `$ … $` |
-| `eq` | multi-line equation block |
-| `eqalign` | aligned block, `&=` on each line |
-| `lr` / `lrb` / `lrc` | `lr(…)` / `lr([…])` / `lr({…})` |
+| `equation` | multi-line equation block |
+| `equation-align` | aligned block, `&=` on each line |
+| `delimiters` / `delimiters-bracket` / `delimiters-curly` | `lr(…)` / `lr([…])` / `lr({…})` |
 | `abs` / `norm` | `|…|` / `||…||` |
 | `ceil` / `floor` / `cases` | `ceil(…)` / `floor(…)` / `cases(…)` |
-| `set` / `setb` | `{ … }` / `{ x in S : P(x) }` |
+| `set` / `set-builder` | `{ … }` / `{ x in S : P(x) }` |
 
 ## Operators and functions
 
@@ -45,11 +45,12 @@ mirror the expansion, not a LaTeX equivalent.
 
 | Trigger | Expands to |
 |---|---|
-| `inff` / `nab` | `infinity` / `nabla` |
-| `arr` / `rarr` / `larr` / `uarr` / `darr` | `arrow` / `arrow.r` / `arrow.l` / `arrow.t` / `arrow.b` |
+| `infinity` / `nabla` | `infinity` / `nabla` |
+| `arrow` / `arrow-right` / `arrow-left` / `arrow-up` / `arrow-down` | `arrow` / `arrow.r` / `arrow.l` / `arrow.t` / `arrow.b` |
 | `iff` / `==>` | `<==>` / `==>` |
 | `therefore` / `because` / `forall` / `exists` | `therefore` / `because` / `forall` / `exists` |
-| `elem` / `notin` / `subs` | `in` / `in.not` / `subset` |
+| `elem` / `notin` / `subset` | `in` / `in.not` / `subset` |
+| `supset` / `subset-equal` / `superset-equal` | `supset` / `subset.eq` / `supset.eq` |
 | `cup` / `cap` / `empty` | `union` / `intersection` / `nothing` |
 | `neq` / `leq` / `geq` / `approx` | `!=` / `<=` / `>=` / `approx` |
 | `times` / `cdot` | `times` / `dot.c` |
@@ -58,21 +59,25 @@ mirror the expansion, not a LaTeX equivalent.
 
 | Trigger | Expands to |
 |---|---|
-| `RR` (alias `add`) | `RR` |
-| `NN` / `ZZ` / `QQ` / `CC` | `NN` / `ZZ` / `QQ` / `CC` |
+| `real` | `real` |
+| `natural` / `integer` / `rational` / `complex` | `natural` / `integer` / `rational` / `complex` |
 
 ## Greek letters
 
-| Trigger | `aa` | `bb` | `gg` | `dd` | `ee` | `th` | `ll` | `mm` |
+| Trigger | `alpha` | `beta` | `gamma` | `delta` | `epsilon` | `theta` | `lambda` | `mu` |
 |---|---|---|---|---|---|---|---|---|
 | Letter | `alpha` | `beta` | `gamma` | `delta` | `epsilon` | `theta` | `lambda` | `mu` |
 
-| Trigger | `pp` | `ss` | `oo` | `ph` | `ps` | `rh` | `ta` |
+| Trigger | `pi` | `sigma` | `omega` | `phi` | `psi` | `rho` | `tau` |
 |---|---|---|---|---|---|---|---|
 | Letter | `pi` | `sigma` | `omega` | `phi` | `psi` | `rho` | `tau` |
+
+| Trigger | `zeta` | `eta` | `iota` | `kappa` | `nu` | `xi` | `chi` | `upsilon` | `omicron` |
+|---|---|---|---|---|---|---|---|---|---|
+| Letter | `zeta` | `eta` | `iota` | `kappa` | `nu` | `xi` | `chi` | `upsilon` | `omicron` |
 
 ## Rules
 
 - Define each symbol on first use.
 - Keep display equations on their own line; do not bury them in a paragraph.
-- Use the `eq` / `eqalign` snippets for multi-line derivations, aligned on `&=`.
+- Use the `equation` / `equation-align` snippets for multi-line derivations, aligned on `&=`.

@@ -48,8 +48,12 @@
         install -m 0444 ${./pi-agent/skills/typst-snippets/references/diagrams.md} $out/references/diagrams.md
         install -m 0444 ${./pi-agent/skills/typst-snippets/references/math.md} $out/references/math.md
         install -m 0444 ${./pi-agent/skills/typst-snippets/references/page-preamble.typ} $out/references/page-preamble.typ
+        install -m 0444 ${../../packages/uni-notes/theme.typ} $out/references/theme.typ
         install -m 0444 ${./pi-agent/skills/typst-snippets/references/example.typ} $out/references/example.typ
         install -m 0444 ${../nvim-src/lua/snippets/typst.lua} $out/references/typst.lua
+
+        # Fail the build if the theme, `page` snippet and page-preamble.typ drift apart.
+        bash ${./pi-agent/skills/typst-snippets/check-sync.sh} $out/references
       '';
 
       bundledSkills =

@@ -24,6 +24,22 @@ require("mini.surround").setup({
 	},
 })
 
+-- Typst: `san` wraps a range/selection in `#noln[…]` (no line numbers) and
+-- `sal` wraps it in `#ln[…]`. Scoped to Typst buffers via the buffer-local
+-- config mini.surround merges on top of the global one.
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "typst",
+	callback = function(args)
+		vim.b[args.buf].minisurround_config = {
+			custom_surroundings = {
+				n = { output = { left = "#noln[", right = "]" } },
+				l = { output = { left = "#ln[", right = "]" } },
+			},
+		}
+	end,
+	desc = "Typst line-number surrounds (#noln / #ln)",
+})
+
 -- ── Mini.clue (which-key) ────────────────────────────────────────────
 local clue = require("mini.clue")
 clue.setup({

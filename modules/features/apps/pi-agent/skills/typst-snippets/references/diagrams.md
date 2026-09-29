@@ -14,12 +14,14 @@ tools:
   ER, Gantt, pie, git graphs. Prefer mmdr when it fits — it is far less
   error-prone than placing CeTZ coordinates by hand.
 
-Diagrams are the number-one source of failed compiles. The two rules that fix
-almost all of them:
+Diagrams are the number-one source of failed compiles. The rules that fix almost
+all of them:
 
-1. **Import the package(s) at the very top of the file.** The `page` preamble does
-   *not* import them, and `#cetz`/`#zap`/`mermaid` are unknown without this (the
-   `cetzsetup` and `mmdsetup` snippets emit these lines):
+1. **The theme already imports the packages.** With
+   `#import "/templates/theme.typ": *`, `cetz`, `zap`, `mermaid`, `mmdr-theme` and
+   `zap-theme` are all in scope — no extra imports needed. If you are *not* using
+   the theme, import them yourself (the `cetz-setup` and `mermaid-setup` snippets emit
+   these lines):
 
    ```typst
    #import "@preview/cetz:0.5.2"
@@ -37,13 +39,20 @@ almost all of them:
    whole document; catching it immediately tells you exactly which block is at
    fault.
 
+3. **Theme every diagram from the theme — never hardcode `black`/`white`.**
+   Mermaid gets `theme: mmdr-theme`; Zap gets `zap-theme`; CeTZ strokes with
+   `text-color` and fills with `bg-color`. The theme already makes the
+   diagram background match the page and flip text light/dark with `theme`. A
+   hardcoded colour is invisible in one of the two themes (e.g. Zap's default
+   black-on-white gates vanish on the dark page).
+
 Pick the right tool:
 
 | Diagram | Use |
 |---|---|
 | Logic gates / digital circuits | Zap `#zap.circuit(...)` |
 | Automata, graphs, trees, block/architecture diagrams, coordinate sketches | CeTZ `#cetz.canvas(...)` |
-| Flowcharts, sequence, ER, Gantt, class diagrams | Mermaid (`mmd`, `erd`, `gantt`) |
+| Flowcharts, sequence, ER, Gantt, class diagrams | Mermaid (`mermaid`, `mermaid-erd`, `mermaid-gantt`) |
 
 Unlike the text snippets, diagrams are **composed, not copied** — use the
 templates below as starting points and build the specific figure you need.
@@ -56,7 +65,7 @@ Importing `zap: *` also brings `cetz` into scope, which is why the style call is
 ```typst
 #zap.circuit({
   import zap: *
-  cetz.draw.set-style(zap: (variant: "ieee"))
+  cetz.draw.set-style(zap: zap-theme)  // themed: gate/label colour follows text-color
   node("A", (0, 0.2), label: (content: "A", anchor: "west", distance: 2pt))
   node("B", (0, -0.2), label: (content: "B", anchor: "west", distance: 2pt))
   node("C", (2.5, 0), label: (content: "C", anchor: "east", distance: 2pt))
@@ -127,7 +136,7 @@ Automaton / state machine:
 
 ### mmdr: Mermaid diagrams
 
-Always pass `theme: mmdr-theme` (defined in the `page` preamble) so the diagram
+Always pass `theme: mmdr-theme` (defined in the theme) so the diagram
 matches the dark page instead of rendering a white box. The diagram source is a
 multiline string and must be followed by a comma before any named argument.
 
@@ -139,7 +148,7 @@ multiline string and must be followed by a comma before any named argument.
 ```
 
 Supported diagram types: `graph`/`flowchart` (LR/TD), `sequenceDiagram`,
-`stateDiagram-v2`, `classDiagram`, `erDiagram`, `gantt`, `pie`, `gitGraph`. The
+`stateDiagram-v2`, `classDiagram`, `erDiagram`, `mermaid-gantt`, `pie`, `gitGraph`. The
 renderer does **not** implement all of Mermaid JS — if a diagram errors, simplify
 the syntax or fall back to CeTZ. Keep node labels short, and wrap it in a figure:
 
