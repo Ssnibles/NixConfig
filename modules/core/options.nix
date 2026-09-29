@@ -24,6 +24,7 @@
         wallpaper-destinations = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
+          apply = lib.unique;
           description = "Target user relative paths where active wallpaper should be deployed.";
         };
       };
