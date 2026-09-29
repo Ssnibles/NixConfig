@@ -70,18 +70,30 @@ in one place.
 
 Most snippets assume the document preamble defined by the `page` snippet. It sets
 the variables `theme` (`"dark"`/`"light"`), `page-type` (`"notes"`/`"lecture"`),
-`course`, `date`, `bg-color`, `text-color`, and `stroke-color`, and installs the
-`#show` rules for headings, links, block/inline `raw`, and the title block.
+`course`, `date`, `bg-color`, `text-color`, `stroke-color`, and the font tokens
+`font-sans`/`font-serif`, and installs the `#show` rules for headings, links,
+block/inline `raw`, and the title block.
 
-It also defines the shared UI design tokens that every block now uses, so all
-containers stay visually consistent:
+It also defines the shared font and UI design tokens used throughout, so all
+containers and typography stay visually consistent:
 
+- `font-sans` — the **body** font (`"SF Pro Text"`). Set globally by
+  `#set text(font: font-sans)`; it applies to paragraphs, lists, tables, callout
+  content, and the footer page number.
+- `font-serif` — the **display** font (`"New Computer Modern"`). Used only by
+  headings, the title block, and the running header/footer, via
+  `#show heading: set text(font: font-serif)` plus explicit `font: font-serif`
+  overrides. Math is unaffected (Typst keeps `New Computer Modern Math`).
 - `ui-radius = 6pt` — corner radius for every block (callouts, cards, code blocks,
   tables). `ui-radius-sm = 3pt` for inline pills and inline code.
 - `ui-border` — subtle border color (`#2e2f38` dark / `#e2e2e8` light), used instead
   of the bright `stroke-color` for container borders.
 - `ui-surface` — raised panel fill for cards and code blocks.
 - `ui-surface-raised` — header/row fill for code headers and table headers.
+
+**Typography is role-split:** normal prose is sans-serif (`font-sans`), while
+headings and heading-like furniture are serif (`font-serif`). Never pass a literal
+family name to `font:`; always use the two tokens so the split stays consistent.
 
 **Every block rounds all four corners** (no more one-sided radii) and uses the
 `ui-*` tokens rather than ad-hoc colors. Callouts keep their colored left accent

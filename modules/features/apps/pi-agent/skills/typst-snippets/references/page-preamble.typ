@@ -18,6 +18,9 @@
 #let ui-surface = if theme == "dark" { rgb("#1f1f26") } else { rgb("#f7f7fa") }
 #let ui-surface-raised = if theme == "dark" { rgb("#17171c") } else { rgb("#efeff3") }
 
+#let font-sans = "SF Pro Text"
+#let font-serif = "New Computer Modern"
+
 #let mmdr-theme = if theme == "dark" {
   (
     background: "#1f1f26",
@@ -41,7 +44,7 @@
   header: if page-type == "notes" { context {
     let page_num = counter(page).get().first()
     if page_num > 1 {
-      set text(size: 8.5pt, font: "New Computer Modern", fill: text-color)
+      set text(size: 8.5pt, font: font-serif, fill: text-color)
       let h1_on_page = query(heading.where(level: 1)).filter(h => h.location().page() == page_num)
       let doc_title = if document.title != none {
         document.title
@@ -73,33 +76,36 @@
   } } else { none },
   footer: context {
     let page_num = counter(page).get().first()
-    set text(size: 9pt, font: "New Computer Modern", fill: text-color)
+    set text(size: 9pt, font: font-serif, fill: text-color)
     if page-type == "lecture" or page_num == 1 {
       align(center)[#str(page_num)]
     }
   },
 )
 
-#set text(font: "New Computer Modern", size: 10pt, fill: text-color, lang: "en")
+#set text(font: font-sans, size: 10pt, fill: text-color, lang: "en")
 #set par(justify: true, leading: 0.65em, first-line-indent: 0pt)
+
+// All headings use the serif display font
+#show heading: set text(font: font-serif)
 
 // Level 1 heading
 #show heading.where(level: 1): it => if page-type == "lecture" {
   block(below: 1.2em)[
-    #text(size: 16pt, weight: "bold", fill: text-color)[#it.body]
+    #text(size: 16pt, weight: "bold", font: font-serif, fill: text-color)[#it.body]
     #v(0.3em)
     #line(length: 100%, stroke: 1.2pt + stroke-color)
   ]
 } else {
   block(above: 1.8em, below: 1.2em)[
-    #text(size: 22pt, weight: "regular", style: "italic", fill: text-color)[#it.body]
+    #text(size: 22pt, weight: "regular", style: "italic", font: font-serif, fill: text-color)[#it.body]
   ]
 }
 
 // Level 2: Bold small-caps section title with trailing line
 #show heading.where(level: 2): it => block(above: 1.8em, below: 1.2em)[
   #box(baseline: 0%, [
-    #text(weight: "bold", fill: text-color)[#smallcaps[#it.body]]
+    #text(weight: "bold", font: font-serif, fill: text-color)[#smallcaps[#it.body]]
     #h(0.8em)
     #box(line(length: 6cm, stroke: 0.8pt + stroke-color))
   ])
@@ -108,7 +114,7 @@
 // Level 3: Bold italic subsection title (notes only)
 #show heading.where(level: 3): it => if page-type == "notes" {
   block(above: 1.4em, below: 0.8em)[
-    #text(size: 11pt, weight: "bold", style: "italic", fill: text-color)[#it.body]
+    #text(size: 11pt, weight: "bold", style: "italic", font: font-serif, fill: text-color)[#it.body]
   ]
 } else { it }
 
@@ -198,7 +204,7 @@
 // Title block (page-type aware)
 #if page-type == "lecture" [
   #align(center)[
-    #text(size: 20pt, weight: "bold", fill: text-color)[#course: Lecture Title]
+    #text(size: 20pt, weight: "bold", font: font-serif, fill: text-color)[#course: Lecture Title]
     #text(size: 10pt, fill: text-color)[#date]
   ]
   = Overview

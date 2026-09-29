@@ -118,17 +118,26 @@ See `references/diagrams.md` for the tools, imports, and templates. The rules:
 - Use consistent terminology for a concept throughout, matching the lecturer.
 - Prefer active voice and plain language.
 
-## 10. Colour and theme
+## 10. Colour, theme, and type
 
-- Never hardcode page/font/colour settings. Use `theme`, `text-color`,
-  `ui-*`, and `mmdr-theme`.
+- Never hardcode page/font/colour settings. Use `theme`, `text-color`, `ui-*`,
+  `font-sans`, `font-serif`, and `mmdr-theme`.
+- **Body text is sans-serif** (`font-sans`): paragraphs, lists, tables, callout
+  content, and the footer page number. The global `#set text(font: font-sans)`
+  handles this, so do not set a body font yourself.
+- **Headings and heading-like furniture are serif** (`font-serif`): h1–h5, the
+  lecture title block, and the running header/footer. This is already wired up
+  by the preamble's `#show heading` rules and explicit overrides.
+- Math is rendered in `New Computer Modern Math` regardless of the text font, so
+  italic variables and display equations keep their conventional look.
 - Callout accents come from the fixed palette (`#3182ce`, `#38a169`, `#dd6b20`,
   `#e53e3e`, `#805ad5`, `#718096`); do not invent new ones.
 
 ## 11. Prohibited
 
 - Adding third-party packages beyond `cetz`, `zap`, and `mmdr`.
-- Overriding the font, page size, margins, or colours set by the preamble.
+- Overriding the font (`font-sans`/`font-serif`), page size, margins, or colours
+  set by the preamble.
 - Reordering or rewriting the preamble.
 - LaTeX syntax (`\frac`, `\begin{…}`) or Markdown syntax (`###`, `**bold**`,
   pipe tables) in `.typ` files.
