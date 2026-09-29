@@ -605,7 +605,10 @@
         programs.firefox = {
           enable = true;
           package = lib.mkDefault cfg.package;
-          preferences = lib.mkDefault allSettings;
+          # Preferences are written to the profile's user.js (see the Hjem file
+          # below). Do NOT also set `programs.firefox.preferences`: in nixpkgs
+          # 26.05 that becomes a *locked* Enterprise Policy, making every pref
+          # immutable in about:config and duplicating the user.js channel.
           autoConfig = "";
           policies = lib.mkMerge [
             cfg.policies
