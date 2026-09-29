@@ -222,68 +222,6 @@
             };
           };
 
-          xdg.mime-apps.default-applications = {
-            "application/pdf" = [ "org.pwmt.zathura.desktop" ];
-            "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
-            "image/png" = [ "imv.desktop" ];
-            "image/jpeg" = [ "imv.desktop" ];
-            "image/jpg" = [ "imv.desktop" ];
-            "image/webp" = [ "imv.desktop" ];
-            "image/gif" = [ "imv.desktop" ];
-            "video/mp4" = [ "mpv.desktop" ];
-            "video/webm" = [ "mpv.desktop" ];
-            "video/x-matroska" = [ "mpv.desktop" ];
-            "video/avi" = [ "mpv.desktop" ];
-            "video/x-msvideo" = [ "mpv.desktop" ];
-            "video/mpeg" = [ "mpv.desktop" ];
-            "video/mp2t" = [ "mpv.desktop" ];
-            "video/quicktime" = [ "mpv.desktop" ];
-            "video/x-flv" = [ "mpv.desktop" ];
-            "video/x-ms-wmv" = [ "mpv.desktop" ];
-            "video/x-m4v" = [ "mpv.desktop" ];
-            "video/3gpp" = [ "mpv.desktop" ];
-            "video/3gpp2" = [ "mpv.desktop" ];
-            "video/x-ogm+ogg" = [ "mpv.desktop" ];
-            "video/x-theora+ogg" = [ "mpv.desktop" ];
-            "video/x-mng" = [ "mpv.desktop" ];
-            "application/vnd.apple.mpegurl" = [ "mpv.desktop" ];
-            "application/x-mpegURL" = [ "mpv.desktop" ];
-            "application/mp4" = [ "mpv.desktop" ];
-            "application/ogg" = [ "mpv.desktop" ];
-          };
-        };
-
-        xdg.mime = {
-          enable = true;
-          defaultApplications = {
-            "application/pdf" = [ "org.pwmt.zathura.desktop" ];
-            "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
-            "image/png" = [ "imv.desktop" ];
-            "image/jpeg" = [ "imv.desktop" ];
-            "image/jpg" = [ "imv.desktop" ];
-            "image/webp" = [ "imv.desktop" ];
-            "image/gif" = [ "imv.desktop" ];
-            "video/mp4" = [ "mpv.desktop" ];
-            "video/webm" = [ "mpv.desktop" ];
-            "video/x-matroska" = [ "mpv.desktop" ];
-            "video/avi" = [ "mpv.desktop" ];
-            "video/x-msvideo" = [ "mpv.desktop" ];
-            "video/mpeg" = [ "mpv.desktop" ];
-            "video/mp2t" = [ "mpv.desktop" ];
-            "video/quicktime" = [ "mpv.desktop" ];
-            "video/x-flv" = [ "mpv.desktop" ];
-            "video/x-ms-wmv" = [ "mpv.desktop" ];
-            "video/x-m4v" = [ "mpv.desktop" ];
-            "video/3gpp" = [ "mpv.desktop" ];
-            "video/3gpp2" = [ "mpv.desktop" ];
-            "video/x-ogm+ogg" = [ "mpv.desktop" ];
-            "video/x-theora+ogg" = [ "mpv.desktop" ];
-            "video/x-mng" = [ "mpv.desktop" ];
-            "application/vnd.apple.mpegurl" = [ "mpv.desktop" ];
-            "application/x-mpegURL" = [ "mpv.desktop" ];
-            "application/mp4" = [ "mpv.desktop" ];
-            "application/ogg" = [ "mpv.desktop" ];
-          };
         };
       };
     };
