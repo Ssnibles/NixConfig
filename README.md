@@ -225,10 +225,10 @@ For mental model comparisons, daily workflows, bookmarks, and rebase commands, r
 
 ### Hardware, Microcontrollers & FPGA
 
-For flashing workflows, compilation databases, and Vivado containers, refer to the **[ESP32 & Arduino Guide](docs/wiki/esp32-arduino.md)** and **[AMD Vivado FPGA Guide](docs/wiki/vivado-fpga.md)**:
+For flashing workflows, compilation databases, and the WRAMP toolchain, refer to the **[ESP32 & Arduino Guide](docs/wiki/esp32-arduino.md)** and **[WRAMP Toolchain Guide](docs/wiki/wramp.md)**:
 
 - **ESP32 & Arduino Toolchain**: Embedded developer workflow with `arduino-cli`, `esptool`, automated Neovim / Clangd compilation database generation (`esp-gen-lsp`), and helper scripts (`esp-init`, `esp-compile`, `esp-upload`, `esp-monitor`).
-- **AMD Vivado Design Suite 2024.1**: Containerised FPGA workflow running inside an isolated Ubuntu 22.04 Distrobox container with full Wayland/X11 GUI passthrough and desktop launcher integration.
+- **WRAMP Toolchain & Simulator**: Containerised [WRAMP](https://wramp.wand.nz/) environment running inside an isolated Ubuntu 22.04 Distrobox container — `wasm`/`wlink`/`wobj`, the `wcc` C compiler, the `wsim` Mono GUI simulator, `remote`/`down`, `trim`, and WRAMPmon (`monitor.mem`) with Wayland/X11 GUI passthrough and host launcher wrappers.
 - **Hardware Permissions & Udev Rules**: OpenOCD, DFU utilities (`dfu-util`), and udev rules for CP210x, CH340, FTDI FT2232, and Meshtastic hardware with non-root user access.
 
 ### Media, Documents & Audio Stack
@@ -270,7 +270,7 @@ NixConfig/
 ├── todo.txt                           # Project task tracking
 │
 ├── assets/
-│   ├── setup_vivado.sh                # Container setup script for AMD Vivado 2024.1
+│   ├── setup_wramp.sh                 # Ubuntu container setup for the WRAMP toolchain & wsim
 │   └── wallpapers/                    # Managed wallpaper library
 │       ├── blackbird.jpg              # Default system wallpaper
 │       ├── girl-standing-at-sea.jpg
@@ -292,7 +292,7 @@ NixConfig/
 │       ├── media-audio.md             # MPV Vulkan pipeline, Zathura SyncTeX, PipeWire
 │       ├── firefox.md                 # Firefox userChrome, Sidebery, Helium browser
 │       ├── esp32-arduino.md           # ESP32 & Arduino toolchain and templates
-│       ├── vivado-fpga.md             # AMD Vivado Distrobox container guide
+│       ├── wramp.md                   # WRAMP toolchain & simulator container guide
 │       └── gaming.md                  # Steam, Millennium, Gamescope, DualSense PS5
 │
 ├── templates/
@@ -364,7 +364,7 @@ NixConfig/
     │   │   ├── neovim.nix             # NVF Neovim declarative configuration
     │   │   ├── pi-agent.nix           # Pi terminal coding agent harness & extensions
     │   │   ├── spotify.nix            # Spotify music player configured with Spicetify
-    │   │   └── vivado.nix             # AMD Vivado Distrobox integration
+    │   │   └── wramp.nix              # WRAMP toolchain & simulator integration
     │   │
     │   └── nvim-src/                  # Modular Lua source tree for Neovim
     │       ├── init.lua               # Neovim entry point
@@ -425,7 +425,7 @@ Comprehensive documentation, architecture references, and step-by-step workflow 
 | **Media & Audio Stack** | [media-audio.md](docs/wiki/media-audio.md) | MPV with Vulkan `gpu-next` pipeline and custom scripts, Zathura PDF reader with dark mode and SyncTeX Neovim jumping, PipeWire audio, and `ytplay` |
 | **Firefox & Helium** | [firefox.md](docs/wiki/firefox.md) | Custom `userChrome.css` styling, Sidebery vertical tab bar setup, startpage WebExtension, live CSS debugging, and Helium browser alternative |
 | **ESP32 & Arduino** | [esp32-arduino.md](docs/wiki/esp32-arduino.md) | ESP32 toolchains, `arduino-cli`, `esptool`, Neovim Clangd LSP compilation database generation (`esp-gen-lsp`), and project templates |
-| **AMD Vivado FPGA** | [vivado-fpga.md](docs/wiki/vivado-fpga.md) | Distrobox Ubuntu 22.04 container setup, GUI/X11 forwarding, desktop shortcut integration, and hardware JTAG USB permissions |
+| **WRAMP Toolchain** | [wramp.md](docs/wiki/wramp.md) | Distrobox Ubuntu 22.04 container with `wasm`/`wlink`/`wobj`, the `wcc` compiler, the `wsim` Mono GUI simulator, `remote`/`down`, `trim`, WRAMPmon, and host launcher wrappers |
 | **Gaming & Controllers** | [gaming.md](docs/wiki/gaming.md) | Steam with Millennium skinning, Gamescope composited sessions, MangoHud overlay, and DualSense PS5 controller pairing via `dualsense-pair` |
 
 ---

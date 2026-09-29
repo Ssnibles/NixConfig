@@ -27,8 +27,8 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 ### Hardware, Embedded & Engineering
 - **[ESP32 & Arduino Development](esp32-arduino.md)**  
   Toolchain and workflow for programming Espressif ESP32 microcontrollers using `arduino-cli`, `esptool`, workflow scripts (`esp-init`, `esp-compile`, `esp-upload`, `esp-monitor`), and automatic Neovim / Clangd LSP compilation database generation (`esp-gen-lsp`).
-- **[AMD Vivado FPGA Container Environment](vivado-fpga.md)**  
-  Containerised workflow for running AMD Vivado Design Suite inside an isolated Ubuntu 22.04 Distrobox container with full Wayland/X11 GUI passthrough and JTAG USB programming permissions.
+- **[WRAMP Toolchain & Simulator](wramp.md)**  
+  Waikato RISC Architecture MicroProcessor environment inside an isolated Ubuntu 22.04 Distrobox container: `wasm`/`wlink`/`wobj`, the `wcc` C compiler, the `wsim` Mono GUI simulator, `remote`/`down`, `trim`, and WRAMPmon.
 
 ### Media, Audio & Applications
 - **[Media, Document Viewer & Audio Stack](media-audio.md)**  
@@ -55,7 +55,7 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 | **Jujutsu (jj)** | `modules/features/shell/cli.nix` | `~/.config/jj/config.toml` | [jujutsu.md](jujutsu.md) |
 | **Pi Agent & Hermes** | `modules/features/apps/pi-agent.nix`, `hermes.nix` | `~/.hermes/config.yaml`, `pi.nix` | [ai-tools.md](ai-tools.md) |
 | **ESP32 & Arduino** | `modules/features/apps/development.nix` | `templates/esp32-arduino/` | [esp32-arduino.md](esp32-arduino.md) |
-| **AMD Vivado FPGA** | `modules/features/apps/vivado.nix` | `assets/setup_vivado.sh` | [vivado-fpga.md](vivado-fpga.md) |
+| **WRAMP Toolchain** | `modules/features/apps/wramp.nix` | `assets/setup_wramp.sh` | [wramp.md](wramp.md) |
 | **Media & Audio** | `modules/features/apps/media.nix`, `system/pipewire.nix` | `mpv.conf`, `zathurarc` | [media-audio.md](media-audio.md) |
 | **Firefox & Helium** | `modules/features/apps/firefox/`, `apps/helium.nix` | `userChrome.css`, `userContent.css` | [firefox.md](firefox.md) |
 | **Gaming & PS5** | `modules/features/apps/gaming.nix` | `modules/packages/dualsense-pair/` | [gaming.md](gaming.md) |

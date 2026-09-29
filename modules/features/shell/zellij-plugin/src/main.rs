@@ -1,9 +1,9 @@
 //! A minimal, tmux-shaped zellij status bar.
 //!
 //! Renders a single line with:
-//!   [ LEADER ][ 1 tab ][ 2 tab ]............[ session ][ /path/to/cwd ]
+//!   [ leader ][ 1 tab ][ 2 tab ]............[ session ][ /path/to/cwd ]
 //!
-//! - The LEADER pill only appears while the leader (`tmux`) mode is active.
+//! - The leader pill only appears while the leader (`tmux`) mode is active.
 //! - Unfocused tabs have no background; the focused tab is accent-on-bgSubtle.
 //! - The focused pane's working directory is read through the plugin API, so it
 //!   updates live and tracks pane focus (unlike shelling out from a command
@@ -104,7 +104,7 @@ impl ZellijPlugin for State {
         let mut first = true;
 
         if self.mode == InputMode::Tmux {
-            let label = " LEADER ";
+            let label = " leader ";
             left.push_str(&seg(label, bg, yellow, true));
             left_w += label.chars().count();
             first = false;
@@ -115,7 +115,7 @@ impl ZellijPlugin for State {
                 left.push_str(&gap);
                 left_w += 1;
             }
-            let label = format!(" {} ", session.to_uppercase());
+            let label = format!(" {} ", session.to_lowercase());
             left.push_str(&seg(&label, bg, accent, true));
             left_w += label.chars().count();
             first = false;
@@ -138,7 +138,7 @@ impl ZellijPlugin for State {
             let name = if stored_name.is_empty() || is_default_tab_name(stored_name) {
                 String::new()
             } else {
-                format!(" {}", stored_name.to_uppercase())
+                format!(" {}", stored_name.to_lowercase())
             };
             // The focused tab gets extra left/right margin around its number.
             let label = if tab.active {

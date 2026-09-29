@@ -66,7 +66,7 @@
       features.quickshell.enable = true;
       features.vicinae.enable = true;
       features.shikane.enable = true;
-      features.vivado.enable = false;
+      features.wramp.enable = false;
       features.hermes.enable = true;
       features.syncthing.enable = true;
       features.tailscale.enable = true;
