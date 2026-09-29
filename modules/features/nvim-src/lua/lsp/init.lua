@@ -58,6 +58,12 @@ end)()
 capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
 capabilities.textDocument.semanticTokens = { requests = { range = true, full = { delta = true } } }
 
+-- goto-preview (peek definitions/references in a floating window)
+local ok_gp, goto_preview = pcall(require, "goto-preview")
+if not ok_gp then
+	goto_preview = nil
+end
+
 -- ── LSP Keymaps (attached per buffer) ────────────────────────────────
 
 local function show_hover_doc()
@@ -82,11 +88,21 @@ local function attach_lsp_keymaps(bufnr)
 	map("gd", lsp.buf.definition, "Go to definition")
 	map("gD", lsp.buf.declaration, "Go to declaration")
 	map("gi", lsp.buf.implementation, "Go to implementation")
-	map("gr", function()
+	map("grr", function()
 		require("fzf-lua").lsp_references({ jump_to_single_result = true })
 	end, "Find references")
 	map("K", show_hover_doc, "Hover documentation")
 	map("L", lsp.buf.signature_help, "Signature help")
+
+	-- Peek (goto-preview)
+	if goto_preview then
+		map("gpd", goto_preview.goto_preview_definition, "Peek definition")
+		map("gpD", goto_preview.goto_preview_declaration, "Peek declaration")
+		map("gpi", goto_preview.goto_preview_implementation, "Peek implementation")
+		map("gpr", goto_preview.goto_preview_references, "Peek references")
+		map("gpt", goto_preview.goto_preview_type_definition, "Peek type definition")
+		map("<leader>cp", goto_preview.close_all_win, "Close previews")
+	end
 
 	-- Refactoring
 	map("<leader>rn", function()
@@ -174,7 +190,7 @@ local function attach_lsp_keymaps(bufnr)
 		if vim.fn.exists(":ClangdMemoryUsage") == 2 then
 			vim.cmd("ClangdMemoryUsage")
 		else
-			vim.cmd("LspInfo")
+			vim.cmd("checkhealth vim.lsp")
 		end
 	end, "LSP Memory/Status")
 
@@ -395,6 +411,13 @@ end
 local ok_ir, ir = pcall(require, "inc_rename")
 if ok_ir then
 	ir.setup({})
+end
+
+-- goto-preview
+if goto_preview then
+	goto_preview.setup({
+		references = { provider = "fzf_lua" },
+	})
 end
 
 -- Roslyn (C#)

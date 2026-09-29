@@ -60,3 +60,7 @@ fzf.setup({
 	grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },
 	keymap = { fzf = { ["ctrl-q"] = "select-all+accept", ["ctrl-/"] = "toggle-preview" } },
 })
+
+-- Route `vim.ui.select` through fzf-lua so LSP code actions, rename prompts,
+-- `SmartRename`, DAP pickers, etc. use the same fast picker UI.
+fzf.register_ui_select()

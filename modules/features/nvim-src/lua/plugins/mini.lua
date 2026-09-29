@@ -82,3 +82,15 @@ require("mini.splitjoin").setup()
 require("mini.trailspace").setup()
 require("mini.pairs").setup()
 require("mini.bufremove").setup({})
+
+-- ── Mini.bracketed (extra `[`/`]` motions) ───────────────────────────
+-- Disable targets that already have bespoke mappings (treesitter class/
+-- function jumps, diagnostics with floats, etc.) to avoid clobbering them.
+require("mini.bracketed").setup({
+	comment = { suffix = "" },
+	diagnostic = { suffix = "" },
+	file = { suffix = "" },
+	location = { suffix = "" },
+	quickfix = { suffix = "" },
+	treesitter = { suffix = "" },
+})

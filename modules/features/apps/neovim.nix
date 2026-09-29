@@ -179,6 +179,7 @@
 
             python3Packages.debugpy
             delve
+            gopls
             lldb
             vscode-js-debug
 
@@ -241,6 +242,11 @@
             gitsigns-nvim
             grug-far-nvim
             inc-rename-nvim
+
+            markview-nvim
+            dial-nvim
+            goto-preview
+            nvim-ts-autotag
 
             mini-nvim
             plenary-nvim

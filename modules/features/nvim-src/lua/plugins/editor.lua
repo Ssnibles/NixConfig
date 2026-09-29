@@ -205,6 +205,12 @@ if ok_st then
 	startinator.setup()
 end
 
+-- ── nvim-ts-autotag ─────────────────────────────────────────────────
+local ok_autotag, autotag = pcall(require, "nvim-ts-autotag")
+if ok_autotag then
+	autotag.setup({})
+end
+
 -- ── jj (Jujutsu) integration ────────────────────────────────────────
 
 vim.keymap.set("n", "<leader>gg", function()

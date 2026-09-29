@@ -61,6 +61,8 @@ require("plugins.terminal")
 require("plugins.lang")
 require("messages").setup()
 require("plugins.diagnostics")
+require("plugins.markview")
+require("plugins.dial")
 
 -- Set after plugins so nothing overrides it
 vim.o.statuscolumn = "%s%=%{v:relnum?v:relnum:v:lnum} %#WinSeparator#▏%*"

@@ -14,7 +14,7 @@ local cmp = require("blink.cmp")
 local ls = require("luasnip")
 
 -- Global LuaSnip jump as fallback in insert & snippet selection modes
-vim.keymap.set({ "i", "s" }, "<C-]>", function()
+vim.keymap.set("s", "<C-]>", function()
 	if ls.locally_jumpable(1) then
 		ls.jump(1)
 	end
@@ -91,7 +91,7 @@ cmp.setup({
 		},
 	},
 	fuzzy = {
-		implementation = "prefer_rust_with_warning",
+		implementation = "prefer_rust",
 		use_proximity = true,
 		sorts = { "exact", "score", "sort_text" },
 	},
@@ -175,6 +175,7 @@ cmp.setup({
 			scrollbar = true,
 			draw = {
 				padding = { 1, 1 },
+				treesitter = { "lsp" },
 				columns = { { "kind_icon", gap = 1 }, { "label", "label_description", gap = 1 }, { "kind" } },
 			},
 		},
