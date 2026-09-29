@@ -14,6 +14,9 @@ local fold_indent = { "markdown", "markdown.mdx", "text", "gitcommit", "typst", 
 autocmd("FileType", {
 	group = augroup,
 	callback = function(ev)
+		if vim.b[ev.buf].large_file then
+			return
+		end
 		pcall(vim.treesitter.start, ev.buf)
 	end,
 })
@@ -89,14 +92,10 @@ autocmd("FileType", {
 autocmd("FileType", {
 	group = augroup,
 	pattern = { "markdown", "markdown.mdx", "text", "gitcommit" },
-	callback = function(ev)
+	callback = function()
 		vim.opt_local.spell = true
 		vim.opt_local.wrap = true
-		if vim.fn.has("nvim-0.12") == 1 then
-			if vim.bo[ev.buf].filetype == "markdown" or vim.bo[ev.buf].filetype == "markdown.mdx" then
-				pcall(vim.treesitter.stop, ev.buf)
-			end
-		end
+		-- Tree-sitter is kept on for Markdown: markview.nvim uses it to render.
 	end,
 })
 
@@ -180,19 +179,33 @@ autocmd("FileType", {
 })
 
 -- ── Large file performance guard ─────────────────────────────────────
-autocmd("BufReadPost", {
+-- Flag big files in BufReadPre (before FileType starts Tree-sitter) so the
+-- expensive highlighting is never enabled for them.
+local LARGE_FILE_MB = 5
+
+autocmd("BufReadPre", {
 	group = augroup,
 	callback = function(ev)
 		local path = vim.api.nvim_buf_get_name(ev.buf)
-		if vim.bo[ev.buf].buftype ~= "" or path == "" then
+		if path == "" or vim.bo[ev.buf].buftype ~= "" then
 			return
 		end
 		local ok, stat = pcall(vim.uv.fs_stat, path)
-		if ok and stat and (stat.size / (1024 * 1024)) > 5 then
+		if ok and stat and (stat.size / (1024 * 1024)) > LARGE_FILE_MB then
 			vim.b[ev.buf].large_file = true
-			vim.opt_local.foldmethod = "manual"
-			vim.opt_local.foldenable = false
-			vim.bo[ev.buf].syntax = ""
 		end
+	end,
+})
+
+autocmd("BufReadPost", {
+	group = augroup,
+	callback = function(ev)
+		if not vim.b[ev.buf].large_file then
+			return
+		end
+		vim.opt_local.foldmethod = "manual"
+		vim.opt_local.foldenable = false
+		vim.bo[ev.buf].syntax = ""
+		pcall(vim.treesitter.stop, ev.buf)
 	end,
 })

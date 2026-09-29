@@ -143,7 +143,7 @@ vim.api.nvim_create_user_command("GenerateCompileFlags", function()
 	for _, flag in ipairs(flags) do file:write(flag .. "\n") end
 	file:close()
 	vim.notify("Generated compile_flags.txt")
-	pcall(vim.cmd, "LspRestart")
+	pcall(vim.cmd, "lsp restart")
 end, { desc = "Generate compile_flags.txt from environment & pkg-config" })
 
 return M

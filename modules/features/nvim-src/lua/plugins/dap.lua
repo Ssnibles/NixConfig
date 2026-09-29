@@ -77,19 +77,9 @@ if delve then
 end
 
 -- ── Java / Kotlin ────────────────────────────────────────────────────
-
-dap.adapters.java = function(callback, config)
-	callback({ type = "server", host = config.hostName or "127.0.0.1", port = config.port or 5005 })
-end
-dap.configurations.java = {
-	{ type = "java", request = "attach", name = "Attach to localhost:5005", hostName = "127.0.0.1", port = 5005 },
-	{
-		type = "java", request = "attach", name = "Attach to custom host/port",
-		hostName = function() local h = vim.fn.input("Host: ", "127.0.0.1"); return h ~= "" and h or "127.0.0.1" end,
-		port = function() return tonumber(vim.fn.input("Port: ", "5005")) or 5005 end,
-	},
-}
-dap.configurations.kotlin = vim.deepcopy(dap.configurations.java)
+-- Java debugging needs the `java-debug` adapter bundles driven through
+-- nvim-jdtls; plain jdtls is not enough. It is intentionally left unwired
+-- here so `:DapContinue` does not offer configurations that cannot start.
 
 -- ── C / C++ (LLDB) ──────────────────────────────────────────────────
 
@@ -118,7 +108,7 @@ end
 
 -- ── JavaScript / TypeScript ──────────────────────────────────────────
 
-local js_debug = executable("js-debug-adapter")
+local js_debug = first_executable({ "js-debug", "js-debug-adapter" })
 if js_debug then
 	dap.adapters["pwa-node"] = { type = "server", host = "127.0.0.1", port = "${port}", executable = { command = js_debug, args = { "${port}" } } }
 	for _, lang in ipairs({ "javascript", "typescript", "javascriptreact", "typescriptreact" }) do

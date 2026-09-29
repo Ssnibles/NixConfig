@@ -4,6 +4,7 @@ local t = ls.text_node
 local i = ls.insert_node
 local c = ls.choice_node
 local sn = ls.snippet_node
+local d = ls.dynamic_node
 
 -- Helper for simple text wrapping
 local function wrap(trig, open, close, desc)
@@ -82,6 +83,8 @@ ls.add_snippets("typst", {
 		t({ '#let ui-border = if theme == "dark" { rgb("#2e2f38") } else { rgb("#e2e2e8") }', "" }),
 		t({ '#let ui-surface = if theme == "dark" { rgb("#1f1f26") } else { rgb("#f7f7fa") }', "" }),
 		t({ '#let ui-surface-raised = if theme == "dark" { rgb("#17171c") } else { rgb("#efeff3") }', "", "" }),
+		t({ '#let font-sans = "SF Pro Text"', "" }),
+		t({ '#let font-serif = "New Computer Modern"', "", "" }),
 		t({ '#let mmdr-theme = if theme == "dark" {', "" }),
 		t({ '  (', "" }),
 		t({ '    background: "#1f1f26",', "" }),
@@ -104,7 +107,7 @@ ls.add_snippets("typst", {
 		t({ '  header: if page-type == "notes" { context {', "" }),
 		t({ "    let page_num = counter(page).get().first()", "" }),
 		t({ "    if page_num > 1 {", "" }),
-		t({ '      set text(size: 8.5pt, font: "New Computer Modern", fill: text-color)', "" }),
+		t({ '      set text(size: 8.5pt, font: font-serif, fill: text-color)', "" }),
 		t({ "      let h1_on_page = query(heading.where(level: 1)).filter(h => h.location().page() == page_num)", "" }),
 		t({ "      let doc_title = if document.title != none {", "" }),
 		t({ "        document.title", "" }),
@@ -136,30 +139,32 @@ ls.add_snippets("typst", {
 		t({ '  } } else { none },', "" }),
 		t({ "  footer: context {", "" }),
 		t({ "    let page_num = counter(page).get().first()", "" }),
-		t({ '    set text(size: 9pt, font: "New Computer Modern", fill: text-color)', "" }),
+		t({ '    set text(size: 9pt, font: font-serif, fill: text-color)', "" }),
 		t({ '    if page-type == "lecture" or page_num == 1 {', "" }),
 		t({ "      align(center)[#str(page_num)]", "" }),
 		t({ "    }", "" }),
 		t({ "  },", "" }),
 		t({ ")", "", "" }),
-		t({ '#set text(font: "New Computer Modern", size: 10pt, fill: text-color, lang: "en")', "" }),
+		t({ '#set text(font: font-sans, size: 10pt, fill: text-color, lang: "en")', "" }),
 		t({ "#set par(justify: true, leading: 0.65em, first-line-indent: 0pt)", "", "" }),
+		t({ "// All headings use the serif display font", "" }),
+		t({ "#show heading: set text(font: font-serif)", "", "" }),
 		t({ "// Level 1 heading", "" }),
 		t({ '#show heading.where(level: 1): it => if page-type == "lecture" {', "" }),
 		t({ "  block(below: 1.2em)[", "" }),
-		t({ '    #text(size: 16pt, weight: "bold", fill: text-color)[#it.body]', "" }),
+		t({ '    #text(size: 16pt, weight: "bold", font: font-serif, fill: text-color)[#it.body]', "" }),
 		t({ "    #v(0.3em)", "" }),
 		t({ '    #line(length: 100%, stroke: 1.2pt + stroke-color)', "" }),
 		t({ "  ]", "" }),
 		t({ "} else {", "" }),
 		t({ "  block(above: 1.8em, below: 1.2em)[", "" }),
-		t({ '    #text(size: 22pt, weight: "regular", style: "italic", fill: text-color)[#it.body]', "" }),
+		t({ '    #text(size: 22pt, weight: "regular", style: "italic", font: font-serif, fill: text-color)[#it.body]', "" }),
 		t({ "  ]", "" }),
 		t({ "}", "", "" }),
 		t({ "// Level 2: Bold small-caps section title with trailing line", "" }),
 		t({ "#show heading.where(level: 2): it => block(above: 1.8em, below: 1.2em)[", "" }),
 		t({ "  #box(baseline: 0%, [", "" }),
-		t({ '    #text(weight: "bold", fill: text-color)[#smallcaps[#it.body]]', "" }),
+		t({ '    #text(weight: "bold", font: font-serif, fill: text-color)[#smallcaps[#it.body]]', "" }),
 		t({ "    #h(0.8em)", "" }),
 		t({ "    #box(line(length: 6cm, stroke: 0.8pt + stroke-color))", "" }),
 		t({ "  ])", "" }),
@@ -167,7 +172,7 @@ ls.add_snippets("typst", {
 		t({ "// Level 3: Bold italic subsection title (notes only)", "" }),
 		t({ '#show heading.where(level: 3): it => if page-type == "notes" {', "" }),
 		t({ "  block(above: 1.4em, below: 0.8em)[", "" }),
-		t({ '    #text(size: 11pt, weight: "bold", style: "italic", fill: text-color)[#it.body]', "" }),
+		t({ '    #text(size: 11pt, weight: "bold", style: "italic", font: font-serif, fill: text-color)[#it.body]', "" }),
 		t({ "  ]", "" }),
 		t({ "} else { it }", "", "" }),
 		t({ "// Underline links", "" }),
@@ -252,7 +257,7 @@ ls.add_snippets("typst", {
 		t({ "// Title block (page-type aware)", "" }),
 		t({ '#if page-type == "lecture" [', "" }),
 		t({ "  #align(center)[", "" }),
-		t({ '    #text(size: 20pt, weight: "bold", fill: text-color)[#course: ' }),
+		t({ '    #text(size: 20pt, weight: "bold", font: font-serif, fill: text-color)[#course: ' }),
 		i(5, "Lecture Title"),
 		t({ "]", "" }),
 		t({ '    #text(size: 10pt, fill: text-color)[#date]', "" }),
@@ -683,7 +688,7 @@ ls.add_snippets("typst", {
 		t({ "", "]" }),
 	}),
 	s({ trig = "date", desc = "Insert current date string" }, {
-		t(os.date("%d %B %Y")),
+		d(1, function() return sn(nil, { t(os.date("%d %B %Y")) }) end),
 	}),
 	s({ trig = "hr", desc = "Horizontal divider rule line" }, {
 		t('#line(length: 100%, stroke: 0.6pt + stroke-color)'),
@@ -1131,7 +1136,6 @@ ls.add_snippets("typst", {
 
 	-- Number sets (Blackboard Bold)
 	s({ trig = "RR", desc = "Set of real numbers blackboard bold identifier" }, { t("RR") }),
-	s({ trig = "add", desc = "Set of real numbers blackboard bold identifier" }, { t("RR") }),
 	s({ trig = "NN", desc = "Set of natural numbers blackboard bold identifier" }, { t("NN") }),
 	s({ trig = "ZZ", desc = "Set of integers blackboard bold identifier" }, { t("ZZ") }),
 	s({ trig = "QQ", desc = "Set of rational numbers blackboard bold identifier" }, { t("QQ") }),

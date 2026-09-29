@@ -24,7 +24,7 @@ conform.setup({
 		sh = { "shfmt" },
 		kotlin = { "ktlint" },
 		java = { "google-java-format" },
-		cs = { "csharpier" },
+		-- cs = { "csharpier" }, -- csharpier is not installed; add it to extraPackages to enable
 		rust = { "rustfmt" },
 		zig = { "zigfmt" },
 		typst = { "typstyle" },
@@ -53,6 +53,8 @@ end, { desc = "Toggle autoformat (global)" })
 vim.keymap.set("n", "<leader>tA", function()
 	local ft = vim.bo.filetype
 	if ft == "" then return end
-	vim.g.disable_autoformat_ft[ft] = not vim.g.disable_autoformat_ft[ft]
-	vim.notify(("Autoformat for %s %s"):format(ft, vim.g.disable_autoformat_ft[ft] and "disabled" or "enabled"))
+	local disabled = vim.g.disable_autoformat_ft or {}
+	disabled[ft] = not disabled[ft]
+	vim.g.disable_autoformat_ft = disabled
+	vim.notify(("Autoformat for %s %s"):format(ft, disabled[ft] and "disabled" or "enabled"))
 end, { desc = "Toggle autoformat for filetype" })

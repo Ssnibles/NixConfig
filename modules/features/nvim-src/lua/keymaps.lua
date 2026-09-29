@@ -41,12 +41,17 @@ map({ "n", "v" }, "c", '"_c', { desc = "Change to void" })
 map({ "n", "v" }, "C", '"_C', { desc = "Change line to void" })
 map({ "n", "v" }, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
 map("n", "<leader>Y", '"+Y', { desc = "Yank line to system clipboard" })
+map("n", "Y", "y$", { desc = "Yank to end of line" })
 map("n", "<leader>P", '"+P', { desc = "Paste before from system clipboard" })
 
 -- ── Selection & Movement ─────────────────────────────────────────────
 map("n", "<leader>va", "ggVG", { desc = "Select all" })
 map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Smart line down" })
 map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Smart line up" })
+map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down (centered)" })
+map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up (centered)" })
+map("n", "]<Space>", "o<Esc>", { desc = "Add blank line below" })
+map("n", "[<Space>", "O<Esc>", { desc = "Add blank line above" })
 
 -- ── Search ───────────────────────────────────────────────────────────
 map("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear search highlight" })
@@ -175,8 +180,8 @@ map("n", "<leader>tc", function()
 end, { desc = "Toggle cursor word" })
 
 -- ── LSP (non-attach) ────────────────────────────────────────────────
-map("n", "<leader>li", "<cmd>LspInfo<CR>", { desc = "LSP info" })
-map("n", "<leader>lr", "<cmd>LspRestart<CR>", { desc = "Restart LSP" })
+map("n", "<leader>li", "<cmd>checkhealth vim.lsp<CR>", { desc = "LSP info" })
+map("n", "<leader>lr", "<cmd>lsp restart<CR>", { desc = "Restart LSP" })
 map("n", "<leader>lf", "<cmd>FzfLua lsp_finder<CR>", { desc = "LSP finder" })
 map("n", "<leader>lh", "<cmd>LspHealth<CR>", { desc = "LSP health" })
 map("n", "<leader>lR", "<cmd>SmartRename<CR>", { desc = "Smart rename/replace" })
@@ -209,6 +214,6 @@ map("n", "<leader>gF", "<cmd>FzfLua git_stash<CR>", { desc = "Git stash" })
 
 -- ── Miscellaneous ────────────────────────────────────────────────────
 map("n", "<leader>cd", "<cmd>cd %:p:h<CR>", { desc = "Change to file directory" })
-map("n", "zz", "za", { desc = "Toggle Folds" })
+-- `zz` intentionally left as the built-in "center cursor"; use `za` to toggle folds.
 map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 map("n", "<C-.>", "@@", { desc = "Repeat last macro" })
