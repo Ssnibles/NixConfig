@@ -126,11 +126,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1790545482,
-        "narHash": "sha256-/uN68L/qi/al6Uq+gAzOP0DrX6j9tSLTsCqm83Q5QXI=",
+        "lastModified": 1790701375,
+        "narHash": "sha256-0FpLHIRDYiyo3EMTnMQSobZQknZaa3JuWo6vmMCK76o=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "69875f70c1df9b3754ce4f414438240b265778b3",
+        "rev": "fe20b5cba7ab5e93ae73f956a8d3efc50e1753f4",
         "type": "github"
       },
       "original": {
@@ -468,11 +468,11 @@
         "scenefx": "scenefx"
       },
       "locked": {
-        "lastModified": 1790577855,
-        "narHash": "sha256-aDjYwXuX+TKZya7UCNgv+O/chCYIbATHpAOKl9xaNdk=",
+        "lastModified": 1790693053,
+        "narHash": "sha256-VlRgHjiqZge2MhuAjmIyw+3gkCLdXhBc5E6TD32nIkE=",
         "owner": "mangowm",
         "repo": "mango",
-        "rev": "c08ca4772d9eb4e0c95035e6012025fca69c6d81",
+        "rev": "61b2070b447e145fe89e90b7619389e8ece239f4",
         "type": "github"
       },
       "original": {
@@ -491,8 +491,8 @@
         "scenefx": "scenefx_2"
       },
       "locked": {
-        "lastModified": 1790565306,
-        "narHash": "sha256-baUJgiVthZO2qqLljQg7A+O8vTxRkZ/6kiOUWfeLE9s=",
+        "lastModified": 1790204367,
+        "narHash": "sha256-R1C93CMAVxrDwBbed+MgLP0JQkvzB8/bieWnBgBT+ac=",
         "path": "/home/josh/mango",
         "type": "path"
       },
@@ -719,11 +719,11 @@
     },
     "nixpkgs-stable": {
       "locked": {
-        "lastModified": 1790533781,
-        "narHash": "sha256-F+b8u43BVF5DlM0pz7JQSbtbwKy5PrHIT5zQUekXsD0=",
+        "lastModified": 1790635395,
+        "narHash": "sha256-bNyvoIyOCu7lzoCpWKWGIsHpTtERUWzqYWFPlN++WTw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "cf5e76507c6e23b59f7e0ffcc7baa2a39ddd8442",
+        "rev": "7fc6f2c20af09cdcaf48b92ec3121860139ec668",
         "type": "github"
       },
       "original": {
@@ -799,11 +799,11 @@
         "nixpkgs-x86_64-darwin": "nixpkgs-x86_64-darwin"
       },
       "locked": {
-        "lastModified": 1790593024,
-        "narHash": "sha256-XBLjJKN/jk7nx5jbQ+2fKfM2tQTtV0l091lgt3UB0go=",
+        "lastModified": 1790705482,
+        "narHash": "sha256-yA7XEcXfb+8WtlsqEPdIrRwOnmOGApHj6LCfrdKYTzg=",
         "owner": "lukasl-dev",
         "repo": "pi.nix",
-        "rev": "467fecc25934b00ec3d5fe0559e4a60fccea528a",
+        "rev": "cf1f0f67725755a1440630fcbfe49485865ef8da",
         "type": "github"
       },
       "original": {
@@ -1115,8 +1115,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1790290551,
-        "narHash": "sha256-x8jL+tdwHKntdDboH04Fz6cC7OTD/tWGmD0z6YjSCQY=",
+        "lastModified": 1790296199,
+        "narHash": "sha256-qvd+U2Rx4aW3+UA/ys2TYMBi9TuQRu8aUzKVmxrDU0s=",
         "path": "/home/josh/ytplay",
         "type": "path"
       },

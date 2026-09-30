@@ -21,6 +21,26 @@ set -e
 CONTAINER_NAME="wramp"
 KEEP_EXISTING=false
 
+# Fully-qualified so Podman/Docker never prompt to disambiguate the registry.
+IMAGE="docker.io/library/ubuntu:22.04"
+
+# Pull a container image without any interactive prompt.
+# distrobox create asks "Do you want to pull the image now? [Y/n]" when the
+# image is missing; pre-pulling here avoids that.
+pull_image() {
+    local image="$1"
+    if podman image exists "$image" 2>/dev/null; then
+        return 0
+    fi
+    if command -v podman >/dev/null 2>&1; then
+        podman pull "$image"
+    elif command -v docker >/dev/null 2>&1; then
+        docker pull "$image"
+    else
+        echo "Warning: neither podman nor docker found; letting distrobox pull $image" >&2
+    fi
+}
+
 # Pinned wandwramp release artefacts.
 WRAMP_TOOLCHAIN_URL="https://github.com/wandwramp/toolchain/releases/download/V3.0.1/toolchain-3.0.1.zip"
 WRAMP_WCC_URL="https://github.com/wandwramp/wcc/releases/download/1.1.1.1/wcc-1.1.1.1.zip"
@@ -70,7 +90,8 @@ if [ "$KEEP_EXISTING" = true ]; then
     echo "=== [1/4] Keeping Existing Container ($CONTAINER_NAME) ==="
     if ! distrobox list | grep -q "^$CONTAINER_NAME "; then
         echo "Container '$CONTAINER_NAME' does not exist. Creating it anyway..."
-        distrobox create --name "$CONTAINER_NAME" --image ubuntu:22.04 --additional-flags "$DISTROBOX_FLAGS"
+        pull_image "$IMAGE"
+        distrobox create --name "$CONTAINER_NAME" --image "$IMAGE" --additional-flags "$DISTROBOX_FLAGS"
     fi
 else
     echo "=== [1/4] Removing Old Distrobox Container ($CONTAINER_NAME) ==="
@@ -79,7 +100,8 @@ else
         distrobox rm "$CONTAINER_NAME" --yes || true
     fi
     echo "=== [2/4] Creating New Distrobox Container ($CONTAINER_NAME) ==="
-    distrobox create --name "$CONTAINER_NAME" --image ubuntu:22.04 --additional-flags "$DISTROBOX_FLAGS"
+    pull_image "$IMAGE"
+    distrobox create --name "$CONTAINER_NAME" --image "$IMAGE" --additional-flags "$DISTROBOX_FLAGS"
 fi
 
 echo "=== [3/4] Installing WRAMP Toolchain, Simulator & Utilities ==="
