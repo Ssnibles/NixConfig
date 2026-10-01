@@ -43,6 +43,11 @@
 
         programs.git.enable = true;
 
+        programs.gnupg.agent = {
+          enable = true;
+          enableSSHSupport = true;
+        };
+
         # ── Git Identity & Conditional Includes ───────────────────────────────
         hjem.users.${config.username}.files = {
           ".config/git/config-uni" = {

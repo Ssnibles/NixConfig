@@ -32,7 +32,12 @@
       zjbar = pkgs.pkgsCross.wasi32.rustPlatform.buildRustPackage {
         pname = "zjbar";
         version = "0.1.0";
-        src = pkgs.lib.cleanSource ./zellij-plugin;
+        # Exclude the local cargo target dir; cleanSource does not, and it is
+        # ~433MB of cached build artifacts from a different target.
+        src = pkgs.lib.cleanSourceWith {
+          src = ./zellij-plugin;
+          filter = path: _: builtins.baseNameOf path != "target";
+        };
         cargoLock.lockFile = ./zellij-plugin/Cargo.lock;
         nativeBuildInputs = [ pkgs.pkgsCross.wasi32.lld ];
         RUSTFLAGS = "-C linker=wasm-ld";

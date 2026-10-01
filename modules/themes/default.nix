@@ -24,7 +24,7 @@
           type = lib.types.attrsOf lib.types.str;
           default = {
             sans = "SF Pro Text";
-            monospace = "JetBrainsMono Nerd Font";
+            monospace = "Maple Mono NR NF";
             serif = "Instrument Serif";
           };
           description = "System typography font family names.";
