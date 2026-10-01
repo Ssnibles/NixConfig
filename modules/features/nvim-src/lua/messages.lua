@@ -14,6 +14,19 @@ local ignore_kinds = {
 	undo = true,
 }
 
+-- Kinds that must stay visible in the message area: interactive prompts and
+-- multi-line command output do not belong in a transient notification.
+-- Returning nil for these lets Nvim render them normally.
+local passthrough_kinds = {
+	confirm = true,
+	list_cmd = true,
+	shell_cmd = true,
+	shell_out = true,
+	shell_ret = true,
+	wildlist = true,
+	completion = true,
+}
+
 function M.setup()
 	if attached then
 		return
@@ -26,7 +39,7 @@ function M.setup()
 		end
 
 		local kind, content, replace_last, _, _, id = ...
-		if ignore_kinds[kind] then
+		if ignore_kinds[kind] or passthrough_kinds[kind] then
 			return
 		end
 
@@ -68,13 +81,7 @@ function M.setup()
 		end
 
 		local level = vim.log.levels.INFO
-		if
-			kind == "emsg"
-			or kind == "echoerr"
-			or kind == "lua_error"
-			or kind == "rpc_error"
-			or kind == "shell_err"
-		then
+		if kind == "emsg" or kind == "echoerr" or kind == "lua_error" or kind == "rpc_error" or kind == "shell_err" then
 			level = vim.log.levels.ERROR
 		elseif kind == "wmsg" then
 			level = vim.log.levels.WARN
@@ -90,6 +97,10 @@ function M.setup()
 			end
 			in_notify = false
 		end)
+
+		-- Signal to Nvim that this msg_show is fully handled so it is not also
+		-- propagated to the UI (avoids duplicating every notification).
+		return true
 	end)
 end
 
