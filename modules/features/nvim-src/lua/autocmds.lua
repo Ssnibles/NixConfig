@@ -2,10 +2,10 @@ local augroup = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 local autocmd = vim.api.nvim_create_autocmd
 
 -- Filetypes closed by pressing 'q' or '<Esc>'
-local close_with_q = { "help", "man", "qf", "lspinfo", "checkhealth", "notify", "oil", "grug-far", "cargo" }
+local close_with_q = { "help", "man", "qf", "checkhealth", "notify", "oil", "grug-far", "cargo" }
 
 -- Filetypes that skip trailing whitespace trimming
-local trim_skip = { markdown = true, text = true, gitcommit = true, diff = true }
+local trim_skip = { markdown = true, ["markdown.mdx"] = true, text = true, gitcommit = true, diff = true }
 
 -- Filetypes using indent folding instead of treesitter
 local fold_indent = { "markdown", "markdown.mdx", "text", "gitcommit", "typst", "txt", "yaml", "json", "toml" }
@@ -35,8 +35,6 @@ autocmd("BufWritePre", {
 		end
 	end,
 })
-
-
 
 -- ── Yank highlight ───────────────────────────────────────────────────
 autocmd("TextYankPost", {
@@ -100,37 +98,28 @@ autocmd("FileType", {
 })
 
 -- ── Relative line numbers toggle on insert ───────────────────────────
-autocmd("InsertEnter", {
+-- Only auto-hide relative numbers when the user hasn't disabled them with
+-- <leader>tn (tracked via vim.g.relativenumber_enabled).
+local function relativenumber_enabled()
+	return vim.g.relativenumber_enabled ~= false
+end
+
+autocmd({ "InsertEnter", "InsertLeave" }, {
 	group = augroup,
-	callback = function()
-		if vim.bo.buftype == "" then
-			vim.opt_local.relativenumber = false
-		end
-	end,
-})
-autocmd("InsertLeave", {
-	group = augroup,
-	callback = function()
-		if vim.bo.buftype == "" then
-			vim.opt_local.relativenumber = true
+	callback = function(ev)
+		if vim.bo.buftype == "" and relativenumber_enabled() then
+			-- Absolute numbers while typing, relative the rest of the time.
+			vim.opt_local.relativenumber = ev.event == "InsertLeave"
 		end
 	end,
 })
 
 -- ── Cursorline follows focus ─────────────────────────────────────────
-autocmd("WinEnter", {
+autocmd({ "WinEnter", "WinLeave" }, {
 	group = augroup,
-	callback = function()
+	callback = function(ev)
 		if vim.bo.buftype ~= "terminal" then
-			vim.opt_local.cursorline = true
-		end
-	end,
-})
-autocmd("WinLeave", {
-	group = augroup,
-	callback = function()
-		if vim.bo.buftype ~= "terminal" then
-			vim.opt_local.cursorline = false
+			vim.opt_local.cursorline = ev.event == "WinEnter"
 		end
 	end,
 })

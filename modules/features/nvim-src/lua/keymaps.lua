@@ -41,7 +41,6 @@ map({ "n", "v" }, "c", '"_c', { desc = "Change to void" })
 map({ "n", "v" }, "C", '"_C', { desc = "Change line to void" })
 map({ "n", "v" }, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
 map("n", "<leader>Y", '"+Y', { desc = "Yank line to system clipboard" })
-map("n", "Y", "y$", { desc = "Yank to end of line" })
 map("n", "<leader>P", '"+P', { desc = "Paste before from system clipboard" })
 
 -- ── Selection & Movement ─────────────────────────────────────────────
@@ -50,8 +49,6 @@ map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true
 map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Smart line up" })
 map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down (centered)" })
 map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up (centered)" })
-map("n", "]<Space>", "o<Esc>", { desc = "Add blank line below" })
-map("n", "[<Space>", "O<Esc>", { desc = "Add blank line above" })
 
 -- ── Search ───────────────────────────────────────────────────────────
 map("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear search highlight" })
@@ -60,8 +57,6 @@ map("n", "n", "nzzzv", { desc = "Next search result (centered)" })
 map("n", "N", "Nzzzv", { desc = "Prev search result (centered)" })
 map("n", "*", "*zz", { desc = "Search word forward (centered)" })
 map("n", "#", "#zz", { desc = "Search word backward (centered)" })
-map("x", "*", [["zy/\V<C-r>=escape(@z, '/\')<CR><CR>]], { desc = "Search visual selection forward", silent = true })
-map("x", "#", [["zy?\V<C-r>=escape(@z, '?\')<CR><CR>]], { desc = "Search visual selection backward", silent = true })
 
 -- ── Windows ──────────────────────────────────────────────────────────
 map("n", "<leader>wv", "<C-w>v", { desc = "Split vertical" })
@@ -103,8 +98,6 @@ map("n", "<leader>bo", function()
 end, { desc = "Close other buffers" })
 
 map("n", "<leader>`", "<cmd>b#<CR>", { desc = "Alternate buffer" })
-map("n", "]b", "<cmd>bnext<CR>", { desc = "Next buffer" })
-map("n", "[b", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 map("n", "<C-Tab>", "<cmd>bnext<CR>", { desc = "Next buffer" })
 map("n", "<C-S-Tab>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 map("n", "]t", "<cmd>tabnext<CR>", { desc = "Next tab" })
@@ -113,23 +106,15 @@ map("n", "<leader>Tn", "<cmd>tabnew<CR>", { desc = "New tab" })
 map("n", "<leader>Tc", "<cmd>tabclose<CR>", { desc = "Close tab" })
 
 -- ── Quickfix & Location List ─────────────────────────────────────────
-map("n", "]q", "<cmd>cnext<CR>", { desc = "Next quickfix" })
-map("n", "[q", "<cmd>cprevious<CR>", { desc = "Previous quickfix" })
+-- [q/]q and [l/]l are built-in defaults now (and honour a count), so only
+-- the <leader> variants are kept here.
 map("n", "<leader>qo", "<cmd>copen<CR>", { desc = "Open quickfix" })
 map("n", "<leader>qc", "<cmd>cclose<CR>", { desc = "Close quickfix" })
 map("n", "<leader>qf", function()
-	for _, win in ipairs(vim.api.nvim_list_wins()) do
-		if vim.bo[vim.api.nvim_win_get_buf(win)].buftype == "quickfix" then
-			vim.cmd("cclose")
-			return
-		end
-	end
-	vim.cmd("copen")
+	vim.cmd(vim.fn.getqflist({ winid = 0 }).winid ~= 0 and "cclose" or "copen")
 end, { desc = "Toggle quickfix list" })
 map("n", "<leader>ql", "<cmd>lopen<CR>", { desc = "Open location list" })
 map("n", "<leader>qL", "<cmd>lclose<CR>", { desc = "Close location list" })
-map("n", "]l", "<cmd>lnext<CR>", { desc = "Next location" })
-map("n", "[l", "<cmd>lprevious<CR>", { desc = "Previous location" })
 
 -- ── Diagnostics ──────────────────────────────────────────────────────
 
@@ -151,7 +136,14 @@ end, { desc = "Previous error" })
 -- ── Toggles ──────────────────────────────────────────────────────────
 map("n", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "Toggle wrap" })
 map("n", "<leader>ts", "<cmd>set spell!<CR>", { desc = "Toggle spell" })
-map("n", "<leader>tn", "<cmd>set relativenumber!<CR>", { desc = "Toggle relative numbers" })
+map("n", "<leader>tn", function()
+	-- Track intent in a global so the InsertEnter/InsertLeave autocmds don't
+	-- silently re-enable relative numbers after this toggle.
+	local enabled = not (vim.g.relativenumber_enabled ~= false)
+	vim.g.relativenumber_enabled = enabled
+	vim.opt.relativenumber = enabled
+	vim.notify("Relative numbers " .. (enabled and "enabled" or "disabled"))
+end, { desc = "Toggle relative numbers" })
 map("n", "<leader>td", function()
 	local new_state = not vim.diagnostic.is_enabled()
 	vim.diagnostic.enable(new_state)
@@ -181,7 +173,13 @@ end, { desc = "Toggle cursor word" })
 
 -- ── LSP (non-attach) ────────────────────────────────────────────────
 map("n", "<leader>li", "<cmd>checkhealth vim.lsp<CR>", { desc = "LSP info" })
-map("n", "<leader>lr", "<cmd>lsp restart<CR>", { desc = "Restart LSP" })
+map("n", "<leader>lr", function()
+	if #vim.lsp.get_clients({ bufnr = 0 }) == 0 then
+		vim.notify("No LSP client attached to this buffer", vim.log.levels.WARN)
+		return
+	end
+	vim.cmd("lsp restart")
+end, { desc = "Restart LSP" })
 map("n", "<leader>lf", "<cmd>FzfLua lsp_finder<CR>", { desc = "LSP finder" })
 map("n", "<leader>lh", "<cmd>LspHealth<CR>", { desc = "LSP health" })
 map("n", "<leader>lR", "<cmd>SmartRename<CR>", { desc = "Smart rename/replace" })
@@ -205,9 +203,8 @@ map("n", "<leader>f.", "<cmd>FzfLua resume<CR>", { desc = "Resume last picker" }
 map("n", "<leader>fR", "<cmd>GrugFar<CR>", { desc = "Find and replace (project)" })
 
 -- ── Git Pickers ──────────────────────────────────────────────────────
-map("n", "<leader>gc", "<cmd>FzfLua git_commits<CR>", { desc = "Git commits" })
-map("n", "<leader>gS", "<cmd>FzfLua git_status<CR>", { desc = "Git status (picker)" })
 map("n", "<leader>gl", "<cmd>FzfLua git_commits<CR>", { desc = "Git log" })
+map("n", "<leader>gS", "<cmd>FzfLua git_status<CR>", { desc = "Git status (picker)" })
 map("n", "<leader>gL", "<cmd>FzfLua git_bcommits<CR>", { desc = "Git log (current file)" })
 map("n", "<leader>gB", "<cmd>FzfLua git_branches<CR>", { desc = "Git branches" })
 map("n", "<leader>gF", "<cmd>FzfLua git_stash<CR>", { desc = "Git stash" })
