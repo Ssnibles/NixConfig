@@ -29,7 +29,7 @@ ls.add_snippets("nix", {
 	}),
 
 	s({ trig = "pkg", desc = "Nix Package (stdenv.mkDerivation)" }, {
-		t({ '{ lib, stdenv, fetchFromGitHub, ... }:', "", "stdenv.mkDerivation rec {", '  pname = "' }),
+		t({ "{ lib, stdenv, fetchFromGitHub, ... }:", "", "stdenv.mkDerivation rec {", '  pname = "' }),
 		i(1, "name"),
 		t({ '";', '  version = "' }),
 		i(2, "0.1.0"),
@@ -37,7 +37,7 @@ ls.add_snippets("nix", {
 		i(3, "owner"),
 		t({ '";', "    repo = pname;", '    rev = "v${version}";', '    hash = "' }),
 		i(4, "sha256-..."),
-		t({ '";', "  };", "", '  meta = with lib; {', '    description = "' }),
+		t({ '";', "  };", "", "  meta = with lib; {", '    description = "' }),
 		i(5, "Description"),
 		t({ '";', '    homepage = "' }),
 		i(6, "https://github.com/..."),
@@ -55,7 +55,7 @@ ls.add_snippets("nix", {
 	s({ trig = "writeShellScriptBin", desc = "writeShellScriptBin script wrapper" }, {
 		t('(pkgs.writeShellScriptBin "'),
 		i(1, "name"),
-		t({ '" \'\'', "  " }),
+		t({ "\" ''", "  " }),
 		i(2, "#!/usr/bin/env bash"),
 		t({ "", "  " }),
 		i(3),
