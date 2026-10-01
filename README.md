@@ -95,7 +95,7 @@ flowchart TD
     subgraph Modules["Dendritic Modules Structure"]
         Core["modules/core/<br/>module-groups, options, parts, devshell, templates"]
         Features["modules/features/<br/>apps, desktop-env, nvim-src, shell, system"]
-        Packages["modules/packages/<br/>boilerplate, dualsense-pair, foot, html-server, instrument-serif, maple-mono, pet, plsfail, sf-pro, tuxedo"]
+        Packages["modules/packages/<br/>boilerplate, dualsense-pair, foot, html-server, instrument-serif, maple-mono, pet, plsfail, sf-pro, tuxedo, uni-notes"]
     end
 
     Tree --> Core
@@ -139,10 +139,10 @@ Every module declares its settings inside `nixos.modules.shared`, `nixos.modules
 ### Core System, Boot & Security
 
 - **Limine Bootloader**: Fast, modern EFI bootloader configured with a 5-second timeout and 10-generation history retention.
-- **Plymouth Boot Splash**: Clean, graphical boot screen using the Catppuccin Mocha theme with silent boot parameters (`quiet`, `splash`, `loglevel=3`).
+- **Silent Boot**: Silent kernel boot (`quiet`, `loglevel=3`, `rd.systemd.show_status=false`) with Limine's menu at a 5-second timeout. No Plymouth splash is configured.
 - **Display Manager**: Lightweight TTY-based [Ly](https://github.com/fairyglade/ly) login manager with GNOME Keyring PAM integration.
 - **Hardware Keyboard Mapping**: Kernel-level Caps Lock swap with Escape configured via udev hwdb (`evdev:atkbd` and `evdev:input`).
-- **Kernel & Performance Tuning**: Mainline Linux kernel (`linuxPackages_latest`) with CPU vulnerability mitigations disabled (`mitigations=off`), `nowatchdog`, zstd-compressed initrd, aggressive swappiness (`10`), and VFS cache pressure (`200`).
+- **Kernel & Performance Tuning**: Mainline Linux kernel (`linuxPackages_latest`) with CPU vulnerability mitigations disabled (`mitigations=off`), `nowatchdog`, zstd-compressed initrd, aggressive swappiness (`10`), and VFS cache pressure (`50`).
 - **Boot Error Notifier**: Custom daemon ([`journal-error-notify.nix`](file:///home/josh/NixConfig/modules/features/system/journal-error-notify.nix)) that scans boot logs for critical errors, filters out benign noise, and dispatches a desktop notification upon login.
 - **Automated Maintenance**: Fast builds via `nh os switch`, automatic store deduplication (`nix.optimise`), and automated garbage collection keeping the latest 3 generations / 30 days.
 
@@ -327,7 +327,7 @@ NixConfig/
     │   │   ├── journal-error-notify.nix # Boot error detection notification daemon
     │   │   ├── nvidia.nix             # Proprietary NVIDIA GPU drivers & Wayland flags
     │   │   ├── pipewire.nix           # Low-latency PipeWire & WirePlumber audio
-    │   │   ├── plymouth.nix           # Catppuccin Mocha boot splash screen
+    │   │   ├── openssh.nix            # Key-only SSH server (Tailscale-only, firewall closed)
     │   │   ├── podman-vm.nix          # Podman and Distrobox container virtualisation
     │   │   ├── startup.nix            # Clipboard persistence & session targets
     │   │   ├── syncthing.nix          # Battery-optimised Syncthing P2P folder sync
@@ -398,7 +398,7 @@ NixConfig/
 | **Kernel & Modules** | `linuxPackages_latest` with NVIDIA DRM & fbdev | `linuxPackages_latest` with `amdgpu` (Yellow Carp DMCUB fix) |
 | **Power Management** | AC performance governor, unthrottled | TLP battery profiles, ASPM powersupersave, AMDGPU ABM |
 | **Display Manager** | Ly TTY Login Manager | Ly TTY Login Manager |
-| **Bootloader** | Limine (EFI) with Plymouth Catppuccin splash | Limine (EFI) with Plymouth Catppuccin splash |
+| **Bootloader** | Limine (EFI), silent boot | Limine (EFI), silent boot |
 | **Active Compositors** | Hyprland, MangoWC | MangoWC (with local development wrapper) |
 | **Hardware Quirks** | ASUS WMI Bluetooth rfkill unblock service | ELAN ACPI touchpad polling workaround, ath11k Wi-Fi |
 | **AI Tooling** | Pi Agent (with safety extensions), Hermes | Pi Agent (with safety extensions), Hermes |

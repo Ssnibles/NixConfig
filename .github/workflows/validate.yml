@@ -35,6 +35,13 @@ jobs:
             | xargs -0 -n1 nix-instantiate --parse > /dev/null
           echo "✓ Nix syntax is valid"
 
+      # The README embeds a Mermaid architecture diagram generated from the
+      # modules/ tree; fail if it has drifted.
+      - name: Check architecture diagram
+        run: |
+          ./assets/update_diagram.sh --check
+          echo "✓ Architecture diagram is up to date"
+
       # The flake consumes two local `path:` inputs for development:
       #   mangowc-local -> /home/josh/mango  (fork of mangowm/mango)
       #   ytplay        -> /home/josh/ytplay
