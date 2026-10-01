@@ -34,7 +34,7 @@ local function make_codeblock(trig, lang, desc)
 	return s({ trig = trig, desc = desc }, {
 		t({ "```" .. lang, "" }),
 		i(1),
-		t({ "", "```" })
+		t({ "", "```" }),
 	})
 end
 
@@ -67,22 +67,70 @@ ls.add_snippets("typst", {
 
 	-- NOTE BLOCKS & CALLOUTS (With icons, names, and background fills)
 	---------------------------------------------------------------------------
-	make_callout("note", "Note", "📝", "#3182ce", "Note callout box with blue border, 📝 icon, and background fill"),
+	make_callout(
+		"note",
+		"Note",
+		"📝",
+		"#3182ce",
+		"Note callout box with blue border, 📝 icon, and background fill"
+	),
 	make_callout("info", "Info", "ℹ", "#3182ce", "Info callout box with blue border, ℹ icon, and background fill"),
 	make_callout("tip", "Tip", "💡", "#38a169", "Tip callout box with green border, 💡 icon, and background fill"),
 	make_callout("warning", "Warning", "⚠", "#dd6b20", "Warning callout box (alias)"),
-	make_callout("caution", "Caution", "🚨", "#e53e3e", "Caution callout box with red border, 🚨 icon, and background fill"),
-	make_callout("danger", "Danger", "🛑", "#e53e3e", "Danger callout box with red border, 🛑 icon, and background fill"),
-	make_callout("important", "Important", "❗", "#e53e3e", "Important callout box with red border, ❗ icon, and background fill"),
+	make_callout(
+		"caution",
+		"Caution",
+		"🚨",
+		"#e53e3e",
+		"Caution callout box with red border, 🚨 icon, and background fill"
+	),
+	make_callout(
+		"danger",
+		"Danger",
+		"🛑",
+		"#e53e3e",
+		"Danger callout box with red border, 🛑 icon, and background fill"
+	),
+	make_callout(
+		"important",
+		"Important",
+		"❗",
+		"#e53e3e",
+		"Important callout box with red border, ❗ icon, and background fill"
+	),
 	make_callout("definition", "Definition", "📖", "#3182ce", "Definition container box (alias)"),
 	make_callout("theorem", "Theorem", "📐", "#38a169", "Theorem container box (alias)"),
 	make_callout("lemma", "Lemma", "🧩", "#805ad5", "Lemma container box (alias)"),
 	make_callout("corollary", "Corollary", "📎", "#3182ce", "Corollary container box (alias)"),
-	make_callout("proposition", "Proposition", "💡", "#3182ce", "Proposition container box with blue border, 💡 icon, and background fill"),
+	make_callout(
+		"proposition",
+		"Proposition",
+		"💡",
+		"#3182ce",
+		"Proposition container box with blue border, 💡 icon, and background fill"
+	),
 	make_callout("example", "Example", "✏", "#dd6b20", "Example container box (alias)"),
-	make_callout("question", "Question", "❓", "#805ad5", "Question container box with purple border, ❓ icon, and background fill"),
-	make_callout("problem", "Problem", "❓", "#805ad5", "Problem container box with purple border, ❓ icon, and background fill"),
-	make_callout("solution", "Solution", "💡", "#38a169", "Solution container box with green border, 💡 icon, and background fill"),
+	make_callout(
+		"question",
+		"Question",
+		"❓",
+		"#805ad5",
+		"Question container box with purple border, ❓ icon, and background fill"
+	),
+	make_callout(
+		"problem",
+		"Problem",
+		"❓",
+		"#805ad5",
+		"Problem container box with purple border, ❓ icon, and background fill"
+	),
+	make_callout(
+		"solution",
+		"Solution",
+		"💡",
+		"#38a169",
+		"Solution container box with green border, 💡 icon, and background fill"
+	),
 	make_callout("remark", "Remark", "💬", "#718096", "Remark container box (alias)"),
 	make_callout("takeaway", "Key Takeaway", "📌", "#dd6b20", "Key Takeaway callout box (alias)"),
 
@@ -183,8 +231,8 @@ ls.add_snippets("typst", {
 			"  block(",
 			"    width: 100%,",
 			"    radius: ui-radius,",
-			'    stroke: 0.5pt + ui-border,',
-			'    fill: ui-surface,',
+			"    stroke: 0.5pt + ui-border,",
+			"    fill: ui-surface,",
 			"    clip: true,",
 			"    stack(",
 			"      dir: ttb,",
@@ -193,9 +241,9 @@ ls.add_snippets("typst", {
 			"        (",
 			"          block(",
 			"            width: 100%,",
-			'            fill: ui-surface-raised,',
+			"            fill: ui-surface-raised,",
 			"            inset: (x: 12pt, y: 6pt),",
-			'            stroke: (bottom: 0.5pt + ui-border),',
+			"            stroke: (bottom: 0.5pt + ui-border),",
 			"            [",
 			'              #text(font: ("JetBrainsMono NF", "DejaVu Sans Mono"), size: 10pt, fill: if theme == "dark" { rgb("#a0a0a0") } else { rgb("#666666") })[#meta.icon]',
 			"              #h(0.6em)",
@@ -208,8 +256,8 @@ ls.add_snippets("typst", {
 			"        inset: (x: 12pt, y: 10pt),",
 			"        width: 100%,",
 			"        {",
-			'          set text(fill: text-color, size: 0.9em)',
-			'          stack(dir: ttb, spacing: 0.65em, ..bodylines.map(l => l.body))',
+			"          set text(fill: text-color, size: 0.9em)",
+			"          stack(dir: ttb, spacing: 0.65em, ..bodylines.map(l => l.body))",
 			"        }",
 			"      )",
 			"    )",
@@ -269,8 +317,8 @@ ls.add_snippets("typst", {
 			"  block(",
 			"    width: 100%,",
 			"    radius: ui-radius,",
-			'    stroke: 0.5pt + ui-border,',
-			'    fill: ui-surface,',
+			"    stroke: 0.5pt + ui-border,",
+			"    fill: ui-surface,",
 			"    clip: true,",
 			"    stack(",
 			"      dir: ttb,",
@@ -279,9 +327,9 @@ ls.add_snippets("typst", {
 			"        (",
 			"          block(",
 			"            width: 100%,",
-			'            fill: ui-surface-raised,',
+			"            fill: ui-surface-raised,",
 			"            inset: (x: 12pt, y: 6pt),",
-			'            stroke: (bottom: 0.5pt + ui-border),',
+			"            stroke: (bottom: 0.5pt + ui-border),",
 			"            [",
 			'              #text(font: ("JetBrainsMono NF", "DejaVu Sans Mono"), size: 10pt, fill: if theme == "dark" { rgb("#a0a0a0") } else { rgb("#666666") })[#meta.icon]',
 			"              #h(0.6em)",
@@ -294,8 +342,8 @@ ls.add_snippets("typst", {
 			"        inset: (x: 12pt, y: 10pt),",
 			"        width: 100%,",
 			"        {",
-			'          set text(fill: text-color, size: 0.9em)',
-			'          stack(dir: ttb, spacing: 0.65em, ..bodylines.map(l => l.body))',
+			"          set text(fill: text-color, size: 0.9em)",
+			"          stack(dir: ttb, spacing: 0.65em, ..bodylines.map(l => l.body))",
 			"        }",
 			"      )",
 			"    )",
@@ -509,26 +557,31 @@ ls.add_snippets("typst", {
 		t("]"),
 	}),
 	s({ trig = "box", desc = "Simple padded container box" }, {
-		t({ '#box(stroke: 0.5pt + ui-border, inset: (x: 12pt, y: 10pt), radius: ui-radius, width: 100%)[', "\t" }),
+		t({ "#box(stroke: 0.5pt + ui-border, inset: (x: 12pt, y: 10pt), radius: ui-radius, width: 100%)[", "\t" }),
 		i(1, "Content..."),
 		t({ "", "]" }),
 	}),
 	s({ trig = "todo", desc = "Incomplete checkbox todo list item" }, { t("- [ ] "), i(1) }),
 	s({ trig = "done", desc = "Completed checkbox todo list item" }, { t("- [x] "), i(1) }),
 	s({ trig = "quote", desc = "Attributed blockquote element" }, {
-		t('#quote(attribution: ['),
+		t("#quote(attribution: ["),
 		i(1, "Author / Source"),
 		t({ "])[", "\t" }),
 		i(2, "Quote text..."),
 		t({ "", "]" }),
 	}),
 	s({ trig = "date", desc = "Insert current date string" }, {
-		d(1, function() return sn(nil, { t(os.date("%d %B %Y")) }) end),
+		d(1, function()
+			return sn(nil, { t(os.date("%d %B %Y")) })
+		end),
 	}),
 	s({ trig = "footnote", desc = "Footnote" }, { t("#footnote["), i(1, "note"), t("]") }),
-	s({ trig = "table-of-contents", desc = "Table of contents (outline)" }, { t({ "#outline(", "  title: [Contents],", "  depth: 2,", ")" }) }),
+	s(
+		{ trig = "table-of-contents", desc = "Table of contents (outline)" },
+		{ t({ "#outline(", "  title: [Contents],", "  depth: 2,", ")" }) }
+	),
 	s({ trig = "divider", desc = "Horizontal divider rule line (alias)" }, {
-		t('#line(length: 100%, stroke: 0.6pt + stroke-color)'),
+		t("#line(length: 100%, stroke: 0.6pt + stroke-color)"),
 	}),
 
 	---------------------------------------------------------------------------
@@ -652,7 +705,7 @@ ls.add_snippets("typst", {
 			"    table.cell(rowspan: 2)[*OUTPUT*],",
 			"    [*A*], [*B*], [*C*],",
 			"    table.hline(stroke: 0.5pt + ui-border),",
-			"    [0], [0], [0], ["
+			"    [0], [0], [0], [",
 		}),
 		i(1, "0"),
 		t({ "],", "    table.hline(stroke: 0.5pt + ui-border),", "    [0], [0], [1], [" }),
@@ -744,7 +797,7 @@ ls.add_snippets("typst", {
 	s({ trig = "circuit", desc = "CeTZ & Zap digital logic circuit diagram" }, {
 		t({ "#zap.circuit({", "" }),
 		t({ "  import zap: *", "" }),
-		t({ '  cetz.draw.set-style(zap: zap-theme)', "" }),
+		t({ "  cetz.draw.set-style(zap: zap-theme)", "" }),
 		t({ '  node("A", (0, 0.2), label: (content: "A", anchor: "west", distance: 2pt))', "" }),
 		t({ '  node("B", (0, -0.2), label: (content: "B", anchor: "west", distance: 2pt))', "" }),
 		t({ '  node("C", (2, 0), label: (content: "C", anchor: "east", distance: 2pt))', "" }),
@@ -761,7 +814,10 @@ ls.add_snippets("typst", {
 			"  set-style(stroke: (paint: text-color, thickness: 0.8pt), fill: none)",
 			"  ",
 		}),
-		i(1, '// rect((0, 0), (1, 1))\n  // circle((2, 1), radius: 0.5)\n  // line((0, 0), (2, 1), mark: (end: ">"))\n  // content((1, 1), [Label])'),
+		i(
+			1,
+			'// rect((0, 0), (1, 1))\n  // circle((2, 1), radius: 0.5)\n  // line((0, 0), (2, 1), mark: (end: ">"))\n  // content((1, 1), [Label])'
+		),
 		t({ "", "})" }),
 	}),
 	s({ trig = "cetz-setup", desc = "Import CeTZ and Zap for diagrams and circuits" }, {
@@ -801,7 +857,7 @@ ls.add_snippets("typst", {
 		t({ "  theme: mmdr-theme,", ")" }),
 	}),
 	s({ trig = "big-o", desc = "Big-O complexity card (#bigo helper)" }, {
-		t({ '#bigo(', '  "' }),
+		t({ "#bigo(", '  "' }),
 		i(1, "Algorithm / Data Structure Name"),
 		t({ '",', "  grid(", "    columns: (1fr, 1fr),", "    [*Time Complexity:*], [*Space Complexity:*],", "" }),
 		t({ "    [- Access: $" }),
@@ -987,10 +1043,19 @@ ls.add_snippets("typst", {
 	s({ trig = "dot", desc = "Single dot accent mathematical symbol modifier" }, { t("dot("), i(1), t(")") }),
 	s({ trig = "ddot", desc = "Double dot accent mathematical symbol modifier" }, { t("dot.double("), i(1), t(")") }),
 	s({ trig = "delimiters", desc = "Dynamic sizing left-right parentheses wrapper" }, { t("lr("), i(1), t(")") }),
-	s({ trig = "delimiters-bracket", desc = "Dynamic sizing left-right square brackets wrapper" }, { t("lr(["), i(1), t("])") }),
-	s({ trig = "delimiters-curly", desc = "Dynamic sizing left-right curly braces wrapper" }, { t("lr({"), i(1), t("})") }),
+	s(
+		{ trig = "delimiters-bracket", desc = "Dynamic sizing left-right square brackets wrapper" },
+		{ t("lr(["), i(1), t("])") }
+	),
+	s(
+		{ trig = "delimiters-curly", desc = "Dynamic sizing left-right curly braces wrapper" },
+		{ t("lr({"), i(1), t("})") }
+	),
 	s({ trig = "set", desc = "Mathematical set notation" }, { t("{ "), i(1), t(" }") }),
-	s({ trig = "set-builder", desc = "Set builder notation with condition" }, { t("{ "), i(1, "x"), t(" in "), i(2, "S"), t(" : "), i(3, "P(x)"), t(" }") }),
+	s(
+		{ trig = "set-builder", desc = "Set builder notation with condition" },
+		{ t("{ "), i(1, "x"), t(" in "), i(2, "S"), t(" : "), i(3, "P(x)"), t(" }") }
+	),
 
 	-- Math Symbols, Relations & Arrows
 	s({ trig = "infinity", desc = "Infinity mathematical symbol" }, { t("infinity") }),

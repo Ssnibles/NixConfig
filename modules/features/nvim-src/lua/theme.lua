@@ -41,10 +41,22 @@ function M.setup()
 
 	require("mini.base16").setup({
 		palette = {
-			base00 = c.bg, base01 = c.bg, base02 = c.bg, base03 = c.comment,
-			base04 = c.comment, base05 = c.fg, base06 = c.fg, base07 = c.fg,
-			base08 = c.red, base09 = c.orange, base0A = c.yellow, base0B = c.green,
-			base0C = c.cyan, base0D = c.blue, base0E = c.purple, base0F = c.magenta,
+			base00 = c.bg,
+			base01 = c.bg,
+			base02 = c.bg,
+			base03 = c.comment,
+			base04 = c.comment,
+			base05 = c.fg,
+			base06 = c.fg,
+			base07 = c.fg,
+			base08 = c.red,
+			base09 = c.orange,
+			base0A = c.yellow,
+			base0B = c.green,
+			base0C = c.cyan,
+			base0D = c.blue,
+			base0E = c.purple,
+			base0F = c.magenta,
 		},
 	})
 
@@ -59,10 +71,23 @@ function M.setup()
 
 	-- Flat editor-bg groups
 	for _, g in ipairs({
-		"NormalNC", "SignColumn", "FoldColumn", "StatusLine", "StatusLineNC",
-		"WinBar", "WinBarNC", "MsgArea", "MsgSeparator", "PmenuSbar", "PmenuThumb",
-		"MiniAnimateNormalFloat", "TreesitterContext", "TreesitterContextLineNumber",
-		"TabLine", "TabLineFill", "OilNormal",
+		"NormalNC",
+		"SignColumn",
+		"FoldColumn",
+		"StatusLine",
+		"StatusLineNC",
+		"WinBar",
+		"WinBarNC",
+		"MsgArea",
+		"MsgSeparator",
+		"PmenuSbar",
+		"PmenuThumb",
+		"MiniAnimateNormalFloat",
+		"TreesitterContext",
+		"TreesitterContextLineNumber",
+		"TabLine",
+		"TabLineFill",
+		"OilNormal",
 	}) do
 		hl(g, { link = "Normal" })
 	end
@@ -70,9 +95,17 @@ function M.setup()
 	-- Float groups (same bg as editor — flat look)
 	hl("NormalFloat", { link = "Normal" })
 	for _, g in ipairs({
-		"Pmenu", "BlinkCmpMenu", "BlinkCmpDoc", "BlinkCmpSignatureHelp",
-		"FzfLuaNormal", "FzfLuaPreviewNormal", "FzfLuaPromptNormal", "FzfLuaHelpNormal",
-		"MiniClueNormal", "DAPUINormal", "DAPUIFloatNormal",
+		"Pmenu",
+		"BlinkCmpMenu",
+		"BlinkCmpDoc",
+		"BlinkCmpSignatureHelp",
+		"FzfLuaNormal",
+		"FzfLuaPreviewNormal",
+		"FzfLuaPromptNormal",
+		"FzfLuaHelpNormal",
+		"MiniClueNormal",
+		"DAPUINormal",
+		"DAPUIFloatNormal",
 	}) do
 		hl(g, { link = "NormalFloat" })
 	end
@@ -147,12 +180,30 @@ function M.setup()
 	hl("BlinkCmpGhostText", { fg = c.comment })
 
 	local kind_colors = {
-		Field = c.purple, Variable = c.fg, Function = c.blue, Method = c.blue,
-		Class = c.orange, Interface = c.green, Keyword = c.purple, Snippet = c.cyan,
-		Text = c.comment, Struct = c.orange, TypeParameter = c.cyan, Enum = c.green,
-		EnumMember = c.yellow, Property = c.fg, Constant = c.orange, Module = c.purple,
-		Unit = c.orange, Value = c.fg, Reference = c.cyan, Color = c.green,
-		File = c.blue, Folder = c.blue, Event = c.orange, Constr = c.orange,
+		Field = c.purple,
+		Variable = c.fg,
+		Function = c.blue,
+		Method = c.blue,
+		Class = c.orange,
+		Interface = c.green,
+		Keyword = c.purple,
+		Snippet = c.cyan,
+		Text = c.comment,
+		Struct = c.orange,
+		TypeParameter = c.cyan,
+		Enum = c.green,
+		EnumMember = c.yellow,
+		Property = c.fg,
+		Constant = c.orange,
+		Module = c.purple,
+		Unit = c.orange,
+		Value = c.fg,
+		Reference = c.cyan,
+		Color = c.green,
+		File = c.blue,
+		Folder = c.blue,
+		Event = c.orange,
+		Constr = c.orange,
 	}
 	for kind, color in pairs(kind_colors) do
 		hl("BlinkCmpKind" .. kind, { fg = color })
