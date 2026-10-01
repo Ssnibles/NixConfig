@@ -11,7 +11,9 @@ local M = {}
 
 local function first_executable(commands)
 	for _, cmd in ipairs(commands) do
-		if vim.fn.executable(cmd) == 1 then return vim.fn.exepath(cmd) end
+		if vim.fn.executable(cmd) == 1 then
+			return vim.fn.exepath(cmd)
+		end
 	end
 	return nil
 end
@@ -46,9 +48,16 @@ vim.g.rustaceanvim = {
 	dap = {
 		adapter = function()
 			local codelldb = first_executable({ "codelldb", "lldb-dap", "lldb-vscode" })
-			if not codelldb then return false end
+			if not codelldb then
+				return false
+			end
 			if codelldb:match("codelldb$") then
-				return { type = "server", port = "${port}", host = "127.0.0.1", executable = { command = codelldb, args = { "--port", "${port}" } } }
+				return {
+					type = "server",
+					port = "${port}",
+					host = "127.0.0.1",
+					executable = { command = codelldb, args = { "--port", "${port}" } },
+				}
 			end
 			return { type = "executable", command = codelldb, name = "lldb" }
 		end,
@@ -56,21 +65,41 @@ vim.g.rustaceanvim = {
 }
 
 local function rustlsp(...)
-	if vim.fn.exists(":RustLsp") == 2 then vim.cmd.RustLsp(...) end
+	if vim.fn.exists(":RustLsp") == 2 then
+		vim.cmd.RustLsp(...)
+	end
 end
 
 local map = vim.keymap.set
-map("n", "<leader>rr", function() rustlsp("runnables") end, { desc = "Rust runnables" })
-map("n", "<leader>rt", function() rustlsp({ "testables", { background = true } }) end, { desc = "Rust testables" })
-map("n", "<leader>rm", function() rustlsp("expandMacro") end, { desc = "Rust expand macro" })
-map("n", "<leader>ro", function() rustlsp("openDocs") end, { desc = "Rust open docs" })
-map("n", "<leader>rp", function() rustlsp("parentModule") end, { desc = "Rust parent module" })
-map("n", "<leader>rH", function() rustlsp("reloadWorkspace") end, { desc = "Rust reload workspace" })
-map("n", "<leader>re", function() rustlsp("rebuildMacros") end, { desc = "Rust rebuild macros" })
-map({ "n", "v" }, "<leader>ra", function() rustlsp("codeAction") end, { desc = "Rust code action" })
+map("n", "<leader>rr", function()
+	rustlsp("runnables")
+end, { desc = "Rust runnables" })
+map("n", "<leader>rt", function()
+	rustlsp({ "testables", { background = true } })
+end, { desc = "Rust testables" })
+map("n", "<leader>rm", function()
+	rustlsp("expandMacro")
+end, { desc = "Rust expand macro" })
+map("n", "<leader>ro", function()
+	rustlsp("openDocs")
+end, { desc = "Rust open docs" })
+map("n", "<leader>rp", function()
+	rustlsp("parentModule")
+end, { desc = "Rust parent module" })
+map("n", "<leader>rH", function()
+	rustlsp("reloadWorkspace")
+end, { desc = "Rust reload workspace" })
+map("n", "<leader>re", function()
+	rustlsp("rebuildMacros")
+end, { desc = "Rust rebuild macros" })
+map({ "n", "v" }, "<leader>ra", function()
+	rustlsp("codeAction")
+end, { desc = "Rust code action" })
 map("n", "<leader>rs", function()
 	local ok, clients = pcall(vim.lsp.get_clients, { name = "rust-analyzer", bufnr = 0 })
-	if ok and #clients > 0 then vim.lsp.stop_client(clients) end
+	if ok and #clients > 0 then
+		vim.lsp.stop_client(clients)
+	end
 	rustlsp("reloadWorkspace")
 end, { desc = "Rust restart server" })
 
@@ -80,15 +109,30 @@ local ok_ext, clangd_ext = pcall(require, "clangd_extensions")
 if ok_ext then
 	clangd_ext.setup({
 		inlay_hints = {
-			inline = vim.fn.has("nvim-0.10") == 1,
+			inline = true,
 			show_parameter_hints = true,
 			parameter_hints_prefix = "<- ",
 			other_hints_prefix = "=> ",
 			highlight = "Comment",
 		},
 		ast = {
-			role_icons = { type = "🅉", declaration = "🄳", expression = "🄴", statement = "🅂", specifier = "🅂", ["template argument"] = "🅃" },
-			kind_icons = { Compound = "🄲", Recovery = "2", TranslationUnit = "🅄", PackExpansion = "🄿", TemplateTypeParm = "🅃", TemplateTemplateParm = "🅃", TemplateParamObject = "🅃" },
+			role_icons = {
+				type = "🅉",
+				declaration = "🄳",
+				expression = "🄴",
+				statement = "🅂",
+				specifier = "🅂",
+				["template argument"] = "🅃",
+			},
+			kind_icons = {
+				Compound = "🄲",
+				Recovery = "2",
+				TranslationUnit = "🅄",
+				PackExpansion = "🄿",
+				TemplateTypeParm = "🅃",
+				TemplateTemplateParm = "🅃",
+				TemplateParamObject = "🅃",
+			},
 		},
 		memory_usage = { border = "rounded" },
 		symbol_info = { border = "rounded" },
@@ -109,9 +153,15 @@ function M.get_nix_c_flags()
 	end
 
 	-- Nix include paths
-	local cpath = (vim.env.CPATH or "") .. ":" .. (vim.env.C_INCLUDE_PATH or "") .. ":" .. (vim.env.CPLUS_INCLUDE_PATH or "")
+	local cpath = (vim.env.CPATH or "")
+		.. ":"
+		.. (vim.env.C_INCLUDE_PATH or "")
+		.. ":"
+		.. (vim.env.CPLUS_INCLUDE_PATH or "")
 	for path in cpath:gmatch("[^:]+") do
-		if path ~= "" then add("-I" .. path) end
+		if path ~= "" then
+			add("-I" .. path)
+		end
 	end
 
 	-- NIX_CFLAGS_COMPILE
@@ -121,10 +171,21 @@ function M.get_nix_c_flags()
 
 	-- pkg-config
 	if vim.fn.executable("pkg-config") == 1 then
-		for _, pkg in ipairs({ "raylib", "wayland-client", "wlroots", "gl", "glfw3", "sdl2", "libxkbcommon", "libinput" }) do
+		for _, pkg in ipairs({
+			"raylib",
+			"wayland-client",
+			"wlroots",
+			"gl",
+			"glfw3",
+			"sdl2",
+			"libxkbcommon",
+			"libinput",
+		}) do
 			local handle = io.popen(("pkg-config --cflags %s 2>/dev/null"):format(pkg))
 			if handle then
-				for flag in handle:read("*a"):gmatch("%S+") do add(flag) end
+				for flag in handle:read("*a"):gmatch("%S+") do
+					add(flag)
+				end
 				handle:close()
 			end
 		end
@@ -140,7 +201,9 @@ vim.api.nvim_create_user_command("GenerateCompileFlags", function()
 		vim.notify("Failed: " .. tostring(err), vim.log.levels.ERROR)
 		return
 	end
-	for _, flag in ipairs(flags) do file:write(flag .. "\n") end
+	for _, flag in ipairs(flags) do
+		file:write(flag .. "\n")
+	end
 	file:close()
 	vim.notify("Generated compile_flags.txt")
 	pcall(vim.cmd, "lsp restart")

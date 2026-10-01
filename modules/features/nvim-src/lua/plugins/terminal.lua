@@ -6,7 +6,9 @@ local function find_terminal_buf()
 		if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "terminal" then
 			local info = vim.fn.getbufinfo(buf)[1]
 			local used = (info and info.lastused) or 0
-			if used > best_used then best_used, best = used, buf end
+			if used > best_used then
+				best_used, best = used, buf
+			end
 		end
 	end
 	return best
@@ -14,7 +16,9 @@ end
 
 local function find_terminal_win(buf)
 	for _, win in ipairs(vim.api.nvim_list_wins()) do
-		if vim.api.nvim_win_get_buf(win) == buf then return win end
+		if vim.api.nvim_win_get_buf(win) == buf then
+			return win
+		end
 	end
 	return nil
 end
@@ -25,10 +29,13 @@ local function open_terminal(position, existing)
 		local w = math.floor(vim.o.columns * 0.8)
 		local h = math.floor(vim.o.lines * 0.8)
 		vim.api.nvim_open_win(buf, true, {
-			relative = "editor", width = w, height = h,
+			relative = "editor",
+			width = w,
+			height = h,
 			row = math.floor((vim.o.lines - h) / 2),
 			col = math.floor((vim.o.columns - w) / 2),
-			style = "minimal", border = "rounded",
+			style = "minimal",
+			border = "rounded",
 		})
 		if existing then
 			vim.cmd("buffer " .. buf)
@@ -68,23 +75,32 @@ local function toggle_terminal(position)
 	open_terminal(position)
 end
 
-vim.keymap.set("n", "<leader>tt", function() toggle_terminal("bottom") end, { desc = "Toggle terminal (bottom)" })
-vim.keymap.set("n", "<leader>tr", function() toggle_terminal("right") end, { desc = "Toggle terminal (right)" })
-vim.keymap.set("n", "<leader>tf", function() toggle_terminal("float") end, { desc = "Toggle terminal (float)" })
+vim.keymap.set("n", "<leader>tt", function()
+	toggle_terminal("bottom")
+end, { desc = "Toggle terminal (bottom)" })
+vim.keymap.set("n", "<leader>tr", function()
+	toggle_terminal("right")
+end, { desc = "Toggle terminal (right)" })
+vim.keymap.set("n", "<leader>tf", function()
+	toggle_terminal("float")
+end, { desc = "Toggle terminal (float)" })
 
 -- ── Terminal autocommands ────────────────────────────────────────────
 
 vim.api.nvim_create_autocmd({ "TermOpen", "BufWinEnter" }, {
 	callback = function()
-		if vim.bo.buftype ~= "terminal" then return end
-		vim.opt_local.number = false
-		vim.opt_local.relativenumber = false
-		vim.opt_local.signcolumn = "no"
+		if vim.bo.buftype ~= "terminal" then
+			return
+		end
+		-- 'number', 'relativenumber' and 'signcolumn' are already forced off by
+		-- the default TermOpen autocmd; only these two are not.
 		vim.wo.cursorline = false
 		vim.wo.statuscolumn = ""
 	end,
 })
 
 vim.api.nvim_create_autocmd("TermOpen", {
-	callback = function() vim.cmd("startinsert") end,
+	callback = function()
+		vim.cmd("startinsert")
+	end,
 })

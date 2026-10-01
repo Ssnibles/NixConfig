@@ -5,7 +5,9 @@
 -- ── Oil (file explorer) ──────────────────────────────────────────────
 
 local function paste_image_to_oil()
-	if vim.bo.filetype ~= "oil" then return end
+	if vim.bo.filetype ~= "oil" then
+		return
+	end
 	local targets = vim.fn.system("wl-paste --list-types")
 	if not targets:match("image/png") then
 		vim.notify("No PNG image in clipboard.", vim.log.levels.WARN)
@@ -13,14 +15,20 @@ local function paste_image_to_oil()
 	end
 	local oil = require("oil")
 	local dir = oil.get_current_dir()
-	if not dir then return end
+	if not dir then
+		return
+	end
 
 	vim.ui.input({
 		prompt = "Save clipboard image as: ",
 		default = "image_" .. os.date("%Y%m%d_%H%M%S") .. ".png",
 	}, function(input)
-		if not input or input == "" then return end
-		if not input:match("%.png$") then input = input .. ".png" end
+		if not input or input == "" then
+			return
+		end
+		if not input:match("%.png$") then
+			input = input .. ".png"
+		end
 		local result = vim.fn.system(("wl-paste -t image/png > %s"):format(vim.fn.shellescape(dir .. input)))
 		if vim.v.shell_error == 0 then
 			vim.notify("Saved image to " .. input)
@@ -61,13 +69,20 @@ require("gitsigns").setup({
 		if vim.diagnostic.is_enabled({ bufnr = bufnr }) and #vim.diagnostic.get(bufnr, { lnum = lnum }) > 0 then
 			return {}
 		end
-		if info.author == name then info.author = "You" end
+		if info.author == name then
+			info.author = "You"
+		end
 		local days = math.floor((os.time() - info.author_time) / 86400)
 		local when
-		if days < 1 then when = "today"
-		elseif days == 1 then when = "1 day ago"
-		elseif days < 8 then when = days .. " days ago"
-		else when = os.date("%d-%m-%Y", info.author_time) end
+		if days < 1 then
+			when = "today"
+		elseif days == 1 then
+			when = "1 day ago"
+		elseif days < 8 then
+			when = days .. " days ago"
+		else
+			when = os.date("%d-%m-%Y", info.author_time)
+		end
 		return { { ("  %s, %s — %s"):format(info.author, when, info.summary), "GitSignsCurrentLineBlame" } }
 	end,
 	preview_config = { border = "rounded" },
@@ -113,9 +128,13 @@ require("grug-far").setup()
 -- Buffer-local find & replace helper
 local function buffer_find_replace(default_search)
 	vim.ui.input({ prompt = "Find in buffer: ", default = default_search or "" }, function(find)
-		if not find or find == "" then return end
+		if not find or find == "" then
+			return
+		end
 		vim.ui.input({ prompt = "Replace with: " }, function(replace)
-			if replace == nil then return end
+			if replace == nil then
+				return
+			end
 			local keys = (":<C-u>%%s/\\V%s/%s/g"):format(vim.fn.escape(find, "/"), vim.fn.escape(replace, "/&"))
 			vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "n", false)
 		end)
@@ -127,11 +146,10 @@ vim.keymap.set("n", "<leader>fr", function()
 end, { desc = "Find and replace (buffer)" })
 
 vim.keymap.set("x", "<leader>fr", function()
-	local old = vim.fn.getreg("z")
-	local old_type = vim.fn.getregtype("z")
-	vim.cmd([[noautocmd silent! normal! gv"zy]])
-	local sel = (vim.fn.getreg("z"):match("^[^\r\n]*") or "")
-	vim.fn.setreg("z", old, old_type)
+	local sel = table.concat(
+		vim.fn.getregion(vim.fn.getpos("."), vim.fn.getpos("v"), { type = vim.fn.mode() }),
+		"\n"
+	):match("^[^\r\n]*")
 	buffer_find_replace(sel)
 end, { desc = "Find and replace selection (buffer)" })
 
@@ -140,29 +158,45 @@ end, { desc = "Find and replace selection (buffer)" })
 local flash = require("flash")
 
 local excluded_ft = {
-	fzf = true, oil = true, fugitive = true, ["grug-far"] = true, qf = true,
-	help = true, jj = true, terminal = true,
+	fzf = true,
+	oil = true,
+	fugitive = true,
+	["grug-far"] = true,
+	qf = true,
+	help = true,
+	jj = true,
+	terminal = true,
 }
 
 local function is_main_editor(win)
 	local w = win or vim.api.nvim_get_current_win()
 	local buf = vim.api.nvim_win_get_buf(w)
-	if vim.bo[buf].buftype ~= "" or excluded_ft[vim.bo[buf].filetype] then return false end
+	if vim.bo[buf].buftype ~= "" or excluded_ft[vim.bo[buf].filetype] then
+		return false
+	end
 	return vim.api.nvim_win_get_config(w).relative == ""
 end
 
 flash.setup({
 	search = {
 		multi_window = true,
-		exclude = { function(win) return not is_main_editor(win) end },
+		exclude = {
+			function(win)
+				return not is_main_editor(win)
+			end,
+		},
 	},
 })
 
 vim.keymap.set({ "n", "x", "o" }, "<leader><leader>", function()
-	if is_main_editor() then flash.jump() end
+	if is_main_editor() then
+		flash.jump()
+	end
 end, { desc = "Flash jump" })
 vim.keymap.set({ "n", "x", "o" }, "S", function()
-	if is_main_editor() then flash.treesitter() end
+	if is_main_editor() then
+		flash.treesitter()
+	end
 end, { desc = "Flash treesitter" })
 
 -- ── Smart-splits ─────────────────────────────────────────────────────
@@ -219,11 +253,14 @@ vim.keymap.set("n", "<leader>gg", function()
 	local buf = vim.api.nvim_create_buf(false, true)
 	local win = vim.api.nvim_open_win(buf, true, {
 		relative = "editor",
-		width = width, height = height,
+		width = width,
+		height = height,
 		row = math.floor((vim.o.lines - height) / 2),
 		col = math.floor((vim.o.columns - width) / 2),
-		style = "minimal", border = "rounded",
-		title = " jjui ", title_pos = "center",
+		style = "minimal",
+		border = "rounded",
+		title = " jjui ",
+		title_pos = "center",
 	})
 	vim.wo[win].number = false
 	vim.wo[win].relativenumber = false
@@ -231,8 +268,12 @@ vim.keymap.set("n", "<leader>gg", function()
 	vim.wo[win].cursorline = false
 	vim.fn.termopen("jjui", {
 		on_exit = function()
-			if vim.api.nvim_win_is_valid(win) then vim.api.nvim_win_close(win, true) end
-			if vim.api.nvim_buf_is_valid(buf) then vim.api.nvim_buf_delete(buf, { force = true }) end
+			if vim.api.nvim_win_is_valid(win) then
+				vim.api.nvim_win_close(win, true)
+			end
+			if vim.api.nvim_buf_is_valid(buf) then
+				vim.api.nvim_buf_delete(buf, { force = true })
+			end
 		end,
 	})
 	vim.cmd("startinsert")

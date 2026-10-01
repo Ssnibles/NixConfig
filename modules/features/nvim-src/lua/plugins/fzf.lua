@@ -13,21 +13,32 @@ local excluded_ft = {
 
 fzf.setup({
 	winopts = {
-		height = 0.85, width = 0.85, row = 0.50, col = 0.50,
-		border = "rounded", backdrop = 100,
+		height = 0.85,
+		width = 0.85,
+		row = 0.50,
+		col = 0.50,
+		border = "rounded",
+		backdrop = 100,
 		preview = {
-			layout = "flex", flip_columns = 100,
-			vertical = "down:50%", horizontal = "right:50%",
-			border = "rounded", title = false,
+			layout = "flex",
+			flip_columns = 100,
+			vertical = "down:50%",
+			horizontal = "right:50%",
+			border = "rounded",
+			title = false,
 		},
 	},
 	helptags = { previewer = false },
 	keymaps = { previewer = false },
 	hl = {
-		normal = "FzfLuaNormal", border = "FzfLuaBorder",
-		preview_normal = "FzfLuaPreviewNormal", preview_border = "FzfLuaPreviewBorder",
-		help_normal = "FzfLuaNormal", help_border = "FzfLuaBorder",
-		cursor = "FzfLuaCursor", cursorline = "CursorLine",
+		normal = "FzfLuaNormal",
+		border = "FzfLuaBorder",
+		preview_normal = "FzfLuaPreviewNormal",
+		preview_border = "FzfLuaPreviewBorder",
+		help_normal = "FzfLuaNormal",
+		help_border = "FzfLuaBorder",
+		cursor = "FzfLuaCursor",
+		cursorline = "CursorLine",
 	},
 	previewers = {
 		builtin = {

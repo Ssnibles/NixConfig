@@ -155,7 +155,9 @@ cmp.setup({
 			spell = {
 				name = "Spell",
 				module = "blink-cmp-spell",
-				enabled = function() return vim.wo.spell end,
+				enabled = function()
+					return vim.wo.spell
+				end,
 				opts = { max_entries = 8 },
 				score_offset = 10,
 			},
@@ -164,7 +166,9 @@ cmp.setup({
 	completion = {
 		list = {
 			selection = {
-				preselect = function(ctx) return ctx.mode ~= "cmdline" end,
+				preselect = function(ctx)
+					return ctx.mode ~= "cmdline"
+				end,
 				auto_insert = false,
 			},
 		},
@@ -225,5 +229,3 @@ if copilot_ok then
 		copilot.panel.toggle()
 	end, { desc = "Toggle copilot panel" })
 end
-
-

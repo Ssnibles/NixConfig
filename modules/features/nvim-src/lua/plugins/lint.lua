@@ -9,7 +9,9 @@ lint.linters.deadnix_nvim = {
 	args = { "-o", "json" },
 	parser = function(output)
 		local ok, decoded = pcall(vim.json.decode, output)
-		if not ok or type(decoded) ~= "table" then return {} end
+		if not ok or type(decoded) ~= "table" then
+			return {}
+		end
 		local diagnostics = {}
 		for _, entry in ipairs(decoded) do
 			for _, item in ipairs(entry.results or {}) do
@@ -48,7 +50,9 @@ lint.linters.statix_nvim = {
 					col = math.max(tonumber(col) - 1, 0),
 					end_col = math.max(tonumber(col) - 1, 0) + 1,
 					severity = sev == "E" and vim.diagnostic.severity.ERROR or vim.diagnostic.severity.WARN,
-					source = "statix", code = code, message = vim.trim(msg),
+					source = "statix",
+					code = code,
+					message = vim.trim(msg),
 				}
 			end
 		end
@@ -70,7 +74,9 @@ lint.linters_by_ft = filetypes
 
 local function run_lint()
 	if filetypes[vim.bo.filetype] then
-		if vim.bo.modified and vim.api.nvim_buf_get_name(0) == "" then return end
+		if vim.bo.modified and vim.api.nvim_buf_get_name(0) == "" then
+			return
+		end
 		lint.try_lint()
 	end
 end

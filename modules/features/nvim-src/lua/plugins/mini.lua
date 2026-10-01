@@ -19,8 +19,13 @@ require("mini.ai").setup({
 -- ── Mini.surround ────────────────────────────────────────────────────
 require("mini.surround").setup({
 	mappings = {
-		add = "sa", delete = "sd", replace = "sr", find = "sf",
-		find_left = "sF", highlight = "sh", update_n_lines = "sn",
+		add = "sa",
+		delete = "sd",
+		replace = "sr",
+		find = "sf",
+		find_left = "sF",
+		highlight = "sh",
+		update_n_lines = "sn",
 	},
 })
 
@@ -65,6 +70,15 @@ clue.setup({
 		{ mode = "n", keys = "<Leader>a", desc = "+copilot" },
 		{ mode = "n", keys = "<Leader>x", desc = "+lists" },
 		{ mode = "n", keys = "<Leader>v", desc = "+select" },
+		-- mini.surround has no built-in clue generator; declare its mappings here.
+		{ mode = { "n", "x" }, keys = "s", desc = "+surround" },
+		{ mode = { "n", "x" }, keys = "sa", desc = "Add surrounding" },
+		{ mode = { "n", "x" }, keys = "sd", desc = "Delete surrounding" },
+		{ mode = { "n", "x" }, keys = "sr", desc = "Replace surrounding" },
+		{ mode = { "n", "x" }, keys = "sf", desc = "Find surrounding" },
+		{ mode = "n", keys = "sF", desc = "Find surrounding left" },
+		{ mode = { "n", "x" }, keys = "sh", desc = "Highlight surrounding" },
+		{ mode = "n", keys = "sn", desc = "Update n lines" },
 	},
 	triggers = {
 		{ mode = "n", keys = "<Leader>" },
@@ -103,6 +117,7 @@ require("mini.bufremove").setup({})
 -- Disable targets that already have bespoke mappings (treesitter class/
 -- function jumps, diagnostics with floats, etc.) to avoid clobbering them.
 require("mini.bracketed").setup({
+	buffer = { suffix = "" },
 	comment = { suffix = "" },
 	diagnostic = { suffix = "" },
 	file = { suffix = "" },

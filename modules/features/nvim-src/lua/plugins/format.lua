@@ -31,14 +31,18 @@ conform.setup({
 	},
 	format_on_save = function(bufnr)
 		local ft = vim.bo[bufnr].filetype
-		if vim.g.disable_autoformat or vim.g.disable_autoformat_ft[ft] then return end
+		if vim.g.disable_autoformat or vim.g.disable_autoformat_ft[ft] then
+			return
+		end
 		return { timeout_ms = 1000, lsp_format = "fallback" }
 	end,
 })
 
 vim.api.nvim_create_user_command("Format", function(opts)
 	conform.format({ bufnr = 0, lsp_format = "fallback" })
-	if opts.bang then vim.cmd("noautocmd write") end
+	if opts.bang then
+		vim.cmd("noautocmd write")
+	end
 end, { desc = "Format buffer (:Format! also saves)", bang = true })
 
 vim.keymap.set({ "n", "v" }, "<leader>cf", function()
@@ -52,7 +56,9 @@ end, { desc = "Toggle autoformat (global)" })
 
 vim.keymap.set("n", "<leader>tA", function()
 	local ft = vim.bo.filetype
-	if ft == "" then return end
+	if ft == "" then
+		return
+	end
 	local disabled = vim.g.disable_autoformat_ft or {}
 	disabled[ft] = not disabled[ft]
 	vim.g.disable_autoformat_ft = disabled
