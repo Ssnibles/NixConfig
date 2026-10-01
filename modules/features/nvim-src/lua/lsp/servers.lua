@@ -43,9 +43,15 @@ local function detect_nix_host(root)
 		end
 	end
 	local hostname = (vim.uv.os_gethostname() or ""):match("^[^.]+") or ""
-	if hostname ~= "" and host_exists(root, hostname) then return hostname end
-	if host_exists(root, "desktop") then return "desktop" end
-	if host_exists(root, "laptop") then return "laptop" end
+	if hostname ~= "" and host_exists(root, hostname) then
+		return hostname
+	end
+	if host_exists(root, "desktop") then
+		return "desktop"
+	end
+	if host_exists(root, "laptop") then
+		return "laptop"
+	end
 	return hostname ~= "" and hostname or NIX_DEFAULT_HOST
 end
 
@@ -75,7 +81,10 @@ in
 		options = {
 			nixos = { expr = ("(builtins.getFlake %s).nixosConfigurations.%s.options"):format(ref, attr) },
 			["home-manager"] = {
-				expr = ('(builtins.getFlake %s).nixosConfigurations.%s.options."home-manager".users.type.getSubOptions []'):format(ref, attr),
+				expr = ('(builtins.getFlake %s).nixosConfigurations.%s.options."home-manager".users.type.getSubOptions []'):format(
+					ref,
+					attr
+				),
 			},
 		}
 	end
@@ -199,7 +208,18 @@ return {
 	-- Emmet
 	emmet_ls = {
 		cmd = { "emmet-ls", "--stdio" },
-		filetypes = { "html", "css", "scss", "less", "javascriptreact", "typescriptreact", "vue", "svelte", "astro", "templ" },
+		filetypes = {
+			"html",
+			"css",
+			"scss",
+			"less",
+			"javascriptreact",
+			"typescriptreact",
+			"vue",
+			"svelte",
+			"astro",
+			"templ",
+		},
 		root_markers = { "package.json", ".git" },
 		init_options = { html = { options = { ["bem.enabled"] = true, ["output.indent"] = "  " } } },
 	},
@@ -207,16 +227,44 @@ return {
 	-- ESLint
 	eslint = {
 		cmd = { "vscode-eslint-language-server", "--stdio" },
-		filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx", "vue", "svelte", "astro" },
+		filetypes = {
+			"javascript",
+			"javascriptreact",
+			"javascript.jsx",
+			"typescript",
+			"typescriptreact",
+			"typescript.tsx",
+			"vue",
+			"svelte",
+			"astro",
+		},
 		root_markers = {
-			".eslintrc", ".eslintrc.js", ".eslintrc.cjs", ".eslintrc.json", ".eslintrc.yml", ".eslintrc.yaml",
-			"eslint.config.js", "eslint.config.mjs", "eslint.config.cjs", "eslint.config.ts", "package.json", ".git",
+			".eslintrc",
+			".eslintrc.js",
+			".eslintrc.cjs",
+			".eslintrc.json",
+			".eslintrc.yml",
+			".eslintrc.yaml",
+			"eslint.config.js",
+			"eslint.config.mjs",
+			"eslint.config.cjs",
+			"eslint.config.ts",
+			"package.json",
+			".git",
 		},
 		settings = {
-			validate = "on", packageManager = "npm", useESLintClass = false,
-			experimental = { useFlatConfig = false }, codeActionOnSave = { enable = false, mode = "all" },
-			format = true, quiet = false, onIgnoredFiles = "off", rulesCustomizations = {},
-			run = "onType", problems = { shortenToSingleLine = false }, nodePath = "",
+			validate = "on",
+			packageManager = "npm",
+			useESLintClass = false,
+			experimental = { useFlatConfig = false },
+			codeActionOnSave = { enable = false, mode = "all" },
+			format = true,
+			quiet = false,
+			onIgnoredFiles = "off",
+			rulesCustomizations = {},
+			run = "onType",
+			problems = { shortenToSingleLine = false },
+			nodePath = "",
 			workingDirectory = { mode = "location" },
 		},
 	},
@@ -239,16 +287,27 @@ return {
 	jdtls = {
 		cmd = { "jdtls" },
 		filetypes = { "java" },
-		root_markers = { "pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", ".git" },
+		root_markers = {
+			"pom.xml",
+			"build.gradle",
+			"build.gradle.kts",
+			"settings.gradle",
+			"settings.gradle.kts",
+			".git",
+		},
 		settings = {
 			java = {
 				signatureHelp = { enabled = true },
 				contentProvider = { preferred = "fernflower" },
 				completion = {
 					favoriteStaticMembers = {
-						"org.hamcrest.MatcherAssert.assertThat", "org.hamcrest.Matchers.*", "org.hamcrest.CoreMatchers.*",
-						"org.junit.jupiter.api.Assertions.*", "java.util.Objects.requireNonNull",
-						"java.util.Objects.requireNonNullElse", "org.mockito.Mockito.*",
+						"org.hamcrest.MatcherAssert.assertThat",
+						"org.hamcrest.Matchers.*",
+						"org.hamcrest.CoreMatchers.*",
+						"org.junit.jupiter.api.Assertions.*",
+						"java.util.Objects.requireNonNull",
+						"java.util.Objects.requireNonNullElse",
+						"org.mockito.Mockito.*",
 					},
 					filteredTypes = { "com.sun.*", "io.micrometer.shaded.*", "java.awt.*", "jdk.*", "sun.*" },
 					importOrder = { "java", "javax", "com", "org" },
@@ -256,7 +315,8 @@ return {
 				sources = { organizeImports = { starThreshold = 9999, staticStarThreshold = 9999 } },
 				codeGeneration = {
 					toString = { template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}" },
-					hashCodeEquals = { useJava7Objects = true }, useBlocks = true,
+					hashCodeEquals = { useJava7Objects = true },
+					useBlocks = true,
 				},
 				configuration = { updateBuildConfiguration = "interactive" },
 				saveActions = { organizeImports = false },
@@ -266,10 +326,14 @@ return {
 		},
 		init_options = {
 			extendedClientCapabilities = {
-				progressReportProvider = true, classFileContentsSupport = true,
-				generateToStringPromptSupport = true, hashCodeEqualsPromptSupport = true,
-				advancedOrganizeImportsSupport = true, advancedGenerateAccessorsSupport = true,
-				advancedExtractRefactoringSupport = true, moveRefactoringSupport = true,
+				progressReportProvider = true,
+				classFileContentsSupport = true,
+				generateToStringPromptSupport = true,
+				hashCodeEqualsPromptSupport = true,
+				advancedOrganizeImportsSupport = true,
+				advancedGenerateAccessorsSupport = true,
+				advancedExtractRefactoringSupport = true,
+				moveRefactoringSupport = true,
 				inferSelectionSupport = { "extractMethod", "extractVariable", "extractConstant" },
 			},
 		},
@@ -296,10 +360,13 @@ return {
 		root_markers = { ".git" },
 		settings = {
 			tinymist = {
-				exportPdf = "onType", formatterMode = "typstyle",
+				exportPdf = "onType",
+				formatterMode = "typstyle",
 				preview = {
 					scrollSync = "onSelectionChangeByCursor",
-					cursor = { group = { { name = "primary", highlight = { background = "#ffcc00", foreground = "#000000" } } } },
+					cursor = {
+						group = { { name = "primary", highlight = { background = "#ffcc00", foreground = "#000000" } } },
+					},
 				},
 			},
 		},
@@ -319,60 +386,66 @@ return {
 		root_markers = { "build.zig", "zls.json", ".git" },
 		settings = {
 			zls = {
-				enable_inlay_hints = true, enable_snippets = true, warn_style = true,
-				enable_build_on_save = true, build_on_save_step = "check",
-				enable_autofix = true, enable_import_embedfile = true,
-				operator_completions = true, include_at_in_builtins = true,
+				enable_inlay_hints = true,
+				enable_snippets = true,
+				warn_style = true,
+				enable_build_on_save = true,
+				build_on_save_step = "check",
+				enable_autofix = true,
+				enable_import_embedfile = true,
+				operator_completions = true,
+				include_at_in_builtins = true,
 			},
 		},
 	},
 
-	-- C# (Roslyn)
-	roslyn = {
-		exe = "Microsoft.CodeAnalysis.LanguageServer",
-		settings = {
-			["csharp|background_analysis"] = { dotnet_analyzer_diagnostics_scope = "openFiles", dotnet_compiler_diagnostics_scope = "openFiles" },
-			["csharp|completion"] = { dotnet_show_name_completion_suggestions = true, dotnet_show_completion_items_from_unimported_namespaces = true, dotnet_provide_regex_completions = false },
-			["csharp|inlay_hints"] = {
-				csharp_enable_inlay_hints_for_implicit_object_creation = true,
-				csharp_enable_inlay_hints_for_implicit_variable_types = true,
-				csharp_enable_inlay_hints_for_lambda_parameter_types = true,
-				csharp_enable_inlay_hints_for_types = true,
-				dotnet_enable_inlay_hints_for_parameters = true,
-				dotnet_enable_inlay_hints_for_object_creation_parameters = true,
-				dotnet_enable_inlay_hints_for_other_parameters = true,
-				dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = true,
-				dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = true,
-			},
-			["csharp|code_lens"] = { dotnet_enable_references_code_lens = true, dotnet_enable_tests_code_lens = true },
-			["csharp|symbol_search"] = { dotnet_search_reference_assemblies = false },
-			["csharp|formatting"] = { dotnet_organize_imports_on_format = true },
-		},
-	},
+	-- C# (Roslyn) is intentionally not registered: neither the `roslyn.nvim`
+	-- plugin nor the `Microsoft.CodeAnalysis.LanguageServer` binary is in this
+	-- environment, so the config would be dead. To enable it, add both to
+	-- `programs.nvf.settings.vim.startPlugins` / `extraPackages` and restore the
+	-- server table from git history.
 
 	-- C / C++ (clangd)
 	clangd = {
 		cmd = {
-			"clangd", "--background-index", "--clang-tidy", "--header-insertion=iwyu",
-			"--completion-style=detailed", "--function-arg-placeholders", "--fallback-style=llvm",
-			"--query-driver=/**/*", "--all-scopes-completion", "--suggest-missing-includes", "--cross-file-rename",
+			"clangd",
+			"--background-index",
+			"--clang-tidy",
+			"--header-insertion=iwyu",
+			"--completion-style=detailed",
+			"--function-arg-placeholders",
+			"--fallback-style=llvm",
+			"--query-driver=/**/*",
+			"--all-scopes-completion",
+			"--suggest-missing-includes",
+			"--cross-file-rename",
 		},
 		filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
 		root_markers = {
-			".clangd", ".clang-format", ".clang-tidy", "compile_commands.json", "compile_flags.txt",
-			"CMakeLists.txt", "Makefile", "meson.build", "build.ninja", "flake.nix", ".git",
+			".clangd",
+			".clang-format",
+			".clang-tidy",
+			"compile_commands.json",
+			"compile_flags.txt",
+			"CMakeLists.txt",
+			"Makefile",
+			"meson.build",
+			"build.ninja",
+			"flake.nix",
+			".git",
 		},
 		capabilities = vim.tbl_deep_extend("force", capabilities, { offsetEncoding = { "utf-16" } }),
-		on_new_config = function(new_config, _)
+		-- `on_new_config` is an lspconfig-legacy field that native
+		-- `vim.lsp.config` ignores; inject the Nix include flags via `before_init`
+		-- (which receives the initialize params just before they are sent).
+		before_init = function(params)
 			local ok_c, c_mod = pcall(require, "plugins.lang")
-			local flags
+			local flags = { "-std=c11", "-Wall", "-Wextra" }
 			if ok_c and type(c_mod.get_nix_c_flags) == "function" then
 				flags = c_mod.get_nix_c_flags()
-			else
-				flags = { "-std=c11", "-Wall", "-Wextra" }
 			end
-			new_config.init_options = new_config.init_options or {}
-			new_config.init_options.fallbackFlags = flags
+			params.initializationOptions = params.initializationOptions or {}
+			params.initializationOptions.fallbackFlags = flags
 		end,
 	},
 }

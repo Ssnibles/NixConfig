@@ -113,7 +113,6 @@ local function attach_lsp_keymaps(bufnr)
 		pcall(lsp.codelens.run)
 	end, "CodeLens action")
 
-
 	-- Code outline (Aerial → fzf-lua → built-in)
 	map("<leader>co", function()
 		if vim.fn.exists(":AerialToggle") == 2 then
@@ -135,13 +134,19 @@ local function attach_lsp_keymaps(bufnr)
 			return
 		end
 		local file = vim.api.nvim_buf_get_name(0)
-		if file == "" then return end
+		if file == "" then
+			return
+		end
 		local ext = vim.fn.fnamemodify(file, ":e")
 		local stem = vim.fn.fnamemodify(file, ":r")
 		local alts = {
-			c = { "h", "hpp" }, cpp = { "hpp", "h" }, cc = { "h", "hpp" },
-			h = { "c", "cpp", "cc" }, hpp = { "cpp", "c" },
-			ts = { "spec.ts", "test.ts" }, js = { "spec.js", "test.js" },
+			c = { "h", "hpp" },
+			cpp = { "hpp", "h" },
+			cc = { "h", "hpp" },
+			h = { "c", "cpp", "cc" },
+			hpp = { "cpp", "c" },
+			ts = { "spec.ts", "test.ts" },
+			js = { "spec.js", "test.js" },
 		}
 		for _, alt in ipairs(alts[ext] or {}) do
 			local path = stem .. "." .. alt
@@ -193,7 +198,6 @@ local function attach_lsp_keymaps(bufnr)
 			vim.cmd("checkhealth vim.lsp")
 		end
 	end, "LSP Memory/Status")
-
 end
 
 -- ── LSP Attach Autocommand ───────────────────────────────────────────
@@ -204,7 +208,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		attach_lsp_keymaps(args.buf)
 
 		local client = lsp.get_client_by_id(args.data.client_id)
-		if not client then return end
+		if not client then
+			return
+		end
 
 		if lsp.inlay_hint and client:supports_method("textDocument/inlayHint", args.buf) then
 			pcall(lsp.inlay_hint.enable, true, { bufnr = args.buf })
@@ -269,7 +275,6 @@ local function register_server(name, config)
 	end
 end
 
-
 -- Load and register all servers from the data table
 local servers = require("lsp.servers")
 for name, config in pairs(servers) do
@@ -306,7 +311,9 @@ end
 
 local function open_grug_far(prefills)
 	local ok, grug = pcall(require, "grug-far")
-	if not ok then return end
+	if not ok then
+		return
+	end
 	local instance = grug.open({ prefills = prefills })
 	if instance and type(instance.when_ready) == "function" and type(instance.goto_input) == "function" then
 		instance:when_ready(function()
@@ -345,9 +352,13 @@ vim.api.nvim_create_user_command("SmartRename", function()
 	else
 		vim.ui.select(choices, {
 			prompt = "Rename/replace mode:",
-			format_item = function(item) return item.label end,
+			format_item = function(item)
+				return item.label
+			end,
 		}, function(choice)
-			if choice then choice.action() end
+			if choice then
+				choice.action()
+			end
 		end)
 	end
 end, { desc = "Context-aware rename and replace" })
@@ -358,14 +369,15 @@ vim.api.nvim_create_user_command("LspHealth", function()
 	local lines = { "LSP Health" }
 	for _, server in ipairs(managed_servers) do
 		local path = vim.fn.exepath(server.cmd)
-		lines[#lines + 1] = path ~= ""
-			and ("- %s: OK (%s)"):format(server.name, path)
+		lines[#lines + 1] = path ~= "" and ("- %s: OK (%s)"):format(server.name, path)
 			or ("- %s: missing `%s`"):format(server.name, server.cmd)
 	end
 	local active = lsp.get_clients({ bufnr = 0 })
 	if #active > 0 then
 		local names = {}
-		for _, c in ipairs(active) do names[#names + 1] = c.name end
+		for _, c in ipairs(active) do
+			names[#names + 1] = c.name
+		end
 		lines[#lines + 1] = "Active: " .. table.concat(names, ", ")
 	else
 		lines[#lines + 1] = "Active: none"
@@ -418,12 +430,6 @@ if goto_preview then
 	goto_preview.setup({
 		references = { provider = "fzf_lua" },
 	})
-end
-
--- Roslyn (C#)
-local ok_roslyn, roslyn = pcall(require, "roslyn")
-if ok_roslyn then
-	roslyn.setup({ filewatching = "roslyn" })
 end
 
 return {
