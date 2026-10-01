@@ -64,16 +64,19 @@
             "nix-command"
             "flakes"
           ];
+          # cache.nixos.org is already the upstream default, so only add extras
+          # here; repeating it produced duplicate entries in nix.settings.
           substituters = [
-            "https://cache.nixos.org/"
             "https://nix-community.cachix.org"
           ];
           trusted-public-keys = [
-            "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
             "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
           ];
           download-buffer-size = 524288000;
           auto-optimise-store = true;
+          # The checkout is a git work tree that is almost always dirty; suppress
+          # the per-command "Git tree is dirty" noise.
+          warn-dirty = false;
         };
 
         # Allow unfree packages for nix-shell, nix-build, nix-env, and impure commands
@@ -181,6 +184,7 @@
         # ── XDG Portals ─────────────────────────────────────────────────────
         xdg.portal = {
           enable = true;
+          xdgOpenUsePortal = true;
           extraPortals = [
             pkgs.xdg-desktop-portal-gtk
             pkgs.xdg-desktop-portal-wlr
@@ -202,6 +206,39 @@
 
         nix.optimise.automatic = true;
         nix.optimise.dates = [ "weekly" ];
+
+        # ── Dynamic Binary Compatibility (nix-ld) ─────────────────────────────
+        # Lets non-nix prebuilt binaries run: Android Studio SDK tools, editor
+        # debug adapters, game mods, and `uv`/`cargo`-installed executables.
+        programs.nix-ld = {
+          enable = true;
+          libraries = with pkgs; [
+            stdenv.cc.cc.lib
+            zlib
+            zstd
+            openssl
+            curl
+            libxml2
+            icu
+            nss
+            nspr
+            libGL
+            libgbm
+            vulkan-loader
+            libxkbcommon
+            fontconfig
+            freetype
+          ];
+        };
+
+        # GSettings backend for GTK/GNOME apps (Seahorse, portals, ...).
+        programs.dconf.enable = true;
+
+        # Put ~/.local/bin on the session PATH for uv/cargo/pipx tools.
+        environment.localBinInPath = true;
+
+        # Firmware/BIOS updates via `fwupdmgr`; D-Bus activated, no always-on daemon.
+        services.fwupd.enable = true;
       };
     };
 }
