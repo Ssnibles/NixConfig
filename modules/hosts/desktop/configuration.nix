@@ -67,6 +67,8 @@
       # ── Desktop Environment Features ───────────────────────────────────────
       features.hyprland.enable = true;
       features.mangowc.enable = true;
+      # Temporary: build/run the local ~/mango checkout (mango-dev wrapper
+      # prefers ~/mango/result). Set back to false to return to upstream.
       features.mangowc.local = false;
       features.niri.enable = false;
       features.quickshell.enable = true;
