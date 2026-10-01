@@ -47,6 +47,11 @@
       boot.kernel.sysctl = {
         "vm.swappiness" = 10;
         "vm.vfs_cache_pressure" = 50;
+        # Games/Proton, some JVM and Android tooling.
+        "vm.max_map_count" = 2147483642;
+        # File-watcher headroom for LSPs, cargo-watch, vite and syncthing.
+        "fs.inotify.max_user_watches" = 524288;
+        "fs.inotify.max_user_instances" = 1024;
       };
 
       # Force Chromium & Electron applications to run natively under Wayland
@@ -71,6 +76,12 @@
       services.displayManager.ly.enable = true;
       security.pam.services.ly.enableGnomeKeyring = true;
       services.gnome.gnome-keyring.enable = true;
+
+      # ── Security Hardening ────────────────────────────────────────────────
+      # Show asterisks while typing a sudo password.
+      security.sudo.extraConfig = "Defaults pwfeedback";
+      # Default AppArmor profile set (kernel LSM, no user-space daemon).
+      security.apparmor.enable = true;
 
       # ── Kernel-level Keyboard Mapping (Caps Lock <-> Escape Swap) ─────────
       services.udev.extraHwdb = ''
