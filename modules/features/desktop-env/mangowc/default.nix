@@ -22,7 +22,7 @@
         ;
 
       # Uses the pinned upstream input by default, or the local development
-      # input (path:/home/josh/mango) when features.mangowc.local is enabled.
+      # input (git+file:///home/josh/mango) when features.mangowc.local is enabled.
       # Note: the programs.mango module itself is imported unconditionally — the
       # two inputs ship the same module — only the package source differs.
       #
@@ -102,13 +102,20 @@
         programs.mango.package =
           if cfg.local then mango-dev else mango-base;
 
-        system.activationScripts.mango-config = ''
-          mkdir -p /home/${config.username}/.config/mango
-          chown -R ${config.username}:users /home/${config.username}/.config/mango
-          ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/mangowc/config.conf /home/${config.username}/.config/mango/config.conf
-          ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/mangowc/binds.conf /home/${config.username}/.config/mango/binds.conf
-          ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/mangowc/screenshot.sh /home/${config.username}/.config/mango/screenshot.sh
-        '';
+        nixos.liveLinks = {
+          "mango-config" = {
+            source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/config.conf";
+            target = ".config/mango/config.conf";
+          };
+          "mango-binds" = {
+            source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/binds.conf";
+            target = ".config/mango/binds.conf";
+          };
+          "mango-screenshot" = {
+            source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/screenshot.sh";
+            target = ".config/mango/screenshot.sh";
+          };
+        };
 
         hjem.users."${config.username}" = {
           enable = true;

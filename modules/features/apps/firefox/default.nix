@@ -666,10 +666,16 @@
         # Bypasses Nix store so edits in NixConfig take effect immediately on Firefox refresh/restart
         system.activationScripts.firefox-config = ''
           FX_PROFILE="/home/${config.username}/.mozilla/firefox/${cfg.profileName}"
-          REPO_FX_DIR="/home/${config.username}/NixConfig/modules/features/apps/firefox"
+          REPO_FX_DIR="${config.nixos.configRepo}/modules/features/apps/firefox"
 
           mkdir -p "$FX_PROFILE/chrome"
-          chown -R ${config.username}:users /home/${config.username}/.mozilla
+          # Only chown the directories this script creates; never recurse into the
+          # profile (Firefox owns its contents as the user).
+          chown ${config.username}:users \
+            /home/${config.username}/.mozilla \
+            /home/${config.username}/.mozilla/firefox \
+            "$FX_PROFILE" \
+            "$FX_PROFILE/chrome"
 
           # Dynamic theme CSS variables
           cat << 'EOF' > "$FX_PROFILE/chrome/colors.css"

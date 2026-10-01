@@ -58,15 +58,13 @@
           };
         };
 
-        system.activationScripts.hyprland-config = ''
-          if [ -f /var/lib/hjem/manifest-${config.username}.json ]; then
-            ${pkgs.jq}/bin/jq 'del(.files[] | select(.target == "/home/${config.username}/.config/hypr/hyprland.lua"))' /var/lib/hjem/manifest-${config.username}.json > /var/lib/hjem/manifest-${config.username}.json.tmp && mv /var/lib/hjem/manifest-${config.username}.json.tmp /var/lib/hjem/manifest-${config.username}.json || true
-          fi
-          mkdir -p /home/${config.username}/.config/hypr
-          chown -R ${config.username}:users /home/${config.username}/.config/hypr
-          ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/hyprland/hyprland.lua /home/${config.username}/.config/hypr/hyprland.lua
-          chown -h ${config.username}:users /home/${config.username}/.config/hypr/hyprland.lua
-        '';
+        # hyprland.lua is a live symlink into the checkout (see nixos.liveLinks);
+        # the previous jq edit of Hjem's manifest is unnecessary because Hjem
+        # only manages .config/hypr/generated.lua.
+        nixos.liveLinks."hyprland-config" = {
+          source = "${config.nixos.configRepo}/modules/features/desktop-env/hyprland/hyprland.lua";
+          target = ".config/hypr/hyprland.lua";
+        };
 
         hjem.users."${config.username}" = {
           enable = true;
@@ -91,8 +89,8 @@
                 M.orange = "${orange}"
                 M.accent_hash = "#${accent}"
                 M.border_hash = "#${border}"
-                M.isDesktop = true
-                M.isLaptop = false
+                M.isDesktop = ${if config.nixos.hostRole == "desktop" then "true" else "false"}
+                M.isLaptop = ${if config.nixos.hostRole == "laptop" then "true" else "false"}
                 M.wallpaper = "~/Pictures/wallpaper"
                 M.screenshot_dir = "~/Pictures/Screenshots"
                 M.special_workspace = "special"

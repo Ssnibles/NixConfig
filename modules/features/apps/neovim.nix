@@ -23,6 +23,10 @@
         defaultEditor = true;
 
         settings.vim = {
+          # Nightly (unwrapped) Neovim from nix-community/neovim-nightly-overlay.
+          # NVF wraps this with the plugin set declared below.
+          package = inputs.neovim-nightly.packages.${pkgs.stdenv.hostPlatform.system}.neovim;
+
           viAlias = true;
           vimAlias = true;
           lineNumberMode = "relNumber";
@@ -265,14 +269,19 @@
         };
       };
 
-      # ── System Activation Script ───────────────────────────────────────────
-      # Links the custom Lua Neovim configuration tree in modules/features/nvim-src
-      system.activationScripts.nvf-config = ''
-        mkdir -p /home/${config.username}/.config
-        chown -R ${config.username}:users /home/${config.username}/.config
-        ln -sfn /home/${config.username}/NixConfig/modules/features/nvim-src /home/${config.username}/.config/nvim
-        ln -sfn /home/${config.username}/NixConfig/modules/features/nvim-src /home/${config.username}/.config/nvf
-        chown -h ${config.username}:users /home/${config.username}/.config/nvim /home/${config.username}/.config/nvf
-      '';
+      # ── Live Config Symlinks ───────────────────────────────────────────────
+      # Point ~/.config/nvim (and the nvf alias) at the custom Lua tree in
+      # modules/features/nvim-src. Managed centrally by nixos.liveLinks so it
+      # no longer recursively chowns the whole ~/.config on every activation.
+      nixos.liveLinks = {
+        "nvim-config" = {
+          source = "${config.nixos.configRepo}/modules/features/nvim-src";
+          target = ".config/nvim";
+        };
+        "nvf-config" = {
+          source = "${config.nixos.configRepo}/modules/features/nvim-src";
+          target = ".config/nvf";
+        };
+      };
     };
 }

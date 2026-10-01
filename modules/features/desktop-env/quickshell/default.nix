@@ -75,15 +75,14 @@
           };
         };
 
-        system.activationScripts.quickshell-config = ''
-          TARGET_DIR="/home/${config.username}/.config/quickshell"
-          mkdir -p "$TARGET_DIR"
-          # Drop every managed symlink first so files deleted from the config no
-          # longer linger; the generated Colors.qml is a regular file, not a link.
-          find "$TARGET_DIR" -maxdepth 1 -type l -delete
-          ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/quickshell/config/* "$TARGET_DIR"/
-          chown -R ${config.username}:users "$TARGET_DIR"
-        '';
+        # Symlink every QML/profile file into ~/.config/quickshell. `contents`
+        # mode prunes only links that point back into the source tree, so the
+        # Hjem-managed Colors.qml (a /nix/store link) is left alone.
+        nixos.liveLinks."quickshell-config" = {
+          source = "${config.nixos.configRepo}/modules/features/desktop-env/quickshell/config";
+          target = ".config/quickshell";
+          contents = true;
+        };
       };
     };
 }

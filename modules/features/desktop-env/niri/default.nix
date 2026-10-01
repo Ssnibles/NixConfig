@@ -31,12 +31,10 @@
           xwayland-satellite
         ];
 
-        system.activationScripts.niri-config = ''
-          mkdir -p /home/${config.username}/.config/niri
-          chown -R ${config.username}:users /home/${config.username}/.config/niri
-          ln -sfn /home/${config.username}/NixConfig/modules/features/desktop-env/niri/config.kdl /home/${config.username}/.config/niri/config.kdl
-          chown -h ${config.username}:users /home/${config.username}/.config/niri/config.kdl
-        '';
+        nixos.liveLinks."niri-config" = {
+          source = "${config.nixos.configRepo}/modules/features/desktop-env/niri/config.kdl";
+          target = ".config/niri/config.kdl";
+        };
       };
     };
 }
