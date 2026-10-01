@@ -34,9 +34,11 @@ vim.opt.grepprg = "rg --vimgrep --smart-case --hidden"
 vim.opt.smoothscroll = true
 vim.opt.shortmess:append("CF")
 
--- Listen address for neovim-remote
-if not vim.env.NVIM_LISTEN_ADDRESS then
-	vim.env.NVIM_LISTEN_ADDRESS = "/tmp/nvim.socket"
+-- Listen address for neovim-remote.
+-- Nvim (with NVIM_APPNAME=nvf) already starts a server, so point children at
+-- the real socket instead of a path we never actually listen on.
+if vim.v.servername ~= "" then
+	vim.env.NVIM_LISTEN_ADDRESS = vim.v.servername
 end
 
 -- User commands
@@ -64,5 +66,9 @@ require("plugins.diagnostics")
 require("plugins.markview")
 require("plugins.dial")
 
--- Set after plugins so nothing overrides it
-vim.o.statuscolumn = "%s%=%{v:relnum?v:relnum:v:lnum} %#WinSeparator#▏%*"
+-- Set after plugins so nothing overrides it.
+-- v:relnum is *always* the relative offset inside 'statuscolumn', regardless
+-- of whether 'relativenumber' is set, so the option has to be tested explicitly.
+-- Without the guard the column never switches to absolute numbers (e.g. while
+-- in insert mode, or after <leader>tn).
+vim.o.statuscolumn = "%s%=%{&relativenumber && v:relnum ? v:relnum : v:lnum} %#WinSeparator#▏%*"
