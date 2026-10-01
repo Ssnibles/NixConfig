@@ -28,6 +28,12 @@
     nvf.url = "github:NotAShelf/nvf";
     nvf.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Nightly Neovim, wired into NVF through `programs.nvf.settings.vim`.
+    neovim-nightly = {
+      url = "github:nix-community/neovim-nightly-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     millennium = {
       url = "github:SteamClientHomebrew/Millennium?dir=packages/nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -43,13 +49,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Local development checkouts. Use the git fetcher (not `path:`) so the
+    # lock is content-addressed by revision: `path:` inputs hash the whole
+    # tree including .git/.jj, so any jj/git operation changed the NAR hash and
+    # broke evaluation. Commit changes in these repos to have them picked up
+    # (the runtime mango-dev wrapper still prefers ~/mango/result for uncommitted
+    # mango iteration).
     mangowc-local = {
-      url = "path:/home/josh/mango";
+      url = "git+file:///home/josh/mango";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     ytplay = {
-      url = "path:/home/josh/ytplay";
+      url = "git+file:///home/josh/ytplay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
