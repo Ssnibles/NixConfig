@@ -13,6 +13,7 @@
         enable = true;
         package = pkgs.millennium-steam;
         gamescopeSession.enable = true;
+        remotePlay.openFirewall = true;
       };
       programs.gamemode.enable = true;
 

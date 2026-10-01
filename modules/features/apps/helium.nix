@@ -97,7 +97,7 @@
         };
 
         environment.systemPackages = [
-          (pkgs.writeShellScriptBin "helium-browser" ''exec helium "$@"'')
+          (pkgs.writeShellScriptBin "helium-browser" ''exec ${cfg.package}/bin/helium "$@"'')
         ];
 
         features.default-apps.browser = lib.mkIf isDefaultBrowser (lib.mkDefault "helium");
