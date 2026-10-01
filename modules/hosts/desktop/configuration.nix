@@ -18,6 +18,8 @@
       ]
       ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
+      nixos.hostRole = "desktop";
+
       # Desktop-specific USB Bluetooth kernel modules
       boot.kernelModules = [ "btusb" ];
 
@@ -41,6 +43,10 @@
       powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
 
       hardware.logitech.wireless.enable = true;
+
+      # Spread IRQs across CPU cores (favours gaming throughput on a many-core
+      # desktop). Optional: disable if it hurts latency on a given workload.
+      services.irqbalance.enable = true;
 
       environment.systemPackages = with pkgs.unstable; [
         amberol

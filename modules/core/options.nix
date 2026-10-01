@@ -28,5 +28,14 @@
           description = "Target user relative paths where active wallpaper should be deployed.";
         };
       };
+
+      options.nixos.hostRole = lib.mkOption {
+        type = lib.types.enum [
+          "desktop"
+          "laptop"
+        ];
+        default = "desktop";
+        description = "Which hardware group this host belongs to; used by shared modules that need host-specific behaviour.";
+      };
     };
 }

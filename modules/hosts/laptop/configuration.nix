@@ -18,10 +18,15 @@
       ]
       ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
-      # Standard mount options for /boot (no automount to avoid dbus-broker ProtectSystem=full deadlocks)
+      nixos.hostRole = "laptop";
+
+      # Standard mount options for /boot (no automount to avoid dbus-broker ProtectSystem=full deadlocks).
+      # mkForce is required because _hardware-generated.nix also sets `options`
+      # (fmask/dmask=0022); list options concatenate, which left duplicate and
+      # conflicting fmask/dmask values.
       fileSystems."/boot" = {
         fsType = "vfat";
-        options = [
+        options = lib.mkForce [
           "fmask=0077"
           "dmask=0077"
           "nodev"
@@ -54,6 +59,16 @@
           size = 8192;
         }
       ];
+
+      # ── Hibernation (finish on the laptop) ────────────────────────────────
+      # Hibernating to /swapfile needs the file's physical offset, which is only
+      # obtainable on the running laptop:
+      #   sudo filefrag -v /swapfile | awk 'NR==4 {print $4}'
+      # Then uncomment the two lines below (strip the trailing "..") and rebuild.
+      # Do NOT set boot.resumeDevice without the offset: a half-configured
+      # hibernation writes an image it cannot resume from, losing unsaved data.
+      # boot.resumeDevice = "/dev/disk/by-uuid/b58b4a43-9a29-463d-944d-fc52976d110c";
+      # boot.kernelParams = [ "resume_offset=NNNNNNN" ];
 
       # Laptop battery: keep Bluetooth radio powered off at boot until explicitly needed
       hardware.bluetooth.powerOnBoot = false;
