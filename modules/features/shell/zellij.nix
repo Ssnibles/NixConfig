@@ -13,6 +13,11 @@
 # The UI is reduced to a single-line compact bar (vs. Zellij's default double
 # tab/status bars), hover popups are disabled, and the theme is generated from
 # the active `config.theme.colors` palette.
+#
+# Besides drawing the bar, the custom `zjbar` plugin doubles as an always-on
+# control plugin: a few leader actions that need live session state (new tab in
+# the focused pane's cwd, the floating yazi popup) are sent to it with
+# `MessagePlugin`, since Zellij's own actions cannot read the focused cwd.
 # =============================================================================
 { ... }:
 {
@@ -24,13 +29,17 @@
     }:
     let
       c = config.theme.colors;
+      zellijBin = "${pkgs.zellij}/bin/zellij";
+      fishBin = "${pkgs.unstable.fish}/bin/fish";
 
-      # Custom status bar plugin (see ./zellij-plugin). zellij's built-in
-      # compact-bar hardcodes a "Zellij" label and the raw mode name, and
-      # neither it nor zjstatus can show the focused pane's cwd. Building our
-      # own tiny wasm plugin gets us the tmux-shaped bar exactly.
-      zjbar = pkgs.pkgsCross.wasi32.rustPlatform.buildRustPackage {
-        pname = "zjbar";
+      # Custom wasm plugins (see ./zellij-plugin):
+      #   zjbar - tmux-shaped status bar; also services the `leader` keybind
+      #           `MessagePlugin` actions (new tab with cwd / yazi popup).
+      #   zjcmd - the `leader :` command palette.
+      # zellij's built-in compact-bar hardcodes a "Zellij" label and the raw
+      # mode name, and neither it nor zjstatus can show the focused pane's cwd.
+      zellijPlugins = pkgs.pkgsCross.wasi32.rustPlatform.buildRustPackage {
+        pname = "zellij-plugins";
         version = "0.1.0";
         # Exclude the local cargo target dir; cleanSource does not, and it is
         # ~433MB of cached build artifacts from a different target.
@@ -161,7 +170,13 @@
             // it simply draws/removes a border row around every pane.
             bind "b" { TogglePaneFrames; SwitchToMode "Locked"; }
             bind "f" { ToggleFloatingPanes; SwitchToMode "Locked"; }
-            bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "Locked"; }
+            // `e` toggles a floating yazi popup rooted at the focused pane's
+            // cwd (handled by the bar plugin). Embed/float moved to `E`.
+            bind "e" {
+              MessagePlugin "zjbar" { name "toggle-yazi"; payload ""; }
+              SwitchToMode "Locked"
+            }
+            bind "E" { TogglePaneEmbedOrFloating; SwitchToMode "Locked"; }
             bind "m" { ToggleMouseMode; SwitchToMode "Locked"; }
             bind "B" { BreakPane; SwitchToMode "Locked"; }
             bind "y" { ToggleActiveSyncTab; SwitchToMode "Locked"; }
@@ -170,8 +185,13 @@
             bind "}" { MovePane "Right"; SwitchToMode "Locked"; }
             bind "Ctrl k" { Clear; SwitchToMode "Locked"; }
 
-            // windows (zellij tabs)
-            bind "c" "n" { NewTab; SwitchToMode "Locked"; }
+            // windows (zellij tabs). New tabs inherit the focused pane's cwd:
+            // Zellij's own NewTab action cannot do that, so we ask the bar's
+            // plugin (which reads the live cwd) to open the tab instead.
+            bind "c" "n" {
+              MessagePlugin "zjbar" { name "new-tab"; payload ""; }
+              SwitchToMode "Locked"
+            }
             bind "Q" { CloseTab; SwitchToMode "Locked"; }
             bind "[" { GoToPreviousTab; SwitchToMode "Locked"; }
             bind "]" { GoToNextTab; SwitchToMode "Locked"; }
@@ -209,6 +229,16 @@
             // `w` already opens the session-manager, so `K` stays a resize.)
             bind "d" { Detach; }
             bind "X" { Quit; }
+            // `w` opens zellij's session-manager; `S` is a lighter picker that
+            // lists running + resurrectable sessions and switches directly.
+            bind "S" {
+              LaunchOrFocusPlugin "zjcmd" {
+                floating true
+                move_to_focused_tab true
+                picker "sessions"
+              }
+              SwitchToMode "Locked"
+            }
             bind "w" {
               LaunchOrFocusPlugin "session-manager" {
                 floating true
@@ -226,8 +256,6 @@
           // is selected with the mouse -- double-click = word, triple-click =
           // line, drag = range -- and copied automatically because of
           // `copy_on_select true`; `y` below re-copies the active selection.
-          // For pure-keyboard selection use `e` (EditScrollback) and copy out
-          // of $EDITOR.
           scroll {
             bind "Ctrl c" "Ctrl s" "Esc" "q" { ScrollToBottom; SwitchToMode "Locked"; }
             bind "j" "Down" { ScrollDown; }
@@ -245,7 +273,6 @@
             bind "N" { Search "up"; }
             // tmux `y` (copy-pipe-and-cancel). Safe no-op without a selection.
             bind "y" { Copy; SwitchToMode "Locked"; }
-            bind "e" { EditScrollback; SwitchToMode "Locked"; }
             bind "s" { SwitchToMode "EnterSearch"; SearchInput 0; }
             bind "[" { ScrollToPreviousPrompt; }
             bind "]" { ScrollToNextPrompt; }
@@ -295,24 +322,33 @@
         // Custom plugins (see ./zellij-plugin): zjbar is the tmux-shaped bar,
         // zjcmd is the `leader :` command palette.
         plugins {
-          zjbar location="file:${zjbar}/bin/zjbar.wasm" {
+          zjbar location="file:${zellijPlugins}/bin/zjbar.wasm" {
             bg        "#${c.bg}"
             fg_mid    "#${c.fgMid}"
             accent    "#${c.accent}"
             bg_subtle "#${c.bgSubtle}"
             yellow    "#${c.yellow}"
             teal      "#${c.teal}"
+            // Keybind control actions (new tab with cwd / yazi popup).
+            zellij_bin  "${zellijBin}"
+            yazi_bin    "${pkgs.yazi}/bin/yazi"
+            yazi_x      "7%"
+            yazi_y      "7%"
+            yazi_width  "86%"
+            yazi_height "86%"
           }
-          zjcmd location="file:${zjbar}/bin/zjcmd.wasm" {
-            zellij_bin "${pkgs.zellij}/bin/zellij"
+          zjcmd location="file:${zellijPlugins}/bin/zjcmd.wasm" {
+            zellij_bin "${zellijBin}"
+            // Shell used by the palette's "Run command" entries.
+            shell      "${fishBin}"
+            // Used to detach the kill+delete of the current session.
+            setsid_bin "${pkgs.util-linux}/bin/setsid"
             // floating-window geometry (percent of the viewport)
             x          "20%"
             y          "25%"
             width      "60%"
             height     "50%"
             bg         "#${c.bg}"
-            border     "#${c.border}"
-            fg         "#${c.fg}"
             fg_mid     "#${c.fgMid}"
             accent     "#${c.accent}"
             bg_subtle  "#${c.bgSubtle}"
@@ -350,7 +386,7 @@
 
         // ─── Behaviour ───────────────────────────────────────────────────────
         default_mode "locked"
-        default_shell "${pkgs.unstable.fish}/bin/fish"
+        default_shell "${fishBin}"
         mouse_mode true
         scroll_buffer_size 50000
         on_force_close "detach"
@@ -391,10 +427,11 @@
           type = "copy";
           permissions = "644";
           text = ''
-            "${zjbar}/bin/zjbar.wasm" {
+            "${zellijPlugins}/bin/zjbar.wasm" {
                 ReadApplicationState
+                RunCommands
             }
-            "${zjbar}/bin/zjcmd.wasm" {
+            "${zellijPlugins}/bin/zjcmd.wasm" {
                 ChangeApplicationState
                 ReadApplicationState
                 RunCommands
@@ -535,17 +572,17 @@
           text = ''
             function za --description "Attach to (or start) a zellij session"
                 if test (count $argv) -gt 0
-                    ${pkgs.zellij}/bin/zellij attach --create $argv[1]
+                    ${zellijBin} attach --create $argv[1]
                     return
                 end
-                set -l sessions (${pkgs.zellij}/bin/zellij list-sessions --short --reverse 2>/dev/null)
+                set -l sessions (${zellijBin} list-sessions --short --reverse 2>/dev/null)
                 if test -z "$sessions"
-                    ${pkgs.zellij}/bin/zellij
+                    ${zellijBin}
                     return
                 end
                 set -l choice (printf '%s\n' $sessions | ${pkgs.fzf}/bin/fzf --prompt='zellij ❯ ' --height=40% --reverse)
                 if test -n "$choice"
-                    ${pkgs.zellij}/bin/zellij attach "$choice"
+                    ${zellijBin} attach "$choice"
                 end
             end
           '';
