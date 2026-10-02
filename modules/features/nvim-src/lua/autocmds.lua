@@ -36,11 +36,13 @@ autocmd("BufWritePre", {
 	end,
 })
 
--- ── Yank highlight ───────────────────────────────────────────────────
-autocmd("TextYankPost", {
+-- ── Yank/paste highlight ────────────────────────────────────────────
+-- vim.hl.on_yank() is deprecated in 0.13 (removed in 0.14); vim.hl.hl_op()
+-- replaces it and also supports TextPutPost for paste highlighting.
+autocmd({ "TextYankPost", "TextPutPost" }, {
 	group = augroup,
 	callback = function()
-		vim.hl.on_yank({ timeout = 200 })
+		vim.hl.hl_op({ timeout = 200 })
 	end,
 })
 
@@ -81,8 +83,15 @@ autocmd("VimResized", { group = augroup, command = "wincmd =" })
 autocmd("FileType", {
 	group = augroup,
 	callback = function()
-		vim.opt_local.formatoptions:remove({ "c", "o" })
-		vim.opt_local.formatoptions:append({ "r" })
+		-- NOTE: `vim.opt_local.formatoptions:remove()` is a no-op inside the
+		-- FileType event on Neovim 0.13 nightly (the new `vim.opt` `remove`
+		-- operation doesn't see the value the ftplugin just assigned). Assigning
+		-- the string directly works, so do that instead of mutating in place.
+		local fo = vim.bo.formatoptions:gsub("[co]", "")
+		if not fo:find("r") then
+			fo = fo .. "r"
+		end
+		vim.bo.formatoptions = fo
 	end,
 })
 

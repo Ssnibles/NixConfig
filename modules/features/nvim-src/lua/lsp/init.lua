@@ -216,12 +216,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
 			pcall(lsp.inlay_hint.enable, true, { bufnr = args.buf })
 		end
 
-		if client:supports_method("textDocument/codeLens", args.buf) then
-			if lsp.codelens.enable then
-				pcall(lsp.codelens.enable, true, { bufnr = args.buf })
-			else
-				pcall(lsp.codelens.refresh, { bufnr = args.buf })
-			end
+		if client:supports_method("textDocument/codeLens", args.buf) and lsp.codelens.enable then
+			-- vim.lsp.codelens.refresh() was removed in 0.13; enable() is the API now.
+			pcall(lsp.codelens.enable, true, { bufnr = args.buf })
 		end
 	end,
 })

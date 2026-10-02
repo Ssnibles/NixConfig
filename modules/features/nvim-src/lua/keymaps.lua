@@ -120,17 +120,28 @@ map("n", "<leader>qL", "<cmd>lclose<CR>", { desc = "Close location list" })
 
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
+
+-- `float = true` in vim.diagnostic.jump() is deprecated (removed in 0.14);
+-- `on_jump` is the replacement and shows the same float at the destination.
+local function diag_jump(count, extra)
+	vim.diagnostic.jump(vim.tbl_extend("force", {
+		count = count,
+		on_jump = function(_, bufnr)
+			vim.diagnostic.open_float({ bufnr = bufnr, scope = "cursor", focus = false })
+		end,
+	}, extra or {}))
+end
 map("n", "]d", function()
-	vim.diagnostic.jump({ count = 1, float = true })
+	diag_jump(1)
 end, { desc = "Next diagnostic" })
 map("n", "[d", function()
-	vim.diagnostic.jump({ count = -1, float = true })
+	diag_jump(-1)
 end, { desc = "Previous diagnostic" })
 map("n", "]e", function()
-	vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = true })
+	diag_jump(1, { severity = vim.diagnostic.severity.ERROR })
 end, { desc = "Next error" })
 map("n", "[e", function()
-	vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })
+	diag_jump(-1, { severity = vim.diagnostic.severity.ERROR })
 end, { desc = "Previous error" })
 
 -- ── Toggles ──────────────────────────────────────────────────────────
