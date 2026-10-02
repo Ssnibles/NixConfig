@@ -1,7 +1,7 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import Quickshell
-import Quickshell.Wayland
 import Quickshell.Services.Mpris
 import QtQuick
 import "Utils.js" as Utils
@@ -36,15 +36,27 @@ Singleton {
 
   // --- Consumer Demand & Activity Tracking ---
   // The position timer ONLY ticks when media is actively playing AND at least one
-  // UI surface is showing live elapsed/total time or the seek bar.
-  property int barHoverCount: 0
-  readonly property bool barHovered: barHoverCount > 0
-  property bool lockActive: false
+  // UI surface is showing live elapsed/total time or the seek bar. Surfaces
+  // register by name so overlapping hovers/overlays can't drift a counter.
+  property var _consumers: ({})
   property int activeConsumers: 0
+  property bool lockActive: false
+
+  function setConsumer(name, active) {
+    if (!name) return
+    var was = root._consumers[name] === true
+    if (active === was) return
+    if (active) root._consumers[name] = true
+    else delete root._consumers[name]
+    var n = 0
+    for (var k in root._consumers) {
+      if (root._consumers[k]) n++
+    }
+    root.activeConsumers = n
+  }
 
   readonly property bool isConsumerActive: (
     Config.commandCenterVisible ||
-    root.barHovered ||
     root.lockActive ||
     (Config.barType === "niri" && Config.barVisible) ||
     root.activeConsumers > 0
@@ -212,6 +224,6 @@ Singleton {
 
   function focusSource() {
     if (!root.player) return
-    Utils.goToSource(root.player, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
+    WindowFocuser.focusSource(root.player)
   }
 }

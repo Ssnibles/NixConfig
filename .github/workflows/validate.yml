@@ -35,6 +35,11 @@ jobs:
             | xargs -0 -n1 nix-instantiate --parse > /dev/null
           echo "✓ Nix syntax is valid"
 
+      # Pure-JS unit tests for the Quickshell helper library. These need no Nix
+      # or Qt and run on the runner's preinstalled Node.
+      - name: Run Quickshell JS unit tests
+        run: node --test modules/features/desktop-env/quickshell/tests/utils.test.js
+
       # The README embeds a Mermaid architecture diagram generated from the
       # modules/ tree; fail if it has drifted.
       - name: Check architecture diagram

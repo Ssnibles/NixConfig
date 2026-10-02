@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
 import QtQuick
@@ -14,7 +15,7 @@ QtObject {
   // Watch focused tag bitmask from ristate -t
   readonly property Process _tagWatcher: Process {
     command: ["ristate", "-t"]
-    running: root.active
+    onExited: if (root.active) root.watcherRestartTimer.restart()
 
     stdout: SplitParser {
       onRead: line => {
@@ -30,7 +31,7 @@ QtObject {
   // Watch occupied views tag bitmask from ristate -vt
   readonly property Process _viewsTagWatcher: Process {
     command: ["ristate", "-vt"]
-    running: root.active
+    onExited: if (root.active) root.watcherRestartTimer.restart()
 
     stdout: SplitParser {
       onRead: line => {
@@ -46,7 +47,7 @@ QtObject {
   // Watch focused view title from ristate -w
   readonly property Process _titleWatcher: Process {
     command: ["ristate", "-w"]
-    running: root.active
+    onExited: if (root.active) root.watcherRestartTimer.restart()
 
     stdout: SplitParser {
       onRead: line => {
@@ -74,6 +75,23 @@ QtObject {
       }
     }
   }
+
+  // Restart the watchers if ristate drops. `running` is controlled explicitly
+  // (not bound) so the restart assignment can't destroy a binding.
+  readonly property Timer watcherRestartTimer: Timer {
+    interval: 2000
+    repeat: false
+    onTriggered: root.syncWatchers()
+  }
+
+  function syncWatchers() {
+    root._tagWatcher.running = root.active
+    root._viewsTagWatcher.running = root.active
+    root._titleWatcher.running = root.active
+  }
+
+  onActiveChanged: root.syncWatchers()
+  Component.onCompleted: root.syncWatchers()
 
   function focusTag(tagNum) {
     var mask = 1 << (tagNum - 1)

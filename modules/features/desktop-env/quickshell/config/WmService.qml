@@ -1,7 +1,6 @@
+pragma ComponentBehavior: Bound
 import Quickshell
-import Quickshell.Wayland
 import QtQuick
-import "Utils.js" as Utils
 
 Scope {
   id: root
@@ -118,6 +117,6 @@ Scope {
   }
 
   function focusWindow(patterns) {
-    Utils.focusWindow(patterns, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
+    WindowFocuser.focus(patterns)
   }
 }

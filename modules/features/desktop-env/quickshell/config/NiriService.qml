@@ -1,5 +1,5 @@
+pragma ComponentBehavior: Bound
 import Quickshell
-import Quickshell.Wayland
 import Quickshell.Io
 import QtQuick
 import "Utils.js" as Utils
@@ -16,7 +16,6 @@ QtObject {
 
   readonly property Process _niriInitWs: Process {
     command: ["niri", "msg", "--json", "workspaces"]
-    running: root.active
     stdout: StdioCollector {
       onDataChanged: {
         try {
@@ -32,7 +31,6 @@ QtObject {
 
   readonly property Process _niriEvents: Process {
     command: ["niri", "msg", "--json", "event-stream"]
-    running: root.active
     onExited: if (root.active) root.eventsRestartTimer.restart()
 
     stdout: SplitParser {
@@ -54,6 +52,17 @@ QtObject {
     repeat: false
     onTriggered: if (root.active) root._niriEvents.running = true
   }
+
+  // Start/stop the IPC streams explicitly instead of binding `running`,
+  // because the restart timers assign to `.running` and would otherwise
+  // destroy the binding (leaving the process unable to stop).
+  function syncWatchers() {
+    root._niriInitWs.running = root.active
+    root._niriEvents.running = root.active
+  }
+
+  onActiveChanged: root.syncWatchers()
+  Component.onCompleted: root.syncWatchers()
 
   function handleEvent(event) {
     if (event.WorkspacesChanged) {
@@ -139,7 +148,7 @@ QtObject {
   }
 
   function focusWindow(patterns) {
-    Utils.focusWindow(patterns, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
+    WindowFocuser.focus(patterns)
   }
 
 
@@ -147,9 +156,21 @@ QtObject {
     var result = []
     var wsList = root.allWorkspaces
     for (var i = 0; i < wsList.length; i++) {
-      if (wsList[i].output === outputName) {
-        result.push(wsList[i])
-      }
+      var ws = wsList[i]
+      if (ws.output !== outputName) continue
+      // The generic bar contract treats `id` as the workspace number, which is
+      // what `niri msg action focus-workspace` expects. Niri's internal `id` is
+      // not that, so expose `idx` as `id` and keep the raw id under `niriId`.
+      result.push({
+        id: (ws.idx !== undefined && ws.idx !== null) ? ws.idx : ws.id,
+        niriId: ws.id,
+        idx: ws.idx,
+        name: ws.name,
+        output: ws.output,
+        is_active: ws.is_active,
+        is_focused: ws.is_focused,
+        is_urgent: ws.is_urgent
+      })
     }
     return result
   }

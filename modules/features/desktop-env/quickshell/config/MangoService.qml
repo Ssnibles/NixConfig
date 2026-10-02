@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
 import QtQuick
@@ -14,7 +15,6 @@ QtObject {
   // Continuous listener for MangoWC JSON stream for workspace tags
   readonly property Process _tagsWatcher: Process {
     command: ["mmsg", "watch", "all-tags"]
-    running: root.active
     onExited: if (root.active) root.tagsRestartTimer.restart()
 
     stdout: SplitParser {
@@ -61,7 +61,6 @@ QtObject {
   // Continuous listener for focused client changes (window title)
   readonly property Process _titleWatcher: Process {
     command: ["mmsg", "watch", "focusing-client"]
-    running: root.active
     onExited: if (root.active) root.titleRestartTimer.restart()
 
     stdout: SplitParser {
@@ -107,6 +106,17 @@ QtObject {
     repeat: false
     onTriggered: if (root.active) root._titleWatcher.running = true
   }
+
+  // Start/stop the IPC streams explicitly instead of binding `running`,
+  // because the restart timers assign to `.running` and would otherwise
+  // destroy the binding (leaving the process unable to stop).
+  function syncWatchers() {
+    root._tagsWatcher.running = root.active
+    root._titleWatcher.running = root.active
+  }
+
+  onActiveChanged: root.syncWatchers()
+  Component.onCompleted: root.syncWatchers()
 
   readonly property var availableLayouts: [
     { symbol: "DW", name: "Dwindle", layoutName: "dwindle", icon: "󱗼", key: "r" },

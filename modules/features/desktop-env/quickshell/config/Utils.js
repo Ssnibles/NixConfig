@@ -1,8 +1,5 @@
 .pragma library
 
-// Static helper script used by focusWindow() when the native ToplevelManager path
-// is unavailable. Built lazily once instead of on every focus request.
-var _focusNodeScriptCache = ""
 
 function findFirst(list, predicate) {
   for (var i = 0; i < list.length; i++) {
@@ -254,183 +251,8 @@ function batteryIcon(pct, charging, plugged, present) {
   return _batteryGlyphs[idx]
 }
 
-function focusWindow(patterns, quickshellObj, toplevelManagerObj) {
-  if (!patterns) return false
-  var targets = Array.isArray(patterns) ? patterns : [patterns]
-  var cleanTargets = []
-  for (var i = 0; i < targets.length; i++) {
-    var p = String(targets[i]).trim().toLowerCase()
-    if (p && cleanTargets.indexOf(p) === -1) {
-      cleanTargets.push(p)
-    }
-  }
-  if (cleanTargets.length === 0) return false
-
-  // 1. Try native Wayland ToplevelManager first (if available in scope or passed in)
-  var manager = toplevelManagerObj || null
-  if (!manager && typeof ToplevelManager !== "undefined") {
-    manager = ToplevelManager
-  }
-
-  var activated = false
-  if (manager && manager.toplevels) {
-    var list = manager.toplevels.values || manager.toplevels
-    var count = list.length !== undefined ? list.length : (list.count !== undefined ? list.count : 0)
-
-    // Score matches the same way as the IPC fallback (exact appId > exact title >
-    // appId substring > title substring, earlier patterns preferred) and only
-    // activate the best one, rather than every window that happens to match.
-    var bestWin = null
-    var bestScore = 0
-    for (var j = 0; j < cleanTargets.length; j++) {
-      var pat = cleanTargets[j]
-      for (var k = 0; k < count; k++) {
-        var win = list[k] || (list.get ? list.get(k) : null)
-        if (!win) continue
-
-        var appId = win.appId ? String(win.appId).toLowerCase() : ""
-        var title = win.title ? String(win.title).toLowerCase() : ""
-        var score = 0
-        if (appId && appId === pat) score = 100 - j
-        else if (title && title === pat) score = 90 - j
-        else if (appId && appId.indexOf(pat) !== -1) score = 80 - j
-        else if (title && title.indexOf(pat) !== -1) score = 70 - j
-
-        if (score > bestScore) { bestScore = score; bestWin = win }
-      }
-    }
-
-    if (bestWin && typeof bestWin.activate === "function") {
-      bestWin.activate()
-      activated = true
-    }
-  }
-
-  // If the native compositor protocol handled activation, skip the heavyweight
-  // Node fallback entirely.
-  if (activated) return true
-
-  // 2. Compositor IPC focus action (MangoWC, Niri, Hyprland, etc.)
-  var qs = quickshellObj
-  if (!qs && typeof Quickshell !== "undefined") qs = Quickshell
-  if (qs && typeof qs.execDetached === "function") {
-    if (_focusNodeScriptCache === "") _focusNodeScriptCache = [
-      'const cp = require("child_process");',
-      'const pats = process.argv.slice(2).map(p => p.toLowerCase());',
-      'if (!pats.length) process.exit(0);',
-      'function sh(cmd) {',
-      '  try { return cp.execSync(cmd, { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"] }); }',
-      '  catch (e) { return ""; }',
-      '}',
-      'function matchScore(appId, title) {',
-      '  appId = (appId || "").toLowerCase();',
-      '  title = (title || "").toLowerCase();',
-      '  for (let i = 0; i < pats.length; i++) {',
-      '    const p = pats[i];',
-      '    if (appId === p) return 100 - i;',
-      '    if (appId.includes(p)) return 80 - i;',
-      '    if (title === p) return 90 - i;',
-      '    if (title.includes(p)) return 70 - i;',
-      '  }',
-      '  return 0;',
-      '}',
-      'const d = (process.env.XDG_CURRENT_DESKTOP || "").toLowerCase();',
-      'const b = (process.env.QS_BAR || "").toLowerCase();',
-      '// 1. MangoWC',
-      'if (process.env.MANGO_INSTANCE_SIGNATURE || b === "mangowc" || d.includes("mango")) {',
-      '  const raw = sh("mmsg get all-clients");',
-      '  if (raw) {',
-      '    try {',
-      '      const clients = JSON.parse(raw).clients || [];',
-      '      let best = null, bestScore = 0;',
-      '      for (const c of clients) {',
-      '        const score = matchScore(c.appid, c.title);',
-      '        if (score > bestScore) { bestScore = score; best = c; }',
-      '      }',
-      '      if (best) { sh(`mmsg dispatch focusid client,${best.id}`); process.exit(0); }',
-      '    } catch (e) {}',
-      '  }',
-      '}',
-      '// 2. Niri',
-      'if (process.env.NIRI_SOCKET || b === "niri" || d.includes("niri")) {',
-      '  const raw = sh("niri msg --json windows");',
-      '  if (raw) {',
-      '    try {',
-      '      const wins = JSON.parse(raw);',
-      '      let best = null, bestScore = 0;',
-      '      for (const w of wins) {',
-      '        const score = matchScore(w.app_id, w.title);',
-      '        if (score > bestScore) { bestScore = score; best = w; }',
-      '      }',
-      '      if (best) { sh(`niri msg action focus-window --id ${best.id}`); process.exit(0); }',
-      '    } catch (e) {}',
-      '  }',
-      '}',
-      '// 3. Hyprland',
-      'if (process.env.HYPRLAND_INSTANCE_SIGNATURE || b === "hyprland" || d.includes("hyprland")) {',
-      '  const raw = sh("hyprctl clients -j");',
-      '  if (raw) {',
-      '    try {',
-      '      const clients = JSON.parse(raw);',
-      '      let best = null, bestScore = 0;',
-      '      for (const c of clients) {',
-      '        const score = Math.max(matchScore(c.class, c.title), matchScore(c.initialClass, c.initialTitle));',
-      '        if (score > bestScore) { bestScore = score; best = c; }',
-      '      }',
-      '      if (best && best.address) { sh(`hyprctl dispatch focuswindow address:${best.address}`); process.exit(0); }',
-      '    } catch (e) {}',
-      '  }',
-      '}',
-      '// Fallback: check available tools',
-      'try {',
-      '  const mRaw = sh("mmsg get all-clients");',
-      '  if (mRaw) {',
-      '    const clients = JSON.parse(mRaw).clients || [];',
-      '    let best = null, bestScore = 0;',
-      '    for (const c of clients) {',
-      '      const score = matchScore(c.appid, c.title);',
-      '      if (score > bestScore) { bestScore = score; best = c; }',
-      '    }',
-      '    if (best) { sh(`mmsg dispatch focusid client,${best.id}`); process.exit(0); }',
-      '  }',
-      '} catch (e) {}',
-      'try {',
-      '  const nRaw = sh("niri msg --json windows");',
-      '  if (nRaw) {',
-      '    const wins = JSON.parse(nRaw);',
-      '    let best = null, bestScore = 0;',
-      '    for (const w of wins) {',
-      '      const score = matchScore(w.app_id, w.title);',
-      '      if (score > bestScore) { bestScore = score; best = w; }',
-      '    }',
-      '    if (best) { sh(`niri msg action focus-window --id ${best.id}`); process.exit(0); }',
-      '  }',
-      '} catch (e) {}',
-      'try {',
-      '  const hRaw = sh("hyprctl clients -j");',
-      '  if (hRaw) {',
-      '    const clients = JSON.parse(hRaw);',
-      '    let best = null, bestScore = 0;',
-      '    for (const c of clients) {',
-      '      const score = Math.max(matchScore(c.class, c.title), matchScore(c.initialClass, c.initialTitle));',
-      '      if (score > bestScore) { bestScore = score; best = c; }',
-      '    }',
-      '    if (best && best.address) { sh(`hyprctl dispatch focuswindow address:${best.address}`); process.exit(0); }',
-      '  }',
-      '} catch (e) {}'
-    ].join('\n')
-
-    qs.execDetached(["node", "-e", _focusNodeScriptCache, "node"].concat(cleanTargets))
-    return true
-  }
-
-  return false
-}
-
-function goToSource(source, quickshellObj, toplevelManagerObj) {
-  if (!source) return
-  var qs = quickshellObj
-  if (!qs && typeof Quickshell !== "undefined") qs = Quickshell
+function goToSource(source) {
+  if (!source) return []
 
   // 1. If source is an MPRIS player or media object with raise() method, invoke it
   try {
@@ -548,9 +370,7 @@ function goToSource(source, quickshellObj, toplevelManagerObj) {
     }
   }
 
-  if (targets.length === 0) return
-
-  focusWindow(targets, qs, toplevelManagerObj)
+  return targets
 }
 
 function cleanUrl(url) {
@@ -611,11 +431,12 @@ function findActivePlayer(players, pausedEnum) {
 }
 
 function findBatteryDevice(upowerDevices, displayDevice) {
-  if (upowerDevices && upowerDevices.count > 0) {
-    for (var i = 0; i < upowerDevices.count; i++) {
-      var d = upowerDevices.get(i)
-      if (d && d.isLaptopBattery && d.ready) return d
-    }
+  // UPower.devices is an UntypedObjectModel; read its `values` list. It does
+  // not expose the QML ListModel `.count`/`.get` API.
+  var list = (upowerDevices && upowerDevices.values) ? upowerDevices.values : []
+  for (var i = 0; i < list.length; i++) {
+    var d = list[i]
+    if (d && d.isLaptopBattery && d.ready) return d
   }
   return (displayDevice && displayDevice.ready) ? displayDevice : null
 }
