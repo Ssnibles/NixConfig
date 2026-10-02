@@ -184,7 +184,11 @@
         # ── XDG Portals ─────────────────────────────────────────────────────
         xdg.portal = {
           enable = true;
-          xdgOpenUsePortal = true;
+          # Do NOT set xdgOpenUsePortal: it routes xdg-open through the portal,
+          # which resolves handlers itself (via xdg-desktop-portal-gnome here)
+          # and pops a chooser instead of honouring ~/.config/mimeapps.list.
+          # Leaving it off keeps mimeapps.list authoritative: use the configured
+          # default, only ever prompting when nothing is set.
           extraPortals = [
             pkgs.xdg-desktop-portal-gtk
             pkgs.xdg-desktop-portal-wlr
