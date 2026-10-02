@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
@@ -25,7 +26,17 @@ Scope {
   readonly property var targetScreens: {
     if (Config.notifAllScreens) return Quickshell.screens
     if (activeCount === 0) return []
-    var s = root._screen || Config.lastActiveScreen || (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)
+    var screens = Quickshell.screens || []
+    var s = root._screen || Config.lastActiveScreen || (screens.length > 0 ? screens[0] : null)
+    // If the frozen screen was disconnected, fall back to the first available
+    // screen instead of rendering onto a dead reference.
+    if (s && screens.length > 0) {
+      var found = false
+      for (var i = 0; i < screens.length; i++) {
+        if (screens[i] === s) { found = true; break }
+      }
+      if (!found) s = screens[0]
+    }
     return s ? [s] : []
   }
 
@@ -96,6 +107,8 @@ Scope {
 
           NotificationCard {
             id: card
+            required property var model
+            required property int index
             notification: model.notification
             appName: model.appName || ""
             desktopEntry: model.desktopEntry || ""
@@ -109,13 +122,8 @@ Scope {
             isMedia: model.isMedia !== undefined ? model.isMedia : false
             timeStr: model.timeStr || ""
 
-            onIsHoveredChanged: {
-              if (card.isHovered) {
-                NotificationStore.hoveredIndex = index
-              } else if (NotificationStore.hoveredIndex === index) {
-                NotificationStore.hoveredIndex = -1
-              }
-            }
+            onIsHoveredChanged: NotificationStore.setHovered(model.uid, card.isHovered)
+            Component.onDestruction: NotificationStore.setHovered(model.uid, false)
 
             onDismissed: NotificationStore.dismissActiveAt(index, false)
             onActionTriggered: NotificationStore.invokeActionOrFocus(model, index)

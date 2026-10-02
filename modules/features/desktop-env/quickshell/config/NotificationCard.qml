@@ -1,5 +1,5 @@
+pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Effects
 import Quickshell
 import "Utils.js" as Utils
 
@@ -185,13 +185,11 @@ Rectangle {
     }
   }
 
-  property bool hasIcon: true
-
   readonly property int targetIconSize: isMedia ? (Config.notifMediaIconSize || 48) : (Config.notifIconSize || 40)
   readonly property int targetIconRadius: Config.notifIconRadius || 8
 
   width: parent ? parent.width : Config.notifWidth
-  height: Math.max(contentCol.implicitHeight, hasIcon ? targetIconSize : 0) + Config.notifCardMargins * 2
+  height: Math.max(contentCol.implicitHeight, targetIconSize) + Config.notifCardMargins * 2
   radius: Config.notifRadius
 
   color: hoverArea.containsMouse ? Colors.bgRaised : Colors.bg
@@ -257,7 +255,6 @@ Rectangle {
   // Left-side Icon/Image Container
   Item {
     id: iconContainer
-    visible: root.hasIcon
     anchors.left: parent.left
     anchors.leftMargin: Config.notifCardMargins
     anchors.top: parent.top
@@ -280,44 +277,16 @@ Rectangle {
         font.pixelSize: (root.fallbackGlyph.length === 1) ? 18 : 20
         font.bold: root.fallbackGlyph.length === 1
         font.family: (root.fallbackGlyph.length === 1) ? Config.sansFont : Config.monoFont
-        visible: !img.visible
+        visible: !iconImage.ready
       }
 
-      // Mask for rounded corners
-      Item {
-        id: iconMask
-        width: parent.width
-        height: parent.height
-        visible: false
-        layer.enabled: img.visible
-        Rectangle {
-          width: parent.width
-          height: parent.height
-          radius: root.targetIconRadius
-          color: "black"
-        }
-      }
-
-      Image {
-        id: img
+      RoundedImage {
+        id: iconImage
         anchors.fill: parent
-        asynchronous: true
-        fillMode: Image.PreserveAspectCrop
         sourceSize: Qt.size(root.targetIconSize * 2, root.targetIconSize * 2)
+        radius: root.targetIconRadius
         source: root.currentCandidate
-        visible: source !== "" && status === Image.Ready
-
-        onStatusChanged: {
-          if (status === Image.Error) {
-            root.nextCandidate()
-          }
-        }
-
-        layer.enabled: img.visible
-        layer.effect: MultiEffect {
-          maskEnabled: true
-          maskSource: iconMask
-        }
+        onSourceError: root.nextCandidate()
       }
 
       MouseArea {
@@ -332,8 +301,8 @@ Rectangle {
   // Text and Actions Column
   Column {
     id: contentCol
-    anchors.left: root.hasIcon ? iconContainer.right : parent.left
-    anchors.leftMargin: root.hasIcon ? 10 : Config.notifCardMargins
+    anchors.left: iconContainer.right
+    anchors.leftMargin: 10
     anchors.right: parent.right
     anchors.rightMargin: Config.notifCardMargins
     anchors.top: parent.top
@@ -400,7 +369,8 @@ Rectangle {
         model: (root.notification && root.notification.actions) ? root.notification.actions : []
         delegate: Rectangle {
           id: actionBtn
-          visible: modelData.identifier !== "default"
+          required property var modelData
+          visible: actionBtn.modelData.identifier !== "default"
           height: 24
           radius: 6
           implicitWidth: actionText.implicitWidth + 16
@@ -411,7 +381,7 @@ Rectangle {
           Text {
             id: actionText
             anchors.centerIn: parent
-            text: modelData.text || modelData.identifier
+            text: actionBtn.modelData.text || actionBtn.modelData.identifier
             font.pixelSize: 11
             font.bold: true
             font.family: Config.sansFont
@@ -425,7 +395,7 @@ Rectangle {
             cursorShape: Qt.PointingHandCursor
             onClicked: {
               try {
-                modelData.invoke()
+                actionBtn.modelData.invoke()
               } catch(e) {}
               if (Config.notifDismissOnAction && root.notification && !root.notification.resident) {
                 root.dismissed()
