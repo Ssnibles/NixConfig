@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import "Utils.js" as Utils
@@ -8,6 +9,8 @@ Item {
   property string uiFont: Config.monoFont
   property string timeFormat: Config.timeFormat
   property string timeStr: ""
+  property string hourStr: ""
+  property string minuteStr: ""
   property PanelWindow sharedWindow: null
   property bool horizontal: false
 
@@ -19,6 +22,10 @@ Item {
   function updateTime() {
     var d = new Date()
     root.timeStr = Qt.formatTime(d, root.timeFormat)
+    // Keep a 24h hour/minute pair for the stacked vertical layout, independent
+    // of `timeFormat` (which may be 12-hour and is not `HH:mm`).
+    root.hourStr = Utils.pad2(d.getHours())
+    root.minuteStr = Utils.pad2(d.getMinutes())
     timeTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
     timeTimer.restart()
   }
@@ -41,7 +48,7 @@ Item {
 
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
-      text: root.timeStr ? root.timeStr.split(":")[0] : ""
+      text: root.hourStr
       color: Colors.accent
       font.family: root.uiFont
       font.pixelSize: 16
@@ -50,7 +57,7 @@ Item {
 
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
-      text: root.timeStr ? root.timeStr.split(":")[1] : ""
+      text: root.minuteStr
       color: Colors.fg
       font.family: root.uiFont
       font.pixelSize: 16
@@ -80,10 +87,7 @@ Item {
     sharedWindow: root.sharedWindow
     icon: "\u{F017}"
     iconColor: Colors.accent
-    title: {
-      var d = new Date()
-      return Qt.formatDate(d, Utils.getOrdinalDate(d))
-    }
+    title: Utils.getOrdinalDate(new Date())
     contentWidth: 216
     contentComponent: calendarComponent
   }
@@ -108,13 +112,22 @@ Item {
         anchors.centerIn: parent
         spacing: 8
 
-        readonly property var today: new Date()
+        property var today: new Date()
         readonly property int realYear: today.getFullYear()
         readonly property int realMonth: today.getMonth()
         readonly property int realDay: today.getDate()
 
         property int viewYear: realYear
         property int viewMonth: realMonth
+
+        // Keep the "today" highlight correct if the calendar stays open across
+        // midnight. This component only exists while the tooltip is shown.
+        Timer {
+          interval: 60000
+          repeat: true
+          running: true
+          onTriggered: calCol.today = new Date()
+        }
 
         readonly property bool isCurrentMonth: (viewYear === realYear && viewMonth === realMonth)
 
@@ -266,9 +279,11 @@ Item {
           Repeater {
             model: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
             Text {
+              id: weekdayLabel
+              required property var modelData
               width: 24
               horizontalAlignment: Text.AlignHCenter
-              text: modelData
+              text: weekdayLabel.modelData
               font.family: root.uiFont
               font.pixelSize: 11
               font.bold: true
@@ -287,19 +302,21 @@ Item {
             model: calCol.monthModel
 
             Rectangle {
+              id: dayCell
+              required property var modelData
               width: 24
               height: 24
               radius: 4
-              color: modelData.isCurrent ? Colors.accent : "transparent"
+              color: dayCell.modelData.isCurrent ? Colors.accent : "transparent"
 
               Text {
                 anchors.centerIn: parent
-                visible: modelData.day > 0
-                text: modelData.day > 0 ? modelData.day.toString() : ""
+                visible: dayCell.modelData.day > 0
+                text: dayCell.modelData.day > 0 ? dayCell.modelData.day.toString() : ""
                 font.family: root.uiFont
                 font.pixelSize: 11
-                font.bold: modelData.isCurrent
-                color: modelData.isCurrent ? Colors.bg : Colors.fg
+                font.bold: dayCell.modelData.isCurrent
+                color: dayCell.modelData.isCurrent ? Colors.bg : Colors.fg
               }
             }
           }

@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 
@@ -66,7 +67,10 @@ Singleton {
 
   // --- Niri vertical bar (niri-bar.qml) ----------------------------------
   readonly property int barWidth: 42
-  readonly property string barSide: "left" // "left" | "right"
+  property string barSide: {
+    var envSide = (Quickshell.env("QS_BAR_SIDE") || "").toLowerCase()
+    return (envSide === "left" || envSide === "right") ? envSide : "left"
+  }
   readonly property int barMarginTop: 8
   readonly property int barMarginBottom: 8
   readonly property int barMarginLeft: 4
@@ -241,7 +245,7 @@ Singleton {
   // --- Lock Screen --------------------------------------------------------
   readonly property string lockAvatarPath: Quickshell.shellDir + "/assets/avatar.png"
   readonly property string lockFallbackIcon: "󰀉"
-  readonly property string lockWallpaperPath: "file://" + (Quickshell.env("HOME") || "/home/josh") + "/Pictures/wallpaper"
+  readonly property string lockWallpaperPath: "file://" + (Quickshell.env("HOME") || ("/home/" + (Quickshell.env("USER") || "user"))) + "/Pictures/wallpaper"
   readonly property string lockClockFormat: "HH:mm"
   readonly property string lockDateFormat: "dddd, MMMM d"
   readonly property int lockCardWidth: 440

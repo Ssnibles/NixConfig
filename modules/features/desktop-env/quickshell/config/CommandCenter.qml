@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
@@ -15,7 +16,10 @@ Scope {
 
   Timer {
     id: openTimeoutTimer
-    interval: 50
+    // Fallback for when the cursor-query process hangs. Kept generous so a
+    // normal (but not instant) WM query isn't pre-empted, which would open the
+    // panel on the stale `lastActiveScreen`.
+    interval: 250
     repeat: false
     onTriggered: {
       if (ccScope.pendingOpen) {
@@ -561,153 +565,9 @@ Scope {
           }
 
           // --- MEDIA PLAYER CARD ---
-          Rectangle {
-            id: mediaCard
+          MediaCard {
             Layout.fillWidth: true
-            implicitHeight: mediaInnerCol.implicitHeight + 24
-            color: Colors.bgRaised
-            border.color: Colors.border
-            border.width: 1
-            radius: Config.commandCenterCardRadius
-            visible: Config.alwaysShowMediaCard || MediaService.hasPlayer
-
-            property bool hasPlayer: MediaService.hasPlayer
-            property var activePlayer: MediaService.player
-
-            MouseArea {
-              anchors.fill: parent
-              acceptedButtons: Qt.RightButton
-              cursorShape: mediaCard.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
-              onClicked: function(mouse) {
-                if (mouse.button === Qt.RightButton) {
-                  MediaService.focusSource()
-                }
-              }
-            }
-
-            Column {
-              id: mediaInnerCol
-              anchors.left: parent.left
-              anchors.right: parent.right
-              anchors.top: parent.top
-              anchors.margins: 12
-              spacing: 8
-
-              RowLayout {
-                id: mediaRow
-                width: parent.width
-                spacing: 12
-
-                // Album Cover Art
-                Rectangle {
-                  width: 48
-                  height: 48
-                  radius: 8
-                  color: Colors.bgSubtle
-                  border.color: Colors.border
-                  border.width: 1
-
-                  Text {
-                    visible: !coverArt.ready
-                    text: "󰎇"
-                    color: Colors.fgDim
-                    font.family: Config.monoFont
-                    font.pixelSize: 22
-                    font.bold: true
-                    anchors.centerIn: parent
-                  }
-
-                  RoundedImage {
-                    id: coverArt
-                    anchors.fill: parent
-                    sourceSize: Qt.size(96, 96)
-                    radius: 8
-                    source: (mediaCard.hasPlayer && mediaCard.activePlayer && (mediaCard.activePlayer.trackTitle || mediaCard.activePlayer.trackArtUrl)) ? NotificationStore.getCoverArt(
-                      mediaCard.activePlayer.trackTitle || "",
-                      mediaCard.activePlayer.trackArtist || "",
-                      mediaCard.activePlayer.trackArtUrl || ""
-                    ) : ""
-                  }
-
-                  MouseArea {
-                    anchors.fill: parent
-                    cursorShape: mediaCard.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    acceptedButtons: Qt.LeftButton | Qt.RightButton
-                    onClicked: function() {
-                      if (mediaCard.activePlayer) {
-                        Utils.goToSource(mediaCard.activePlayer, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
-                      }
-                    }
-                  }
-                }
-
-                // Track Details
-                Item {
-                  Layout.fillWidth: true
-                  implicitHeight: ccTrackCol.implicitHeight
-
-                  Column {
-                    id: ccTrackCol
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 2
-
-                    Text {
-                      width: parent.width
-                      text: mediaCard.hasPlayer ? Utils.cleanTrackTitle(mediaCard.activePlayer.trackTitle) : "Nothing is playing"
-                      color: mediaCard.hasPlayer ? Colors.fg : Colors.fgDim
-                      font.bold: true
-                      font.pixelSize: 15
-                      font.family: Config.sansFont
-                      elide: Text.ElideRight
-                    }
-
-                    Text {
-                      width: parent.width
-                      text: mediaCard.hasPlayer ? (mediaCard.activePlayer.trackArtist || "Unknown Artist") : "No artist"
-                      color: Colors.fgMid
-                      font.pixelSize: 13
-                      font.family: Config.sansFont
-                      elide: Text.ElideRight
-                    }
-                  }
-
-                  MouseArea {
-                    anchors.fill: parent
-                    cursorShape: mediaCard.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    acceptedButtons: Qt.LeftButton | Qt.RightButton
-                    onClicked: function() {
-                      if (mediaCard.activePlayer) {
-                        Utils.goToSource(mediaCard.activePlayer, Quickshell, typeof ToplevelManager !== "undefined" ? ToplevelManager : null)
-                      }
-                    }
-                  }
-                }
-
-                // Playback buttons
-                PlaybackControls {
-                  Layout.alignment: Qt.AlignVCenter
-                  canPrevious: !!(mediaCard.activePlayer && mediaCard.activePlayer.canGoPrevious)
-                  canNext: !!(mediaCard.activePlayer && mediaCard.activePlayer.canGoNext)
-                  isPlaying: !!(mediaCard.activePlayer && mediaCard.activePlayer.isPlaying)
-                  onPreviousClicked: mediaCard.activePlayer.previous()
-                  onPlayPauseClicked: { if (mediaCard.activePlayer) mediaCard.activePlayer.isPlaying = !mediaCard.activePlayer.isPlaying }
-                  onNextClicked: mediaCard.activePlayer.next()
-                }
-              }
-
-              // Progress row
-              MediaProgressRow {
-                width: parent.width
-                visible: mediaCard.hasPlayer ? MediaService.lastLength > 0 : Config.alwaysShowMediaCard
-                position: MediaService.estimatedPosition
-                length: MediaService.lastLength
-                progress: MediaService.progress
-                seekable: MediaService.canSeek
-                onSeekRequested: function(v) { MediaService.seek(v) }
-              }
-            }
+            showWhenIdle: Config.alwaysShowMediaCard
           }
 
           // --- NOTIFICATION HISTORY CARD ---
@@ -917,6 +777,9 @@ Scope {
                   model: NotificationStore.historyModel
 
                   delegate: NotificationCard {
+                    id: historyCard
+                    required property var model
+                    required property int index
                     width: notifHistList.width
                     notification: model.notification
                     appName: model.appName || ""
@@ -940,65 +803,9 @@ Scope {
           }
 
           // --- SYSTEM POWER/CONTROLS ---
-          RowLayout {
-            id: sysControlsRow
+          PowerButtons {
             Layout.fillWidth: true
-            spacing: 10
-
-            property var buttonModel: [
-              { icon: "󰌾", label: "Lock", cmd: Config.cmdLock, hoverCol: Colors.accent },
-              { icon: "󰤄", label: "Sleep", cmd: Config.cmdSleep, hoverCol: Colors.accent },
-              { icon: "󰜉", label: "Reboot", cmd: Config.cmdReboot, hoverCol: Colors.orange },
-              { icon: "󰐥", label: "Power", cmd: Config.cmdPoweroff, hoverCol: Colors.red }
-            ]
-
-            Repeater {
-              model: sysControlsRow.buttonModel
-              delegate: Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1
-                height: 48
-                radius: 10
-                color: hoverArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised
-                border.color: hoverArea.containsMouse ? modelData.hoverCol : Colors.border
-                border.width: 1
-                Behavior on scale { NumberAnimation { duration: 100 } }
-
-                MouseArea {
-                  id: hoverArea
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onEntered: parent.scale = 0.94
-                  onExited: parent.scale = 1.0
-                  onClicked: {
-                    Config.commandCenterVisible = false
-                    Quickshell.execDetached(modelData.cmd)
-                  }
-                }
-
-                Row {
-                  anchors.centerIn: parent
-                  spacing: 6
-
-                  Text {
-                    text: modelData.icon
-                    color: hoverArea.containsMouse ? modelData.hoverCol : Colors.fg
-                    font.family: Config.monoFont
-                    font.pixelSize: 18
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-
-                  Text {
-                    text: modelData.label
-                    color: hoverArea.containsMouse ? Colors.fg : Colors.fgMid
-                    font.family: Config.sansFont
-                    font.pixelSize: 13
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-                }
-              }
-            }
+            onActivated: Config.commandCenterVisible = false
           }
         }
       }

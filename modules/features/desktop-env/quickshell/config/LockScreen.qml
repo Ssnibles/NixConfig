@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Pam
@@ -5,7 +6,6 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
-import "Utils.js" as Utils
 
 Scope {
   id: lockScope
@@ -15,6 +15,10 @@ Scope {
   property string errorMessage: ""
   property int shakeTrigger: 0
   property string pendingPassword: ""
+  // Guards against a tight start→fail→start loop if PAM keeps erroring without
+  // user input. Reset on every user-initiated submit and on a successful unlock.
+  property int _authRestarts: 0
+  readonly property int _maxAuthRestarts: 5
 
   // Expose lock/unlock via IPC at Scope level so target exists when unlocked
   IpcHandler {
@@ -62,26 +66,37 @@ Scope {
       lockScope.authenticating = false
       lockScope.pendingPassword = ""
       if (result === PamResult.Success) {
+        lockScope._authRestarts = 0
         lockScope.errorMessage = ""
         lockScope.unlockSession()
-      } else {
+      } else if (lockScope._authRestarts < lockScope._maxAuthRestarts) {
+        lockScope._authRestarts++
         lockScope.errorMessage = "Authentication failed. Try again."
         lockScope.shakeTrigger++
         pam.start()
+      } else {
+        lockScope.errorMessage = "Authentication unavailable. Try again later."
+        lockScope.shakeTrigger++
       }
     }
 
     onError: function(err) {
       lockScope.authenticating = false
       lockScope.pendingPassword = ""
-      lockScope.errorMessage = "PAM Error"
       lockScope.shakeTrigger++
-      pam.start()
+      if (lockScope._authRestarts < lockScope._maxAuthRestarts) {
+        lockScope._authRestarts++
+        lockScope.errorMessage = "PAM error. Retrying..."
+        pam.start()
+      } else {
+        lockScope.errorMessage = "Authentication unavailable. Try again later."
+      }
     }
   }
 
   function submitPassword(password) {
     if (!password || lockScope.authenticating) return
+    lockScope._authRestarts = 0
     lockScope.authenticating = true
     lockScope.errorMessage = ""
 
@@ -102,6 +117,7 @@ Scope {
     onActiveChanged: {
       MediaService.lockActive = lockLoader.active
       if (lockLoader.active) {
+        lockScope._authRestarts = 0
         lockScope.errorMessage = ""
         lockScope.authenticating = false
         lockScope.pendingPassword = ""
@@ -311,109 +327,11 @@ Scope {
             }
 
             // --- MEDIA PLAYER CARD (matches the Command Centre media card) ---
-            Rectangle {
-              id: lockMediaCard
+            MediaCard {
               Layout.fillWidth: true
-              implicitHeight: lockMediaCol.implicitHeight + 24
-              color: Colors.bgRaised
-              border.color: Colors.border
-              border.width: 1
-              radius: Config.commandCenterCardRadius
-              visible: MediaService.hasPlayer && (MediaService.isPlaying || (MediaService.trackTitle !== ""))
-
-              property var activePlayer: MediaService.player
-
-              Column {
-                id: lockMediaCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 12
-                spacing: 8
-
-                RowLayout {
-                  width: parent.width
-                  spacing: 12
-
-                  // Track Art / Icon
-                  Rectangle {
-                    width: 48
-                    height: 48
-                    radius: 8
-                    color: Colors.bgSubtle
-                    border.color: Colors.border
-                    border.width: 1
-
-                    Text {
-                      visible: !coverArt.ready
-                      text: "󰎇"
-                      color: Colors.fgDim
-                      font.family: Config.monoFont
-                      font.pixelSize: 22
-                      font.bold: true
-                      anchors.centerIn: parent
-                    }
-
-                    RoundedImage {
-                      id: coverArt
-                      anchors.fill: parent
-                      sourceSize: Qt.size(96, 96)
-                      radius: 8
-                      source: (lockMediaCard.activePlayer && (lockMediaCard.activePlayer.trackTitle || lockMediaCard.activePlayer.trackArtUrl)) ? NotificationStore.getCoverArt(
-                        lockMediaCard.activePlayer.trackTitle || "",
-                        lockMediaCard.activePlayer.trackArtist || "",
-                        lockMediaCard.activePlayer.trackArtUrl || ""
-                      ) : ""
-                    }
-                  }
-
-                  // Track Info
-                  Column {
-                    Layout.fillWidth: true
-                    spacing: 2
-
-                    Text {
-                      width: parent.width
-                      text: lockMediaCard.activePlayer ? Utils.cleanTrackTitle(lockMediaCard.activePlayer.trackTitle) : ""
-                      color: Colors.fg
-                      font.bold: true
-                      font.pixelSize: 15
-                      font.family: Config.sansFont
-                      elide: Text.ElideRight
-                    }
-
-                    Text {
-                      width: parent.width
-                      text: lockMediaCard.activePlayer ? (lockMediaCard.activePlayer.trackArtist || "Unknown Artist") : ""
-                      color: Colors.fgMid
-                      font.pixelSize: 13
-                      font.family: Config.sansFont
-                      elide: Text.ElideRight
-                    }
-                  }
-
-                  // Playback Controls (shared prev / play-pause / next cluster)
-                  PlaybackControls {
-                    Layout.alignment: Qt.AlignVCenter
-                    canPrevious: !!(lockMediaCard.activePlayer && lockMediaCard.activePlayer.canGoPrevious)
-                    canNext: !!(lockMediaCard.activePlayer && lockMediaCard.activePlayer.canGoNext)
-                    isPlaying: !!(lockMediaCard.activePlayer && lockMediaCard.activePlayer.isPlaying)
-                    onPreviousClicked: lockMediaCard.activePlayer.previous()
-                    onPlayPauseClicked: { if (lockMediaCard.activePlayer) lockMediaCard.activePlayer.isPlaying = !lockMediaCard.activePlayer.isPlaying }
-                    onNextClicked: lockMediaCard.activePlayer.next()
-                  }
-                }
-
-                // Non-interactive progress bar & position numbers
-                MediaProgressRow {
-                  width: parent.width
-                  visible: MediaService.lastLength > 0
-                  position: MediaService.estimatedPosition
-                  length: MediaService.lastLength
-                  progress: MediaService.progress
-                  seekable: false
-                }
-              }
+              seekable: false
+              interactive: false
+              visible: MediaService.hasPlayer && (MediaService.isPlaying || MediaService.trackTitle !== "")
             }
 
             // --- USER & AUTHENTICATION CARD ---
@@ -646,62 +564,10 @@ Scope {
             }
 
             // --- BOTTOM SYSTEM POWER CONTROLS ---
-            RowLayout {
-              id: sysControlsRow
+            PowerButtons {
               Layout.fillWidth: true
-              spacing: 10
-
-              property var buttonModel: [
-                { icon: "󰤄", label: "Sleep", cmd: Config.cmdSleep, hoverCol: Colors.accent },
-                { icon: "󰜉", label: "Reboot", cmd: Config.cmdReboot, hoverCol: Colors.orange },
-                { icon: "󰐥", label: "Power", cmd: Config.cmdPoweroff, hoverCol: Colors.red }
-              ]
-
-              Repeater {
-                model: sysControlsRow.buttonModel
-                delegate: Rectangle {
-                  Layout.fillWidth: true
-                  Layout.preferredWidth: 1
-                  height: 48
-                  radius: Config.lockInputRadius
-                  color: hoverArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised
-                  border.color: hoverArea.containsMouse ? modelData.hoverCol : Colors.border
-                  border.width: 1
-
-                  Behavior on scale { NumberAnimation { duration: 100 } }
-
-                  MouseArea {
-                    id: hoverArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onEntered: parent.scale = 0.94
-                    onExited: parent.scale = 1.0
-                    onClicked: Quickshell.execDetached(modelData.cmd)
-                  }
-
-                  Row {
-                    anchors.centerIn: parent
-                    spacing: 6
-
-                    Text {
-                      text: modelData.icon
-                      color: hoverArea.containsMouse ? modelData.hoverCol : Colors.fg
-                      font.family: Config.monoFont
-                      font.pixelSize: 18
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Text {
-                      text: modelData.label
-                      color: hoverArea.containsMouse ? Colors.fg : Colors.fgMid
-                      font.family: Config.sansFont
-                      font.pixelSize: 13
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-                  }
-                }
-              }
+              showLock: false
+              buttonRadius: Config.lockInputRadius
             }
           }
 

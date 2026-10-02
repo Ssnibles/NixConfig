@@ -1,5 +1,5 @@
+pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Layouts
 import Quickshell
 import "Utils.js" as Utils
 
@@ -169,156 +169,17 @@ Item {
     target: root
     sharedWindow: root.sharedWindow
     contentComponent: mediaPopoverComponent
-    onHoveredChanged: {
-      if (mediaTooltip.hovered) {
-        MediaService.barHoverCount++
-      } else {
-        MediaService.barHoverCount = Math.max(0, MediaService.barHoverCount - 1)
-      }
-    }
+    onHoveredChanged: MediaService.setConsumer("barMedia", mediaTooltip.hovered)
   }
 
   Component {
     id: mediaPopoverComponent
 
-    Rectangle {
+    MediaCard {
       id: popoverCard
       width: 280
-      height: popoverContent.implicitHeight + 24
-      radius: Config.popupRadius
-      color: Colors.bg
-      border.color: Colors.border
-      border.width: 1
-
-      MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.RightButton
-        cursorShape: root.mediaPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onClicked: function(mouse) {
-          if (mouse.button === Qt.RightButton) {
-            root.focusMediaPlayer()
-          }
-        }
-      }
-
-      Column {
-        id: popoverContent
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: 12
-        spacing: 8
-
-        // Top row: Album Art + Track Details + Playback Buttons (matches CommandCenter)
-        RowLayout {
-          width: parent.width
-          spacing: 12
-
-          // Album Art
-          Rectangle {
-            width: 48
-            height: 48
-            radius: 8
-            color: Colors.bgSubtle
-            border.color: Colors.border
-            border.width: 1
-
-            Text {
-              visible: !popoverCover.ready
-              text: "󰎆"
-              color: Colors.fgDim
-              font.family: root.uiFont
-              font.pixelSize: 22
-              font.bold: true
-              anchors.centerIn: parent
-            }
-
-            RoundedImage {
-              id: popoverCover
-              anchors.fill: parent
-              sourceSize: Qt.size(96, 96)
-              radius: 8
-              source: (root.mediaPlayer && (root.mediaPlayer.trackTitle || root.mediaPlayer.trackArtUrl)) ? NotificationStore.getCoverArt(
-                root.mediaPlayer.trackTitle || "",
-                root.mediaPlayer.trackArtist || "",
-                root.mediaPlayer.trackArtUrl || ""
-              ) : ""
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: root.mediaPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
-              acceptedButtons: Qt.LeftButton | Qt.RightButton
-              onClicked: root.focusMediaPlayer()
-            }
-          }
-
-          // Track Details
-          Item {
-            Layout.fillWidth: true
-            implicitHeight: trackDetailsCol.implicitHeight
-
-            Column {
-              id: trackDetailsCol
-              anchors.left: parent.left
-              anchors.right: parent.right
-              anchors.verticalCenter: parent.verticalCenter
-              spacing: 2
-
-              Text {
-                width: parent.width
-                text: root.mediaPlayer ? root.mediaPlayer.trackTitle : "No Media"
-                color: Colors.fg
-                font.bold: true
-                font.pixelSize: 15
-                font.family: Config.sansFont
-                elide: Text.ElideRight
-              }
-
-              Text {
-                width: parent.width
-                text: root.mediaPlayer ? (root.mediaPlayer.trackArtist || "Unknown Artist") : ""
-                color: Colors.fgMid
-                font.pixelSize: 13
-                font.family: Config.sansFont
-                elide: Text.ElideRight
-              }
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: root.mediaPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
-              acceptedButtons: Qt.LeftButton | Qt.RightButton
-              onClicked: root.focusMediaPlayer()
-            }
-          }
-
-          // Playback Buttons
-          PlaybackControls {
-            Layout.alignment: Qt.AlignVCenter
-            uiFont: root.uiFont
-            canPrevious: !!(root.mediaPlayer && root.mediaPlayer.canGoPrevious)
-            canNext: !!(root.mediaPlayer && root.mediaPlayer.canGoNext)
-            isPlaying: !!(root.mediaPlayer && root.mediaPlayer.isPlaying)
-            onPreviousClicked: root.mediaPlayer.previous()
-            onPlayPauseClicked: { if (root.mediaPlayer) root.mediaPlayer.isPlaying = !root.mediaPlayer.isPlaying }
-            onNextClicked: root.mediaPlayer.next()
-          }
-
-          Item { Layout.fillWidth: true }
-        }
-
-        // Seekable progress row
-        MediaProgressRow {
-          width: parent.width
-          visible: root.mediaPlayer && MediaService.lastLength > 0
-          position: MediaService.estimatedPosition
-          length: MediaService.lastLength
-          progress: MediaService.progress
-          seekable: MediaService.canSeek
-          onSeekRequested: function(v) { MediaService.seek(v) }
-        }
-      }
+      cardColor: Colors.bg
+      cardRadius: Config.popupRadius
     }
   }
 }

@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
 
@@ -12,6 +13,11 @@ Item {
   property alias fillMode: img.fillMode
   property real radius: 8
   readonly property bool ready: img.source !== "" && img.status === Image.Ready
+  readonly property int status: img.status
+
+  // Emitted when the image fails to load, so callers can advance to a fallback
+  // candidate or reveal a placeholder.
+  signal sourceError()
 
   Item {
     id: maskItem
@@ -31,6 +37,7 @@ Item {
     asynchronous: true
     fillMode: Image.PreserveAspectCrop
     visible: root.ready
+    onStatusChanged: if (status === Image.Error) root.sourceError()
     layer.enabled: visible
     layer.effect: MultiEffect {
       maskEnabled: true

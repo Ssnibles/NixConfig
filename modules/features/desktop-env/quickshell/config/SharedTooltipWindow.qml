@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 
@@ -37,7 +38,7 @@ PanelWindow {
     interval: Config.popupGraceMs
     onTriggered: {
       if (root._active === null && !root.hovered) {
-        cardOpacity = 0
+        root.cardOpacity = 0
         fadeTimer.restart()
       }
     }
@@ -81,23 +82,23 @@ PanelWindow {
 
   anchors {
     top: true
-    bottom: barSide !== "top"
-    left: barSide !== "right"
-    right: barSide !== "left"
+    bottom: root.barSide !== "top"
+    left: root.barSide !== "right"
+    right: root.barSide !== "left"
   }
   margins {
-    top: barSide === "top" ? (Config.barHeight + 6) : 0
-    left: barSide === "left" ? Config.popupGap : 0
-    right: barSide === "right" ? Config.popupGap : 0
+    top: root.barSide === "top" ? (Config.barHeight + 6) : 0
+    left: root.barSide === "left" ? Config.popupGap : 0
+    right: root.barSide === "right" ? Config.popupGap : 0
   }
-  implicitWidth: barSide === "top" ? (screenTarget ? screenTarget.width : 1920) : (cachedActive
-    ? (cachedActive.contentWidth > 0 ? cachedActive.contentWidth : cachedActive.maxWidth)
+  implicitWidth: root.barSide === "top" ? (screenTarget ? screenTarget.width : 1920) : (root.cachedActive
+    ? (root.cachedActive.contentWidth > 0 ? root.cachedActive.contentWidth : root.cachedActive.maxWidth)
     : Config.popupMaxWidth)
-  implicitHeight: barSide === "top" ? 300 : (screenTarget ? screenTarget.height : 1080)
+  implicitHeight: root.barSide === "top" ? 300 : (screenTarget ? screenTarget.height : 1080)
 
   Loader {
     id: tipLoader
-    width: cachedActive ? (cachedActive.contentWidth > 0 ? cachedActive.contentWidth : cachedActive.maxWidth) : Config.popupMaxWidth
+    width: root.cachedActive ? (root.cachedActive.contentWidth > 0 ? root.cachedActive.contentWidth : root.cachedActive.maxWidth) : Config.popupMaxWidth
     opacity: root.cardOpacity
 
     HoverHandler {
@@ -119,14 +120,14 @@ PanelWindow {
     }
 
     x: {
-      if (barSide !== "top") return 0
+      if (root.barSide !== "top") return 0
       if (!src) return 0
       var w = item ? item.width : Config.popupMaxWidth
       return Math.round(Math.max(12, Math.min(targetCenterX - w / 2, root.width - w - 12)))
     }
 
     y: {
-      if (barSide === "top") return 0
+      if (root.barSide === "top") return 0
       if (!src) return 0
       var h = item ? item.height : 0
       return Math.round(Math.max(6, Math.min(targetCenterY - h / 2, root.height - h - 6)))
@@ -159,14 +160,14 @@ PanelWindow {
           Row {
             spacing: 8
             Text {
-              text: _src ? _src.icon : ""
-              color: _src ? _src.iconColor : Colors.fg
+              text: card._src ? card._src.icon : ""
+              color: card._src ? card._src.iconColor : Colors.fg
               font.family: Config.monoFont
               font.pixelSize: 19
               anchors.verticalCenter: parent.verticalCenter
             }
             Text {
-              text: _src ? _src.title : ""
+              text: card._src ? card._src.title : ""
               color: Colors.fg
               font.family: Config.sansFont
               font.pixelSize: 15
@@ -175,14 +176,14 @@ PanelWindow {
           }
 
           Rectangle {
-            visible: _src ? _src.details.length > 0 : false
+            visible: card._src ? card._src.details.length > 0 : false
             width: parent.width
             height: 1
             color: Colors.border
           }
 
           Repeater {
-            model: _src ? _src.details : []
+            model: card._src ? card._src.details : []
             delegate: Text {
               required property var modelData
               text: modelData
