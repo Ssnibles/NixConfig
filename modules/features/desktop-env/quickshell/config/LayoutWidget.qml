@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 
@@ -126,6 +127,7 @@ Pill {
           Repeater {
             model: root.wmService ? root.wmService.availableLayouts : []
             delegate: Rectangle {
+              id: layoutOption
               required property var modelData
               readonly property bool isCurrent: {
                 if (!root.wmService) return false
@@ -156,27 +158,27 @@ Pill {
                   spacing: 8
 
                   Text {
-                    text: modelData.icon
-                    color: isCurrent ? Colors.bg : Colors.accent
+                    text: layoutOption.modelData.icon
+                    color: layoutOption.isCurrent ? Colors.bg : Colors.accent
                     font.family: Config.monoFont
                     font.pixelSize: 13
                     anchors.verticalCenter: parent.verticalCenter
                   }
 
                   Text {
-                    text: modelData.name
-                    color: isCurrent ? Colors.bg : Colors.fg
+                    text: layoutOption.modelData.name
+                    color: layoutOption.isCurrent ? Colors.bg : Colors.fg
                     font.family: Config.sansFont
                     font.pixelSize: 12
-                    font.weight: isCurrent ? Font.Bold : Font.Normal
+                    font.weight: layoutOption.isCurrent ? Font.Bold : Font.Normal
                     anchors.verticalCenter: parent.verticalCenter
                   }
                 }
 
                 Text {
-                  text: modelData.key ? ("Super+" + modelData.key) : ""
-                  visible: modelData.key !== ""
-                  color: isCurrent ? Colors.bgSubtle : Colors.fgDim
+                  text: layoutOption.modelData.key ? ("Super+" + layoutOption.modelData.key) : ""
+                  visible: layoutOption.modelData.key !== ""
+                  color: layoutOption.isCurrent ? Colors.bgSubtle : Colors.fgDim
                   font.family: Config.monoFont
                   font.pixelSize: 10
                   anchors.right: parent.right
@@ -191,7 +193,7 @@ Pill {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                   if (root.wmService) {
-                    root.wmService.setLayout(modelData.symbol)
+                    root.wmService.setLayout(layoutOption.modelData.symbol)
                   }
                 }
               }
