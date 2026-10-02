@@ -71,7 +71,7 @@ Scope {
 | Property | Default | Purpose |
 | --- | --- | --- |
 | `barWidth` | `42` | Niri bar width (px) |
-| `barSide` | `"left"` | Niri bar screen edge (`"left"` \| `"right"`) |
+| `barSide` | `"left"` | Niri bar screen edge (`"left"` \| `"right"`). Overridable with the `QS_BAR_SIDE` env var. |
 | `barMarginTop/Bottom/Left/Right` | `8 / 8 / 4 / 4` | Outer padding around Niri bar |
 | `barSpacing` | `8` | Vertical gap between widget groups |
 | `volBarHeight` | `64` | Volume bar widget height |
@@ -189,6 +189,10 @@ Scope {
 - **Role**: IPC service bridging Niri window manager via `niri msg --json event-stream`.
 - **Exposes**: `allWorkspaces`, `currentTitle`, `workspacesForOutput(output)`, `focusWorkspace(id)`, `formatActiveTitle(title, appId)`.
 
+#### `WindowFocuser.qml`
+- **Role**: Singleton that activates a window from a notification / MPRIS player / app descriptor.
+- **Strategy**: Uses Quickshell's native `ToplevelManager` when available; otherwise queries and scores the compositor's IPC (`mmsg` / `niri` / `hyprctl`) directly in QML (replaces the old inline Node fallback). Exposes `focus(patterns)` and `focusSource(source)`.
+
 #### `NotificationStore.qml`
 - **Role**: Central notification daemon state & disk cache manager.
 - **Features**: Subscribes to `Quickshell.Services.Notifications`, manages active stack and history log up to `Config.notifMaxHistory`, auto-dismiss timers, removes toasts when the sender closes them, and cover art disk caching (`~/.cache/quickshell/coverart/`).
@@ -231,6 +235,26 @@ Scope {
 #### `CommandCenterButton.qml`
 - **Role**: Quick dashboard trigger button component for status bars.
 - **Properties**: `horizontal`, `screen`. Toggles `Config.commandCenterVisible`, automatically setting the target screen to the parent bar's monitor.
+
+#### `MediaCard.qml`
+- **Role**: Shared MPRIS media card used by the Command Center, the bar media popover and the lock screen.
+- **Properties**: `showWhenIdle`, `seekable`, `interactive`, `cardColor`, `cardRadius`. Renders album art (with fallback), track/artist text, `PlaybackControls` and `MediaProgressRow`.
+
+#### `PlaybackControls.qml`
+- **Role**: Reusable previous / play-pause / next button cluster.
+- **Properties**: `canPrevious`, `canNext`, `isPlaying`, `uiFont`; signals `previousClicked`, `playPauseClicked`, `nextClicked`.
+
+#### `MediaProgressRow.qml`
+- **Role**: Reusable elapsed-time + seek bar + total-time row.
+- **Properties**: `position`, `length`, `progress`, `seekable`; signal `seekRequested(real progress)`.
+
+#### `PowerButtons.qml`
+- **Role**: Shared system power-action row (Lock / Sleep / Reboot / Power).
+- **Properties**: `showLock`, `buttonRadius`; signal `activated()`.
+
+#### `RoundedImage.qml`
+- **Role**: Async image with rounded-corner masking.
+- **Properties**: `source`, `sourceSize`, `fillMode`, `radius`; exposes `ready`, `status`, and a `sourceError()` signal for fallback chains.
 
 #### Standard Bar Widgets
 - **`ClockWidget.qml`**: Time/date stack with click-to-popup details.
@@ -336,10 +360,10 @@ CpuWidget {
 }
 ```
 
-### Step 4: Symlink & Test
-Because activation scripts symlink `config/*` into `~/.config/quickshell/`, newly created QML files must be symlinked before Quickshell can see them:
+### Step 4: Test
+Because activation scripts symlink the whole `config/` directory into `~/.config/quickshell/`, newly created QML files are picked up automatically after a `sudo nixos-rebuild switch` — no manual `ln -s` step is needed. (The symlinks are re-created on activation, so files deleted from the repo are also pruned.)
 
-- Run `sudo nixos-rebuild switch` (or manually symlink the file: `ln -s ~/NixConfig/modules/features/desktop-env/quickshell/config/CpuWidget.qml ~/.config/quickshell/`).
+- Run `sudo nixos-rebuild switch` to refresh the live links.
 - Restart Quickshell to load the new widget!
 
 ---
@@ -363,3 +387,21 @@ To reload Quickshell after editing existing QML files:
 ```bash
 pkill quickshell; quickshell &
 ```
+
+---
+
+## 9. Tooling & Tests
+
+- **Unit tests** (`tests/utils.test.js`): pure-JS tests for the helpers in `Utils.js` (title cleaning, app-name prettifying, time/volume/battery formatting, screen lookup). Run locally with:
+  ```bash
+  node --test modules/features/desktop-env/quickshell/tests/utils.test.js
+  ```
+  These also run in the `Validate Nix Flake` GitHub Actions workflow and need no Nix or Qt.
+
+- **Editor / LSP support**: `config/qmldir.lsp` is a *staged* module manifest so `qmllint`/`qmlls` can resolve the local singletons. It is deliberately not named `qmldir`, because Quickshell discovers `pragma Singleton` types on its own. To enable it:
+  ```bash
+  cp modules/features/desktop-env/quickshell/config/qmldir.lsp ~/.config/quickshell/qmldir
+  ```
+  Delete that copy to revert if your editor or shell misbehaves.
+
+- **Static analysis**: every QML file declares `pragma ComponentBehavior: Bound`, and delegates declare their model context as `required property ...`. With the `qmldir` above, `qmllint` is clean apart from a handful of Quickshell/`Qt` type-resolution false positives (`PanelWindow`, `margins {}`, `Qt.CapsLockModifier`).

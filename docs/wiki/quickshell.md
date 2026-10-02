@@ -13,13 +13,15 @@ All QML source files live in `modules/features/desktop-env/quickshell/config/` a
 ```
 modules/features/desktop-env/quickshell/
 ├── default.nix                   # Nix module installing quickshell & generating Colors.qml
+├── README.md                     # Module reference & development guide
 └── config/                       # Live QML source code (symlinked to ~/.config/quickshell/)
     ├── shell.qml                 # Root application entry point (Scope)
     ├── Config.qml                # Singleton storing UI layout dimensions & fonts
     ├── Colors.qml                # Nix-generated theme colour tokens
     ├── Utils.js                  # Shared JavaScript helper functions
+    ├── qmldir.lsp                # Optional staged manifest for editor/LSP tooling
     │
-    ├── bar.qml                   # Top horizontal bar (MangoWC, Hyprland)
+    ├── bar.qml                   # Top horizontal bar (MangoWC, River, Hyprland)
     ├── niri-bar.qml              # Vertical side bar (Niri)
     ├── CommandCenter.qml         # Slide-out quick settings dashboard
     ├── CommandCenterButton.qml   # Toggle button in status bar
@@ -30,22 +32,33 @@ modules/features/desktop-env/quickshell/
     ├── NotificationCard.qml      # Visual notification card component
     │
     ├── WmService.qml             # Unified compositor abstraction layer
-    ├── MangoService.qml          # MangoWC IPC backend
-    ├── HyprlandService.qml       # Hyprland IPC backend
+    ├── MangoService.qml          # MangoWC IPC backend (mmsg)
+    ├── HyprlandService.qml       # Hyprland IPC backend (hyprctl)
     ├── NiriService.qml           # Niri event-stream backend
-    ├── RiverService.qml          # River IPC backend
+    ├── RiverService.qml          # River IPC backend (ristate)
     ├── MediaService.qml          # MPRIS media player backend
+    ├── WindowFocuser.qml         # Native-first window activation (no Node fallback)
+    │
+    ├── MediaCard.qml             # Shared media card (Command Center / popover / lock)
+    ├── MediaWidget.qml           # Player controls & current song title (bar button)
+    ├── PlaybackControls.qml      # Shared prev / play-pause / next cluster
+    ├── MediaProgressRow.qml      # Elapsed + seek bar + total time row
+    ├── PowerButtons.qml          # Shared system power action row
     │
     ├── BatteryWidget.qml         # Battery telemetry & charging indicator
     ├── BluetoothWidget.qml       # Connected devices status
-    ├── ClockWidget.qml           # Time and date widget
+    ├── ClockWidget.qml           # Time and date widget (with calendar popover)
     ├── LayoutWidget.qml          # Active window manager layout widget
-    ├── MediaWidget.qml           # Player controls & current song title
-    ├── MediaProgress.qml         # Song seek and progress bar
     ├── NetworkWidget.qml         # Wi-Fi SSID and signal strength
     ├── VolumeWidget.qml          # PipeWire volume level & mute status
     ├── WindowTitleWidget.qml     # Focused application window title
-    └── WorkspacesWidget.qml      # Visual workspace and tag indicators
+    ├── WorkspacesWidget.qml      # Visual workspace and tag indicators
+    │
+    ├── Pill.qml                  # Rounded pill container primitive
+    ├── SliderControl.qml         # Reusable horizontal slider
+    ├── RoundedImage.qml          # Async rounded/masked image
+    ├── Tooltip.qml               # Hover popup trigger
+    └── SharedTooltipWindow.qml   # Per-display popup layer window
 ```
 
 ---
