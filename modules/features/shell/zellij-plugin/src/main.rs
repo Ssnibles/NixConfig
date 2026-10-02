@@ -13,7 +13,7 @@
 //! follows `config.theme.colors`.
 
 use std::collections::BTreeMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use zellij_tile::prelude::*;
 
 const MAX_PATH: usize = 35;
@@ -30,8 +30,17 @@ struct State {
     // *display* name (which becomes the pane title when frames draw titles),
     // whereas get_tab_info returns the name the user actually set.
     tab_names: BTreeMap<usize, String>,
+    // Live pane manifest, used to find an existing yazi pane to focus.
+    pane_manifest: PaneManifest,
+    // Display form of the last known *terminal* cwd (see `refresh_cwd`).
     cwd: Option<String>,
+    // Raw form of the same path, handed to keybind actions (new tab / yazi).
+    cwd_path: Option<PathBuf>,
     config: BTreeMap<String, String>,
+    zellij_bin: String,
+    yazi_bin: String,
+    // This bar instance's own plugin id, used to tell which tab it lives in.
+    plugin_id: u32,
     // Host APIs (get_focused_pane_info/get_pane_cwd) need the
     // ReadApplicationState permission; calling them before zellij has
     // registered it panics, so wait for the result.
@@ -42,8 +51,22 @@ register_plugin!(State);
 
 impl ZellijPlugin for State {
     fn load(&mut self, configuration: BTreeMap<String, String>) {
+        self.zellij_bin = configuration
+            .get("zellij_bin")
+            .cloned()
+            .unwrap_or_else(|| "zellij".to_owned());
+        self.yazi_bin = configuration
+            .get("yazi_bin")
+            .cloned()
+            .unwrap_or_else(|| "yazi".to_owned());
         self.config = configuration;
-        request_permission(&[PermissionType::ReadApplicationState]);
+        self.plugin_id = get_plugin_ids().plugin_id;
+        // RunCommands lets the bar answer keybind `MessagePlugin` actions by
+        // running `zellij action ...` (new tab with cwd / yazi popup toggle).
+        request_permission(&[
+            PermissionType::ReadApplicationState,
+            PermissionType::RunCommands,
+        ]);
         subscribe(&[
             EventType::ModeUpdate,
             EventType::TabUpdate,
@@ -77,8 +100,16 @@ impl ZellijPlugin for State {
                 self.refresh_tab_names();
                 true
             },
+            Event::PaneUpdate(pane_manifest) => {
+                self.pane_manifest = pane_manifest;
+                if self.permitted {
+                    self.refresh_cwd()
+                } else {
+                    false
+                }
+            },
             // Focus changes show up as pane updates; cwd changes arrive directly.
-            Event::PaneUpdate(_) | Event::CwdChanged(..) => {
+            Event::CwdChanged(..) => {
                 if self.permitted {
                     self.refresh_cwd()
                 } else {
@@ -87,6 +118,27 @@ impl ZellijPlugin for State {
             },
             _ => false,
         }
+    }
+
+    /// Keybind `MessagePlugin "zjbar" { name "..."; payload "..."; }` actions
+    /// and `zellij action pipe` messages arrive here.
+    ///
+    /// A pipe fans out to every bar instance (one per tab); `in_focused_tab`
+    /// keeps that to the bar in the focused tab, so one keypress opens/moves
+    /// exactly one thing. The `None` end-of-pipe marker that
+    /// `zellij action pipe` appends after the real payload is ignored.
+    fn pipe(&mut self, pipe_message: PipeMessage) -> bool {
+        let Some(payload) = pipe_message.payload.as_deref() else {
+            return false;
+        };
+        if self.permitted && self.in_focused_tab() {
+            match pipe_message.name.as_str() {
+                "new-tab" => self.open_new_tab(Some(payload).filter(|name| !name.is_empty())),
+                "toggle-yazi" => self.toggle_yazi(),
+                _ => {},
+            }
+        }
+        false
     }
 
     fn render(&mut self, _rows: usize, cols: usize) {
@@ -213,17 +265,124 @@ impl State {
             return false;
         }
 
-        let new_cwd = get_focused_pane_info()
+        // Only terminal panes report a cwd. When a plugin (eg. the command
+        // palette) takes focus there is nothing to read; keep the last known
+        // terminal cwd so the bar and the keybind actions still have a target.
+        let Some(path) = get_focused_pane_info()
             .ok()
             .and_then(|(_tab, pane_id)| get_pane_cwd(pane_id).ok())
-            .map(|path| display_path(&path));
+        else {
+            return false;
+        };
 
-        if new_cwd != self.cwd {
-            self.cwd = new_cwd;
-            true
-        } else {
-            false
+        let display = display_path(&path);
+        if self.cwd.as_deref() == Some(display.as_str())
+            && self.cwd_path.as_deref() == Some(path.as_path())
+        {
+            return false;
         }
+        self.cwd = Some(display);
+        self.cwd_path = Some(path);
+        true
+    }
+
+    /// Open a new tab, carrying over the focused pane's working directory.
+    fn open_new_tab(&self, name: Option<&str>) {
+        let cwd = self.cwd_path.as_ref().map(|path| path.display().to_string());
+        let mut argv: Vec<&str> = vec![self.zellij_bin.as_str(), "action", "new-tab"];
+        if let Some(name) = name.filter(|name| !name.is_empty()) {
+            argv.push("--name");
+            argv.push(name);
+        }
+        if let Some(cwd) = cwd.as_deref() {
+            argv.push("--cwd");
+            argv.push(cwd);
+        }
+        run_command(&argv, BTreeMap::new());
+    }
+
+    /// Focus (or open) a floating yazi popup, closing it when it already has
+    /// focus. Mirrors the tmux `leader e` popup toggle.
+    fn toggle_yazi(&self) {
+        if let Ok((_tab, pane_id)) = get_focused_pane_info() {
+            if is_yazi(pane_id) && pane_is_floating(pane_id) {
+                let target = pane_ref(pane_id);
+                self.run_action(&["close-pane", "--pane-id", target.as_str()]);
+                return;
+            }
+        }
+        if let Some(pane_id) = self.find_yazi_pane() {
+            let target = pane_ref(pane_id);
+            self.run_action(&["focus-pane-id", target.as_str()]);
+            return;
+        }
+
+        let cwd = self.cwd_path.as_ref().map(|path| path.display().to_string());
+        let coord = |key: &str, default: &str| {
+            self.config
+                .get(key)
+                .cloned()
+                .unwrap_or_else(|| default.to_owned())
+        };
+        let x = coord("yazi_x", "7%");
+        let y = coord("yazi_y", "7%");
+        let width = coord("yazi_width", "86%");
+        let height = coord("yazi_height", "86%");
+        let mut argv: Vec<&str> = vec![
+            self.zellij_bin.as_str(),
+            "action",
+            "new-pane",
+            "--floating",
+            "--close-on-exit",
+            "--x",
+            x.as_str(),
+            "--y",
+            y.as_str(),
+            "--width",
+            width.as_str(),
+            "--height",
+            height.as_str(),
+        ];
+        if let Some(cwd) = cwd.as_deref() {
+            argv.push("--cwd");
+            argv.push(cwd);
+        }
+        argv.push("--");
+        argv.push(self.yazi_bin.as_str());
+        run_command(&argv, BTreeMap::new());
+    }
+
+    /// Run a `zellij action ...` command with the bar as the caller.
+    fn run_action(&self, args: &[&str]) {
+        let mut argv: Vec<&str> = vec![self.zellij_bin.as_str(), "action"];
+        argv.extend_from_slice(args);
+        run_command(&argv, BTreeMap::new());
+    }
+
+    /// Whether this bar instance lives in the currently focused tab. A pipe to
+    /// the `zjbar` alias reaches every tab's bar, so this gate keeps exactly
+    /// one instance acting on a control message.
+    fn in_focused_tab(&self) -> bool {
+        let Ok((focused_tab, _pane)) = get_focused_pane_info() else {
+            return false;
+        };
+        self.pane_manifest.panes.iter().any(|(tab_position, panes)| {
+            *tab_position == focused_tab
+                && panes
+                    .iter()
+                    .any(|pane| pane.is_plugin && pane.id == self.plugin_id)
+        })
+    }
+
+    /// Floating pane running yazi, if any (ie. the popup we opened).
+    fn find_yazi_pane(&self) -> Option<PaneId> {
+        self.pane_manifest.panes.values().flatten().find_map(|pane| {
+            if pane.is_plugin || !pane.is_floating {
+                return None;
+            }
+            let pane_id = PaneId::Terminal(pane.id);
+            is_yazi(pane_id).then_some(pane_id)
+        })
     }
 }
 
@@ -251,6 +410,35 @@ fn bg_code((r, g, b): Rgb) -> String {
 fn is_default_tab_name(name: &str) -> bool {
     name.strip_prefix("Tab #")
         .is_some_and(|rest| !rest.is_empty() && rest.chars().all(|c| c.is_ascii_digit()))
+}
+
+/// The `terminal_<id>` / `plugin_<id>` string Zellij's CLI expects.
+fn pane_ref(pane_id: PaneId) -> String {
+    match pane_id {
+        PaneId::Terminal(id) => format!("terminal_{id}"),
+        PaneId::Plugin(id) => format!("plugin_{id}"),
+    }
+}
+
+/// Whether the pane's foreground process is yazi.
+fn is_yazi(pane_id: PaneId) -> bool {
+    get_pane_running_command(pane_id)
+        .ok()
+        .and_then(|argv| argv.into_iter().next())
+        .and_then(|command| {
+            Path::new(&command)
+                .file_name()
+                .map(|name| name.to_string_lossy() == "yazi")
+        })
+        .unwrap_or(false)
+}
+
+/// Whether the pane is currently floating (tiled panes should never be
+/// mistaken for the yazi popup).
+fn pane_is_floating(pane_id: PaneId) -> bool {
+    get_pane_info(pane_id)
+        .map(|info| info.is_floating)
+        .unwrap_or(false)
 }
 
 fn parse_hex(value: &str) -> Option<Rgb> {
