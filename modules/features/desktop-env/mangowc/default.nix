@@ -21,14 +21,17 @@
         border
         ;
 
-      # Uses the pinned upstream input by default, or the local development
-      # input (git+file:///home/josh/mango) when features.mangowc.local is enabled.
-      # Note: the programs.mango module itself is imported unconditionally — the
-      # two inputs ship the same module — only the package source differs.
+      # "Mango" (the plain login-screen entry) is always the pinned upstream
+      # input, so a known-good remote build stays available while iterating.
+      # The local development input (git+file:///home/josh/mango) powers the
+      # separate "Mango Local" entry, exposed only when features.mangowc.local
+      # is enabled. Note: the programs.mango module itself is imported
+      # unconditionally — the two inputs ship the same module — only the package
+      # source differs.
       #
       # Temporary workaround for broken borders on NVIDIA proprietary drivers
       # (https://github.com/wlrfx/scenefx/pull/177). The patched scenefx is
-      # threaded into the mango build below so it keeps working for both inputs;
+      # threaded into both builds below so it keeps working for both inputs;
       # drop this once upstream merges/releases the fix.
       scenefx = inputs.scenefx.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (oldAttrs: {
         postPatch = (oldAttrs.postPatch or "") + ''
@@ -40,9 +43,16 @@
         '';
       });
 
-      mango-base =
-        ((if cfg.local then inputs.mangowc-local else inputs.mangowc)
-          .packages.${pkgs.stdenv.hostPlatform.system}.default)
+      mango-remote =
+        (inputs.mangowc.packages.${pkgs.stdenv.hostPlatform.system}.default)
+        .override {
+          inherit scenefx;
+        };
+
+      # Local development build from the checked-in input, only evaluated when
+      # features.mangowc.local is on.
+      mango-local-base =
+        (inputs.mangowc-local.packages.${pkgs.stdenv.hostPlatform.system}.default)
         .override {
           inherit scenefx;
         };
@@ -54,13 +64,13 @@
       # packaged binary and logs the fallback so it is never silent.
       mango-dev = pkgs.symlinkJoin {
         name = "mango-dev";
-        paths = [ mango-base ];
+        paths = [ mango-local-base ];
         nativeBuildInputs = [ pkgs.makeWrapper ];
         postBuild = ''
           wrap_mango() {
             local bin="$1"
             rm "$out/bin/$bin"
-            makeWrapper ${mango-base}/bin/$bin "$out/bin/$bin" \
+            makeWrapper ${mango-local-base}/bin/$bin "$out/bin/$bin" \
               --run 'if [ -x /home/${config.username}/mango/result/bin/'"$bin"' ]; then exec /home/${config.username}/mango/result/bin/'"$bin"' "$@"; fi
                      echo "[mango-dev] $(date +%Y-%m-%d_%H:%M:%S) local build missing, using packaged '"$bin"'" >> "''${XDG_CACHE_HOME:-$HOME/.cache}/mango-dev.log"'
           }
@@ -70,10 +80,38 @@
           fi
         '';
         meta.mainProgram = "mango";
-        passthru = (mango-base.passthru or { }) // {
-          inherit (mango-base) providedSessions;
-        };
       };
+
+      # A second, independent login-screen entry ("Mango Local"). The upstream
+      # package only ships `mango.desktop`, which points at whatever is in
+      # environment.systemPackages; this one hard-codes the dev wrapper and
+      # prepends its bin dir so `mmsg` etc. also come from the local build.
+      # providedSessions is required by services.displayManager.sessionPackages.
+      mango-local-session =
+        (pkgs.runCommand "mango-local-session" { } ''
+          mkdir -p $out/bin $out/share/wayland-sessions
+
+          cat > $out/bin/mango-local <<'EOF'
+          #!${pkgs.runtimeShell}
+          export PATH=${mango-dev}/bin:$PATH
+          exec ${mango-dev}/bin/mango "$@"
+          EOF
+          chmod +x $out/bin/mango-local
+
+          cat > $out/share/wayland-sessions/mango-local.desktop <<EOF
+          [Desktop Entry]
+          Name=Mango Local
+          Comment=Mango compositor (local development build)
+          Exec=$out/bin/mango-local
+          TryExec=$out/bin/mango-local
+          Icon=mango
+          DesktopNames=mango;wlroots
+          Type=Application
+          EOF
+        '')
+        // {
+          providedSessions = [ "mango-local" ];
+        };
     in
     {
       imports = [
@@ -89,7 +127,11 @@
       options.features.mangowc.local = lib.mkOption {
         type = lib.types.bool;
         default = false;
-        description = "Build from the local path input and wrap binaries to prefer ~/mango/result.";
+        description = ''
+          Add a second "Mango Local" login-screen session built from the local
+          path input and wrapped to prefer ~/mango/result. The regular "Mango"
+          session keeps using the pinned upstream package.
+        '';
       };
 
       config = lib.mkIf cfg.enable {
@@ -97,10 +139,14 @@
 
         programs.mango.enable = true;
 
-        # The upstream package ships its binaries as-is; the dev wrapper is only
-        # used when iterating on the local input.
-        programs.mango.package =
-          if cfg.local then mango-dev else mango-base;
+        # The plain "Mango" session always uses the pinned upstream package. The
+        # dev wrapper is exposed as the separate "Mango Local" session below.
+        programs.mango.package = mango-remote;
+
+        # Adds share/wayland-sessions/mango-local.desktop (picked up by ly and
+        # other display managers) on top of the upstream mango.desktop session.
+        services.displayManager.sessionPackages =
+          lib.mkIf cfg.local [ mango-local-session ];
 
         nixos.liveLinks = {
           "mango-config" = {
