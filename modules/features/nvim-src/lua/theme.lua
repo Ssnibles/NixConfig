@@ -114,8 +114,8 @@ function M.setup()
 	hl("CursorLine", { bg = c.bgSubtle })
 	hl("CursorLineNr", { fg = blend(c.blue, c.fg, 0.7), bold = true })
 	hl("CursorColumn", { bg = c.bgSubtle })
-	hl("CursorLineSign", { link = "CursorLine" })
-	hl("CursorLineFold", { link = "CursorLine" })
+	hl("CursorLineSign", { link = "SignColumn" })
+	hl("CursorLineFold", { link = "FoldColumn" })
 
 	-- Selection & search
 	hl("Visual", { bg = c.selection })
