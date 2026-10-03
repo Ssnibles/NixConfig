@@ -95,7 +95,7 @@ flowchart TD
     subgraph Modules["Dendritic Modules Structure"]
         Core["modules/core/<br/>module-groups, options, parts, devshell, templates"]
         Features["modules/features/<br/>apps, desktop-env, nvim-src, shell, system"]
-        Packages["modules/packages/<br/>boilerplate, dualsense-pair, foot, html-server, instrument-serif, maple-mono, pet, plsfail, sf-pro, tuxedo, uni-notes"]
+        Packages["modules/packages/<br/>boilerplate, dualsense-pair, foot, html-server, instrument-serif, maple-mono, navi, plsfail, sf-pro, tuxedo, uni-notes"]
     end
 
     Tree --> Core
@@ -178,7 +178,7 @@ For architecture diagrams, singletons, widgets, and IPC commands, refer to the *
 
 ### Terminal, Shell & Multiplexer
 
-For single-instance terminal performance, Tmux session management, Yazi openers, and Pet shortcuts, refer to the **[Terminal Workflow Guide](docs/wiki/terminal-workflow.md)**:
+For single-instance terminal performance, Tmux session management, Yazi openers, and Navi shortcuts, refer to the **[Terminal Workflow Guide](docs/wiki/terminal-workflow.md)**:
 
 - **Kitty in Single-Instance Mode**: GPU-accelerated terminal emulator ([`kitty.nix`](file:///home/josh/NixConfig/modules/features/apps/kitty.nix)) running in shared server mode (`kitty --single-instance`), drastically reducing per-window RAM by sharing GPU texture caches. Features Maple Mono font, capped scrollback, and dynamic theme palette colours.
 - **Foot Terminal Alternative**: Lightweight Wayland terminal emulator ([`modules/packages/foot/default.nix`](file:///home/josh/NixConfig/modules/packages/foot/default.nix)) pre-configured with theme palette integration.
@@ -186,11 +186,12 @@ For single-instance terminal performance, Tmux session management, Yazi openers,
   - Sesh session manager (`Prefix + K`) with interactive FZF filtering across sessions, configs, and Git repos.
   - Floating interactive window picker (`Prefix + o`) with live pane preview.
   - Native floating Jujutsu TUI popup (`Prefix + g`).
+  - Floating Navi cheatsheet popup (`Prefix + Ctrl-g`) that pastes the chosen cheat, unexecuted, into the current pane.
   - Floating scratchpad terminal (`Prefix + P` via floax).
   - Resurrect store path sanitizer (`tmux-resurrect-save`) stripping transient Nix store hashes from saved sessions so sessions restore reliably across updates.
   - Alt-passthrough mode (`Prefix + a`) for Neovim line shifting.
 - **Yazi File Manager**: Async terminal file manager configured with custom image and text openers, hidden file toggles, preview maximisation, and Neovim directory opening.
-- **Pet Snippet Manager**: Interactive snippet fuzzy search bound to `Ctrl + P` in Fish (`pet-pick`), pre-populated with NixOS rebuild, Git, Tmux, and system commands.
+- **Navi Cheatsheet Manager**: Interactive cheatsheet fuzzy search bound to `Ctrl + P` in Fish (`navi-pick`) with an fzf preview pane showing the command and tags. Also available in a floating tmux popup via `Prefix + Ctrl-g`, which pastes the chosen cheat unexecuted into the invoking pane (works over SSH). The library is declared in Nix (`modules/packages/navi/default.nix`) and rendered to per-topic `.cheat` files under `~/.config/navi/cheats/`, covering NixOS, Git/GitHub, Jujutsu, Tmux, files, system, MangoWC, and on-demand tools.
 - **Fish Shell 4+ & Cached FZF Traversal**: Fast Fish shell with a custom caching engine (`__fzf_cache_fd`) that caches `fd` traversal per directory for 5 minutes, making file lookups instantaneous in large repositories.
 - **Starship Prompt**: Transient prompt (`>>`) with indicators for Git status, Nix shell, Node.js, Rust, Python, battery levels, and command execution duration.
 
@@ -292,7 +293,7 @@ NixConfig/
 │       ├── index.md                   # Wiki homepage & reference index
 │       ├── compositors.md             # MangoWC, Niri, Hyprland, Shikane, Vicinae
 │       ├── quickshell.md              # Quickshell QML shell & widget architecture
-│       ├── terminal-workflow.md       # Kitty, Tmux, Yazi, Pet snippets, Fish shell
+│       ├── terminal-workflow.md       # Kitty, Tmux, Yazi, Navi cheats, Fish shell
 │       ├── neovim.md                  # Declarative Neovim, NVF, Lua plugins, LSP wrappers
 │       ├── ai-tools.md                # Pi coding agent, Hermes AI, Ollama offloading
 │       ├── jujutsu.md                 # Jujutsu (jj) VCS cheat sheet & workflows
@@ -387,7 +388,7 @@ NixConfig/
     │   ├── html-server/               # Go web server with live reloading
     │   ├── instrument-serif/          # Instrument Serif font derivation
     │   ├── maple-mono/                # Maple Mono font derivation
-    │   ├── pet/                       # Pet command snippet manager & fish integration
+    │   ├── navi/                      # Navi cheatsheet manager (Nix-declared cheats) & fish integration
     │   ├── plsfail/                   # Command failure stress-testing utility
     │   ├── sf-pro/                    # Apple San Francisco Pro font derivation
     │   └── tuxedo/                    # Rust todo.txt TUI client derivation
@@ -427,7 +428,7 @@ Comprehensive documentation, architecture references, and step-by-step workflow 
 | :--- | :--- | :--- |
 | **Wayland Compositors** | [compositors.md](docs/wiki/compositors.md) | Configuration guide for MangoWC (layouts, binds, OCR screenshot helper), Niri, Hyprland, Shikane display daemon, and Vicinae launcher |
 | **Quickshell UI** | [quickshell.md](docs/wiki/quickshell.md) | Quickshell QML framework architecture, status bar widgets, multi-compositor routing, Command Centre, Lock Screen, and notification daemon |
-| **Terminal Workflow** | [terminal-workflow.md](docs/wiki/terminal-workflow.md) | Kitty single-instance server mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Pet fuzzy snippets (`Ctrl+P`), and Fish shell |
+| **Terminal Workflow** | [terminal-workflow.md](docs/wiki/terminal-workflow.md) | Kitty single-instance server mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Navi fuzzy cheats (`Ctrl+P`), and Fish shell |
 | **Declarative Neovim** | [neovim.md](docs/wiki/neovim.md) | NVF Neovim setup, modular Lua plugins in `nvim-src/`, language servers (`qmlls`, `zls`), Blink.cmp, formatters, and `:GenerateCompileFlags` |
 | **AI Development Tools** | [ai-tools.md](docs/wiki/ai-tools.md) | Pi coding agent harness (`pi.nix`) with safety extensions and Bubblewrap jail, Hermes AI agent with homeserver Ollama inference offloading |
 | **Jujutsu Version Control** | [jujutsu.md](docs/wiki/jujutsu.md) | Quick reference for the Jujutsu VCS: Git vs jj mental models, daily workflow, bookmarks, pushing/pulling, conflict resolution, and shell aliases |
@@ -662,7 +663,7 @@ This repository exports custom packages under `self.packages.${system}`:
 - **`html-server`**: High-performance Go web server with live reloading for quick local HTML/CSS previews.
 - **`instrument-serif`**: Custom font derivation packaging Google's Instrument Serif.
 - **`maple-mono`**: Custom font derivation packaging Maple Mono.
-- **`pet`**: Interactive fuzzy command snippet manager with pre-configured developer workflows. See [Terminal Workflow Guide](docs/wiki/terminal-workflow.md).
+- **`navi`**: Interactive fuzzy command cheatsheet picker (maintained Rust replacement for pet). Cheats are declared in the Nix module and rendered to `~/.config/navi/cheats/*.cheat`. See [Terminal Workflow Guide](docs/wiki/terminal-workflow.md).
 - **`plsfail`**: Diagnostic utility that runs a command repeatedly in a loop until it encounters an error.
 - **`sf-pro`**: Custom font derivation packaging Apple's San Francisco Pro font family.
 - **`tuxedo`**: Rust-based `todo.txt` terminal UI client.

@@ -170,10 +170,10 @@
         };
 
         # Pure function definition (bindings handled in interactiveShellInit)
-        ".config/fish/functions/pet-pick.fish" = {
+        ".config/fish/functions/navi-pick.fish" = {
           text = ''
-            function pet-pick --description "Fuzzy search snippets and insert into command line"
-                set -l cmd (pet search)
+            function navi-pick --description "Fuzzy search cheatsheets and insert into command line"
+                set -l cmd (navi --print)
                 if test -n "$cmd"
                     commandline -r -- $cmd
                 end
@@ -225,9 +225,13 @@
           set -g fish_greeting
           stty -ixon 2>/dev/null
 
-          # Snippet picker keybindings
-          bind \cp pet-pick
-          bind -M insert \cp pet-pick
+          # Cheatsheet picker keybindings
+          bind \cp navi-pick
+          bind -M insert \cp navi-pick
+
+          # Zoxide directory picker (Alt+Z) — fuzzy jump via zoxide frecency
+          bind \ez zi
+          bind -M insert \ez zi
 
           # Bind Ctrl+L to clear terminal scrollback and repaint prompt cleanly
           bind \cl 'clear; commandline -f repaint'

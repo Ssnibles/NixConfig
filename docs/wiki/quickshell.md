@@ -128,7 +128,7 @@ quickshell ipc call lockscreen lock
 # Toggle top bar visibility
 quickshell ipc call bar toggle
 
-# Reload Quickshell UI in-place (also available in Pet snippets)
+# Reload Quickshell UI in-place (also available in navi cheats)
 qs -c default ipc call quickshell reload all
 # Or restart process:
 pkill quickshell; quickshell &

@@ -20,6 +20,7 @@
 //! renders its list directly without its own border.
 
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 use std::time::Duration;
 use zellij_tile::prelude::*;
 
@@ -669,7 +670,12 @@ impl State {
         ];
         let mut env = BTreeMap::new();
         env.insert("ZL_TARGET".to_owned(), name);
-        run_command(&argv, env);
+        // NOTE: `run_command`'s second argument is the *context* returned with
+        // the `RunCommandResult` event, not the child environment (the shim
+        // hardcodes `env_variables` to an empty map). Passing the name there
+        // left `$ZL_TARGET` empty, so the kill/delete silently no-op'd. Use the
+        // env-aware variant so the variable actually reaches the shell.
+        run_command_with_env_variables_and_cwd(&argv, env, PathBuf::from("."), BTreeMap::new());
     }
 
     fn color(&self, key: &str, fallback: Rgb) -> Rgb {

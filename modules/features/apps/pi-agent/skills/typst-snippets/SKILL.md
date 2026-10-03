@@ -149,6 +149,7 @@ emits a `#note-title(...)` call.
 #uml-class(name, fields: (), methods: ())  // UML class box
 #proof(body)                               // grey proof block (∎ + QED)
 #bigo(title, body)                         // blue "⚡ Big-O" complexity card
+#keep-together(body)                       // keep a block on one page when it fits
 #note-title(date, title)                   // date + outlined title heading
 ```
 
@@ -164,6 +165,13 @@ emits a `#note-title(...)` call.
 the `35` border and `15` fill automatically. `#uml-class` expects **arrays** for
 `fields` and `methods` (`([a], [b])`), because it spreads them into a `stack`.
 `#note-title` is the single source of the title block.
+
+**Blocks keep together on one page.** The theme wraps tables, code blocks,
+`#callout`, `#card`, `#proof` and `#bigo` in `keep-together(...)`. It measures the
+block and, when it does not fit in the space left on the page, moves the whole block
+to the next page rather than splitting it and leaving one or two orphan rows/lines
+behind. A block that is genuinely taller than a page still breaks normally. Wrap
+any other content yourself when it must not split: `#keep-together[...]`.
 
 ## Palette
 
@@ -305,12 +313,19 @@ column list and cell count):
     fill: (col, row) => if row == 0 { ui-surface-raised } else { none },
     inset: (x: 10pt, y: 6pt),
     stroke: (x, y) => (top: if y > 0 { 0.5pt + ui-border } else { none }, left: if x > 0 { 0.5pt + ui-border } else { none }),
-    [*Header 1*], [*Header 2*],
+    table.header([*Header 1*], [*Header 2*]),
     [Row 1 Cell 1], [Row 1 Cell 2],
     [Row 2 Cell 1], [Row 2 Cell 2],
   )
 ]
 ```
+
+**Tables keep together.** The theme measures every table and moves the whole table
+to the next page when it does not fit, so a table is never left with one or two
+orphan rows at the bottom of a page. Always put the header row(s) inside
+`table.header(...)` (as above): in the rare case a table is taller than a page and
+must break, the header then repeats at the top of the continuation page. The header
+is still row 0 for the `fill`/`stroke` functions.
 
 Do **not** add `width: 100%` to the wrapper or use `Nfr` columns: that forces the
 card to the full page width while the text stays left-aligned.
@@ -321,7 +336,8 @@ full-width `table.hline(stroke: 0.5pt + ui-border)` after the `A`/`B` row. Use
 `table.hline` here rather than a per-cell stroke function: the row-spanned
 `OUTPUT` cell shifts the per-cell `y` indices and truncates the separator.
 `truthtable-3` is the three-input variant (`A`, `B`, `C`). Both use `auto` columns
-like the other tables.
+like the other tables. Truth tables are short, so they are covered by the same
+keep-together handling and do not need `table.header(...)`.
 
 Keep the wrapper, neutral header fill, and `ui-border` separator exactly as
 templated; do not reintroduce `stroke-color` or the accent-tinted header.

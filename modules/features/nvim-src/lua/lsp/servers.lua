@@ -339,6 +339,34 @@ return {
 		},
 	},
 
+	-- PHP
+	-- Intelephense is the primary PHP language server. Premium features unlock
+	-- via a licence key, read from the INTELEPHENSE_LICENCE environment variable
+	-- or an `intelephense.licenceKey` setting here.
+	intelephense = {
+		cmd = { "intelephense", "--stdio" },
+		filetypes = { "php" },
+		root_markers = { "composer.json", "composer.lock", ".git" },
+		settings = {
+			intelephense = {
+				environment = { phpVersion = "8.4.0" },
+				files = {
+					maxSize = 5000000,
+					associations = { "*.php", "*.phtml" },
+					exclude = { "**/.git/**", "**/.svn/**", "**/node_modules/**" },
+				},
+				completion = {
+					insertUseDeclaration = true,
+					fullyQualifyGlobalConstantsAndFunctions = false,
+					maxItems = 100,
+				},
+				-- Formatting is handled by php-cs-fixer via conform.nvim.
+				format = { enable = false },
+				telemetry = { enabled = false },
+			},
+		},
+	},
+
 	-- Markdown
 	marksman = {
 		cmd = { "marksman", "server" },

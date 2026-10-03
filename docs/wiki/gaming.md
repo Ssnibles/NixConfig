@@ -33,10 +33,10 @@ nixpkgs.overlays = [
 Millennium injects CSS and JavaScript customisation directly into Steam's Chromium-based interface without breaking across client updates. This allows installing custom dark themes, minimal navigation bars, and custom library views.
 
 ### Managing Compatibility Tools (Proton-GE)
-For titles requiring non-standard Proton builds, you can invoke `protonup` on-demand (also available via Pet snippets):
+For titles requiring non-standard Proton builds, you can invoke `protonup` on-demand (also available via navi cheats):
 
 ```bash
-nix-shell -p protonup-ng --run "protonup"
+nix shell nixpkgs#protonup-ng -c protonup
 ```
 
 ---

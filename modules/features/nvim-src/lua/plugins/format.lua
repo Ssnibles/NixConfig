@@ -28,6 +28,14 @@ conform.setup({
 		rust = { "rustfmt" },
 		zig = { "zigfmt" },
 		typst = { "typstyle" },
+		php = { "php_cs_fixer" },
+	},
+	formatters = {
+		-- Without --no-interaction, php-cs-fixer prompts to create a config file
+		-- / enable risky rules when it finds none, which hangs conform.
+		php_cs_fixer = {
+			args = { "fix", "--no-interaction", "--allow-risky=no", "--using-cache=no", "$FILENAME" },
+		},
 	},
 	format_on_save = function(bufnr)
 		local ft = vim.bo[bufnr].filetype

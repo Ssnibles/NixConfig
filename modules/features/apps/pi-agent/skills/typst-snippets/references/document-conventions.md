@@ -53,6 +53,11 @@ these rules, see `references/example.typ`.
   the slides.
 - One idea per section. If a heading needs "and", it is probably two sections.
 - Use `#pagebreak()` only between major topics, not between every section.
+- Let the theme keep blocks together: tables, code blocks, callouts, cards,
+  proofs and Big-O cards move whole to the next page when they do not fit in the
+  space left, instead of splitting and leaving orphan rows/lines. Do not work
+  around this with manual `#pagebreak()`s or `breakable: false`; if some other
+  block must not split, wrap it in `#keep-together[...]`.
 - Put related things side by side with `#grid(columns: (1fr, 1fr), align:
   center + horizon, …)` — e.g. diagram + explanation, expression + truth table.
 
@@ -69,6 +74,8 @@ forms:
 - `#uml-class(name, fields: (), methods: ())` — a UML class box (arrays).
 - `#proof(body)` — the grey proof block.
 - `#bigo(title, body)` — the blue Big-O complexity card.
+- `#keep-together(body)` — keep any block on one page when it fits (the theme
+  already applies this to tables, code blocks, callouts, cards, proofs, Big-O).
 - `#note-title(date, title)` — the title heading.
 
 | Content | Snippet |
@@ -207,6 +214,7 @@ See `references/diagrams.md` for the tools, imports, and templates. The rules:
 - [ ] Theme imported and applied (`#show: theme.with(course: …)`); title via `#note-title`.
 - [ ] One h1 (the title); heading levels not skipped.
 - [ ] Every code block has a language tag (no stray `code-show-rule`/`raw-show-rule` on top of the theme).
+- [ ] Tables are the snippet shape (content-hugging wrapper, `auto` columns) and their header row(s) are wrapped in `table.header(...)`.
 - [ ] Every diagram imported, themed, captioned, and code-generated.
 - [ ] Math uses Typst names; symbols defined.
 - [ ] No hardcoded colours/fonts; no new packages.

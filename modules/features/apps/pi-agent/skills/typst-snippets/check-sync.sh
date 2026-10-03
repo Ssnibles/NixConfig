@@ -21,10 +21,14 @@ fail() { echo "typst-snippet drift: $1" >&2; exit 1; }
 
 # 1. the theme defines everything notes rely on.
 for binding in "theme(" "note-title(" "callout(" "card(" "qa(" "uml-class(" \
-  "proof(" "bigo(" "code-line-numbers" "lang-meta" "font-sans" "font-serif" \
-  "font-mono" "mmdr-theme" "zap-theme"; do
+  "proof(" "bigo(" "keep-together(" "code-line-numbers" "lang-meta" \
+  "font-sans" "font-serif" "font-mono" "mmdr-theme" "zap-theme"; do
   grep -q "#let $binding" "$theme" || fail "theme.typ does not define #let $binding"
 done
+
+# Tables keep themselves together across page breaks.
+grep -q 'show table: it => keep-together(it)' "$theme" \
+  || fail "theme.typ does not keep tables together"
 
 # 2. the `page` snippet imports the theme rather than inlining it.
 grep -q '#import "/templates/theme.typ": \*' "$lua" || fail "page snippet does not import the theme"

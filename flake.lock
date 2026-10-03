@@ -1178,11 +1178,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791005369,
-        "narHash": "sha256-5EXNKRMdJwDCOKl9O3jG41lv8irmsLzkIu2/BRYwSPw=",
+        "lastModified": 1791010930,
+        "narHash": "sha256-3g349i7zVlLPSyxwMsttf9k1ATgcRCdazlLFAIuRr5k=",
         "ref": "refs/heads/main",
-        "rev": "bb586081fbcc48a9b3182bd00f963afe86559eed",
-        "revCount": 35,
+        "rev": "76e5b8e279de37d266a45a332a6d65367ecea8fd",
+        "revCount": 40,
         "type": "git",
         "url": "file:///home/josh/ytplay"
       },

@@ -165,6 +165,20 @@
         ${pkgs.tmux}/bin/tmux kill-session -t popup-jjui 2>/dev/null || true
       '';
 
+      # Navi cheatsheet popup: pick a cheat in a floating popup, then paste it
+      # (unexecuted) into the pane that opened the popup.
+      tmuxNaviPopup = pkgs.writeShellScriptBin "tmux-navi-popup" ''
+        set -eu
+        target_pane="''${1:-}"
+        [ -n "$target_pane" ] || exit 0
+
+        cmd="$(${pkgs.navi}/bin/navi --print)"
+        if [ -n "$cmd" ]; then
+          printf '%s' "$cmd" | ${pkgs.tmux}/bin/tmux load-buffer -b navi-popup -
+          ${pkgs.tmux}/bin/tmux paste-buffer -p -b navi-popup -d -t "$target_pane"
+        fi
+      '';
+
     in
     {
       config = {
@@ -175,6 +189,7 @@
           tmuxSeshKiller
           tmuxYaziPopup
           tmuxJjuiPopup
+          tmuxNaviPopup
           pkgs.tmuxPlugins.yank
           pkgs.tmuxPlugins.resurrect
           pkgs.tmuxPlugins.extrakto
@@ -266,6 +281,9 @@
 
             # Fast Interactive Floating Window Switcher (popup)
             bind-key o display-popup -E -w 75% -h 65% "${tmuxWindowPicker}/bin/tmux-window-picker"
+
+            # Navi cheatsheet popup (Prefix + Ctrl-g): insert selected cheat into this pane
+            bind-key C-g display-popup -E -w 80% -h 70% -d "#{pane_current_path}" "${tmuxNaviPopup}/bin/tmux-navi-popup #{pane_id}"
             bind-key N command-prompt -p "New Session Name:" "if-shell -F '%1' 'new-session -A -s \"%1\"'"
 
             # Smart Command Mode & Auto-Completion (: and tmux-fzf launcher)

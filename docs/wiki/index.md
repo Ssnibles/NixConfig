@@ -11,8 +11,8 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
   Architecture and configuration for MangoWC (DWM-style tiling, gestures, OCR screenshots), Niri (infinite scrollable tiling), Hyprland (Lua configuration), Shikane multi-monitor display daemon, and Vicinae application launcher.
 - **[Quickshell Desktop Shell Bar](quickshell.md)**  
   Modular QML desktop shell architecture: singletons (`Colors.qml`, `Config.qml`), status bars (`bar.qml`, `niri-bar.qml`), multi-compositor routing (`WmService.qml`), Command Centre dashboard, session lock screen, and notification daemon.
-- **[Terminal Workflow: Kitty, Tmux, Yazi & Pet](terminal-workflow.md)**  
-  Terminal stack optimisations: Kitty in single-instance shared GPU memory mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Pet fuzzy snippet picker (`Ctrl+P`), and Fish shell with cached FZF directory indexing.
+- **[Terminal Workflow: Kitty, Tmux, Yazi & Navi](terminal-workflow.md)**  
+  Terminal stack optimisations: Kitty in single-instance shared GPU memory mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Navi fuzzy cheatsheet picker (`Ctrl+P`), and Fish shell with cached FZF directory indexing.
 
 ### Developer Toolchains & Editors
 - **[Declarative Neovim & Lua Plugins](neovim.md)**  
@@ -52,7 +52,7 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 | :--- | :--- | :--- | :--- |
 | **Compositors** | `modules/features/desktop-env/` | `mangowc/`, `niri/`, `hyprland/`, `shikane/` | [compositors.md](compositors.md) |
 | **Quickshell UI** | `modules/features/desktop-env/quickshell/` | `modules/features/desktop-env/quickshell/config/` | [quickshell.md](quickshell.md) |
-| **Terminal & Multiplexer** | `modules/features/apps/kitty.nix`, `modules/features/shell/` | `modules/packages/pet/`, `tmux.nix`, `shell.nix` | [terminal-workflow.md](terminal-workflow.md) |
+| **Terminal & Multiplexer** | `modules/features/apps/kitty.nix`, `modules/features/shell/` | `modules/packages/navi/`, `tmux.nix`, `shell.nix` | [terminal-workflow.md](terminal-workflow.md) |
 | **Declarative Neovim** | `modules/features/apps/neovim.nix` | `modules/features/nvim-src/` | [neovim.md](neovim.md) |
 | **Jujutsu (jj)** | `modules/features/shell/cli.nix` | `~/.config/jj/config.toml` | [jujutsu.md](jujutsu.md) |
 | **Pi Agent & Hermes** | `modules/features/apps/pi-agent.nix`, `hermes.nix` | `~/.hermes/config.yaml`, `pi.nix` | [ai-tools.md](ai-tools.md) |

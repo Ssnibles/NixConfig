@@ -1,6 +1,6 @@
-# Terminal Workflow: Kitty, Tmux, Yazi, Pet & Shell Environment
+# Terminal Workflow: Kitty, Tmux, Yazi, Navi & Shell Environment
 
-This guide documents the terminal environment in NixConfig, covering the Kitty terminal emulator, Tmux multiplexer, Yazi file manager, Pet snippet picker, and the Fish shell with Starship prompt.
+This guide documents the terminal environment in NixConfig, covering the Kitty terminal emulator, Tmux multiplexer, Yazi file manager, Navi cheatsheet picker, and the Fish shell with Starship prompt.
 
 ---
 
@@ -14,7 +14,7 @@ The terminal environment is engineered for low latency, memory efficiency, and f
 | **Alternative** | **Foot** | Lightweight Wayland native terminal | `modules/packages/foot/default.nix` |
 | **Multiplexer** | **Tmux** | Backtick prefix, Sesh session picker, resurrect path sanitizer, floating popups | `modules/features/shell/tmux.nix` |
 | **File Manager** | **Yazi** | Async Rust file manager, image previews, Neovim directory opening | `modules/features/apps/development.nix` |
-| **Snippets** | **Pet** | Fuzzy command snippet insertion bound to `Ctrl+P` | `modules/packages/pet/default.nix` |
+| **Cheatsheets** | **Navi** | Fuzzy command cheatsheet insertion bound to `Ctrl+P` | `modules/packages/navi/default.nix` |
 | **Shell** | **Fish 4+** | 5-minute cached FZF search (`__fzf_cache_fd`), Starship prompt | `modules/features/shell/shell.nix` |
 
 ---
@@ -135,34 +135,57 @@ prepend_rules = [
 
 ---
 
-## Pet Snippet Manager
+## Navi Cheatsheet Manager
 
-Pet is a command-line snippet manager configured in `modules/packages/pet/default.nix`.
+Navi is a command-line cheatsheet picker (an actively maintained Rust alternative to the now-idle `pet`) configured in `modules/packages/navi/default.nix`.
 
 ### Fish Interactive Picker (`Ctrl + P`)
 
-Pressing `Ctrl + P` in any interactive Fish session opens `pet search` inside FZF. Selecting a snippet inserts the command directly into the active prompt line for editing or immediate execution.
+Pressing `Ctrl + P` in any interactive Fish session opens navi's FZF picker. Selecting a cheat inserts the command directly into the active prompt line for editing or immediate execution. Navi then prompts for each `<variable>`; variables that had a default in the old pet library are pre-filled through a `$ name: ...` suggestion line.
 
-### Pre-Configured Snippet Library (`~/.config/pet/snippet.toml`)
+The picker includes a live preview pane (navi's built-in `navi preview`) showing the cheat's comment, tags, and full command template. `finder.overrides` in `config.yaml` widens it to `right:55%:wrap` and binds `Ctrl-/` to toggle it.
 
-Includes dozens of tested snippets categorised by tags:
-- **NixOS Rebuilds & Flakes**:
+### Tmux Popup (`Prefix + Ctrl-g`)
+
+`Prefix + Ctrl-g` (bound in `modules/features/shell/tmux.nix`) opens the same picker in a floating `tmux display-popup` and pastes the chosen cheat — unexecuted — into the pane that opened the popup for in-place editing. Because it shells out to navi rather than the shell widget, it works from any pane, including remote SSH sessions and from inside editors.
+
+### Declarative Cheatsheet Library (`~/.config/navi/`)
+
+The library is **declared in Nix**, not edited with an editor. `modules/packages/navi/default.nix` defines every cheat as typed Nix data and renders it to navi `.cheat` files under `~/.config/navi/cheats/` (`core`, `nix`, `git`, `jj`, `tmux`, `files`, `system`, `mango`, `on-demand`); `~/.config/navi/config.yaml` points navi at that directory. The generated files are read-only store symlinks, so add or change cheats in the Nix module and rebuild.
+
+Placeholders use navi's `<name>` syntax; a default is supplied by a following `$ name: echo 'default'` suggestion line. Defaults that were themselves shell commands, such as `$(git branch --show-current)`, become `$ name: git branch --show-current` so navi evaluates them for suggestions.
+
+Representative cheats by category:
+- **Nix / NixOS**:
   - `nh os switch` - Fast system switch
-  - `cd ~/NixConfig && nix flake lock --update-input <input>` - Update single input
+  - `nh clean all --keep <n>` (default `10`) - Garbage collect, keeping the last N generations
+  - `cd ~/NixConfig && nix flake update <input>` (default `nixpkgs-unstable`) - Update a single input
+  - `cd ~/NixConfig && nix flake check` - Validate the flake
   - `cd ~/NixConfig && nix why-depends .#nixosConfigurations.$(hostname).config.system.build.toplevel 'nixpkgs#<pkg>'` - Check dependency chain
-  - `sudo nix-collect-garbage -d` - Garbage collect all generations
+  - `nix-locate --whole-name bin/<name>` (default `neovim`) - Find which package provides a binary (nix-index)
 - **Git & GitHub**:
-  - `gh pr create --fill --base <base=main>` - Open PR with auto-filled description
-  - `git blame -L <line>,<line> <file>` - Locate line origin
-  - `git rebase -i HEAD~<n=5>` - Interactive rebase
+  - `gh pr create --fill --base <base>` (default `main`) - Open PR with auto-filled description
+  - `gh pr checkout <number>` (default `1`) - Check out a pull request
+  - `git blame -L <start>,<end> <file>` - Locate line origin
+  - `git commit --fixup=<target> && git rebase -i --autosquash <base>` - Fixup + autosquash
+- **Jujutsu (`jj`)**:
+  - `jj new 'trunk()'` - Start work on top of trunk
+  - `jj describe -m '<message>'` - Describe the current change
+  - `jj undo` - Undo the last operation
 - **Tmux**:
   - `tmux attach -t $(tmux list-sessions -F '#{session_name}' | fzf)` - Fuzzy session attach
-  - `tmux capture-pane -t <pane=0> -p -S -<lines=500> > <output=pane.txt>` - Capture pane scrollback
-- **System & Utility**:
-  - `rg -n --hidden --glob '!.git' '<query=TODO|FIXME>' <path=.>` - Search codebase
-  - `fd <name> <path=.> | fzf | xargs -r bat --style=plain` - Find file and preview
+  - `sesh picker` - Sesh session picker
+  - `tmux capture-pane -t <pane> -p -S -<lines> > <output>` - Capture pane scrollback
+- **Files & System**:
+  - `rg -n --hidden --glob '!.git' '<query>' <path>` - Search codebase
+  - `rg --files | fzf | xargs -r nvim` - Fuzzy-open a file in Neovim
+  - `yazi <dir>` - Open Yazi in a directory
+  - `zip -r <output> <target>` / `unzip <archive> -d <dest>` - Create and extract zip archives (plus `unzip -l` to list and single-member extraction)
+  - `python3 -m http.server <port> --bind 127.0.0.1 -d <dir>` - Local file server
   - `mmsg get all-clients | jq` - Inspect MangoWC Wayland clients
-  - `pet new $(history | tail -n 2 | head -n 1)` - Save last command to Pet
+- **On-demand tools**:
+  - `nix shell nixpkgs#<package> -c <command> <args>` - Grab a package and run it with arguments; `<command>` defaults to the package name (e.g. `nix shell nixpkgs#dust -c dust ./`)
+  - `nix run nixpkgs#<package> -- <args>` - Run a package's default command without installing it
 
 ---
 
@@ -178,6 +201,14 @@ NixConfig implements a custom caching function `__fzf_cache_fd`:
 - Calculates a SHA-256 hash of the current working directory path.
 - Stores the output of `fd --strip-cwd-prefix --hidden --exclude .git` in `/tmp/fzf_fd_cache_$USER/<hash>`.
 - Reuses the cached file list for up to **5 minutes** (300 seconds), making subsequent fuzzy file lookups instantaneous.
+
+### Zoxide Directory Picker (`Alt + Z`)
+
+`zoxide` provides two fish commands via `programs.zoxide.enableFishIntegration`:
+
+- **`z <query>`**: Direct frecency jump (no UI).
+- **`zi`**: Interactive picker — `zoxide query --interactive` pipes zoxide's ranked directory history into `fzf`, then `cd`s to the selection. Because it drives `fzf` directly, it inherits the themed `FZF_DEFAULT_OPTS` (rounded border, `ls -la` preview for directories). Pass a query to pre-filter, e.g. `zi nix`.
+- **`Alt + Z`**: Keybinding that runs `zi` from the command line without typing it (bound in both default and insert modes), mirroring the existing `Ctrl + P` cheatsheet picker.
 
 ### Custom Functions & Aliases
 

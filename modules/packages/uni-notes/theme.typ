@@ -160,6 +160,20 @@
 // again below) to get highlighting without changing the note's content.
 #let _php-opener = "<?php /*__uni-notes-php__*/"
 
+// ── Keep-together helper ────────────────────────────────────────────────────
+// Wrap content in a block that stays on one page when it fits: instead of
+// splitting and leaving one or two orphan rows, the whole block moves to the
+// next page. Content taller than a page can't be kept together, so it is
+// allowed to break (a table with `table.header` rows repeats its header).
+#let keep-together(body, ..style) = context {
+  let m = page.margin
+  let avail-w = page.width - m.left.length - m.right.length - (m.left.ratio + m.right.ratio) * page.width
+  let avail-h = page.height - m.top.length - m.bottom.length - (m.top.ratio + m.bottom.ratio) * page.height
+  let probe = block(..style, body)
+  // 2pt tolerance: if it only *just* fits, prefer breaking over overflowing.
+  block(..style, breakable: measure(probe, width: avail-w).height > avail-h - 2pt, body)
+}
+
 // Styled code blocks: background with language + filename header, plus inline
 // code pills. Applied by `theme()`.
 #let raw-style(it) = {
@@ -185,7 +199,7 @@
       let start = if start < lines.len() and lines.at(start) == _php-opener { start + 1 } else { start }
       let bodylines = it.lines.slice(start)
       let numbered = code-line-numbers.get()
-      block(
+      keep-together(block(
         width: 100%,
         radius: ui-radius,
         stroke: 0.5pt + ui-border,
@@ -230,7 +244,7 @@
             }
           )
         )
-      )
+      ))
     } else {
       box(
         fill: inline-code-bg.get(),
@@ -245,7 +259,7 @@
 }
 
 // ── Convenience helpers (expand to the canonical snippet patterns) ──────────
-#let callout(icon, title, color, body) = block(
+#let callout(icon, title, color, body) = keep-together(block(
   width: 100%,
   stroke: (left: 3pt + rgb(color), rest: 0.5pt + rgb(color + "35")),
   fill: rgb(color + "15"),
@@ -256,16 +270,16 @@
     #v(2pt)
     #body
   ],
-)
+))
 
-#let card(body) = block(
+#let card(body) = keep-together(block(
   width: 100%,
   stroke: 0.5pt + ui-border,
   fill: ui-surface,
   inset: (x: 12pt, y: 10pt),
   radius: ui-radius,
   body,
-)
+))
 
 #let qa(q, a) = [
   *Q:* #text(weight: "bold")[#q] \
@@ -307,7 +321,7 @@
 // (the outline targets only these, ignoring any stray level-1 headings inside a
 // note). The heading is styled by `theme()`'s level-1 show rule.
 // Grey proof block, matching the `proof` snippet.
-#let proof(body) = block(
+#let proof(body) = keep-together(block(
   width: 100%,
   stroke: (left: 3pt + rgb("#718096"), rest: 0.5pt + rgb("#71809635")),
   fill: rgb("#71809612"),
@@ -318,10 +332,10 @@
     #v(2pt)
     #body #h(1fr) $square$
   ],
-)
+))
 
 // Blue "Big-O" complexity card, matching the `big-o` snippet.
-#let bigo(title, body) = block(
+#let bigo(title, body) = keep-together(block(
   width: 100%,
   stroke: (left: 3pt + rgb("#3182ce"), rest: 0.5pt + rgb("#3182ce35")),
   fill: rgb("#3182ce15"),
@@ -332,7 +346,7 @@
     #v(0.4em)
     #body
   ],
-)
+))
 
 #let note-title(date, title) = [
   #align(center)[
@@ -433,6 +447,12 @@
 
   // Styled code blocks and inline code
   show raw: raw-style
+
+  // Tables keep themselves on one page whenever they fit: instead of leaving
+  // one or two orphan rows at the bottom of a page, the whole table moves to
+  // the next page. A table taller than a page may still break (repeat its
+  // header with `table.header`).
+  show table: it => keep-together(it)
 
   body
 }

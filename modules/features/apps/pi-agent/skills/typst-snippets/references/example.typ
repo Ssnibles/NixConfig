@@ -6,8 +6,9 @@
 //   #import "/templates/theme.typ": *
 //   #show: theme.with(course: "COMPXxxx")
 //
-// which brings in the helpers (#callout, #card, #qa, #uml-class, #note-title),
-// the `font-sans` / `font-serif` / `font-mono` tokens, and the diagram packages.
+// which brings in the helpers (#callout, #card, #qa, #uml-class, #bigo,
+// #keep-together, #note-title), the `font-sans` / `font-serif` / `font-mono`
+// tokens, and the diagram packages.
 // This body then shows a helper callout, math, code, a table, and a diagram
 // together. Copy its style, not its content.
 
@@ -21,15 +22,11 @@ logarithmically. Its running time obeys the recurrence $T(n) = T(n/2) + O(1)$.
   element to the target, until the target is found or the range is empty.
 ]
 
-#block(stroke: (left: 3pt + rgb("#3182ce"), rest: 0.5pt + rgb("#3182ce35")), fill: rgb("#3182ce15"), inset: (x: 12pt, y: 10pt), radius: ui-radius, width: 100%)[
-  #text(weight: "bold", size: 12pt, fill: rgb("#3182ce"))[⚡ Big-O: Binary search]
-  #v(0.4em)
-  #grid(
-    columns: (1fr, 1fr),
-    [*Time Complexity:*], [*Space Complexity:*],
-    [- Search: $O(log n)$], [- Aux Space: $O(1)$],
-  )
-]
+#bigo("Binary search", grid(
+  columns: (1fr, 1fr),
+  [*Time Complexity:*], [*Space Complexity:*],
+  [- Search: $O(log n)$], [- Aux Space: $O(1)$],
+))
 
 Expanding the recurrence gives the familiar bound:
 
@@ -48,13 +45,13 @@ def binary_search(items, target):
     return lo
 ```
 
-#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border, width: 100%)[
+#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border)[
   #table(
-    columns: (1fr, 1fr, 1fr),
+    columns: (auto, auto, auto),
     fill: (col, row) => if row == 0 { ui-surface-raised } else { none },
     inset: (x: 10pt, y: 6pt),
-    stroke: (x, y) => if y == 0 { (bottom: 0.5pt + ui-border) } else { none },
-    [*Input*], [*Comparisons*], [*Result*],
+    stroke: (x, y) => (top: if y > 0 { 0.5pt + ui-border } else { none }, left: if x > 0 { 0.5pt + ui-border } else { none }),
+    table.header([*Input*], [*Comparisons*], [*Result*]),
     [`[1, 3, 5, 7]`, `2`], [2], [found],
     [`[2, 4, 6]`, `5`], [2], [not found],
   )
