@@ -37,6 +37,8 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
   Guide for customising Firefox Developer Edition native UI (`userChrome.css`), Sidebery vertical tab bar (`userContent.css`), offline startpage WebExtension, and Helium browser alternative.
 - **[Gaming, Steam & DualSense Controllers](gaming.md)**  
   Gaming configuration on NixOS: Steam with Millennium UI skinning overlay, Gamescope sandboxed micro-compositor sessions, MangoHud performance overlay, and PlayStation 5 DualSense controller pairing via `dualsense-pair`.
+- **[Frame Remote Desktop Client](frame.md)**  
+  Nutanix Frame Desktop-as-a-Service client inside an isolated Ubuntu 24.04 Distrobox container: repacked `.deb` with a container-safe post-install script, host `frame` launcher, `frame://` SSO URL handling, audio passthrough, and USB device redirection.
 
 ### Networking & Synchronisation
 - **[Networking, Tailscale & Syncthing Synchronisation](networking-sync.md)**  
@@ -59,4 +61,5 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 | **Media & Audio** | `modules/features/apps/media.nix`, `system/pipewire.nix` | `mpv.conf`, `zathurarc` | [media-audio.md](media-audio.md) |
 | **Firefox & Helium** | `modules/features/apps/firefox/`, `apps/helium.nix` | `userChrome.css`, `userContent.css` | [firefox.md](firefox.md) |
 | **Gaming & PS5** | `modules/features/apps/gaming.nix` | `modules/packages/dualsense-pair/` | [gaming.md](gaming.md) |
+| **Frame Remote Desktop** | `modules/features/apps/frame.nix` | `assets/setup_frame.sh` | [frame.md](frame.md) |
 | **Tailscale & Syncthing** | `modules/features/system/tailscale.nix`, `syncthing.nix` | Tailscale client, Syncthing service | [networking-sync.md](networking-sync.md) |

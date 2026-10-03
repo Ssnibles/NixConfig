@@ -16,6 +16,7 @@
         environment.systemPackages = with pkgs.unstable; [
           zathura
           imv
+          musicpod
           (mpv.override {
             scripts = [
               mpvScripts.autoload

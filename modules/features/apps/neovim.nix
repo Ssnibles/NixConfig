@@ -98,7 +98,7 @@
             cmdheight = 0;
             showcmdloc = "statusline";
             grepformat = "%f:%l:%c:%m";
-            shortmess = "sIcWFoO";
+            shortmess = "sIcWFoOu";
           };
 
           # ── Language Servers, Linters & Formatters ─────────────────────────

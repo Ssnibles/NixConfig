@@ -137,6 +137,7 @@
       features.vicinae.enable = true;
       features.shikane.enable = true;
       features.wramp.enable = true;
+      features.frame.enable = true;
       features.hermes.enable = true;
       features.syncthing.enable = true;
       features.tailscale.enable = true;

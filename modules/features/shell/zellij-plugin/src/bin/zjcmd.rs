@@ -86,10 +86,8 @@ const COMMANDS: &[Command] = &[
     Command { name: "Next swap layout", desc: "Cycle the pane layout", exec: Exec::Action(&["next-swap-layout"]), prompt: None },
     Command { name: "Clear pane", desc: "Clear the focused pane's buffers", exec: Exec::Action(&["clear"]), prompt: None },
     Command { name: "Save session", desc: "Save the session state to disk", exec: Exec::Action(&["save-session"]), prompt: None },
-    Command { name: "Toggle theme", desc: "Switch dark/light theme", exec: Exec::Action(&["toggle-theme"]), prompt: None },
     Command { name: "Session manager", desc: "Open the session manager", exec: Exec::Action(&["launch-or-focus-plugin", "zellij:session-manager", "--floating", "--move-to-focused-tab"]), prompt: None },
     Command { name: "Plugin manager", desc: "Open the plugin manager", exec: Exec::Action(&["launch-or-focus-plugin", "zellij:plugin-manager", "--floating", "--move-to-focused-tab"]), prompt: None },
-    Command { name: "Configuration", desc: "Open the zellij configuration", exec: Exec::Action(&["launch-or-focus-plugin", "zellij:configuration", "--floating", "--move-to-focused-tab"]), prompt: None },
     Command { name: "Detach", desc: "Detach from the session", exec: Exec::Action(&["detach"]), prompt: None },
     // ── Sessions ─────────────────────────────────────────────────────────────
     // `switch_session` creates the session when it does not exist, so "New
@@ -654,8 +652,12 @@ impl State {
         let Some(name) = self.session_name.clone() else {
             return;
         };
+        // Pass the name through the environment rather than as a shell
+        // positional: `$argv[1]` is fish-only and `$1` is POSIX-only, but
+        // `$VAR` expands in both, so this no longer depends on which shell is
+        // configured.
         let script = format!(
-            "{} kill-session $argv[1] >/dev/null 2>&1; sleep 1; {} delete-session $argv[1] >/dev/null 2>&1",
+            "{} kill-session \"$ZL_TARGET\" >/dev/null 2>&1; sleep 1; {} delete-session \"$ZL_TARGET\" >/dev/null 2>&1",
             self.zellij_bin, self.zellij_bin
         );
         let argv: Vec<&str> = vec![
@@ -664,9 +666,10 @@ impl State {
             self.shell_bin.as_str(),
             "-c",
             script.as_str(),
-            name.as_str(),
         ];
-        run_command(&argv, BTreeMap::new());
+        let mut env = BTreeMap::new();
+        env.insert("ZL_TARGET".to_owned(), name);
+        run_command(&argv, env);
     }
 
     fn color(&self, key: &str, fallback: Rgb) -> Rgb {
@@ -900,7 +903,10 @@ fn humanize_age(age: Duration) -> String {
 
 fn parse_hex(value: &str) -> Option<Rgb> {
     let value = value.trim().trim_start_matches('#');
-    if value.len() != 6 {
+    let bytes = value.as_bytes();
+    // Require exactly 6 ASCII hex digits so the byte-slicing below cannot hit a
+    // UTF-8 char boundary (and so odd input is rejected up front).
+    if bytes.len() != 6 || !bytes.iter().all(u8::is_ascii_hexdigit) {
         return None;
     }
     Some((

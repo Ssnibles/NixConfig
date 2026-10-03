@@ -507,7 +507,7 @@ Singleton {
       isMedia: true,
       appName: mediaPlayer.name || "",
       desktopEntry: mediaPlayer.desktopEntry || "",
-      timeStr: Qt.formatDateTime(new Date(), "hh:mm A"),
+      timeStr: Qt.formatDateTime(new Date(), Config.timeFormat),
       createdAt: Date.now()
     }
 
@@ -700,7 +700,7 @@ Singleton {
           isMedia: true,
           appName: notification.appName || "",
           desktopEntry: notification.desktopEntry || "",
-          timeStr: Qt.formatDateTime(new Date(), "hh:mm A"),
+          timeStr: Qt.formatDateTime(new Date(), Config.timeFormat),
           createdAt: Date.now()
         }
 
@@ -721,7 +721,7 @@ Singleton {
         isMedia: false,
         appName: notification.appName || "",
         desktopEntry: notification.desktopEntry || "",
-        timeStr: Qt.formatDateTime(new Date(), "hh:mm A"),
+        timeStr: Qt.formatDateTime(new Date(), Config.timeFormat),
         createdAt: Date.now()
       }
 

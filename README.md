@@ -258,6 +258,12 @@ For Steam skinning, Gamescope launch parameters, and controller pairing, refer t
 - **GameMode & MangoHud**: Automatic CPU performance governor tuning via GameMode daemon and real-time on-screen telemetry overlay via MangoHud.
 - **PlayStation 5 DualSense Controllers**: Full kernel driver support via `hid-playstation` and a custom Bluetooth pairing CLI utility ([`dualsense-pair`](file:///home/josh/NixConfig/modules/packages/dualsense-pair/dualsense-pair.sh)).
 
+### Remote Desktop & Cloud Workstations
+
+For the containerised Frame client setup, refer to the **[Frame Remote Desktop Guide](docs/wiki/frame.md)**:
+
+- **Frame Remote Desktop Client**: Nutanix Frame Desktop-as-a-Service client running inside an isolated Ubuntu 24.04 Distrobox container — repacked `.deb` with a container-safe post-install script, host `frame` launcher, `frame://` SSO URL handling, audio passthrough, and USB device redirection.
+
 ---
 
 ## Repository Structure
@@ -270,6 +276,8 @@ NixConfig/
 ├── todo.txt                           # Project task tracking
 │
 ├── assets/
+│   ├── frame.svg                      # Frame App icon for the host desktop entry
+│   ├── setup_frame.sh                 # Ubuntu container setup for the Frame remote desktop client
 │   ├── setup_wramp.sh                 # Ubuntu container setup for the WRAMP toolchain & wsim
 │   └── wallpapers/                    # Managed wallpaper library
 │       ├── blackbird.jpg              # Default system wallpaper
@@ -291,6 +299,7 @@ NixConfig/
 │       ├── networking-sync.md         # Tailscale mesh VPN, Syncthing, encrypted DNS
 │       ├── media-audio.md             # MPV Vulkan pipeline, Zathura SyncTeX, PipeWire
 │       ├── firefox.md                 # Firefox userChrome, Sidebery, Helium browser
+│       ├── frame.md                   # Frame remote desktop client container guide
 │       ├── esp32-arduino.md           # ESP32 & Arduino toolchain and templates
 │       ├── wramp.md                   # WRAMP toolchain & simulator container guide
 │       └── gaming.md                  # Steam, Millennium, Gamescope, DualSense PS5
@@ -356,6 +365,7 @@ NixConfig/
     │   │   ├── content-creation.nix   # FFmpeg and FLAC audio/video tools
     │   │   ├── development.nix        # Runtimes, Antigravity CLI, compilers, Yazi
     │   │   ├── firefox/               # Firefox Developer Edition, CSS, Sidebery
+    │   │   ├── frame.nix              # Frame remote desktop client launcher
     │   │   ├── gaming.nix             # Steam, Millennium, Gamescope, MangoHud
     │   │   ├── helium.nix             # Helium browser & enterprise policies
     │   │   ├── hermes.nix             # Hermes AI agent with homeserver Ollama link
@@ -427,6 +437,7 @@ Comprehensive documentation, architecture references, and step-by-step workflow 
 | **ESP32 & Arduino** | [esp32-arduino.md](docs/wiki/esp32-arduino.md) | ESP32 toolchains, `arduino-cli`, `esptool`, Neovim Clangd LSP compilation database generation (`esp-gen-lsp`), and project templates |
 | **WRAMP Toolchain** | [wramp.md](docs/wiki/wramp.md) | Distrobox Ubuntu 22.04 container with `wasm`/`wlink`/`wobj`, the `wcc` compiler, the `wsim` Mono GUI simulator, `remote`/`down`, `trim`, WRAMPmon, and host launcher wrappers |
 | **Gaming & Controllers** | [gaming.md](docs/wiki/gaming.md) | Steam with Millennium skinning, Gamescope composited sessions, MangoHud overlay, and DualSense PS5 controller pairing via `dualsense-pair` |
+| **Frame Remote Desktop** | [frame.md](docs/wiki/frame.md) | Nutanix Frame Desktop-as-a-Service client in an Ubuntu 24.04 Distrobox container: repacked `.deb`, host `frame` launcher, `frame://` SSO URL handling, audio passthrough, and USB redirection |
 
 ---
 

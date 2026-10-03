@@ -32,6 +32,16 @@
       zellijBin = "${pkgs.zellij}/bin/zellij";
       fishBin = "${pkgs.unstable.fish}/bin/fish";
 
+      # Absolute, stable location the built plugin wasms are exposed at.
+      # Zellij keys both its plugin-permission cache and serialized session
+      # layouts by a plugin's absolute path. Pointing at the content-addressed
+      # `${zellijPlugins}` store path directly means every rebuild produces a
+      # new path, so the pre-granted permission no longer matches and
+      # reattaching to a session serialized before the rebuild re-prompts once
+      # per tab (each tab's bar is a separate plugin instance). Serving the
+      # wasms from a fixed symlink path keeps the key stable across rebuilds.
+      zellijPluginDir = "/home/${config.username}/.local/share/zellij/plugins";
+
       # Custom wasm plugins (see ./zellij-plugin):
       #   zjbar - tmux-shaped status bar; also services the `leader` keybind
       #           `MessagePlugin` actions (new tab with cwd / yazi popup).
@@ -322,7 +332,7 @@
         // Custom plugins (see ./zellij-plugin): zjbar is the tmux-shaped bar,
         // zjcmd is the `leader :` command palette.
         plugins {
-          zjbar location="file:${zellijPlugins}/bin/zjbar.wasm" {
+          zjbar location="file:${zellijPluginDir}/zjbar.wasm" {
             bg        "#${c.bg}"
             fg_mid    "#${c.fgMid}"
             accent    "#${c.accent}"
@@ -337,7 +347,7 @@
             yazi_width  "86%"
             yazi_height "86%"
           }
-          zjcmd location="file:${zellijPlugins}/bin/zjcmd.wasm" {
+          zjcmd location="file:${zellijPluginDir}/zjcmd.wasm" {
             zellij_bin "${zellijBin}"
             // Shell used by the palette's "Run command" entries.
             shell      "${fishBin}"
@@ -411,6 +421,12 @@
           text = zellijConfig;
         };
 
+        # Mirror the built plugins to the stable path referenced by the config
+        # and the permission cache (see zellijPluginDir). Without this, every
+        # rebuild would change the plugin path and bust the permission cache.
+        ".local/share/zellij/plugins/zjbar.wasm".source = "${zellijPlugins}/bin/zjbar.wasm";
+        ".local/share/zellij/plugins/zjcmd.wasm".source = "${zellijPlugins}/bin/zjcmd.wasm";
+
         # Pre-grant the plugins the permissions they ask for. Without this, the
         # first launch shows zellij's plugin permission prompt, which is awkward
         # to answer for a top-bar plugin (the bar must be focused first). zellij
@@ -420,18 +436,18 @@
         # this file is zellij's *writable* permission cache. As a symlink into
         # the read-only /nix/store, zellij cannot persist permissions it grants
         # at runtime, so prompts for plugins that aren't pre-granted come back
-        # forever. A real copy is writable; hjem refreshes it (with the current
-        # plugin paths) on each activation.
+        # forever. A real copy is writable; hjem refreshes it on each activation
+        # with the stable plugin paths (see zellijPluginDir).
         ".cache/zellij/permissions.kdl" = {
           clobber = true;
           type = "copy";
           permissions = "644";
           text = ''
-            "${zellijPlugins}/bin/zjbar.wasm" {
+            "${zellijPluginDir}/zjbar.wasm" {
                 ReadApplicationState
                 RunCommands
             }
-            "${zellijPlugins}/bin/zjcmd.wasm" {
+            "${zellijPluginDir}/zjcmd.wasm" {
                 ChangeApplicationState
                 ReadApplicationState
                 RunCommands

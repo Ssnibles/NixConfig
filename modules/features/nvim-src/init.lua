@@ -34,6 +34,48 @@ vim.opt.grepprg = "rg --vimgrep --smart-case --hidden"
 vim.opt.smoothscroll = true
 vim.opt.shortmess:append("CF")
 
+-- Message/cmdline presentation (Neovim 0.12+ "ui2"). This is what makes
+-- 'cmdheight=0' usable: messages are drawn in a transient floating "msg"
+-- window that auto-dismisses, and the legacy hit-enter "Press ENTER" prompt
+-- (which has nowhere to draw when cmdheight=0) no longer exists.
+-- NOTE: do NOT attach another `vim.ui_attach(..., { ext_messages = true })`
+-- UI on top of this. ext_messages externalizes *all* message rendering, so any
+-- kind it does not explicitly draw silently disappears (this was the cause of
+-- `:!cmd` output vanishing and the editor appearing to freeze).
+require("vim._core.ui2").enable({
+  msg = {
+    -- Ephemeral messages (`:!` output, `:echo`, errors, …) go to the floating
+    -- message window instead of the cmdline, so they auto-dismiss.
+    targets = { default = "msg" },
+  },
+})
+-- `wait` is required whenever `hit-enter` is omitted. `timeout` is how long a
+-- message stays visible in the message window (ms).
+vim.o.messagesopt = "history:200,wait:0,timeout:4000,maxheight:50,pager:<CR>"
+
+-- zline.nvim owns the cmdline: it captures `ext_cmdline` events and renders the
+-- line into the statusline. ui2 also claims cmdline events and draws its own
+-- 'cmd' window, so both would be shown at once. ui2 exposes no option to opt out
+-- of the cmdline, so drop its cmdline event handlers; message handling is
+-- unaffected. If a future Neovim renames these methods this simply becomes a
+-- no-op and the duplicate would return (not an error).
+do
+  local ui2 = require("vim._core.ui2")
+  if ui2.cmd then
+    for _, ev in ipairs({
+      "cmdline_show",
+      "cmdline_pos",
+      "cmdline_hide",
+      "cmdline_special_char",
+      "cmdline_block_show",
+      "cmdline_block_append",
+      "cmdline_block_hide",
+    }) do
+      ui2.cmd[ev] = nil
+    end
+  end
+end
+
 -- Listen address for neovim-remote.
 -- Nvim (with NVIM_APPNAME=nvf) already starts a server, so point children at
 -- the real socket instead of a path we never actually listen on.
@@ -61,7 +103,6 @@ require("plugins.lint")
 require("plugins.dap")
 require("plugins.terminal")
 require("plugins.lang")
-require("messages").setup()
 require("plugins.diagnostics")
 require("plugins.markview")
 require("plugins.dial")

@@ -374,30 +374,46 @@ Scope {
               Layout.alignment: Qt.AlignTop
               spacing: 2
 
-              Text {
-                id: headerTime
-                text: Qt.formatDateTime(new Date(), Config.commandCenterClockFormat)
-                color: Colors.fg
-                font.family: Config.serifFont
-                font.letterSpacing: 2
-                font.pixelSize: 36
-                font.italic: true
+              RowLayout {
+                spacing: 6
 
-                function updateTime() {
-                  var d = new Date()
-                  headerTime.text = Qt.formatDateTime(d, Config.commandCenterClockFormat)
-                  headerTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
-                  headerTimer.restart()
+                Text {
+                  id: headerTime
+                  text: Qt.formatDateTime(new Date(), Config.commandCenterClockFormat)
+                  color: Colors.fg
+                  font.family: Config.serifFont
+                  font.letterSpacing: 2
+                  font.pixelSize: 36
+                  font.italic: true
+                  Layout.alignment: Qt.AlignBaseline
+
+                  function updateTime() {
+                    var d = new Date()
+                    headerTime.text = Qt.formatDateTime(d, Config.commandCenterClockFormat)
+                    headerTime12.text = Qt.formatDateTime(d, "h:mm AP")
+                    headerTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
+                    headerTimer.restart()
+                  }
+
+                  Timer {
+                    id: headerTimer
+                    running: panel.panelOpacity > 0
+                    repeat: false
+                    onTriggered: headerTime.updateTime()
+                  }
+
+                  Component.onCompleted: updateTime()
                 }
 
-                Timer {
-                  id: headerTimer
-                  running: panel.panelOpacity > 0
-                  repeat: false
-                  onTriggered: headerTime.updateTime()
+                // Small 12-hour companion to the 24-hour clock
+                Text {
+                  id: headerTime12
+                  text: Qt.formatDateTime(new Date(), "h:mm AP")
+                  color: Colors.fgDim
+                  font.family: Config.sansFont
+                  font.pixelSize: 13
+                  Layout.alignment: Qt.AlignBaseline
                 }
-
-                Component.onCompleted: updateTime()
               }
 
               Text {

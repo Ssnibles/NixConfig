@@ -21,15 +21,24 @@ const PATH_TAIL: usize = 32;
 
 type Rgb = (u8, u8, u8);
 
+/// A tab's two names: the `display` name carried by the latest `TabUpdate`,
+/// and the `stored` (user-set) name from `get_tab_info`. Caching the display
+/// name lets `refresh_tab_names` skip the blocking host call when nothing has
+/// changed.
+#[derive(Clone)]
+struct TabName {
+    display: String,
+    stored: String,
+}
+
 #[derive(Default)]
 struct State {
     mode: InputMode,
     session_name: Option<String>,
     tabs: Vec<TabInfo>,
-    // Stored tab names, keyed by stable tab id. The TabUpdate event carries the
-    // *display* name (which becomes the pane title when frames draw titles),
-    // whereas get_tab_info returns the name the user actually set.
-    tab_names: BTreeMap<usize, String>,
+    // Per-tab names keyed by stable tab id: the display name from `TabUpdate`
+    // and the stored name from `get_tab_info`. See `TabName` / `refresh_tab_names`.
+    tab_names: BTreeMap<usize, TabName>,
     // Live pane manifest, used to find an existing yazi pane to focus.
     pane_manifest: PaneManifest,
     // Display form of the last known *terminal* cwd (see `refresh_cwd`).
@@ -149,35 +158,34 @@ impl ZellijPlugin for State {
         let yellow = self.color("yellow");
         let teal = self.color("teal");
 
-        let mut left = String::new();
-        let mut left_w = 0usize;
-        // A neutral gap between elements so coloured pills don't touch.
-        let gap = seg(" ", bg, bg, false);
-        let mut first = true;
+        // The cwd is right-aligned. Compute it first so the left side can be
+        // truncated to fit instead of pushing it off the (single-row) bar.
+        let mut right = String::new();
+        let mut right_w = 0usize;
+        if let Some(cwd) = &self.cwd {
+            let label = format!(" {cwd} ");
+            let width = label.chars().count();
+            // Drop the cwd entirely rather than overflow a very narrow bar.
+            if width < cols {
+                right = seg(&label, teal, bg, true);
+                right_w = width;
+            }
+        }
+        let budget = cols.saturating_sub(right_w);
 
+        // Build the left side as (rendered, width) segments, then keep as many
+        // as fit in the budget. Trailing tabs are dropped (with an ellipsis)
+        // when the bar is too narrow for everything.
+        let mut segments: Vec<(String, usize)> = Vec::new();
         if self.mode == InputMode::Tmux {
             let label = " leader ";
-            left.push_str(&seg(label, bg, yellow, true));
-            left_w += label.chars().count();
-            first = false;
+            segments.push((seg(label, bg, yellow, true), label.chars().count()));
         }
-
         if let Some(session) = &self.session_name {
-            if !first {
-                left.push_str(&gap);
-                left_w += 1;
-            }
             let label = format!(" {} ", session.to_lowercase());
-            left.push_str(&seg(&label, bg, accent, true));
-            left_w += label.chars().count();
-            first = false;
+            segments.push((seg(&label, bg, accent, true), label.chars().count()));
         }
-
         for tab in &self.tabs {
-            if !first {
-                left.push_str(&gap);
-                left_w += 1;
-            }
             let index = tab.position + 1;
             // Use the stored name (see `tab_names`), not the display name from
             // the event: zellij swaps that for the pane title when frames draw
@@ -185,7 +193,7 @@ impl ZellijPlugin for State {
             let stored_name = self
                 .tab_names
                 .get(&tab.tab_id)
-                .map(String::as_str)
+                .map(|name| name.stored.as_str())
                 .unwrap_or("");
             let name = if stored_name.is_empty() || is_default_tab_name(stored_name) {
                 String::new()
@@ -193,28 +201,36 @@ impl ZellijPlugin for State {
                 format!(" {}", stored_name.to_lowercase())
             };
             // The focused tab gets extra left/right margin around its number.
-            let label = if tab.active {
-                format!("  {index}{name}  ")
+            let (label, fg, tab_bg, bold) = if tab.active {
+                (format!("  {index}{name}  "), accent, bg_subtle, true)
             } else {
-                format!(" {index}{name} ")
+                (format!(" {index}{name} "), fg_mid, bg, false)
             };
             let width = label.chars().count();
-            if tab.active {
-                left.push_str(&seg(&label, accent, bg_subtle, true));
-            } else {
-                left.push_str(&seg(&label, fg_mid, bg, false));
-            }
-            left_w += width;
-            first = false;
+            segments.push((seg(&label, fg, tab_bg, bold), width));
         }
 
-        let mut right = String::new();
-        let mut right_w = 0usize;
-
-        if let Some(cwd) = &self.cwd {
-            let label = format!(" {cwd} ");
-            right.push_str(&seg(&label, teal, bg, true));
-            right_w += label.chars().count();
+        // A neutral gap between elements so coloured pills don't touch.
+        let gap = seg(" ", bg, bg, false);
+        let mut left = String::new();
+        let mut left_w = 0usize;
+        let mut truncated = false;
+        for (index, (text, width)) in segments.iter().enumerate() {
+            let separator = if index > 0 { 1 } else { 0 };
+            if left_w + separator + width > budget {
+                truncated = true;
+                break;
+            }
+            if index > 0 {
+                left.push_str(&gap);
+                left_w += 1;
+            }
+            left.push_str(text);
+            left_w += width;
+        }
+        if truncated && left_w + 1 <= budget {
+            left.push_str(&seg("…", fg_mid, bg, false));
+            left_w += 1;
         }
 
         let pad = cols.saturating_sub(left_w + right_w);
@@ -245,17 +261,32 @@ impl State {
 
     /// Cache the stored (user-set) tab names, which the `TabUpdate` event does
     /// not reliably carry (it sends the pane title instead once frames render
-    /// titles).
+    /// titles). `get_tab_info` is a blocking host round-trip, so only make it
+    /// when a tab's display name changed since the last fetch; a steady-state
+    /// update then performs no host calls at all.
     fn refresh_tab_names(&mut self) {
         if !self.permitted {
             return;
         }
-        self.tab_names.clear();
+        let mut names = BTreeMap::new();
         for tab in &self.tabs {
+            if let Some(cached) = self.tab_names.get(&tab.tab_id) {
+                if cached.display == tab.name {
+                    names.insert(tab.tab_id, cached.clone());
+                    continue;
+                }
+            }
             if let Some(info) = get_tab_info(tab.tab_id) {
-                self.tab_names.insert(tab.tab_id, info.name);
+                names.insert(
+                    tab.tab_id,
+                    TabName {
+                        display: tab.name.clone(),
+                        stored: info.name,
+                    },
+                );
             }
         }
+        self.tab_names = names;
     }
 
     /// Re-read the focused pane's cwd. Returns whether it changed (so zellij
@@ -362,16 +393,41 @@ impl State {
     /// Whether this bar instance lives in the currently focused tab. A pipe to
     /// the `zjbar` alias reaches every tab's bar, so this gate keeps exactly
     /// one instance acting on a control message.
+    ///
+    /// `pane_manifest` is keyed by tab *position*, but `get_focused_pane_info`
+    /// returns the focused tab's stable *id* (not its position), so comparing
+    /// the two directly breaks as soon as tabs are moved or closed. Match by
+    /// pane id instead: locate this bar and the focused pane in the manifest and
+    /// check whether they live in the same tab.
     fn in_focused_tab(&self) -> bool {
-        let Ok((focused_tab, _pane)) = get_focused_pane_info() else {
+        let Ok((_tab, focused_pane)) = get_focused_pane_info() else {
             return false;
         };
-        self.pane_manifest.panes.iter().any(|(tab_position, panes)| {
-            *tab_position == focused_tab
-                && panes
-                    .iter()
-                    .any(|pane| pane.is_plugin && pane.id == self.plugin_id)
-        })
+        let position_of = |target: PaneId| {
+            self.pane_manifest
+                .panes
+                .iter()
+                .find_map(|(position, panes)| {
+                    panes
+                        .iter()
+                        .any(|pane| {
+                            let pane_id = if pane.is_plugin {
+                                PaneId::Plugin(pane.id)
+                            } else {
+                                PaneId::Terminal(pane.id)
+                            };
+                            pane_id == target
+                        })
+                        .then_some(*position)
+                })
+        };
+        matches!(
+            (
+                position_of(PaneId::Plugin(self.plugin_id)),
+                position_of(focused_pane)
+            ),
+            (Some(own), Some(focused)) if own == focused
+        )
     }
 
     /// Floating pane running yazi, if any (ie. the popup we opened).
@@ -443,7 +499,10 @@ fn pane_is_floating(pane_id: PaneId) -> bool {
 
 fn parse_hex(value: &str) -> Option<Rgb> {
     let value = value.trim().trim_start_matches('#');
-    if value.len() != 6 {
+    let bytes = value.as_bytes();
+    // Require exactly 6 ASCII hex digits so the byte-slicing below cannot hit a
+    // UTF-8 char boundary (and so odd input is rejected up front).
+    if bytes.len() != 6 || !bytes.iter().all(u8::is_ascii_hexdigit) {
         return None;
     }
     Some((
