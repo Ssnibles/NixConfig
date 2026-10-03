@@ -245,8 +245,8 @@ Scope {
 - **Properties**: `canPrevious`, `canNext`, `isPlaying`, `uiFont`; signals `previousClicked`, `playPauseClicked`, `nextClicked`.
 
 #### `MediaProgressRow.qml`
-- **Role**: Reusable elapsed-time + seek bar + total-time row.
-- **Properties**: `position`, `length`, `progress`, `seekable`; signal `seekRequested(real progress)`.
+- **Role**: Reusable elapsed-time + seek bar + total-time row. Renders a `● LIVE` label instead of the seek bar when `live` is set (streams with no finite length).
+- **Properties**: `position`, `length`, `progress`, `seekable`, `live`; signal `seekRequested(real progress)`.
 
 #### `PowerButtons.qml`
 - **Role**: Shared system power-action row (Lock / Sleep / Reboot / Power).

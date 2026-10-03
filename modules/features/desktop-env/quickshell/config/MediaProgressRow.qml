@@ -13,6 +13,7 @@ RowLayout {
   property real length: 0     // total length in seconds
   property real progress: 0   // 0..1 fraction (computed externally by MediaService)
   property bool seekable: true
+  property bool live: false   // live stream: no finite length, not seekable
 
   signal seekRequested(real progress)
 
@@ -26,6 +27,7 @@ RowLayout {
   }
 
   SliderControl {
+    visible: !root.live
     Layout.fillWidth: true
     value: root.progress
     fillColor: Colors.accent
@@ -34,10 +36,22 @@ RowLayout {
   }
 
   Text {
+    visible: !root.live
     text: Utils.formatTime(Math.round(root.length))
     color: Colors.fgDim
     font.family: Config.sansFont
     font.pixelSize: 12
     Layout.preferredWidth: 38
+  }
+
+  Text {
+    visible: root.live
+    text: "● LIVE"
+    color: Colors.red
+    font.family: Config.sansFont
+    font.pixelSize: 11
+    font.bold: true
+    Layout.fillWidth: true
+    horizontalAlignment: Text.AlignRight
   }
 }

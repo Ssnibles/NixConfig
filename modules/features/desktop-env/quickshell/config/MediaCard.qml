@@ -155,7 +155,8 @@ Rectangle {
 
     MediaProgressRow {
       width: parent.width
-      visible: root.hasPlayer ? (MediaService.lastLength > 0) : root.showWhenIdle
+      visible: root.hasPlayer ? (MediaService.lastLength > 0 || MediaService.isLive) : root.showWhenIdle
+      live: MediaService.isLive
       position: MediaService.estimatedPosition
       length: MediaService.lastLength
       progress: MediaService.progress

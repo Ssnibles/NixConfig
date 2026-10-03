@@ -25,7 +25,6 @@
               mpvScripts.quality-menu
               mpvScripts.smartskip
               mpvScripts.thumbfast
-              mpvScripts.visualizer
               mpvScripts.webtorrent-mpv-hook
             ];
           })
@@ -73,6 +72,276 @@
                 j seek -10
                 k seek +10
                 l seek +5
+
+                # Toggle now-playing card <-> video mode. The card shows the
+                # cover art (embedded art, or the YouTube thumbnail) scaled,
+                # rounded and centred with the title/artist below it; files
+                # without any cover get a text-only card.
+                # Note: overrides the default subtitle-visibility toggle.
+                v script-message toggle-nowplaying
+              '';
+            };
+
+            # Start each session in now-playing mode (yes) or video mode (no).
+            ".config/mpv/script-opts/nowplaying.conf" = {
+              text = ''
+                initial=no
+              '';
+            };
+
+            # Add the best YouTube thumbnail as an image track so the card has
+            # cover art for videos too. The thumbnail is added unselected, so
+            # normal video mode still plays the real video.
+            ".config/mpv/script-opts/ytdl_hook.conf" = {
+              text = ''
+                thumbnails=best
+              '';
+            };
+
+            # Custom now-playing card <-> video mode toggle (bound to `v` above).
+            ".config/mpv/scripts/nowplaying.lua" = {
+              text = ''
+                local mp = require "mp"
+                local options = require "mp.options"
+                local utils = require "mp.utils"
+
+                local function write_file(path, content)
+                    local f = io.open(path, "w")
+                    if f then
+                        f:write(content)
+                        f:close()
+                    end
+                end
+
+                local opts = { initial = false }
+                options.read_options(opts, "nowplaying")
+
+                -- Layout / theme -------------------------------------------------
+                local W, H = 1280, 720
+                local COVER, RADIUS, COVER_Y = 340, 24, 120
+                local BLUR_SIGMA, TINT_ALPHA = 45, 0.4
+                local TITLE_Y, TITLE_NOCOVER_Y = 510, 300
+                local ARTIST_Y, ARTIST_NOCOVER_Y = 585, 370
+                local FONT = "sans"
+                local BG = "0x${c.bg}"
+                local FG = "0x${c.fg}"
+                local FG_DIM = "0x${c.fgMid}"
+
+                local enabled = opts.initial or false
+                local pending = false
+                local started = false
+                local uid = tostring(utils.getpid())
+                local title_file = "/tmp/mpv-nowplaying-" .. uid .. "-title.txt"
+                local artist_file = "/tmp/mpv-nowplaying-" .. uid .. "-artist.txt"
+
+                local function meta_first(keys)
+                    for _, k in ipairs(keys) do
+                        local v = mp.get_property("metadata/by-key/" .. k)
+                        if v and v ~= "" then
+                            return v
+                        end
+                    end
+                    return ""
+                end
+
+                local function utf8len(s)
+                    return #s - select(2, s:gsub("[\128-\191]", ""))
+                end
+
+                local function utf8sub(s, max)
+                    local count, i = 0, 1
+                    while i <= #s and count < max do
+                        local b = s:byte(i)
+                        local len = b < 0x80 and 1 or (b < 0xE0 and 2 or (b < 0xF0 and 3 or 4))
+                        i = i + len
+                        count = count + 1
+                    end
+                    return s:sub(1, i - 1)
+                end
+
+                -- Keep text on the canvas: shrink for medium strings, ellipsise long ones.
+                local function fit(text, max_chars, base, min_size)
+                    local n = utf8len(text)
+                    if n > max_chars then
+                        text = utf8sub(text, max_chars - 1) .. "..."
+                        n = max_chars
+                    end
+                    local size = base
+                    if n > 30 then
+                        size = base - 8
+                    end
+                    if n > 40 then
+                        size = base - 14
+                    end
+                    if size < min_size then
+                        size = min_size
+                    end
+                    return text, size
+                end
+
+                -- Cover art = embedded art or an added thumbnail (image track).
+                local function cover_id()
+                    for _, t in ipairs(mp.get_property_native("track-list") or {}) do
+                        if t.type == "video" and (t.albumart or t.image) then
+                            return t.id
+                        end
+                    end
+                end
+
+                -- A real, moving video track (ignores cover art / thumbnails).
+                local function real_video_id()
+                    for _, t in ipairs(mp.get_property_native("track-list") or {}) do
+                        if t.type == "video" and not (t.albumart or t.image) then
+                            return t.id
+                        end
+                    end
+                end
+
+                local function audio_id()
+                    local a = mp.get_property_native("current-tracks/audio")
+                    if a then
+                        return a.id
+                    end
+                    for _, t in ipairs(mp.get_property_native("track-list") or {}) do
+                        if t.type == "audio" then
+                            return t.id
+                        end
+                    end
+                end
+
+                -- drawtext reads the text from a file (textfile), which avoids the
+                -- fragile filtergraph escaping of quotes/colons/commas/percent signs.
+                local function dtext(file, size, color, y)
+                    return string.format(
+                        "drawtext=font=%s:textfile=%s:fontcolor=%s:fontsize=%d:expansion=none:x=(w-text_w)/2:y=%d",
+                        FONT, file, color, size, y)
+                end
+
+                local function build_graph()
+                    local title = meta_first({ "title" })
+                    if title == "" then
+                        title = mp.get_property("media-title") or ""
+                    end
+                    local artist = meta_first({ "artist", "album_artist", "uploader", "channel" })
+                    local title_size, artist_size
+                    title, title_size = fit(title, 44, 46, 30)
+                    artist, artist_size = fit(artist, 56, 30, 20)
+                    write_file(title_file, title)
+                    write_file(artist_file, artist)
+
+                    local aid, cid = audio_id(), cover_id()
+                    local parts = {}
+
+                    if cid then
+                        -- Blurred cover art tinted with the theme colour, with the
+                        -- sharp rounded cover composited on top.
+                        parts[#parts + 1] = string.format("[vid%d]split[covsrc][bgsrc]", cid)
+                        parts[#parts + 1] = string.format(
+                            "[covsrc]scale=%d:%d:force_original_aspect_ratio=increase,crop=%d:%d,format=rgba," ..
+                            "geq=r='p(X,Y)':g='p(X,Y)':b='p(X,Y)':" ..
+                            "a='if(lt(hypot(max(0\\,abs(X-W/2)-(W/2-%d))\\,max(0\\,abs(Y-H/2)-(H/2-%d)))\\,%d)\\,255\\,0)'[cover]",
+                            COVER, COVER, COVER, COVER, RADIUS, RADIUS, RADIUS)
+                        parts[#parts + 1] = string.format(
+                            "[bgsrc]scale=%d:%d:force_original_aspect_ratio=increase,crop=%d:%d," ..
+                            "gblur=sigma=%d,eq=brightness=-0.25:saturation=0.85[bgb]",
+                            W, H, W, H, BLUR_SIGMA)
+                        parts[#parts + 1] = string.format(
+                            "color=c=%s:s=%dx%d,format=rgba,colorchannelmixer=aa=%.2f[tint]",
+                            BG, W, H, TINT_ALPHA)
+                        parts[#parts + 1] = "[bgb][tint]overlay[bg]"
+                        local chain = string.format("[bg][cover]overlay=x=(W-w)/2:y=%d", COVER_Y)
+                        chain = chain .. "," .. dtext(title_file, title_size, FG, TITLE_Y)
+                        if artist ~= "" then
+                            chain = chain .. "," .. dtext(artist_file, artist_size, FG_DIM, ARTIST_Y)
+                        end
+                        parts[#parts + 1] = chain .. ",format=yuv420p[vo]"
+                    else
+                        local chain = string.format("color=c=%s:s=%dx%d", BG, W, H)
+                        chain = chain .. "," .. dtext(title_file, title_size, FG, TITLE_NOCOVER_Y)
+                        if artist ~= "" then
+                            chain = chain .. "," .. dtext(artist_file, artist_size, FG_DIM, ARTIST_NOCOVER_Y)
+                        end
+                        parts[#parts + 1] = chain .. ",format=yuv420p[vo]"
+                    end
+
+                    if aid then
+                        parts[#parts + 1] = string.format("[aid%d]anull[ao]", aid)
+                    end
+                    return table.concat(parts, ";")
+                end
+
+                local function ready()
+                    return started and mp.get_property_native("current-tracks/audio") ~= nil
+                end
+
+                local function show_card()
+                    local g = build_graph()
+                    if g ~= mp.get_property("file-local-options/lavfi-complex", "") then
+                        mp.set_property("file-local-options/lavfi-complex", g)
+                    end
+                end
+
+                local function clear_card()
+                    if mp.get_property("file-local-options/lavfi-complex", "") ~= "" then
+                        mp.set_property("file-local-options/lavfi-complex", "")
+                    end
+                end
+
+                local function apply()
+                    if enabled then
+                        if not ready() then
+                            pending = true
+                            return
+                        end
+                        pending = false
+                        show_card()
+                    else
+                        pending = false
+                        clear_card()
+                        -- Clearing lavfi deselects the video track, so restore the
+                        -- real video (or the cover art) once the teardown has settled.
+                        mp.add_timeout(0.2, function()
+                            if enabled then
+                                return
+                            end
+                            local target = real_video_id() or cover_id()
+                            mp.set_property("vid", target and tostring(target) or "auto")
+                        end)
+                    end
+                end
+
+                local function toggle()
+                    enabled = not enabled
+                    mp.osd_message(enabled and "Now playing" or "Video mode", 1)
+                    apply()
+                end
+
+                mp.register_script_message("toggle-nowplaying", toggle)
+                mp.register_event("start-file", function()
+                    started = false
+                end)
+                mp.register_event("playback-restart", function()
+                    started = true
+                    if pending or enabled then
+                        pending = false
+                        mp.add_timeout(0.3, apply)
+                    end
+                end)
+                mp.register_event("file-loaded", function()
+                    if enabled then
+                        pending = true
+                    end
+                end)
+                mp.observe_property("metadata", "native", function()
+                    if enabled and ready() then
+                        show_card()
+                    end
+                end)
+                mp.observe_property("track-list/count", "number", function()
+                    if enabled and ready() then
+                        show_card()
+                    end
+                end)
               '';
             };
 

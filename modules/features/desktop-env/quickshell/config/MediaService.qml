@@ -6,8 +6,20 @@ import Quickshell.Services.Mpris
 import QtQuick
 import "Utils.js" as Utils
 
-// Centralized singleton managing MPRIS player state, unified position/progress estimation,
-// and synchronized ticking across the bar, command center, and lock screen.
+// Centralized singleton managing MPRIS player state, unified position/progress
+// sampling, and synchronized ticking across the bar, command center, and lock
+// screen.
+//
+// Position handling note: Quickshell's MprisPlayer.position is already
+// interpolated against the wall clock (honouring the player's reported rate and
+// pause state) and reading it always returns the current value. Crucially, its
+// `positionChanged` signal only fires on non-linear changes (seeks, track
+// changes) *not* continuously during normal playback -- the docs explicitly
+// recommend re-reading the property or re-emitting the signal while it is being
+// watched. We therefore re-read the property on every tick (and on every
+// relevant player change) instead of keeping our own extrapolated copy, which
+// used to drift whenever the player did not push Position updates (Firefox /
+// Chromium players, live streams, after a rewind, ...).
 Singleton {
   id: root
 
@@ -62,15 +74,34 @@ Singleton {
     root.activeConsumers > 0
   )
 
-  // --- Position & Progress Estimation ---
+  // --- Position & Progress Sampling ---
   property real lastPosition: 0
   property real lastLength: 0
-  property real wallClock: 0
-
   property real estimatedPosition: 0
   property real progress: 0
 
+  // Live streams report no `mpris:length`; Quickshell surfaces that as
+  // lengthSupported == false (and its `length` getter falls back to `position`).
+  // Such a track must never be rendered as a seekable bar with a bogus total.
+  readonly property bool isLive: root.hasPlayer && !root.player.lengthSupported
+  readonly property bool hasPosition: root.hasPlayer && root.player.positionSupported
+
   readonly property int tickInterval: 300
+
+  // True between a seek request and the debounced seek being issued. Sampling is
+  // suspended during this window so a tick can't clobber the optimistic
+  // position the user just dragged to.
+  property bool _seekPending: false
+
+  // True after the seek is issued until the player confirms a position near the
+  // target. Prevents a stale in-flight Position report from snapping the bar
+  // back to the pre-seek time.
+  property bool _seekSettling: false
+
+  // After a track change Quickshell re-reads Position asynchronously; suppress
+  // sampling until the settle timer fires so the previous track's time can't
+  // flash on the new one before that refresh lands.
+  property bool _trackSettling: false
 
   function safePos(p) {
     if (!p) return 0
@@ -94,87 +125,102 @@ Singleton {
     }
   }
 
-  function reset(pos, len) {
-    root.lastPosition = Math.max(0, pos || 0)
-    root.lastLength = Math.max(0, len || 0)
-    root.wallClock = Date.now() / 1000
-    root.updateEstimatedPosition()
-  }
-
-  function updatePosition(pos, len) {
-    var p = Math.max(0, pos || 0)
-    var l = Math.max(0, len || 0)
-    if (p + 0.5 < root.lastPosition) {
-      root.reset(p, l)
-      return
-    }
-    root.lastPosition = p
-    root.lastLength = l
-    root.wallClock = Date.now() / 1000
-    root.updateEstimatedPosition()
-  }
-
-  function updateEstimatedPosition() {
+  // Re-read the authoritative position from the player. Safe to call at any time
+  // and cheap enough to run every tick.
+  function sample() {
+    if (root._seekPending || root._trackSettling) return
     if (!root.player) {
-      root.estimatedPosition = root.lastPosition
+      root.lastPosition = 0
+      root.lastLength = 0
+      root.estimatedPosition = 0
       root.progress = 0
       return
     }
-    var playing = false
-    try { playing = !!root.player.isPlaying } catch (e) {}
-    var elapsed = Date.now() / 1000 - root.wallClock
-    root.estimatedPosition = root.lastPosition + (playing ? elapsed : 0)
-    if (root.lastLength > 0) {
-      root.progress = Math.min(1, Math.max(0, root.estimatedPosition / root.lastLength))
-    } else {
-      root.progress = 0
+    var pos = root.safePos(root.player)
+    var len = root.safeLen(root.player)
+    // While settling a seek, ignore reports far from the target; accept the
+    // first report that lands near it (seekSettleTimer releases us otherwise).
+    if (root._seekSettling) {
+      if (Math.abs(pos - root.lastPosition) > 1.0) return
+      root._seekSettling = false
     }
+    root.lastPosition = pos
+    root.lastLength = len
+    // Never let a stale/overrunning player base render past the track end.
+    root.estimatedPosition = len > 0 ? Math.min(pos, len) : pos
+    root.progress = len > 0
+      ? Math.min(1, Math.max(0, pos / len))
+      : 0
   }
 
   onPlayerChanged: {
-    if (!root.player) {
-      root.reset(0, 0)
-      return
-    }
-    root.reset(root.safePos(root.player), root.safeLen(root.player))
+    root._seekPending = false
+    root._seekSettling = false
+    root._trackSettling = false
+    seekDebounceTimer.stop()
+    seekSettleTimer.stop()
+    trackSettleTimer.stop()
+    root.sample()
   }
 
-  // Refresh position immediately as soon as a UI surface opens or is hovered
+  // Refresh immediately as soon as a UI surface opens or is hovered.
   onIsConsumerActiveChanged: {
-    if (root.isConsumerActive && root.player) {
-      root.updatePosition(root.safePos(root.player), root.safeLen(root.player))
-    }
+    if (root.isConsumerActive) root.sample()
   }
 
   Connections {
     target: root.player
     ignoreUnknownSignals: true
-    function onPositionChanged() {
-      if (!root.player) return
-      root.updatePosition(root.safePos(root.player), root.safeLen(root.player))
-    }
-    function onLengthChanged() {
-      if (!root.player) return
-      root.lastLength = Math.max(0, root.safeLen(root.player))
-      root.updateEstimatedPosition()
-    }
+    function onPositionChanged() { root.sample() }
+    function onPositionSupportedChanged() { root.sample() }
+    function onLengthChanged() { root.sample() }
+    function onLengthSupportedChanged() { root.sample() }
     function onTrackChanged() {
-      if (!root.player) return
-      root.reset(root.safePos(root.player), root.safeLen(root.player))
+      // trackChanged fires before the new metadata/track id is applied, so
+      // sampling here would resurrect the previous track's position. Clear it
+      // immediately and resample once the async Position refresh has landed.
+      root._trackSettling = true
+      root.lastPosition = 0
+      root.lastLength = 0
+      root.estimatedPosition = 0
+      root.progress = 0
+      trackSettleTimer.restart()
     }
-    function onIsPlayingChanged() {
-      if (!root.player) return
-      root.updatePosition(root.safePos(root.player), root.safeLen(root.player))
-    }
+    function onIsPlayingChanged() { root.sample() }
   }
 
-  // Unified position ticking timer: stopped when no consumer UI is active or when paused.
+  // Position tick: only runs while a surface is showing the time/seek bar and
+  // playback is actually advancing. Each tick re-reads the player property.
   Timer {
     id: tickTimer
     interval: root.tickInterval
     running: root.isConsumerActive && root.isPlaying
     repeat: true
-    onTriggered: root.updateEstimatedPosition()
+    onTriggered: root.sample()
+  }
+
+  // Resamples after a track change once Quickshell's async Position refresh has
+  // had time to complete (covers paused tracks too, where the tick is stopped).
+  Timer {
+    id: trackSettleTimer
+    interval: 400
+    repeat: false
+    onTriggered: {
+      root._trackSettling = false
+      root.sample()
+    }
+  }
+
+  // Fallback release for a seek that the player never confirms near the target
+  // (e.g. a keyframe seek landing further away).
+  Timer {
+    id: seekSettleTimer
+    interval: 600
+    repeat: false
+    onTriggered: {
+      root._seekSettling = false
+      root.sample()
+    }
   }
 
   // --- Centralized Debounced Seeking ---
@@ -184,29 +230,39 @@ Singleton {
     repeat: false
     property real targetProgress: 0
     onTriggered: {
-      if (root.player && root.player.canSeek) {
-        var targetPos = targetProgress * root.lastLength
-        if (root.player.positionSupported) {
-          root.player.position = targetPos
-        } else {
-          var currentPos = root.estimatedPosition
-          root.player.seek(targetPos - currentPos)
-        }
-        root.reset(targetPos, root.lastLength)
+      root._seekPending = false
+      if (!root.player || !root.player.canSeek) {
+        root.sample()
+        return
       }
+      var targetPos = targetProgress * root.lastLength
+      if (root.player.positionSupported) {
+        root.player.position = targetPos
+      } else {
+        var currentPos = root.estimatedPosition
+        root.player.seek(targetPos - currentPos)
+      }
+      // Setting position triggers a positionChanged -> sample() reading the
+      // target; keep showing it until the player confirms (or the settle timer
+      // releases us) so a stale report can't rewind the bar.
+      root._seekSettling = true
+      seekSettleTimer.restart()
     }
   }
 
   function seek(progressFraction) {
     if (!root.player || !root.canSeek) return
     var p = Math.max(0, Math.min(1, progressFraction))
+    root._seekPending = true
     seekDebounceTimer.targetProgress = p
     seekDebounceTimer.restart()
     // Move the estimate immediately so the position tick can't rewind it before
     // the debounced MPRIS seek lands.
     root.lastPosition = p * root.lastLength
-    root.wallClock = Date.now() / 1000
-    root.updateEstimatedPosition()
+    root.estimatedPosition = root.lastPosition
+    if (root.lastLength > 0) {
+      root.progress = Math.min(1, Math.max(0, p))
+    }
   }
 
   // --- Common Playback Actions ---

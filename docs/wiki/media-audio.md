@@ -10,7 +10,7 @@ The media stack is optimised for hardware acceleration, low latency, and aesthet
 
 | Application / Layer | Technology | Key Capabilities | Configuration Location |
 | :--- | :--- | :--- | :--- |
-| **Video Player** | **MPV** | Vulkan `gpu-next` pipeline, hardware decode, themed Modernz OSC, Thumbfast | `modules/features/apps/media.nix` |
+| **Video Player** | **MPV** | Vulkan `gpu-next` pipeline, hardware decode, themed Modernz OSC, Thumbfast, toggleable now-playing card | `modules/features/apps/media.nix` |
 | **PDF & Documents** | **Zathura** | Dynamic dark mode recolouring, Neovim SyncTeX reverse search | `modules/features/apps/media.nix` |
 | **Image Viewer** | **imv** | Fast Wayland image viewer with shrink scaling | `modules/features/apps/media.nix` |
 | **Audio Server** | **PipeWire** | Low-latency audio with WirePlumber, ALSA, PulseAudio, and JACK support | `modules/features/system/pipewire.nix` |
@@ -44,10 +44,24 @@ Seeking controls follow standard Vim home-row navigation:
 - **`j`**: Seek backward 10 seconds
 - **`k`**: Seek forward 10 seconds
 
+### Now-Playing Card (`v`)
+
+A custom Lua script (`~/.config/mpv/scripts/nowplaying.lua`) adds a single-key toggle between a **now-playing card** and normal **video mode**:
+
+- **Now-playing mode**: builds a `lavfi-complex` filter graph: the cover art fills the window heavily blurred and tinted with the theme colour, with the sharp cover centre-cropped to a square and rounded on top, plus the track **title** and **artist** below it. Embedded art is used for local files; for YouTube, `ytdl_hook.conf` sets `thumbnails=best`, which adds the video thumbnail as an *unselected* image track (so it never hijacks the real video). Files with no cover at all get a text-only card on the flat theme background.
+- **Video mode** (default): normal playback, restoring the real video track (or the plain cover art for audio files).
+
+The card colours are pulled from the active theme (`bg`, `fg`, `fgMid`). Title/artist text is passed through `drawtext` `textfile`s with `expansion=none`, so quotes, colons, commas and `%` render literally, and long titles are shrunk/ellipsised to stay on the canvas. Pressing **`v`** toggles the mode with a short OSD confirmation, and the state carries across playlist entries. Set `initial=yes` in `script-opts/nowplaying.conf` to start every session in now-playing mode.
+
+The card is only applied once playback has actually started, which avoids reconfiguring the video chain while a network stream is still opening.
+
+> **Note:** binding `v` overrides MPV's default subtitle-visibility toggle.
+
 ### Bundled Scripts & Theming
 
 - **Modernz OSC (`modernz.conf`)**: Replaces the default on-screen controller with a clean, modern interface. Nix injects the active system colour palette (`bgRaised`, `accent`, `red`, `yellow`, `green`) into the seekbars, volume sliders, and hover effects. Window controls are disabled to match tiling compositor aesthetics.
 - **Thumbfast (`thumbfast.conf`)**: Generates instant thumbnail previews while hovering over the seekbar. Configured with hardware decoding (`hwdec=yes`), remote network stream support (`network=yes`), and an automatic idle timeout (60 seconds) that reaps the background process to free system memory.
+- **Now-Playing Card (`scripts/nowplaying.lua`)**: Custom toggle (**`v`**) that renders a centred, rounded cover-art card with the title/artist below (embedded art, or the YouTube thumbnail via `ytdl_hook.conf`: `thumbnails=best`), or a text-only card for coverless media.
 - **Autoload**: Automatically loads all adjacent media files in the active directory into the playlist.
 - **MPRIS**: Exposes playback state and track metadata to Quickshell status widgets and media control keys (`playerctl`).
 - **Quality Menu**: On-screen menu allowing interactive video resolution and stream selection.
