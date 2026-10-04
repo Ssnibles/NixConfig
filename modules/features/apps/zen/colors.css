@@ -1,0 +1,112 @@
+/* ==========================================================================
+   Zen Browser Dynamic Theme Palette (Generated from config.theme.colors)
+   Active Scheme: vague
+   ========================================================================== */
+:root {
+  /* System Palette Tokens */
+  --theme-bg: #141415;
+  --theme-bg-raised: #1c1c24;
+  --theme-bg-subtle: #252530;
+  --theme-border: #252530;
+  --theme-fg: #cdcdcd;
+  --theme-fg-mid: #878787;
+  --theme-fg-dim: #606079;
+  --theme-accent: #6e94b2;
+  --theme-teal: #b4d4cf;
+  --theme-purple: #bb9dbd;
+  --theme-green: #7fa563;
+  --theme-yellow: #f3be7c;
+  --theme-red: #d8647e;
+  --theme-orange: #e8b589;
+
+  /* System Typography (Quickshell & System Theme) */
+  --theme-font-sans: "SF Pro Text", system-ui, -apple-system, sans-serif;
+  --theme-font-mono: "JetBrainsMono Nerd Font", monospace;
+  --theme-font-serif: "Instrument Serif", Georgia, serif;
+
+  /* UI Metrics (Refined Quickshell Design System) */
+  --theme-radius-sm: 6px;
+  --theme-radius: 8px;
+  --theme-radius-lg: 12px;
+  --theme-radius-pill: 9999px;
+  --theme-transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  --theme-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --theme-transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --theme-shadow-card: 0 4px 16px rgba(0, 0, 0, 0.25);
+  --theme-shadow-popup: 0 10px 30px rgba(0, 0, 0, 0.4);
+
+  /* Zen Browser Native Design Tokens */
+  --zen-primary-color: #6e94b2 !important;
+  --zen-colors-primary: #252530 !important;
+  --zen-colors-secondary: #252530 !important;
+  --zen-colors-tertiary: #141415 !important;
+  --zen-colors-border: #252530 !important;
+  --zen-main-browser-background: #141415 !important;
+  --zen-themed-toolbar-bg: #141415 !important;
+  --toolbox-bgcolor-inactive: #141415 !important;
+  --toolbar-bgcolor: #141415 !important;
+  --toolbar-color: #cdcdcd !important;
+  --toolbar-field-color: #cdcdcd !important;
+  --toolbar-field-focus-color: #cdcdcd !important;
+  --toolbarbutton-icon-fill: #6e94b2 !important;
+  --tab-selected-textcolor: #6e94b2 !important;
+  --lwt-text-color: #cdcdcd !important;
+  --lwt-sidebar-text-color: #cdcdcd !important;
+  --lwt-sidebar-background-color: #141415 !important;
+  --sidebar-text-color: #cdcdcd !important;
+  --arrowpanel-background: color-mix(in srgb, #1c1c24 90%, transparent) !important;
+  --arrowpanel-color: #cdcdcd !important;
+  --arrowpanel-border-color: #252530 !important;
+  --panel-background: color-mix(in srgb, #1c1c24 90%, transparent) !important;
+  --panel-color: #cdcdcd !important;
+  --panel-border-color: #252530 !important;
+  --newtab-background-color: #141415 !important;
+  --newtab-text-primary-color: #cdcdcd !important;
+  --urlbar-box-bgcolor: #1c1c24 !important;
+  --urlbar-box-focus-bgcolor: #1c1c24 !important;
+  --urlbar-box-hover-bgcolor: #1c1c24 !important;
+
+  /* In-Content Page Tokens */
+  --in-content-page-background: #141415 !important;
+  --in-content-page-color: #cdcdcd !important;
+  --in-content-box-background: #1c1c24 !important;
+  --in-content-box-border-color: #252530 !important;
+  --color-accent-primary: #6e94b2 !important;
+  --color-accent-primary-hover: color-mix(in srgb, #6e94b2 85%, white) !important;
+  --color-accent-primary-active: color-mix(in srgb, #6e94b2 70%, white) !important;
+}
+
+/* Container Tab Accent Colors */
+.identity-color-blue {
+  --identity-tab-color: #6e94b2 !important;
+  --identity-icon-color: #6e94b2 !important;
+}
+.identity-color-turquoise {
+  --identity-tab-color: #b4d4cf !important;
+  --identity-icon-color: #b4d4cf !important;
+}
+.identity-color-green {
+  --identity-tab-color: #7fa563 !important;
+  --identity-icon-color: #7fa563 !important;
+}
+.identity-color-yellow {
+  --identity-tab-color: #f3be7c !important;
+  --identity-icon-color: #f3be7c !important;
+}
+.identity-color-orange {
+  --identity-tab-color: #e8b589 !important;
+  --identity-icon-color: #e8b589 !important;
+}
+.identity-color-red {
+  --identity-tab-color: #d8647e !important;
+  --identity-icon-color: #d8647e !important;
+}
+.identity-color-pink {
+  --identity-tab-color: #bb9dbd !important;
+  --identity-icon-color: #bb9dbd !important;
+}
+.identity-color-purple {
+  --identity-tab-color: #6e94b2 !important;
+  --identity-icon-color: #6e94b2 !important;
+}
+

@@ -18,7 +18,12 @@
 #import "@preview/mmdr:0.2.2": mermaid
 
 // ── Palette and design tokens ───────────────────────────────────────────────
-#let theme-mode = "dark"
+// Theme mode: "dark" (default) or "light". Override at compile time with
+// `typst compile --input theme-mode=light …`; the complete-notes generator does
+// this for you via its `--light` flag. Read here, at module load, so that every
+// derived colour (and the notes' own `ui-border`/`ui-surface`/… references)
+// stays a plain value rather than a context-dependent one.
+#let theme-mode = sys.inputs.at("theme-mode", default: "dark")
 #let text-size = 10pt
 
 #let bg-color = if theme-mode == "dark" { rgb("#1a1a1a") } else { rgb("#ffffff") }
