@@ -143,6 +143,7 @@
       features.tailscale.enable = true;
       features.podman-vm.enable = true;
       features.bluetooth.enable = true;
+      features.flatpak.enable = true;
       features.helium.enable = false;
       features.pi-agent = {
         enable = true;

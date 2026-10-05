@@ -41,7 +41,7 @@ export DIAGRAM_CONTENT=$(cat <<EOF
 \`\`\`mermaid
 flowchart TD
     subgraph Flake["flake.nix (Flake-Parts Entry Point)"]
-        Inputs["Inputs: nixpkgs (26.05), unstable, flake-parts, import-tree, hjem, nvf, mangowc, pi-agent..."]
+        Inputs["Inputs: nixpkgs (26.05), unstable, flake-parts, import-tree, hjem, nix-flatpak, nvf, mangowc, pi-agent..."]
     end
 
     Tree["inputs.import-tree ./modules<br/>(Filesystem Auto-Discovery)"]

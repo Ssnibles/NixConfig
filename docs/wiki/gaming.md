@@ -16,6 +16,7 @@ The gaming stack configured in `modules/features/apps/gaming.nix` provides a hig
 | **GameMode** | System Performance Daemon | Dynamically sets CPU governor to performance and elevates process scheduling |
 | **MangoHud** | Telemetry Overlay | Real-time on-screen display for FPS, frame times, CPU/GPU temperatures |
 | **DualSense Stack** | PS5 Controller Support | Native `hid-playstation` kernel drivers, udev rules, `dualsense-pair` CLI |
+| **Sober** | Roblox Client | Community-built Roblox client (`org.vinegarhq.Sober`) installed from Flathub as a sandboxed app (see the [Flatpak Guide](flatpak.md)) |
 
 ---
 
@@ -103,3 +104,15 @@ The repository includes a custom helper script (`modules/packages/dualsense-pair
    dualsense-pair
    ```
 3. The script automatically powers on the Bluetooth adapter, scans for the DualSense MAC address, pairs the device, marks it as trusted, and connects.
+
+---
+
+## Roblox with Sober
+
+Roblox is played through **Sober** (`org.vinegarhq.Sober`), a community-built Linux client distributed as a sandboxed Flatpak:
+
+```bash
+flatpak run org.vinegarhq.Sober
+```
+
+Sober is declared in [`modules/features/system/flatpak.nix`](../../modules/features/system/flatpak.nix) and pulled from Flathub, then refreshed on a daily schedule so it keeps matching the live Roblox client version. Installation, updates, and pinning are covered in the [Flatpak & Sandboxed Applications Guide](flatpak.md).

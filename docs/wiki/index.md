@@ -40,6 +40,10 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 - **[Frame Remote Desktop Client](frame.md)**  
   Nutanix Frame Desktop-as-a-Service client inside an isolated Ubuntu 24.04 Distrobox container: repacked `.deb` with a container-safe post-install script, host `frame` launcher, `frame://` SSO URL handling, audio passthrough, and USB device redirection.
 
+### Application Packaging & Sandboxing
+- **[Flatpak & Sandboxed Applications](flatpak.md)**  
+  Declarative Flatpak management via `nix-flatpak`: the Flathub remote, Sober (Roblox) from Flathub, the hash-pinned Nuvio Desktop `.flatpak` bundle, activation-time installation, update behaviour, overrides, and troubleshooting.
+
 ### Networking & Synchronisation
 - **[Networking, Tailscale & Syncthing Synchronisation](networking-sync.md)**  
   Encrypted mesh networking with Tailscale, battery-optimised peer-to-peer folder synchronisation with Syncthing, systemd-resolved DNS-over-TLS, and iwd wireless configuration with Opportunistic Wireless Encryption.
@@ -62,4 +66,5 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 | **Firefox & Helium** | `modules/features/apps/firefox/`, `apps/helium.nix` | `userChrome.css`, `userContent.css` | [firefox.md](firefox.md) |
 | **Gaming & PS5** | `modules/features/apps/gaming.nix` | `modules/packages/dualsense-pair/` | [gaming.md](gaming.md) |
 | **Frame Remote Desktop** | `modules/features/apps/frame.nix` | `assets/setup_frame.sh` | [frame.md](frame.md) |
+| **Flatpak & Sandboxed Apps** | `modules/features/system/flatpak.nix` | `nix-flatpak`, Flathub remote | [flatpak.md](flatpak.md) |
 | **Tailscale & Syncthing** | `modules/features/system/tailscale.nix`, `syncthing.nix` | Tailscale client, Syncthing service | [networking-sync.md](networking-sync.md) |

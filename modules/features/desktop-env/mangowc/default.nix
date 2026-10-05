@@ -168,8 +168,8 @@
           files = {
             ".config/mango/colours.conf" = {
               text = ''
-                focuscolor = 0x${accent}ff
-                bordercolor = 0x${border}ff
+                focus_color = 0x${accent}ff
+                border_color = 0x${border}ff
               '';
             };
             ".config/xdg-desktop-portal-wlr/config" = {

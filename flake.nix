@@ -95,6 +95,10 @@
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Declarative Flatpak manager. Adds services.flatpak.remotes/.packages on
+    # top of NixOS' built-in module (which only provides `enable`).
+    nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.7.0";
   };
 
   outputs =

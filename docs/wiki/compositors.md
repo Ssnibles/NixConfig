@@ -24,7 +24,7 @@ MangoWC is a lightweight, DWM-inspired Wayland compositor built on wlroots. It i
 
 - **`config.conf`**: Core options (border width, inner/outer gaps, mouse focus, master window ratio). Symlinked to `~/.config/mango/config.conf`.
 - **`binds.conf`**: Complete keybinding definitions, trackpad gestures, and scratchpad management.
-- **`colours.conf`**: Generated declaratively by Hjem from `config.theme.colors` (`focuscolor`, `bordercolor`).
+- **`colours.conf`**: Generated declaratively by Hjem from `config.theme.colors` (`focus_color`, `border_color`).
 - **`mango-dev` Wrapper**: When `features.mangowc.local = true` is set, the system wraps `mango` and `mmsg` to check `/home/josh/mango/result/bin/` first. This enables instant iteration on local compositor source code via `nix build` without requiring a full `nixos-rebuild`.
 
 ### Keybindings & Workflows
@@ -79,7 +79,7 @@ Triggered via keybindings:
 - **`SUPER + Shift + s`**: Interactive area screenshot with instant OCR text recognition
 
 The custom script (`modules/features/desktop-env/mangowc/screenshot.sh`) includes several advanced behaviours:
-1. **Zero-Border Capture**: Queries MangoWC options via `mmsg`, temporarily sets `borderpx` and `border_radius` to 0, and restores them immediately upon completion.
+1. **Zero-Border Capture**: Queries MangoWC options via `mmsg`, temporarily sets `border_px` and `border_radius` to 0, and restores them immediately upon completion.
 2. **Window Snapping**: Queries visible client geometry via `mmsg get all-clients` and passes coordinates to `slurp` for one-click window boundary selection.
 3. **Cursor Warping**: Uses `wlrctl pointer move` to temporarily warp the mouse pointer off-screen, preventing software cursor artifacts from appearing in screenshots.
 4. **OCR Extraction**: For `SUPER + Shift + s`, pipes cropped image data directly into `tesseract` and copies the resulting text to `wl-copy`.

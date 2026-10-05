@@ -48,6 +48,7 @@ User environments and dotfiles are managed declaratively using **[hjem](https://
   - [Media, Documents & Audio Stack](#media-documents--audio-stack)
   - [Browsers & Web Tools](#browsers--web-tools)
   - [Gaming Suite](#gaming-suite)
+  - [Flatpak & Sandboxed Applications](#flatpak--sandboxed-applications)
 - [Repository Structure](#repository-structure)
 - [Hosts Comparison](#hosts-comparison)
 - [Wiki & Feature Guides](#wiki--feature-guides)
@@ -86,7 +87,7 @@ The configuration is organised into deferred module groups defined in [`modules/
 ```mermaid
 flowchart TD
     subgraph Flake["flake.nix (Flake-Parts Entry Point)"]
-        Inputs["Inputs: nixpkgs (26.05), unstable, flake-parts, import-tree, hjem, nvf, mangowc, pi-agent..."]
+        Inputs["Inputs: nixpkgs (26.05), unstable, flake-parts, import-tree, hjem, nix-flatpak, nvf, mangowc, pi-agent..."]
     end
 
     Tree["inputs.import-tree ./modules<br/>(Filesystem Auto-Discovery)"]
@@ -240,6 +241,7 @@ For hardware acceleration parameters, Modernz theming, SyncTeX setup, and audio 
 - **Zathura PDF Reader**: Keyboard-driven document viewer with automatic dark mode recolouring matching system theme colours and SyncTeX reverse jumping (`Ctrl + Click` opens Neovim at source line).
 - **PipeWire Low-Latency Audio**: Pro-audio ready PipeWire sound server ([`pipewire.nix`](file:///home/josh/NixConfig/modules/features/system/pipewire.nix)) with WirePlumber, ALSA, PulseAudio, and JACK support.
 - **YouTube Playback CLI (`ytplay`)**: Dedicated CLI utility for playing YouTube videos or music directly into MPV.
+- **Nuvio Desktop**: Stremio-addon media player (`com.nuvio.media.desktop`) delivered as a hash-pinned sandboxed Flatpak bundle — see the [Flatpak Guide](docs/wiki/flatpak.md).
 - **Image Viewing & Spotify**: `imv` image viewer, desktop Spotify enhanced with Spicetify, and `spotatui` Spotify terminal UI.
 
 ### Browsers & Web Tools
@@ -258,6 +260,15 @@ For Steam skinning, Gamescope launch parameters, and controller pairing, refer t
 - **Gamescope Micro-Compositor**: Isolated sandboxed gaming sessions supporting resolution scaling, AMD FSR upscaling, and refresh rate limiting.
 - **GameMode & MangoHud**: Automatic CPU performance governor tuning via GameMode daemon and real-time on-screen telemetry overlay via MangoHud.
 - **PlayStation 5 DualSense Controllers**: Full kernel driver support via `hid-playstation` and a custom Bluetooth pairing CLI utility ([`dualsense-pair`](file:///home/josh/NixConfig/modules/packages/dualsense-pair/dualsense-pair.sh)).
+- **Sober (Roblox)**: Community-built Roblox client (`org.vinegarhq.Sober`) installed from Flathub as a sandboxed app — see the [Flatpak Guide](docs/wiki/flatpak.md).
+
+### Flatpak & Sandboxed Applications
+
+For declarative app management, Nuvio pinning, and update behaviour, refer to the **[Flatpak & Sandboxed Applications Guide](docs/wiki/flatpak.md)**:
+
+- **Declarative Flatpak Management**: The Flathub remote and application set are declared in [`flatpak.nix`](file:///home/josh/NixConfig/modules/features/system/flatpak.nix) through the [nix-flatpak](https://github.com/gmodena/nix-flatpak) module (NixOS core only provides `services.flatpak.enable`). A `flatpak-managed-install` systemd oneshot installs, updates, and removes apps at activation.
+- **Sober (Roblox)**: Roblox client for Linux (`org.vinegarhq.Sober`) from Flathub, refreshed daily so it tracks the live Roblox version.
+- **Nuvio Desktop**: Stremio-addon media player (`com.nuvio.media.desktop`) — not published on Flathub, so it is installed from a hash-pinned GitHub release `.flatpak` bundle.
 
 ### Remote Desktop & Cloud Workstations
 
@@ -303,6 +314,7 @@ NixConfig/
 │       ├── frame.md                   # Frame remote desktop client container guide
 │       ├── esp32-arduino.md           # ESP32 & Arduino toolchain and templates
 │       ├── wramp.md                   # WRAMP toolchain & simulator container guide
+│       ├── flatpak.md                 # Declarative Flathub apps, Sober & Nuvio
 │       └── gaming.md                  # Steam, Millennium, Gamescope, DualSense PS5
 │
 ├── templates/
@@ -334,6 +346,7 @@ NixConfig/
     │   ├── system/                    # Core system layers
     │   │   ├── base.nix               # Nixpkgs overlays, caches, network, nh GC, ytplay
     │   │   ├── bluetooth.nix          # Bluetooth stack & Blueman service
+    │   │   ├── flatpak.nix            # Declarative Flathub remote, Sober & Nuvio bundle
     │   │   ├── journal-error-notify.nix # Boot error detection notification daemon
     │   │   ├── nvidia.nix             # Proprietary NVIDIA GPU drivers & Wayland flags
     │   │   ├── pipewire.nix           # Low-latency PipeWire & WirePlumber audio
@@ -417,6 +430,7 @@ NixConfig/
 | **Networking & Sync** | Tailscale mesh VPN, Syncthing (Documents, Hermes) | Tailscale mesh VPN, Syncthing (Battery-optimised) |
 | **Peripheral Stack** | Logitech wireless support, DualSense PS5 driver | DFU / OpenOCD / Meshtastic serial udev permissions |
 | **Audio & Media** | Low-latency PipeWire, Amberol, MPV, Spotify | Low-latency PipeWire, MPV, Spotify, Gowall |
+| **Flatpak & Sandboxed Apps** | Flathub, Sober (Roblox), Nuvio Desktop | Flathub, Sober (Roblox), Nuvio Desktop |
 
 ---
 
@@ -438,6 +452,7 @@ Comprehensive documentation, architecture references, and step-by-step workflow 
 | **ESP32 & Arduino** | [esp32-arduino.md](docs/wiki/esp32-arduino.md) | ESP32 toolchains, `arduino-cli`, `esptool`, Neovim Clangd LSP compilation database generation (`esp-gen-lsp`), and project templates |
 | **WRAMP Toolchain** | [wramp.md](docs/wiki/wramp.md) | Distrobox Ubuntu 22.04 container with `wasm`/`wlink`/`wobj`, the `wcc` compiler, the `wsim` Mono GUI simulator, `remote`/`down`, `trim`, WRAMPmon, and host launcher wrappers |
 | **Gaming & Controllers** | [gaming.md](docs/wiki/gaming.md) | Steam with Millennium skinning, Gamescope composited sessions, MangoHud overlay, and DualSense PS5 controller pairing via `dualsense-pair` |
+| **Flatpak & Sandboxed Apps** | [flatpak.md](docs/wiki/flatpak.md) | Declarative Flatpak via nix-flatpak: Flathub remote, Sober (Roblox) from Flathub, hash-pinned Nuvio Desktop `.flatpak` bundle, update behaviour, and troubleshooting |
 | **Frame Remote Desktop** | [frame.md](docs/wiki/frame.md) | Nutanix Frame Desktop-as-a-Service client in an Ubuntu 24.04 Distrobox container: repacked `.deb`, host `frame` launcher, `frame://` SSO URL handling, audio passthrough, and USB redirection |
 
 ---
