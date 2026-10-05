@@ -10,6 +10,18 @@
     { pkgs, config, ... }:
     let
       c = config.theme.colors;
+
+      # Zathura parses colors with GDK, which accepts `rgba(r, g, b, a)` but
+      # not 8-digit hex. Convert a theme hex triplet (no leading '#') plus an
+      # alpha into an rgba() string.
+      hexByte = pos: hex: (builtins.fromTOML "v = 0x${builtins.substring (pos * 2) 2 hex}").v;
+      rgba =
+        alpha: hex:
+        "rgba(${toString (hexByte 0 hex)}, ${toString (hexByte 1 hex)}, ${toString (hexByte 2 hex)}, ${builtins.toJSON alpha})";
+
+      # Highlight rectangles are 70% transparent (alpha 0.3) so the text they
+      # cover stays readable instead of being hidden behind an opaque block.
+      highlightAlpha = 0.3;
     in
     {
       config = {
@@ -478,10 +490,13 @@
                 set notification-warning-bg "#${c.bgRaised}"
                 set notification-warning-fg "#${c.yellow}"
 
-                # Highlight and selection colors
-                set highlight-color "#${c.yellow}"
-                set highlight-active-color "#${c.orange}"
-                set highlight-fg "#${c.bg}"
+                # Highlight and selection colors. The highlight fill must be
+                # translucent so search hits don't cover the text, and
+                # highlight-fg must not be the background color or the matched
+                # glyphs themselves would be painted invisible.
+                set highlight-color "${rgba highlightAlpha c.yellow}"
+                set highlight-active-color "${rgba highlightAlpha c.orange}"
+                set highlight-fg "#${c.fg}"
 
                 # Index (Table of Contents) colors
                 set index-bg "#${c.bg}"

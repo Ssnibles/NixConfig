@@ -13,6 +13,23 @@ compress ruthlessly, and let the reader test themselves.
 **The one-line test:** if the notes are mostly the slides re-typed or reordered,
 they are wrong.
 
+> **Working from a test, exam or practice paper?** That is a different genre —
+> load the `test-notes` skill, which covers the per-question worked-answer format
+> (verbatim question, correct answer, reasoning, distractor analysis).
+
+## Getting the source
+
+Slides and readings are usually PDFs. Extract the text *and* the figures:
+
+- `pdftotext slides.pdf -` for the prose. If the poppler tools are not on
+  `PATH`, they usually live under `/nix/store/*-poppler-utils-*/bin/`.
+- Render the pages to images (`pdftoppm -png -r 150 slides.pdf slide`) and read
+  the ones carrying diagrams, screenshots, tables or code. Text extraction drops
+  those, and they usually carry the lecturer's point.
+- Some existing notes in a repo may be *intentionally hand-styled* (their own
+  background and title block). Do not reformat them to the shared theme unless
+  asked; new notes use the theme.
+
 ## The job
 
 Reconstruct the *argument* of the lecture, not its running order:
@@ -73,7 +90,8 @@ evidence behind them for durable learning.
 ## Suggested structure
 
 Use the user's snippet library for all styling (see the `typst-snippets` skill
-and its `references/example.typ` for a worked body); do not invent markup. A
+and its `references/example.typ` for a worked body, and this skill's own
+`references/example.typ` for a full lecture-note shape); do not invent markup. A
 typical set of notes:
 
 1. Page preamble (`page` snippet), title block, course, date.

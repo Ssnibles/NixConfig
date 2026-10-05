@@ -13,7 +13,10 @@ show rules). Only deviate when the user explicitly asks for something different.
 When the document is lecture or course material, also load the `lecture-notes`
 skill: it defines **what the notes should contain** (explanations, examples,
 connections, self-tests) so they are a learning resource rather than a re-typed
-copy of the slides. This skill only covers **how** it should look.
+copy of the slides. When the source is a *test, exam or practice paper*, load the
+`test-notes` skill instead: it defines the per-question worked-answer format
+(verbatim question, correct answer, reasoning, distractor analysis). This skill
+only covers **how** it should look.
 
 > **Before writing or restructuring a document, read
 > `references/document-conventions.md`.** It is the full house-style checklist:
@@ -115,6 +118,10 @@ title centred beneath it (hyphenation disabled, so a long title wraps to whole
 words). The title is a real level-1 heading, so it feeds the outline and PDF
 bookmarks for free — use it (or the `title` snippet) rather than hand-copying the
 block.
+
+**Page type:** pass `page-type: "notes"` (the default) for self-study notes — a
+running header on every page — or `page-type: "lecture"` for a lecture handout
+with a numbered footer. Pick one and keep it for the whole document; do not mix.
 
 **Typography is role-split:** normal prose is sans-serif (`font-sans`), while
 headings and heading-like furniture are serif (`font-serif`). Never pass a literal
@@ -381,6 +388,20 @@ every diagram you add.
 
 `bold` `*bold*`, `italic` `_italic_`, `strikethrough` `#strike[...]`, `highlight` `#highlight[...]`,
 `smallcaps` `#smallcaps[...]`, `superscript` `#super[...]`, `subscript` `#sub[...]`.
+
+**Typst emphasis is not Markdown.** `*...*` is strong (bold) and `_..._` is
+emphasis (italic) — there is **no** `**` or `__`. Typst has no Markdown mode, so
+`**bold**` (or `**not**`, `**C**lass`) parses the doubled stars as an *empty*
+strong block and emits a `no text within stars` warning; the text still renders,
+but unstyled. **Never emit `**` or `__` in a `.typ` file**, and when editing one
+that already contains them, replace each pair with a single delimiter.
+
+Delimiters must sit on a **word boundary**. A `*` immediately followed by a
+letter does not close the strong run, so `*C*lass` fails to compile with
+`unclosed delimiter`. To bold one or more letters *inside* a word, use the
+function form — `#strong[C]lass`, `#strong[R]esponsibilities`,
+`#strong[C]ollaborators`. A run may span a line break as long as both delimiters
+are on word boundaries, e.g. `*listeners are the Observer\npattern*`.
 
 ## Note-taking elements
 

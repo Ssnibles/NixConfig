@@ -38,6 +38,58 @@
 
       allExtensions = enabledBuiltinExtensions ++ headerExtension ++ cfg.extensions;
 
+      # Vendored Typst packages the shared theme imports (`cetz`, `zap`, `mmdr`
+      # and `cetz`'s own `oxifmt` dependency). Pinning them lets the skill
+      # reference examples be compiled offline during the build.
+      typstPreviewPackages = pkgs.runCommand "pi-skill-typst-packages" { } ''
+        mkdir -p $out/preview
+        extract() {
+          mkdir -p "$out/preview/$2/$3"
+          tar -xzf "$1" -C "$out/preview/$2/$3"
+        }
+        extract ${pkgs.fetchurl {
+          url = "https://packages.typst.org/preview/cetz-0.5.2.tar.gz";
+          sha256 = "0gzjj9r1kh88awdpf6cpvg5a116jj6kfy4ascrp4rq2a26889kvp";
+        }} cetz 0.5.2
+        extract ${pkgs.fetchurl {
+          url = "https://packages.typst.org/preview/oxifmt-1.0.0.tar.gz";
+          sha256 = "0ksrb7ysd3m9bxv10mwf67wmy8m4c1rkrc5j7kn405yhibya25vx";
+        }} oxifmt 1.0.0
+        extract ${pkgs.fetchurl {
+          url = "https://packages.typst.org/preview/zap-0.6.0.tar.gz";
+          sha256 = "1682mh2rzxcf20dsazyvjjwignc49dg4h94swdj0gvy4lh4g9b9f";
+        }} zap 0.6.0
+        extract ${pkgs.fetchurl {
+          url = "https://packages.typst.org/preview/mmdr-0.2.2.tar.gz";
+          sha256 = "11nck1gxsdlsccy8j362d84pnrxs16r92h90jqws4sdjm3l58yz8";
+        }} mmdr 0.2.2
+
+        # Fail loudly if a tarball layout ever changes.
+        for pkg in cetz/0.5.2 oxifmt/1.0.0 zap/0.6.0 mmdr/0.2.2; do
+          test -f "$out/preview/$pkg/typst.toml" || {
+            echo "typst package $pkg missing its typst.toml" >&2
+            exit 1
+          }
+        done
+      '';
+
+      # Bundle a skill, validate its SKILL.md frontmatter and compile its
+      # reference examples offline against the shared theme (see
+      # check-skills.sh). A drift or a broken example fails the build.
+      mkSkill = name: src: pkgs.runCommand "pi-skill-${name}" {
+        nativeBuildInputs = [ pkgs.typst ];
+      } ''
+        mkdir -p $out
+        cp -r ${src}/. $out/
+        export HOME=$(mktemp -d)
+        export XDG_CACHE_HOME=$HOME/.cache
+        bash ${./pi-agent/skills/check-skills.sh} \
+          $out --expect ${name} --compile \
+          --theme ${../../packages/uni-notes/theme.typ} \
+          --package-path ${typstPreviewPackages} \
+          --font-path ${pkgs.dejavu_fonts}/share/fonts/truetype
+      '';
+
       # Skill bundling the user's canonical Typst snippet library. The LuaSnip
       # source of truth lives in the Neovim config; copy it in at build time so
       # the skill can never drift from the snippets.
@@ -54,11 +106,18 @@
 
         # Fail the build if the theme, `page` snippet and page-preamble.typ drift apart.
         bash ${./pi-agent/skills/typst-snippets/check-sync.sh} $out/references
+
+        # Validate the skill's own frontmatter.
+        bash ${./pi-agent/skills/check-skills.sh} $out --expect typst-snippets
       '';
 
       bundledSkills =
         lib.optional cfg.typstSnippets typstSnippetsSkill
-        ++ lib.optional cfg.lectureNotes ./pi-agent/skills/lecture-notes;
+        ++ lib.optional cfg.lectureNotes (mkSkill "lecture-notes" ./pi-agent/skills/lecture-notes)
+        ++ lib.optional cfg.testNotes (mkSkill "test-notes" ./pi-agent/skills/test-notes)
+        ++ lib.optional cfg.labNotes (mkSkill "lab-notes" ./pi-agent/skills/lab-notes)
+        ++ lib.optional cfg.assignmentReport (mkSkill "assignment-report" ./pi-agent/skills/assignment-report)
+        ++ lib.optional cfg.revisionSheets (mkSkill "revision-sheets" ./pi-agent/skills/revision-sheets);
 
       defaultSettings = {
         defaultProvider = cfg.defaultProvider;
@@ -210,6 +269,46 @@
             Bundle the lecture-notes skill, which turns lecture slides or
             recordings into high-yield study notes instead of re-typed copies
             of the slides.
+          '';
+        };
+
+        testNotes = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Bundle the test-notes skill, which turns past tests, exams and
+            practice papers into worked study guides that answer every question
+            with the correct answer and the reasoning.
+          '';
+        };
+
+        labNotes = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Bundle the lab-notes skill, which turns lab sessions, practicals
+            and exercises into notes that explain the method, results and why
+            they turned out that way.
+          '';
+        };
+
+        assignmentReport = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Bundle the assignment-report skill, which turns briefs and
+            specifications into structured write-ups that address every
+            requirement and mark-scheme item.
+          '';
+        };
+
+        revisionSheets = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Bundle the revision-sheets skill, which compresses a course or
+            topic into dense one-page revision sheets and active-recall
+            question banks.
           '';
         };
       };

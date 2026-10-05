@@ -137,6 +137,12 @@
 #let inline-code-bg = state("inline-code-bg", ui-surface)
 #let inline-code-fg = state("inline-code-fg", text-color)
 
+// When the complete-notes generator assembles a paper it passes
+// `--input stitched=true`; the generated wrapper then applies the theme once
+// (with `force: true`) and the included notes skip it, so the `show raw` rule
+// and page setup are not stacked (which would double inline-code backgrounds).
+#let _uni-notes-stitched = sys.inputs.at("stitched", default: "false") == "true"
+
 // Line numbers for block code. **On by default.** Toggle them globally for the
 // rest of a document with `#code-line-numbers.update(false)` / `(true)`, or
 // override a single block with the `#noln[…]` / `#ln[…]` wrappers below.
@@ -363,8 +369,12 @@
 ]
 
 // ── The theme itself ────────────────────────────────────────────────────────
-#let theme(course: "", page-type: "notes", body) = {
-  set page(
+#let theme(course: "", page-type: "notes", force: false, body) = {
+  if _uni-notes-stitched and not force {
+    // The assembled complete-notes file already applied the theme.
+    body
+  } else {
+    set page(
     paper: "a4",
     margin: (x: 2.5cm, top: 3cm, bottom: 3cm),
     fill: bg-color,
@@ -459,5 +469,6 @@
   // header with `table.header`).
   show table: it => keep-together(it)
 
-  body
+    body
+  }
 }

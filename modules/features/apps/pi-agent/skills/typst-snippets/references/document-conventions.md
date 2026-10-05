@@ -164,6 +164,11 @@ See `references/diagrams.md` for the tools, imports, and templates. The rules:
 
 - `*bold*` marks a key term on first use.
 - `_italic_` for emphasis or foreign terms.
+- Typst is **not** Markdown: `*…*` is strong and `_…_` is emphasis. There is no
+  `**bold**` or `__italic__`; a doubled star is an empty strong block that only
+  warns (`no text within stars`). Never write `**` or `__`.
+- Delimiters must be on word boundaries. To bold letters inside a word use
+  `#strong[C]lass`, not `*C*lass` (the latter never closes and fails to compile).
 - `` `code` `` for identifiers, file paths, and commands.
 - `-` for unordered lists; `+` for ordered steps; `key-value`/`term` for term lists.
 - Do not manually indent or add blank lines to fake spacing; the `#show` rules
