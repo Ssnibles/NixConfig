@@ -19,11 +19,11 @@ Item {
     id: mediaBg
     anchors.fill: parent
     radius: 4
-    color: mediaTooltip.hovered ? Colors.bgRaised : "transparent"
+    color: mediaTooltip.hovered ? Colours.bgRaised : "transparent"
     Behavior on color { ColorAnimation { duration: 100 } }
   }
 
-  // --- Centralized MPRIS State from MediaService ---
+  // --- Centralised MPRIS State from MediaService ---
   readonly property var mediaPlayer: MediaService.player
   readonly property string mediaText: MediaService.mediaText
   readonly property bool hasMedia: MediaService.hasMedia
@@ -53,7 +53,7 @@ Item {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         text: root.mediaPlayer && root.mediaPlayer.isPlaying ? "󰎈" : "󰎆"
-        color: root.mediaPlayer && root.mediaPlayer.isPlaying ? Colors.accent : Colors.fgDim
+        color: root.mediaPlayer && root.mediaPlayer.isPlaying ? Colours.accent : Colours.fgDim
         font.pixelSize: 15
         font.bold: true
         font.family: root.uiFont
@@ -79,7 +79,7 @@ Item {
         id: elapsedLabel
         anchors.horizontalCenter: parent.horizontalCenter
         text: Utils.formatTime(Math.round(MediaService.estimatedPosition))
-        color: Colors.fgMid
+        color: Colours.fgMid
         font.family: root.uiFont
         font.pixelSize: 11
         horizontalAlignment: Text.AlignHCenter
@@ -90,7 +90,7 @@ Item {
         visible: root.mediaPlayer && MediaService.lastLength > 0
         anchors.horizontalCenter: parent.horizontalCenter
         text: Utils.formatTime(Math.round(MediaService.lastLength))
-        color: Colors.fgDim
+        color: Colours.fgDim
         font.family: root.uiFont
         font.pixelSize: 11
         horizontalAlignment: Text.AlignHCenter
@@ -113,7 +113,7 @@ Item {
       Text {
         anchors.centerIn: parent
         text: root.mediaPlayer && root.mediaPlayer.isPlaying ? "󰎈" : "󰎆"
-        color: root.mediaPlayer && root.mediaPlayer.isPlaying ? Colors.accent : Colors.fgDim
+        color: root.mediaPlayer && root.mediaPlayer.isPlaying ? Colours.accent : Colours.fgDim
         font.pixelSize: 13
         font.bold: true
         font.family: root.uiFont
@@ -130,7 +130,7 @@ Item {
 
     Text {
       text: root.mediaText
-      color: Colors.fg
+      color: Colours.fg
       font.family: Config.sansFont
       font.pixelSize: 12
       elide: Text.ElideRight
@@ -178,7 +178,7 @@ Item {
     MediaCard {
       id: popoverCard
       width: 280
-      cardColor: Colors.bg
+      cardColour: Colours.bg
       cardRadius: Config.popupRadius
     }
   }

@@ -9,7 +9,7 @@
     }:
     let
       cfg = config.features.hyprland;
-      inherit (config.theme.colors)
+      inherit (config.theme.colours)
         bg
         bgRaised
         bgSubtle

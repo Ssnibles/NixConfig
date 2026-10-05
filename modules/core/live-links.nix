@@ -43,7 +43,7 @@
       # One `contents` link: symlink every entry of the source directory into the
       # target directory, then prune stale links that point back into the source.
       # Only links whose resolved target lives under the source are removed, so
-      # Hjem-managed store symlinks (e.g. Colors.qml) in the same directory are
+      # Hjem-managed store symlinks (e.g. Colours.qml) in the same directory are
       # left untouched.
       contentsLink =
         link:

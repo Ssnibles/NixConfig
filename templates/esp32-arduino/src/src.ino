@@ -15,12 +15,12 @@ void setup() {
   delay(1000);
 
   Serial.println("\n=========================================");
-  Serial.println("🚀 ESP32 Arduino Initialization");
+  Serial.println("🚀 ESP32 Arduino Initialisation");
   Serial.println("=========================================");
 
   pinMode(LED_BUILTIN, OUTPUT);
 
-  // Initialize Wi-Fi station mode
+  // Initialise Wi-Fi station mode
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   delay(100);

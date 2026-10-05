@@ -6,7 +6,7 @@ Item {
   id: root
 
   property real value: 0
-  property color fillColor: Colors.accent
+  property color fillColour: Colours.accent
   property real snapPercent: 0
 
   signal moved(real value)
@@ -51,9 +51,9 @@ Item {
       width: parent.width
       height: root._trackHeight
       radius: 4
-      color: Colors.bgSubtle
+      color: Colours.bgSubtle
       border.width: 1
-      border.color: mouse.containsMouse ? root.fillColor : "transparent"
+      border.color: mouse.containsMouse ? root.fillColour : "transparent"
       Behavior on border.color { ColorAnimation { duration: 120 } }
     }
 
@@ -65,7 +65,7 @@ Item {
       anchors.bottomMargin: -root._trackHeight / 2
       width: parent.width * root._visualValue
       radius: 4
-      color: root.fillColor
+      color: root.fillColour
       Behavior on color { ColorAnimation { duration: 150 } }
     }
 

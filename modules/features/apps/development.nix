@@ -107,7 +107,7 @@
                 [mgr]
                 prepend_keymap = [
                   { on = [ "." ], run = "hidden toggle", desc = "Toggle hidden files" },
-                  { on = [ "T" ], run = "plugin toggle-pane --args=max-preview", desc = "Maximize or restore preview" },
+                  { on = [ "T" ], run = "plugin toggle-pane --args=max-preview", desc = "Maximise or restore preview" },
                   { on = [ "e" ], run = "shell 'nvim .' --block", desc = "Open directory in Neovim" },
                 ]
               '';

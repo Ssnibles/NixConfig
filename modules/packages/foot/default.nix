@@ -14,7 +14,7 @@
     let
       cfg = config.features.foot;
 
-      inherit (config.theme.colors)
+      inherit (config.theme.colours)
         bg
         bgRaised
         bgSubtle
@@ -64,7 +64,7 @@
           files = {
             ".config/foot/foot.ini" = {
               text = ''
-                include=/home/${config.username}/.config/foot/colors.ini
+                include=/home/${config.username}/.config/foot/colours.ini
                 font=Maple Mono NR NF:size=12
                 pad=10x10
 
@@ -75,7 +75,7 @@
                 \x1f = Control+BackSpace
               '';
             };
-            ".config/foot/colors.ini" = {
+            ".config/foot/colours.ini" = {
               text = ''
                 [colors-dark]
                 background=${bg}

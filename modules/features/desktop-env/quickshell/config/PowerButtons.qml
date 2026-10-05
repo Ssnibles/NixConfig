@@ -3,9 +3,9 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 
-// Shared row of system power actions used by the Command Center and the lock
+// Shared row of system power actions used by the Command Centre and the lock
 // screen. Emits `activated` after launching the command so callers can react
-// (e.g. hide the Command Center).
+// (e.g. hide the Command Centre).
 RowLayout {
   id: root
 
@@ -19,11 +19,11 @@ RowLayout {
   readonly property var buttonModel: {
     var m = []
     if (root.showLock) {
-      m.push({ icon: "󰌾", label: "Lock", cmd: Config.cmdLock, hoverCol: Colors.accent })
+      m.push({ icon: "󰌾", label: "Lock", cmd: Config.cmdLock, hoverCol: Colours.accent })
     }
-    m.push({ icon: "󰤄", label: "Sleep", cmd: Config.cmdSleep, hoverCol: Colors.accent })
-    m.push({ icon: "󰜉", label: "Reboot", cmd: Config.cmdReboot, hoverCol: Colors.orange })
-    m.push({ icon: "󰐥", label: "Power", cmd: Config.cmdPoweroff, hoverCol: Colors.red })
+    m.push({ icon: "󰤄", label: "Sleep", cmd: Config.cmdSleep, hoverCol: Colours.accent })
+    m.push({ icon: "󰜉", label: "Reboot", cmd: Config.cmdReboot, hoverCol: Colours.orange })
+    m.push({ icon: "󰐥", label: "Power", cmd: Config.cmdPoweroff, hoverCol: Colours.red })
     return m
   }
 
@@ -37,8 +37,8 @@ RowLayout {
       Layout.preferredWidth: 1
       height: 48
       radius: root.buttonRadius
-      color: hoverArea.containsMouse ? Colors.bgSubtle : Colors.bgRaised
-      border.color: hoverArea.containsMouse ? modelData.hoverCol : Colors.border
+      color: hoverArea.containsMouse ? Colours.bgSubtle : Colours.bgRaised
+      border.color: hoverArea.containsMouse ? modelData.hoverCol : Colours.border
       border.width: 1
       Behavior on scale { NumberAnimation { duration: 100 } }
 
@@ -61,7 +61,7 @@ RowLayout {
 
         Text {
           text: buttonDelegate.modelData.icon
-          color: hoverArea.containsMouse ? buttonDelegate.modelData.hoverCol : Colors.fg
+          color: hoverArea.containsMouse ? buttonDelegate.modelData.hoverCol : Colours.fg
           font.family: Config.monoFont
           font.pixelSize: 18
           anchors.verticalCenter: parent.verticalCenter
@@ -69,7 +69,7 @@ RowLayout {
 
         Text {
           text: buttonDelegate.modelData.label
-          color: hoverArea.containsMouse ? Colors.fg : Colors.fgMid
+          color: hoverArea.containsMouse ? Colours.fg : Colours.fgMid
           font.family: Config.sansFont
           font.pixelSize: 13
           anchors.verticalCenter: parent.verticalCenter

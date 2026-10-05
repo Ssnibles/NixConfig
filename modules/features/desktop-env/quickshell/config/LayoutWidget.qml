@@ -27,8 +27,8 @@ Pill {
   pillHeight: root.horizontal ? 24 : 32
   padding: 8
   orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
-  pillColor: Colors.bgSubtle
-  border.color: Colors.accent
+  pillColour: Colours.bgSubtle
+  border.color: Colours.accent
 
   Row {
     id: layoutRow
@@ -37,7 +37,7 @@ Pill {
 
     Text {
       text: root.layoutInfo.icon
-      color: Colors.accent
+      color: Colours.accent
       font.family: Config.monoFont
       font.pixelSize: 13
       anchors.verticalCenter: parent.verticalCenter
@@ -45,7 +45,7 @@ Pill {
 
     Text {
       text: root.layoutInfo.name
-      color: Colors.fg
+      color: Colours.fg
       font.family: Config.sansFont
       font.pixelSize: 12
       font.weight: Font.Medium
@@ -77,9 +77,9 @@ Pill {
         width: 210
         height: contentCol.implicitHeight + Config.popupContentMargins * 2
         radius: Config.popupRadius
-        color: Colors.bg
+        color: Colours.bg
         border.width: 1
-        border.color: Colors.border
+        border.color: Colours.border
         antialiasing: true
 
         Column {
@@ -95,7 +95,7 @@ Pill {
             spacing: 8
             Text {
               text: "󰕰"
-              color: Colors.accent
+              color: Colours.accent
               font.family: Config.monoFont
               font.pixelSize: 15
               anchors.verticalCenter: parent.verticalCenter
@@ -103,14 +103,14 @@ Pill {
             Column {
               Text {
                 text: "Layout Selection"
-                color: Colors.fg
+                color: Colours.fg
                 font.family: Config.sansFont
                 font.pixelSize: 13
                 font.weight: Font.Bold
               }
               Text {
                 text: "MangoWC Window Tiling Mode"
-                color: Colors.fgDim
+                color: Colours.fgDim
                 font.family: Config.sansFont
                 font.pixelSize: 10
               }
@@ -120,7 +120,7 @@ Pill {
           Rectangle {
             width: parent.width
             height: 1
-            color: Colors.border
+            color: Colours.border
           }
 
           // Options List
@@ -143,7 +143,7 @@ Pill {
               width: contentCol.width
               height: 28
               radius: 6
-              color: isCurrent ? Colors.accent : (rowMouse.containsMouse ? Colors.bgRaised : "transparent")
+              color: isCurrent ? Colours.accent : (rowMouse.containsMouse ? Colours.bgRaised : "transparent")
 
               Behavior on color { ColorAnimation { duration: 100 } }
 
@@ -159,7 +159,7 @@ Pill {
 
                   Text {
                     text: layoutOption.modelData.icon
-                    color: layoutOption.isCurrent ? Colors.bg : Colors.accent
+                    color: layoutOption.isCurrent ? Colours.bg : Colours.accent
                     font.family: Config.monoFont
                     font.pixelSize: 13
                     anchors.verticalCenter: parent.verticalCenter
@@ -167,7 +167,7 @@ Pill {
 
                   Text {
                     text: layoutOption.modelData.name
-                    color: layoutOption.isCurrent ? Colors.bg : Colors.fg
+                    color: layoutOption.isCurrent ? Colours.bg : Colours.fg
                     font.family: Config.sansFont
                     font.pixelSize: 12
                     font.weight: layoutOption.isCurrent ? Font.Bold : Font.Normal
@@ -178,7 +178,7 @@ Pill {
                 Text {
                   text: layoutOption.modelData.key ? ("Super+" + layoutOption.modelData.key) : ""
                   visible: layoutOption.modelData.key !== ""
-                  color: layoutOption.isCurrent ? Colors.bgSubtle : Colors.fgDim
+                  color: layoutOption.isCurrent ? Colours.bgSubtle : Colours.fgDim
                   font.family: Config.monoFont
                   font.pixelSize: 10
                   anchors.right: parent.right

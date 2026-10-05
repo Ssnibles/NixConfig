@@ -12,7 +12,7 @@ The terminal environment is engineered for low latency, memory efficiency, and f
 | :--- | :--- | :--- | :--- |
 | **Terminal** | **Kitty** | Single-instance server mode, shared GPU sprite cache, Maple Mono font | `modules/features/apps/kitty.nix` |
 | **Alternative** | **Foot** | Lightweight Wayland native terminal | `modules/packages/foot/default.nix` |
-| **Multiplexer** | **Tmux** | Backtick prefix, Sesh session picker, resurrect path sanitizer, floating popups | `modules/features/shell/tmux.nix` |
+| **Multiplexer** | **Tmux** | Backtick prefix, Sesh session picker, resurrect path sanitiser, floating popups | `modules/features/shell/tmux.nix` |
 | **File Manager** | **Yazi** | Async Rust file manager, image previews, Neovim directory opening | `modules/features/apps/development.nix` |
 | **Cheatsheets** | **Navi** | Fuzzy command cheatsheet insertion bound to `Ctrl+P` | `modules/packages/navi/default.nix` |
 | **Shell** | **Fish 4+** | 5-minute cached FZF search (`__fzf_cache_fd`), Starship prompt | `modules/features/shell/shell.nix` |
@@ -40,7 +40,7 @@ By default, opening multiple terminal windows typically spawns separate processe
 ### Styling & Typography
 
 - **Font**: Maple Mono (`Maple Mono NR NF`) at 12pt, with block cursor and 10px horizontal/vertical padding.
-- **Palette Tokens**: All 16 ANSI colours and window backgrounds (`bg`, `fg`, `accent`, `border`, `selection`) are generated dynamically from the active theme palette (`config.theme.colors`).
+- **Palette Tokens**: All 16 ANSI colours and window backgrounds (`bg`, `fg`, `accent`, `border`, `selection`) are generated dynamically from the active theme palette (`config.theme.colours`).
 
 ---
 
@@ -77,7 +77,7 @@ Tmux integrates with [Sesh](https://github.com/joshmedeski/sesh) for smart sessi
 - **`Prefix + /`**: Instantly begins reverse incremental search in scrollback history (`?` in copy mode).
 - **`Prefix + o`**: Opens `tmux-window-picker`, a floating interactive FZF popup listing all windows across all sessions with a live preview pane.
 - **`Prefix + u`**: Triggers `extrakto` to search and copy URLs, file paths, and hashes from the screen.
-- **`Prefix + q`**: Display pane numbers overlay in accent colors for 3 seconds (type number to jump directly to pane).
+- **`Prefix + q`**: Display pane numbers overlay in accent colours for 3 seconds (type number to jump directly to pane).
 - **`Prefix + x`**: Kill current pane without confirmation prompt.
 - **`Prefix + X`**: Kill current session with confirmation (smoothly jumps to next session).
 - **`Prefix + v` / `Prefix + s`**: Split horizontally / vertically preserving current path.
@@ -90,7 +90,7 @@ Tmux integrates with [Sesh](https://github.com/joshmedeski/sesh) for smart sessi
 - **`Prefix + a`**: Toggles Alt-Passthrough mode, letting `Alt + h/j/k/l` pass through to Neovim (for `mini.move` line shifting).
 - **Mouse & Selection**: Double-click selects word (with path/kebab awareness) and copies directly to Wayland clipboard; Triple-click copies line; Drag copies without closing copy-mode.
 
-### Resurrect Store Path Sanitizer (`tmux-resurrect-save`)
+### Resurrect Store Path Sanitiser (`tmux-resurrect-save`)
 
 On NixOS, running binaries have nix store paths like `/nix/store/abc123...-neovim-0.10.0/bin/.nvim-wrapped`. When `tmux-resurrect` snapshots sessions, these transient store paths get saved. After a system upgrade or garbage collection, restoring the session fails because the old store path no longer exists.
 

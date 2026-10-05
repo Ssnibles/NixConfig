@@ -666,7 +666,7 @@ Singleton {
         var cleanT = Utils.cleanTrackTitle(notification.summary || (isCurrentPlayerTrack && store.mediaPlayer ? store.mediaPlayer.trackTitle : ""))
         var cleanA = notification.body || (isCurrentPlayerTrack && store.mediaPlayer ? store.mediaPlayer.trackArtist : "Unknown Artist")
 
-        // Skip generic placeholder titles emitted while web player is initializing
+        // Skip generic placeholder titles emitted while web player is initialising
         var tLower = cleanT.toLowerCase().trim()
         var isUnknownArtist = (!cleanA || cleanA === "Unknown Artist" || cleanA.toLowerCase() === "unknown")
         if (!cleanT || (isUnknownArtist && (
@@ -774,7 +774,7 @@ Singleton {
   function removeHistoryAt(i) {
     if (i < 0 || i >= historyModel.count) return
     var item = historyModel.get(i)
-    // Dismissing a card from the Command Center history should also clear the
+    // Dismissing a card from the Command Centre history should also clear the
     // matching live toast, not just the history entry.
     if (item && item.notification) {
       store.dismissActiveByNotification(item.notification, false)

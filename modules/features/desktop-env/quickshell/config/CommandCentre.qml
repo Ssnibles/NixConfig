@@ -11,7 +11,7 @@ Scope {
   id: ccScope
 
   property bool closing: false
-  property bool active: Config.commandCenterVisible || ccScope.closing
+  property bool active: Config.commandCentreVisible || ccScope.closing
   property bool pendingOpen: false
 
   Timer {
@@ -27,7 +27,7 @@ Scope {
         if (!Config.targetScreen) {
           Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         }
-        Config.commandCenterVisible = true
+        Config.commandCentreVisible = true
       }
     }
   }
@@ -76,7 +76,7 @@ Scope {
         if (!Config.targetScreen) {
           Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         }
-        Config.commandCenterVisible = true
+        Config.commandCentreVisible = true
       }
     }
 
@@ -87,13 +87,13 @@ Scope {
         if (!Config.targetScreen) {
           Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         }
-        Config.commandCenterVisible = true
+        Config.commandCentreVisible = true
       }
     }
   }
 
   function openOnActiveScreen(): void {
-    if (Config.commandCenterVisible) return
+    if (Config.commandCentreVisible) return
 
     var cmd = null
     if (Config.wm === "mangowc") {
@@ -110,24 +110,24 @@ Scope {
       cursorQueryProc.exec(cmd)
     } else {
       Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
-      Config.commandCenterVisible = true
+      Config.commandCentreVisible = true
     }
   }
 
   IpcHandler {
-    target: "command-center"
+    target: "command-centre"
     function toggle(): void {
-      if (Config.commandCenterVisible || ccScope.pendingOpen) {
+      if (Config.commandCentreVisible || ccScope.pendingOpen) {
         ccScope.pendingOpen = false
         openTimeoutTimer.stop()
-        Config.commandCenterVisible = false
+        Config.commandCentreVisible = false
       } else {
         ccScope.openOnActiveScreen()
       }
     }
 
     function open(): void {
-      if (!Config.commandCenterVisible) {
+      if (!Config.commandCentreVisible) {
         ccScope.openOnActiveScreen()
       }
     }
@@ -135,14 +135,14 @@ Scope {
     function close(): void {
       ccScope.pendingOpen = false
       openTimeoutTimer.stop()
-      Config.commandCenterVisible = false
+      Config.commandCentreVisible = false
     }
   }
 
   Connections {
     target: Config
-    function onCommandCenterVisibleChanged() {
-      if (Config.commandCenterVisible) {
+    function onCommandCentreVisibleChanged() {
+      if (Config.commandCentreVisible) {
         ccScope.closing = false
         if (!Config.targetScreen) {
           Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
@@ -184,8 +184,8 @@ Scope {
         return panel.modelData === target || (panel.modelData && target && panel.modelData.name === target.name)
       }
       property bool isPrimaryScreen: isTargetScreen
-      readonly property bool isLeft: Config.commandCenterSide === "left"
-      readonly property real slideDistance: isLeft ? -Config.commandCenterSlideOffset : Config.commandCenterSlideOffset
+      readonly property bool isLeft: Config.commandCentreSide === "left"
+      readonly property real slideDistance: isLeft ? -Config.commandCentreSlideOffset : Config.commandCentreSlideOffset
       property real panelOpacity: 0
       property real panelSlide: slideDistance
 
@@ -235,7 +235,7 @@ Scope {
           if (ccScope.closing) {
             fadeInAnim.stop()
             fadeOutAnim.start()
-          } else if (Config.commandCenterVisible) {
+          } else if (Config.commandCentreVisible) {
             fadeOutAnim.stop()
             panel.panelSlide = panel.slideDistance
             fadeInAnim.start()
@@ -248,16 +248,16 @@ Scope {
         id: fadeInAnim
         PauseAnimation { duration: 1 }
         ParallelAnimation {
-          NumberAnimation { target: panel; property: "panelOpacity"; to: 1; duration: Config.commandCenterAnimDuration; easing.type: Easing.OutCubic }
-          NumberAnimation { target: panel; property: "panelSlide"; to: 0; duration: Config.commandCenterAnimDuration; easing.type: Easing.OutCubic }
+          NumberAnimation { target: panel; property: "panelOpacity"; to: 1; duration: Config.commandCentreAnimDuration; easing.type: Easing.OutCubic }
+          NumberAnimation { target: panel; property: "panelSlide"; to: 0; duration: Config.commandCentreAnimDuration; easing.type: Easing.OutCubic }
         }
       }
 
       SequentialAnimation {
         id: fadeOutAnim
         ParallelAnimation {
-          NumberAnimation { target: panel; property: "panelOpacity"; to: 0; duration: Config.commandCenterCloseDuration; easing.type: Easing.OutCubic }
-          NumberAnimation { target: panel; property: "panelSlide"; to: panel.slideDistance; duration: Config.commandCenterCloseDuration; easing.type: Easing.OutCubic }
+          NumberAnimation { target: panel; property: "panelOpacity"; to: 0; duration: Config.commandCentreCloseDuration; easing.type: Easing.OutCubic }
+          NumberAnimation { target: panel; property: "panelSlide"; to: panel.slideDistance; duration: Config.commandCentreCloseDuration; easing.type: Easing.OutCubic }
         }
         onFinished: {
           if (ccScope.closing) {
@@ -311,12 +311,12 @@ Scope {
         }
         Keys.onPressed: function(event) {
           if (event.key === Qt.Key_Escape) {
-            Config.commandCenterVisible = false
+            Config.commandCentreVisible = false
             event.accepted = true
           }
         }
         onClicked: {
-          Config.commandCenterVisible = false
+          Config.commandCentreVisible = false
         }
       }
 
@@ -325,15 +325,15 @@ Scope {
         id: cardLoader
         active: panel.isTargetScreen
         sourceComponent: mainCardComponent
-        width: Config.commandCenterWidth
+        width: Config.commandCentreWidth
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: panel.isLeft ? parent.left : undefined
         anchors.right: panel.isLeft ? undefined : parent.right
-        anchors.topMargin: Config.hasTopBar ? (Config.barHeight + Config.commandCenterMargin) : Config.commandCenterMargin
-        anchors.bottomMargin: Config.commandCenterMargin
-        anchors.leftMargin: panel.isLeft ? (Config.hasLeftBar ? (Config.barWidth + Config.commandCenterMargin) : Config.commandCenterMargin) : 0
-        anchors.rightMargin: !panel.isLeft ? (Config.hasRightBar ? (Config.barWidth + Config.commandCenterMargin) : Config.commandCenterMargin) : 0
+        anchors.topMargin: Config.hasTopBar ? (Config.barHeight + Config.commandCentreMargin) : Config.commandCentreMargin
+        anchors.bottomMargin: Config.commandCentreMargin
+        anchors.leftMargin: panel.isLeft ? (Config.hasLeftBar ? (Config.barWidth + Config.commandCentreMargin) : Config.commandCentreMargin) : 0
+        anchors.rightMargin: !panel.isLeft ? (Config.hasRightBar ? (Config.barWidth + Config.commandCentreMargin) : Config.commandCentreMargin) : 0
       }
 
       Component {
@@ -354,10 +354,10 @@ Scope {
           }
           opacity: panel.panelOpacity
 
-          color: Colors.bg
-          border.color: Colors.border
+          color: Colours.bg
+          border.color: Colours.border
           border.width: 1
-          radius: Config.commandCenterRadius
+          radius: Config.commandCentreRadius
 
         ColumnLayout {
           anchors.fill: parent
@@ -379,8 +379,8 @@ Scope {
 
                 Text {
                   id: headerTime
-                  text: Qt.formatDateTime(new Date(), Config.commandCenterClockFormat)
-                  color: Colors.fg
+                  text: Qt.formatDateTime(new Date(), Config.commandCentreClockFormat)
+                  color: Colours.fg
                   font.family: Config.serifFont
                   font.letterSpacing: 2
                   font.pixelSize: 36
@@ -389,7 +389,7 @@ Scope {
 
                   function updateTime() {
                     var d = new Date()
-                    headerTime.text = Qt.formatDateTime(d, Config.commandCenterClockFormat)
+                    headerTime.text = Qt.formatDateTime(d, Config.commandCentreClockFormat)
                     headerTime12.text = Qt.formatDateTime(d, "h:mm AP")
                     headerTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
                     headerTimer.restart()
@@ -409,7 +409,7 @@ Scope {
                 Text {
                   id: headerTime12
                   text: Qt.formatDateTime(new Date(), "h:mm AP")
-                  color: Colors.fgDim
+                  color: Colours.fgDim
                   font.family: Config.sansFont
                   font.pixelSize: 13
                   Layout.alignment: Qt.AlignBaseline
@@ -417,8 +417,8 @@ Scope {
               }
 
               Text {
-                text: Qt.formatDateTime(new Date(), Config.commandCenterDateFormat)
-                color: Colors.fgDim
+                text: Qt.formatDateTime(new Date(), Config.commandCentreDateFormat)
+                color: Colours.fgDim
                 font.family: Config.sansFont
                 font.pixelSize: 14
               }
@@ -455,10 +455,10 @@ Scope {
           Rectangle {
             Layout.fillWidth: true
             implicitHeight: sliderCol.implicitHeight + 20
-            color: Colors.bgRaised
-            border.color: Colors.border
+            color: Colours.bgRaised
+            border.color: Colours.border
             border.width: 1
-            radius: Config.commandCenterCardRadius
+            radius: Config.commandCentreCardRadius
 
             Column {
               id: sliderCol
@@ -478,14 +478,14 @@ Scope {
                   Layout.preferredWidth: 32
                   Layout.preferredHeight: 32
                   radius: 8
-                  color: Colors.bgSubtle
+                  color: Colours.bgSubtle
                   border.width: 1
-                  border.color: panel.volMuted ? Colors.red : Colors.border
+                  border.color: panel.volMuted ? Colours.red : Colours.border
 
                   Text {
                     anchors.centerIn: parent
                     text: Utils.volumeIcon(panel.volPct, panel.volMuted)
-                    color: panel.volMuted ? Colors.red : Colors.fg
+                    color: panel.volMuted ? Colours.red : Colours.fg
                     font.family: Config.monoFont
                     font.pixelSize: 16
                   }
@@ -506,7 +506,7 @@ Scope {
                   Layout.fillWidth: true
                   Layout.alignment: Qt.AlignVCenter
                   value: panel.volPct
-                  fillColor: panel.volMuted ? Colors.red : Colors.accent
+                  fillColour: panel.volMuted ? Colours.red : Colours.accent
                   snapPercent: 5
                   onMoved: function(v) {
                     volSetTimer.targetVal = v
@@ -518,7 +518,7 @@ Scope {
                   Layout.preferredWidth: 42
                   horizontalAlignment: Text.AlignRight
                   text: Math.round(panel.volPct * 100) + "%"
-                  color: panel.volMuted ? Colors.red : Colors.fg
+                  color: panel.volMuted ? Colours.red : Colours.fg
                   font.family: Config.monoFont
                   font.pixelSize: 14
                 }
@@ -529,7 +529,7 @@ Scope {
                 visible: panel.brightnessAvailable
                 width: parent.width
                 height: 1
-                color: Colors.border
+                color: Colours.border
               }
 
               // Brightness Row
@@ -542,14 +542,14 @@ Scope {
                   Layout.preferredWidth: 32
                   Layout.preferredHeight: 32
                   radius: 8
-                  color: Colors.bgSubtle
+                  color: Colours.bgSubtle
                   border.width: 1
-                  border.color: Colors.border
+                  border.color: Colours.border
 
                   Text {
                     anchors.centerIn: parent
                     text: "󰃠"
-                    color: Colors.yellow
+                    color: Colours.yellow
                     font.family: Config.monoFont
                     font.pixelSize: 16
                   }
@@ -559,7 +559,7 @@ Scope {
                   Layout.fillWidth: true
                   Layout.alignment: Qt.AlignVCenter
                   value: panel.brightnessPct
-                  fillColor: Colors.yellow
+                  fillColour: Colours.yellow
                   snapPercent: 5
                   onMoved: function(v) {
                     panel.brightnessPct = v
@@ -572,7 +572,7 @@ Scope {
                   Layout.preferredWidth: 42
                   horizontalAlignment: Text.AlignRight
                   text: Math.round(panel.brightnessPct * 100) + "%"
-                  color: Colors.fg
+                  color: Colours.fg
                   font.family: Config.monoFont
                   font.pixelSize: 14
                 }
@@ -591,10 +591,10 @@ Scope {
             id: notifCard
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: Colors.bgRaised
-            border.color: Colors.border
+            color: Colours.bgRaised
+            border.color: Colours.border
             border.width: 1
-            radius: Config.commandCenterCardRadius
+            radius: Config.commandCentreCardRadius
 
             ColumnLayout {
               anchors.fill: parent
@@ -613,7 +613,7 @@ Scope {
 
                   Text {
                     text: NotificationStore.dnd ? "󰂛" : "󰂚"
-                    color: NotificationStore.dnd ? Colors.red : Colors.accent
+                    color: NotificationStore.dnd ? Colours.red : Colours.accent
                     font.family: Config.monoFont
                     font.pixelSize: 17
                     anchors.verticalCenter: parent.verticalCenter
@@ -621,7 +621,7 @@ Scope {
 
                   Text {
                     text: "Notifications"
-                    color: Colors.fg
+                    color: Colours.fg
                     font.family: Config.sansFont
                     font.pixelSize: 15
                     font.bold: true
@@ -633,8 +633,8 @@ Scope {
                     visible: NotificationStore.historyModel.count > 0
                     height: 18
                     radius: 9
-                    color: Colors.bgSubtle
-                    border.color: Colors.border
+                    color: Colours.bgSubtle
+                    border.color: Colours.border
                     border.width: 1
                     implicitWidth: badgeText.width + 10
                     anchors.verticalCenter: parent.verticalCenter
@@ -643,7 +643,7 @@ Scope {
                       id: badgeText
                       anchors.centerIn: parent
                       text: NotificationStore.historyModel.count
-                      color: Colors.fgDim
+                      color: Colours.fgDim
                       font.family: Config.sansFont
                       font.pixelSize: 11
                     }
@@ -661,8 +661,8 @@ Scope {
                   Rectangle {
                     height: 26
                     radius: 13
-                    color: NotificationStore.dnd ? Colors.red : (muteHover.containsMouse ? Colors.bgSubtle : "transparent")
-                    border.color: NotificationStore.dnd ? Colors.red : Colors.border
+                    color: NotificationStore.dnd ? Colours.red : (muteHover.containsMouse ? Colours.bgSubtle : "transparent")
+                    border.color: NotificationStore.dnd ? Colours.red : Colours.border
                     border.width: 1
                     implicitWidth: muteRow.width + 12
 
@@ -673,7 +673,7 @@ Scope {
 
                       Text {
                         text: NotificationStore.dnd ? "󰂛" : "󰂚"
-                        color: NotificationStore.dnd ? Colors.bg : (muteHover.containsMouse ? Colors.red : Colors.fgDim)
+                        color: NotificationStore.dnd ? Colours.bg : (muteHover.containsMouse ? Colours.red : Colours.fgDim)
                         font.family: Config.monoFont
                         font.pixelSize: 13
                         anchors.verticalCenter: parent.verticalCenter
@@ -681,7 +681,7 @@ Scope {
 
                       Text {
                         text: NotificationStore.dnd ? "Muted" : "Mute"
-                        color: NotificationStore.dnd ? Colors.bg : (muteHover.containsMouse ? Colors.fg : Colors.fgMid)
+                        color: NotificationStore.dnd ? Colours.bg : (muteHover.containsMouse ? Colours.fg : Colours.fgMid)
                         font.family: Config.sansFont
                         font.pixelSize: 12
                         anchors.verticalCenter: parent.verticalCenter
@@ -702,8 +702,8 @@ Scope {
                     visible: NotificationStore.historyModel.count > 0
                     height: 26
                     radius: 13
-                    color: clearHover.containsMouse ? Colors.bgSubtle : "transparent"
-                    border.color: Colors.border
+                    color: clearHover.containsMouse ? Colours.bgSubtle : "transparent"
+                    border.color: Colours.border
                     border.width: 1
                     implicitWidth: clearRow.width + 12
 
@@ -714,7 +714,7 @@ Scope {
 
                       Text {
                         text: "󰎟"
-                        color: clearHover.containsMouse ? Colors.red : Colors.fgDim
+                        color: clearHover.containsMouse ? Colours.red : Colours.fgDim
                         font.family: Config.monoFont
                         font.pixelSize: 13
                         anchors.verticalCenter: parent.verticalCenter
@@ -722,7 +722,7 @@ Scope {
 
                       Text {
                         text: "Clear"
-                        color: clearHover.containsMouse ? Colors.fg : Colors.fgMid
+                        color: clearHover.containsMouse ? Colours.fg : Colours.fgMid
                         font.family: Config.sansFont
                         font.pixelSize: 12
                         anchors.verticalCenter: parent.verticalCenter
@@ -744,7 +744,7 @@ Scope {
               Rectangle {
                 Layout.fillWidth: true
                 implicitHeight: 1
-                color: Colors.border
+                color: Colours.border
               }
 
               // Empty State view
@@ -759,7 +759,7 @@ Scope {
 
                   Text {
                     text: "󰂜"
-                    color: Colors.fgDim
+                    color: Colours.fgDim
                     font.family: Config.monoFont
                     font.pixelSize: 22
                     anchors.verticalCenter: parent.verticalCenter
@@ -767,7 +767,7 @@ Scope {
 
                   Text {
                     text: "No notifications"
-                    color: Colors.fgDim
+                    color: Colours.fgDim
                     font.family: Config.sansFont
                     font.pixelSize: 14
                     anchors.verticalCenter: parent.verticalCenter
@@ -821,7 +821,7 @@ Scope {
           // --- SYSTEM POWER/CONTROLS ---
           PowerButtons {
             Layout.fillWidth: true
-            onActivated: Config.commandCenterVisible = false
+            onActivated: Config.commandCentreVisible = false
           }
         }
       }

@@ -1,7 +1,7 @@
 # =============================================================================
 # Default Applications & MIME Handlers Feature
 # =============================================================================
-# Centralized single source of truth for default system applications, session
+# Centralised single source of truth for default system applications, session
 # environment variables, and declarative XDG MIME associations via Hjem.
 # =============================================================================
 { ... }:
@@ -95,7 +95,7 @@
         enable = lib.mkOption {
           type = lib.types.bool;
           default = true;
-          description = "Enable centralized default applications and MIME associations.";
+          description = "Enable centralised default applications and MIME associations.";
         };
 
         browser = lib.mkOption {

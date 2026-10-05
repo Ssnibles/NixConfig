@@ -1,7 +1,7 @@
 # =============================================================================
-# Syncthing Continuous File Synchronization Feature
+# Syncthing Continuous File Synchronisation Feature
 # =============================================================================
-# Peer-to-peer decentralized folder synchronization optimized for laptop battery.
+# Peer-to-peer decentralised folder synchronisation optimised for laptop battery.
 # =============================================================================
 { ... }:
 {
@@ -18,7 +18,7 @@
       options.features.syncthing.enable = lib.mkOption {
         type = lib.types.bool;
         default = false;
-        description = "Enable Syncthing peer-to-peer folder synchronization with the homeserver.";
+        description = "Enable Syncthing peer-to-peer folder synchronisation with the homeserver.";
       };
 
       config = lib.mkIf cfg.enable {
@@ -61,7 +61,7 @@
             };
 
             options = {
-              # Laptop battery optimization: disable battery-draining internet relaying & global discovery
+              # Laptop battery optimisation: disable battery-draining internet relaying & global discovery
               globalAnnounceEnabled = false;
               relaysEnabled = false;
               natEnabled = false;

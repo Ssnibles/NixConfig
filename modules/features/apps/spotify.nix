@@ -1,8 +1,8 @@
 # =============================================================================
 # Spotify & Spicetify Application Feature
 # =============================================================================
-# Spotify desktop music player configured and customized with Spicetify.
-# Includes theme color synchronization with the active system palette,
+# Spotify desktop music player configured and customised with Spicetify.
+# Includes theme colour synchronisation with the active system palette,
 # useful extensions, and custom sidebar apps.
 # =============================================================================
 { inputs, ... }:
@@ -15,7 +15,7 @@
       ...
     }:
     let
-      c = config.theme.colors;
+      c = config.theme.colours;
       spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.hostPlatform.system};
     in
     {
@@ -42,7 +42,7 @@
           theme = lib.mkDefault spicePkgs.themes.text;
 
           customColorScheme = lib.mkDefault {
-            # TUI (text) theme specific color keys
+            # TUI (text) theme specific colour keys
             accent = c.accent;
             accent-active = c.accent;
             accent-inactive = c.bg;

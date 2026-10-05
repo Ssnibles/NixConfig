@@ -33,7 +33,7 @@ Scope {
       }
       implicitWidth: Config.barWidth
       exclusionMode: ExclusionMode.Auto
-      color: Colors.bg
+      color: Colours.bg
 
       mask: Region { item: barPanel.contentItem }
 
@@ -56,7 +56,7 @@ Scope {
         anchors.left: Config.barSide === "right" ? parent.left : undefined
         anchors.right: Config.barSide === "right" ? undefined : parent.right
         width: 1
-        color: Colors.border
+        color: Colours.border
       }
 
       // Bar Content Container
@@ -81,8 +81,8 @@ Scope {
             sharedWindow: sharedTipWindow
           }
 
-          CommandCenterButton {
-            id: commandCenterButton
+          CommandCentreButton {
+            id: commandCentreButton
             screen: barPanel.modelData
           }
 
@@ -92,7 +92,7 @@ Scope {
           }
         }
 
-        // Center Section: Workspaces Indicators
+        // Centre Section: Workspaces Indicators
         WorkspacesWidget {
           id: workspacesWidget
           anchors.centerIn: parent

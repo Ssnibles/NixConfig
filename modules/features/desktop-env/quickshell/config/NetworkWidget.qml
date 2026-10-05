@@ -37,19 +37,19 @@ Pill {
     return "Offline"
   }
 
-  property color netColor: (root.isWired || root.isWifi) ? Colors.accent : Colors.fgDim
+  property color netColour: (root.isWired || root.isWifi) ? Colours.accent : Colours.fgDim
 
-  // Match Command Center Wi-Fi Pill styling
+  // Match Command Centre Wi-Fi Pill styling
   pillHeight: root.horizontal ? 25 : 30
   padding: root.horizontal ? 6 : 0
   orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
   anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
 
-  pillColor: (root.interactive && netTooltip.hovered) ? Colors.bgSubtle : Colors.bgRaised
+  pillColour: (root.interactive && netTooltip.hovered) ? Colours.bgSubtle : Colours.bgRaised
   border.width: 1
-  border.color: Colors.border
+  border.color: Colours.border
 
-  Behavior on pillColor { ColorAnimation { duration: 120 } }
+  Behavior on pillColour { ColorAnimation { duration: 120 } }
   Behavior on border.color { ColorAnimation { duration: 120 } }
 
   Row {
@@ -61,7 +61,7 @@ Pill {
 
     Text {
       text: root.netIcon
-      color: root.netColor
+      color: root.netColour
       font.family: Config.monoFont
       font.pixelSize: 12
       anchors.verticalCenter: parent.verticalCenter
@@ -70,7 +70,7 @@ Pill {
     Text {
       visible: root.horizontal
       text: root.netText
-      color: Colors.fg
+      color: Colours.fg
       font.family: Config.sansFont
       font.pixelSize: 12
       elide: Text.ElideRight
@@ -85,7 +85,7 @@ Pill {
     target: root
     sharedWindow: root.sharedWindow
     icon: root.netIcon
-    iconColor: root.netColor
+    iconColour: root.netColour
     title: {
       if (root.isWired) return "Wired (" + root.wiredDev.name + ")"
       if (root.isWifi)  return root.wifiSsid !== "" ? root.wifiSsid : "Connected"

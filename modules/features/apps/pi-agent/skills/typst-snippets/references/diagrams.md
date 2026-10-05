@@ -41,7 +41,7 @@ all of them:
 
 3. **Theme every diagram from the theme — never hardcode `black`/`white`.**
    Mermaid gets `theme: mmdr-theme`; Zap gets `zap-theme`; CeTZ strokes with
-   `text-color` and fills with `bg-color`. The theme already makes the
+   `text-colour` and fills with `bg-colour`. The theme already makes the
    diagram background match the page and flip text light/dark with `theme`. A
    hardcoded colour is invisible in one of the two themes (e.g. Zap's default
    black-on-white gates vanish on the dark page).
@@ -65,7 +65,7 @@ Importing `zap: *` also brings `cetz` into scope, which is why the style call is
 ```typst
 #zap.circuit({
   import zap: *
-  cetz.draw.set-style(zap: zap-theme)  // themed: gate/label colour follows text-color
+  cetz.draw.set-style(zap: zap-theme)  // themed: gate/label colour follows text-colour
   node("A", (0, 0.2), label: (content: "A", anchor: "west", distance: 2pt))
   node("B", (0, -0.2), label: (content: "B", anchor: "west", distance: 2pt))
   node("C", (2.5, 0), label: (content: "C", anchor: "east", distance: 2pt))
@@ -86,7 +86,7 @@ Gate functions (all take `(name, position, label: ...)` and expose `.in1`,
 | `lxor` | XOR | `lxnor` | XNOR |
 | `lnot` | NOT (use `.in1` → `.out`) | | |
 
-`node(name, pos, label: ...)` creates a labeled endpoint; `wire(from, to,
+`node(name, pos, label: ...)` creates a labelled endpoint; `wire(from, to,
 anchor: "east"/"west")` draws the connection. Use `import zap: *` for the gate,
 node, and wire functions, and `cetz.draw.*` for anything else (arrows, text,
 groups).
@@ -94,13 +94,13 @@ groups).
 ### CeTZ: general diagrams
 
 The `cetz.draw` functions are available after `import cetz.draw: *` inside the
-canvas. Coordinates are in centimetres. Use the theme's `text-color` for strokes
+canvas. Coordinates are in centimetres. Use the theme's `text-colour` for strokes
 so diagrams match the page.
 
 ```typst
 #cetz.canvas({
   import cetz.draw: *
-  set-style(stroke: (paint: text-color, thickness: 0.8pt), fill: none)
+  set-style(stroke: (paint: text-colour, thickness: 0.8pt), fill: none)
   // shapes
   rect((0, 0), (1.2, 1))
   circle((3, 0.5), radius: 0.5)
@@ -121,7 +121,7 @@ Automaton / state machine:
 ```typst
 #cetz.canvas({
   import cetz.draw: *
-  set-style(stroke: (paint: text-color, thickness: 0.8pt), fill: none)
+  set-style(stroke: (paint: text-colour, thickness: 0.8pt), fill: none)
   circle((0, 0), radius: 0.35)
   content((0, 0), [$q_0$])
   circle((1.5, 0), radius: 0.35)

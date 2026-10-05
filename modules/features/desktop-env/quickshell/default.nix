@@ -2,7 +2,7 @@
 # Quickshell UI Engine Feature
 # =============================================================================
 # Quickshell widget framework setup, system activation script, and dynamic QML
-# color theme singleton generated from active theme palette options.
+# colour theme singleton generated from active theme palette options.
 # =============================================================================
 { ... }:
 {
@@ -11,7 +11,7 @@
     let
       cfg = config.features.quickshell;
 
-      inherit (config.theme.colors)
+      inherit (config.theme.colours)
         bg
         bgRaised
         bgSubtle
@@ -32,7 +32,7 @@
       options.features.quickshell.enable = lib.mkOption {
         type = lib.types.bool;
         default = false;
-        description = "Enable the Quickshell UI engine (bars, command center, lock screen, notifications).";
+        description = "Enable the Quickshell UI engine (bars, command centre, lock screen, notifications).";
       };
 
       config = lib.mkIf cfg.enable {
@@ -43,7 +43,7 @@
         hjem.users."${config.username}" = {
           enable = true;
           files = {
-            ".config/quickshell/Colors.qml" = {
+            ".config/quickshell/Colours.qml" = {
               text = ''
                 pragma Singleton
 
@@ -77,7 +77,7 @@
 
         # Symlink every QML/profile file into ~/.config/quickshell. `contents`
         # mode prunes only links that point back into the source tree, so the
-        # Hjem-managed Colors.qml (a /nix/store link) is left alone.
+        # Hjem-managed Colours.qml (a /nix/store link) is left alone.
         nixos.liveLinks."quickshell-config" = {
           source = "${config.nixos.configRepo}/modules/features/desktop-env/quickshell/config";
           target = ".config/quickshell";

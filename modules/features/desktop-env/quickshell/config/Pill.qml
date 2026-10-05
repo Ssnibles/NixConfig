@@ -1,26 +1,26 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 
-// Smart rounded pill container used across bars and command center.
+// Smart rounded pill container used across bars and command centre.
 Rectangle {
   id: root
 
   property int padding: 8
   property int pillHeight: 22
-  property color pillColor: Colors.bgRaised
+  property color pillColour: Colours.bgRaised
   property int orientation: Qt.Horizontal // Qt.Horizontal | Qt.Vertical
 
   // Default radius is half of the smaller dimension (caps on ends)
   property real pillRadius: Math.min(width, height) / 2
 
-  color: root.pillColor
+  color: root.pillColour
   radius: root.pillRadius
   antialiasing: true
   clip: true
   border.width: 1
-  border.color: Colors.border
+  border.color: Colours.border
 
-  Behavior on pillColor { ColorAnimation { duration: 120 } }
+  Behavior on pillColour { ColorAnimation { duration: 120 } }
   Behavior on border.color { ColorAnimation { duration: 120 } }
 
   default property alias contentData: contentItem.data

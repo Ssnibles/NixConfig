@@ -20,11 +20,11 @@ Pill {
   orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
   anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
 
-  pillColor: (root.interactive && batTooltip.hovered) ? Colors.bgSubtle : Colors.bgRaised
+  pillColour: (root.interactive && batTooltip.hovered) ? Colours.bgSubtle : Colours.bgRaised
   border.width: 1
-  border.color: Colors.border
+  border.color: Colours.border
 
-  Behavior on pillColor { ColorAnimation { duration: 120 } }
+  Behavior on pillColour { ColorAnimation { duration: 120 } }
   Behavior on border.color { ColorAnimation { duration: 120 } }
 
   // UPower State
@@ -38,12 +38,12 @@ Pill {
   readonly property int  batState:    root.batDevice ? root.batDevice.state : UPowerDeviceState.Unknown
 
   property string batIcon: Utils.batteryIcon(root.batPct, root.batCharging, root.batPlugged, root.batPresent)
-  property color  batColor: {
-    if (!root.batPresent)                    return Colors.fg
-    if (root.batCharging || root.batPlugged) return Colors.green
-    if (root.batPct <= 15)                   return Colors.red
-    if (root.batPct <= 30)                   return Colors.yellow
-    return Colors.fg
+  property color  batColour: {
+    if (!root.batPresent)                    return Colours.fg
+    if (root.batCharging || root.batPlugged) return Colours.green
+    if (root.batPct <= 15)                   return Colours.red
+    if (root.batPct <= 30)                   return Colours.yellow
+    return Colours.fg
   }
 
   Tooltip {
@@ -51,7 +51,7 @@ Pill {
     target: root
     sharedWindow: root.sharedWindow
     icon: root.batIcon
-    iconColor: root.batColor
+    iconColour: root.batColour
     title: {
       var pct = Math.round(root.batPct)
       var state
@@ -90,7 +90,7 @@ Pill {
 
     Text {
       text: root.batIcon
-      color: root.batColor
+      color: root.batColour
       font.family: root.uiFont
       font.pixelSize: root.horizontal ? 14 : 18
       anchors.verticalCenter: parent.verticalCenter
@@ -99,7 +99,7 @@ Pill {
     Text {
       visible: root.horizontal
       text: root.batPct + "%"
-      color: root.batColor
+      color: root.batColour
       font.family: Config.sansFont
       font.pixelSize: 12
       font.bold: true

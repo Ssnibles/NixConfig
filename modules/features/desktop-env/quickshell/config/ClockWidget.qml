@@ -49,7 +49,7 @@ Item {
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
       text: root.hourStr
-      color: Colors.accent
+      color: Colours.accent
       font.family: root.uiFont
       font.pixelSize: 16
       font.bold: true
@@ -58,7 +58,7 @@ Item {
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
       text: root.minuteStr
-      color: Colors.fg
+      color: Colours.fg
       font.family: root.uiFont
       font.pixelSize: 16
       font.bold: true
@@ -74,7 +74,7 @@ Item {
 
     Text {
       text: root.timeStr
-      color: Colors.accent
+      color: Colours.accent
       font.family: root.uiFont
       font.pixelSize: 14
       font.bold: true
@@ -86,7 +86,7 @@ Item {
     target: root
     sharedWindow: root.sharedWindow
     icon: "\u{F017}"
-    iconColor: Colors.accent
+    iconColour: Colours.accent
     title: Utils.getOrdinalDate(new Date())
     contentWidth: 216
     contentComponent: calendarComponent
@@ -97,9 +97,9 @@ Item {
 
     Rectangle {
       id: calBg
-      color: Colors.bg
+      color: Colours.bg
       radius: 8
-      border.color: Colors.border
+      border.color: Colours.border
       border.width: 1
 
       implicitWidth: calCol.implicitWidth + 20
@@ -185,7 +185,7 @@ Item {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             text: calCol.monthNames[calCol.viewMonth] + " " + calCol.viewYear
-            color: Colors.fg
+            color: Colours.fg
             font.family: root.uiFont
             font.pixelSize: 13
             font.bold: true
@@ -201,12 +201,12 @@ Item {
               width: 22
               height: 22
               radius: 4
-              color: prevHover.containsMouse ? Colors.bgSubtle : "transparent"
+              color: prevHover.containsMouse ? Colours.bgSubtle : "transparent"
 
               Text {
                 anchors.centerIn: parent
                 text: "󰅁"
-                color: prevHover.containsMouse ? Colors.accent : Colors.fgMid
+                color: prevHover.containsMouse ? Colours.accent : Colours.fgMid
                 font.family: root.uiFont
                 font.pixelSize: 14
               }
@@ -225,14 +225,14 @@ Item {
               width: 22
               height: 22
               radius: 4
-              color: (!calCol.isCurrentMonth && todayHover.containsMouse) ? Colors.bgSubtle : "transparent"
+              color: (!calCol.isCurrentMonth && todayHover.containsMouse) ? Colours.bgSubtle : "transparent"
 
               Text {
                 anchors.centerIn: parent
                 text: "󰃭"
                 color: calCol.isCurrentMonth
-                       ? Colors.fgDim
-                       : (todayHover.containsMouse ? Colors.accent : Colors.fgMid)
+                       ? Colours.fgDim
+                       : (todayHover.containsMouse ? Colours.accent : Colours.fgMid)
                 font.family: root.uiFont
                 font.pixelSize: 13
               }
@@ -252,12 +252,12 @@ Item {
               width: 22
               height: 22
               radius: 4
-              color: nextHover.containsMouse ? Colors.bgSubtle : "transparent"
+              color: nextHover.containsMouse ? Colours.bgSubtle : "transparent"
 
               Text {
                 anchors.centerIn: parent
                 text: "󰅂"
-                color: nextHover.containsMouse ? Colors.accent : Colors.fgMid
+                color: nextHover.containsMouse ? Colours.accent : Colours.fgMid
                 font.family: root.uiFont
                 font.pixelSize: 14
               }
@@ -287,7 +287,7 @@ Item {
               font.family: root.uiFont
               font.pixelSize: 11
               font.bold: true
-              color: Colors.accent
+              color: Colours.accent
             }
           }
         }
@@ -307,7 +307,7 @@ Item {
               width: 24
               height: 24
               radius: 4
-              color: dayCell.modelData.isCurrent ? Colors.accent : "transparent"
+              color: dayCell.modelData.isCurrent ? Colours.accent : "transparent"
 
               Text {
                 anchors.centerIn: parent
@@ -316,7 +316,7 @@ Item {
                 font.family: root.uiFont
                 font.pixelSize: 11
                 font.bold: dayCell.modelData.isCurrent
-                color: dayCell.modelData.isCurrent ? Colors.bg : Colors.fg
+                color: dayCell.modelData.isCurrent ? Colours.bg : Colours.fg
               }
             }
           }

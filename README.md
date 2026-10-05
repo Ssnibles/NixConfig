@@ -161,7 +161,7 @@ For in-depth details on mesh routing, battery preservation, and encrypted DNS, r
 For compositor keybindings, trackpad gestures, OCR screenshots, and multi-monitor setup, refer to the **[Wayland Compositors Guide](docs/wiki/compositors.md)**:
 
 - **MangoWC (Primary Lightweight Compositor)**: DWM-style tiling compositor with master/stack, dwindle, monocle, and scroller layouts, 3-finger trackpad gestures, tag-based workspaces, and local development wrapper `mango-dev`.
-- **Intelligent OCR Screenshot Script**: Built-in script ([`screenshot.sh`](file:///home/josh/NixConfig/modules/features/desktop-env/mangowc/screenshot.sh)) featuring zero-border window capture, cursor warping to avoid pointer artifacts, and instant optical character recognition (`tesseract`) copied directly to the clipboard via `SUPER + Shift + s`.
+- **Intelligent OCR Screenshot Script**: Built-in script ([`screenshot.sh`](file:///home/josh/NixConfig/modules/features/desktop-env/mangowc/screenshot.sh)) featuring zero-border window capture, cursor warping to avoid pointer artefacts, and instant optical character recognition (`tesseract`) copied directly to the clipboard via `SUPER + Shift + s`.
 - **Niri (Scrollable Infinite Strip)**: Infinite horizontal strip tiling compositor with Quickshell vertical sidebar integration.
 - **Hyprland (Dynamic Workstation Compositor)**: Dynamic tiling compositor configured through [`hyprland.lua`](file:///home/josh/NixConfig/modules/features/desktop-env/hyprland/hyprland.lua) with theme palette integration.
 - **Shikane Dynamic Display Daemon**: Multi-monitor profile daemon ([`shikane/default.nix`](file:///home/josh/NixConfig/modules/features/desktop-env/shikane/default.nix)) automatically detecting displays and adjusting layouts between laptop-only, dual-screen, and external monitors.
@@ -189,7 +189,7 @@ For single-instance terminal performance, Tmux session management, Yazi openers,
   - Native floating Jujutsu TUI popup (`Prefix + g`).
   - Floating Navi cheatsheet popup (`Prefix + Ctrl-g`) that pastes the chosen cheat, unexecuted, into the current pane.
   - Floating scratchpad terminal (`Prefix + P` via floax).
-  - Resurrect store path sanitizer (`tmux-resurrect-save`) stripping transient Nix store hashes from saved sessions so sessions restore reliably across updates.
+  - Resurrect store path sanitiser (`tmux-resurrect-save`) stripping transient Nix store hashes from saved sessions so sessions restore reliably across updates.
   - Alt-passthrough mode (`Prefix + a`) for Neovim line shifting.
 - **Yazi File Manager**: Async terminal file manager configured with custom image and text openers, hidden file toggles, preview maximisation, and Neovim directory opening.
 - **Navi Cheatsheet Manager**: Interactive cheatsheet fuzzy search bound to `Ctrl + P` in Fish (`navi-pick`) with an fzf preview pane showing the command and tags. Also available in a floating tmux popup via `Prefix + Ctrl-g`, which pastes the chosen cheat unexecuted into the invoking pane (works over SSH). The library is declared in Nix (`modules/packages/navi/default.nix`) and rendered to per-topic `.cheat` files under `~/.config/navi/cheats/`, covering NixOS, Git/GitHub, Jujutsu, Tmux, files, system, MangoWC, and on-demand tools.
@@ -748,7 +748,7 @@ The `boilerplate` CLI automates the creation of new hosts, features, layers, and
 boilerplate -l
 
 # Scaffold a shared feature layer
-boilerplate layer audio-equalizer
+boilerplate layer audio-equaliser
 
 # Scaffold an application feature
 boilerplate feature obsidian -t app

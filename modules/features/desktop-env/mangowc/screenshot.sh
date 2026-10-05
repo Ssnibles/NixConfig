@@ -42,7 +42,7 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM HUP
 
-# Resolve accent color
+# Resolve accent colour
 ACCENT="6e94b2"
 mango_colours="$HOME/.config/mango/colours.conf"
 if [ -f "$mango_colours" ]; then

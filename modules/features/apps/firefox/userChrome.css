@@ -3,7 +3,7 @@
    Sidebery vertical tabs · floating viewport · minimal chrome
    ========================================================================== */
 
-@import url("colors.css");
+@import url("colours.css");
 
 /* ==========================================================================
    §1  DESIGN SYSTEM — Spacing, radii, transitions & browser theme tokens
@@ -156,7 +156,7 @@
 }
 
 /* ==========================================================================
-   §5  URL BAR — Centered pill, single-layer background & breakout elevation
+   §5  URL BAR — Centred pill, single-layer background & breakout elevation
    ========================================================================== */
 
 #urlbar-container {

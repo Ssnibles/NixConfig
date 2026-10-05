@@ -1,6 +1,6 @@
 local M = {}
 
-M.colors = {
+M.colours = {
 	bg = "#141415",
 	fg = "#cdcdcd",
 	comment = "#606079",
@@ -36,7 +36,7 @@ local function blend(fg, bg, alpha)
 end
 
 function M.setup()
-	local c = M.colors
+	local c = M.colours
 	vim.o.background = "dark"
 
 	require("mini.base16").setup({
@@ -179,7 +179,7 @@ function M.setup()
 	hl("BlinkCmpKind", { fg = c.comment })
 	hl("BlinkCmpGhostText", { fg = c.comment })
 
-	local kind_colors = {
+	local kind_colours = {
 		Field = c.purple,
 		Variable = c.fg,
 		Function = c.blue,
@@ -205,8 +205,8 @@ function M.setup()
 		Event = c.orange,
 		Constr = c.orange,
 	}
-	for kind, color in pairs(kind_colors) do
-		hl("BlinkCmpKind" .. kind, { fg = color })
+	for kind, colour in pairs(kind_colours) do
+		hl("BlinkCmpKind" .. kind, { fg = colour })
 	end
 
 	hl("BlinkCmpDoc", { link = "Normal" })

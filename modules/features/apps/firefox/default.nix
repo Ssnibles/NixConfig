@@ -16,7 +16,7 @@
     }:
     let
       cfg = config.features.firefox;
-      inherit (config.theme.colors)
+      inherit (config.theme.colours)
         bg
         bgRaised
         bgSubtle
@@ -31,7 +31,7 @@
         orange
         ;
 
-      colorsCss = ''
+      coloursCss = ''
         :root {
           --fx-bg: #${bg};
           --fx-bg-raised: #${bgRaised};
@@ -72,7 +72,7 @@
       );
 
       # Canonical extension registrations (id -> download URL)
-      extensionCatalog = {
+      extensionCatalogue = {
         "uBlock0@raymondhill.net" = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
         "{3c078156-979c-498b-8990-85f7987dd929}" = "https://addons.mozilla.org/firefox/downloads/latest/sidebery/latest.xpi";
         "{446900e4-71c2-419f-a6a7-df9c091e268b}" = "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi";
@@ -94,10 +94,10 @@
         "tridactyl.vim@cmcaine.co.uk" = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
       };
 
-      # Known extension mappings (name/slug or id -> id & download URL), resolved from the catalog
+      # Known extension mappings (name/slug or id -> id & download URL), resolved from the catalogue
       knownExtensions =
-        lib.mapAttrs' (id: url: lib.nameValuePair id { inherit id url; }) extensionCatalog
-        // lib.mapAttrs' (alias: id: lib.nameValuePair alias { inherit id; url = extensionCatalog.${id}; }) extensionAliases;
+        lib.mapAttrs' (id: url: lib.nameValuePair id { inherit id url; }) extensionCatalogue
+        // lib.mapAttrs' (alias: id: lib.nameValuePair alias { inherit id; url = extensionCatalogue.${id}; }) extensionAliases;
 
       # Build custom New Tab WebExtension package (.xpi)
       customNewTabXpi = pkgs.runCommand "custom-newtab.xpi" { buildInputs = [ pkgs.zip ]; } ''
@@ -105,8 +105,8 @@
                 cp -r ${./startpage}/* tmp_ext/
                 cd tmp_ext
                 chmod -R +w .
-                cat << 'EOF' > colors.css
-        ${colorsCss}EOF
+                cat << 'EOF' > colours.css
+        ${coloursCss}EOF
                 zip -r $out ./*
       '';
 
@@ -264,7 +264,7 @@
             tabsTreeBookmarks = true;
             treeRmOutdent = "branch";
 
-            # --- Tab Behavior, Activation & Lifecycle ---
+            # --- Tab Behaviour, Activation & Lifecycle ---
             moveNewTab = "last_child";
             moveNewTabParent = "last_child";
             activateLastTabOnPanelSwitching = true;
@@ -628,7 +628,7 @@
               NoDisplay=true
             '';
 
-            # Profile initialization config
+            # Profile initialisation config
             ".mozilla/firefox/profiles.ini".text = ''
               [Profile0]
               Name=default
@@ -662,7 +662,7 @@
           };
         };
 
-        # Direct repository symlinks for live-reloading UI customization (userChrome, userContent, startpage)
+        # Direct repository symlinks for live-reloading UI customisation (userChrome, userContent, startpage)
         # Bypasses Nix store so edits in NixConfig take effect immediately on Firefox refresh/restart
         system.activationScripts.firefox-config = ''
           FX_PROFILE="/home/${config.username}/.mozilla/firefox/${cfg.profileName}"
@@ -678,10 +678,10 @@
             "$FX_PROFILE/chrome"
 
           # Dynamic theme CSS variables
-          cat << 'EOF' > "$FX_PROFILE/chrome/colors.css"
-${colorsCss}
+          cat << 'EOF' > "$FX_PROFILE/chrome/colours.css"
+${coloursCss}
 EOF
-          chown ${config.username}:users "$FX_PROFILE/chrome/colors.css"
+          chown ${config.username}:users "$FX_PROFILE/chrome/colours.css"
 
           ${lib.optionalString (cfg.enableCustomCss && cfg.userChromeFile != null) ''
             if [ -d "$REPO_FX_DIR" ]; then
@@ -709,10 +709,10 @@ EOF
           fi
           chown -h ${config.username}:users "$FX_PROFILE/startpage"
 
-          cat << 'EOF' > "$FX_PROFILE/startpage/colors.css"
-${colorsCss}
+          cat << 'EOF' > "$FX_PROFILE/startpage/colours.css"
+${coloursCss}
 EOF
-          chown ${config.username}:users "$FX_PROFILE/startpage/colors.css"
+          chown ${config.username}:users "$FX_PROFILE/startpage/colours.css"
 
           # Tridactyl native messaging host & configuration
           mkdir -p /home/${config.username}/.mozilla/native-messaging-hosts

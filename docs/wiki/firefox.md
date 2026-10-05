@@ -10,7 +10,7 @@ This guide explains how Firefox Developer Edition UI customisation works in NixC
 | :--- | :--- | :--- |
 | **`userChrome.css`** | **Firefox Native UI** | Toolbar, URL bar, sidebars, context menus, navbar buttons, window frame. |
 | **`userContent.css`** | **Web Content & Extensions** | Extension sidebars (e.g. Sidebery), `about:config`, `about:blank`, `about:newtab`. |
-| **`colors.css`** | **Theme System** | Dynamic CSS variables generated from your system colour palette (`--fx-bg`, `--fx-accent`, etc.). |
+| **`colours.css`** | **Theme System** | Dynamic CSS variables generated from your system colour palette (`--fx-bg`, `--fx-accent`, etc.). |
 | **`startpage/`** | **Offline New Tab Extension** | Local embedded offline startpage WebExtension loaded into Firefox. |
 
 > [!NOTE]

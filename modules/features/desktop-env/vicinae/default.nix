@@ -11,7 +11,7 @@
     let
       cfg = config.features.vicinae;
 
-      inherit (config.theme.colors)
+      inherit (config.theme.colours)
         bg
         bgRaised
         border
@@ -60,7 +60,7 @@
                 [meta]
                 version = 1
                 name = "nixconfig"
-                description = "Generated from theme colors"
+                description = "Generated from theme colours"
                 variant = "dark"
 
                 [colors.core]

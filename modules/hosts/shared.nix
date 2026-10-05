@@ -2,7 +2,7 @@
 # Shared Host Base Configuration
 # =============================================================================
 # Core hardware tuning, bootloader (Limine), graphics acceleration, login manager (Ly),
-# udev kernel remaps (Caps/Esc swap), swap, and systemd service optimizations.
+# udev kernel remaps (Caps/Esc swap), swap, and systemd service optimisations.
 # =============================================================================
 { ... }:
 {
@@ -108,7 +108,7 @@
         priority = 100;
       };
 
-      # ── Systemd Boot & Service Optimizations ──────────────────────────────
+      # ── Systemd Boot & Service Optimisations ──────────────────────────────
       systemd.services.NetworkManager-wait-online.enable = false;
 
       # Disable systemd-boot random seed update since Limine is used (saves ~8.9s on boot)

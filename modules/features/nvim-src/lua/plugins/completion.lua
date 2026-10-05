@@ -96,7 +96,7 @@ cmp.setup({
 		sorts = { "exact", "score", "sort_text" },
 	},
 	sources = {
-		-- Context-aware: in comments, suppress LSP symbol noise and favor prose/buffer/spell/copilot
+		-- Context-aware: in comments, suppress LSP symbol noise and favour prose/buffer/spell/copilot
 		default = function()
 			local ok, node = pcall(vim.treesitter.get_node)
 			if ok and node then

@@ -3,7 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 
 // Reusable prev / play-pause / next button cluster with hover scaling.
-// Used in CommandCenter media card and MediaWidget popover.
+// Used in CommandCentre media card and MediaWidget popover.
 RowLayout {
   id: root
   spacing: 6
@@ -23,12 +23,12 @@ RowLayout {
     Layout.preferredHeight: 28
     Layout.alignment: Qt.AlignVCenter
     radius: 14
-    color: prevHover.containsMouse ? Colors.bgSubtle : "transparent"
+    color: prevHover.containsMouse ? Colours.bgSubtle : "transparent"
     Behavior on scale { NumberAnimation { duration: 100 } }
 
     Text {
       text: "󰒮"
-      color: root.canPrevious ? (prevHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
+      color: root.canPrevious ? (prevHover.containsMouse ? Colours.accent : Colours.fg) : Colours.fgDim
       font.family: root.uiFont
       font.pixelSize: 16
       anchors.centerIn: parent
@@ -51,14 +51,14 @@ RowLayout {
     Layout.preferredHeight: 32
     Layout.alignment: Qt.AlignVCenter
     radius: 16
-    color: playHover.containsMouse ? Colors.accent : Colors.bgSubtle
-    border.color: Colors.border
+    color: playHover.containsMouse ? Colours.accent : Colours.bgSubtle
+    border.color: Colours.border
     border.width: 1
     Behavior on scale { NumberAnimation { duration: 100 } }
 
     Text {
       text: root.isPlaying ? "󰏤" : "󰐊"
-      color: playHover.containsMouse ? Colors.bg : Colors.fg
+      color: playHover.containsMouse ? Colours.bg : Colours.fg
       font.family: root.uiFont
       font.pixelSize: 18
       anchors.centerIn: parent
@@ -81,12 +81,12 @@ RowLayout {
     Layout.preferredHeight: 28
     Layout.alignment: Qt.AlignVCenter
     radius: 14
-    color: nextHover.containsMouse ? Colors.bgSubtle : "transparent"
+    color: nextHover.containsMouse ? Colours.bgSubtle : "transparent"
     Behavior on scale { NumberAnimation { duration: 100 } }
 
     Text {
       text: "󰒭"
-      color: root.canNext ? (nextHover.containsMouse ? Colors.accent : Colors.fg) : Colors.fgDim
+      color: root.canNext ? (nextHover.containsMouse ? Colours.accent : Colours.fg) : Colours.fgDim
       font.family: root.uiFont
       font.pixelSize: 16
       anchors.centerIn: parent

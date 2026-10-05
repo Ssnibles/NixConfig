@@ -3,7 +3,7 @@
    Startpage · Sidebery v5 · about: pages
    ========================================================================== */
 
-@import url("colors.css");
+@import url("colours.css");
 
 /* ==========================================================================
    §1  NEW TAB & BLANK PAGES — Minimalist dark canvas & Instrument Serif
@@ -193,7 +193,7 @@
     --sb-teal: var(--fx-teal, #b4d4cf);
     --sb-red: var(--fx-red, #d8647e);
 
-    /* Tree indent guide line color */
+    /* Tree indent guide line colour */
     --sb-guide: color-mix(in srgb, var(--sb-fg-dim) 60%, transparent);
 
     /* Highlight border width token (2px across all highlights) */
@@ -248,7 +248,7 @@
     --tabs-border-radius: var(--sb-radius-sm) !important;
     --tabs-indent: 12px !important;
 
-    /* Tabs States & Colors (No box-shadows) */
+    /* Tabs States & Colours (No box-shadows) */
     --tabs-normal-bg: transparent !important;
     --tabs-normal-fg: var(--sb-fg) !important;
     --tabs-activated-bg: var(--sb-bg-subtle) !important;

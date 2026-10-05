@@ -99,7 +99,7 @@
           };
         };
 
-        # ── Localization & Timezone ──────────────────────────────────────────
+        # ── Localisation & Timezone ──────────────────────────────────────────
         time.timeZone = "Pacific/Auckland";
 
         i18n.defaultLocale = "en_US.UTF-8";
@@ -200,7 +200,7 @@
         hardware.enableRedistributableFirmware = true;
         services.printing.enable = false;
 
-        # ── System Maintenance & Store Optimization ─────────────────────────
+        # ── System Maintenance & Store Optimisation ─────────────────────────
         programs.nh = {
           enable = true;
           flake = "/home/${config.username}/NixConfig";

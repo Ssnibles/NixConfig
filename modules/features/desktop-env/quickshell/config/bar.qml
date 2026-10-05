@@ -31,7 +31,7 @@ Scope {
       }
       implicitHeight: Config.barHeight
       exclusionMode: ExclusionMode.Auto
-      color: Colors.bg
+      color: Colours.bg
 
       mask: Region { item: barPanel.contentItem }
 
@@ -52,7 +52,7 @@ Scope {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: 1
-        color: Colors.border
+        color: Colours.border
       }
 
       // Bar Content Container
@@ -62,7 +62,7 @@ Scope {
         anchors.leftMargin: Config.barHorizontalMargin
         anchors.rightMargin: Config.barHorizontalMargin
 
-        // Left Section: Clock, Command Center Button, Window Title
+        // Left Section: Clock, Command Centre Button, Window Title
         Row {
           id: leftRow
           anchors.left: parent.left
@@ -75,8 +75,8 @@ Scope {
             sharedWindow: sharedTipWindow
           }
 
-          CommandCenterButton {
-            id: commandCenterButton
+          CommandCentreButton {
+            id: commandCentreButton
             horizontal: true
             screen: barPanel.modelData
             anchors.verticalCenter: parent.verticalCenter
@@ -97,7 +97,7 @@ Scope {
             anchors.verticalCenter: parent.verticalCenter
             pillHeight: 24
             padding: 10
-            pillColor: Colors.bgRaised
+            pillColour: Colours.bgRaised
             clip: true
 
             Behavior on width {
@@ -114,7 +114,7 @@ Scope {
           }
         }
 
-        // Center Section: Unified Workspaces Widget
+        // Centre Section: Unified Workspaces Widget
         WorkspacesWidget {
           id: workspacesWidget
           anchors.centerIn: parent

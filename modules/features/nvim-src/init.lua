@@ -39,7 +39,7 @@ vim.opt.shortmess:append("CF")
 -- window that auto-dismisses, and the legacy hit-enter "Press ENTER" prompt
 -- (which has nowhere to draw when cmdheight=0) no longer exists.
 -- NOTE: do NOT attach another `vim.ui_attach(..., { ext_messages = true })`
--- UI on top of this. ext_messages externalizes *all* message rendering, so any
+-- UI on top of this. ext_messages externalises *all* message rendering, so any
 -- kind it does not explicitly draw silently disappears (this was the cause of
 -- `:!cmd` output vanishing and the editor appearing to freeze).
 require("vim._core.ui2").enable({

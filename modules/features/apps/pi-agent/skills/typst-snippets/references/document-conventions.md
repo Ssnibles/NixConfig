@@ -22,7 +22,7 @@ these rules, see `references/example.typ`.
 
 - The theme (`references/theme.typ`; `templates/theme.typ` in a notes repo)
   defines `theme`, `note-title`, `page-type`, `course`, the colours
-  (`text-color`, `stroke-color`, `bg-color`), the UI tokens (`ui-radius`,
+  (`text-colour`, `stroke-colour`, `bg-colour`), the UI tokens (`ui-radius`,
   `ui-radius-sm`, `ui-border`, `ui-surface`, `ui-surface-raised`), the font
   tokens, `mmdr-theme`/`zap-theme`, and the `#show` rules. Everything else
   assumes it exists.
@@ -67,7 +67,7 @@ The theme defines **helper functions** that emit the canonical markup. They
 arrive with the `#import`; prefer them over hand-writing the raw `#block(...)`
 forms:
 
-- `#callout(icon, title, color, body)` — any callout variant, e.g.
+- `#callout(icon, title, colour, body)` — any callout variant, e.g.
   `#callout("📖", "Definition — …:", "#3182ce")[…]`.
 - `#card(body)` — a neutral bordered card.
 - `#qa(question, answer)` — the Q/A retrieval pair.
@@ -184,7 +184,7 @@ See `references/diagrams.md` for the tools, imports, and templates. The rules:
 
 ## 10. Colour, theme, and type
 
-- Never hardcode page/font/colour settings. Use `theme`, `text-color`, `ui-*`,
+- Never hardcode page/font/colour settings. Use `theme`, `text-colour`, `ui-*`,
   `font-sans`, `font-serif`, and `mmdr-theme`.
 - **Body text is sans-serif** (`font-sans`): paragraphs, lists, tables, callout
   content, and the footer page number. The global `#set text(font: font-sans)`

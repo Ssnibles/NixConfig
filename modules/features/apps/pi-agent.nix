@@ -199,7 +199,7 @@
         subagent = lib.mkOption {
           type = lib.types.bool;
           default = false;
-          description = "Enable subagent extension (delegate tasks to specialized subagents with isolated context).";
+          description = "Enable subagent extension (delegate tasks to specialised subagents with isolated context).";
         };
 
         extensions = lib.mkOption {

@@ -4,7 +4,7 @@ local map = vim.keymap.set
 map("n", "U", "<C-r>", { desc = "Redo" })
 map("n", "Q", "<Nop>", { desc = "Disable Ex mode" })
 map("n", "<C-z>", "<Nop>", { desc = "Disable suspend" })
-map({ "i", "v" }, "<C-c>", "<Esc>", { desc = "Normalize Ctrl-c to Escape" })
+map({ "i", "v" }, "<C-c>", "<Esc>", { desc = "Normalise Ctrl-c to Escape" })
 
 -- ── Saving & Quitting ────────────────────────────────────────────────
 map("i", "<C-s>", "<C-o><cmd>update<CR>", { desc = "Save buffer" })
@@ -47,16 +47,16 @@ map("n", "<leader>P", '"+P', { desc = "Paste before from system clipboard" })
 map("n", "<leader>va", "ggVG", { desc = "Select all" })
 map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Smart line down" })
 map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Smart line up" })
-map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down (centered)" })
-map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up (centered)" })
+map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down (centred)" })
+map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up (centred)" })
 
 -- ── Search ───────────────────────────────────────────────────────────
 map("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear search highlight" })
 map("n", "<leader>h", "<cmd>nohlsearch<CR>", { desc = "Clear search highlight" })
-map("n", "n", "nzzzv", { desc = "Next search result (centered)" })
-map("n", "N", "Nzzzv", { desc = "Prev search result (centered)" })
-map("n", "*", "*zz", { desc = "Search word forward (centered)" })
-map("n", "#", "#zz", { desc = "Search word backward (centered)" })
+map("n", "n", "nzzzv", { desc = "Next search result (centred)" })
+map("n", "N", "Nzzzv", { desc = "Prev search result (centred)" })
+map("n", "*", "*zz", { desc = "Search word forward (centred)" })
+map("n", "#", "#zz", { desc = "Search word backward (centred)" })
 
 -- ── Windows ──────────────────────────────────────────────────────────
 map("n", "<leader>wv", "<C-w>v", { desc = "Split vertical" })
@@ -71,8 +71,8 @@ map("n", "<leader>wz", function()
 		vim.cmd("tab split")
 		vim.t.zoomed = true
 	end
-end, { desc = "Toggle maximize/zoom window" })
-map("n", "<leader>w=", "<C-w>=", { desc = "Equalize windows" })
+end, { desc = "Toggle maximise/zoom window" })
+map("n", "<leader>w=", "<C-w>=", { desc = "Equalise windows" })
 map("n", "<leader>wh", "<C-w>H", { desc = "Move window left" })
 map("n", "<leader>wl", "<C-w>L", { desc = "Move window right" })
 map("n", "<leader>wj", "<C-w>J", { desc = "Move window down" })
@@ -222,6 +222,6 @@ map("n", "<leader>gF", "<cmd>FzfLua git_stash<CR>", { desc = "Git stash" })
 
 -- ── Miscellaneous ────────────────────────────────────────────────────
 map("n", "<leader>cd", "<cmd>cd %:p:h<CR>", { desc = "Change to file directory" })
--- `zz` intentionally left as the built-in "center cursor"; use `za` to toggle folds.
+-- `zz` intentionally left as the built-in "centre cursor"; use `za` to toggle folds.
 map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 map("n", "<C-.>", "@@", { desc = "Repeat last macro" })

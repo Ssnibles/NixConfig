@@ -6,7 +6,7 @@ This directory provides a complete, nix-backed development shell for programming
 
 ## 🚀 Quick Start & New Project Setup
 
-### 1. Initialize a New Project
+### 1. Initialise a New Project
 
 To create a new ESP32 project anywhere on your system:
 
@@ -27,7 +27,7 @@ nix flake init -t github:Ssnibles/NixConfig#esp32-arduino
    direnv allow
    ```
 
-2. **Initialize Board Core (First Time Setup)**:
+2. **Initialise Board Core (First Time Setup)**:
    ```bash
    esp-init
    ```

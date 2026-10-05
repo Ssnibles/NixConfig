@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Zen Browser Dynamic Theme Palette (Generated from config.theme.colors)
+   Zen Browser Dynamic Theme Palette (Generated from config.theme.colours)
    Active Scheme: vague
    ========================================================================== */
 :root {
@@ -76,7 +76,7 @@
   --color-accent-primary-active: color-mix(in srgb, #6e94b2 70%, white) !important;
 }
 
-/* Container Tab Accent Colors */
+/* Container Tab Accent Colours */
 .identity-color-blue {
   --identity-tab-color: #6e94b2 !important;
   --identity-icon-color: #6e94b2 !important;

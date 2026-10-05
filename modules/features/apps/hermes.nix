@@ -59,7 +59,7 @@
           pkgs.uv
         ];
 
-        # Offload heavy LLM inference to the homeserver to maximize laptop battery
+        # Offload heavy LLM inference to the homeserver to maximise laptop battery
         services.ollama.enable = false;
 
         environment.sessionVariables = {

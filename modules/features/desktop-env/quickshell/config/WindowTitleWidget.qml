@@ -6,7 +6,7 @@ Item {
 
   property string titleText: ""
   property string uiFont: Config.monoFont
-  property color textColor: Colors.fgMid
+  property color textColour: Colours.fgMid
   property int fontSize: 13
   property real targetRotation: horizontal ? 0 : 270
   property bool horizontal: false
@@ -23,7 +23,7 @@ Item {
   Text {
     id: titleLabel
     text: root.titleText
-    color: root.textColor
+    color: root.textColour
     font.family: root.uiFont
     font.pixelSize: root.fontSize
     font.italic: root.italic

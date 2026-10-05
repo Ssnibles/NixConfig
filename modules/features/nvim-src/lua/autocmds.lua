@@ -74,7 +74,7 @@ autocmd("FileType", {
 	end,
 })
 
--- ── Equalize splits on resize ────────────────────────────────────────
+-- ── Equalise splits on resize ────────────────────────────────────────
 autocmd("VimResized", { group = augroup, command = "wincmd =" })
 
 -- ── Auto-comment formatting ──────────────────────────────────────────

@@ -1,7 +1,7 @@
 # =============================================================================
-# Podman Container & Virtualization Feature
+# Podman Container & Virtualisation Feature
 # =============================================================================
-# OCI container virtualization stack, Docker CLI alias wrapper, and Distrobox.
+# OCI container virtualisation stack, Docker CLI alias wrapper, and Distrobox.
 # =============================================================================
 { ... }:
 {
@@ -19,7 +19,7 @@
       options.features.podman-vm.enable = lib.mkOption {
         type = lib.types.bool;
         default = false;
-        description = "Enable the Podman container and virtualization stack with Distrobox.";
+        description = "Enable the Podman container and virtualisation stack with Distrobox.";
       };
 
       config = lib.mkIf cfg.enable {

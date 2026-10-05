@@ -1,7 +1,7 @@
 # =============================================================================
 # Laptop Host Specific Configuration
 # =============================================================================
-# Hardware definitions, TLP battery power optimization profiles, i2c_hid ACPI
+# Hardware definitions, TLP battery power optimisation profiles, i2c_hid ACPI
 # touchpad polling workarounds, ath11k Wi-Fi kernel modules, and DFU udev rules.
 # =============================================================================
 { ... }:

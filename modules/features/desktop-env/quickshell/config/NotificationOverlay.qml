@@ -55,11 +55,11 @@ Scope {
 
       readonly property bool onTop: pos.startsWith("top") || pos === "top"
       readonly property bool onBottom: pos.startsWith("bottom") || pos === "bottom"
-      readonly property bool isVertCenter: !onTop && !onBottom
+      readonly property bool isVertCentre: !onTop && !onBottom
 
       readonly property bool onLeft: pos.endsWith("left") || pos === "left"
       readonly property bool onRight: pos.endsWith("right") || pos === "right"
-      readonly property bool isHorizCenter: !onLeft && !onRight
+      readonly property bool isHorizCentre: !onLeft && !onRight
 
       anchors {
         top: panel.onTop
@@ -90,7 +90,7 @@ Scope {
         anchors.margins: Config.notifCardMargins
         anchors.top: panel.onTop ? parent.top : undefined
         anchors.bottom: panel.onBottom ? parent.bottom : undefined
-        anchors.verticalCenter: panel.isVertCenter ? parent.verticalCenter : undefined
+        anchors.verticalCenter: panel.isVertCentre ? parent.verticalCenter : undefined
         anchors.horizontalCenter: parent.horizontalCenter
 
         add: Transition {

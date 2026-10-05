@@ -12,10 +12,10 @@ Item {
   property int dotSizeFocused: Config.workspaceDotSizeFocused
   property int dotSpacing: Config.workspaceDotSpacing
 
-  property color dotColorFocused: Colors.accent
-  property color dotColorActive: Colors.fgMid
-  property color dotColorUrgent: Colors.red
-  property color dotColorEmpty: Colors.fgDim
+  property color dotColourFocused: Colours.accent
+  property color dotColourActive: Colours.fgMid
+  property color dotColourUrgent: Colours.red
+  property color dotColourEmpty: Colours.fgDim
 
   readonly property int focusedIndex: {
     if (!workspaces || workspaces.length === 0) return 0
@@ -137,7 +137,7 @@ Item {
     // Sliding Morphing Focused Pill
     Rectangle {
       id: activePill
-      color: root.dotColorFocused
+      color: root.dotColourFocused
       radius: Math.min(width, height) / 2
       antialiasing: true
       z: 2
@@ -210,7 +210,7 @@ Item {
           width: root.dotSize
           height: root.dotSize
           radius: root.dotSize / 2
-          color: dotItem.isUrgent ? root.dotColorUrgent : ((dotItem.isActive || dotItem.isOccupied) ? root.dotColorActive : root.dotColorEmpty)
+          color: dotItem.isUrgent ? root.dotColourUrgent : ((dotItem.isActive || dotItem.isOccupied) ? root.dotColourActive : root.dotColourEmpty)
           opacity: dotItem.isFocused ? 0.0 : 1.0
 
           Behavior on opacity {

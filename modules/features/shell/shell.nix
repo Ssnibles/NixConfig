@@ -10,7 +10,7 @@
       ...
     }:
     let
-      c = config.theme.colors;
+      c = config.theme.colours;
     in
     {
       users.users."${config.username}".shell = pkgs.unstable.fish;

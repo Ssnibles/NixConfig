@@ -12,7 +12,7 @@
 #
 # The UI is reduced to a single-line compact bar (vs. Zellij's default double
 # tab/status bars), hover popups are disabled, and the theme is generated from
-# the active `config.theme.colors` palette.
+# the active `config.theme.colours` palette.
 #
 # Besides drawing the bar, the custom `zjbar` plugin doubles as an always-on
 # control plugin: a few leader actions that need live session state (new tab in
@@ -28,16 +28,16 @@
       ...
     }:
     let
-      c = config.theme.colors;
+      c = config.theme.colours;
       zellijBin = "${pkgs.zellij}/bin/zellij";
       fishBin = "${pkgs.unstable.fish}/bin/fish";
 
       # Absolute, stable location the built plugin wasms are exposed at.
-      # Zellij keys both its plugin-permission cache and serialized session
+      # Zellij keys both its plugin-permission cache and serialised session
       # layouts by a plugin's absolute path. Pointing at the content-addressed
       # `${zellijPlugins}` store path directly means every rebuild produces a
       # new path, so the pre-granted permission no longer matches and
-      # reattaching to a session serialized before the rebuild re-prompts once
+      # reattaching to a session serialised before the rebuild re-prompts once
       # per tab (each tab's bar is a separate plugin instance). Serving the
       # wasms from a fixed symlink path keeps the key stable across rebuilds.
       zellijPluginDir = "/home/${config.username}/.local/share/zellij/plugins";
@@ -52,7 +52,7 @@
         pname = "zellij-plugins";
         version = "0.1.0";
         # Exclude the local cargo target dir; cleanSource does not, and it is
-        # ~433MB of cached build artifacts from a different target.
+        # ~433MB of cached build artefacts from a different target.
         src = pkgs.lib.cleanSourceWith {
           src = ./zellij-plugin;
           filter = path: _: builtins.baseNameOf path != "target";
@@ -63,7 +63,7 @@
         doCheck = false;
       };
 
-      # Zellij theme colors are quoted hex strings (e.g. "#cdd6f4").
+      # Zellij theme colours are quoted hex strings (e.g. "#cdd6f4").
       hex = x: "\"#${x}\"";
 
       # A single StyleDeclaration (base/background + 4 emphasis slots).
@@ -321,7 +321,7 @@
             bind "Enter" { SwitchToMode "Locked"; }
           }
 
-          // Confirmation prompts (kept so dialogs never trap the user).
+          // Confirmation prompts (kept so dialogues never trap the user).
           prompt {
             bind "y" "Enter" { Confirm; SwitchToMode "Locked"; }
             bind "n" "Esc" { Deny; SwitchToMode "Locked"; }

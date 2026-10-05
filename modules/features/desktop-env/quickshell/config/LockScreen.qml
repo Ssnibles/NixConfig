@@ -135,7 +135,7 @@ Scope {
 
       WlSessionLockSurface {
         id: surface
-        color: Colors.bg
+        color: Colours.bg
 
         Connections {
           target: lockRoot
@@ -205,7 +205,7 @@ Scope {
         Rectangle {
           id: mainBg
           anchors.fill: parent
-          color: Colors.bg
+          color: Colours.bg
           focus: true
 
           Keys.onPressed: function(event) {
@@ -310,7 +310,7 @@ Scope {
                 id: clockText
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: surface.currentTimeStr
-                color: Colors.fg
+                color: Colours.fg
                 font.family: Config.serifFont
                 font.pixelSize: 72
                 font.italic: true
@@ -320,7 +320,7 @@ Scope {
               Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: surface.currentDateStr
-                color: Colors.fgDim
+                color: Colours.fgDim
                 font.family: Config.sansFont
                 font.pixelSize: 16
               }
@@ -338,10 +338,10 @@ Scope {
             Rectangle {
               Layout.fillWidth: true
               implicitHeight: authCol.implicitHeight + 36
-              color: Colors.bgRaised
-              border.color: surface.errorMessage !== "" ? Colors.red : Colors.border
+              color: Colours.bgRaised
+              border.color: surface.errorMessage !== "" ? Colours.red : Colours.border
               border.width: 1
-              radius: Config.commandCenterCardRadius
+              radius: Config.commandCentreCardRadius
 
               transform: Translate {
                 x: surface.shakeOffset
@@ -367,16 +367,16 @@ Scope {
                     Layout.alignment: Qt.AlignHCenter
                     width: Config.lockAvatarSize
                     height: Config.lockAvatarSize
-                    radius: Config.commandCenterCardRadius
-                    color: Colors.bgSubtle
-                    border.color: Colors.border
+                    radius: Config.commandCentreCardRadius
+                    color: Colours.bgSubtle
+                    border.color: Colours.border
                     border.width: 1
 
                     // Fallback Icon
                     Text {
                       anchors.centerIn: parent
                       text: Config.lockFallbackIcon
-                      color: Colors.accent
+                      color: Colours.accent
                       font.family: Config.monoFont
                       font.pixelSize: 32
                       visible: !avatarImage.ready
@@ -388,7 +388,7 @@ Scope {
                       anchors.fill: parent
                       source: Config.lockAvatarPath
                       sourceSize: Qt.size(192, 192)
-                      radius: Config.commandCenterCardRadius
+                      radius: Config.commandCentreCardRadius
                     }
                   }
 
@@ -396,7 +396,7 @@ Scope {
                   Text {
                     Layout.alignment: Qt.AlignHCenter
                     text: Quickshell.env("USER") || "User"
-                    color: Colors.fg
+                    color: Colours.fg
                     font.family: Config.sansFont
                     font.pixelSize: 20
                     font.bold: true
@@ -406,7 +406,7 @@ Scope {
                   Text {
                     Layout.alignment: Qt.AlignHCenter
                     text: surface.errorMessage !== "" ? surface.errorMessage : (surface.authenticating ? "Authenticating..." : "System Locked")
-                    color: surface.errorMessage !== "" ? Colors.red : (surface.authenticating ? Colors.accent : Colors.fgDim)
+                    color: surface.errorMessage !== "" ? Colours.red : (surface.authenticating ? Colours.accent : Colours.fgDim)
                     font.family: Config.sansFont
                     font.pixelSize: 14
                   }
@@ -418,8 +418,8 @@ Scope {
                   Layout.fillWidth: true
                   height: 48
                   radius: Config.lockInputRadius
-                  color: Colors.bgSubtle
-                  border.color: passInput.activeFocus ? Colors.accent : Colors.border
+                  color: Colours.bgSubtle
+                  border.color: passInput.activeFocus ? Colours.accent : Colours.border
                   border.width: passInput.activeFocus ? 2 : 1
 
                   Behavior on border.color { ColorAnimation { duration: 150 } }
@@ -440,7 +440,7 @@ Scope {
                     // Lock / Auth Icon
                     Text {
                       text: surface.authenticating ? "󱎟" : "󰌾"
-                      color: passInput.activeFocus ? Colors.accent : Colors.fgDim
+                      color: passInput.activeFocus ? Colours.accent : Colours.fgDim
                       font.family: Config.monoFont
                       font.pixelSize: 18
                       Layout.alignment: Qt.AlignVCenter
@@ -452,7 +452,7 @@ Scope {
                       Layout.fillWidth: true
                       Layout.alignment: Qt.AlignVCenter
                       echoMode: TextInput.Password
-                      color: Colors.fg
+                      color: Colours.fg
                       font.family: Config.sansFont
                       font.pixelSize: 16
                       clip: true
@@ -479,7 +479,7 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.left
                         text: "Enter password..."
-                        color: Colors.fgDim
+                        color: Colours.fgDim
                         font.family: Config.sansFont
                         font.pixelSize: 16
                         visible: passInput.text.length === 0 && !passInput.activeFocus
@@ -500,8 +500,8 @@ Scope {
                       Layout.preferredHeight: 32
                       Layout.alignment: Qt.AlignVCenter
                       radius: 8
-                      color: submitHover.containsMouse ? Colors.accent : Colors.bgRaised
-                      border.color: Colors.border
+                      color: submitHover.containsMouse ? Colours.accent : Colours.bgRaised
+                      border.color: Colours.border
                       border.width: 1
 
                       Behavior on scale { NumberAnimation { duration: 100 } }
@@ -509,7 +509,7 @@ Scope {
                       Text {
                         anchors.centerIn: parent
                         text: "󰁔"
-                        color: submitHover.containsMouse ? Colors.bg : Colors.fg
+                        color: submitHover.containsMouse ? Colours.bg : Colours.fg
                         font.family: Config.monoFont
                         font.pixelSize: 16
                       }
@@ -535,8 +535,8 @@ Scope {
                 Pill {
                   visible: surface.capsLockOn
                   Layout.alignment: Qt.AlignHCenter
-                  pillColor: Colors.bgSubtle
-                  border.color: Colors.yellow
+                  pillColour: Colours.bgSubtle
+                  border.color: Colours.yellow
                   padding: 8
 
                   Row {
@@ -545,7 +545,7 @@ Scope {
 
                     Text {
                       text: "󰌎"
-                      color: Colors.yellow
+                      color: Colours.yellow
                       font.family: Config.monoFont
                       font.pixelSize: 14
                       anchors.verticalCenter: parent.verticalCenter
@@ -553,7 +553,7 @@ Scope {
 
                     Text {
                       text: "Caps Lock is active"
-                      color: Colors.yellow
+                      color: Colours.yellow
                       font.family: Config.sansFont
                       font.pixelSize: 13
                       anchors.verticalCenter: parent.verticalCenter
@@ -581,7 +581,7 @@ Scope {
             Text {
               anchors.horizontalCenter: parent.horizontalCenter
               text: surface.currentTimeStr
-              color: Colors.fg
+              color: Colours.fg
               font.family: Config.serifFont
               font.pixelSize: 72
               font.italic: true
@@ -591,15 +591,15 @@ Scope {
             Text {
               anchors.horizontalCenter: parent.horizontalCenter
               text: surface.currentDateStr
-              color: Colors.fgDim
+              color: Colours.fgDim
               font.family: Config.sansFont
               font.pixelSize: 18
             }
 
             Pill {
               anchors.horizontalCenter: parent.horizontalCenter
-              pillColor: Colors.bgRaised
-              border.color: Colors.border
+              pillColour: Colours.bgRaised
+              border.color: Colours.border
               padding: 10
 
               Row {
@@ -608,7 +608,7 @@ Scope {
 
                 Text {
                   text: "󰌾"
-                  color: Colors.accent
+                  color: Colours.accent
                   font.family: Config.monoFont
                   font.pixelSize: 16
                   anchors.verticalCenter: parent.verticalCenter
@@ -616,7 +616,7 @@ Scope {
 
                 Text {
                   text: "Locked"
-                  color: Colors.fgDim
+                  color: Colours.fgDim
                   font.family: Config.sansFont
                   font.pixelSize: 15
                   anchors.verticalCenter: parent.verticalCenter

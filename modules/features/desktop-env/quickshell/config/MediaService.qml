@@ -6,8 +6,8 @@ import Quickshell.Services.Mpris
 import QtQuick
 import "Utils.js" as Utils
 
-// Centralized singleton managing MPRIS player state, unified position/progress
-// sampling, and synchronized ticking across the bar, command center, and lock
+// Centralised singleton managing MPRIS player state, unified position/progress
+// sampling, and synchronised ticking across the bar, command centre, and lock
 // screen.
 //
 // Position handling note: Quickshell's MprisPlayer.position is already
@@ -68,7 +68,7 @@ Singleton {
   }
 
   readonly property bool isConsumerActive: (
-    Config.commandCenterVisible ||
+    Config.commandCentreVisible ||
     root.lockActive ||
     (Config.barType === "niri" && Config.barVisible) ||
     root.activeConsumers > 0
@@ -223,7 +223,7 @@ Singleton {
     }
   }
 
-  // --- Centralized Debounced Seeking ---
+  // --- Centralised Debounced Seeking ---
   Timer {
     id: seekDebounceTimer
     interval: Config.mediaSeekDebounceMs || 200

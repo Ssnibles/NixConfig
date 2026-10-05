@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import "Utils.js" as Utils
 
 // Reusable elapsed-time + seekbar + total-time row.
-// Used in CommandCenter, MediaWidget popover, and LockScreen.
+// Used in CommandCentre, MediaWidget popover, and LockScreen.
 RowLayout {
   id: root
   spacing: 8
@@ -19,7 +19,7 @@ RowLayout {
 
   Text {
     text: Utils.formatTime(Math.round(root.position))
-    color: Colors.fgDim
+    color: Colours.fgDim
     font.family: Config.sansFont
     font.pixelSize: 12
     Layout.preferredWidth: 38
@@ -30,7 +30,7 @@ RowLayout {
     visible: !root.live
     Layout.fillWidth: true
     value: root.progress
-    fillColor: Colors.accent
+    fillColour: Colours.accent
     enabled: root.seekable
     onMoved: function(v) { root.seekRequested(v) }
   }
@@ -38,7 +38,7 @@ RowLayout {
   Text {
     visible: !root.live
     text: Utils.formatTime(Math.round(root.length))
-    color: Colors.fgDim
+    color: Colours.fgDim
     font.family: Config.sansFont
     font.pixelSize: 12
     Layout.preferredWidth: 38
@@ -47,7 +47,7 @@ RowLayout {
   Text {
     visible: root.live
     text: "● LIVE"
-    color: Colors.red
+    color: Colours.red
     font.family: Config.sansFont
     font.pixelSize: 11
     font.bold: true

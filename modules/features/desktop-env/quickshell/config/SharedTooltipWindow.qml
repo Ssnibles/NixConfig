@@ -107,13 +107,13 @@ PanelWindow {
 
     readonly property var src: root.cachedActive
 
-    readonly property real targetCenterY: {
+    readonly property real targetCentreY: {
       if (!src || !src.target) return 0
       var p = src.target.mapToItem(null, 0, src.target.height / 2)
       return p ? p.y : 0
     }
 
-    readonly property real targetCenterX: {
+    readonly property real targetCentreX: {
       if (!src || !src.target) return 0
       var p = src.target.mapToItem(null, src.target.width / 2, 0)
       return p ? p.x : 0
@@ -123,14 +123,14 @@ PanelWindow {
       if (root.barSide !== "top") return 0
       if (!src) return 0
       var w = item ? item.width : Config.popupMaxWidth
-      return Math.round(Math.max(12, Math.min(targetCenterX - w / 2, root.width - w - 12)))
+      return Math.round(Math.max(12, Math.min(targetCentreX - w / 2, root.width - w - 12)))
     }
 
     y: {
       if (root.barSide === "top") return 0
       if (!src) return 0
       var h = item ? item.height : 0
-      return Math.round(Math.max(6, Math.min(targetCenterY - h / 2, root.height - h - 6)))
+      return Math.round(Math.max(6, Math.min(targetCentreY - h / 2, root.height - h - 6)))
     }
 
     sourceComponent: src ? (src.contentComponent ? src.contentComponent : defaultCard) : null
@@ -142,10 +142,10 @@ PanelWindow {
         width: parent ? parent.width : 0
         height: content.implicitHeight + Config.popupContentMargins * 2
         radius: Config.popupRadius
-        color: Colors.bg
+        color: Colours.bg
         antialiasing: true
         border.width: 1
-        border.color: Colors.border
+        border.color: Colours.border
 
         property var _src: root.cachedActive
 
@@ -161,14 +161,14 @@ PanelWindow {
             spacing: 8
             Text {
               text: card._src ? card._src.icon : ""
-              color: card._src ? card._src.iconColor : Colors.fg
+              color: card._src ? card._src.iconColour : Colours.fg
               font.family: Config.monoFont
               font.pixelSize: 19
               anchors.verticalCenter: parent.verticalCenter
             }
             Text {
               text: card._src ? card._src.title : ""
-              color: Colors.fg
+              color: Colours.fg
               font.family: Config.sansFont
               font.pixelSize: 15
               anchors.verticalCenter: parent.verticalCenter
@@ -179,7 +179,7 @@ PanelWindow {
             visible: card._src ? card._src.details.length > 0 : false
             width: parent.width
             height: 1
-            color: Colors.border
+            color: Colours.border
           }
 
           Repeater {
@@ -187,7 +187,7 @@ PanelWindow {
             delegate: Text {
               required property var modelData
               text: modelData
-              color: Colors.fgMid
+              color: Colours.fgMid
               font.family: Config.sansFont
               font.pixelSize: 13
             }

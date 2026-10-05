@@ -120,7 +120,7 @@
             clobber = true;
             text =
               let
-                c = config.theme.colors;
+                c = config.theme.colours;
               in
               ''
                 [colors]

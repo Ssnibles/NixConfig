@@ -13,7 +13,7 @@ local list_filetypes = {
 	gitcommit = true,
 }
 
---- Analyzes the current line to see if it represents a list item
+--- Analyses the current line to see if it represents a list item
 --- @param line string
 --- @param ft string
 --- @return table|nil

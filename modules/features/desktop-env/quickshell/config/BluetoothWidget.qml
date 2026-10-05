@@ -34,7 +34,7 @@ Pill {
     return "󰂲"
   }
 
-  property color btColor: (root.isConnected || root.isPowered) ? Colors.accent : Colors.fgDim
+  property color btColour: (root.isConnected || root.isPowered) ? Colours.accent : Colours.fgDim
 
   property string statusText: {
     if (root.isConnected) {
@@ -55,25 +55,25 @@ Pill {
   padding: showLabel ? 6 : 0
   anchors.horizontalCenter: (parent && !showLabel) ? parent.horizontalCenter : undefined
 
-  pillColor: btTooltip.hovered ? Colors.bgSubtle : Colors.bgRaised
+  pillColour: btTooltip.hovered ? Colours.bgSubtle : Colours.bgRaised
   border.width: 1
-  border.color: Colors.border
+  border.color: Colours.border
 
-  Behavior on pillColor { ColorAnimation { duration: 120 } }
+  Behavior on pillColour { ColorAnimation { duration: 120 } }
   Behavior on border.color { ColorAnimation { duration: 120 } }
 
-  // Bar mode content (centered icon, pixelSize 18)
+  // Bar mode content (centred icon, pixelSize 18)
   Text {
     visible: !root.showLabel
     anchors.verticalCenter: parent.verticalCenter
     anchors.horizontalCenter: parent.horizontalCenter
     text: root.btIcon
-    color: root.btColor
+    color: root.btColour
     font.family: root.uiFont
     font.pixelSize: 18
   }
 
-  // Pill / CommandCenter mode content (icon + text row, matching Wi-Fi & Battery layout)
+  // Pill / CommandCentre mode content (icon + text row, matching Wi-Fi & Battery layout)
   Row {
     id: labelRow
     visible: root.showLabel
@@ -83,7 +83,7 @@ Pill {
 
     Text {
       text: root.btIcon
-      color: root.btColor
+      color: root.btColour
       font.family: root.uiFont
       font.pixelSize: 12
       anchors.verticalCenter: parent.verticalCenter
@@ -91,7 +91,7 @@ Pill {
 
     Text {
       text: root.statusText
-      color: Colors.fg
+      color: Colours.fg
       font.family: Config.sansFont
       font.pixelSize: 12
       anchors.verticalCenter: parent.verticalCenter
@@ -104,7 +104,7 @@ Pill {
     target: root
     sharedWindow: root.sharedWindow
     icon: root.btIcon
-    iconColor: root.btColor
+    iconColour: root.btColour
     title: {
       if (root.isConnected) {
         if (root.connectedDevicesList.length > 1) {

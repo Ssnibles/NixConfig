@@ -1,7 +1,7 @@
 -- =============================================================================
 -- LSP SERVER DEFINITIONS (pure data — no side effects)
 -- =============================================================================
--- Each key is the server name recognized by vim.lsp.config().
+-- Each key is the server name recognised by vim.lsp.config().
 -- Values are configuration tables passed to register_server() in lsp/init.lua.
 -- =============================================================================
 
@@ -465,7 +465,7 @@ return {
 		capabilities = vim.tbl_deep_extend("force", capabilities, { offsetEncoding = { "utf-16" } }),
 		-- `on_new_config` is an lspconfig-legacy field that native
 		-- `vim.lsp.config` ignores; inject the Nix include flags via `before_init`
-		-- (which receives the initialize params just before they are sent).
+		-- (which receives the initialise params just before they are sent).
 		before_init = function(params)
 			local ok_c, c_mod = pcall(require, "plugins.lang")
 			local flags = { "-std=c11", "-Wall", "-Wextra" }

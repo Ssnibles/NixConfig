@@ -106,7 +106,7 @@ hl.animation({ leaf = "workspaces", enabled = true, speed = 2.5, bezier = "m3_ex
 -- ── Layout Presets ─────────────────────────────────────────────────────
 hl.config({ dwindle = { preserve_split = true } })
 
--- ── Gaming & Performance Optimizations ────────────────────────────────
+-- ── Gaming & Performance Optimisations ────────────────────────────────
 hl.config({
 	misc = {
 		disable_hyprland_logo = true,
@@ -182,7 +182,7 @@ local screenshotOcrCmd = "$HOME/.config/mango/screenshot.sh ocr"
 -- Application Launchers
 hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("kitty --single-instance"))
 hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd("vicinae toggle"))
-hl.bind(mod .. " + D", hl.dsp.exec_cmd("quickshell ipc call command-center toggle"))
+hl.bind(mod .. " + D", hl.dsp.exec_cmd("quickshell ipc call command-centre toggle"))
 hl.bind(mod .. " + ALT + L", hl.dsp.exec_cmd("quickshell ipc call lockscreen lock"))
 hl.bind(mod .. " + E", hl.dsp.exec_cmd("kitty --single-instance -e yazi"))
 

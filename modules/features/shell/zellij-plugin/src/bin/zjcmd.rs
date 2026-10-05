@@ -458,7 +458,7 @@ impl State {
                 sessions.extend(snapshot.resurrectable_sessions.into_iter().map(
                     |(name, age)| SessionEntry {
                         name,
-                        detail: format!("exited · {}", humanize_age(age)),
+                        detail: format!("exited · {}", humanise_age(age)),
                         current: false,
                     },
                 ));
@@ -678,7 +678,7 @@ impl State {
         run_command_with_env_variables_and_cwd(&argv, env, PathBuf::from("."), BTreeMap::new());
     }
 
-    fn color(&self, key: &str, fallback: Rgb) -> Rgb {
+    fn colour(&self, key: &str, fallback: Rgb) -> Rgb {
         self.config
             .get(key)
             .and_then(|value| parse_hex(value))
@@ -690,10 +690,10 @@ impl State {
             return;
         }
 
-        let bg = self.color("bg", (0, 0, 0));
-        let fg_mid = self.color("fg_mid", (128, 128, 128));
-        let accent = self.color("accent", (255, 255, 255));
-        let bg_subtle = self.color("bg_subtle", (40, 40, 40));
+        let bg = self.colour("bg", (0, 0, 0));
+        let fg_mid = self.colour("fg_mid", (128, 128, 128));
+        let accent = self.colour("accent", (255, 255, 255));
+        let bg_subtle = self.colour("bg_subtle", (40, 40, 40));
 
         let mut lines: Vec<String> = Vec::with_capacity(rows);
         match self.mode {
@@ -894,7 +894,7 @@ fn plural(count: usize) -> &'static str {
     if count == 1 { "" } else { "s" }
 }
 
-fn humanize_age(age: Duration) -> String {
+fn humanise_age(age: Duration) -> String {
     let secs = age.as_secs();
     if secs < 60 {
         format!("{secs}s")

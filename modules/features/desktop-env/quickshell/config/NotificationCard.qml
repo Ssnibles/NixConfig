@@ -4,7 +4,7 @@ import Quickshell
 import "Utils.js" as Utils
 
 // Single notification card. Rendered by NotificationOverlay for each queued
-// notification and by CommandCenter for history items.
+// notification and by CommandCentre for history items.
 Rectangle {
   id: root
 
@@ -51,7 +51,7 @@ Rectangle {
       }
       if (!str) return
 
-      // Normalize file paths to file:// scheme for Qt Quick Image
+      // Normalise file paths to file:// scheme for Qt Quick Image
       if (str.startsWith("/")) {
         str = "file://" + str
       }
@@ -192,10 +192,10 @@ Rectangle {
   height: Math.max(contentCol.implicitHeight, targetIconSize) + Config.notifCardMargins * 2
   radius: Config.notifRadius
 
-  color: hoverArea.containsMouse ? Colors.bgRaised : Colors.bg
+  color: hoverArea.containsMouse ? Colours.bgRaised : Colours.bg
   border.color: hoverArea.containsMouse
-    ? (isMedia ? Colors.teal : (urgency === 2 ? Colors.red : Colors.accent))
-    : (urgency === 2 ? Colors.red : Colors.border)
+    ? (isMedia ? Colours.teal : (urgency === 2 ? Colours.red : Colours.accent))
+    : (urgency === 2 ? Colours.red : Colours.border)
   border.width: 1
 
   scale: hoverArea.containsMouse ? (hoverArea.pressed ? 0.98 : 1.01) : 1.0
@@ -265,15 +265,15 @@ Rectangle {
     Rectangle {
       anchors.fill: parent
       radius: root.targetIconRadius
-      color: Colors.bgSubtle
-      border.color: Colors.border
+      color: Colours.bgSubtle
+      border.color: Colours.border
       border.width: 1
 
       // Fallback Nerd Font icon glyph or first letter
       Text {
         anchors.centerIn: parent
         text: root.fallbackGlyph
-        color: root.isMedia ? Colors.fgDim : (root.urgency === 2 ? Colors.red : Colors.accent)
+        color: root.isMedia ? Colours.fgDim : (root.urgency === 2 ? Colours.red : Colours.accent)
         font.pixelSize: (root.fallbackGlyph.length === 1) ? 18 : 20
         font.bold: root.fallbackGlyph.length === 1
         font.family: (root.fallbackGlyph.length === 1) ? Config.sansFont : Config.monoFont
@@ -317,7 +317,7 @@ Rectangle {
       Text {
         width: timeLabel.visible ? (parent.width - timeLabel.implicitWidth - 6) : parent.width
         text: root.isMedia ? "Now Playing" : root.summary
-        color: root.isMedia ? Colors.teal : (root.urgency === 2 ? Colors.red : Colors.accent)
+        color: root.isMedia ? Colours.teal : (root.urgency === 2 ? Colours.red : Colours.accent)
         font.bold: true
         font.pixelSize: root.isMedia ? 12 : 13
         font.family: Config.sansFont
@@ -327,7 +327,7 @@ Rectangle {
       Text {
         id: timeLabel
         text: root.timeStr
-        color: Colors.fgDim
+        color: Colours.fgDim
         font.pixelSize: 11
         font.family: Config.sansFont
         visible: root.timeStr !== ""
@@ -338,7 +338,7 @@ Rectangle {
     Text {
       width: parent.width
       text: root.isMedia ? root.trackTitle : root.body
-      color: Colors.fg
+      color: Colours.fg
       font.pixelSize: 13
       font.family: Config.sansFont
       maximumLineCount: root.isMedia ? 1 : (Config.notifMaxLines || 5)
@@ -351,7 +351,7 @@ Rectangle {
     Text {
       width: parent.width
       text: root.trackArtist
-      color: Colors.fgMid
+      color: Colours.fgMid
       font.pixelSize: 12
       font.family: Config.sansFont
       elide: Text.ElideRight
@@ -374,8 +374,8 @@ Rectangle {
           height: 24
           radius: 6
           implicitWidth: actionText.implicitWidth + 16
-          color: actionHover.containsMouse ? Colors.bgRaised : Colors.bgSubtle
-          border.color: actionHover.containsMouse ? Colors.accent : Colors.border
+          color: actionHover.containsMouse ? Colours.bgRaised : Colours.bgSubtle
+          border.color: actionHover.containsMouse ? Colours.accent : Colours.border
           border.width: 1
 
           Text {
@@ -385,7 +385,7 @@ Rectangle {
             font.pixelSize: 11
             font.bold: true
             font.family: Config.sansFont
-            color: actionHover.containsMouse ? Colors.accent : Colors.fgMid
+            color: actionHover.containsMouse ? Colours.accent : Colours.fgMid
           }
 
           MouseArea {

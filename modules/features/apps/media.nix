@@ -1,17 +1,17 @@
 # =============================================================================
 # Media & Document Applications Feature
 # =============================================================================
-# Media viewer (imv) and Zathura PDF reader with dark mode recoloring
-# matching active theme colors and inverse search settings.
+# Media viewer (imv) and Zathura PDF reader with dark mode recolouring
+# matching active theme colours and inverse search settings.
 # =============================================================================
 { ... }:
 {
   nixos.modules.shared =
     { pkgs, config, ... }:
     let
-      c = config.theme.colors;
+      c = config.theme.colours;
 
-      # Zathura parses colors with GDK, which accepts `rgba(r, g, b, a)` but
+      # Zathura parses colours with GDK, which accepts `rgba(r, g, b, a)` but
       # not 8-digit hex. Convert a theme hex triplet (no leading '#') plus an
       # alpha into an rgba() string.
       hexByte = pos: hex: (builtins.fromTOML "v = 0x${builtins.substring (pos * 2) 2 hex}").v;
@@ -223,10 +223,10 @@
 
                 -- drawtext reads the text from a file (textfile), which avoids the
                 -- fragile filtergraph escaping of quotes/colons/commas/percent signs.
-                local function dtext(file, size, color, y)
+                local function dtext(file, size, colour, y)
                     return string.format(
                         "drawtext=font=%s:textfile=%s:fontcolor=%s:fontsize=%d:expansion=none:x=(w-text_w)/2:y=%d",
-                        FONT, file, color, size, y)
+                        FONT, file, colour, size, y)
                 end
 
                 local function build_graph()
@@ -376,7 +376,7 @@
                 # Disable built-in window control buttons
                 window_controls=no
 
-                # Theme colors
+                # Theme colours
                 osc_color=#${c.bgRaised}
                 window_title_color=#${c.fg}
                 window_controls_color=#${c.fg}
@@ -450,7 +450,7 @@
                 set render-loading-bg "#${c.bg}"
                 set render-loading-fg "#${c.fg}"
 
-                # Enable dark mode recoloring by default
+                # Enable dark mode recolouring by default
                 set recolor true
                 set recolor-keephue true
                 set recolor-reverse-video true
@@ -460,17 +460,17 @@
                 map Y copy_filepath
                 map b toggle_statusbar
 
-                # Core layout colors
+                # Core layout colours
                 set default-bg "#${c.bg}"
                 set default-fg "#${c.fg}"
                 set recolor-lightcolor "#${c.bg}"
                 set recolor-darkcolor "#${c.fg}"
 
-                # Statusbar colors
+                # Statusbar colours
                 set statusbar-bg "#${c.bg}"
                 set statusbar-fg "#${c.fg}"
 
-                # Input bar colors
+                # Input bar colours
                 set inputbar-bg "#${c.bg}"
                 set inputbar-fg "#${c.fg}"
 
@@ -490,15 +490,15 @@
                 set notification-warning-bg "#${c.bgRaised}"
                 set notification-warning-fg "#${c.yellow}"
 
-                # Highlight and selection colors. The highlight fill must be
+                # Highlight and selection colours. The highlight fill must be
                 # translucent so search hits don't cover the text, and
-                # highlight-fg must not be the background color or the matched
+                # highlight-fg must not be the background colour or the matched
                 # glyphs themselves would be painted invisible.
                 set highlight-color "${rgba highlightAlpha c.yellow}"
                 set highlight-active-color "${rgba highlightAlpha c.orange}"
                 set highlight-fg "#${c.fg}"
 
-                # Index (Table of Contents) colors
+                # Index (Table of Contents) colours
                 set index-bg "#${c.bg}"
                 set index-fg "#${c.fg}"
                 set index-active-bg "#${c.accent}"

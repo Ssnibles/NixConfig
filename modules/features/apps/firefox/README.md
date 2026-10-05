@@ -1,6 +1,6 @@
-# Firefox & Sidebery Customization Guide
+# Firefox & Sidebery Customisation Guide
 
-This guide explains how Firefox UI customization works in this repository, how to inspect elements, and where to find CSS selectors and community resources for styling both Firefox itself (`userChrome.css`) and WebExtensions like Sidebery (`userContent.css`).
+This guide explains how Firefox UI customisation works in this repository, how to inspect elements, and where to find CSS selectors and community resources for styling both Firefox itself (`userChrome.css`) and WebExtensions like Sidebery (`userContent.css`).
 
 ---
 
@@ -10,7 +10,7 @@ This guide explains how Firefox UI customization works in this repository, how t
 | :--- | :--- | :--- |
 | **`userChrome.css`** | **Firefox Native UI** | Main toolbar, URL bar, sidebars, context menus, navbar buttons, window frame. |
 | **`userContent.css`** | **Web Content & Extensions** | Extension sidebars (e.g. Sidebery), `about:config`, `about:blank`, `about:newtab`. |
-| **`colors.css`** | **Theme System** | Dynamic CSS variables generated from your system color palette (`--fx-bg`, `--fx-accent`, etc.). |
+| **`colours.css`** | **Theme System** | Dynamic CSS variables generated from your system colour palette (`--fx-bg`, `--fx-accent`, etc.). |
 
 > [!NOTE]
 > Both `userChrome.css` and `userContent.css` are symlinked directly from your `NixConfig` workspace (`~/NixConfig/modules/features/apps/firefox/`) into your Firefox profile directory (`~/.mozilla/firefox/default/chrome/`). Any changes saved here take effect immediately upon restarting Firefox or reloading the sidebar/page!
@@ -66,7 +66,7 @@ unzip -p ~/.mozilla/firefox/*/extensions/\{3c078156-979c-498b-8990-85f7987dd929\
 
 ## 📚 Essential Resources & Community Libraries
 
-### 🦊 Firefox Customization & `userChrome.css`
+### 🦊 Firefox Customisation & `userChrome.css`
 - **[r/FirefoxCSS Subreddit](https://www.reddit.com/r/FirefoxCSS/)**: The official community for Firefox CSS tweaks, snippets, and troubleshooting.
 - **[MrOtherGuy/firefox-csshacks](https://github.com/MrOtherGuy/firefox-csshacks)**: A comprehensive repository of modular `userChrome.css` and `userContent.css` tweaks.
 - **[Firefox CSS Store](https://firefoxcss-store.github.io/)**: Showcase of custom themes for Firefox.
@@ -89,5 +89,5 @@ unzip -p ~/.mozilla/firefox/*/extensions/\{3c078156-979c-498b-8990-85f7987dd929\
      ```
 2. **Use `!important` Overrides**:
    - Firefox internal stylesheets have high specificity; add `!important` to your rules to ensure they override browser defaults.
-3. **Use Dynamic Color Variables**:
-   - Leverage `var(--fx-bg)`, `var(--fx-bg-raised)`, `var(--fx-accent)`, etc. defined in `colors.css` so your Firefox UI seamlessly matches your system's color scheme.
+3. **Use Dynamic Colour Variables**:
+   - Leverage `var(--fx-bg)`, `var(--fx-bg-raised)`, `var(--fx-accent)`, etc. defined in `colours.css` so your Firefox UI seamlessly matches your system's colour scheme.

@@ -19,11 +19,11 @@ end
 -- Helper for uniform callout blocks with icons, names, borders, and background fills
 -- Callouts now expand to the theme helper (`#callout(icon, title, colour, body)`)
 -- rather than the verbose `#block(...)` markup, matching how notes actually use them.
-local function make_callout(trig, title, icon, color_hex, desc)
+local function make_callout(trig, title, icon, colour_hex, desc)
 	return s({ trig = trig, desc = desc }, {
 		t('#callout("' .. icon .. '", "'),
 		i(1, title .. ":"),
-		t('", "' .. color_hex .. '")['),
+		t('", "' .. colour_hex .. '")['),
 		i(2, "Content..."),
 		t("]"),
 	})
@@ -141,7 +141,7 @@ ls.add_snippets("typst", {
 		t({ "", "]" }),
 	}),
 
-	-- Modern styled callout alert box with selectable colors
+	-- Modern styled callout alert box with selectable colours
 	s({ trig = "callout", desc = "Modern styled callout alert box with icon and background fill" }, {
 		t("#block(stroke: (left: 3pt + rgb("),
 		c(1, {
@@ -256,7 +256,7 @@ ls.add_snippets("typst", {
 			"        inset: (x: 12pt, y: 10pt),",
 			"        width: 100%,",
 			"        {",
-			"          set text(fill: text-color, size: 0.9em)",
+			"          set text(fill: text-colour, size: 0.9em)",
 			"          stack(dir: ttb, spacing: 0.65em, ..bodylines.map(l => l.body))",
 			"        }",
 			"      )",
@@ -342,7 +342,7 @@ ls.add_snippets("typst", {
 			"        inset: (x: 12pt, y: 10pt),",
 			"        width: 100%,",
 			"        {",
-			"          set text(fill: text-color, size: 0.9em)",
+			"          set text(fill: text-colour, size: 0.9em)",
 			"          stack(dir: ttb, spacing: 0.65em, ..bodylines.map(l => l.body))",
 			"        }",
 			"      )",
@@ -514,7 +514,7 @@ ls.add_snippets("typst", {
 		t("* -- "),
 		i(2, "Description"),
 	}),
-	s({ trig = "badge", desc = "Inline colored pill badge / tag" }, {
+	s({ trig = "badge", desc = "Inline coloured pill badge / tag" }, {
 		t('#box(fill: rgb("'),
 		c(1, {
 			sn(nil, { t("#3182ce20") }),
@@ -581,7 +581,7 @@ ls.add_snippets("typst", {
 		{ t({ "#outline(", "  title: [Contents],", "  depth: 2,", ")" }) }
 	),
 	s({ trig = "divider", desc = "Horizontal divider rule line (alias)" }, {
-		t("#line(length: 100%, stroke: 0.6pt + stroke-color)"),
+		t("#line(length: 100%, stroke: 0.6pt + stroke-colour)"),
 	}),
 
 	---------------------------------------------------------------------------
@@ -811,7 +811,7 @@ ls.add_snippets("typst", {
 		t({
 			"#cetz.canvas({",
 			"  import cetz.draw: *",
-			"  set-style(stroke: (paint: text-color, thickness: 0.8pt), fill: none)",
+			"  set-style(stroke: (paint: text-colour, thickness: 0.8pt), fill: none)",
 			"  ",
 		}),
 		i(
@@ -898,7 +898,7 @@ ls.add_snippets("typst", {
 	}),
 	s({ trig = "column-break", desc = "Column break" }, { t("#colbreak()") }),
 	s({ trig = "page-break", desc = "Page break" }, { t("#pagebreak()") }),
-	s({ trig = "align", desc = "Content alignment block (center, left, right)" }, {
+	s({ trig = "align", desc = "Content alignment block (centre, left, right)" }, {
 		t("#align("),
 		c(1, {
 			sn(nil, { t("center") }),
@@ -1082,7 +1082,7 @@ ls.add_snippets("typst", {
 	s({ trig = "geq", desc = "Greater than or equal relation symbol" }, { t(">=") }),
 	s({ trig = "approx", desc = "Approximately equal relation symbol" }, { t("approx") }),
 	s({ trig = "times", desc = "Multiplication cross symbol" }, { t("times") }),
-	s({ trig = "cdot", desc = "Center dot multiplication symbol" }, { t("dot.c") }),
+	s({ trig = "cdot", desc = "Centre dot multiplication symbol" }, { t("dot.c") }),
 
 	-- Number sets (Blackboard Bold)
 	s({ trig = "real", desc = "Set of real numbers blackboard bold identifier" }, { t("RR") }),

@@ -1,8 +1,8 @@
 # Quickshell — Module Reference & Development Guide
 
-This directory contains the [Quickshell](https://quickshell.outfoxxed.me/) configuration for status bars (`niri-bar.qml` and `bar.qml`), the **Command Center** dashboard, the Wayland **Lock Screen**, the **Notification system**, and shared UI primitives (pills, tooltips, sliders).
+This directory contains the [Quickshell](https://quickshell.outfoxxed.me/) configuration for status bars (`niri-bar.qml` and `bar.qml`), the **Command Centre** dashboard, the Wayland **Lock Screen**, the **Notification system**, and shared UI primitives (pills, tooltips, sliders).
 
-All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by Nix activation scripts. **QML edits apply immediately on the next quickshell restart** — no Nix rebuild needed for standard QML modifications. Only `Colors.qml` is generated directly by Nix from system theme tokens and requires a rebuild to update.
+All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by Nix activation scripts. **QML edits apply immediately on the next quickshell restart** — no Nix rebuild needed for standard QML modifications. Only `Colours.qml` is generated directly by Nix from system theme tokens and requires a rebuild to update.
 
 ---
 
@@ -11,8 +11,8 @@ All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by N
 1. [How the Module is Wired Up (`default.nix`)](#1-how-the-module-is-wired-up-defaultnix)
 2. [Entry Point & Architecture (`shell.qml`)](#2-entry-point--architecture-shellqml)
 3. [Configuration Reference (`Config.qml`)](#3-configuration-reference--configqml)
-4. [Theme Colors (`Colors.qml`)](#4-theme-colors--colorsqml)
-5. [Module Catalog & Component Reference](#5-module-catalog--component-reference)
+4. [Theme Colours (`Colours.qml`)](#4-theme-colours-coloursqml)
+5. [Module Catalogue & Component Reference](#5-module-catalogue--component-reference)
    - [Bars](#51-bars)
    - [Services & Infrastructure](#52-services--infrastructure)
    - [Overlays & Standalone Screens](#53-overlays--standalone-screens)
@@ -28,7 +28,7 @@ All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by N
 | Step | Description |
 | --- | --- |
 | **System Packages** | `quickshell` (unstable) is installed into the environment. |
-| **`Colors.qml`** | Generated from `config.theme.colors` into `~/.config/quickshell/Colors.qml` via Hjem. |
+| **`Colours.qml`** | Generated from `config.theme.colours` into `~/.config/quickshell/Colours.qml` via Hjem. |
 | **Config Symlinks** | Activation script (`quickshell-config`) creates `~/.config/quickshell` and symlinks every file in `config/*`. |
 | **Permissions** | Symlinks and target directories are owned by the active user. |
 
@@ -36,7 +36,7 @@ All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by N
 
 ## 2. Entry Point & Architecture (`shell.qml`)
 
-`shell.qml` serves as the top-level application root (`Scope`), instantiating the active status bar, notification manager, command center, and lock screen:
+`shell.qml` serves as the top-level application root (`Scope`), instantiating the active status bar, notification manager, command centre, and lock screen:
 
 ```qml
 Scope {
@@ -44,14 +44,14 @@ Scope {
     source: (bar === "niri") ? "niri-bar.qml" : "bar.qml"
   }
   NotificationOverlay { }
-  CommandCenter { }
+  CommandCentre { }
   LockScreen { }
 }
 ```
 
 - **Status Bar Loading**: Set `QS_BAR=niri` for the vertical Niri bar; defaults to the unified `bar.qml` top bar (which connects to `WmService` for MangoWC, River, Hyprland, etc.).
 - **Notification Overlay**: Global notification stack present on every display.
-- **Command Center**: Slide-out dashboard overlay controllable via IPC.
+- **Command Centre**: Slide-out dashboard overlay controllable via IPC.
 - **Lock Screen**: Wayland session lock (`WlSessionLock`) with PAM authentication.
 
 ---
@@ -63,9 +63,9 @@ Scope {
 ### 3.1 Fonts
 | Property | Default | Purpose |
 | --- | --- | --- |
-| `monoFont` | `Colors.monoFont` \| `"JetBrainsMono Nerd Font"` | Icons, numbers, monospaced text |
+| `monoFont` | `Colours.monoFont` \| `"JetBrainsMono Nerd Font"` | Icons, numbers, monospaced text |
 | `sansFont` | `"SF Pro Text"` | UI text, notifications, titles |
-| `serifFont` | `Colors.serifFont` \| `"Instrument Serif"` | Clocks, headers |
+| `serifFont` | `Colours.serifFont` \| `"Instrument Serif"` | Clocks, headers |
 
 ### 3.2 Status Bars
 | Property | Default | Purpose |
@@ -79,15 +79,15 @@ Scope {
 | `barHeight` | `34` | MangoWC top bar height (px) |
 | `mangowcMinWorkspaces` | `5` | Minimum workspace tag slots in MangoWC |
 
-### 3.3 Command Center (`CommandCenter.qml`)
+### 3.3 Command Centre (`CommandCentre.qml`)
 | Property | Default | Purpose |
 | --- | --- | --- |
-| `commandCenterVisible` | `false` | Controls overlay visibility (toggleable via IPC) |
-| `commandCenterWidth` | `500` | Width of slide-out panel (px) |
-| `commandCenterRadius` | `16` | Panel corner rounding radius |
-| `commandCenterCardRadius` | `12` | Inner section card corner radius |
-| `commandCenterClockFormat` | `"HH:mm"` | Header clock format |
-| `commandCenterDateFormat` | `"dddd, MMMM d"` | Header date format |
+| `commandCentreVisible` | `false` | Controls overlay visibility (toggleable via IPC) |
+| `commandCentreWidth` | `500` | Width of slide-out panel (px) |
+| `commandCentreRadius` | `16` | Panel corner rounding radius |
+| `commandCentreCardRadius` | `12` | Inner section card corner radius |
+| `commandCentreClockFormat` | `"HH:mm"` | Header clock format |
+| `commandCentreDateFormat` | `"dddd, MMMM d"` | Header date format |
 | `alwaysShowMediaCard` | `true` | Show media player card even when idle |
 | `mediaRotationDuration` | `4000` | Album art rotation duration (ms) |
 | `mediaSeekDebounceMs` | `200` | Seeking debounce delay (ms) |
@@ -100,7 +100,7 @@ Scope {
 | `lockWallpaperPath` | `"file://" + $HOME + "/Pictures/wallpaper"` | Lock screen wallpaper image |
 | `lockClockFormat` | `"HH:mm"` | Time display format |
 | `lockDateFormat` | `"dddd, MMMM d"` | Date display format |
-| `commandCenterCardRadius` | `12` | Authentication card corner radius (also used by the lock screen) |
+| `commandCentreCardRadius` | `12` | Authentication card corner radius (also used by the lock screen) |
 | `lockInputRadius` | `10` | Password input box radius |
 | `lockBackgroundDimming` | `0.8` | Dark background overlay opacity (0.0–1.0) |
 | `lockBlurPercentage` | `0.5` | Wallpaper GPU blur amount (0.0–1.0) |
@@ -149,23 +149,23 @@ Scope {
 
 ---
 
-## 4. Theme Colors (`Colors.qml`)
+## 4. Theme Colours (`Colours.qml`)
 
-`Colors.qml` is automatically generated by Nix based on the current theme (`config.theme.colors`). Available color tokens:
+`Colours.qml` is automatically generated by Nix based on the current theme (`config.theme.colours`). Available colour tokens:
 
 | Token | Semantic Purpose |
 | --- | --- |
-| `Colors.bg` | Primary background surface |
-| `Colors.bgRaised` | Elevated card & modal container backgrounds |
-| `Colors.bgSubtle` | Subtle highlight / track backgrounds |
-| `Colors.border` | Border lines and dividers |
-| `Colors.fg` / `Colors.fgMid` / `Colors.fgDim` | Primary, secondary, and muted text |
-| `Colors.accent` | Active state accent color |
-| `Colors.teal` / `purple` / `green` / `yellow` / `red` / `orange` | Status and semantic accent colors |
+| `Colours.bg` | Primary background surface |
+| `Colours.bgRaised` | Elevated card & modal container backgrounds |
+| `Colours.bgSubtle` | Subtle highlight / track backgrounds |
+| `Colours.border` | Border lines and dividers |
+| `Colours.fg` / `Colours.fgMid` / `Colours.fgDim` | Primary, secondary, and muted text |
+| `Colours.accent` | Active state accent colour |
+| `Colours.teal` / `purple` / `green` / `yellow` / `red` / `orange` | Status and semantic accent colours |
 
 ---
 
-## 5. Module Catalog & Component Reference
+## 5. Module Catalogue & Component Reference
 
 ### 5.1 Bars
 
@@ -205,16 +205,16 @@ Scope {
 
 ### 5.3 Overlays & Standalone Screens
 
-#### `CommandCenter.qml`
+#### `CommandCentre.qml`
 - **Role**: Slide-out quick settings dashboard and system metrics panel.
-- **IPC Target**: `"command-center"` (functions: `toggle()`, `open()`, `close()`).
+- **IPC Target**: `"command-centre"` (functions: `toggle()`, `open()`, `close()`).
 - **Multi-Monitor Cursor Tracking**: Automatically detects which monitor the mouse cursor is located on (via `mmsg get cursorpos` on MangoWC, `hyprctl cursorpos` on Hyprland, `niri msg --json focused-output` on Niri, or bar hover/active window focus fallback) and slides out on that specific monitor while rendering a transparent dismiss overlay across all other screens.
 - **Features**: Header clock & date, status pills (Wi-Fi, Ethernet, Battery, Bluetooth), system sliders (`SliderControl` for Pipewire volume & `brightnessctl` screen brightness), full MPRIS media player card with position seekbar, album art preview, and player selection, plus notification history list.
 
 #### `LockScreen.qml`
 - **Role**: Wayland session screen locker built on `WlSessionLock` and `WlSessionLockSurface`.
 - **IPC Target**: `"lockscreen"` (functions: `lock()`, `unlock()`, `toggle()`).
-- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt with Caps Lock warning & error shake animation, secondary screen display lock graphics, background wallpaper with customizable GPU blur (`MultiEffect`) and dimming, read-only `NetworkWidget`/`BatteryWidget` status pills, and system power actions (Sleep/Suspend, Reboot, Power Off).
+- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt with Caps Lock warning & error shake animation, secondary screen display lock graphics, background wallpaper with customisable GPU blur (`MultiEffect`) and dimming, read-only `NetworkWidget`/`BatteryWidget` status pills, and system power actions (Sleep/Suspend, Reboot, Power Off).
 
 #### `NotificationOverlay.qml` & `NotificationCard.qml`
 - **Role**: Screen overlay rendering active notification toasts.
@@ -225,20 +225,20 @@ Scope {
 ### 5.4 Widgets & UI Components
 
 #### `Pill.qml`
-- **Role**: Standardized container for bar widgets.
-- **Properties**: `padding`, `pillHeight`, `pillColor`, `orientation` (`"horizontal"` \| `"vertical"`). Includes hover/active state transitions and auto-sizing.
+- **Role**: Standardised container for bar widgets.
+- **Properties**: `padding`, `pillHeight`, `pillColour`, `orientation` (`"horizontal"` \| `"vertical"`). Includes hover/active state transitions and auto-sizing.
 
 #### `SliderControl.qml`
 - **Role**: Reusable interactive horizontal range slider.
-- **Properties**: `value` (0.0–1.0), `fillColor`, `snapPercent`, signal `moved(real value)`. Supports mouse drag and direct click positioning.
+- **Properties**: `value` (0.0–1.0), `fillColour`, `snapPercent`, signal `moved(real value)`. Supports mouse drag and direct click positioning.
 
-#### `CommandCenterButton.qml`
+#### `CommandCentreButton.qml`
 - **Role**: Quick dashboard trigger button component for status bars.
-- **Properties**: `horizontal`, `screen`. Toggles `Config.commandCenterVisible`, automatically setting the target screen to the parent bar's monitor.
+- **Properties**: `horizontal`, `screen`. Toggles `Config.commandCentreVisible`, automatically setting the target screen to the parent bar's monitor.
 
 #### `MediaCard.qml`
-- **Role**: Shared MPRIS media card used by the Command Center, the bar media popover and the lock screen.
-- **Properties**: `showWhenIdle`, `seekable`, `interactive`, `cardColor`, `cardRadius`. Renders album art (with fallback), track/artist text, `PlaybackControls` and `MediaProgressRow`.
+- **Role**: Shared MPRIS media card used by the Command Centre, the bar media popover and the lock screen.
+- **Properties**: `showWhenIdle`, `seekable`, `interactive`, `cardColour`, `cardRadius`. Renders album art (with fallback), track/artist text, `PlaybackControls` and `MediaProgressRow`.
 
 #### `PlaybackControls.qml`
 - **Role**: Reusable previous / play-pause / next button cluster.
@@ -305,8 +305,8 @@ Pill {
   id: root
   property var sharedWindow: null
 
-  pillColor: mouseArea.containsMouse ? Colors.bgRaised : Colors.bgSubtle
-  border.color: Colors.border
+  pillColour: mouseArea.containsMouse ? Colours.bgRaised : Colours.bgSubtle
+  border.color: Colours.border
   border.width: 1
 
   Row {
@@ -315,14 +315,14 @@ Pill {
 
     Text {
       text: "󰍛"
-      color: Colors.accent
+      color: Colours.accent
       font.family: Config.monoFont
       font.pixelSize: 14
     }
 
     Text {
       text: "42%"
-      color: Colors.fg
+      color: Colours.fg
       font.family: Config.monoFont
       font.pixelSize: 12
     }
@@ -373,8 +373,8 @@ Because activation scripts symlink the whole `config/` directory into `~/.config
 Quickshell includes built-in IPC mechanisms. You can trigger overlays or inspect state from the command line or desktop keybindings:
 
 ```bash
-# Toggle Command Center overlay
-quickshell ipc call command-center toggle
+# Toggle Command Centre overlay
+quickshell ipc call command-centre toggle
 
 # Lock screen
 quickshell ipc call lockscreen lock

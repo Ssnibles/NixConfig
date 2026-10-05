@@ -3,7 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import "Utils.js" as Utils
 
-// Shared MPRIS media card used by the Command Center, the bar media popover and
+// Shared MPRIS media card used by the Command Centre, the bar media popover and
 // the lock screen. All three previously duplicated this markup and had begun to
 // drift; they now differ only through the properties below.
 Rectangle {
@@ -16,14 +16,14 @@ Rectangle {
   // Click-to-focus / right-click-to-focus behaviour.
   property bool interactive: true
   // Card chrome (the popover uses a slightly different surface).
-  property color cardColor: Colors.bgRaised
-  property real cardRadius: Config.commandCenterCardRadius
+  property color cardColour: Colours.bgRaised
+  property real cardRadius: Config.commandCentreCardRadius
 
   readonly property var player: MediaService.player
   readonly property bool hasPlayer: MediaService.hasPlayer
 
-  color: root.cardColor
-  border.color: Colors.border
+  color: root.cardColour
+  border.color: Colours.border
   border.width: 1
   radius: root.cardRadius
   visible: root.showWhenIdle || root.hasPlayer
@@ -65,14 +65,14 @@ Rectangle {
         width: 48
         height: 48
         radius: 8
-        color: Colors.bgSubtle
-        border.color: Colors.border
+        color: Colours.bgSubtle
+        border.color: Colours.border
         border.width: 1
 
         Text {
           visible: !coverArt.ready
           text: "󰎇"
-          color: Colors.fgDim
+          color: Colours.fgDim
           font.family: Config.monoFont
           font.pixelSize: 22
           font.bold: true
@@ -115,7 +115,7 @@ Rectangle {
           Text {
             width: parent.width
             text: root.hasPlayer ? Utils.cleanTrackTitle(root.player.trackTitle) : "Nothing is playing"
-            color: root.hasPlayer ? Colors.fg : Colors.fgDim
+            color: root.hasPlayer ? Colours.fg : Colours.fgDim
             font.bold: true
             font.pixelSize: 15
             font.family: Config.sansFont
@@ -125,7 +125,7 @@ Rectangle {
           Text {
             width: parent.width
             text: root.hasPlayer ? (root.player.trackArtist || "Unknown Artist") : "No artist"
-            color: Colors.fgMid
+            color: Colours.fgMid
             font.pixelSize: 13
             font.family: Config.sansFont
             elide: Text.ElideRight

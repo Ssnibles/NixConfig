@@ -13,7 +13,7 @@
     let
       cfg = config.features.kitty;
 
-      inherit (config.theme.colors)
+      inherit (config.theme.colours)
         bg
         bgRaised
         bgSubtle

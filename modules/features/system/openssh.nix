@@ -2,7 +2,7 @@
 # OpenSSH Server Feature
 # =============================================================================
 # Key-only SSH server. The firewall is left closed so sshd is only reachable
-# over trusted interfaces (tailscale0), which is where the authorized keys are
+# over trusted interfaces (tailscale0), which is where the authorised keys are
 # meant to be used.
 # =============================================================================
 { ... }:

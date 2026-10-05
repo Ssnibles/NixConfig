@@ -1,7 +1,7 @@
 # =============================================================================
 # Theme Engine Option Schema
 # =============================================================================
-# Exposes theme selection options (active theme palette, colors, and fonts).
+# Exposes theme selection options (active theme palette, colours, and fonts).
 # =============================================================================
 { ... }:
 {
@@ -12,12 +12,12 @@
         active = lib.mkOption {
           type = lib.types.str;
           default = "vague";
-          description = "Active color palette scheme name defined in themes/palette.nix.";
+          description = "Active colour palette scheme name defined in themes/palette.nix.";
         };
 
-        colors = lib.mkOption {
+        colours = lib.mkOption {
           type = lib.types.attrsOf lib.types.str;
-          description = "HEX color attributes injected globally for UI styling.";
+          description = "HEX colour attributes injected globally for UI styling.";
         };
 
         fonts = lib.mkOption {

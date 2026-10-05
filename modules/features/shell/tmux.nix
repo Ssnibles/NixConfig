@@ -13,7 +13,7 @@
       ...
     }:
     let
-      c = config.theme.colors;
+      c = config.theme.colours;
 
       tmuxWindowPicker = pkgs.writeShellScriptBin "tmux-window-picker" ''
         set -euo pipefail
@@ -79,7 +79,7 @@
           exit 0
         fi
 
-        # Sanitize Nix store paths, wrapped binaries, and Neovim --cmd flags in save file
+        # Sanitise Nix store paths, wrapped binaries, and Neovim --cmd flags in save file
         ${pkgs.gnused}/bin/sed -i -E \
           -e 's|/nix/store/[a-z0-9]{32}-[^/]+/bin/\.([a-zA-Z0-9_-]+)-wrapped|\1|g' \
           -e 's|/nix/store/[a-z0-9]{32}-[^/]+/bin/||g' \
@@ -296,7 +296,7 @@
               'detach-client' \
               'if-shell -F "#{m/r:^(popup-|scratch),#{session_name}}" "detach-client" "display-popup -d \"#{pane_current_path}\" -w 85% -h 85% -E \"${tmuxJjuiPopup}/bin/tmux-jjui-popup \\\"#{pane_current_path}\\\"\""'
 
-            # ─── Terminal & True Color support ───────────────────────────────
+            # ─── Terminal & True Colour support ───────────────────────────────
             set-option -a terminal-features ",xterm-256color:RGB,xterm-kitty:RGB,ghostty:RGB,foot:RGB,alacritty:RGB,tmux-256color:RGB,*:RGB"
             set-option -a terminal-features ",*:hyperlinks"
             set-option -a terminal-overrides ",xterm-256color:Tc,xterm-kitty:Tc,ghostty:Tc,foot:Tc,alacritty:Tc,tmux-256color:Tc,*:Tc"
@@ -316,7 +316,7 @@
             set -s exit-empty off
             set -g aggressive-resize on
 
-            # ─── Indexing & Window behavior ──────────────────────────────────
+            # ─── Indexing & Window behaviour ──────────────────────────────────
             set -g pane-base-index 1
             set -g renumber-windows on
             setw -g automatic-rename on
@@ -342,7 +342,7 @@
             bind x kill-pane
             bind z resize-pane -Z
             bind = select-layout tiled
-            bind y setw synchronize-panes \; display-message "Pane synchronization: #{?pane_synchronized,ON,OFF}"
+            bind y setw synchronize-panes \; display-message "Pane synchronisation: #{?pane_synchronized,ON,OFF}"
             bind e if-shell -F '#{==:#{session_name},popup-yazi}' \
               'detach-client' \
               'if-shell -F "#{m/r:^(popup-|scratch),#{session_name}}" "detach-client" "display-popup -d \"#{pane_current_path}\" -w 85% -h 85% -E \"${tmuxYaziPopup}/bin/tmux-yazi-popup \\\"#{pane_current_path}\\\"\""'

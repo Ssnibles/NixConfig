@@ -7,7 +7,7 @@ description: The user's canonical Typst (.typ) document conventions, derived fro
 
 When you write or edit Typst for this user, **reproduce the output of their canonical
 snippets** instead of inventing new markup or styling. If a snippet exists for a
-construct, use its exact expansion (same helper functions, colors, dimensions, and
+construct, use its exact expansion (same helper functions, colours, dimensions, and
 show rules). Only deviate when the user explicitly asks for something different.
 
 When the document is lecture or course material, also load the `lecture-notes`
@@ -108,8 +108,8 @@ containers and typography stay visually consistent:
   name; use `font-sans` / `font-serif` / `font-mono`.
 - `ui-radius = 6pt` — corner radius for every block (callouts, cards, code blocks,
   tables). `ui-radius-sm = 3pt` for inline pills and inline code.
-- `ui-border` — subtle border color (`#2e2f38` dark / `#e2e2e8` light), used instead
-  of the bright `stroke-color` for container borders.
+- `ui-border` — subtle border colour (`#2e2f38` dark / `#e2e2e8` light), used instead
+  of the bright `stroke-colour` for container borders.
 - `ui-surface` — raised panel fill for cards and code blocks.
 - `ui-surface-raised` — header/row fill for code headers and table headers.
 
@@ -128,7 +128,7 @@ headings and heading-like furniture are serif (`font-serif`). Never pass a liter
 family name to `font:`; always use the two tokens so the split stays consistent.
 
 **Every block rounds all four corners** (no more one-sided radii) and uses the
-`ui-*` tokens rather than ad-hoc colors. Callouts keep their colored left accent
+`ui-*` tokens rather than ad-hoc colours. Callouts keep their coloured left accent
 bar, but now share the same 6pt radius, 0.5pt base border, and 12pt/10pt inset as
 the other containers.
 
@@ -150,7 +150,7 @@ They arrive with `#import "/templates/theme.typ": *`, and the `title` snippet
 emits a `#note-title(...)` call.
 
 ```typst
-#callout(icon, title, color, body)         // colored left-accent callout
+#callout(icon, title, colour, body)         // coloured left-accent callout
 #card(body)                                // neutral bordered card
 #qa(question, answer)                      // stacked Q + bold-A retrieval pair
 #uml-class(name, fields: (), methods: ())  // UML class box
@@ -168,7 +168,7 @@ emits a `#note-title(...)` call.
 #note-title("Week 10, Lecture 2", "Lecture 10.2 — XML and XPath")
 ```
 
-`#callout`'s `color` is the bare palette hex (e.g. `"#3182ce"`); the helper derives
+`#callout`'s `colour` is the bare palette hex (e.g. `"#3182ce"`); the helper derives
 the `35` border and `15` fill automatically. `#uml-class` expects **arrays** for
 `fields` and `methods` (`([a], [b])`), because it spreads them into a `stack`.
 `#note-title` is the single source of the title block.
@@ -182,7 +182,7 @@ any other content yourself when it must not split: `#keep-together[...]`.
 
 ## Palette
 
-Reuse these exact colors from the snippets:
+Reuse these exact colours from the snippets:
 
 | Role     | Hex       | Used by                                     |
 |----------|-----------|---------------------------------------------|
@@ -347,7 +347,7 @@ like the other tables. Truth tables are short, so they are covered by the same
 keep-together handling and do not need `table.header(...)`.
 
 Keep the wrapper, neutral header fill, and `ui-border` separator exactly as
-templated; do not reintroduce `stroke-color` or the accent-tinted header.
+templated; do not reintroduce `stroke-colour` or the accent-tinted header.
 
 ## Figures and diagrams
 
@@ -407,14 +407,14 @@ are on word boundaries, e.g. `*listeners are the Observer\npattern*`.
 
 - `step` / `steps` → numbered `+ *Step N:*` items.
 - `key-value` / `term` → bold term + definition.
-- `badge` → inline colored pill (`#box(fill: rgb("<hex>20"), inset: (x: 6pt, y: 2pt), radius: ui-radius-sm)[...]`).
+- `badge` → inline coloured pill (`#box(fill: rgb("<hex>20"), inset: (x: 6pt, y: 2pt), radius: ui-radius-sm)[...]`).
 - `qa` → `#qa[question][answer]`.
 - `uml-class` → `#uml-class("Name", fields: ("- field: Type"), methods: ("+ method(): Type"))`.
 - `card` → `#card[body]`.
 - `box` → `#box(stroke: 0.5pt + ui-border, inset: (x: 12pt, y: 10pt), radius: ui-radius, width: 100%)[...]`.
 - `todo` / `done` → `- [ ]` / `- [x]`.
 - `quote` → `#quote(attribution: [...])[...]`.
-- `divider` → `#line(length: 100%, stroke: 0.6pt + stroke-color)`.
+- `divider` → `#line(length: 100%, stroke: 0.6pt + stroke-colour)`.
 - `footnote` → `#footnote[...]`.
 - `table-of-contents` → `#outline(title: [Contents], depth: 2)`. Outline entries are clickable
   links to their headings (Typst does this automatically).

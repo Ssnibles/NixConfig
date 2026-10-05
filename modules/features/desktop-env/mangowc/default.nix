@@ -2,7 +2,7 @@
 # Mango Wayland Compositor Feature
 # =============================================================================
 # Enables Mango Wayland compositor, links config & keybindings, and generates
-# theme colors file via Hjem.
+# theme colours file via Hjem.
 # =============================================================================
 { ... }:
 {
@@ -16,7 +16,7 @@
     }:
     let
       cfg = config.features.mangowc;
-      inherit (config.theme.colors)
+      inherit (config.theme.colours)
         accent
         border
         ;

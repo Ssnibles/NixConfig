@@ -26,9 +26,9 @@
 #let theme-mode = sys.inputs.at("theme-mode", default: "dark")
 #let text-size = 10pt
 
-#let bg-color = if theme-mode == "dark" { rgb("#1a1a1a") } else { rgb("#ffffff") }
-#let text-color = if theme-mode == "dark" { rgb("#e0e0e0") } else { rgb("#000000") }
-#let stroke-color = if theme-mode == "dark" { rgb("#e0e0e0") } else { black }
+#let bg-colour = if theme-mode == "dark" { rgb("#1a1a1a") } else { rgb("#ffffff") }
+#let text-colour = if theme-mode == "dark" { rgb("#e0e0e0") } else { rgb("#000000") }
+#let stroke-colour = if theme-mode == "dark" { rgb("#e0e0e0") } else { black }
 
 #let ui-radius = 6pt
 #let ui-radius-sm = 3pt
@@ -88,9 +88,9 @@
 // colour, so circuits stay legible in both themes (Zap defaults to black on white).
 #let zap-theme = (
   variant: "ieee",
-  stroke: 0.8pt + text-color,
-  node: (stroke: 0.65pt + text-color, fill: text-color, nofill: bg-color),
-  wire: (stroke: 0.6pt + text-color),
+  stroke: 0.8pt + text-colour,
+  node: (stroke: 0.65pt + text-colour, fill: text-colour, nofill: bg-colour),
+  wire: (stroke: 0.6pt + text-colour),
 )
 
 // Language metadata: nerd font devicon + file extension
@@ -135,7 +135,7 @@
 )
 
 #let inline-code-bg = state("inline-code-bg", ui-surface)
-#let inline-code-fg = state("inline-code-fg", text-color)
+#let inline-code-fg = state("inline-code-fg", text-colour)
 
 // When the complete-notes generator assembles a paper it passes
 // `--input stitched=true`; the generated wrapper then applies the theme once
@@ -238,7 +238,7 @@
             inset: (x: 12pt, y: 10pt),
             width: 100%,
             {
-              set text(fill: text-color, size: 0.9em)
+              set text(fill: text-colour, size: 0.9em)
               if numbered {
                 grid(
                   columns: (auto, 1fr),
@@ -270,14 +270,14 @@
 }
 
 // ── Convenience helpers (expand to the canonical snippet patterns) ──────────
-#let callout(icon, title, color, body) = keep-together(block(
+#let callout(icon, title, colour, body) = keep-together(block(
   width: 100%,
-  stroke: (left: 3pt + rgb(color), rest: 0.5pt + rgb(color + "35")),
-  fill: rgb(color + "15"),
+  stroke: (left: 3pt + rgb(colour), rest: 0.5pt + rgb(colour + "35")),
+  fill: rgb(colour + "15"),
   inset: (x: 12pt, y: 10pt),
   radius: ui-radius,
   [
-    #text(weight: "bold", fill: rgb(color))[#icon #title] \
+    #text(weight: "bold", fill: rgb(colour))[#icon #title] \
     #v(2pt)
     #body
   ],
@@ -299,7 +299,7 @@
 
 #let uml-class(name, fields: (), methods: ()) = block(
   width: 100%,
-  stroke: 0.8pt + stroke-color,
+  stroke: 0.8pt + stroke-colour,
   radius: ui-radius-sm,
   clip: true,
   stack(
@@ -313,13 +313,13 @@
     ),
     block(
       width: 100%,
-      stroke: (top: 0.8pt + stroke-color),
+      stroke: (top: 0.8pt + stroke-colour),
       inset: (x: 8pt, y: 6pt),
       text(size: 8.5pt, stack(dir: ttb, spacing: 0.45em, ..fields)),
     ),
     block(
       width: 100%,
-      stroke: (top: 0.8pt + stroke-color),
+      stroke: (top: 0.8pt + stroke-colour),
       inset: (x: 8pt, y: 6pt),
       text(size: 8.5pt, stack(dir: ttb, spacing: 0.45em, ..methods)),
     ),
@@ -377,11 +377,11 @@
     set page(
     paper: "a4",
     margin: (x: 2.5cm, top: 3cm, bottom: 3cm),
-    fill: bg-color,
+    fill: bg-colour,
     header: if page-type == "notes" { context {
       let page_num = counter(page).get().first()
       if page_num > 1 {
-        set text(size: 8.5pt, font: font-serif, fill: text-color, hyphenate: false)
+        set text(size: 8.5pt, font: font-serif, fill: text-colour, hyphenate: false)
         let h1_on_page = query(heading.where(level: 1)).filter(h => h.location().page() == page_num)
         let doc_title = if document.title != none {
           document.title
@@ -413,14 +413,14 @@
     } } else { none },
     footer: context {
       let page_num = counter(page).get().first()
-      set text(size: 9pt, font: font-serif, fill: text-color)
+      set text(size: 9pt, font: font-serif, fill: text-colour)
       if page-type == "lecture" or page_num == 1 {
         align(center)[#str(page_num)]
       }
     },
   )
 
-  set text(font: font-sans, size: text-size, fill: text-color, lang: "en")
+  set text(font: font-sans, size: text-size, fill: text-colour, lang: "en")
   set par(justify: true, leading: 0.65em, first-line-indent: 0pt)
 
   // All headings use the serif display font
@@ -432,7 +432,7 @@
   show heading.where(level: 1): it => block(above: 0em, below: 1.4em, width: 100%)[
     #align(center)[
       #set par(justify: false)
-      #text(size: 20pt, weight: "bold", font: font-serif, fill: text-color, hyphenate: false)[#course: #it.body]
+      #text(size: 20pt, weight: "bold", font: font-serif, fill: text-colour, hyphenate: false)[#course: #it.body]
     ]
   ]
 
@@ -442,15 +442,15 @@
       columns: (auto, 1fr),
       column-gutter: 0.8em,
       align: horizon,
-      text(weight: "bold", font: font-serif, fill: text-color)[#smallcaps[#it.body]],
-      line(length: 100%, stroke: 0.8pt + stroke-color),
+      text(weight: "bold", font: font-serif, fill: text-colour)[#smallcaps[#it.body]],
+      line(length: 100%, stroke: 0.8pt + stroke-colour),
     )
   ]
 
   // Level 3: Bold italic subsection title (notes only)
   show heading.where(level: 3): it => if page-type == "notes" {
     block(above: 1.4em, below: 0.8em)[
-      #text(size: 11pt, weight: "bold", style: "italic", font: font-serif, fill: text-color)[#it.body]
+      #text(size: 11pt, weight: "bold", style: "italic", font: font-serif, fill: text-colour)[#it.body]
     ]
   } else { it }
 

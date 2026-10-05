@@ -27,7 +27,7 @@ Item {
     id: volTooltip
     sharedWindow: root.sharedWindow
     icon: Utils.volumeIcon(root.volPct, root.volMuted)
-    iconColor: root.volMuted ? Colors.red : Colors.accent
+    iconColour: root.volMuted ? Colours.red : Colours.accent
     title: {
       var pct = Math.round(root.volPct * 100)
       return root.volMuted ? "Muted" : ("Volume " + pct + "%")
@@ -39,7 +39,7 @@ Item {
     id: volBg
     anchors.fill: parent
     radius: 6
-    color: volTooltip.hovered ? Colors.bgSubtle : "transparent"
+    color: volTooltip.hovered ? Colours.bgSubtle : "transparent"
     Behavior on color { ColorAnimation { duration: 100 } }
   }
 
@@ -83,8 +83,8 @@ Item {
       Rectangle {
         anchors.fill: parent
         radius: 4
-        color: Colors.bgSubtle
-        border.color: trackMouse.containsMouse ? (root.volMuted ? Colors.red : Colors.accent) : "transparent"
+        color: Colours.bgSubtle
+        border.color: trackMouse.containsMouse ? (root.volMuted ? Colours.red : Colours.accent) : "transparent"
         border.width: 1
 
         Rectangle {
@@ -93,7 +93,7 @@ Item {
           anchors.right: parent.right
           height: parent.height * Math.min(1.0, root.volPct)
           radius: 4
-          color: root.volMuted ? Colors.red : Colors.accent
+          color: root.volMuted ? Colours.red : Colours.accent
           Behavior on height { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
           Behavior on color { ColorAnimation { duration: 150 } }
         }
@@ -126,7 +126,7 @@ Item {
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
       text: Utils.volumeIcon(root.volPct, root.volMuted)
-      color: root.volMuted ? Colors.red : Colors.fg
+      color: root.volMuted ? Colours.red : Colours.fg
       font.family: root.uiFont
       font.pixelSize: 15
     }
@@ -134,7 +134,7 @@ Item {
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
       text: Math.round(root.volPct * 100) + "%"
-      color: root.volMuted ? Colors.red : Colors.fgMid
+      color: root.volMuted ? Colours.red : Colours.fgMid
       font.family: root.uiFont
       font.pixelSize: 11
     }
@@ -149,7 +149,7 @@ Item {
 
     Text {
       text: Utils.volumeIcon(root.volPct, root.volMuted)
-      color: root.volMuted ? Colors.red : Colors.accent
+      color: root.volMuted ? Colours.red : Colours.accent
       font.family: root.uiFont
       font.pixelSize: 14
       anchors.verticalCenter: parent.verticalCenter
@@ -157,7 +157,7 @@ Item {
 
     Text {
       text: root.volMuted ? "Muted" : Math.round(root.volPct * 100) + "%"
-      color: root.volMuted ? Colors.red : Colors.fg
+      color: root.volMuted ? Colours.red : Colours.fg
       font.family: root.uiFont
       font.pixelSize: 12
       font.bold: true

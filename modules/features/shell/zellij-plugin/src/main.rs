@@ -9,8 +9,8 @@
 //!   updates live and tracks pane focus (unlike shelling out from a command
 //!   widget).
 //!
-//! Colors are passed in from the Nix module via plugin config so the bar
-//! follows `config.theme.colors`.
+//! Colours are passed in from the Nix module via plugin config so the bar
+//! follows `config.theme.colours`.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -151,12 +151,12 @@ impl ZellijPlugin for State {
     }
 
     fn render(&mut self, _rows: usize, cols: usize) {
-        let bg = self.color("bg");
-        let fg_mid = self.color("fg_mid");
-        let accent = self.color("accent");
-        let bg_subtle = self.color("bg_subtle");
-        let yellow = self.color("yellow");
-        let teal = self.color("teal");
+        let bg = self.colour("bg");
+        let fg_mid = self.colour("fg_mid");
+        let accent = self.colour("accent");
+        let bg_subtle = self.colour("bg_subtle");
+        let yellow = self.colour("yellow");
+        let teal = self.colour("teal");
 
         // The cwd is right-aligned. Compute it first so the left side can be
         // truncated to fit instead of pushing it off the (single-row) bar.
@@ -252,7 +252,7 @@ impl ZellijPlugin for State {
 }
 
 impl State {
-    fn color(&self, key: &str) -> Rgb {
+    fn colour(&self, key: &str) -> Rgb {
         self.config
             .get(key)
             .and_then(|value| parse_hex(value))

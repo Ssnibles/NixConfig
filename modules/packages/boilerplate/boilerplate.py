@@ -30,7 +30,7 @@ TEMPLATES_INFO = {
         "basic": "Bare feature module",
         "app": "Application feature with system package and hjem config file",
         "service": "Background systemd user service daemon feature",
-        "theme": "Theme-integrated feature using config.theme.colors",
+        "theme": "Theme-integrated feature using config.theme.colours",
     },
     "host": {
         "standard": "Multi-file host directory (default.nix, configuration.nix, _hardware-generated.nix)",
@@ -46,7 +46,7 @@ TEMPLATES_INFO = {
 NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 
 
-class Colors:
+class Colours:
     GREEN = "\033[32m"
     CYAN = "\033[36m"
     YELLOW = "\033[33m"
@@ -59,8 +59,8 @@ class Colors:
 
 
 def fmt(text: str, style: str) -> str:
-    if Colors.enable():
-        return f"{style}{text}{Colors.RESET}"
+    if Colours.enable():
+        return f"{style}{text}{Colours.RESET}"
     return text
 
 
@@ -292,7 +292,7 @@ def feature_template(name: str, target: str, tmpl: str) -> str:
               nixos.modules.{target} =
                 {{ pkgs, lib, config, ... }}:
                 let
-                  c = config.theme.colors;
+                  c = config.theme.colours;
                 in
                 {{
                   hjem.users.${{config.username}}.files = {{
@@ -489,12 +489,12 @@ def stage(paths: list[Path], root: Path) -> None:
 
 
 def print_templates_help() -> None:
-    print(fmt("Available Boilerplate Kinds & Templates:", Colors.BOLD))
+    print(fmt("Available Boilerplate Kinds & Templates:", Colours.BOLD))
     print()
     for kind, tmpls in TEMPLATES_INFO.items():
-        print(f"  {fmt(kind, Colors.CYAN)} (target directory: modules/{kind}s/):")
+        print(f"  {fmt(kind, Colours.CYAN)} (target directory: modules/{kind}s/):")
         for tmpl, desc in tmpls.items():
-            print(f"    - {fmt(tmpl, Colors.GREEN)}: {desc}")
+            print(f"    - {fmt(tmpl, Colours.GREEN)}: {desc}")
         print()
 
 
@@ -556,7 +556,7 @@ def parse_args() -> argparse.Namespace:
     if not args.kind or not args.name:
         parser.print_help()
         print()
-        print(fmt("Error: missing required arguments 'kind' and 'name'.", Colors.YELLOW))
+        print(fmt("Error: missing required arguments 'kind' and 'name'.", Colours.YELLOW))
         print("Run with -l/--list-templates to see available templates.")
         sys.exit(2)
 
@@ -568,7 +568,7 @@ def main() -> int:
 
     if not NAME_RE.fullmatch(args.name):
         print(
-            fmt("Error: name must match ^[A-Za-z0-9][A-Za-z0-9_.-]*$", Colors.YELLOW),
+            fmt("Error: name must match ^[A-Za-z0-9][A-Za-z0-9_.-]*$", Colours.YELLOW),
             file=sys.stderr,
         )
         return 2
@@ -593,7 +593,7 @@ def main() -> int:
     targets = [target_base / rel for rel in files]
 
     if args.dry_run:
-        print(fmt("Dry run: no files will be created", Colors.CYAN))
+        print(fmt("Dry run: no files will be created", Colours.CYAN))
         for target in targets:
             print(f"  {target.relative_to(root)}")
         return 0
@@ -602,7 +602,7 @@ def main() -> int:
         for rel_path, content in files.items():
             write_file(target_base / rel_path, content)
     except FileExistsError as err:
-        print(fmt(str(err), Colors.YELLOW), file=sys.stderr)
+        print(fmt(str(err), Colours.YELLOW), file=sys.stderr)
         return 1
 
     updated_groups = False
@@ -615,16 +615,16 @@ def main() -> int:
     if not args.no_git_stage:
         stage(targets, root)
 
-    print(fmt("Created files successfully:", Colors.GREEN))
+    print(fmt("Created files successfully:", Colours.GREEN))
     for target in targets:
         print(f"  {target.relative_to(root)}")
 
     if updated_groups:
-        print(fmt("  modules/module-groups.nix (updated host options)", Colors.CYAN))
+        print(fmt("  modules/module-groups.nix (updated host options)", Colours.CYAN))
 
     if args.kind == "host" and not updated_groups:
         print()
-        print(fmt("Next Steps:", Colors.BOLD))
+        print(fmt("Next Steps:", Colours.BOLD))
         print(f"  Remember to declare option `options.nixos.modules.{args.name}` in modules/module-groups.nix")
 
     return 0

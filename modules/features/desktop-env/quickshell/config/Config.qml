@@ -9,28 +9,28 @@ import QtQuick
 // widget's own file.
 Singleton {
   // --- Fonts ------------------------------------------------------------
-  readonly property string monoFont: Colors.monoFont !== undefined ? Colors.monoFont : "JetBrainsMono Nerd Font"
-  readonly property string sansFont: Colors.sansFont !== undefined ? Colors.sansFont : "SF Pro Text"
-  readonly property string serifFont: Colors.serifFont !== undefined ? Colors.serifFont : "Instrument Serif"
+  readonly property string monoFont: Colours.monoFont !== undefined ? Colours.monoFont : "JetBrainsMono Nerd Font"
+  readonly property string sansFont: Colours.sansFont !== undefined ? Colours.sansFont : "SF Pro Text"
+  readonly property string serifFont: Colours.serifFont !== undefined ? Colours.serifFont : "Instrument Serif"
 
-  // --- Command Center State & Geometry ----------------------------------
-  property bool commandCenterVisible: false
+  // --- Command Centre State & Geometry ----------------------------------
+  property bool commandCentreVisible: false
   property var targetScreen: null
   property var lastActiveScreen: null
-  property string commandCenterSide: {
-    var envSide = (Quickshell.env("QS_COMMAND_CENTER_SIDE") || "").toLowerCase()
+  property string commandCentreSide: {
+    var envSide = (Quickshell.env("QS_COMMAND_CENTRE_SIDE") || "").toLowerCase()
     if (envSide === "left" || envSide === "right") return envSide
     return "left" // "left" | "right"
   }
-  readonly property int commandCenterWidth: 500
-  readonly property int commandCenterRadius: 16
-  readonly property int commandCenterCardRadius: 12
-  readonly property int commandCenterMargin: 12
-  readonly property int commandCenterSlideOffset: 60
-  readonly property int commandCenterAnimDuration: 250
-  readonly property int commandCenterCloseDuration: 180
-  readonly property string commandCenterClockFormat: "HH:mm"
-  readonly property string commandCenterDateFormat: "dddd, MMMM d"
+  readonly property int commandCentreWidth: 500
+  readonly property int commandCentreRadius: 16
+  readonly property int commandCentreCardRadius: 12
+  readonly property int commandCentreMargin: 12
+  readonly property int commandCentreSlideOffset: 60
+  readonly property int commandCentreAnimDuration: 250
+  readonly property int commandCentreCloseDuration: 180
+  readonly property string commandCentreClockFormat: "HH:mm"
+  readonly property string commandCentreDateFormat: "dddd, MMMM d"
 
   // --- Status Bars --------------------------------------------------------
   property bool barVisible: true
@@ -55,7 +55,7 @@ Singleton {
 
 
   // --- Media --------------------------------------------------------------
-  // Whether the command center's media card always stays visible, showing
+  // Whether the command centre's media card always stays visible, showing
   // "Nothing is playing" when no media is active.
   readonly property bool alwaysShowMediaCard: true
   readonly property bool animateMediaIcon: false
@@ -110,9 +110,9 @@ Singleton {
 
   // --- Notifications ------------------------------------------------------
   // Notification position on screen:
-  //   "top-left", "top-center" (or "top"), "top-right",
-  //   "center-left", "center", "center-right",
-  //   "bottom-left", "bottom-center" (or "bottom"), "bottom-right"
+  //   "top-left", "top-centre" (or "top"), "top-right",
+  //   "centre-left", "centre", "centre-right",
+  //   "bottom-left", "bottom-centre" (or "bottom"), "bottom-right"
   property string notifPosition: "top-right"
   readonly property int notifMarginX: 12
   readonly property int notifMarginY: 12

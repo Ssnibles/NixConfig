@@ -12,19 +12,19 @@ All QML source files live in `modules/features/desktop-env/quickshell/config/` a
 
 ```
 modules/features/desktop-env/quickshell/
-├── default.nix                   # Nix module installing quickshell & generating Colors.qml
+├── default.nix                   # Nix module installing quickshell & generating Colours.qml
 ├── README.md                     # Module reference & development guide
 └── config/                       # Live QML source code (symlinked to ~/.config/quickshell/)
     ├── shell.qml                 # Root application entry point (Scope)
     ├── Config.qml                # Singleton storing UI layout dimensions & fonts
-    ├── Colors.qml                # Nix-generated theme colour tokens
+    ├── Colours.qml                # Nix-generated theme colour tokens
     ├── Utils.js                  # Shared JavaScript helper functions
     ├── qmldir.lsp                # Optional staged manifest for editor/LSP tooling
     │
     ├── bar.qml                   # Top horizontal bar (MangoWC, River, Hyprland)
     ├── niri-bar.qml              # Vertical side bar (Niri)
-    ├── CommandCenter.qml         # Slide-out quick settings dashboard
-    ├── CommandCenterButton.qml   # Toggle button in status bar
+    ├── CommandCentre.qml         # Slide-out quick settings dashboard
+    ├── CommandCentreButton.qml   # Toggle button in status bar
     ├── LockScreen.qml            # Wayland session locker (WlSessionLock + PAM)
     │
     ├── NotificationOverlay.qml   # Toast notification popup overlay
@@ -39,7 +39,7 @@ modules/features/desktop-env/quickshell/
     ├── MediaService.qml          # MPRIS media player backend
     ├── WindowFocuser.qml         # Native-first window activation (no Node fallback)
     │
-    ├── MediaCard.qml             # Shared media card (Command Center / popover / lock)
+    ├── MediaCard.qml             # Shared media card (Command Centre / popover / lock)
     ├── MediaWidget.qml           # Player controls & current song title (bar button)
     ├── PlaybackControls.qml      # Shared prev / play-pause / next cluster
     ├── MediaProgressRow.qml      # Elapsed + seek bar + total time row
@@ -69,13 +69,13 @@ modules/features/desktop-env/quickshell/
 Holds global layout dimensions, fonts, timings, and component parameters:
 - **Fonts**: `monoFont` ("JetBrainsMono Nerd Font"), `sansFont` ("SF Pro Text"), `serifFont` ("Instrument Serif").
 - **Bar Dimensions**: `barWidth` (42px vertical bar), `barHeight` (34px top bar).
-- **Command Centre**: `commandCenterWidth` (500px), `commandCenterRadius` (16px).
+- **Command Centre**: `commandCentreWidth` (500px), `commandCentreRadius` (16px).
 
-### `Colors.qml` (Nix-Generated Colour Tokens)
-Generated automatically by Nix based on `config.theme.colors`:
-- **Surface Colours**: `Colors.bg`, `Colors.bgRaised`, `Colors.bgSubtle`, `Colors.border`
-- **Text Colours**: `Colors.fg`, `Colors.fgMid`, `Colors.fgDim`
-- **Accents**: `Colors.accent`, `Colors.teal`, `Colors.purple`, `Colors.green`, `Colors.yellow`, `Colors.red`, `Colors.orange`
+### `Colours.qml` (Nix-Generated Colour Tokens)
+Generated automatically by Nix based on `config.theme.colours`:
+- **Surface Colours**: `Colours.bg`, `Colours.bgRaised`, `Colours.bgSubtle`, `Colours.border`
+- **Text Colours**: `Colours.fg`, `Colours.fgMid`, `Colours.fgDim`
+- **Accents**: `Colours.accent`, `Colours.teal`, `Colours.purple`, `Colours.green`, `Colours.yellow`, `Colours.red`, `Colours.orange`
 
 ---
 
@@ -120,7 +120,7 @@ You can trigger Quickshell overlays programmatically or via keybindings using `q
 
 ```bash
 # Toggle Command Centre overlay
-quickshell ipc call command-center toggle
+quickshell ipc call command-centre toggle
 
 # Lock screen immediately
 quickshell ipc call lockscreen lock

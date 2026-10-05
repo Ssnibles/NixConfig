@@ -140,7 +140,7 @@ QtObject {
     }
 
     if (symUpper === "CT" || symLower === "center_tile") {
-      return { symbol: "CT", name: "Center Tile", layoutName: "center_tile", icon: "󰕴", key: "" }
+      return { symbol: "CT", name: "Centre Tile", layoutName: "center_tile", icon: "󰕴", key: "" }
     }
     if (symUpper === "RT" || symLower === "right_tile") {
       return { symbol: "RT", name: "Right Tile", layoutName: "right_tile", icon: "󰙀", key: "" }

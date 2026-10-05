@@ -9,7 +9,7 @@ Item {
   property string icon: ""
   property string title: ""
   property var details: []
-  property color iconColor: Colors.fg
+  property color iconColour: Colours.fg
   property int showDelay: Config.popupShowDelay
   property int maxWidth: Config.popupMaxWidth
   property int contentWidth: 0
