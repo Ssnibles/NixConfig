@@ -6,67 +6,72 @@
 @import url("colours.css");
 
 /* ==========================================================================
-   §1  DESIGN SYSTEM — Spacing, radii, transitions & browser theme tokens
+   §1  BROWSER THEME TOKENS — Firefox 158 "Nova" remap
    ========================================================================== */
 
 :root {
-  /* ── Spacing scale ── */
-  --fx-space-xs: 2px;
-  --fx-space-sm: 4px;
-  --fx-space-md: 8px;
-  --fx-space-lg: 12px;
-
-  /* ── Highlight & active border tokens (uniform 2px) ── */
-  --fx-highlight-border-width: 2px;
-  --fx-border-width-active: var(--fx-highlight-border-width);
-
-  /* ── Border radii ── */
-  --fx-radius-sm: 8px;
-  --fx-radius: 12px;
-  --fx-radius-lg: 28px;
-
-  /* ── Transitions (Material-style ease) ── */
-  --fx-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --fx-transition-fast: 0.12s var(--fx-ease);
-  --fx-transition: 0.2s var(--fx-ease);
-  --fx-transition-slow: 0.35s var(--fx-ease);
-
-  /* ── Chrome background & toolbar tokens ── */
-  --toolbar-bgcolor: var(--fx-bg) !important;
+  /* ── Chrome, toolbar & accent tokens — Firefox 158 "Nova" names ── */
+  --toolbar-background-color: var(--fx-bg) !important;
   --toolbar-color: var(--fx-fg) !important;
+  --toolbar-text-color: var(--fx-fg) !important;
+  --toolbox-background-color: var(--fx-bg) !important;
+  --toolbox-background-color-inactive: var(--fx-bg) !important;
+  --toolbox-text-color: var(--fx-fg) !important;
+  --toolbox-text-color-inactive: var(--fx-fg) !important;
+  /* Kill Nova's violet→orange toolbox wash. */
+  --toolbox-background-gradient: image(transparent) !important;
+  --text-color: var(--fx-fg) !important;
+  --chrome-content-separator-color: var(--fx-border) !important;
+
+  /* ── URL bar / search fields ── */
   --toolbar-field-background-color: var(--fx-bg-raised) !important;
-  --toolbar-field-focus-background-color: var(--fx-bg-raised) !important;
-  --toolbar-field-color: var(--fx-fg) !important;
+  --toolbar-field-background-color-focus: var(--fx-bg-raised) !important;
+  --toolbar-field-text-color: var(--fx-fg) !important;
+  --toolbar-field-text-color-focus: var(--fx-fg) !important;
   --toolbar-field-focus-color: var(--fx-fg) !important;
   --toolbar-field-border-color: transparent !important;
-  --toolbar-field-focus-border-color: var(--fx-accent) !important;
-  --urlbar-background-open: var(--fx-bg-raised) !important;
+  --toolbar-field-border-color-focus: var(--fx-accent) !important;
+
+  /* ── Accent — repoint Nova's violet primary back to the palette accent ── */
+  --color-accent-primary: var(--fx-accent) !important;
+  --color-accent-primary-hover: var(--fx-accent) !important;
+  --color-accent-primary-active: var(--fx-accent) !important;
+  --color-accent-attention: var(--fx-accent) !important;
+  --focus-outline-color: var(--fx-accent) !important;
+
+  /* ── Toolbar buttons ── */
+  --toolbarbutton-icon-fill: var(--fx-fg-mid) !important;
+  --toolbarbutton-icon-fill-attention: var(--fx-accent) !important;
+  --toolbarbutton-background-color-hover: var(--fx-bg-raised) !important;
+  --toolbarbutton-background-color-active: var(--fx-bg-subtle) !important;
 
   /* ── Firefox internal overrides — lightweight theme ── */
   --lwt-accent-color: var(--fx-bg) !important;
   --lwt-accent-color-inactive: var(--fx-bg) !important;
-  --lwt-frame: var(--fx-bg) !important;
   --lwt-text-color: var(--fx-fg) !important;
-  --lwt-sidebar-background: var(--fx-bg) !important;
-  --lwt-sidebar-background-color: var(--fx-bg) !important;
-  --lwt-sidebar-text-color: var(--fx-fg) !important;
-  --lwt-selected-tab-background-color: var(--fx-bg-subtle) !important;
   --lwt-background-tab-separator-color: transparent !important;
   --tabpanel-background-color: var(--fx-bg) !important;
 
+  /* ── Tabs (native tabs hidden, but keep tokens consistent) ── */
+  --tab-background-color-selected: var(--fx-bg-subtle) !important;
+  --tab-text-color-selected: var(--fx-fg) !important;
+  --tab-icon-fill-loading: var(--fx-accent) !important;
+
+  /* ── Sidebar (Sidebery & native) ── */
+  --sidebar-background-color: var(--fx-bg) !important;
+  --sidebar-text-color: var(--fx-fg) !important;
+  --sidebar-border-color: transparent !important;
+
   /* ── Firefox internal overrides — panels, menus & buttons ── */
-  --arrowpanel-background: var(--fx-bg-raised) !important;
-  --arrowpanel-color: var(--fx-fg) !important;
-  --arrowpanel-border-color: var(--fx-border) !important;
-  --arrowpanel-border-radius: var(--fx-radius) !important;
-  --arrowpanel-menuitem-border-radius: var(--fx-radius-sm) !important;
   --panel-background: var(--fx-bg-raised) !important;
+  --panel-background-color: var(--fx-bg-raised) !important;
   --panel-border-color: var(--fx-border) !important;
-  --panel-color: var(--fx-fg) !important;
+  --panel-text-color: var(--fx-fg) !important;
+  --popup-background-color: var(--fx-bg-raised) !important;
+  --popup-border-color: var(--fx-border) !important;
   --panel-border-radius: var(--fx-radius) !important;
   --panel-menuitem-border-radius: var(--fx-radius-sm) !important;
   --toolbarbutton-border-radius: var(--fx-radius-sm) !important;
-  --sidebar-border-color: transparent !important;
 }
 
 /* ==========================================================================
@@ -164,35 +169,46 @@
   margin-inline: auto !important;
 }
 
+/* ── Firefox 158 "joint background" (input half + results half) ──
+   Sizing, radius and glow all go through Firefox's own tokens: it squares the
+   corners where the halves meet and aligns the results edge with the input edge,
+   which a direct `border-radius`/`box-shadow` would fight. */
+.urlbar,
+#searchbar {
+  --chrome-box-shadow: transparent !important;
+  --urlbar-background-box-shadow-open: none !important;
+  --urlbar-background-border-radius: var(--fx-radius) !important;
+  --urlbar-border-radius: var(--fx-radius) !important;
+  --urlbarView-joint-background-outset-inline: var(--urlbar-background-overhang-open) !important;
+}
+
 #urlbar {
-  --urlbar-box-bgcolor: var(--fx-bg-raised) !important;
-  --urlbar-box-focus-bgcolor: var(--fx-bg-raised) !important;
-  --urlbar-box-hover-bgcolor: var(--fx-bg-raised) !important;
-  --urlbar-box-active-bgcolor: var(--fx-bg-raised) !important;
+  --urlbar-box-background-color: var(--fx-bg-raised) !important;
+  --urlbar-box-background-color-focus: var(--fx-bg-raised) !important;
+  --urlbar-box-background-color-hover: var(--fx-bg-raised) !important;
+  --urlbar-box-background-color-active: var(--fx-bg-raised) !important;
   background-color: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-#urlbar-background {
+.urlbar-background,
+.urlbarView-background {
   background-color: var(--fx-bg-raised) !important;
   border: var(--fx-highlight-border-width) solid transparent !important;
-  border-radius: var(--fx-radius) !important;
   box-shadow: none !important;
   transition: border-color var(--fx-transition) !important;
 }
 
-#urlbar-input-container {
-  background-color: transparent !important;
-  border-radius: var(--fx-radius) !important;
+/* Accent border when focused/open; the input container's own open-state outline
+   is dropped so it can't draw a line across the seam. */
+.urlbar:is([focused="true"], [open], [popover-open]) > .urlbar-background,
+.urlbar:is([open], [popover-open]) .urlbarView-background {
+  border-color: var(--fx-accent) !important;
 }
 
-/* Focused / open / breakout → accent border, zero shadows */
-#urlbar[focused="true"] > #urlbar-background,
-#urlbar[open] > #urlbar-background,
-#urlbar[breakout][breakout-extend] > #urlbar-background {
-  border-color: var(--fx-accent) !important;
-  box-shadow: none !important;
+.urlbar[popover-open] > .urlbar-input-container {
+  outline: none !important;
 }
 
 #urlbar-input {
@@ -335,11 +351,11 @@ browser#sidebar,
 menupopup,
 panel {
   --panel-background: var(--fx-bg-raised) !important;
+  --panel-background-color: var(--fx-bg-raised) !important;
   --panel-border-color: var(--fx-border) !important;
-  --panel-color: var(--fx-fg) !important;
-  --arrowpanel-background: var(--fx-bg-raised) !important;
-  --arrowpanel-border-color: var(--fx-border) !important;
-  --arrowpanel-color: var(--fx-fg) !important;
+  --panel-text-color: var(--fx-fg) !important;
+  --popup-background-color: var(--fx-bg-raised) !important;
+  --popup-border-color: var(--fx-border) !important;
   border-radius: var(--fx-radius) !important;
 }
 

@@ -45,6 +45,19 @@
           --fx-purple: #${purple};
           --fx-red: #${red};
           --fx-orange: #${orange};
+
+          /* Shared geometry & motion — consumed by userChrome + userContent */
+          --fx-space-xs: 2px;
+          --fx-space-sm: 4px;
+          --fx-space-md: 8px;
+          --fx-space-lg: 12px;
+          --fx-radius-sm: 8px;
+          --fx-radius: 12px;
+          --fx-radius-lg: 28px;
+          --fx-highlight-border-width: 2px;
+          --fx-ease: cubic-bezier(0.4, 0, 0.2, 1);
+          --fx-transition-fast: 0.12s var(--fx-ease);
+          --fx-transition: 0.2s var(--fx-ease);
         }
       '';
 

@@ -60,28 +60,23 @@
 
 @-moz-document url-prefix("about:preferences"), url-prefix("about:addons") {
   :root {
-    --in-content-page-background: var(--fx-bg) !important;
-    --in-content-page-color: var(--fx-fg) !important;
-    --in-content-text-color: var(--fx-fg) !important;
-    --in-content-deemphasized-text: var(--fx-fg-dim) !important;
-    --in-content-box-background: var(--fx-bg-raised) !important;
-    --in-content-box-border-color: var(--fx-border) !important;
-    --in-content-border-color: var(--fx-border) !important;
-    --in-content-border-hover: var(--fx-accent) !important;
-    --in-content-border-active: var(--fx-accent) !important;
-    --in-content-category-text-selected: var(--fx-accent) !important;
-    --in-content-category-text-selected-active: var(--fx-accent) !important;
-    --in-content-category-background-selected: var(--fx-bg-subtle) !important;
-    --in-content-category-background-hover: var(--fx-bg-raised) !important;
-    --in-content-item-selected: var(--fx-bg-subtle) !important;
-    --in-content-item-hover: var(--fx-bg-raised) !important;
-    --in-content-primary-button-background: var(--fx-accent) !important;
-    --in-content-primary-button-background-hover: color-mix(
-      in srgb,
-      var(--fx-accent) 85%,
-      white
-    ) !important;
-    --in-content-primary-button-text-color: var(--fx-bg) !important;
+    /* Firefox 158 in-content design-system tokens. */
+    --background-color-canvas: var(--fx-bg) !important;
+    --background-color-box: var(--fx-bg-raised) !important;
+    --text-color: var(--fx-fg) !important;
+    --text-color-deemphasized: var(--fx-fg-dim) !important;
+    --border-color: var(--fx-border) !important;
+    --border-color-deemphasized: var(--fx-border) !important;
+    --color-accent-primary: var(--fx-accent) !important;
+    --color-accent-primary-hover: var(--fx-accent) !important;
+    --color-accent-primary-active: var(--fx-accent) !important;
+    --text-color-accent-primary-selected: var(--fx-bg) !important;
+    --link-color: var(--fx-accent) !important;
+    --link-color-hover: var(--fx-accent) !important;
+    --link-color-active: var(--fx-accent) !important;
+    --button-background-color: var(--fx-bg-subtle) !important;
+    --button-text-color: var(--fx-fg) !important;
+    --focus-outline-color: var(--fx-accent) !important;
   }
 
   html,
@@ -93,18 +88,18 @@
   .addon-card {
     background-color: var(--fx-bg-raised) !important;
     border: 1px solid var(--fx-border) !important;
-    border-radius: 8px !important;
+    border-radius: var(--fx-radius-sm) !important;
     box-shadow: none !important;
     color: var(--fx-fg) !important;
   }
 
   button,
   .button {
-    border-radius: 6px !important;
+    border-radius: var(--fx-radius-sm) !important;
     background-color: var(--fx-bg-subtle) !important;
     border: 1px solid var(--fx-border) !important;
     color: var(--fx-fg) !important;
-    padding: 5px 12px !important;
+    padding: var(--fx-space-sm) var(--fx-space-lg) !important;
     transition:
       background-color 0.12s ease,
       border-color 0.12s ease !important;
@@ -133,6 +128,17 @@
    ========================================================================== */
 
 @-moz-document url-prefix("about:config"), url-prefix("about:debugging"), url-prefix("about:support"), url-prefix("about:processes") {
+  :root {
+    /* Firefox 158 design-system tokens. */
+    --background-color-canvas: var(--fx-bg) !important;
+    --background-color-box: var(--fx-bg-raised) !important;
+    --text-color: var(--fx-fg) !important;
+    --border-color: var(--fx-border) !important;
+    --color-accent-primary: var(--fx-accent) !important;
+    --link-color: var(--fx-accent) !important;
+    --focus-outline-color: var(--fx-accent) !important;
+  }
+
   html,
   body {
     background-color: var(--fx-bg) !important;
@@ -141,11 +147,11 @@
 
   #about-config-search,
   input[type="search"] {
-    border-radius: 6px !important;
+    border-radius: var(--fx-radius-sm) !important;
     background-color: var(--fx-bg-raised) !important;
-    border: 2px solid var(--fx-border) !important;
+    border: var(--fx-highlight-border-width) solid var(--fx-border) !important;
     color: var(--fx-fg) !important;
-    padding: 6px 12px !important;
+    padding: var(--fx-space-sm) var(--fx-space-lg) !important;
     box-shadow: none !important;
   }
 
@@ -197,13 +203,13 @@
     --sb-guide: color-mix(in srgb, var(--sb-fg-dim) 60%, transparent);
 
     /* Highlight border width token (2px across all highlights) */
-    --sb-highlight-border-width: 2px;
+    --sb-highlight-border-width: var(--fx-highlight-border-width, 2px);
     --sb-active-border-width: var(--sb-highlight-border-width);
 
-    --sb-radius-sm: 8px;
-    --sb-radius: 12px;
-    --sb-transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
-    --sb-transition: 0.18s ease;
+    --sb-radius-sm: var(--fx-radius-sm, 8px);
+    --sb-radius: var(--fx-radius, 12px);
+    --sb-transition-fast: var(--fx-transition-fast, 0.12s cubic-bezier(0.4, 0, 0.2, 1));
+    --sb-transition: var(--fx-transition, 0.2s cubic-bezier(0.4, 0, 0.2, 1));
 
     --sb-font-ui:
       system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -672,7 +678,6 @@
     50% {
       transform: scale(1.2);
       opacity: 1;
-      filter: drop-shadow(0 0 3px var(--sb-teal));
     }
   }
 
@@ -716,19 +721,14 @@
 
   /* The pill only renders while the search is in use (focused/active or has a
      query) — an idle, empty bar paints nothing so no outline is left behind */
-  .SearchBar .input:focus,
   .SearchBar[data-active="true"] .input,
   .SearchBar[data-filled="true"] .input {
     border-color: var(--sb-border) !important;
-    box-shadow: none !important;
-    outline: none !important;
   }
 
   .SearchBar .input:focus,
   .SearchBar[data-focused="true"] .input {
     border-color: var(--sb-accent) !important;
-    box-shadow: none !important;
-    outline: none !important;
   }
 
   /* ────────────────────────────────────────────────────────────────────────
