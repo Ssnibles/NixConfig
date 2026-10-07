@@ -56,6 +56,12 @@ fzf.setup({
 			local ft = vim.bo[bufnr].filetype
 			local name = vim.api.nvim_buf_get_name(bufnr)
 
+			-- fzf-lua's picker is itself a terminal buffer (filetype "fzf") and can
+			-- outlive a hidden picker; never offer it as a buffer to switch to.
+			if excluded_ft[ft] then
+				return false
+			end
+
 			if bt == "terminal" or ft == "terminal" or name:match("^term://") then
 				return true
 			end

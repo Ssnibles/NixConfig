@@ -1,9 +1,21 @@
 -- ── Terminal toggle ───────────────────────────────────────────────────
 
+-- fzf-lua runs its picker inside a terminal buffer too (filetype "fzf").
+-- When a picker is hidden (default <M-Esc> = "hide" / the `hide` profile) the
+-- buffer is kept alive with 'bufhidden=hide' rather than deleted. It must not
+-- be treated as the user's shell terminal, otherwise toggling the terminal
+-- would resurrect the hidden picker instead of showing a shell.
+local function is_user_terminal(buf)
+	if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].buftype ~= "terminal" then
+		return false
+	end
+	return vim.bo[buf].filetype ~= "fzf"
+end
+
 local function find_terminal_buf()
 	local best, best_used = nil, -1
 	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-		if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "terminal" then
+		if is_user_terminal(buf) then
 			local info = vim.fn.getbufinfo(buf)[1]
 			local used = (info and info.lastused) or 0
 			if used > best_used then
