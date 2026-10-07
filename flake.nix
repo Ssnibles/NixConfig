@@ -99,6 +99,13 @@
     # Declarative Flatpak manager. Adds services.flatpak.remotes/.packages on
     # top of NixOS' built-in module (which only provides `enable`).
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.7.0";
+
+    # Minecraft Bedrock (Windows GDK build) on Linux, via Wine/Proton with
+    # native Xbox sign-in. The flake exposes a single wrapped package.
+    bedrock-on-linux = {
+      url = "github:Wyze3306/BedrockOnLinux";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

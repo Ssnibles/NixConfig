@@ -261,6 +261,7 @@ For Steam skinning, Gamescope launch parameters, and controller pairing, refer t
 - **GameMode & MangoHud**: Automatic CPU performance governor tuning via GameMode daemon and real-time on-screen telemetry overlay via MangoHud.
 - **PlayStation 5 DualSense Controllers**: Full kernel driver support via `hid-playstation` and a custom Bluetooth pairing CLI utility ([`dualsense-pair`](file:///home/josh/NixConfig/modules/packages/dualsense-pair/dualsense-pair.sh)).
 - **Sober (Roblox)**: Community-built Roblox client (`org.vinegarhq.Sober`) installed from Flathub as a sandboxed app — see the [Flatpak Guide](docs/wiki/flatpak.md).
+- **Minecraft Java & Bedrock**: Java Edition via PrismLauncher (multi-instance, modded, per-instance Java) with a Temurin 21 JDK, and Bedrock Edition via [BedrockOnLinux](https://github.com/Wyze3306/BedrockOnLinux), which runs the Windows GDK build under Wine with native Xbox sign-in ([`minecraft.nix`](file:///home/josh/NixConfig/modules/features/apps/minecraft.nix)).
 
 ### Flatpak & Sandboxed Applications
 
