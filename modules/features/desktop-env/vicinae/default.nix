@@ -122,7 +122,14 @@
           wantedBy = [ "wayland-session.target" ];
           after = [ "wayland-session.target" ];
           partOf = [ "wayland-session.target" ];
-          path = [ config.system.path ];
+          # vicinae calls `pactl` for its audio/volume provider. PipeWire's
+          # PulseAudio shim (services.pipewire.pulse) does not expose the
+          # PulseAudio client tools on the system PATH, so the launcher logs
+          # "pactl not found, audio control will not work". Supply them.
+          path = [
+            config.system.path
+            pkgs.pulseaudio
+          ];
           environment = {
             QT_QPA_PLATFORM = "wayland;xcb";
             ELECTRON_OZONE_PLATFORM_HINT = "auto";

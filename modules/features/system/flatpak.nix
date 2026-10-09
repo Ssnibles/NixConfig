@@ -74,6 +74,19 @@ in
             }
           ];
         };
+
+        # The upstream nix-flatpak module orders the on-activation service after
+        # multi-user.target, but the auto-update timer only depends on
+        # timers.target. Its Persistent=true catch-up run therefore fires
+        # within the first seconds of boot -- before the network is up -- and
+        # fails with "Could not resolve hostname", self-healing ~60s later on
+        # restart. Delay it past multi-user and express the network dependency
+        # so the common case no longer logs a boot failure.
+        systemd.services."flatpak-managed-install-timer" = {
+          after = [ "multi-user.target" "network-online.target" ];
+          wants = [ "network-online.target" ];
+        };
+        systemd.services."flatpak-managed-install".wants = [ "network-online.target" ];
       };
     };
 }

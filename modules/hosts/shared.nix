@@ -7,7 +7,7 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, lib, ... }:
+    { pkgs, lib, config, ... }:
     {
       nixpkgs.hostPlatform = "x86_64-linux";
 
@@ -125,11 +125,30 @@
       systemd.services.dbus.restartTriggers = lib.mkForce [ ];
       systemd.user.services.dbus.restartTriggers = lib.mkForce [ ];
 
-      # Suppress benign log spam in systemd journal
+      # ── D-Bus duplicate-service-name log spam ────────────────────────────
+      # NixOS' generated /etc/dbus-1/{session,system}.conf lists both
+      # <standard_session_servicedirs/> (which resolves $XDG_DATA_DIRS, including
+      # /run/current-system/sw/share where every package's dbus-1/services is
+      # symlinked) and an explicit <servicedir> per package. dbus-broker-launch
+      # therefore sees each service twice and logs
+      #   "Ignoring duplicate name '…' in service file '…'"
+      # (~50 lines per login). LogFilterPatterns= cannot suppress those on the
+      # *user* bus -- systemd documents it as "only available in system
+      # services" -- so the system bus relies on LogFilterPatterns and the user
+      # bus sends the launcher's log stream through a filter. dbus-broker only
+      # writes to the journal socket while stderr *is* that socket; handing it a
+      # pipe makes it fall back to stderr, which grep cleans before journald
+      # ever records the line.
       systemd.services.dbus.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
-      systemd.user.services.dbus.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
       systemd.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
-      systemd.user.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
+      systemd.user.services.dbus-broker.serviceConfig.ExecStart = lib.mkIf (
+        config.services.dbus.implementation == "broker"
+      ) (lib.mkForce [
+        # Leading empty element resets the packaged unit's ExecStart so this
+        # replaces it instead of appending a second launcher.
+        ""
+        "${pkgs.bash}/bin/bash -c 'exec ${config.services.dbus.brokerPackage}/bin/dbus-broker-launch --scope user 2> >(${pkgs.gnugrep}/bin/grep --line-buffered -v \"Ignoring duplicate name\" >&2)'"
+      ]);
       systemd.services.display-manager.serviceConfig.LogFilterPatterns = [
         "~gkr-pam: unable to locate daemon control file"
       ];
