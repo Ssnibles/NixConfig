@@ -23,7 +23,12 @@ let
 in
 {
   nixos.modules.shared =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       imports = [
         inputs.nix-flatpak.nixosModules.nix-flatpak
@@ -60,6 +65,7 @@ in
           packages = [
             # Roblox client for Linux (community runtime, sandboxed via Flatpak).
             "org.vinegarhq.Sober"
+            "app.twintaillauncher.ttl"
 
             # Nuvio Desktop — not on Flathub; pinned release bundle from GitHub.
             # The bundle is uninstalled/reinstalled automatically when
@@ -73,6 +79,36 @@ in
               }}";
             }
           ];
+
+          # Flatpak apps do not inherit environment.sessionVariables, so the
+          # NVIDIA + WebKitGTK workaround has to be injected per app.
+          #
+          # Twintail Launcher is a Tauri app (WebKitGTK). On NVIDIA it forces
+          #   WEBKIT_DISABLE_DMABUF_RENDERER=1
+          #   WEBKIT_DISABLE_COMPOSITING_MODE=1   <-- the problem
+          #   __NV_DISABLE_EXPLICIT_SYNC=1
+          # (src-tauri/src/utils/gpu.rs). Disabling accelerated compositing
+          # makes WebKit paint on the CPU: an idle window pins WebKitWebProcess
+          # at ~50% CPU and the UI lags badly.
+          #
+          # TTL_BYPASS_NVIDIA_FIXES makes the app skip all of that; we then
+          # re-apply only the half that is actually needed (disable the broken
+          # DMA-BUF renderer, keep GPU compositing). The `wayland` socket is
+          # added so the window does not have to round-trip through XWayland.
+          #
+          # If the app misbehaves on native Wayland, drop `Context.sockets`.
+          # If WebKit renders blank/glitchy, remove WEBKIT_DISABLE_DMABUF_RENDERER
+          # as well (upstream's workaround was overly broad; disabling the
+          # DMA-BUF renderer is the documented NVIDIA fix).
+          overrides = {
+            "app.twintaillauncher.ttl" = {
+              Context.sockets = [ "wayland" ];
+              Environment = {
+                TTL_BYPASS_NVIDIA_FIXES = "1";
+                WEBKIT_DISABLE_DMABUF_RENDERER = "1";
+              };
+            };
+          };
         };
 
         # The upstream nix-flatpak module orders the on-activation service after
@@ -83,7 +119,10 @@ in
         # restart. Delay it past multi-user and express the network dependency
         # so the common case no longer logs a boot failure.
         systemd.services."flatpak-managed-install-timer" = {
-          after = [ "multi-user.target" "network-online.target" ];
+          after = [
+            "multi-user.target"
+            "network-online.target"
+          ];
           wants = [ "network-online.target" ];
         };
         systemd.services."flatpak-managed-install".wants = [ "network-online.target" ];

@@ -55,6 +55,17 @@
         # Keep GLX and Video Acceleration pointed to NVIDIA
         __GLX_VENDOR_LIBRARY_NAME = "nvidia";
         LIBVA_DRIVER_NAME = "nvidia";
+
+        # WebKitGTK (Tauri, GNOME Web, DBeaver's embedded browser) selects a
+        # DMA-BUF renderer that is broken/slow on the proprietary NVIDIA
+        # driver: WebKit ends up stuttering or falling back to software.
+        # Disable *only* that renderer and keep GPU (EGL) compositing.
+        #
+        # Do NOT set WEBKIT_DISABLE_COMPOSITING_MODE: that turns off all GPU
+        # compositing and makes WebKit apps paint on the CPU. Some Tauri apps
+        # (e.g. Twintail Launcher) set it themselves -- see the Flatpak
+        # override in system/flatpak.nix for that case.
+        WEBKIT_DISABLE_DMABUF_RENDERER = "1";
       };
     };
 }

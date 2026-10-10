@@ -1,0 +1,514 @@
+/* ==========================================================================
+   Vague — a minimal, modern Spicetify theme
+   --------------------------------------------------------------------------
+   A hand-written theme that mirrors the rest of the NixConfig desktop: the
+   active "vague" warm-grey palette, SF Pro typography, gently rounded floating
+   panels and a restrained accent highlight.
+
+   Every colour below comes from the `customColorScheme` in spotify.nix, which
+   Spicetify exposes as `--spice-<key>` / `--spice-rgb-<key>` custom
+   properties. That keeps this stylesheet palette-agnostic: change
+   `theme.active` and the whole player follows.
+
+   Selectors target Spotify's Encore design tokens and the stable
+   `.main-*` / `.Root__*` class names, so the theme keeps working across
+   Spotify releases without depending on hashed CSS class names.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Design tokens
+   -------------------------------------------------------------------------- */
+:root {
+  --radius-lg: 16px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --radius-pill: 999px;
+
+  --font-sans: "SF Pro Text", "SF Pro Display", "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "Maple Mono NR NF", "Maple Mono NR", ui-monospace, monospace;
+
+  --panel-gap: 8px;
+  --hairline: 1px solid var(--spice-border-inactive);
+  --transition: 140ms ease;
+
+  /* Encore's overlay shadow token, flattened. */
+  --encore-overlay-drop-shadow: 0 0 #0000;
+}
+
+/* --------------------------------------------------------------------------
+   Flat surfaces — no shadows or glows anywhere
+   --------------------------------------------------------------------------
+   The rest of the desktop is flat, so strip every box shadow, text shadow and
+   drop shadow — including the ones Spotify ships in its own stylesheets. */
+*,
+*::before,
+*::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Spotify uses `filter: drop-shadow()` (rather than `box-shadow`) for the
+   card play button, its cover art and the context-menu arrow; cancel those
+   too without touching functional filters like `blur()`/`brightness()`. */
+.main-card-PlayButtonContainer,
+.main-card-PlayButtonContainer > *,
+.main-contextMenu-tippy {
+  filter: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Encore token remap
+   Redirect Spotify's own design tokens at the desktop palette so native
+   components (cards, menus, buttons, text, inputs) inherit it automatically.
+   -------------------------------------------------------------------------- */
+:root,
+.encore-base-set,
+.encore-dark-theme,
+.encore-dark-theme .encore-base-set {
+  --background-base: var(--spice-main);
+  --background-highlight: var(--spice-highlight);
+  --background-press: var(--spice-main);
+  --background-elevated-base: var(--spice-card);
+  --background-elevated-highlight: var(--spice-selected-row);
+  --background-elevated-press: var(--spice-selected-row);
+  --background-tinted-base: var(--spice-card);
+  --background-tinted-highlight: var(--spice-selected-row);
+  --background-tinted-press: var(--spice-selected-row);
+
+  --text-base: var(--spice-text);
+  --text-subdued: var(--spice-subtext);
+  --text-bright-accent: var(--spice-button-active);
+  --text-negative: var(--spice-notification-error);
+
+  --essential-base: var(--spice-text);
+  --essential-subdued: var(--spice-subtext);
+  --essential-bright-accent: var(--spice-button-active);
+  --essential-negative: var(--spice-notification-error);
+
+  --decorative-base: var(--spice-text);
+  --decorative-subdued: var(--spice-selected-row);
+}
+
+/* Accent surfaces (play buttons, toggles, selected pills). */
+.encore-bright-accent-set {
+  --background-base: var(--spice-button);
+  --background-highlight: var(--spice-button-active);
+  --background-press: var(--spice-button-active);
+  --text-base: var(--spice-main);
+}
+
+/* --------------------------------------------------------------------------
+   Typography
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  font-family: var(--font-sans) !important;
+}
+
+/* Monospaced, tabular timers read cleaner and match the terminal/status bar. */
+.playback-bar__progress-time,
+.playback-bar__progress-time-elapsed,
+.main-playbackBarRemainingTime-container,
+.main-trackList-durationColumn {
+  font-family: var(--font-mono) !important;
+  font-feature-settings: "tnum" 1;
+}
+
+/* --------------------------------------------------------------------------
+   Panel shell — colour only
+   --------------------------------------------------------------------------
+   Spotify's Encore layout already floats the panels: `.Root__top-container`
+   uses `gap`/`padding` of `--panel-gap` (8px) and rounds `.Root__nav-bar` /
+   `.Root__main-view` at 8px, while `.Root__now-playing-bar` uses
+   `padding: 8px; margin: -8px` to stay full-bleed. Do not override any of that
+   geometry — only recolour the surfaces, otherwise the playbar gains stray
+   padding/overflow. */
+.Root {
+  background-color: var(--spice-main);
+}
+
+.Root__top-container {
+  background-color: var(--spice-main) !important;
+}
+
+.Root__nav-bar,
+.Root__right-sidebar {
+  background-color: var(--spice-sidebar) !important;
+}
+
+.Root__main-view {
+  background-color: var(--spice-main) !important;
+}
+
+.Root__now-playing-bar {
+  background-color: var(--spice-player) !important;
+}
+
+.main-nowPlayingBar-nowPlayingBar {
+  background-color: transparent !important;
+}
+
+/* --------------------------------------------------------------------------
+   Top bar
+   -------------------------------------------------------------------------- */
+.main-topBar-background {
+  background-color: var(--spice-main) !important;
+  background-image: none !important;
+}
+
+.main-topBar-overlay,
+.Root__globalNav {
+  background-color: transparent !important;
+}
+
+.main-topBar-container,
+.main-topBar-topbarContent {
+  -webkit-app-region: drag;
+}
+
+.main-topBar-topbarContentWrapper a,
+.main-topBar-topbarContentWrapper button,
+.main-topBar-historyButtons button,
+.main-globalNav-navLink,
+.x-searchInput-searchInputInput {
+  -webkit-app-region: no-drag;
+}
+
+.main-topBar-historyButtons button {
+  border-radius: var(--radius-pill) !important;
+}
+
+.main-topBar-historyButtons button:hover {
+  background-color: var(--spice-selected-row) !important;
+}
+
+/* Pill-shaped search field. */
+.x-searchInput-searchInputInput,
+.main-topBar-searchBar input,
+.main-globalNav-searchBar input {
+  border: var(--hairline) !important;
+  border-radius: var(--radius-pill) !important;
+  background-color: var(--spice-card) !important;
+  transition: border-color var(--transition), background-color var(--transition);
+}
+
+.x-searchInput-searchInputInput:hover,
+.x-searchInput-searchInputInput:focus,
+.main-topBar-searchBar input:focus {
+  border-color: var(--spice-border-active) !important;
+  background-color: var(--spice-selected-row) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Left sidebar / library
+   -------------------------------------------------------------------------- */
+.main-yourLibraryX-entryPoints {
+  border-radius: var(--radius-sm);
+}
+
+.main-yourLibraryX-navItem,
+.main-yourLibraryX-listItem {
+  border-radius: var(--radius-sm);
+}
+
+.main-yourLibraryX-navLink,
+.main-yourLibraryX-listRow {
+  border-radius: var(--radius-sm) !important;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.main-yourLibraryX-navLink:hover,
+.main-yourLibraryX-listRow:hover {
+  background-color: var(--spice-selected-row) !important;
+}
+
+.main-yourLibraryX-navLinkActive,
+.main-yourLibraryX-navLinkActive:hover {
+  background-color: var(--spice-selected-row) !important;
+  color: var(--spice-text) !important;
+}
+
+/* Selected entry points (Liked Songs, etc.) get the accent instead of the
+   stock white-on-black inversion. */
+.main-yourLibraryX-navLinkActive .main-yourLibraryX-icon,
+.main-yourLibraryX-navLinkActive svg {
+  color: var(--spice-button-active) !important;
+  fill: var(--spice-button-active) !important;
+}
+
+.main-collectionLinkButton-collectionLinkButton,
+.main-createPlaylistButton-button {
+  border-radius: var(--radius-sm) !important;
+  transition: background-color var(--transition);
+}
+
+.main-collectionLinkButton-collectionLinkButton:hover,
+.main-createPlaylistButton-button:hover {
+  background-color: var(--spice-selected-row) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Cards & shelves
+   -------------------------------------------------------------------------- */
+.main-card-card {
+  border: var(--hairline) !important;
+  border-radius: var(--radius) !important;
+  background-color: var(--spice-card) !important;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    transform var(--transition);
+}
+
+.main-card-card:hover,
+.main-card-card[data-context-menu-open="true"] {
+  border-color: var(--spice-border-active) !important;
+  background-color: var(--spice-selected-row) !important;
+  transform: translateY(-2px);
+}
+
+.main-card-imageContainer,
+.main-card-imageContainerOld,
+.main-cardImage-imageWrapper,
+.main-cardImage-image,
+.main-cardImage-imageWrapper > div {
+  border-radius: var(--radius-sm) !important;
+}
+
+.main-card-PlayButtonContainer button,
+.main-playButton-PlayButton button {
+  border-radius: var(--radius-pill) !important;
+}
+
+/* The `.main-playButton-PlayButton` element is just an always-present wrapper;
+   Spotify fades the real `<button>` inside it in on hover. Keep the wrapper
+   completely transparent so it can never show as an empty circle. */
+.main-playButton-PlayButton {
+  background-color: transparent !important;
+}
+
+/* --------------------------------------------------------------------------
+   Play buttons & accent controls
+   -------------------------------------------------------------------------- */
+/* Play/pause and card play buttons are `data-encore-id="buttonPrimary"`.
+   Spicetify already recolours them through `.encore-bright-accent-set`, and
+   Spotify fades the button in on hover. Do NOT paint the background directly:
+   an `!important` background makes the (otherwise transparent) button always
+   visible as an empty accent circle and stacks a second background on top of
+   the playbar's own circle. */
+
+/* Playbar play/pause: recolour the existing inner circle through the design
+   token instead, so only one surface is ever painted. */
+.main-nowPlayingBar-nowPlayingBar button[data-encore-id="buttonPrimary"],
+.main-nowPlayingBar-nowPlayingBar .main-playPauseButton-button {
+  --background-base: var(--spice-button);
+  --background-highlight: var(--spice-button-active);
+  --background-press: var(--spice-button-active);
+  --text-base: var(--spice-main);
+  color: var(--spice-main) !important;
+}
+
+.main-addButton-button.main-addButton-active,
+.main-addButton-active {
+  color: var(--spice-button-active) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Progress / volume sliders
+   -------------------------------------------------------------------------- */
+.progress-bar {
+  --bg-color: var(--spice-selected-row);
+  --fg-color: var(--spice-button);
+  --progress-bar-radius: var(--radius-pill);
+}
+
+.x-progressBar-progressBarBg,
+.x-progressBar-sliderArea {
+  border-radius: var(--radius-pill) !important;
+}
+
+.x-progressBar-fillColor {
+  border-radius: var(--radius-pill) !important;
+  background-color: var(--spice-button) !important;
+}
+
+.progress-bar__slider {
+  background-color: var(--spice-text) !important;
+  border: 2px solid var(--spice-main);
+  transform: scale(0);
+  transition: transform var(--transition);
+}
+
+.progress-bar:hover .progress-bar__slider {
+  transform: scale(1);
+}
+
+/* --------------------------------------------------------------------------
+   Now-playing bar
+   -------------------------------------------------------------------------- */
+.main-nowPlayingWidget-coverArt .cover-art,
+.main-coverSlotCollapsed-container,
+.main-nowPlayingWidget-nowPlaying .cover-art {
+  border-radius: var(--radius-sm) !important;
+}
+
+.main-nowPlayingWidget-nowPlaying a,
+.main-nowPlayingWidget-trackInfo a {
+  transition: color var(--transition);
+}
+
+.main-nowPlayingWidget-nowPlaying a:hover,
+.main-nowPlayingWidget-trackInfo a:hover {
+  color: var(--spice-button-active) !important;
+}
+
+.main-nowPlayingBar-extraControls button:hover,
+.main-nowPlayingBar-right button:hover {
+  color: var(--spice-text) !important;
+}
+
+.main-connectBar-connectBar {
+  background-color: transparent !important;
+  color: var(--spice-subtext) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Track lists
+   -------------------------------------------------------------------------- */
+.main-trackList-trackListHeader,
+.main-trackList-trackListHeaderRow {
+  background-color: var(--spice-main) !important;
+}
+
+.main-trackList-trackListRow {
+  border-radius: var(--radius-sm) !important;
+  transition: background-color var(--transition);
+}
+
+.main-trackList-trackListRow:hover {
+  background-color: var(--spice-selected-row) !important;
+}
+
+.main-trackList-trackListRow.main-trackList-selected,
+.main-trackList-trackListRow.main-trackList-selected:hover,
+.main-trackList-selected {
+  background-color: var(--spice-selected-row) !important;
+}
+
+.main-trackList-rowTitle,
+.main-trackList-trackListRow.main-trackList-selected .main-trackList-rowTitle {
+  color: var(--spice-text) !important;
+}
+
+.main-trackList-selected .main-trackList-rowTitle,
+.main-trackList-trackListRow.main-trackList-selected .main-trackList-rowTitle {
+  color: var(--spice-button-active) !important;
+}
+
+/* The little animated "now playing" equaliser. */
+.main-trackList-playingIcon,
+.view-homeShortcutsGrid-playingIcon,
+[src*="equaliser"] {
+  color: var(--spice-button-active) !important;
+  fill: var(--spice-button-active) !important;
+  background-color: var(--spice-button-active) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Menus, modals, tooltips & popovers
+   -------------------------------------------------------------------------- */
+.main-contextMenu-menu,
+.main-userWidget-dropDownMenu,
+.main-popupModal-container .main-popupModal-modal,
+.GenericModal,
+.GenericModal__overlay + .GenericModal,
+[role="menu"] {
+  border: var(--hairline) !important;
+  border-radius: var(--radius) !important;
+  background-color: var(--spice-card) !important;
+}
+
+.main-contextMenu-menuItemButton,
+.main-userWidget-dropDownMenuItemButton,
+.main-contextMenu-subMenuIcon {
+  border-radius: var(--radius-xs) !important;
+  transition: background-color var(--transition);
+}
+
+.main-contextMenu-menuItemButton:hover,
+.main-userWidget-dropDownMenuItemButton:hover {
+  background-color: var(--spice-selected-row) !important;
+}
+
+.main-contextMenu-menuItemButton:focus-visible {
+  outline: 2px solid var(--spice-border-active);
+  outline-offset: -2px;
+}
+
+[data-tippy-root] .tippy-box,
+.main-tooltip-container,
+.main-tooltip-tooltip {
+  border: var(--hairline) !important;
+  border-radius: var(--radius-sm) !important;
+  background-color: var(--spice-card) !important;
+  color: var(--spice-text) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Chips, buttons & inputs
+   -------------------------------------------------------------------------- */
+.ChipInnerComponent {
+  border: var(--hairline) !important;
+  background-color: var(--spice-card) !important;
+  color: var(--spice-text) !important;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.ChipInnerComponent:hover {
+  border-color: var(--spice-border-active) !important;
+  background-color: var(--spice-selected-row) !important;
+}
+
+.ChipInnerComponent-selected,
+.ChipInnerComponent-selected:hover {
+  border-color: var(--spice-button-active) !important;
+  background-color: var(--spice-button) !important;
+  color: var(--spice-main) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Lyrics
+   -------------------------------------------------------------------------- */
+.lyrics-lyricsContainer-LyricsLine {
+  color: var(--spice-subtext) !important;
+}
+
+.lyrics-lyricsContainer-LyricsLine.lyrics-lyricsContainer-LyricsLine-active,
+.lyrics-lyricsContainer-LyricsLineActive {
+  color: var(--spice-text) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Scrollbars
+   -------------------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  background-color: var(--spice-selected-row);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--spice-subtext);
+}

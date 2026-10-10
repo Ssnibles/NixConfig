@@ -25,6 +25,7 @@
         mangohud
         dualsensectl
         via
+        vintagestory
         self.packages.${pkgs.stdenv.hostPlatform.system}.dualsense-pair
       ];
 

@@ -112,6 +112,30 @@
         // {
           providedSessions = [ "mango-local" ];
         };
+
+      # Vesktop opens three portal sessions for a single share and
+      # xdg-desktop-portal-wlr runs the chooser once per session. Cache the
+      # pick for a short window so the user only chooses once per share, while
+      # later shares still get a fresh picker (or a new pick when the offered
+      # source list changes).
+      screencast-chooser = pkgs.writeShellScript "wlr-screencast-chooser" ''
+        cache="''${XDG_RUNTIME_DIR:-/tmp}/wlr-screencast-choice"
+        input=$(${pkgs.coreutils}/bin/cat)
+
+        if [ -f "$cache" ] && [ -n "$(${pkgs.findutils}/bin/find "$cache" -newermt '-30 seconds' 2>/dev/null)" ]; then
+          cached=$(${pkgs.coreutils}/bin/cat "$cache")
+          if printf '%s\n' "$input" | ${pkgs.gnugrep}/bin/grep -qxF -- "$cached"; then
+            printf '%s\n' "$cached"
+            exit 0
+          fi
+        fi
+
+        choice=$(printf '%s\n' "$input" | ${pkgs.unstable.vicinae}/bin/vicinae dmenu -f data -n 'Share screen' -p 'Pick a screen or window')
+        if [ -n "$choice" ]; then
+          printf '%s\n' "$choice" > "$cache"
+          printf '%s\n' "$choice"
+        fi
+      '';
     in
     {
       imports = [
@@ -136,6 +160,31 @@
 
       config = lib.mkIf cfg.enable {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
+
+        # The upstream mango NixOS module enables xdg-desktop-portal-wlr but
+        # leaves its settings empty. NixOS always launches the portal with
+        # `--config=<generated.ini>`, so a hand-written
+        # ~/.config/xdg-desktop-portal-wlr/config is ignored and the portal
+        # falls back to its default chooser chain (slurp/wofi/rofi/bemenu/...),
+        # which all fail on this host. That makes ScreenCast calls fail with
+        # "no output found", so Electron's desktopCapturer.getSources()
+        # errors out and Vesktop never shows its screen-share picker.
+        #
+        # Use a dmenu-style chooser: the portal pipes one line per selectable
+        # source ("Monitor: <name> <desc>" and "Window: <title> (<id>)") to
+        # the command's stdin and reads the chosen line back from stdout.
+        # Vicinae's `dmenu` mode renders that list as a fuzzy-searchable native
+        # picker covering monitors *and* windows -- nicer than slurp's
+        # monitor-only region drag. `-f data` makes it echo the chosen line
+        # verbatim instead of an index.
+        # For a single-monitor setup with zero interaction, swap this for:
+        #   chooser_type = "none";  # optionally + output_name = "DP-1";
+        xdg.portal.wlr.settings.screencast = {
+          chooser_type = "dmenu";
+          # Vesktop opens three portal sessions per share and the portal runs
+          # the chooser for each, so the wrapper caches the pick for 30s.
+          chooser_cmd = "${screencast-chooser}";
+        };
 
         programs.mango.enable = true;
 
@@ -170,13 +219,6 @@
               text = ''
                 focus_color = 0x${accent}ff
                 border_color = 0x${border}ff
-              '';
-            };
-            ".config/xdg-desktop-portal-wlr/config" = {
-              text = ''
-                [screencast]
-                chooser_type = simple
-                chooser_cmd = ${pkgs.slurp}/bin/slurp -f %o -or
               '';
             };
           };
