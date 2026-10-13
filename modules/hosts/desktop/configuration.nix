@@ -49,7 +49,7 @@
       services.irqbalance.enable = true;
 
       environment.systemPackages = with pkgs.unstable; [
-        amberol
+
       ];
 
       # Open desktop local discovery & streaming ports
