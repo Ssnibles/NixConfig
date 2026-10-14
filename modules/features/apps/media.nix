@@ -28,10 +28,6 @@
         environment.systemPackages = with pkgs.unstable; [
           zathura
           imv
-          musicpod
-          nicotine-plus
-          calibre
-          sigil
           (mpv.override {
             scripts = [
               mpvScripts.autoload

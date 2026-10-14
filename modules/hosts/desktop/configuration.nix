@@ -49,7 +49,10 @@
       services.irqbalance.enable = true;
 
       environment.systemPackages = with pkgs.unstable; [
-
+        musicpod
+        nicotine-plus
+        calibre
+        sigil
       ];
 
       # Open desktop local discovery & streaming ports
