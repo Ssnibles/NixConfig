@@ -55,6 +55,18 @@
                 };
               };
             })
+            # nixpkgs forces sesh to build with Go 1.27, but its preBuild
+            # mock-generation step (and mockery's own checkPhase) uses
+            # mockery 3.8.0, whose vendored golang.org/x/tools v0.49.0 only
+            # understands unified IR export data up to v4 while Go 1.27 emits
+            # v5. sesh's go.mod only requires Go 1.26, so build it (and the
+            # mockery it uses) with the default Go 1.26, whose v2 export data
+            # x/tools can read. Drop this once nixpkgs fixes the Go pairing.
+            (_: prev: {
+              sesh = prev.sesh.override {
+                buildGo127Module = prev.buildGo126Module;
+              };
+            })
           ];
         };
 
