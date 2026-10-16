@@ -63,7 +63,7 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 | **ESP32 & Arduino** | `modules/features/apps/development.nix` | `templates/esp32-arduino/` | [esp32-arduino.md](esp32-arduino.md) |
 | **WRAMP Toolchain** | `modules/features/apps/wramp.nix` | `assets/setup_wramp.sh` | [wramp.md](wramp.md) |
 | **Media & Audio** | `modules/features/apps/media.nix`, `system/pipewire.nix` | `mpv.conf`, `zathurarc` | [media-audio.md](media-audio.md) |
-| **Firefox & Helium** | `modules/features/apps/firefox/`, `apps/helium.nix` | `userChrome.css`, `userContent.css` | [firefox.md](firefox.md) |
+| **Firefox & Helium** | `modules/features/apps/firefox/`, `apps/helium/` | `userChrome.css`, `userContent.css` | [firefox.md](firefox.md) |
 | **Gaming & PS5** | `modules/features/apps/gaming.nix` | `modules/packages/dualsense-pair/` | [gaming.md](gaming.md) |
 | **Frame Remote Desktop** | `modules/features/apps/frame.nix` | `assets/setup_frame.sh` | [frame.md](frame.md) |
 | **Flatpak & Sandboxed Apps** | `modules/features/system/flatpak.nix` | `nix-flatpak`, Flathub remote | [flatpak.md](flatpak.md) |

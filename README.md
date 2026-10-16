@@ -249,7 +249,7 @@ For hardware acceleration parameters, Modernz theming, SyncTeX setup, and audio 
 For stylesheet architecture, Sidebery selectors, and browser policies, refer to the **[Firefox & Sidebery Customisation Guide](docs/wiki/firefox.md)**:
 
 - **Firefox Developer Edition**: Browser configuration with FastFox optimisations, custom `userChrome.css` and `userContent.css`, Sidebery vertical tab bar integration, and an embedded offline startpage WebExtension.
-- **Helium Browser**: Chromium-based Helium browser alternative ([`helium.nix`](file:///home/josh/NixConfig/modules/features/apps/helium.nix)) with declarative enterprise policies and Wayland ozone acceleration.
+- **Helium Browser**: Chromium-based Helium browser alternative ([`helium/default.nix`](file:///home/josh/NixConfig/modules/features/apps/helium/default.nix)) mirroring the Firefox theming and behaviour via enterprise policies, force-installed Web Store extensions, a themed startpage, and Wayland ozone acceleration.
 - **Centralised Default Applications**: Single source of truth ([`default-apps.nix`](file:///home/josh/NixConfig/modules/features/desktop-env/default-apps.nix)) managing systemwide MIME associations and default application preferences.
 
 ### Gaming Suite
@@ -382,7 +382,7 @@ NixConfig/
     │   │   ├── firefox/               # Firefox Developer Edition, CSS, Sidebery
     │   │   ├── frame.nix              # Frame remote desktop client launcher
     │   │   ├── gaming.nix             # Steam, Millennium, Gamescope, MangoHud
-    │   │   ├── helium.nix             # Helium browser & enterprise policies
+    │   │   ├── helium/                # Helium browser, policies, themed startpage
     │   │   ├── hermes.nix             # Hermes AI agent with homeserver Ollama link
     │   │   ├── kitty.nix              # Kitty terminal single-instance server mode
     │   │   ├── media.nix              # MPV Vulkan pipeline, Zathura PDF reader, imv

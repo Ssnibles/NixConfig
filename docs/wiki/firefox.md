@@ -52,8 +52,18 @@ Sidebery runs inside an extension frame (`moz-extension://`). Scope rules inside
 
 ## Helium Browser Alternative
 
-In addition to Firefox Developer Edition, NixConfig packages the Chromium-based **Helium Browser** via `modules/features/apps/helium.nix`:
+In addition to Firefox Developer Edition, NixConfig packages the Chromium-based **Helium Browser** via `modules/features/apps/helium/default.nix`. It deliberately mirrors the Firefox module's behaviour and theming wherever Chromium allows:
+
 - Packaged from `inputs.helium`.
 - Declarative Chrome Enterprise policies written to `/etc/chromium/policies/managed/helium-nixos.json`.
-- Configured with Wayland ozone flags (`--ozone-platform-hint=auto`).
+- Wayland ozone acceleration injected by the upstream wrapper (`NIXOS_OZONE_WL`), plus GPU/VA-API feature flags and overlay scrollbars.
+- **Search**: default engine forced to SearXNG (`search.ssnibles.xyz`), search suggestions disabled.
+- **Privacy/security**: telemetry, studies, Safe Browsing remote checks, Privacy Sandbox, third-party cookies and background networking disabled; HTTPS-only forced; password manager/autofill off (Bitwarden).
+- **Startup**: restore last session, no default-browser prompt, permissions default-deny.
+- **Extensions**: `uBlock Origin`, `Bitwarden`, `Dark Reader` and `SponsorBlock` force-installed from the Chrome Web Store via the `ExtensionSettings` policy.
+- **Theming**: a Chromium theme extension is generated from the active palette and loaded with `--load-extension`, so chrome colours (`frame`, `toolbar`, `omnibox`, tab text) are applied literally and bypass Material You. `OverlayScrollbar` gives thin overlay scrollbars.
+- **Custom startpage**: a themed local startpage (shared with Firefox's palette via `--fx-*` variables) is materialised at `~/.config/helium/startpage` and used for the new-tab page (via the ungoogled `--custom-ntp` switch) and home button. The hand-written page files live in `modules/features/apps/helium/startpage/` and are symlinked into place for live editing; `colours.css` is generated from `config.theme.colours` by Hjem.
 - Integrated into `modules/features/desktop-env/default-apps.nix` as a selectable default browser.
+
+> [!NOTE]
+> Chromium has no `userChrome.css`/`userContent.css` equivalent, so arbitrary CSS on the browser *chrome* is impossible. The palette is applied through a generated theme extension loaded with `--load-extension` (theme-extension colours are applied literally, unlike the `BrowserThemeColor` policy which runs the seed through Material You) and through the custom startpage. Helium reads local (including `file://`) new-tab URLs only through the ungoogled `--custom-ntp` switch — the `NewTabPageLocation` policy silently ignores them.
