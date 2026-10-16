@@ -1,5 +1,26 @@
 vim.loader.enable()
 
+-- ── Globals ──────────────────────────────────────────────────────────
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
+
+-- Neovide (GUI) tuning
+vim.g.neovide_font_family = "JetBrainsMono Nerd Font"
+vim.g.neovide_font_size = 12
+vim.g.neovide_padding_top = 20
+vim.g.neovide_padding_bottom = 20
+vim.g.neovide_padding_left = 20
+vim.g.neovide_padding_right = 20
+vim.g.neovide_refresh_rate = 60
+vim.g.neovide_idle = true
+vim.g.neovide_vsync = true
+vim.g.neovide_cursor_vfx_mode = ""
+vim.g.neovide_cursor_animation_length = 0.0
+vim.g.neovide_scroll_animation_length = 0.08
+vim.g.neovide_floating_blur = false
+vim.g.neovide_confirm_quit = true
+vim.g.neovide_remember_window_size = true
+
 -- Dev plugins (loaded from local checkouts when present)
 for _, path in ipairs({
 	"/home/josh/sshinator.nvim",
@@ -16,9 +37,75 @@ end
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
--- Editor options
+-- ── Editor options ──────────────────────────────────────────────────
+
+-- Indentation
+vim.opt.shiftwidth = 2
+vim.opt.tabstop = 2
+vim.opt.expandtab = true
+vim.opt.smartindent = true
+vim.opt.autoindent = true
+vim.opt.shiftround = true
+
+-- Appearance
+vim.opt.termguicolors = true
+vim.opt.cursorline = true
+vim.opt.showmode = false
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.signcolumn = "yes"
+vim.opt.conceallevel = 2
+vim.opt.list = false
+vim.opt.pumheight = 12
+
+-- Wrapping
+vim.opt.wrap = false
+vim.opt.linebreak = true
+vim.opt.breakindent = true
+
+-- Splits & windows
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+vim.opt.splitkeep = "cursor"
+vim.opt.laststatus = 3
+vim.opt.cmdheight = 0
+vim.opt.showcmdloc = "statusline"
+
+-- Folding
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldlevelstart = 99
+vim.opt.foldcolumn = "0"
+
+-- Search
+vim.opt.incsearch = true
+vim.opt.inccommand = "split"
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+
+-- Editing behaviour
+vim.opt.autoread = true
+vim.opt.confirm = true
+vim.opt.swapfile = false
+vim.opt.undofile = true
+vim.opt.virtualedit = "block"
+vim.opt.mouse = "a"
+vim.opt.mousemodel = "extend"
+vim.opt.clipboard = "unnamedplus"
+
+-- Command-line & messages
+vim.opt.wildmode = "longest:full,full"
+vim.opt.wildoptions = "fuzzy"
+vim.opt.wildignorecase = true
+vim.opt.grepformat = "%f:%l:%c:%m"
+vim.opt.shortmess = "sIcWFoOuCF"
+
+-- Timing
 vim.opt.updatetime = 250
 vim.opt.timeoutlen = 500
+vim.opt.ttimeoutlen = 10
+
+-- Misc
 vim.opt.jumpoptions = "view"
 vim.opt.diffopt:append("vertical")
 vim.opt.diffopt:append("linematch:60")
@@ -27,12 +114,10 @@ vim.opt.whichwrap:append("<,>,[,],h,l")
 vim.opt.sessionoptions:append("globals")
 vim.opt.scrolloff = 999
 vim.opt.sidescrolloff = 8
-vim.opt.list = false
 vim.opt.joinspaces = false
 vim.opt.fillchars = { eob = " ", foldopen = "▾", foldclose = "▸", foldsep = "│", diff = "╱", lastline = "…" }
 vim.opt.grepprg = "rg --vimgrep --smart-case --hidden"
 vim.opt.smoothscroll = true
-vim.opt.shortmess:append("CF")
 
 -- Message/cmdline presentation (Neovim 0.12+ "ui2"). This is what makes
 -- 'cmdheight=0' usable: messages are drawn in a transient floating "msg"
