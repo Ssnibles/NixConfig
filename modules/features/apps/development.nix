@@ -72,33 +72,46 @@
           files = {
             ".config/yazi/yazi.toml" = {
               text = ''
+                # yazi 25+ uses `%s` (and `%s1`, `%S`, ...) as the path
+                # placeholder. The old `$@` form is no longer substituted,
+                # which made Neovim open the *cwd* instead of the file.
                 [opener]
                 edit = [
-                  { run = "''${EDITOR:-nvim} \"$@\"", block = true, desc = "Editor" }
+                  { run = "''${EDITOR:-nvim} %s", block = true, desc = "Edit in $EDITOR" }
                 ]
                 imv = [
-                  { run = "imv-dir \"$@\"", orphan = true, desc = "Open with imv-dir" }
+                  { run = "imv-dir %s", orphan = true, desc = "Open images with imv-dir" }
                 ]
 
                 [open]
                 prepend_rules = [
                   { mime = "image/*", use = "imv" },
-                  { mime = "text/*", use = "edit" }
+                  { mime = "text/*", use = "edit" },
+                  { mime = "application/{json,ndjson,javascript,yaml,toml,xml,x-shellscript}", use = "edit" },
+                  { mime = "inode/empty", use = "edit" }
                 ]
 
-                [manager]
+                # NOTE: the section is `[mgr]`, not `[manager]`, in yazi 25+.
+                # Everything under the old name was silently ignored.
+                [mgr]
+                linemode = "size"
                 show_hidden = true
+                show_symlink = true
                 sort_by = "natural"
                 sort_sensitive = false
                 sort_reverse = false
                 sort_dir_first = true
-                linemode = "size"
+                sort_translit = false
+                scrolloff = 5
+                mouse_events = [ "click", "scroll", "drag" ]
 
                 [preview]
+                wrap = "no"
                 tab_size = 2
                 max_width = 1200
                 max_height = 1500
                 image_filter = "lanczos3"
+                image_quality = 90
               '';
             };
 
@@ -106,9 +119,9 @@
               text = ''
                 [mgr]
                 prepend_keymap = [
-                  { on = [ "." ], run = "hidden toggle", desc = "Toggle hidden files" },
-                  { on = [ "T" ], run = "plugin toggle-pane --args=max-preview", desc = "Maximise or restore preview" },
-                  { on = [ "e" ], run = "shell 'nvim .' --block", desc = "Open directory in Neovim" },
+                  { on = ".", run = "hidden toggle", desc = "Toggle hidden files" },
+                  { on = "e", run = "open --hover", desc = "Open hovered file (Neovim for text/code)" },
+                  { on = "E", run = "shell 'nvim .' --block", desc = "Open current directory in Neovim" },
                 ]
               '';
             };
