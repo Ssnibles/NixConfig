@@ -7,22 +7,14 @@
 
 local M = {}
 
--- ── Rust (rustaceanvim) ──────────────────────────────────────────────
+local util = require("util")
 
-local function first_executable(commands)
-	for _, cmd in ipairs(commands) do
-		if vim.fn.executable(cmd) == 1 then
-			return vim.fn.exepath(cmd)
-		end
-	end
-	return nil
-end
+-- ── Rust (rustaceanvim) ──────────────────────────────────────────────
 
 vim.g.rustaceanvim = {
 	server = {
 		capabilities = function()
-			local ok, blink = pcall(require, "blink.cmp")
-			return ok and blink.get_lsp_capabilities() or vim.lsp.protocol.make_client_capabilities()
+			return vim.deepcopy(require("lsp.capabilities"))
 		end,
 		settings = function(project_root, default_settings)
 			local has_cargo = project_root and vim.uv.fs_stat(vim.fs.joinpath(project_root, "Cargo.toml")) ~= nil
@@ -47,7 +39,7 @@ vim.g.rustaceanvim = {
 	},
 	dap = {
 		adapter = function()
-			local codelldb = first_executable({ "codelldb", "lldb-dap", "lldb-vscode" })
+			local codelldb = util.find_debug_adapter()
 			if not codelldb then
 				return false
 			end

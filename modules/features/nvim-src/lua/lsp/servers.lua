@@ -5,8 +5,6 @@
 -- Values are configuration tables passed to register_server() in lsp/init.lua.
 -- =============================================================================
 
-local lsp = vim.lsp
-
 -- ── Nix helpers ──────────────────────────────────────────────────────
 
 local NIX_FALLBACK_DIR = (vim.env.HOME or "~") .. "/NixConfig"
@@ -105,10 +103,7 @@ end
 
 -- ── Blink.cmp capabilities (for servers needing extra) ───────────────
 
-local capabilities = (function()
-	local ok, blink = pcall(require, "blink.cmp")
-	return ok and blink.get_lsp_capabilities() or lsp.protocol.make_client_capabilities()
-end)()
+local capabilities = require("lsp.capabilities")
 
 -- ── Server table ─────────────────────────────────────────────────────
 
@@ -462,7 +457,7 @@ return {
 			"flake.nix",
 			".git",
 		},
-		capabilities = vim.tbl_deep_extend("force", capabilities, { offsetEncoding = { "utf-16" } }),
+		capabilities = vim.tbl_deep_extend("force", vim.deepcopy(capabilities), { offsetEncoding = { "utf-16" } }),
 		-- `on_new_config` is an lspconfig-legacy field that native
 		-- `vim.lsp.config` ignores; inject the Nix include flags via `before_init`
 		-- (which receives the initialise params just before they are sent).

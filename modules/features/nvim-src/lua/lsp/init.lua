@@ -13,24 +13,6 @@ local CONFIG = {
 	max_height_ratio = 0.4,
 }
 
--- ── Shared helpers ───────────────────────────────────────────────────
-
---- Check if an executable exists on PATH; return its full path or nil
-local function executable(cmd)
-	return vim.fn.executable(cmd) == 1 and vim.fn.exepath(cmd) or nil
-end
-
---- Return the first executable found from a list of candidates
-local function first_executable(commands)
-	for _, cmd in ipairs(commands) do
-		local path = executable(cmd)
-		if path then
-			return path
-		end
-	end
-	return nil
-end
-
 -- ── Diagnostics ──────────────────────────────────────────────────────
 
 vim.diagnostic.config({
@@ -51,12 +33,7 @@ vim.diagnostic.config({
 
 -- ── Capabilities ─────────────────────────────────────────────────────
 
-local capabilities = (function()
-	local ok, blink = pcall(require, "blink.cmp")
-	return ok and blink.get_lsp_capabilities() or lsp.protocol.make_client_capabilities()
-end)()
-capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
-capabilities.textDocument.semanticTokens = { requests = { range = true, full = { delta = true } } }
+local capabilities = require("lsp.capabilities")
 
 -- goto-preview (peek definitions/references in a floating window)
 local ok_gp, goto_preview = pcall(require, "goto-preview")
@@ -225,10 +202,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 -- ── Global LSP defaults ─────────────────────────────────────────────
 
-lsp.config("*", {
-	capabilities = capabilities,
-	flags = { debounce_text_changes = 150 },
-})
+lsp.config("*", { capabilities = capabilities })
 
 -- ── Server registration ──────────────────────────────────────────────
 
@@ -428,10 +402,3 @@ if goto_preview then
 		references = { provider = "fzf_lua" },
 	})
 end
-
-return {
-	executable = executable,
-	first_executable = first_executable,
-	register_server = register_server,
-	attach_keymaps = attach_lsp_keymaps,
-}
