@@ -2,6 +2,7 @@ vim.g.disable_autoformat = vim.g.disable_autoformat or false
 vim.g.disable_autoformat_ft = vim.g.disable_autoformat_ft or {}
 
 local conform = require("conform")
+local util = require("util")
 
 conform.setup({
 	formatters_by_ft = {
@@ -59,7 +60,7 @@ end, { desc = "Format buffer" })
 
 vim.keymap.set("n", "<leader>tF", function()
 	vim.g.disable_autoformat = not vim.g.disable_autoformat
-	vim.notify("Autoformat " .. (vim.g.disable_autoformat and "disabled" or "enabled"))
+	util.notify_toggle("Autoformat", not vim.g.disable_autoformat)
 end, { desc = "Toggle autoformat (global)" })
 
 vim.keymap.set("n", "<leader>tA", function()
@@ -70,5 +71,5 @@ vim.keymap.set("n", "<leader>tA", function()
 	local disabled = vim.g.disable_autoformat_ft or {}
 	disabled[ft] = not disabled[ft]
 	vim.g.disable_autoformat_ft = disabled
-	vim.notify(("Autoformat for %s %s"):format(ft, disabled[ft] and "disabled" or "enabled"))
+	util.notify_toggle("Autoformat for " .. ft, not disabled[ft])
 end, { desc = "Toggle autoformat for filetype" })

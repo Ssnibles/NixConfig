@@ -1,4 +1,5 @@
 local map = vim.keymap.set
+local util = require("util")
 
 -- ── General ──────────────────────────────────────────────────────────
 map("n", "U", "<C-r>", { desc = "Redo" })
@@ -153,7 +154,7 @@ map("n", "<leader>tn", function()
 	local enabled = not (vim.g.relativenumber_enabled ~= false)
 	vim.g.relativenumber_enabled = enabled
 	vim.opt.relativenumber = enabled
-	vim.notify("Relative numbers " .. (enabled and "enabled" or "disabled"))
+	util.notify_toggle("Relative numbers", enabled)
 end, { desc = "Toggle relative numbers" })
 map("n", "<leader>td", function()
 	local new_state = not vim.diagnostic.is_enabled()
@@ -179,7 +180,7 @@ map("n", "<leader>ti", function()
 end, { desc = "Toggle inlay hints" })
 map("n", "<leader>tc", function()
 	vim.g.minicursorword_disable = not vim.g.minicursorword_disable
-	vim.notify("Cursor word highlighting " .. (vim.g.minicursorword_disable and "disabled" or "enabled"))
+	util.notify_toggle("Cursor word highlighting", not vim.g.minicursorword_disable)
 end, { desc = "Toggle cursor word" })
 
 -- ── LSP (non-attach) ────────────────────────────────────────────────

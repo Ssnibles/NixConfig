@@ -33,19 +33,7 @@ end
 
 -- ── Helpers ──────────────────────────────────────────────────────────
 
-local function executable(cmd)
-	return vim.fn.executable(cmd) == 1 and vim.fn.exepath(cmd) or nil
-end
-
-local function first_executable(commands)
-	for _, cmd in ipairs(commands) do
-		local path = executable(cmd)
-		if path then
-			return path
-		end
-	end
-	return nil
-end
+local util = require("util")
 
 local function prompt_args(prompt)
 	local line = vim.trim(vim.fn.input(prompt))
@@ -56,7 +44,7 @@ local dap_utils = require("dap.utils")
 
 -- ── Python ───────────────────────────────────────────────────────────
 
-local debugpy = executable("debugpy-adapter")
+local debugpy = util.executable("debugpy-adapter")
 if debugpy then
 	require("dap-python").setup(debugpy)
 	dap.configurations.python = {
@@ -93,7 +81,7 @@ end
 
 -- ── .NET ─────────────────────────────────────────────────────────────
 
-local netcoredbg = executable("netcoredbg")
+local netcoredbg = util.executable("netcoredbg")
 if netcoredbg then
 	dap.adapters.coreclr = { type = "executable", command = netcoredbg, args = { "--interpreter=vscode" } }
 	dap.configurations.cs = {
@@ -113,7 +101,7 @@ end
 
 -- ── Go ───────────────────────────────────────────────────────────────
 
-local delve = executable("dlv")
+local delve = util.executable("dlv")
 if delve then
 	dap.adapters.go = {
 		type = "server",
@@ -134,7 +122,7 @@ end
 
 -- ── C / C++ (LLDB) ──────────────────────────────────────────────────
 
-local lldb = first_executable({ "codelldb", "lldb-dap", "lldb-vscode" })
+local lldb = util.find_debug_adapter()
 if lldb then
 	if lldb:match("codelldb$") then
 		dap.adapters.lldb =
@@ -175,7 +163,7 @@ end
 
 -- ── JavaScript / TypeScript ──────────────────────────────────────────
 
-local js_debug = first_executable({ "js-debug", "js-debug-adapter" })
+local js_debug = util.first_executable({ "js-debug", "js-debug-adapter" })
 if js_debug then
 	dap.adapters["pwa-node"] = {
 		type = "server",

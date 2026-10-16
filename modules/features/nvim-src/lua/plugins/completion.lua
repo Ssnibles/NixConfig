@@ -12,6 +12,7 @@ require("luasnip.loaders.from_lua").lazy_load({
 
 local cmp = require("blink.cmp")
 local ls = require("luasnip")
+local util = require("util")
 
 -- Global LuaSnip jump as fallback in insert & snippet selection modes
 vim.keymap.set("s", "<C-]>", function()
@@ -222,7 +223,7 @@ if copilot_ok then
 
 	vim.keymap.set("n", "<leader>ac", function()
 		copilot.suggestion.toggle()
-		vim.notify("Copilot " .. (copilot.suggestion.is_enabled() and "enabled" or "disabled"))
+		util.notify_toggle("Copilot", copilot.suggestion.is_enabled())
 	end, { desc = "Toggle copilot" })
 
 	vim.keymap.set("n", "<leader>ap", function()
