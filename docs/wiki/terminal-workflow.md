@@ -109,27 +109,45 @@ Yazi is configured in `modules/features/apps/development.nix` and set as the def
 
 ### Custom Opener Rules
 
+> **yazi 25+ gotchas:** path placeholders are `%s` / `%s1` / `%S` etc. — the
+> old `$@` form is no longer substituted and expands to nothing (so `nvim "$@"`
+> opened the *cwd* instead of the file). The listing section is `[mgr]`, **not**
+> `[manager]`; everything under the old name is silently ignored.
+
 ```toml
 [opener]
 edit = [
-  { run = '${EDITOR:-nvim} "$@"', block = true, desc = "Editor" }
+  { run = '${EDITOR:-nvim} %s', block = true, desc = "Edit in $EDITOR" }
 ]
 imv = [
-  { run = "imv-dir \"$@\"", orphan = true, desc = "Open with imv-dir" }
+  { run = "imv-dir %s", orphan = true, desc = "Open images with imv-dir" }
 ]
 
 [open]
 prepend_rules = [
   { mime = "image/*", use = "imv" },
-  { mime = "text/*", use = "edit" }
+  { mime = "text/*", use = "edit" },
+  { mime = "application/{json,ndjson,javascript,yaml,toml,xml,x-shellscript}", use = "edit" },
+  { mime = "inode/empty", use = "edit" }
 ]
+
+[mgr]
+linemode          = "size"
+show_hidden       = true
+show_symlink      = true
+sort_by           = "natural"
+sort_sensitive    = false
+sort_dir_first    = true
+sort_translit     = false
+scrolloff         = 5
 ```
 
 ### Keybindings & Behaviour
 
+- **Enter / `o`**: Open the selected file with its configured opener (Neovim for text/code, imv for images).
 - **`.`**: Toggle hidden files and directories.
-- **`T`**: Maximise or restore the preview pane (`plugin toggle-pane --args=max-preview`).
-- **`e`**: Open the current directory inside Neovim (`shell 'nvim .' --block`).
+- **`e`**: Open the hovered file (`open --hover`).
+- **`E`**: Open the current directory as a project in Neovim (`shell 'nvim .' --block`).
 - **`y`**: Fish shell abbreviation expanding to `yazi`.
 - **SUPER + e**: Compositor keybinding launching `kitty --single-instance -e yazi`.
 
