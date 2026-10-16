@@ -53,6 +53,10 @@
           owner = "${link.user}:${config.users.users.${link.user}.group}";
         in
         ''
+          # A previous setup may have left a symlink to a directory here (e.g.
+          # an older activation script). Remove it first so the per-entry links
+          # below are not written through it into the source tree.
+          if [ -L ${q target} ]; then rm -f ${q target}; fi
           mkdir -p ${q target}
           chown ${q owner} ${q target} || true
           for entry in ${q link.source}/*; do
