@@ -1,12 +1,9 @@
-# =============================================================================
 # Desktop Environment Fonts Feature
-# =============================================================================
 # Provides system UI typography (Inter, Noto), serif, and monospace Nerd Fonts.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, ... }:
+    { pkgs, config, ... }:
     {
       fonts.packages = with pkgs; [
         inter
@@ -19,12 +16,12 @@
       # Match the fonts chosen via `theme.fonts`: monospace is the same family
       # Kitty uses, so GTK/Qt/XWayland agree with the terminal and Quickshell.
       fonts.fontconfig.defaultFonts = {
-        monospace = [ "Maple Mono NR NF" ];
+        monospace = [ config.theme.fonts.monospace ];
         sansSerif = [
-          "SF Pro Text"
+          config.theme.fonts.sans
           "Inter"
         ];
-        serif = [ "Instrument Serif" ];
+        serif = [ config.theme.fonts.serif ];
         emoji = [ "Noto Color Emoji" ];
       };
     };

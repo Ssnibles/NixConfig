@@ -1,8 +1,5 @@
-# =============================================================================
 # Desktop Environment Cursors Feature
-# =============================================================================
 # Configures Bibata Modern Ice cursor theme for GTK applications, Xcursor, and Hyprcursor.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =

@@ -23,7 +23,7 @@ Item {
     Behavior on color { ColorAnimation { duration: 100 } }
   }
 
-  // --- Centralised MPRIS State from MediaService ---
+  // Centralised MPRIS State from MediaService
   readonly property var mediaPlayer: MediaService.player
   readonly property string mediaText: MediaService.mediaText
   readonly property bool hasMedia: MediaService.hasMedia
@@ -32,7 +32,7 @@ Item {
     MediaService.focusSource()
   }
 
-  // --- UI Layout (Vertical for Sidebar) ---
+  // UI Layout (Vertical for Sidebar)
   Column {
     id: mediaLayout
     visible: !root.horizontal
@@ -98,7 +98,7 @@ Item {
     }
   }
 
-  // --- UI Layout (Horizontal for Topbar) ---
+  // UI Layout (Horizontal for Topbar)
   Row {
     id: horizontalMediaRow
     visible: root.horizontal

@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
-# =============================================================================
 # Maple Mono Custom Font Builder
-# =============================================================================
 # Builds Maple Mono fonts using options from config.json.
 # Requirements: git, uv, nix
-# =============================================================================
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

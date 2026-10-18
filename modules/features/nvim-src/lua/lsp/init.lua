@@ -1,9 +1,6 @@
--- =============================================================================
 -- LSP CONFIGURATION
--- =============================================================================
 -- Capabilities, attach keymaps, server registration, and user commands.
 -- Server definitions live in lsp/servers.lua for clean separation.
--- =============================================================================
 
 local lsp = vim.lsp
 
@@ -13,7 +10,7 @@ local CONFIG = {
 	max_height_ratio = 0.4,
 }
 
--- ── Diagnostics ──────────────────────────────────────────────────────
+-- Diagnostics
 
 vim.diagnostic.config({
 	virtual_text = false,
@@ -31,7 +28,7 @@ vim.diagnostic.config({
 	update_in_insert = false,
 })
 
--- ── Capabilities ─────────────────────────────────────────────────────
+-- Capabilities
 
 local capabilities = require("lsp.capabilities")
 
@@ -41,7 +38,7 @@ if not ok_gp then
 	goto_preview = nil
 end
 
--- ── LSP Keymaps (attached per buffer) ────────────────────────────────
+-- LSP Keymaps (attached per buffer)
 
 local function show_hover_doc()
 	lsp.buf.hover({
@@ -177,7 +174,7 @@ local function attach_lsp_keymaps(bufnr)
 	end, "LSP Memory/Status")
 end
 
--- ── LSP Attach Autocommand ───────────────────────────────────────────
+-- LSP Attach Autocommand
 
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("UserLspAttach", { clear = true }),
@@ -200,11 +197,11 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	end,
 })
 
--- ── Global LSP defaults ─────────────────────────────────────────────
+-- Global LSP defaults
 
 lsp.config("*", { capabilities = capabilities })
 
--- ── Server registration ──────────────────────────────────────────────
+-- Server registration
 
 local managed_servers = {}
 
@@ -252,7 +249,7 @@ for name, config in pairs(servers) do
 	register_server(name, config)
 end
 
--- ── SmartRename command ──────────────────────────────────────────────
+-- SmartRename command
 
 local function supports_lsp_rename(bufnr)
 	for _, client in ipairs(lsp.get_clients({ bufnr = bufnr })) do
@@ -334,7 +331,7 @@ vim.api.nvim_create_user_command("SmartRename", function()
 	end
 end, { desc = "Context-aware rename and replace" })
 
--- ── LspHealth command ────────────────────────────────────────────────
+-- LspHealth command
 
 vim.api.nvim_create_user_command("LspHealth", function()
 	local lines = { "LSP Health" }
@@ -356,7 +353,7 @@ vim.api.nvim_create_user_command("LspHealth", function()
 	vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "LSP Health" })
 end, { desc = "Show LSP health details" })
 
--- ── Third-party plugin setups ────────────────────────────────────────
+-- Third-party plugin setups
 
 -- Typst preview
 local ok_tp, tp = pcall(require, "typst-preview")

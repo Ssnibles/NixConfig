@@ -1,6 +1,4 @@
--- =============================================================================
 -- markview.nvim: in-buffer Markdown rendering
--- =============================================================================
 -- Loaded after the colorscheme (init.lua requires `theme` before `plugins.*`).
 local ok, markview = pcall(require, "markview")
 if not ok then

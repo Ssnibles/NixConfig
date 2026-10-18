@@ -108,9 +108,9 @@ local function raw_show_rule(trig, desc)
 			"            inset: (x: 12pt, y: 6pt),",
 			"            stroke: (bottom: 0.5pt + ui-border),",
 			"            [",
-			'              #text(font: ("JetBrainsMono NF", "DejaVu Sans Mono"), size: 10pt, fill: if theme == "dark" { rgb("#a0a0a0") } else { rgb("#666666") })[#meta.icon]',
+			'              #text(font: ("Maple Mono NR NF", "DejaVu Sans Mono"), size: 10pt, fill: if theme-mode == "dark" { rgb("#a0a0a0") } else { rgb("#666666") })[#meta.icon]',
 			"              #h(0.6em)",
-			'              #text(size: 8.5pt, weight: "bold", fill: if theme == "dark" { rgb("#c0c0c0") } else { rgb("#444444") })[#display]',
+			'              #text(size: 8.5pt, weight: "bold", fill: if theme-mode == "dark" { rgb("#c0c0c0") } else { rgb("#444444") })[#display]',
 			"            ]",
 			"          ),",
 			"        )",
@@ -131,9 +131,7 @@ local function raw_show_rule(trig, desc)
 end
 
 ls.add_snippets("typst", {
-	---------------------------------------------------------------------------
 	-- BOILERPLATES & TEMPLATES
-	---------------------------------------------------------------------------
 	s({ trig = "page", desc = "Note header: import the shared theme and start a note" }, {
 		t({ '#import "/templates/theme.typ": *', "" }),
 		t({ '#show: theme.with(course: "' }),
@@ -158,7 +156,6 @@ ls.add_snippets("typst", {
 	}),
 
 	-- NOTE BLOCKS & CALLOUTS (With icons, names, and background fills)
-	---------------------------------------------------------------------------
 	make_callout(
 		"note",
 		"Note",
@@ -266,9 +263,7 @@ ls.add_snippets("typst", {
 		t({ "", "]" }),
 	}),
 
-	---------------------------------------------------------------------------
 	-- CODE BLOCKS (With background and language headers)
-	---------------------------------------------------------------------------
 	-- Code block show rule to drop into any file
 	raw_show_rule("code-show-rule", "Insert #show raw rule for code block background & language header"),
 	raw_show_rule("raw-show-rule", "Insert #show raw rule (alias)"),
@@ -382,9 +377,7 @@ ls.add_snippets("typst", {
 	make_codeblock("code-tcl", "tcl", "Code block specified for Tcl script syntax"),
 	make_codeblock("code-gradle", "gradle", "Code block specified for Gradle build files"),
 
-	---------------------------------------------------------------------------
 	-- LINKS & REFERENCES (With automatic underlines)
-	---------------------------------------------------------------------------
 	s({ trig = "link", desc = "Hyperlink with custom display text (underlined)" }, {
 		t('#link("'),
 		i(1, "url"),
@@ -405,9 +398,7 @@ ls.add_snippets("typst", {
 	s({ trig = "cite", desc = "Citation" }, { t("#cite(<"), i(1, "key"), t(">)") }),
 	s({ trig = "bib", desc = "Bibliography" }, { t('#bibliography("'), i(1, "refs.bib"), t('")') }),
 
-	---------------------------------------------------------------------------
 	-- NOTE TAKING ESSENTIALS: STEPS, LISTS, TERMS, BADGES, CARDS
-	---------------------------------------------------------------------------
 	s({ trig = "step", desc = "Numbered procedure step" }, {
 		t("+ *Step "),
 		i(1, "1"),
@@ -468,9 +459,9 @@ ls.add_snippets("typst", {
 		i(1, "ClassName"),
 		t({ '",', '  fields: ("' }),
 		i(2, "- field: Type"),
-		t({ '"),', '  methods: ("' }),
+		t({ '",),', '  methods: ("' }),
 		i(3, "+ method(): Type"),
-		t({ '"),', ")" }),
+		t({ '",),', ")" }),
 	}),
 	s({ trig = "card", desc = "Bordered content card container (#card helper)" }, {
 		t("#card["),
@@ -505,9 +496,7 @@ ls.add_snippets("typst", {
 		t("#line(length: 100%, stroke: 0.6pt + stroke-colour)"),
 	}),
 
-	---------------------------------------------------------------------------
 	-- TABLES
-	---------------------------------------------------------------------------
 	s({ trig = "table", desc = "2-column table with a rounded border that hugs the content" }, {
 		t({
 			"#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border)[",
@@ -612,7 +601,6 @@ ls.add_snippets("typst", {
 		t({ "],", "  )", "]" }),
 	}),
 
-	---------------------------------------------------------------------------
 	s({ trig = "truthtable-3", desc = "3-input digital logic truth table that hugs its content" }, {
 		t({
 			"#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border)[",
@@ -661,7 +649,6 @@ ls.add_snippets("typst", {
 		}),
 	}),
 	-- FIGURES, MEDIA & DIAGRAMS
-	---------------------------------------------------------------------------
 	s({ trig = "figure", desc = "Figure block with embedded image and caption" }, {
 		t("#figure("),
 		t({ "", '  image("' }),
@@ -795,9 +782,7 @@ ls.add_snippets("typst", {
 		t({ "  ),", ")" }),
 	}),
 
-	---------------------------------------------------------------------------
 	-- HEADINGS & LAYOUT
-	---------------------------------------------------------------------------
 	s({ trig = "h1", desc = "Heading level 1" }, { t("= "), i(1, "Heading") }),
 	s({ trig = "h2", desc = "Heading level 2" }, { t("== "), i(1, "Heading") }),
 	s({ trig = "h3", desc = "Heading level 3" }, { t("=== "), i(1, "Heading") }),
@@ -839,9 +824,7 @@ ls.add_snippets("typst", {
 		t({ "],", ")" }),
 	}),
 
-	---------------------------------------------------------------------------
 	-- TEXT FORMATTING
-	---------------------------------------------------------------------------
 	wrap("bold", "*", "*", "Bold text format"),
 	wrap("italic", "_", "_", "Italic text format"),
 	wrap("strikethrough", "#strike[", "]", "Strikethrough text format"),
@@ -850,9 +833,7 @@ ls.add_snippets("typst", {
 	wrap("superscript", "#super[", "]", "Superscript text"),
 	wrap("subscript", "#sub[", "]", "Subscript text"),
 
-	---------------------------------------------------------------------------
 	-- MATHEMATICS
-	---------------------------------------------------------------------------
 	s({ trig = "$", desc = "Inline math block" }, { t("$"), i(1), t("$") }),
 	s({ trig = "$$", desc = "Display math block" }, { t("$ "), i(1), t(" $") }),
 	s({ trig = "equation", desc = "Multi-line block equation syntax" }, {

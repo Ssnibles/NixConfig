@@ -65,7 +65,7 @@ Reconstruct the *argument* of the lecture, not its running order:
 - Procedures as numbered steps (`step` / `steps`).
 - Formulas with the meaning of each symbol and when to reach for them.
 - Worked examples that show the reasoning, not just the answer.
-- Common mistakes, misconceptions, and exam traps (`warn`).
+- Common mistakes, misconceptions, and exam traps (`warning`).
 - Connections to earlier topics and the wider course.
 - A small number of self-test questions with answers (`qa`).
 
@@ -99,17 +99,17 @@ typical set of notes:
 3. **Objectives as questions** — "By the end you can …", phrased so each is
    answerable (use a `card`).
 4. **One section per concept**, in a logical order:
-   - `def` callout — precise definition + plain restatement;
+   - `definition` callout — precise definition + plain restatement;
    - prose — the mechanism / why;
-   - `ex` callout — a concrete or worked example;
-   - `warn` callout — the common mistake or exam trap;
+   - `example` callout — a concrete or worked example;
+   - `warning` callout — the common mistake or exam trap;
    - `qa` block — one or two active-recall questions.
-5. **Key takeaways** — 3–6 compressed points (`key` callout), not a recap of every
+5. **Key takeaways** — 3–6 compressed points (`takeaway` callout), not a recap of every
    slide.
 6. **Open questions / review** — gaps to resolve and links to related topics.
 
-Adapt this to the subject: a proof-heavy topic leans on `thm`/`proof`; a
-systems topic on `circuit`/`cetz`; an algorithms topic on `bigo` + `cbsql`/`cbpy`.
+Adapt this to the subject: a proof-heavy topic leans on `theorem`/`proof`; a
+systems topic on `circuit`/`cetz`; an algorithms topic on `bigo` + `code-sql`/`code-python`.
 
 ## Quality bar (check before finishing)
 
@@ -119,7 +119,7 @@ systems topic on `circuit`/`cetz`; an algorithms topic on `bigo` + `cbsql`/`cbpy
 - Is there at least one example per abstract idea, and one self-test per concept?
 - Is the structure conceptual rather than slide-per-section? No verbatim bullets,
   "Agenda"/"Recap" filler, or outside material presented as the lecture's.
-- No decorative diagrams, and no screenshots where a clean `cetz`/`mmd` diagram
+- No decorative diagrams, and no screenshots where a clean `cetz`/`mermaid` diagram
   belongs.
 - Does it read as a coherent explanation, or as disconnected bullets and walls of
   prose that can't be skimmed?

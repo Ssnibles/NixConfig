@@ -17,7 +17,7 @@ QtObject {
   readonly property Process _niriInitWs: Process {
     command: ["niri", "msg", "--json", "workspaces"]
     stdout: StdioCollector {
-      onDataChanged: {
+      onStreamFinished: {
         try {
           var wsList = JSON.parse(this.text)
           if (Array.isArray(wsList)) {

@@ -9,5 +9,5 @@ nohup.out
 _installer-options.nix
 Session.vim*
 mono_crash.*.json
-modules/features/apps/firefox/startpage/colors.css
+modules/features/apps/firefox/startpage/colours.css
 .jj/

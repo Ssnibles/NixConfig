@@ -1,9 +1,6 @@
-# =============================================================================
 # Command-Line Tools, Git & Jujutsu (jj) Integration
-# =============================================================================
 # Common CLI tools (bat, btop, fzf, ripgrep), nix-index-database, and Git/jj
 # user profiles.
-# =============================================================================
 { inputs, ... }:
 {
   nixos.modules.shared =
@@ -48,7 +45,7 @@
           enableSSHSupport = true;
         };
 
-        # ── Git Identity & Conditional Includes ───────────────────────────────
+        # Git Identity & Conditional Includes
         hjem.users.${config.username}.files = {
           ".config/git/config-uni" = {
             text = ''
@@ -73,7 +70,7 @@
             '';
           };
 
-          # ── Jujutsu Identity & Config ──────────────────────────────────────
+          # Jujutsu Identity & Config
           # jj reads its global config from ~/.config/jj/config.toml.
           # Conditional identity per repo-root is handled via per-repo config
           # (.jj/repo/config.toml) or by running `jj config set --repo` once
@@ -112,7 +109,7 @@
             '';
           };
 
-          # ── jjui Theme Overrides ────────────────────────────────────────────
+          # jjui Theme Overrides
           # jjui defaults use "bright black" for both dimmed text AND selection
           # highlight backgrounds — a conflict on dark terminals. We override
           # each use-case independently with explicit theme hex values.

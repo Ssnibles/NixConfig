@@ -1,15 +1,12 @@
--- =============================================================================
 -- Language-specific configurations: Rust, C/C++
--- =============================================================================
 -- Previously separate rust.lua and c.lua files, now consolidated since both
 -- are filetype-deferred language support modules.
--- =============================================================================
 
 local M = {}
 
 local util = require("util")
 
--- ── Rust (rustaceanvim) ──────────────────────────────────────────────
+-- Rust (rustaceanvim)
 
 vim.g.rustaceanvim = {
 	server = {
@@ -95,7 +92,7 @@ map("n", "<leader>rs", function()
 	rustlsp("reloadWorkspace")
 end, { desc = "Rust restart server" })
 
--- ── C / C++ (clangd extensions) ──────────────────────────────────────
+-- C / C++ (clangd extensions)
 
 local ok_ext, clangd_ext = pcall(require, "clangd_extensions")
 if ok_ext then

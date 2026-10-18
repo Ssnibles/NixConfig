@@ -1,9 +1,6 @@
-# =============================================================================
 # Startup & Clipboard Session Management
-# =============================================================================
 # Systemd user services managing Wayland session targets, clipboard persistence
 # (wl-clip-persist), and cliphist clipboard history indexing daemons.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -25,7 +22,7 @@
       # Disable unused speech-dispatcher socket in user session
       systemd.user.sockets.speech-dispatcher.enable = false;
 
-      # ── Clipboard Persistence Daemon ──────────────────────────────────────
+      # Clipboard Persistence Daemon
       systemd.user.services.clipboard-persist = {
         description = "Persist Wayland clipboard (regular and primary) after source application exits";
         wantedBy = [ "wayland-session.target" ];
@@ -42,7 +39,7 @@
         };
       };
 
-      # ── Cliphist History Indexing Daemons ──────────────────────────────────
+      # Cliphist History Indexing Daemons
       systemd.user.services.cliphist-store-text = {
         description = "Index text clipboard history with cliphist";
         wantedBy = [ "wayland-session.target" ];

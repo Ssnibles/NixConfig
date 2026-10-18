@@ -17,6 +17,7 @@ The gaming stack configured in `modules/features/apps/gaming.nix` provides a hig
 | **MangoHud** | Telemetry Overlay | Real-time on-screen display for FPS, frame times, CPU/GPU temperatures |
 | **DualSense Stack** | PS5 Controller Support | Native `hid-playstation` kernel drivers, udev rules, `dualsense-pair` CLI |
 | **Sober** | Roblox Client | Community-built Roblox client (`org.vinegarhq.Sober`) installed from Flathub as a sandboxed app (see the [Flatpak Guide](flatpak.md)) |
+| **Minecraft** | Java & Bedrock Editions | PrismLauncher (Temurin 21 JDK) & BedrockOnLinux (Wine GDK with Xbox sign-in) |
 
 ---
 
@@ -116,3 +117,18 @@ flatpak run org.vinegarhq.Sober
 ```
 
 Sober is declared in [`modules/features/system/flatpak.nix`](../../modules/features/system/flatpak.nix) and pulled from Flathub, then refreshed on a daily schedule so it keeps matching the live Roblox client version. Installation, updates, and pinning are covered in the [Flatpak & Sandboxed Applications Guide](flatpak.md).
+
+---
+
+## Minecraft (Java & Bedrock Editions)
+
+Gaming capabilities include both Java and Bedrock editions configured in [`modules/features/apps/minecraft.nix`](../../modules/features/apps/minecraft.nix):
+
+### 1. Java Edition (Prism Launcher)
+- **Multi-Instance Launcher**: Packaged via `prismlauncher`, allowing isolated instance setups, custom modloader installation (Fabric, Quilt, Forge, NeoForge), and per-instance modpack management.
+- **Optimised Java Runtime**: Bundles Eclipse Temurin 21 OpenJDK (`pkgs.temurin-bin-21`), providing high-performance garbage collection (ZGC / Shenandoah) and mod compatibility for modern Minecraft releases.
+
+### 2. Bedrock Edition (BedrockOnLinux)
+- **Windows GDK Wine Runner**: Uses [BedrockOnLinux](https://github.com/Wyze3306/BedrockOnLinux) to run the official Windows x86_64 GDK build under Wine.
+- **Native Xbox Live Authentication**: Supports full Microsoft / Xbox Live account sign-in, realm connectivity, and crossplay with friends on consoles and mobile devices.
+- **Convenient Launchers**: Provides desktop integration and the CLI command `bedrock-launcher` to automate game startup, Wine environment staging, and Discord Rich Presence.

@@ -1,6 +1,4 @@
-# =============================================================================
 # Kitty Terminal Emulator Feature
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -15,7 +13,6 @@
 
       inherit (config.theme.colours)
         bg
-        bgRaised
         bgSubtle
         fg
         fgDim
@@ -29,7 +26,7 @@
         ;
 
       kittyConfig = ''
-        # ── Server Mode (single shared instance) ──────────────────────────────
+        # Server Mode (single shared instance)
         # Enables the Unix-domain socket so `kitty --single-instance` invocations
         # open new windows inside this one process instead of forking duplicates.
         # All windows then share a single GPU sprite cache and process, cutting

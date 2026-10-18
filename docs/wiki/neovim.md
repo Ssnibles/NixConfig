@@ -13,7 +13,7 @@ NixOS Module (modules/features/apps/neovim.nix)
 ├── Declarative package definition via nvf
 ├── LSPs, formatters, linters, and DAPs pinned via Nixpkgs
 ├── Tree-Sitter grammars compiled ahead of time
-└── System activation script:
+└── Centralised nixos.liveLinks:
     symlinks modules/features/nvim-src/ -> ~/.config/nvim and ~/.config/nvf
 ```
 

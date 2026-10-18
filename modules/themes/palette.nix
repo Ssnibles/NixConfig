@@ -1,9 +1,6 @@
-# =============================================================================
 # Global Colour Palettes Registry
-# =============================================================================
 # Defines central colour palette dictionaries mapped to `config.theme.colours` based
 # on `config.theme.active`. Used across Tmux, Qutebrowser, Firefox, Vicinae, Quickshell, etc.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =

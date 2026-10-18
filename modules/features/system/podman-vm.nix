@@ -1,8 +1,5 @@
-# =============================================================================
 # Podman Container & Virtualisation Feature
-# =============================================================================
 # OCI container virtualisation stack, Docker CLI alias wrapper, and Distrobox.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =

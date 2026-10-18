@@ -1,6 +1,4 @@
-# =============================================================================
 # Zellij Multiplexer Feature
-# =============================================================================
 # Zellij with tmux-compatible, leader-based interaction and a minimal UI.
 #
 # Zellij is modal by default (Ctrl+p for panes, Ctrl+t for tabs, ...), which
@@ -18,7 +16,6 @@
 # control plugin: a few leader actions that need live session state (new tab in
 # the focused pane's cwd, the floating yazi popup) are sent to it with
 # `MessagePlugin`, since Zellij's own actions cannot read the focused cwd.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -137,7 +134,7 @@
       '';
 
       zellijConfig = ''
-        // ─── Keybindings ─────────────────────────────────────────────────────
+        // Keybindings
         // clear-defaults wipes Zellij's modal bindings. The leader (backtick)
         // opens a tmux command mode; most actions return to Locked so the very
         // next keystroke goes straight back to the focused program.
@@ -328,7 +325,7 @@
           }
         }
 
-        // ─── Status bar + command palette plugins ─────────────────────────────
+        // Status bar + command palette plugins
         // Custom plugins (see ./zellij-plugin): zjbar is the tmux-shaped bar,
         // zjcmd is the `leader :` command palette.
         plugins {
@@ -340,6 +337,7 @@
             yellow    "#${c.yellow}"
             teal      "#${c.teal}"
             // Keybind control actions (new tab with cwd / yazi popup).
+            home        "/home/${config.username}"
             zellij_bin  "${zellijBin}"
             yazi_bin    "${pkgs.yazi}/bin/yazi"
             yazi_x      "7%"
@@ -365,7 +363,7 @@
           }
         }
 
-        // ─── UI (kept deliberately small, tmux-shaped) ──────────────────────
+        // UI (kept deliberately small, tmux-shaped)
         // Custom layout: a single status bar pinned to the TOP (see
         // layouts/minimal.kdl + minimal.swap.kdl).
         default_layout "minimal"
@@ -394,7 +392,7 @@
         show_startup_tips false
         show_release_notes false
 
-        // ─── Behaviour ───────────────────────────────────────────────────────
+        // Behaviour
         default_mode "locked"
         default_shell "${fishBin}"
         mouse_mode true
@@ -414,7 +412,7 @@
         pkgs.wl-clipboard
       ];
 
-      # ── Hjem Dotfiles ──────────────────────────────────────────────────────
+      # Hjem Dotfiles
       hjem.users.${config.username}.files = {
         ".config/zellij/config.kdl" = {
           clobber = true;

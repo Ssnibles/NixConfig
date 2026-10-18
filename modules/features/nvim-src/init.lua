@@ -1,11 +1,11 @@
 vim.loader.enable()
 
--- ── Globals ──────────────────────────────────────────────────────────
+-- Globals
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
 -- Neovide (GUI) tuning
-vim.g.neovide_font_family = "JetBrainsMono Nerd Font"
+vim.g.neovide_font_family = "Maple Mono NR NF"
 vim.g.neovide_font_size = 12
 vim.g.neovide_padding_top = 20
 vim.g.neovide_padding_bottom = 20
@@ -22,12 +22,14 @@ vim.g.neovide_confirm_quit = true
 vim.g.neovide_remember_window_size = true
 
 -- Dev plugins (loaded from local checkouts when present)
-for _, path in ipairs({
-	"/home/josh/sshinator.nvim",
-	"/home/josh/indentinator.nvim",
-	"/home/josh/zline.nvim",
-	"/home/josh/startinator.nvim",
+local dev_home = vim.env.HOME or "/home/josh"
+for _, name in ipairs({
+	"sshinator.nvim",
+	"indentinator.nvim",
+	"zline.nvim",
+	"startinator.nvim",
 }) do
+	local path = dev_home .. "/" .. name
 	if vim.uv.fs_stat(path) then
 		vim.opt.runtimepath:append(path)
 	end
@@ -37,7 +39,7 @@ end
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
--- ── Editor options ──────────────────────────────────────────────────
+-- Editor options
 
 -- Indentation
 vim.opt.shiftwidth = 2

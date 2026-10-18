@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# =============================================================================
 # Frame App Remote Desktop Container Setup
-# =============================================================================
 # Creates (or recreates) a Distrobox / Podman Ubuntu 24.04 container and
 # installs the Nutanix Frame App desktop client together with the runtime
 # libraries it needs: GTK/Chromium, audio (PulseAudio/PipeWire), VA-API/Mesa
@@ -17,7 +15,6 @@
 # manifest pointing at the current .deb, which is resolved at run time.
 #
 # Usage: ./setup_frame.sh [options]
-# =============================================================================
 set -euo pipefail
 
 CONTAINER_NAME="frame"

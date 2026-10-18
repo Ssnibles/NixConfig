@@ -1,8 +1,6 @@
--- =============================================================================
 -- Editor plugins: oil, gitsigns, grug-far, flash, smart-splits, sshinator
--- =============================================================================
 
--- ── Oil (file explorer) ──────────────────────────────────────────────
+-- Oil (file explorer)
 
 local function paste_image_to_oil()
 	if vim.bo.filetype ~= "oil" then
@@ -56,7 +54,7 @@ vim.keymap.set("n", "<leader>e", function()
 	require("oil").toggle_float()
 end, { desc = "Explorer (Oil)" })
 
--- ── Gitsigns ─────────────────────────────────────────────────────────
+-- Gitsigns
 
 require("gitsigns").setup({
 	signcolumn = true,
@@ -121,7 +119,7 @@ vim.api.nvim_create_autocmd("DiagnosticChanged", {
 	end,
 })
 
--- ── Grug-far (project-wide find & replace) ───────────────────────────
+-- Grug-far (project-wide find & replace)
 
 require("grug-far").setup()
 
@@ -153,7 +151,7 @@ vim.keymap.set("x", "<leader>fr", function()
 	buffer_find_replace(sel)
 end, { desc = "Find and replace selection (buffer)" })
 
--- ── Flash (jump motions) ─────────────────────────────────────────────
+-- Flash (jump motions)
 
 local flash = require("flash")
 
@@ -199,7 +197,7 @@ vim.keymap.set({ "n", "x", "o" }, "S", function()
 	end
 end, { desc = "Flash treesitter" })
 
--- ── Smart-splits ─────────────────────────────────────────────────────
+-- Smart-splits
 
 local splits = require("smart-splits")
 splits.setup({})
@@ -213,7 +211,7 @@ vim.keymap.set("n", "<C-S-j>", splits.resize_down, { desc = "Resize down" })
 vim.keymap.set("n", "<C-S-k>", splits.resize_up, { desc = "Resize up" })
 vim.keymap.set("n", "<C-S-l>", splits.resize_right, { desc = "Resize right" })
 
--- ── Dev plugins (simple setups) ──────────────────────────────────────
+-- Dev plugins (simple setups)
 
 local ok_ssh, sshinator = pcall(require, "sshinator")
 if ok_ssh then
@@ -239,13 +237,13 @@ if ok_st then
 	startinator.setup()
 end
 
--- ── nvim-ts-autotag ─────────────────────────────────────────────────
+-- nvim-ts-autotag
 local ok_autotag, autotag = pcall(require, "nvim-ts-autotag")
 if ok_autotag then
 	autotag.setup({})
 end
 
--- ── jj (Jujutsu) integration ────────────────────────────────────────
+-- jj (Jujutsu) integration
 
 vim.keymap.set("n", "<leader>gg", function()
 	local width = math.floor(vim.o.columns * 0.85)

@@ -1,10 +1,7 @@
-# =============================================================================
 # Firefox Browser Feature (Developer Edition)
-# =============================================================================
 # Firefox Developer Edition setup, FastFox performance preferences, custom CSS
 # userChrome/userContent styles, Sidebery extension managed storage, enterprise policies,
 # and live-reloaded startpage.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -239,7 +236,7 @@
         sideberySettings = lib.mkOption {
           type = lib.types.attrs;
           default = {
-            # --- Visual Style & Theme ---
+            # Visual Style & Theme
             theme = "proton";
             colorScheme = "dark";
             density = "compact";
@@ -247,7 +244,7 @@
             animations = true;
             animationSpeed = "fast";
 
-            # --- Navigation Bar (Panels & Tabs Switcher) ---
+            # Navigation Bar (Panels & Tabs Switcher)
             navBarLayout = "horizontal";
             navBarInline = true;
             navBarSide = "left";
@@ -256,7 +253,7 @@
             hideDiscardedTabPanels = false;
             navSwitchPanelsWheel = true;
 
-            # --- Pinned Tabs (Compact Grid Dock) ---
+            # Pinned Tabs (Compact Grid Dock)
             pinnedTabsPosition = "panel";
             pinnedTabsList = false;
             pinnedNoUnload = false;
@@ -264,7 +261,7 @@
             pinnedForcedDiscard = true;
             tabPinnedMiddleClick = "discard";
 
-            # --- Tabs Tree Hierarchy & Folding ---
+            # Tabs Tree Hierarchy & Folding
             tabsTree = true;
             tabsTreeLimit = "none";
             autoFoldTabs = true;
@@ -277,7 +274,7 @@
             tabsTreeBookmarks = true;
             treeRmOutdent = "branch";
 
-            # --- Tab Behaviour, Activation & Lifecycle ---
+            # Tab Behaviour, Activation & Lifecycle
             moveNewTab = "last_child";
             moveNewTabParent = "last_child";
             activateLastTabOnPanelSwitching = true;
@@ -299,7 +296,7 @@
             tabsReloadLimit = 5;
             tabsReloadLimitNotif = true;
 
-            # --- Scrollbars & Search ---
+            # Scrollbars & Search
             nativeScrollbars = true;
             nativeScrollbarsThin = true;
             searchBarMode = "dynamic";
@@ -319,9 +316,7 @@
             lib.types.either lib.types.bool (lib.types.either lib.types.int lib.types.str)
           );
           default = {
-            # ==============================================================
             # CORE UI & EXPERIENCE
-            # ==============================================================
             "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
             "browser.aboutConfig.showWarning" = false;
             "browser.compactmode.show" = true;
@@ -346,9 +341,7 @@
             "browser.newtabpage.activity-stream.section.highlights.includeVisited" = false;
             "browser.newtabpage.activity-stream.section.highlights.includeBookmarks" = false;
 
-            # ==============================================================
             # FASTFOX — RENDERING & NETWORK PERFORMANCE
-            # ==============================================================
             # Font/canvas/image caches — larger = fewer re-decodes
             "gfx.content.skia-font-cache-size" = 20;
             "gfx.canvas.accelerated.cache-size" = 32;
@@ -368,9 +361,7 @@
             "accessibility.force_disabled" = 1;
             "media.autoplay.default" = 5;
 
-            # ==============================================================
             # PRIVACY & SECURITY
-            # ==============================================================
             "browser.contentblocking.category" = "strict";
             "privacy.donottrackheader.enabled" = true;
             "privacy.fingerprintingProtection" = true;
@@ -424,9 +415,7 @@
             # Container tabs
             "privacy.userContext.ui.enabled" = true;
 
-            # ==============================================================
             # SPECULATIVE LOADING — DISABLE (saves CPU, network, privacy)
-            # ==============================================================
             "network.http.speculative-parallel-limit" = 0;
             "network.dns.disablePrefetch" = true;
             "network.dns.disablePrefetchFromHTTPS" = true;
@@ -435,9 +424,7 @@
             "browser.urlbar.speculativeConnect.enabled" = false;
             "browser.places.speculativeConnect.enabled" = false;
 
-            # ==============================================================
             # DISK AVOIDANCE — RAM CACHE (faster, less SSD wear)
-            # ==============================================================
             "browser.cache.disk.enable" = false;
             "browser.cache.memory.enable" = true;
             "browser.cache.memory.capacity" = 65536; # 64MB RAM cache
@@ -448,9 +435,7 @@
             "browser.tabs.unloadOnLowMemory" = true;
             "browser.download.start_downloads_in_tmp_dir" = true;
 
-            # ==============================================================
             # TELEMETRY — COMPLETE DISABLE
-            # ==============================================================
             "datareporting.policy.dataSubmissionEnabled" = false;
             "datareporting.healthreport.uploadEnabled" = false;
             "datareporting.usage.uploadEnabled" = false;
@@ -470,16 +455,12 @@
             "browser.newtabpage.activity-stream.telemetry" = false;
             "browser.tabs.crashReporting.sendReport" = false;
 
-            # ==============================================================
             # EXPERIMENTS & STUDIES — DISABLE
-            # ==============================================================
             "app.shield.optoutstudies.enabled" = false;
             "app.normandy.enabled" = false;
             "app.normandy.api_url" = "";
 
-            # ==============================================================
             # PESKYFOX — UI DECLUTTER & ANNOYANCE REMOVAL
-            # ==============================================================
             "extensions.getAddons.showPane" = false;
             "extensions.getAddons.cache.enabled" = false;
             "extensions.htmlaboutaddons.recommendations.enabled" = false;
@@ -523,17 +504,13 @@
             "browser.download.manager.addToRecentDocs" = false;
             "browser.download.open_pdf_attachments_inline" = true;
 
-            # ==============================================================
             # GRAPHICS & HARDWARE ACCELERATION
-            # ==============================================================
             "media.ffmpeg.vaapi.enabled" = true;
 
             # Smooth scrolling
             "general.smoothScroll" = true;
 
-            # ==============================================================
             # DARK MODE & THEME
-            # ==============================================================
             "ui.systemUsesDarkTheme" = 1;
             "layout.css.prefers-color-scheme.content-override" = 0;
             "browser.in-content.dark-mode" = true;
@@ -593,13 +570,14 @@
       };
 
       config = lib.mkIf cfg.enable {
+        features.default-apps.browser = lib.mkIf (cfg.defaultBrowser && !config.features.helium.enable) (lib.mkDefault "firefox");
+
         environment.systemPackages = [
           (pkgs.writeShellScriptBin "firefox" ''
-            exec ${cfg.package}/bin/firefox-devedition "$@"
+            exec ${lib.getExe cfg.package} "$@"
           '')
           pkgs.tridactyl-native
         ];
-
 
         # Firefox Enterprise Managed Storage Policy for WebExtension Sidebery
         # Sidebery merges browser.storage.managed over its local storage, so this
@@ -632,6 +610,7 @@
         };
 
         hjem.users."${config.username}" = {
+          enable = true;
           files = {
             # Hide standard firefox.desktop launcher entry so only Firefox Developer Edition appears
             ".local/share/applications/firefox.desktop".text = ''
@@ -668,6 +647,12 @@
 
             # Automatically write preferences to about:config via user.js
             ".mozilla/firefox/${cfg.profileName}/user.js".text = userJsContent;
+
+            # Hjem declarative files for generated colours and native messaging hosts
+            ".mozilla/firefox/${cfg.profileName}/chrome/colours.css".text = coloursCss;
+            ".mozilla/firefox/${cfg.profileName}/startpage/colours.css".text = coloursCss;
+            ".mozilla/native-messaging-hosts/tridactyl.json".source =
+              "${pkgs.tridactyl-native}/lib/mozilla/native-messaging-hosts/tridactyl.json";
           };
 
           environment.sessionVariables = {
@@ -677,71 +662,43 @@
 
         # Direct repository symlinks for live-reloading UI customisation (userChrome, userContent, startpage)
         # Bypasses Nix store so edits in NixConfig take effect immediately on Firefox refresh/restart
-        system.activationScripts.firefox-config = ''
-          FX_PROFILE="/home/${config.username}/.mozilla/firefox/${cfg.profileName}"
-          REPO_FX_DIR="${config.nixos.configRepo}/modules/features/apps/firefox"
-
-          mkdir -p "$FX_PROFILE/chrome"
-          # Only chown the directories this script creates; never recurse into the
-          # profile (Firefox owns its contents as the user).
-          chown ${config.username}:users \
-            /home/${config.username}/.mozilla \
-            /home/${config.username}/.mozilla/firefox \
-            "$FX_PROFILE" \
-            "$FX_PROFILE/chrome"
-
-          # Dynamic theme CSS variables
-          cat << 'EOF' > "$FX_PROFILE/chrome/colours.css"
-${coloursCss}
-EOF
-          chown ${config.username}:users "$FX_PROFILE/chrome/colours.css"
-
-          ${lib.optionalString (cfg.enableCustomCss && cfg.userChromeFile != null) ''
-            if [ -d "$REPO_FX_DIR" ]; then
-              ln -sfn "$REPO_FX_DIR/userChrome.css" "$FX_PROFILE/chrome/userChrome.css"
-            else
-              cp -f ${./userChrome.css} "$FX_PROFILE/chrome/userChrome.css"
-            fi
-            chown -h ${config.username}:users "$FX_PROFILE/chrome/userChrome.css"
-          ''}
-          ${lib.optionalString (cfg.enableCustomCss && cfg.userContentFile != null) ''
-            if [ -d "$REPO_FX_DIR" ]; then
-              ln -sfn "$REPO_FX_DIR/userContent.css" "$FX_PROFILE/chrome/userContent.css"
-            else
-              cp -f ${./userContent.css} "$FX_PROFILE/chrome/userContent.css"
-            fi
-            chown -h ${config.username}:users "$FX_PROFILE/chrome/userContent.css"
-          ''}
-
-          # Symlink startpage directory for live reloading
-          rm -rf "$FX_PROFILE/startpage"
-          if [ -d "$REPO_FX_DIR/startpage" ]; then
-            ln -sfn "$REPO_FX_DIR/startpage" "$FX_PROFILE/startpage"
-          else
-            cp -rf ${./startpage} "$FX_PROFILE/startpage"
-          fi
-          chown -h ${config.username}:users "$FX_PROFILE/startpage"
-
-          cat << 'EOF' > "$FX_PROFILE/startpage/colours.css"
-${coloursCss}
-EOF
-          chown ${config.username}:users "$FX_PROFILE/startpage/colours.css"
-
-          # Tridactyl native messaging host & configuration
-          mkdir -p /home/${config.username}/.mozilla/native-messaging-hosts
-          ln -sfn ${pkgs.tridactyl-native}/lib/mozilla/native-messaging-hosts/tridactyl.json /home/${config.username}/.mozilla/native-messaging-hosts/tridactyl.json
-          chown -h ${config.username}:users /home/${config.username}/.mozilla/native-messaging-hosts/tridactyl.json
-
-          mkdir -p /home/${config.username}/.config/tridactyl
-          if [ -d "$REPO_FX_DIR" ]; then
-            ln -sfn "$REPO_FX_DIR/tridactylrc" /home/${config.username}/.config/tridactyl/tridactylrc
-            ln -sfn "$REPO_FX_DIR/tridactylrc" /home/${config.username}/.tridactylrc
-          else
-            cp -f ${./tridactylrc} /home/${config.username}/.config/tridactyl/tridactylrc
-            cp -f ${./tridactylrc} /home/${config.username}/.tridactylrc
-          fi
-          chown -h ${config.username}:users /home/${config.username}/.config/tridactyl/tridactylrc /home/${config.username}/.tridactylrc
-        '';
+        nixos.liveLinks = lib.mkMerge [
+          {
+            "firefox-startpage" = {
+              source = "${config.nixos.configRepo}/modules/features/apps/firefox/startpage";
+              target = ".mozilla/firefox/${cfg.profileName}/startpage";
+              contents = true;
+            };
+            "firefox-tridactylrc-config" = {
+              source = "${config.nixos.configRepo}/modules/features/apps/firefox/tridactylrc";
+              target = ".config/tridactyl/tridactylrc";
+            };
+            "firefox-tridactylrc-home" = {
+              source = "${config.nixos.configRepo}/modules/features/apps/firefox/tridactylrc";
+              target = ".tridactylrc";
+            };
+          }
+          (lib.mkIf (cfg.enableCustomCss && cfg.userChromeFile != null) {
+            "firefox-userchrome" = {
+              source =
+                if cfg.userChromeFile == ./userChrome.css then
+                  "${config.nixos.configRepo}/modules/features/apps/firefox/userChrome.css"
+                else
+                  cfg.userChromeFile;
+              target = ".mozilla/firefox/${cfg.profileName}/chrome/userChrome.css";
+            };
+          })
+          (lib.mkIf (cfg.enableCustomCss && cfg.userContentFile != null) {
+            "firefox-usercontent" = {
+              source =
+                if cfg.userContentFile == ./userContent.css then
+                  "${config.nixos.configRepo}/modules/features/apps/firefox/userContent.css"
+                else
+                  cfg.userContentFile;
+              target = ".mozilla/firefox/${cfg.profileName}/chrome/userContent.css";
+            };
+          })
+        ];
       };
     };
 }

@@ -171,11 +171,12 @@ For compositor keybindings, trackpad gestures, OCR screenshots, and multi-monito
 
 For architecture diagrams, singletons, widgets, and IPC commands, refer to the **[Quickshell Desktop Shell Guide](docs/wiki/quickshell.md)**:
 
-- **Modular QML Architecture**: Unified desktop shell framework written in QML, symlinked from `modules/features/desktop-env/quickshell/config/` to `~/.config/quickshell/`.
-- **Multi-Compositor Routing**: Abstract `WmService.qml` routing events and workspace states across MangoWC, Hyprland, Niri, and River.
+- **Modular QML Architecture**: Unified desktop shell framework written in QML, symlinked from `modules/features/desktop-env/quickshell/config/` to `~/.config/quickshell/` via `nixos.liveLinks` (`contents = true`).
+- **Multi-Compositor Routing**: Abstract `WmService.qml` routing events and workspace states across MangoWC, Hyprland, and Niri, using `StdioCollector.onStreamFinished` for complete JSON stream decoding.
 - **Command Centre Dashboard**: Slide-out quick settings dashboard (`SUPER + d`) with quick toggles, sliders, media controls, and hardware telemetry.
-- **Wayland Session Locker**: Lock screen (`LockScreen.qml`) leveraging `ext-session-lock-v1` and system PAM for secure authentication.
+- **Session Locker with Unified Focus**: Lock screen (`LockScreen.qml`) leveraging `ext-session-lock-v1` and PAM with unified root-scope password focus across multi-monitor setups and modifier key filtering.
 - **Notification Daemon & Toast Overlay**: Built-in Freedesktop notification daemon (`NotificationStore.qml`) and toast overlay (`NotificationOverlay.qml`).
+- **Node.js Unit Testing Suite**: Automated test suite (`modules/features/desktop-env/quickshell/tests/utils.test.js`) verifying JavaScript helper utilities in an isolated `vm` environment.
 
 ### Terminal, Shell & Multiplexer
 
@@ -191,21 +192,27 @@ For single-instance terminal performance, Tmux session management, Yazi openers,
   - Floating scratchpad terminal (`Prefix + P` via floax).
   - Resurrect store path sanitiser (`tmux-resurrect-save`) stripping transient Nix store hashes from saved sessions so sessions restore reliably across updates.
   - Alt-passthrough mode (`Prefix + a`) for Neovim line shifting.
+- **Zellij Multiplexer & Custom WASI Plugins**: Alternative workspace multiplexer ([`zellij.nix`](file:///home/josh/NixConfig/modules/features/shell/zellij.nix)) paired with custom Rust WASI plugins in [`zellij-plugin/`](file:///home/josh/NixConfig/modules/features/shell/zellij-plugin):
+  - `zjbar`: Custom status bar displaying session state, mode indicators, git branch, and dynamic user home path prefix truncation (`~`).
+  - `zjcmd`: Floating command palette with explicit ANSI attribute resets to prevent formatting bleed.
+  - Stable user plugin directory (`~/.local/share/zellij/plugins/`) with writable copy-mode permissions cache (`~/.cache/zellij/permissions.kdl`).
 - **Yazi File Manager**: Async terminal file manager configured with custom image and text openers, hidden file toggles, preview maximisation, and Neovim directory opening.
 - **Navi Cheatsheet Manager**: Interactive cheatsheet fuzzy search bound to `Ctrl + P` in Fish (`navi-pick`) with an fzf preview pane showing the command and tags. Also available in a floating tmux popup via `Prefix + Ctrl-g`, which pastes the chosen cheat unexecuted into the invoking pane (works over SSH). The library is declared in Nix (`modules/packages/navi/default.nix`) and rendered to per-topic `.cheat` files under `~/.config/navi/cheats/`, covering NixOS, Git/GitHub, Jujutsu, Tmux, files, system, MangoWC, and on-demand tools.
-- **Fish Shell 4+ & Cached FZF Traversal**: Fast Fish shell with a custom caching engine (`__fzf_cache_fd`) that caches `fd` traversal per directory for 5 minutes, making file lookups instantaneous in large repositories.
+- **Fish Shell 4+ & Cached FZF Traversal**: Fast Fish shell with a custom caching engine (`__fzf_cache_fd`) caching `fd` traversal in `$XDG_RUNTIME_DIR/fzf_fd_cache` for 5 minutes with atomic file replacement.
 - **Starship Prompt**: Transient prompt (`>>`) with indicators for Git status, Nix shell, Node.js, Rust, Python, battery levels, and command execution duration.
 
 ### Declarative Neovim & Development
 
 For language server wrappers, completion, DAP, and `:GenerateCompileFlags`, refer to the **[Declarative Neovim Guide](docs/wiki/neovim.md)**:
 
-- **Declarative NVF Architecture**: Neovim managed via [nvf](https://github.com/NotAShelf/nvf), linked directly to a modular Lua source tree under [`modules/features/nvim-src/`](file:///home/josh/NixConfig/modules/features/nvim-src/).
+- **Declarative NVF Architecture**: Neovim managed via [nvf](https://github.com/NotAShelf/nvf), linked directly to a modular Lua source tree under [`modules/features/nvim-src/`](file:///home/josh/NixConfig/modules/features/nvim-src/) via `nixos.liveLinks`.
 - **Specialised LSP Wrappers**:
   - `qmlls`: Wrapped with QtQuick 6 and Quickshell include flags for real-time QML type checking.
   - `zls`: Wrapped with Wayland, wlroots, libxkbcommon, and libinput system headers for Wayland compositor development.
+  - `vtsls`: Configured for TypeScript/JavaScript tooling.
 - **C/C++ Tooling & `:GenerateCompileFlags`**: Custom command generating project-local `compile_flags.txt` from active Nix shell flags (`CPATH`, `pkg-config`) for Clangd autocomplete.
 - **Neovim Plugins**: Blink.cmp completion, Treesitter, FZF-Lua, Oil with clipboard image pasting (`OilPasteImage` / `<leader>p`), Gitsigns with diagnostic collision prevention, Grug-far find/replace, Flash jump motions, Rustaceanvim, Tiny Inline Diagnostics, and custom plugins (`sshinator`, `indentinator`, `zline`).
+- **SyncTeX Inverse Search**: Bidirectional sync between Zathura PDF reader and Neovim source lines powered by `neovim-remote` (`nvr`).
 - **Floating Jujutsu TUI (`<leader>gg`)**: Direct invocation of `jjui` inside a centred Neovim floating modal.
 
 ### Artificial Intelligence & Autonomous Agents
@@ -213,7 +220,7 @@ For language server wrappers, completion, DAP, and `:GenerateCompileFlags`, refe
 For extension toggles, sandboxing, and remote homeserver Ollama offloading, refer to the **[AI Development Tools Guide](docs/wiki/ai-tools.md)**:
 
 - **Pi Terminal Coding Agent**: Modern coding agent harness ([`pi-agent.nix`](file:///home/josh/NixConfig/modules/features/apps/pi-agent.nix)) packaged via `pi.nix`. Features built-in safety extensions (turn-by-turn Git stash checkpoints, protected paths blocking writes to `.env` or `.git`, questionnaire select prompts, plan mode) and optional Bubblewrap sandboxing (`jail.nix`).
-- **Hermes AI Agent**: Autonomous multi-step agent ([`hermes.nix`](file:///home/josh/NixConfig/modules/features/apps/hermes.nix)) configured with remote homeserver Ollama inference offloading over Tailscale (`qwen2.5:7b`), eliminating local GPU/CPU load to preserve laptop battery.
+- **Hermes AI Agent (Disabled)**: Optional autonomous agent module ([`hermes.nix`](file:///home/josh/NixConfig/modules/features/apps/hermes.nix)) configured for remote homeserver Ollama inference offloading over Tailscale; disabled in favor of the primary Pi coding agent harness.
 - **Antigravity CLI & OpenCode**: Terminal AI assistants for interactive code refactoring and autonomous programming.
 
 ### Version Control with Jujutsu & Git
@@ -248,7 +255,7 @@ For hardware acceleration parameters, Modernz theming, SyncTeX setup, and audio 
 
 For stylesheet architecture, Sidebery selectors, and browser policies, refer to the **[Firefox & Sidebery Customisation Guide](docs/wiki/firefox.md)**:
 
-- **Firefox Developer Edition**: Browser configuration with FastFox optimisations, custom `userChrome.css` and `userContent.css`, Sidebery vertical tab bar integration, and an embedded offline startpage WebExtension.
+- **Firefox Developer Edition**: Browser configuration with FastFox optimisations, declarative `nixos.liveLinks` (`contents = true`) linking `userChrome.css`, `userContent.css`, and `startpage/` without git tree mutation, Sidebery vertical tab bar integration, and an embedded offline startpage WebExtension with Hjem-managed `colours.css`.
 - **Helium Browser**: Chromium-based Helium browser alternative ([`helium/default.nix`](file:///home/josh/NixConfig/modules/features/apps/helium/default.nix)) mirroring the Firefox theming and behaviour via enterprise policies, force-installed Web Store extensions, a themed startpage, and Wayland ozone acceleration.
 - **Centralised Default Applications**: Single source of truth ([`default-apps.nix`](file:///home/josh/NixConfig/modules/features/desktop-env/default-apps.nix)) managing systemwide MIME associations and default application preferences.
 
@@ -325,6 +332,7 @@ NixConfig/
 └── modules/
     ├── core/                          # Flake-parts infrastructure & system options
     │   ├── devshell.nix               # Developer environment (Rust, Nix tools, Fish)
+    │   ├── live-links.nix             # Live symlink generation for mutable dev configs
     │   ├── module-groups.nix          # Declaration of shared, desktop, laptop groups
     │   ├── options.nix                # System options (username, active wallpaper)
     │   ├── parts.nix                  # Platform architectures (x86_64-linux)
@@ -362,7 +370,9 @@ NixConfig/
     │   ├── shell/                     # Interactive shell & multiplexer
     │   │   ├── cli.nix                # CLI tools, Git & Jujutsu identity configuration
     │   │   ├── shell.nix              # Fish 4+, Starship prompt, FZF cached search
-    │   │   └── tmux.nix               # Tmux daemon, Sesh, window picker, resurrect
+    │   │   ├── tmux.nix               # Tmux daemon, Sesh, window picker, resurrect
+    │   │   ├── zellij.nix             # Zellij workspace multiplexer & zjbar integration
+    │   │   └── zellij-plugin/         # Custom zjbar status bar plugin written in Rust
     │   │
     │   ├── desktop-env/               # Graphical environment & window managers
     │   │   ├── cursors.nix            # Bibata Modern Ice cursor configuration
@@ -386,6 +396,7 @@ NixConfig/
     │   │   ├── hermes.nix             # Hermes AI agent with homeserver Ollama link
     │   │   ├── kitty.nix              # Kitty terminal single-instance server mode
     │   │   ├── media.nix              # MPV Vulkan pipeline, Zathura PDF reader, imv
+    │   │   ├── minecraft.nix          # Prism Launcher & Minecraft configuration
     │   │   ├── neovim.nix             # NVF Neovim declarative configuration
     │   │   ├── pi-agent.nix           # Pi terminal coding agent harness & extensions
     │   │   ├── spotify.nix            # Spotify music player configured with Spicetify
@@ -405,7 +416,8 @@ NixConfig/
     │   ├── navi/                      # Navi cheatsheet manager (Nix-declared cheats) & fish integration
     │   ├── plsfail/                   # Command failure stress-testing utility
     │   ├── sf-pro/                    # Apple San Francisco Pro font derivation
-    │   └── tuxedo/                    # Rust todo.txt TUI client derivation
+    │   ├── tuxedo/                    # Rust todo.txt TUI client derivation
+    │   └── uni-notes/                 # Typst university lecture notes template & packaging
     │
     └── themes/                        # Dynamic styling engine
         ├── default.nix                # Theme schema options (config.theme.active)

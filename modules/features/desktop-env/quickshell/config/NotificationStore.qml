@@ -34,11 +34,10 @@ Singleton {
   property alias activeModel: activeModel
   property alias historyModel: historyModel
 
-  // --- MPRIS Track Change Listener ---
+  // MPRIS Track Change Listener
   readonly property var mediaPlayer: MediaService.player
 
-
-  // --- Cover Art Cache System ---
+  // Cover Art Cache System
   property int cacheVersion: 0
   property var artCache: ({})
   property var _pendingDownloads: ({})
@@ -113,7 +112,7 @@ Singleton {
     if (item.localSource) {
       downloadProc.exec(["sh", "-c", 'mkdir -p "$1" && cp -f "$2" "$3"', "sh", store.cacheDir, item.localSource, item.targetPath])
     } else {
-      var script = 'if [ -f "$2" ]; then exit 0; fi; mkdir -p "$1" && curl -s -L -f --max-time 30 --max-filesize 10485760 "$3" -o "$2"'
+      var script = 'if [ -f "$2" ]; then exit 0; fi; mkdir -p "$1" && curl -s -L -f --max-time 30 --max-filesize 10485760 "$3" -o "$2.part" && mv -f "$2.part" "$2" || { rm -f "$2.part"; exit 1; }'
       downloadProc.exec(["sh", "-c", script, "sh", store.cacheDir, item.targetPath, item.url])
     }
   }
@@ -265,6 +264,8 @@ Singleton {
       // If image is inside /tmp/, copy it to cacheDir immediately so it persists
       // even after Electron/Chromium/Discord unlinks the temporary file
       if (localPath.startsWith("/tmp/") && store.cacheDir !== "") {
+        var originalUrl = "file://" + localPath
+        if (store.artCache[originalUrl]) return store.artCache[originalUrl]
         var ext = ".png"
         var lLower = localPath.toLowerCase()
         if (lLower.indexOf(".jpg") !== -1 || lLower.indexOf(".jpeg") !== -1) ext = ".jpg"
@@ -272,7 +273,6 @@ Singleton {
         else if (lLower.indexOf(".svg") !== -1) ext = ".svg"
         var hash = _hashString(localPath)
         var target = store.cacheDir + "/" + hash + ext
-        var originalUrl = "file://" + localPath
         if (!store._pendingDownloads[localPath]) {
           store._pendingDownloads[localPath] = true
           enqueueDownload({
@@ -367,7 +367,7 @@ Singleton {
     }
   }
 
-  // --- Reference-counted hover tracking (keyed by notification uid) ---
+  // Reference-counted hover tracking (keyed by notification uid)
   function setHovered(uid, hovered) {
     if (uid === undefined || uid === null || uid < 0) return
     var n = (store._hoverCounts[uid] || 0) + (hovered ? 1 : -1)

@@ -1,10 +1,7 @@
-# =============================================================================
-# Hermes AI Agent & Local Model Feature
-# =============================================================================
-# Hermes AI agent (Nous Research) integrated with a local inference backend
-# (Ollama) serving a lightweight model (Qwen 2.5 Coder 1.5B) for private,
-# fast local tool-calling, coding, and autonomous workflows.
-# =============================================================================
+# Hermes AI Agent Feature
+# Hermes AI agent (Nous Research) configured with remote Ollama inference
+# (qwen2.5:7b) over Tailscale for private, battery-friendly tool-calling,
+# coding, and autonomous workflows.
 { ... }:
 {
   nixos.modules.shared =
@@ -68,16 +65,10 @@
           OLLAMA_HOST = "${ollamaHost}:${toString ollamaPort}";
         };
 
-        system.activationScripts.hermes-config = ''
-          HERMES_DIR="/home/${config.username}/.hermes"
-          mkdir -p "$HERMES_DIR"
-
-          cat << 'EOF' > "$HERMES_DIR/config.yaml"
-          ${hermesConfig}
-          EOF
-
-          chown -R ${config.username}:users "$HERMES_DIR"
-        '';
+        hjem.users."${config.username}" = {
+          enable = true;
+          files.".hermes/config.yaml".text = hermesConfig;
+        };
       };
     };
 }

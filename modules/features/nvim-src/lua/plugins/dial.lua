@@ -1,6 +1,4 @@
--- =============================================================================
 -- dial.nvim: smarter <C-a>/<C-x> (dates, hex, semver, booleans, …)
--- =============================================================================
 local ok_dial, dial_map = pcall(require, "dial.map")
 if not ok_dial then
 	return

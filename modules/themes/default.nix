@@ -1,8 +1,5 @@
-# =============================================================================
 # Theme Engine Option Schema
-# =============================================================================
 # Exposes theme selection options (active theme palette, colours, and fonts).
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -10,7 +7,19 @@
     {
       options.theme = {
         active = lib.mkOption {
-          type = lib.types.str;
+          type = lib.types.enum [
+            "catppuccin-mocha"
+            "gruvbox-dark"
+            "default-dark"
+            "default-light"
+            "gruvbox-dark-hard"
+            "gruvbox-light-hard"
+            "rose-pine"
+            "rose-pine-moon"
+            "rose-pine-dawn"
+            "everforest-light"
+            "vague"
+          ];
           default = "vague";
           description = "Active colour palette scheme name defined in themes/palette.nix.";
         };

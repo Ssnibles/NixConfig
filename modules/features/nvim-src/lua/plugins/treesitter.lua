@@ -5,7 +5,7 @@ require("nvim-treesitter-textobjects").setup({
 	move = { set_jumps = true },
 })
 
--- ── Textobject keymaps ───────────────────────────────────────────────
+-- Textobject keymaps
 
 local ts_select = require("nvim-treesitter-textobjects.select")
 local ts_move = require("nvim-treesitter-textobjects.move")
@@ -25,7 +25,7 @@ for key, spec in pairs(textobjects) do
 	end, { silent = true, desc = spec.desc })
 end
 
--- ── Movement keymaps ─────────────────────────────────────────────────
+-- Movement keymaps
 
 local movements = {
 	{ "]f", "goto_next_start", "@function.outer", "Next function" },
@@ -40,7 +40,7 @@ for _, m in ipairs(movements) do
 	end, { silent = true, desc = m[4] })
 end
 
--- ── Treesitter Context ───────────────────────────────────────────────
+-- Treesitter Context
 
 require("treesitter-context").setup({
 	enable = true,

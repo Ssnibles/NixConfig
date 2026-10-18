@@ -36,7 +36,7 @@ these rules, see `references/example.typ`.
   `= ` level-1 heading (the running header falls back to it).
 - Pass `course` to `theme.with(...)`; set `date` as a local before `#note-title`.
 - Use `#note-title(date, title)` (or the `title` snippet) instead of hand-writing
-  the title: the date sits top-left and the title is centred with hyphenation off,
+  the title: the date and title are centred with hyphenation off,
   as a real level-1 heading (so it feeds the outline).
 - `page-type: "notes"` = self-study notes (header on every page, level-3
   headings). `page-type: "lecture"` = lecture handout (numbered footer). Pick one
@@ -147,14 +147,22 @@ See `references/diagrams.md` for the tools, imports, and templates. The rules:
 
 - **All diagrams are code-generated.** Never paste a screenshot or photo unless
   the figure is inherently an image (software UI, a photograph, a scan).
-- **Mermaid-modelled → `mmdr`** (flowcharts, sequence, state, class, ER, Gantt,
-  pie, git graphs). Less error-prone than hand-placing coordinates.
-- **Everything else → CeTZ**, and **logic circuits → Zap**.
+- **CeTZ when the layout needs routing**: state machines and automata (cycles),
+  class/object collaboration, block/architecture and data-flow diagrams,
+  coordinate sketches.
+- **`mmdr` only for what it lays out cleanly**: sequence, Gantt, pie, git, ER,
+  and simple **acyclic** flowcharts/trees with at most one edge per pair of
+  nodes. Cycles and parallel labelled edges produce stacked arrowheads and
+  overlapping labels — use CeTZ instead.
+- **Logic circuits → Zap**.
 - Add the import for the tool you use at the very top of the file
   (`cetz-setup` / `mermaid-setup` snippets). `mmdr` diagrams must pass
   `theme: mmdr-theme`.
 - Wrap each diagram in `#figure(caption: [...])[...]`, centre it, and refer to it
   in the surrounding text.
+- **Render the figure and look at it before moving on** — compile the page to a
+  PNG and `read` it. Overlapping labels and tangled edges are not compile errors,
+  so an unseen diagram is the most common way these notes look bad.
 - Figure captions are styled globally by the theme (smaller, italic, muted
   grey `#718096`); write the caption as plain content and do not wrap it in your
   own `#text(...)`.

@@ -45,6 +45,7 @@ struct State {
     cwd: Option<String>,
     // Raw form of the same path, handed to keybind actions (new tab / yazi).
     cwd_path: Option<PathBuf>,
+    home: Option<PathBuf>,
     config: BTreeMap<String, String>,
     zellij_bin: String,
     yazi_bin: String,
@@ -68,6 +69,10 @@ impl ZellijPlugin for State {
             .get("yazi_bin")
             .cloned()
             .unwrap_or_else(|| "yazi".to_owned());
+        self.home = configuration
+            .get("home")
+            .map(PathBuf::from)
+            .or_else(|| std::env::var("HOME").ok().map(PathBuf::from));
         self.config = configuration;
         self.plugin_id = get_plugin_ids().plugin_id;
         // RunCommands lets the bar answer keybind `MessagePlugin` actions by
@@ -306,7 +311,7 @@ impl State {
             return false;
         };
 
-        let display = display_path(&path);
+        let display = display_path(&path, self.home.as_deref());
         if self.cwd.as_deref() == Some(display.as_str())
             && self.cwd_path.as_deref() == Some(path.as_path())
         {
@@ -514,13 +519,17 @@ fn parse_hex(value: &str) -> Option<Rgb> {
 
 /// Show `~` for the home directory and middle-truncate long paths, matching the
 /// tmux status bar's formatter.
-fn display_path(path: &Path) -> String {
-    let full = path.display().to_string();
-    let display = match std::env::var("HOME") {
-        Ok(home) if !home.is_empty() && full.starts_with(&home) => {
-            format!("~{}", &full[home.len()..])
-        },
-        _ => full,
+fn display_path(path: &Path, home: Option<&Path>) -> String {
+    let display = match home.and_then(|h| path.strip_prefix(h).ok()) {
+        Some(rel) => {
+            let rel_str = rel.display().to_string();
+            if rel_str.is_empty() {
+                "~".to_string()
+            } else {
+                format!("~/{rel_str}")
+            }
+        }
+        None => path.display().to_string(),
     };
 
     let len = display.chars().count();

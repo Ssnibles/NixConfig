@@ -10,7 +10,7 @@
 
 import type { ExtensionAPI, Theme } from "@earendil-works/pi-coding-agent";
 
-// --- PI MASCOT -----------------------------------------------------------------
+// PI MASCOT
 // Renders the little pi agent character (a stylised "pi" with two eyes).
 function getPiMascot(theme: Theme): string[] {
 	const BLOCK = "█";
@@ -40,7 +40,7 @@ function shortenPath(path: string, max = 48): string {
 	return pretty;
 }
 
-// --- LAYOUT HELPERS ------------------------------------------------------------
+// LAYOUT HELPERS
 const ANSI_PATTERN = /\x1b\[[0-9;]*m/g;
 
 // Visible width of a string, ignoring ANSI colour codes.

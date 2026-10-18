@@ -36,7 +36,6 @@ NotificationOverlay 1.0 NotificationOverlay.qml
 Pill 1.0 Pill.qml
 PlaybackControls 1.0 PlaybackControls.qml
 PowerButtons 1.0 PowerButtons.qml
-RiverService 1.0 RiverService.qml
 RoundedImage 1.0 RoundedImage.qml
 SharedTooltipWindow 1.0 SharedTooltipWindow.qml
 SliderControl 1.0 SliderControl.qml

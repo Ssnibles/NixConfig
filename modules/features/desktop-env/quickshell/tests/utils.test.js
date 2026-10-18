@@ -31,7 +31,9 @@ const exported = [
   'findBatteryDevice',
   'screenAt',
   'screenByName',
-  'getOrdinalDate'
+  'getOrdinalDate',
+  'goToSource',
+  'resolveActiveScreen'
 ]
 
 const sandbox = {
@@ -108,6 +110,7 @@ test('batteryIcon handles absent / charging / plugged / level', () => {
   assert.equal(U.batteryIcon(50, false, true, true), '\u{F06A5}')
   assert.equal(U.batteryIcon(0, false, false, true), '\u{F007A}')
   assert.equal(U.batteryIcon(50, false, false, true), '\u{F007E}')
+  assert.equal(U.batteryIcon(75, false, false, true), '\u{F0081}')
   assert.equal(U.batteryIcon(100, false, false, true), '\u{F0079}')
 })
 
@@ -164,3 +167,40 @@ test('getOrdinalDate picks the correct ordinal suffix', () => {
   assert.equal(U.getOrdinalDate(new Date(2025, 9, 22)), '22nd X')
   assert.equal(U.getOrdinalDate(new Date(2025, 9, 23)), '23rd X')
 })
+
+test('goToSource extracts target patterns and invokes raise or actions', () => {
+  let raised = false
+  const player = {
+    raise: () => { raised = true },
+    desktopEntry: 'spotify',
+    identity: 'Spotify',
+    trackTitle: 'Song'
+  }
+  const targets = U.goToSource(player)
+  assert.equal(raised, true)
+  assert.ok(targets.includes('spotify'))
+  assert.ok(targets.includes('Spotify'))
+
+  let defaultInvoked = false
+  const notif = {
+    appName: 'vesktop',
+    actions: [
+      { identifier: 'default', invoke: () => { defaultInvoked = true } }
+    ]
+  }
+  const notifTargets = U.goToSource(notif)
+  assert.equal(defaultInvoked, true)
+  assert.ok(notifTargets.includes('vesktop'))
+  assert.equal(U.goToSource(null).length, 0)
+})
+
+test('resolveActiveScreen selects targetScreen, lastActiveScreen, or screen list fallback', () => {
+  const s1 = { name: 'eDP-1' }
+  const s2 = { name: 'HDMI-1' }
+  assert.equal(U.resolveActiveScreen(s1, s2, [s2]), s1)
+  assert.equal(U.resolveActiveScreen(null, s2, [s1]), s2)
+  assert.equal(U.resolveActiveScreen(null, null, [s1, s2]), s1)
+  assert.equal(U.resolveActiveScreen(null, null, []), null)
+  assert.equal(U.resolveActiveScreen(null, null, null), null)
+})
+

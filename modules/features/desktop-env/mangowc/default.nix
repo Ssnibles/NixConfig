@@ -1,9 +1,6 @@
-# =============================================================================
 # Mango Wayland Compositor Feature
-# =============================================================================
 # Enables Mango Wayland compositor, links config & keybindings, and generates
 # theme colours file via Hjem.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -72,6 +69,7 @@
             rm "$out/bin/$bin"
             makeWrapper ${mango-local-base}/bin/$bin "$out/bin/$bin" \
               --run 'if [ -x /home/${config.username}/mango/result/bin/'"$bin"' ]; then exec /home/${config.username}/mango/result/bin/'"$bin"' "$@"; fi
+                     mkdir -p "''${XDG_CACHE_HOME:-$HOME/.cache}"
                      echo "[mango-dev] $(date +%Y-%m-%d_%H:%M:%S) local build missing, using packaged '"$bin"'" >> "''${XDG_CACHE_HOME:-$HOME/.cache}/mango-dev.log"'
           }
           wrap_mango mango

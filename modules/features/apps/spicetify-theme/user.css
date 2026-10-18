@@ -1,6 +1,4 @@
-/* ==========================================================================
-   Vague — a minimal, modern Spicetify theme
-   --------------------------------------------------------------------------
+/* Vague — a minimal, modern Spicetify theme
    A hand-written theme that mirrors the rest of the NixConfig desktop: the
    active "vague" warm-grey palette, SF Pro typography, gently rounded floating
    panels and a restrained accent highlight.
@@ -12,12 +10,9 @@
 
    Selectors target Spotify's Encore design tokens and the stable
    `.main-*` / `.Root__*` class names, so the theme keeps working across
-   Spotify releases without depending on hashed CSS class names.
-   ========================================================================== */
+   Spotify releases without depending on hashed CSS class names. */
 
-/* --------------------------------------------------------------------------
-   Design tokens
-   -------------------------------------------------------------------------- */
+/* Design tokens */
 :root {
   --radius-lg: 16px;
   --radius: 12px;
@@ -36,9 +31,7 @@
   --encore-overlay-drop-shadow: 0 0 #0000;
 }
 
-/* --------------------------------------------------------------------------
-   Flat surfaces — no shadows or glows anywhere
-   --------------------------------------------------------------------------
+/* Flat surfaces — no shadows or glows anywhere
    The rest of the desktop is flat, so strip every box shadow, text shadow and
    drop shadow — including the ones Spotify ships in its own stylesheets. */
 *,
@@ -57,11 +50,9 @@
   filter: none !important;
 }
 
-/* --------------------------------------------------------------------------
-   Encore token remap
+/* Encore token remap
    Redirect Spotify's own design tokens at the desktop palette so native
-   components (cards, menus, buttons, text, inputs) inherit it automatically.
-   -------------------------------------------------------------------------- */
+   components (cards, menus, buttons, text, inputs) inherit it automatically. */
 :root,
 .encore-base-set,
 .encore-dark-theme,
@@ -98,9 +89,7 @@
   --text-base: var(--spice-main);
 }
 
-/* --------------------------------------------------------------------------
-   Typography
-   -------------------------------------------------------------------------- */
+/* Typography */
 *,
 *::before,
 *::after {
@@ -116,9 +105,7 @@
   font-feature-settings: "tnum" 1;
 }
 
-/* --------------------------------------------------------------------------
-   Panel shell — colour only
-   --------------------------------------------------------------------------
+/* Panel shell — colour only
    Spotify's Encore layout already floats the panels: `.Root__top-container`
    uses `gap`/`padding` of `--panel-gap` (8px) and rounds `.Root__nav-bar` /
    `.Root__main-view` at 8px, while `.Root__now-playing-bar` uses
@@ -150,9 +137,7 @@
   background-color: transparent !important;
 }
 
-/* --------------------------------------------------------------------------
-   Top bar
-   -------------------------------------------------------------------------- */
+/* Top bar */
 .main-topBar-background {
   background-color: var(--spice-main) !important;
   background-image: none !important;
@@ -201,9 +186,7 @@
   background-color: var(--spice-selected-row) !important;
 }
 
-/* --------------------------------------------------------------------------
-   Left sidebar / library
-   -------------------------------------------------------------------------- */
+/* Left sidebar / library */
 .main-yourLibraryX-entryPoints {
   border-radius: var(--radius-sm);
 }
@@ -249,9 +232,7 @@
   background-color: var(--spice-selected-row) !important;
 }
 
-/* --------------------------------------------------------------------------
-   Cards & shelves
-   -------------------------------------------------------------------------- */
+/* Cards & shelves */
 .main-card-card {
   border: var(--hairline) !important;
   border-radius: var(--radius) !important;
@@ -289,9 +270,7 @@
   background-color: transparent !important;
 }
 
-/* --------------------------------------------------------------------------
-   Play buttons & accent controls
-   -------------------------------------------------------------------------- */
+/* Play buttons & accent controls */
 /* Play/pause and card play buttons are `data-encore-id="buttonPrimary"`.
    Spicetify already recolours them through `.encore-bright-accent-set`, and
    Spotify fades the button in on hover. Do NOT paint the background directly:
@@ -315,9 +294,7 @@
   color: var(--spice-button-active) !important;
 }
 
-/* --------------------------------------------------------------------------
-   Progress / volume sliders
-   -------------------------------------------------------------------------- */
+/* Progress / volume sliders */
 .progress-bar {
   --bg-color: var(--spice-selected-row);
   --fg-color: var(--spice-button);
@@ -345,9 +322,7 @@
   transform: scale(1);
 }
 
-/* --------------------------------------------------------------------------
-   Now-playing bar
-   -------------------------------------------------------------------------- */
+/* Now-playing bar */
 .main-nowPlayingWidget-coverArt .cover-art,
 .main-coverSlotCollapsed-container,
 .main-nowPlayingWidget-nowPlaying .cover-art {
@@ -374,9 +349,7 @@
   color: var(--spice-subtext) !important;
 }
 
-/* --------------------------------------------------------------------------
-   Track lists
-   -------------------------------------------------------------------------- */
+/* Track lists */
 .main-trackList-trackListHeader,
 .main-trackList-trackListHeaderRow {
   background-color: var(--spice-main) !important;
@@ -416,9 +389,7 @@
   background-color: var(--spice-button-active) !important;
 }
 
-/* --------------------------------------------------------------------------
-   Menus, modals, tooltips & popovers
-   -------------------------------------------------------------------------- */
+/* Menus, modals, tooltips & popovers */
 .main-contextMenu-menu,
 .main-userWidget-dropDownMenu,
 .main-popupModal-container .main-popupModal-modal,
@@ -456,9 +427,7 @@
   color: var(--spice-text) !important;
 }
 
-/* --------------------------------------------------------------------------
-   Chips, buttons & inputs
-   -------------------------------------------------------------------------- */
+/* Chips, buttons & inputs */
 .ChipInnerComponent {
   border: var(--hairline) !important;
   background-color: var(--spice-card) !important;
@@ -478,9 +447,7 @@
   color: var(--spice-main) !important;
 }
 
-/* --------------------------------------------------------------------------
-   Lyrics
-   -------------------------------------------------------------------------- */
+/* Lyrics */
 .lyrics-lyricsContainer-LyricsLine {
   color: var(--spice-subtext) !important;
 }
@@ -490,9 +457,7 @@
   color: var(--spice-text) !important;
 }
 
-/* --------------------------------------------------------------------------
-   Scrollbars
-   -------------------------------------------------------------------------- */
+/* Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

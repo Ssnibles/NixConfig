@@ -4,7 +4,7 @@ local mod = "SUPER"
 local screenshotDir = G.screenshot_dir
 local specialWS = G.special_workspace
 
--- ── Input Configuration ────────────────────────────────────────────────
+-- Input Configuration
 hl.config({
 	input = {
 		kb_layout = "us",
@@ -27,31 +27,32 @@ if G.isDesktop then
 	})
 end
 
--- ── Cursor Configuration ──────────────────────────────────────────────
+-- Cursor Configuration
 hl.config({
 	cursor = {
 		hide_on_key_press = true,
 	},
 })
 
--- ── Autostart Services ─────────────────────────────────────────────────
+-- Autostart Services
 hl.on("hyprland.start", function()
 	hl.exec_cmd(
 		"bash -lc 'systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE PATH XDG_DATA_DIRS ELECTRON_OZONE_PLATFORM_HINT && dbus-update-activation-environment --systemd --all && systemctl --user start wayland-session.target graphical-session.target && systemctl --user restart vicinae-server.service xdg-desktop-portal-hyprland xdg-desktop-portal'"
 	)
 	hl.exec_cmd("QS_BAR=hyprland quickshell &")
-	hl.exec_cmd("swaybg -i ~/Pictures/wallpaper -m fill &")
+	hl.exec_cmd("swaybg -i " .. G.wallpaper .. " -m fill &")
 	hl.exec_cmd("nm-applet --indicator &")
 end)
 
--- ── Environment Variables ──────────────────────────────────────────────
+-- Environment Variables
 hl.env("QS_BAR", "hyprland")
+hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("QT_QPA_PLATFORM", "wayland")
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "wayland")
 hl.env("XCURSOR_THEME", "Bibata-Modern-Ice")
 hl.env("XCURSOR_SIZE", "24")
 
--- ── General Layout & Styling (Matched to Mango & Niri) ─────────────────
+-- General Layout & Styling (Matched to Mango & Niri)
 hl.config({
 	general = {
 		gaps_in = 12,
@@ -67,7 +68,7 @@ hl.config({
 	},
 })
 
--- ── Decoration Options ─────────────────────────────────────────────────
+-- Decoration Options
 hl.config({
 	decoration = {
 		rounding = 12,
@@ -86,7 +87,7 @@ hl.config({
 	},
 })
 
--- ── Animations ─────────────────────────────────────────────────────────
+-- Animations
 hl.curve("m3_expressive", { type = "bezier", points = { { 0.1, 1 }, { 0, 1 } } })
 hl.curve("m3_expressive_out", { type = "bezier", points = { { 0.3, 0 }, { 0, 1 } } })
 
@@ -103,10 +104,10 @@ hl.animation({ leaf = "fade", enabled = true, speed = 1.8, bezier = "m3_expressi
 hl.animation({ leaf = "layers", enabled = true, speed = 2, bezier = "m3_expressive", style = "slide" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 2.5, bezier = "m3_expressive", style = "slide" })
 
--- ── Layout Presets ─────────────────────────────────────────────────────
+-- Layout Presets
 hl.config({ dwindle = { preserve_split = true } })
 
--- ── Gaming & Performance Optimisations ────────────────────────────────
+-- Gaming & Performance Optimisations
 hl.config({
 	misc = {
 		disable_hyprland_logo = true,
@@ -118,17 +119,17 @@ hl.config({
 	},
 })
 
--- ── Monitors ───────────────────────────────────────────────────────────
+-- Monitors
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 
--- ── Workspaces ─────────────────────────────────────────────────────────
+-- Workspaces
 for i = 1, 5 do
 	hl.workspace_rule({ workspace = tostring(i), persistent = true, default = (i == 1) })
 end
 
 hl.config({ binds = { allow_workspace_cycles = true } })
 
--- ── Window Rules & Gaming Tearing Overrides ────────────────────────────
+-- Window Rules & Gaming Tearing Overrides
 hl.window_rule({ name = "float-borders", match = { float = true }, border_size = 2 })
 hl.window_rule({ name = "pavucontrol", match = { class = "org.pulseaudio.pavucontrol" }, float = true })
 hl.window_rule({ name = "blueman", match = { class = ".blueman-manager-wrapped" }, float = true })
@@ -174,23 +175,23 @@ hl.layer_rule({
 	no_anim = true,
 })
 
--- ── Screenshot & OCR Commands ─────────────────────────────────────────
+-- Screenshot & OCR Commands
 local screenshotCmd = "$HOME/.config/mango/screenshot.sh"
 local screenshotOcrCmd = "$HOME/.config/mango/screenshot.sh ocr"
 
--- ── Keybindings (Unified with Mango & Niri) ────────────────────────────
+-- Keybindings (Unified with Mango & Niri)
 -- Application Launchers
 hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("kitty --single-instance"))
 hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd("vicinae toggle"))
 hl.bind(mod .. " + D", hl.dsp.exec_cmd("quickshell ipc call command-centre toggle"))
-hl.bind(mod .. " + ALT + L", hl.dsp.exec_cmd("quickshell ipc call lockscreen lock"))
+hl.bind(mod .. " + ALT + l", hl.dsp.exec_cmd("quickshell ipc call lockscreen lock"))
 hl.bind(mod .. " + E", hl.dsp.exec_cmd("kitty --single-instance -e yazi"))
 
 -- Window Management
 hl.bind(mod .. " + Q", hl.dsp.window.close())
 hl.bind(mod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(mod .. " + SHIFT + F", hl.dsp.window.fullscreen({ action = "toggle" }))
-hl.bind(mod .. " + V", hl.dsp.exec_cmd("hyprctl dispatch togglefloating"))
+hl.bind(mod .. " + V", hl.dsp.exec_cmd("vicinae cmd launch clipboard:history"))
 hl.bind(mod .. " + C", hl.dsp.exec_cmd("hyprctl dispatch togglefloating"))
 hl.bind(mod .. " + G", hl.dsp.exec_cmd("quickshell ipc call bar toggle"))
 hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
@@ -227,7 +228,7 @@ hl.bind(mod .. " + CTRL + Down", hl.dsp.window.resize({ x = 0, y = 50, relative 
 
 -- Monitor Focus
 hl.bind(mod .. " + ALT + h", hl.dsp.focus({ monitor = "l" }))
-hl.bind(mod .. " + ALT + l", hl.dsp.focus({ monitor = "r" }))
+-- hl.bind(mod .. " + ALT + l", hl.dsp.focus({ monitor = "r" })) -- Collides with Lock Screen (SUPER+ALT+l); use SUPER+ALT+Right
 hl.bind(mod .. " + ALT + k", hl.dsp.focus({ monitor = "u" }))
 hl.bind(mod .. " + ALT + j", hl.dsp.focus({ monitor = "d" }))
 hl.bind(mod .. " + ALT + Left", hl.dsp.focus({ monitor = "l" }))

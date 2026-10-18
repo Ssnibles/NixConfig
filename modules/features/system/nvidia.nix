@@ -1,9 +1,6 @@
-# =============================================================================
 # NVIDIA GPU Hardware Feature (Desktop Host)
-# =============================================================================
 # Proprietary NVIDIA driver configuration, DRM modesetting parameters,
 # VA-API hardware decoding, and Wayland compositor environment overrides.
-# =============================================================================
 { ... }:
 {
   nixos.modules.desktop =

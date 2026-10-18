@@ -1,9 +1,6 @@
-# =============================================================================
 # WRAMP Toolchain & Simulator Distrobox Feature
-# =============================================================================
 # Distrobox launcher scripts and desktop entry for the WRAMP (Waikato RISC
 # Architecture MicroProcessor) toolchain and wsim simulator.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -24,11 +21,21 @@
         "trim"
       ];
 
+      check_container = ''
+        if ! ${pkgs.distrobox}/bin/distrobox list 2>/dev/null | grep -q "| ${container} "; then
+          echo "wramp: Distrobox container '${container}' was not found." >&2
+          echo "Run ~/NixConfig/assets/setup_wramp.sh to create it." >&2
+          exit 1
+        fi
+      '';
+
       tool-wrapper = tool: pkgs.writeShellScriptBin tool ''
+        ${check_container}
         exec ${pkgs.distrobox}/bin/distrobox enter ${container} -- ${tool} "$@"
       '';
 
       wsim-script = pkgs.writeShellScriptBin "wsim" ''
+        ${check_container}
         exec ${pkgs.distrobox}/bin/distrobox enter ${container} -- wsim "$@"
       '';
 

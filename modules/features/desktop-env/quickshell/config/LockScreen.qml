@@ -15,6 +15,7 @@ Scope {
   property string errorMessage: ""
   property int shakeTrigger: 0
   property string pendingPassword: ""
+  property string enteredPassword: ""
   // Guards against a tight start→fail→start loop if PAM keeps erroring without
   // user input. Reset on every user-initiated submit and on a successful unlock.
   property int _authRestarts: 0
@@ -65,6 +66,7 @@ Scope {
     onCompleted: function(result) {
       lockScope.authenticating = false
       lockScope.pendingPassword = ""
+      lockScope.enteredPassword = ""
       if (result === PamResult.Success) {
         lockScope._authRestarts = 0
         lockScope.errorMessage = ""
@@ -83,6 +85,7 @@ Scope {
     onError: function(err) {
       lockScope.authenticating = false
       lockScope.pendingPassword = ""
+      lockScope.enteredPassword = ""
       lockScope.shakeTrigger++
       if (lockScope._authRestarts < lockScope._maxAuthRestarts) {
         lockScope._authRestarts++
@@ -121,6 +124,7 @@ Scope {
         lockScope.errorMessage = ""
         lockScope.authenticating = false
         lockScope.pendingPassword = ""
+        lockScope.enteredPassword = ""
         pam.start()
       }
     }
@@ -182,8 +186,8 @@ Scope {
         Connections {
           target: lockScope
           function onShakeTriggerChanged() {
+            lockScope.enteredPassword = ""
             if (surface.isPrimaryScreen) {
-              passInput.text = ""
               shakeAnimation.start()
               mainBg.forceActiveFocus()
             }
@@ -215,28 +219,48 @@ Scope {
             if (surface.authenticating) return
 
             if (event.key === Qt.Key_Escape) {
-              passInput.focus = false
+              lockScope.enteredPassword = ""
+              if (surface.isPrimaryScreen && passInput) {
+                passInput.focus = false
+              }
               mainBg.forceActiveFocus()
               event.accepted = true
               return
             }
 
-            if (!passInput.activeFocus) {
-              // Ignore alone modifier keys or tabs
-              if (event.key === Qt.Key_Shift || event.key === Qt.Key_Control ||
-                  event.key === Qt.Key_Alt || event.key === Qt.Key_Meta ||
-                  event.key === Qt.Key_CapsLock || event.key === Qt.Key_Tab ||
-                  event.key === Qt.Key_Backtab) {
-                return
-              }
+            // Ignore standalone modifier keys or tabs
+            if (event.key === Qt.Key_Shift || event.key === Qt.Key_Control ||
+                event.key === Qt.Key_Alt || event.key === Qt.Key_Meta ||
+                event.key === Qt.Key_CapsLock || event.key === Qt.Key_Tab ||
+                event.key === Qt.Key_Backtab) {
+              return
+            }
 
-              passInput.forceActiveFocus()
-              if (event.text && event.text.length > 0) {
-                if (event.key !== Qt.Key_Backspace && event.key !== Qt.Key_Return && event.key !== Qt.Key_Enter && event.key !== Qt.Key_Delete) {
-                  passInput.text += event.text
-                }
-                event.accepted = true
+            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+              if (lockScope.enteredPassword.length > 0 && !surface.authenticating) {
+                lockScope.submitPassword(lockScope.enteredPassword)
+                lockScope.enteredPassword = ""
               }
+              event.accepted = true
+              return
+            }
+
+            if (event.key === Qt.Key_Backspace) {
+              if (lockScope.enteredPassword.length > 0) {
+                lockScope.enteredPassword = lockScope.enteredPassword.slice(0, -1)
+              }
+              event.accepted = true
+              return
+            }
+
+            // Ignore modifier shortcuts (Ctrl, Alt combos)
+            if (event.modifiers & (Qt.ControlModifier | Qt.AltModifier)) {
+              return
+            }
+
+            if (event.text && event.text.length > 0) {
+              lockScope.enteredPassword += event.text
+              event.accepted = true
             }
           }
 
@@ -301,7 +325,7 @@ Scope {
             width: Math.min(parent.width - 40, Config.lockCardWidth)
             spacing: 24
 
-            // --- TIME & DATE HEADER ---
+            // TIME & DATE HEADER
             Column {
               Layout.alignment: Qt.AlignHCenter
               spacing: 4
@@ -326,7 +350,7 @@ Scope {
               }
             }
 
-            // --- MEDIA PLAYER CARD (matches the Command Centre media card) ---
+            // MEDIA PLAYER CARD (matches the Command Centre media card)
             MediaCard {
               Layout.fillWidth: true
               seekable: false
@@ -334,7 +358,7 @@ Scope {
               visible: MediaService.hasPlayer && (MediaService.isPlaying || MediaService.trackTitle !== "")
             }
 
-            // --- USER & AUTHENTICATION CARD ---
+            // USER & AUTHENTICATION CARD
             Rectangle {
               Layout.fillWidth: true
               implicitHeight: authCol.implicitHeight + 36
@@ -459,6 +483,11 @@ Scope {
                       focus: false
                       enabled: !surface.authenticating
                       cursorVisible: activeFocus
+                      text: lockScope.enteredPassword
+
+                      onTextEdited: {
+                        lockScope.enteredPassword = passInput.text
+                      }
 
                       onTextChanged: {
                         if (passInput.text.length > 0 && lockScope.errorMessage !== "") {
@@ -469,6 +498,7 @@ Scope {
                       Keys.onPressed: function(event) {
                         surface.capsLockOn = (event.modifiers & Qt.CapsLockModifier) !== 0
                         if (event.key === Qt.Key_Escape) {
+                          lockScope.enteredPassword = ""
                           passInput.focus = false
                           mainBg.forceActiveFocus()
                           event.accepted = true
@@ -482,13 +512,13 @@ Scope {
                         color: Colours.fgDim
                         font.family: Config.sansFont
                         font.pixelSize: 16
-                        visible: passInput.text.length === 0 && !passInput.activeFocus
+                        visible: lockScope.enteredPassword.length === 0 && !passInput.activeFocus
                       }
 
                       onAccepted: {
-                        if (passInput.text.length > 0 && !surface.authenticating) {
-                          lockScope.submitPassword(passInput.text)
-                          passInput.text = ""
+                        if (lockScope.enteredPassword.length > 0 && !surface.authenticating) {
+                          lockScope.submitPassword(lockScope.enteredPassword)
+                          lockScope.enteredPassword = ""
                         }
                       }
                     }
@@ -522,8 +552,9 @@ Scope {
                         onEntered: parent.scale = 0.92
                         onExited: parent.scale = 1.0
                         onClicked: {
-                          if (passInput.text.length > 0 && !surface.authenticating) {
-                            passInput.accepted()
+                          if (lockScope.enteredPassword.length > 0 && !surface.authenticating) {
+                            lockScope.submitPassword(lockScope.enteredPassword)
+                            lockScope.enteredPassword = ""
                           }
                         }
                       }
@@ -563,7 +594,7 @@ Scope {
               }
             }
 
-            // --- BOTTOM SYSTEM POWER CONTROLS ---
+            // BOTTOM SYSTEM POWER CONTROLS
             PowerButtons {
               Layout.fillWidth: true
               showLock: false

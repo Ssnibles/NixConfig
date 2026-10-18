@@ -7,11 +7,18 @@
 # import. Fail the build if any of those drift apart.
 #
 #   bash check-sync.sh <dir-containing-typst.lua-page-preamble.typ-theme.typ>
-set -euo pipefail
-dir="${1:-$(cd "$(dirname "$0")" && pwd)/references}"
-lua="$dir/typst.lua"
-typ="$dir/page-preamble.typ"
-theme="$dir/theme.typ"
+if [ $# -ge 1 ]; then
+  dir="$1"
+  lua="$dir/typst.lua"
+  typ="$dir/page-preamble.typ"
+  theme="$dir/theme.typ"
+else
+  base="$(cd "$(dirname "$0")" && pwd)"
+  repo="$(cd "$base/../../../../../.." && pwd)"
+  lua="$repo/modules/features/nvim-src/lua/snippets/typst.lua"
+  typ="$base/references/page-preamble.typ"
+  theme="$repo/modules/packages/uni-notes/theme.typ"
+fi
 
 fail() { echo "typst-snippet drift: $1" >&2; exit 1; }
 

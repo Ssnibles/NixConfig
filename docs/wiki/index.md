@@ -54,17 +54,18 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 
 | Subsystem | Primary Nix Module Location | Custom Config / Source | Wiki Guide |
 | :--- | :--- | :--- | :--- |
-| **Compositors** | `modules/features/desktop-env/` | `mangowc/`, `niri/`, `hyprland/`, `shikane/` | [compositors.md](compositors.md) |
+| **Compositors** | `modules/features/desktop-env/` | `mangowc/`, `niri/`, `hyprland/`, `shikane/`, `vicinae/` | [compositors.md](compositors.md) |
 | **Quickshell UI** | `modules/features/desktop-env/quickshell/` | `modules/features/desktop-env/quickshell/config/` | [quickshell.md](quickshell.md) |
-| **Terminal & Multiplexer** | `modules/features/apps/kitty.nix`, `modules/features/shell/` | `modules/packages/navi/`, `tmux.nix`, `shell.nix` | [terminal-workflow.md](terminal-workflow.md) |
+| **Live Link Registry** | `modules/core/live-links.nix` | Declarative symlink engine with `contents = true` | [neovim.md](neovim.md) / [quickshell.md](quickshell.md) |
+| **Terminal & Multiplexers** | `modules/features/apps/kitty.nix`, `modules/features/shell/` | `modules/packages/navi/`, `tmux.nix`, `zellij.nix`, `zellij-plugin/` | [terminal-workflow.md](terminal-workflow.md) |
 | **Declarative Neovim** | `modules/features/apps/neovim.nix` | `modules/features/nvim-src/` | [neovim.md](neovim.md) |
 | **Jujutsu (jj)** | `modules/features/shell/cli.nix` | `~/.config/jj/config.toml` | [jujutsu.md](jujutsu.md) |
-| **Pi Agent & Hermes** | `modules/features/apps/pi-agent.nix`, `hermes.nix` | `~/.hermes/config.yaml`, `pi.nix` | [ai-tools.md](ai-tools.md) |
+| **Pi Agent & Hermes** | `modules/features/apps/pi-agent.nix`, `hermes.nix` | `pi-agent/skills/`, `~/.hermes/config.yaml`, `pi.nix` | [ai-tools.md](ai-tools.md) |
 | **ESP32 & Arduino** | `modules/features/apps/development.nix` | `templates/esp32-arduino/` | [esp32-arduino.md](esp32-arduino.md) |
 | **WRAMP Toolchain** | `modules/features/apps/wramp.nix` | `assets/setup_wramp.sh` | [wramp.md](wramp.md) |
-| **Media & Audio** | `modules/features/apps/media.nix`, `system/pipewire.nix` | `mpv.conf`, `zathurarc` | [media-audio.md](media-audio.md) |
-| **Firefox & Helium** | `modules/features/apps/firefox/`, `apps/helium/` | `userChrome.css`, `userContent.css` | [firefox.md](firefox.md) |
-| **Gaming & PS5** | `modules/features/apps/gaming.nix` | `modules/packages/dualsense-pair/` | [gaming.md](gaming.md) |
+| **Media, Notes & Audio** | `modules/features/apps/media.nix`, `system/pipewire.nix` | `modules/packages/uni-notes/`, `mpv.conf`, `zathurarc` | [media-audio.md](media-audio.md) |
+| **Firefox & Helium** | `modules/features/apps/firefox/`, `apps/helium/` | `userChrome.css`, `userContent.css`, `startpage/` | [firefox.md](firefox.md) |
+| **Gaming & Minecraft** | `modules/features/apps/gaming.nix`, `apps/minecraft.nix` | `dualsense-pair/`, Prism Launcher, BedrockOnLinux | [gaming.md](gaming.md) |
 | **Frame Remote Desktop** | `modules/features/apps/frame.nix` | `assets/setup_frame.sh` | [frame.md](frame.md) |
 | **Flatpak & Sandboxed Apps** | `modules/features/system/flatpak.nix` | `nix-flatpak`, Flathub remote | [flatpak.md](flatpak.md) |
 | **Tailscale & Syncthing** | `modules/features/system/tailscale.nix`, `syncthing.nix` | Tailscale client, Syncthing service | [networking-sync.md](networking-sync.md) |

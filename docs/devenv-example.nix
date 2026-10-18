@@ -1,20 +1,17 @@
-# =============================================================================
 # Example devenv.nix Modular Configuration
-# =============================================================================
 # Use this file as a template when setting up a new project with devenv!
 # Documentation & options reference: https://devenv.sh/reference/options/
-# =============================================================================
 { pkgs, lib, config, inputs, ... }:
 
 {
-  # ── Environment Variables ──────────────────────────────────────────────────
+  # Environment Variables
   env = {
     APP_ENV = "development";
     PORT = "8080";
     # DATABASE_URL = "postgres://postgres:postgres@localhost:5432/myapp_dev";
   };
 
-  # ── Package Toolchain ──────────────────────────────────────────────────────
+  # Package Toolchain
   # Extra CLI tools needed in the shell (beyond language defaults)
   packages = with pkgs; [
     git
@@ -24,7 +21,7 @@
     fd
   ];
 
-  # ── Language Toolchains & Frameworks ───────────────────────────────────────
+  # Language Toolchains & Frameworks
   # Enable language support out-of-the-box with managed toolchains & LSPs:
 
   # Rust
@@ -59,7 +56,7 @@
   # Nix formatting & LSP support
   languages.nix.enable = true;
 
-  # ── Background Services (Orchestrated in Dev Shell) ───────────────────────
+  # Background Services (Orchestrated in Dev Shell)
   # Services start automatically with `devenv up` or process manager:
 
   # PostgreSQL
@@ -77,7 +74,7 @@
   #   port = 6379;
   # };
 
-  # ── Pre-commit Git Hooks ───────────────────────────────────────────────────
+  # Pre-commit Git Hooks
   # Automatically runs formatters and linters on `git commit`
   pre-commit.hooks = {
     # Nix formatter
@@ -94,7 +91,7 @@
     trailing-whitespace.enable = true;
   };
 
-  # ── Custom Shell Scripts & Tasks ───────────────────────────────────────────
+  # Custom Shell Scripts & Tasks
   # Define project-specific CLI shortcuts (`devenv run <script>` or directly in shell)
   scripts = {
     dev.exec = ''
@@ -109,7 +106,7 @@
     '';
   };
 
-  # ── Shell Entry Hook ───────────────────────────────────────────────────────
+  # Shell Entry Hook
   enterShell = ''
     echo "=================================================="
     echo "🚀 Developer Environment Activated!"

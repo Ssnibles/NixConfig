@@ -1,6 +1,4 @@
-# =============================================================================
 # Interactive Shell Environment (Fish, Starship, Direnv)
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -27,7 +25,7 @@
         enableFishIntegration = true;
       };
 
-      # ── Hjem Dotfiles for Shell Configuration ────────────────────────────
+      # Hjem Dotfiles for Shell Configuration
       hjem.users.${config.username}.files = {
 
         ".config/fish/config.fish" = {
@@ -93,7 +91,12 @@
                     set mode file
                 end
 
-                set -l cache_dir "/tmp/fzf_fd_cache_$USER"
+                set -l cache_dir
+                if test -n "$XDG_RUNTIME_DIR"
+                    set cache_dir "$XDG_RUNTIME_DIR/fzf_fd_cache"
+                else
+                    set cache_dir "/tmp/fzf_fd_cache_$USER"
+                end
                 command mkdir -p $cache_dir
 
                 set -l pwd_hash (pwd | sha256sum | string sub -l 16)
@@ -113,10 +116,16 @@
                 end
 
                 if test $needs_refresh -eq 1
+                    set -l tmp_file "$cache_file.tmp.$fish_pid"
                     if test "$mode" = "dir"
-                        fd --type d --strip-cwd-prefix --hidden --exclude .git > "$cache_file" 2>/dev/null
+                        fd --type d --strip-cwd-prefix --hidden --exclude .git > "$tmp_file" 2>/dev/null
                     else
-                        fd --type f --strip-cwd-prefix --hidden --exclude .git > "$cache_file" 2>/dev/null
+                        fd --type f --strip-cwd-prefix --hidden --exclude .git > "$tmp_file" 2>/dev/null
+                    end
+                    if test -s "$tmp_file" -o $status -eq 0
+                        command mv -f "$tmp_file" "$cache_file"
+                    else
+                        command rm -f "$tmp_file"
                     end
                 end
 
@@ -210,7 +219,7 @@
         MANPAGER = "sh -c 'col -bx | bat -l man -p'";
       };
 
-      # ── Fish Program Configuration ───────────────────────────────────────
+      # Fish Program Configuration
       programs.fish = {
         enable = true;
         package = pkgs.unstable.fish;
@@ -251,7 +260,7 @@
         nix-direnv.enable = true;
       };
 
-      # ── Starship Prompt Configuration ────────────────────────────────────
+      # Starship Prompt Configuration
       programs.starship = {
         enable = true;
         package = pkgs.unstable.starship;

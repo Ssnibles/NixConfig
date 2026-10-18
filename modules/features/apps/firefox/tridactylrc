@@ -1,9 +1,7 @@
-" ==============================================================================
 " Tridactyl Configuration — Standard Vim Bindings
 " Clean modal navigation without Space-prefixed bindings
-" ==============================================================================
 
-" ── Link Hinting & Following ──────────────────────────────────────────────────
+" Link Hinting & Following
 bind f hint
 bind F hint -b
 bind ;b hint -b
@@ -13,7 +11,7 @@ bind ;i hint -i
 bind ;I hint -I
 bind ;s hint -s
 
-" ── Opening URLs & Searches ───────────────────────────────────────────────────
+" Opening URLs & Searches
 bind o fillcmdline open
 bind t fillcmdline tabopen
 bind O current_url open
@@ -21,12 +19,12 @@ bind T current_url tabopen
 bind w fillcmdline winopen
 bind b fillcmdline buffer
 
-" ── Search Engines ────────────────────────────────────────────────────────────
+" Search Engines
 set searchurls.searx https://search.ssnibles.xyz/search?q=%s
 set searchurls.s https://search.ssnibles.xyz/search?q=%s
 set searchengine searx
 
-" ── Tab Navigation & Lifecycle ────────────────────────────────────────────────
+" Tab Navigation & Lifecycle
 bind d tabclose
 bind u undo
 bind U undo
@@ -42,7 +40,7 @@ bind ga tab #
 bind r reload
 bind R reload --hard
 
-" ── Page Scrolling & Movement ─────────────────────────────────────────────────
+" Page Scrolling & Movement
 bind j scrollline 10
 bind k scrollline -10
 bind h scrollline -10 x
@@ -54,26 +52,25 @@ bind G scrollto 100
 bind H back
 bind L forward
 
-" ── Clipboard & Yanking ───────────────────────────────────────────────────────
+" Clipboard & Yanking
 bind yy clipboard yank
 bind p clipboard open
 bind P clipboard tabopen
 
-" ── In-Page Search ────────────────────────────────────────────────────────────
+" In-Page Search
 bind / fillcmdline find
 bind ? fillcmdline find -?
 bind n findnext 1
 bind N findnext -1
 bind <Esc> composite nohlsearch; mode normal
 
-" ── Text Input & External Editor ──────────────────────────────────────────────
+" Text Input & External Editor
 bind gi focusinput -l
 set editorcmd kitty --single-instance -e nvim %f
 
-" ── Visual Theme & Options ────────────────────────────────────────────────────
+" Visual Theme & Options
 set smoothscroll true
 set hintfiltermode vimperator-reflow
 set hintnames uniform
 set newtab about:newtab
 colors dark
-

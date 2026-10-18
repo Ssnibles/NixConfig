@@ -132,6 +132,10 @@ QtObject {
     var symUpper = sym.toUpperCase()
     var symLower = sym.toLowerCase()
 
+    if (symUpper === "M" || symUpper === "[M]" || /^\[\d+\]$/.test(sym) || symLower === "monocle") {
+      return availableLayouts[2] // Monocle
+    }
+
     for (var i = 0; i < availableLayouts.length; i++) {
       var item = availableLayouts[i]
       if (symUpper === item.symbol || symLower === item.layoutName || symLower === item.name.toLowerCase()) {
@@ -181,10 +185,10 @@ QtObject {
   }
 
   function nextLayout() {
-    var curSym = (root.currentLayoutSymbol || "DW").toUpperCase()
+    var info = getLayoutInfo(root.currentLayoutSymbol)
     var curIdx = -1
     for (var i = 0; i < availableLayouts.length; i++) {
-      if (availableLayouts[i].symbol === curSym || availableLayouts[i].layoutName === curSym.toLowerCase()) {
+      if (availableLayouts[i].layoutName === info.layoutName) {
         curIdx = i
         break
       }

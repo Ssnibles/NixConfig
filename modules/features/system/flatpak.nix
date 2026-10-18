@@ -1,13 +1,10 @@
-# =============================================================================
 # System Flatpak Feature
-# =============================================================================
 # Declarative Flatpak support via the nix-flatpak module (gmodena). NixOS'
 # built-in services.flatpak only knows `enable`; nix-flatpak adds the
 # declarative `remotes` and `packages` options used below.
 #
 # Nuvio Desktop is NOT published on Flathub, so it is installed from a
 # version-pinned GitHub release `.flatpak` bundle. Sober is pulled from Flathub.
-# =============================================================================
 { inputs, ... }:
 let
   # Nuvio Desktop (https://github.com/NuvioMedia/NuvioDesktop) is alpha software

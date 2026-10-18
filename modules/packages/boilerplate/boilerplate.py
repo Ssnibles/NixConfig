@@ -88,6 +88,7 @@ def host_templates(name: str) -> dict[Path, str]:
             {{ inputs, config, ... }}:
             {{
               flake.nixosConfigurations.{name} = inputs.nixpkgs.lib.nixosSystem {{
+                specialArgs = {{ inherit inputs; }};
                 modules = [
                   config.nixos.modules.shared
                   config.nixos.modules.{name}
@@ -113,7 +114,7 @@ def host_templates(name: str) -> dict[Path, str]:
                   environment.systemPackages = with pkgs; [
                   ];
 
-                  system.stateVersion = "25.11";
+                  system.stateVersion = "26.05";
                 }};
             }}
             """
@@ -446,7 +447,7 @@ def planned_files(
 
 
 def update_module_groups(root: Path, host_name: str) -> bool:
-    groups_path = root / "modules/module-groups.nix"
+    groups_path = root / "modules/core/module-groups.nix"
     if not groups_path.exists():
         return False
 
@@ -492,7 +493,7 @@ def print_templates_help() -> None:
     print(fmt("Available Boilerplate Kinds & Templates:", Colours.BOLD))
     print()
     for kind, tmpls in TEMPLATES_INFO.items():
-        print(f"  {fmt(kind, Colours.CYAN)} (target directory: modules/{kind}s/):")
+        print(f"  {fmt(kind, Colours.CYAN)} (target directory: {KIND_LAYOUTS[kind]}/):")
         for tmpl, desc in tmpls.items():
             print(f"    - {fmt(tmpl, Colours.GREEN)}: {desc}")
         print()
@@ -528,7 +529,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--update-groups",
         action="store_true",
-        help="Automatically register host in modules/module-groups.nix when creating a host",
+        default=True,
+        help="Automatically register host in modules/core/module-groups.nix when creating a host (default: enabled)",
+    )
+    parser.add_argument(
+        "--no-update-groups",
+        action="store_false",
+        dest="update_groups",
+        help="Do not automatically update modules/core/module-groups.nix when creating a host",
     )
     parser.add_argument(
         "-l",
@@ -607,10 +615,10 @@ def main() -> int:
 
     updated_groups = False
     if args.kind == "host":
-        if args.update_groups or True: # Automatically attempt to update module-groups.nix for host creation
+        if args.update_groups:
             updated_groups = update_module_groups(root, args.name)
             if updated_groups and not args.no_git_stage:
-                stage([root / "modules/module-groups.nix"], root)
+                stage([root / "modules/core/module-groups.nix"], root)
 
     if not args.no_git_stage:
         stage(targets, root)
@@ -620,12 +628,12 @@ def main() -> int:
         print(f"  {target.relative_to(root)}")
 
     if updated_groups:
-        print(fmt("  modules/module-groups.nix (updated host options)", Colours.CYAN))
+        print(fmt("  modules/core/module-groups.nix (updated host options)", Colours.CYAN))
 
     if args.kind == "host" and not updated_groups:
         print()
         print(fmt("Next Steps:", Colours.BOLD))
-        print(f"  Remember to declare option `options.nixos.modules.{args.name}` in modules/module-groups.nix")
+        print(f"  Remember to declare option `options.nixos.modules.{args.name}` in modules/core/module-groups.nix")
 
     return 0
 

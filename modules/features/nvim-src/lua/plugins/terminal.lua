@@ -1,4 +1,4 @@
--- ── Terminal toggle ───────────────────────────────────────────────────
+-- Terminal toggle
 
 -- fzf-lua runs its picker inside a terminal buffer too (filetype "fzf").
 -- When a picker is hidden (default <M-Esc> = "hide" / the `hide` profile) the
@@ -97,7 +97,7 @@ vim.keymap.set("n", "<leader>tf", function()
 	toggle_terminal("float")
 end, { desc = "Toggle terminal (float)" })
 
--- ── Terminal autocommands ────────────────────────────────────────────
+-- Terminal autocommands
 
 vim.api.nvim_create_autocmd({ "TermOpen", "BufWinEnter" }, {
 	callback = function()

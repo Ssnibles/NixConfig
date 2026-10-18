@@ -8,12 +8,14 @@ This document details the [Quickshell](https://quickshell.outfoxxed.me/) QML des
 
 Quickshell powers the horizontal top status bar (`bar.qml`), the vertical Niri status bar (`niri-bar.qml`), the **Command Centre** quick-settings dashboard, the Wayland **Lock Screen**, the desktop **Notification daemon and overlay**, and shared UI primitives.
 
-All QML source files live in `modules/features/desktop-env/quickshell/config/` and are symlinked directly to `~/.config/quickshell/` by NixOS activation scripts:
+All QML source files live in `modules/features/desktop-env/quickshell/config/` and are symlinked directly to `~/.config/quickshell/` via `nixos.liveLinks` (`contents = true`), while generated theme files (`Colours.qml`) are managed declaratively by Hjem:
 
 ```
 modules/features/desktop-env/quickshell/
 ├── default.nix                   # Nix module installing quickshell & generating Colours.qml
 ├── README.md                     # Module reference & development guide
+├── tests/
+│   └── utils.test.js             # Node.js unit test suite for Utils.js
 └── config/                       # Live QML source code (symlinked to ~/.config/quickshell/)
     ├── shell.qml                 # Root application entry point (Scope)
     ├── Config.qml                # Singleton storing UI layout dimensions & fonts
@@ -21,7 +23,7 @@ modules/features/desktop-env/quickshell/
     ├── Utils.js                  # Shared JavaScript helper functions
     ├── qmldir.lsp                # Optional staged manifest for editor/LSP tooling
     │
-    ├── bar.qml                   # Top horizontal bar (MangoWC, River, Hyprland)
+    ├── bar.qml                   # Top horizontal bar (MangoWC, Hyprland)
     ├── niri-bar.qml              # Vertical side bar (Niri)
     ├── CommandCentre.qml         # Slide-out quick settings dashboard
     ├── CommandCentreButton.qml   # Toggle button in status bar
@@ -35,7 +37,6 @@ modules/features/desktop-env/quickshell/
     ├── MangoService.qml          # MangoWC IPC backend (mmsg)
     ├── HyprlandService.qml       # Hyprland IPC backend (hyprctl)
     ├── NiriService.qml           # Niri event-stream backend
-    ├── RiverService.qml          # River IPC backend (ristate)
     ├── MediaService.qml          # MPRIS media player backend
     ├── WindowFocuser.qml         # Native-first window activation (no Node fallback)
     │
@@ -85,7 +86,8 @@ Quickshell does not hardcode compositor dependencies into individual UI widgets.
 - In MangoWC, it communicates via `MangoService.qml` (`mmsg`).
 - In Hyprland, it communicates via `HyprlandService.qml` (`hyprctl`).
 - In Niri, it parses the JSON stream from `NiriService.qml` (`niri msg --json event-stream`).
-- In River, it hooks into `RiverService.qml`.
+
+`NiriService` and `CommandCentre` process CLI output using `StdioCollector` hooked to `onStreamFinished` rather than `onDataChanged`, ensuring complete JSON streams and hardware states are collected before parsing.
 
 This enables swapping between Wayland compositors while keeping the exact same status bar, notification centre, lock screen, and styling.
 
@@ -102,6 +104,8 @@ This enables swapping between Wayland compositors while keeping the exact same s
 - Toggled via **`SUPER + Alt + L`** or `quickshell ipc call lockscreen lock`.
 - Utilises the Wayland `ext-session-lock-v1` protocol, guaranteeing that no windows or notifications leak while locked.
 - Authenticates directly against system PAM for password validation.
+- **Unified Multi-Monitor Focus**: Password input state (`enteredPassword`) is stored on the root singleton `Scope` rather than inside per-monitor surface text inputs. When multi-monitor setups lock, keystrokes captured on secondary surfaces route directly to the active password buffer on the primary screen, eliminating secondary-monitor focus traps.
+- **Modifier Filtering**: Keypress handlers explicitly guard against `Ctrl` and `Alt` modifiers (`!(event.modifiers & (Qt.ControlModifier | Qt.AltModifier))`), preventing control characters from corrupting typed passwords.
 
 ---
 
@@ -111,6 +115,23 @@ Quickshell includes a built-in Freedesktop notification daemon replacement:
 - **`NotificationStore.qml`**: Listens for DBus notifications (`org.freedesktop.Notifications`), filters incoming messages, and manages historical stores.
 - **`NotificationOverlay.qml`**: Renders smooth toast cards on the top-right corner of the active monitor.
 - Integrates with system daemons like `journal-error-notify` (notifying on boot failures) and `shikane` (display profile changes).
+
+---
+
+## Unit Testing Framework (`tests/utils.test.js`)
+
+Quickshell includes a zero-dependency Node.js unit test suite in `modules/features/desktop-env/quickshell/tests/utils.test.js`:
+
+```bash
+node --test modules/features/desktop-env/quickshell/tests/utils.test.js
+```
+
+The test runner validates core JavaScript helpers in `Utils.js` inside an isolated Node `vm` context:
+- Two-digit padding (`pad2`) and audio track duration formatting (`formatTime`).
+- Media metadata sanitation (stripping site suffixes and track counters).
+- Application ID normalization (`prettifyAppName`) and window title formatting (`formatActiveTitle`).
+- Battery icon state mapping (0% through 100%, plugged, charging, discharging).
+- `goToSource` window activation rules and multi-output target screen resolution (`resolveActiveScreen`).
 
 ---
 

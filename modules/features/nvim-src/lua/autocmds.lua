@@ -10,7 +10,7 @@ local trim_skip = { markdown = true, ["markdown.mdx"] = true, text = true, gitco
 -- Filetypes using indent folding instead of treesitter
 local fold_indent = { "markdown", "markdown.mdx", "text", "gitcommit", "typst", "txt", "yaml", "json", "toml" }
 
--- ── Tree-sitter highlighting ─────────────────────────────────────────
+-- Tree-sitter highlighting
 autocmd("FileType", {
 	group = augroup,
 	callback = function(ev)
@@ -21,7 +21,7 @@ autocmd("FileType", {
 	end,
 })
 
--- ── Trim trailing whitespace on save ─────────────────────────────────
+-- Trim trailing whitespace on save
 autocmd("BufWritePre", {
 	group = augroup,
 	callback = function()
@@ -36,7 +36,7 @@ autocmd("BufWritePre", {
 	end,
 })
 
--- ── Yank/paste highlight ────────────────────────────────────────────
+-- Yank/paste highlight
 -- vim.hl.on_yank() is deprecated in 0.13 (removed in 0.14); vim.hl.hl_op()
 -- replaces it and also supports TextPutPost for paste highlighting.
 autocmd({ "TextYankPost", "TextPutPost" }, {
@@ -46,10 +46,10 @@ autocmd({ "TextYankPost", "TextPutPost" }, {
 	end,
 })
 
--- ── Check for external changes on focus ──────────────────────────────
+-- Check for external changes on focus
 autocmd("FocusGained", { group = augroup, command = "checktime" })
 
--- ── Restore cursor position ──────────────────────────────────────────
+-- Restore cursor position
 autocmd("BufReadPost", {
 	group = augroup,
 	callback = function(ev)
@@ -64,7 +64,7 @@ autocmd("BufReadPost", {
 	end,
 })
 
--- ── Close utility windows with q / <Esc> ────────────────────────────
+-- Close utility windows with q / <Esc>
 autocmd("FileType", {
 	group = augroup,
 	pattern = close_with_q,
@@ -74,10 +74,10 @@ autocmd("FileType", {
 	end,
 })
 
--- ── Equalise splits on resize ────────────────────────────────────────
+-- Equalise splits on resize
 autocmd("VimResized", { group = augroup, command = "wincmd =" })
 
--- ── Auto-comment formatting ──────────────────────────────────────────
+-- Auto-comment formatting
 -- Keep 'r' so <CR> in insert mode continues comments (block comments, doc comments, etc.)
 -- Remove 'o' so 'o' in normal mode doesn't auto-insert comments, and 'c' to prevent textwidth auto-wrapping.
 autocmd("FileType", {
@@ -95,7 +95,7 @@ autocmd("FileType", {
 	end,
 })
 
--- ── Prose filetypes: spell + wrap ────────────────────────────────────
+-- Prose filetypes: spell + wrap
 autocmd("FileType", {
 	group = augroup,
 	pattern = { "markdown", "markdown.mdx", "text", "gitcommit" },
@@ -106,7 +106,7 @@ autocmd("FileType", {
 	end,
 })
 
--- ── Relative line numbers toggle on insert ───────────────────────────
+-- Relative line numbers toggle on insert
 -- Only auto-hide relative numbers when the user hasn't disabled them with
 -- <leader>tn (tracked via vim.g.relativenumber_enabled).
 local function relativenumber_enabled()
@@ -123,7 +123,7 @@ autocmd({ "InsertEnter", "InsertLeave" }, {
 	end,
 })
 
--- ── Cursorline follows focus ─────────────────────────────────────────
+-- Cursorline follows focus
 autocmd({ "WinEnter", "WinLeave" }, {
 	group = augroup,
 	callback = function(ev)
@@ -133,7 +133,7 @@ autocmd({ "WinEnter", "WinLeave" }, {
 	end,
 })
 
--- ── Indent folding for structured text ───────────────────────────────
+-- Indent folding for structured text
 autocmd("FileType", {
 	group = augroup,
 	pattern = fold_indent,
@@ -143,7 +143,7 @@ autocmd("FileType", {
 	end,
 })
 
--- ── Help keywordprg for Lua/Vim ──────────────────────────────────────
+-- Help keywordprg for Lua/Vim
 autocmd("FileType", {
 	group = augroup,
 	pattern = { "lua", "vim" },
@@ -152,7 +152,7 @@ autocmd("FileType", {
 	end,
 })
 
--- ── Typst preview & Zathura sync ─────────────────────────────────────
+-- Typst preview & Zathura sync
 autocmd("FileType", {
 	group = augroup,
 	pattern = "typst",
@@ -176,7 +176,7 @@ autocmd("FileType", {
 	end,
 })
 
--- ── Large file performance guard ─────────────────────────────────────
+-- Large file performance guard
 -- Flag big files in BufReadPre (before FileType starts Tree-sitter) so the
 -- expensive highlighting is never enabled for them.
 local LARGE_FILE_MB = 5

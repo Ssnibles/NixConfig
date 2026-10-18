@@ -1,11 +1,8 @@
-# =============================================================================
 # Spotify & Spicetify Application Feature
-# =============================================================================
 # Spotify desktop music player configured and customised with Spicetify.
 # Uses a hand-written "Vague" theme (modules/features/apps/spicetify-theme)
 # that mirrors the active system palette, typography and rounded desktop
 # styling, plus useful extensions and custom sidebar apps.
-# =============================================================================
 { inputs, ... }:
 {
   nixos.modules.shared =

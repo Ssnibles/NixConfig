@@ -1,9 +1,6 @@
-# =============================================================================
 # Shared Host Base Configuration
-# =============================================================================
 # Core hardware tuning, bootloader (Limine), graphics acceleration, login manager (Ly),
 # udev kernel remaps (Caps/Esc swap), swap, and systemd service optimisations.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -11,13 +8,13 @@
     {
       nixpkgs.hostPlatform = "x86_64-linux";
 
-      # ── Bootloader & Firmware ──────────────────────────────────────────────
+      # Bootloader & Firmware
       boot.loader.limine.enable = true;
       boot.loader.limine.maxGenerations = 10;
       boot.loader.efi.canTouchEfiVariables = true;
       boot.loader.timeout = 5;
 
-      # ── Hardware Graphics Acceleration (Mesa / Vulkan) ────────────────────
+      # Hardware Graphics Acceleration (Mesa / Vulkan)
       hardware.graphics = {
         enable = true;
         enable32Bit = true;
@@ -25,7 +22,7 @@
 
       hardware.keyboard.qmk.enable = true;
 
-      # ── Kernel & Performance Tuning ───────────────────────────────────────
+      # Kernel & Performance Tuning
       boot.kernelPackages = pkgs.unstable.linuxPackages_latest;
 
       boot.initrd.systemd.enable = true;
@@ -60,7 +57,7 @@
         ELECTRON_OZONE_PLATFORM_HINT = "auto";
       };
 
-      # ── System Journal & Power Management ─────────────────────────────────
+      # System Journal & Power Management
       features.foot.enable = false;
 
       services.journald.settings.Journal = {
@@ -72,18 +69,18 @@
 
       services.upower.enable = true;
 
-      # ── Display Manager & Authentication ─────────────────────────────────
+      # Display Manager & Authentication
       services.displayManager.ly.enable = true;
       security.pam.services.ly.enableGnomeKeyring = true;
       services.gnome.gnome-keyring.enable = true;
 
-      # ── Security Hardening ────────────────────────────────────────────────
+      # Security Hardening
       # Show asterisks while typing a sudo password.
       security.sudo.extraConfig = "Defaults pwfeedback";
       # Default AppArmor profile set (kernel LSM, no user-space daemon).
       security.apparmor.enable = true;
 
-      # ── Kernel-level Keyboard Mapping (Caps Lock <-> Escape Swap) ─────────
+      # Kernel-level Keyboard Mapping (Caps Lock <-> Escape Swap)
       services.udev.extraHwdb = ''
         evdev:atkbd:dmi:bvn*:bvr*:bd*:svn*:pn*:pvr*
          KEYBOARD_KEY_3a=esc
@@ -93,7 +90,7 @@
          KEYBOARD_KEY_70029=capslock
       '';
 
-      # ── Networking & Filesystems ──────────────────────────────────────────
+      # Networking & Filesystems
       networking.hostName = "nixos";
 
       fileSystems."/" = {
@@ -108,7 +105,7 @@
         priority = 100;
       };
 
-      # ── Systemd Boot & Service Optimisations ──────────────────────────────
+      # Systemd Boot & Service Optimisations
       systemd.services.NetworkManager-wait-online.enable = false;
 
       # Disable systemd-boot random seed update since Limine is used (saves ~8.9s on boot)
@@ -125,7 +122,7 @@
       systemd.services.dbus.restartTriggers = lib.mkForce [ ];
       systemd.user.services.dbus.restartTriggers = lib.mkForce [ ];
 
-      # ── D-Bus duplicate-service-name log spam ────────────────────────────
+      # D-Bus duplicate-service-name log spam
       # NixOS' generated /etc/dbus-1/{session,system}.conf lists both
       # <standard_session_servicedirs/> (which resolves $XDG_DATA_DIRS, including
       # /run/current-system/sw/share where every package's dbus-1/services is

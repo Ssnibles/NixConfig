@@ -1,7 +1,7 @@
 local dap = require("dap")
 local dapui = require("dapui")
 
--- ── DAP UI ───────────────────────────────────────────────────────────
+-- DAP UI
 
 dapui.setup({
 	icons = { expanded = "▾", collapsed = "▸", current_frame = "▸" },
@@ -31,7 +31,7 @@ dap.listeners.before.event_exited.dapui_config = function()
 	dapui.close()
 end
 
--- ── Helpers ──────────────────────────────────────────────────────────
+-- Helpers
 
 local util = require("util")
 
@@ -42,7 +42,7 @@ end
 
 local dap_utils = require("dap.utils")
 
--- ── Python ───────────────────────────────────────────────────────────
+-- Python
 
 local debugpy = util.executable("debugpy-adapter")
 if debugpy then
@@ -79,7 +79,7 @@ if debugpy then
 	}
 end
 
--- ── .NET ─────────────────────────────────────────────────────────────
+-- .NET
 
 local netcoredbg = util.executable("netcoredbg")
 if netcoredbg then
@@ -99,7 +99,7 @@ if netcoredbg then
 	}
 end
 
--- ── Go ───────────────────────────────────────────────────────────────
+-- Go
 
 local delve = util.executable("dlv")
 if delve then
@@ -115,12 +115,12 @@ if delve then
 	}
 end
 
--- ── Java / Kotlin ────────────────────────────────────────────────────
+-- Java / Kotlin
 -- Java debugging needs the `java-debug` adapter bundles driven through
 -- nvim-jdtls; plain jdtls is not enough. It is intentionally left unwired
 -- here so `:DapContinue` does not offer configurations that cannot start.
 
--- ── C / C++ (LLDB) ──────────────────────────────────────────────────
+-- C / C++ (LLDB)
 
 local lldb = util.find_debug_adapter()
 if lldb then
@@ -130,38 +130,42 @@ if lldb then
 	else
 		dap.adapters.lldb = { type = "executable", command = lldb, name = "lldb" }
 	end
-	local lldb_configs = {
-		{
-			type = "lldb",
-			request = "launch",
-			name = "Launch executable",
-			program = function()
-				local cwd = vim.fn.getcwd()
-				return vim.fn.input(
-					"Path to executable: ",
-					cwd .. "/target/debug/" .. vim.fn.fnamemodify(cwd, ":t"),
-					"file"
-				)
-			end,
-			cwd = "${workspaceFolder}",
-			stopOnEntry = false,
-			args = function()
-				return prompt_args("Args: ")
-			end,
-		},
-		{
-			type = "lldb",
-			request = "attach",
-			name = "Attach to process",
-			pid = dap_utils.pick_process,
-			cwd = "${workspaceFolder}",
-		},
-	}
-	dap.configurations.c = vim.deepcopy(lldb_configs)
-	dap.configurations.cpp = vim.deepcopy(lldb_configs)
+	local function make_lldb_config(default_path_fn)
+		return {
+			{
+				type = "lldb",
+				request = "launch",
+				name = "Launch executable",
+				program = function()
+					local cwd = vim.fn.getcwd()
+					return vim.fn.input("Path to executable: ", default_path_fn(cwd), "file")
+				end,
+				cwd = "${workspaceFolder}",
+				stopOnEntry = false,
+				args = function()
+					return prompt_args("Args: ")
+				end,
+			},
+			{
+				type = "lldb",
+				request = "attach",
+				name = "Attach to process",
+				pid = dap_utils.pick_process,
+				cwd = "${workspaceFolder}",
+			},
+		}
+	end
+
+	dap.configurations.c = make_lldb_config(function(cwd)
+		return cwd .. "/"
+	end)
+	dap.configurations.cpp = vim.deepcopy(dap.configurations.c)
+	dap.configurations.rust = make_lldb_config(function(cwd)
+		return cwd .. "/target/debug/" .. vim.fn.fnamemodify(cwd, ":t")
+	end)
 end
 
--- ── JavaScript / TypeScript ──────────────────────────────────────────
+-- JavaScript / TypeScript
 
 local js_debug = util.first_executable({ "js-debug", "js-debug-adapter" })
 if js_debug then
@@ -193,7 +197,7 @@ if js_debug then
 	end
 end
 
--- ── Keymaps ──────────────────────────────────────────────────────────
+-- Keymaps
 
 local map = vim.keymap.set
 map("n", "<leader>mb", dap.toggle_breakpoint, { desc = "Toggle breakpoint" })

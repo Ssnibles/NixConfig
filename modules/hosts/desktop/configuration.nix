@@ -1,9 +1,6 @@
-# =============================================================================
 # Desktop Host Specific Configuration
-# =============================================================================
 # Hardware definitions, rfkill bluetooth workaround for ASUS motherboard WMI,
 # Logitech wireless peripheral support, local firewall rules, and state version.
-# =============================================================================
 { ... }:
 {
   nixos.modules.desktop =
@@ -59,7 +56,7 @@
       networking.firewall.allowedTCPPorts = [ 5353 ];
       networking.firewall.allowedUDPPorts = [ 5353 ];
 
-      # ── Wi-Fi tuning ───────────────────────────────────────────────────────
+      # Wi-Fi tuning
       # The only in-range AP for this SSID sits at ~-79 dBm, below iwd's
       # default RoamThreshold5G (-76), so iwd roam-scans every ~60s looking
       # for a better BSSID that doesn't exist. That spikes latency. This is a
@@ -67,7 +64,7 @@
       # actually roams, keeps the default.)
       networking.wireless.iwd.settings.Scan.DisableRoamingScan = true;
 
-      # ── Desktop Environment Features ───────────────────────────────────────
+      # Desktop Environment Features
       features.hyprland.enable = true;
       features.mangowc.enable = true;
       # Temporary: build/run the local ~/mango checkout (mango-dev wrapper
@@ -79,7 +76,7 @@
       features.shikane.enable = true;
       features.wramp.enable = false;
       features.frame.enable = true;
-      features.hermes.enable = true;
+      features.hermes.enable = false;
       features.syncthing.enable = true;
       features.tailscale.enable = true;
       features.podman-vm.enable = true;

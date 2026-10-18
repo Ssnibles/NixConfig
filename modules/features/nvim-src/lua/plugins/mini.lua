@@ -1,9 +1,9 @@
--- ── Mini.icons ───────────────────────────────────────────────────────
+-- Mini.icons
 local icons = require("mini.icons")
 icons.setup()
 icons.mock_nvim_web_devicons()
 
--- ── Mini.ai (textobjects) ────────────────────────────────────────────
+-- Mini.ai (textobjects)
 require("mini.ai").setup({
 	n_lines = 500,
 	custom_textobjects = {
@@ -16,7 +16,7 @@ require("mini.ai").setup({
 	},
 })
 
--- ── Mini.surround ────────────────────────────────────────────────────
+-- Mini.surround
 require("mini.surround").setup({
 	mappings = {
 		add = "sa",
@@ -45,7 +45,7 @@ vim.api.nvim_create_autocmd("FileType", {
 	desc = "Typst line-number surrounds (#noln / #ln)",
 })
 
--- ── Mini.clue (which-key) ────────────────────────────────────────────
+-- Mini.clue (which-key)
 local clue = require("mini.clue")
 clue.setup({
 	clues = {
@@ -91,7 +91,7 @@ clue.setup({
 	window = { delay = 300, config = { border = "rounded", width = "auto" } },
 })
 
--- ── Mini.hipatterns ──────────────────────────────────────────────────
+-- Mini.hipatterns
 local hip = require("mini.hipatterns")
 hip.setup({
 	highlighters = {
@@ -103,7 +103,7 @@ hip.setup({
 	},
 })
 
--- ── Simple mini modules ──────────────────────────────────────────────
+-- Simple mini modules
 require("mini.cursorword").setup({ delay = 200 })
 require("mini.align").setup()
 require("mini.move").setup()
@@ -113,7 +113,7 @@ require("mini.trailspace").setup()
 require("mini.pairs").setup()
 require("mini.bufremove").setup({})
 
--- ── Mini.bracketed (extra `[`/`]` motions) ───────────────────────────
+-- Mini.bracketed (extra `[`/`]` motions)
 -- Disable targets that already have bespoke mappings (treesitter class/
 -- function jumps, diagnostics with floats, etc.) to avoid clobbering them.
 require("mini.bracketed").setup({

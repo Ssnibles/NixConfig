@@ -23,13 +23,13 @@ import "Utils.js" as Utils
 Singleton {
   id: root
 
-  // --- Active MPRIS Player (Single Source of Truth) ---
+  // Active MPRIS Player (Single Source of Truth)
   readonly property var mediaPlayers: Mpris.players.values
   readonly property var player: Utils.findActivePlayer(root.mediaPlayers, MprisPlaybackState.Paused)
   readonly property bool hasPlayer: !!root.player
   readonly property bool isPlaying: !!(root.player && root.player.isPlaying)
 
-  // --- Track Metadata ---
+  // Track Metadata
   readonly property string rawTrackTitle: root.player ? (root.player.trackTitle || "") : ""
   readonly property string trackTitle: Utils.cleanTrackTitle(root.rawTrackTitle)
   readonly property string trackArtist: root.player ? (root.player.trackArtist || "") : ""
@@ -46,7 +46,7 @@ Singleton {
     : ""
   readonly property bool hasMedia: root.mediaText !== ""
 
-  // --- Consumer Demand & Activity Tracking ---
+  // Consumer Demand & Activity Tracking
   // The position timer ONLY ticks when media is actively playing AND at least one
   // UI surface is showing live elapsed/total time or the seek bar. Surfaces
   // register by name so overlapping hovers/overlays can't drift a counter.
@@ -74,7 +74,7 @@ Singleton {
     root.activeConsumers > 0
   )
 
-  // --- Position & Progress Sampling ---
+  // Position & Progress Sampling
   property real lastPosition: 0
   property real lastLength: 0
   property real estimatedPosition: 0
@@ -223,7 +223,7 @@ Singleton {
     }
   }
 
-  // --- Centralised Debounced Seeking ---
+  // Centralised Debounced Seeking
   Timer {
     id: seekDebounceTimer
     interval: Config.mediaSeekDebounceMs || 200
@@ -265,7 +265,7 @@ Singleton {
     }
   }
 
-  // --- Common Playback Actions ---
+  // Common Playback Actions
   function playPause() {
     if (root.player) root.player.isPlaying = !root.player.isPlaying
   }

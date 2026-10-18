@@ -1,6 +1,6 @@
 local lint = require("lint")
 
--- ── Custom linter: deadnix ───────────────────────────────────────────
+-- Custom linter: deadnix
 
 lint.linters.deadnix_nvim = {
 	cmd = "deadnix",
@@ -30,7 +30,7 @@ lint.linters.deadnix_nvim = {
 	end,
 }
 
--- ── Custom linter: statix ────────────────────────────────────────────
+-- Custom linter: statix
 
 lint.linters.statix_nvim = {
 	cmd = "statix",
@@ -60,18 +60,19 @@ lint.linters.statix_nvim = {
 	end,
 }
 
--- ── Linter assignments ───────────────────────────────────────────────
+-- Linter assignments
 
 local filetypes = {
 	nix = { "deadnix_nvim", "statix_nvim" },
 	c = { "cppcheck" },
 	cpp = { "cppcheck" },
 	php = { "php", "phpstan" },
+	lua = { "luacheck" },
 }
 
 lint.linters_by_ft = filetypes
 
--- ── Auto-lint on read/save ───────────────────────────────────────────
+-- Auto-lint on read/save
 
 local function run_lint()
 	if filetypes[vim.bo.filetype] then

@@ -51,11 +51,15 @@ Pill {
     return "Off"
   }
 
+  HoverHandler {
+    id: pillHover
+  }
+
   pillHeight: showLabel ? 25 : 30
   padding: showLabel ? 6 : 0
   anchors.horizontalCenter: (parent && !showLabel) ? parent.horizontalCenter : undefined
 
-  pillColour: btTooltip.hovered ? Colours.bgSubtle : Colours.bgRaised
+  pillColour: (btTooltip.hovered || pillHover.hovered) ? Colours.bgSubtle : Colours.bgRaised
   border.width: 1
   border.color: Colours.border
 

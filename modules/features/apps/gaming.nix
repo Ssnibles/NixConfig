@@ -1,9 +1,6 @@
-# =============================================================================
 # Gaming Applications Feature (Desktop Host)
-# =============================================================================
 # Steam with Millennium skin overlay support, Gamescope session integration,
 # GameMode performance daemon, and PlayStation DualSense controller drivers.
-# =============================================================================
 { self, ... }:
 {
   nixos.modules.desktop =

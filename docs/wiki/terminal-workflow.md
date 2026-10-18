@@ -13,6 +13,7 @@ The terminal environment is engineered for low latency, memory efficiency, and f
 | **Terminal** | **Kitty** | Single-instance server mode, shared GPU sprite cache, Maple Mono font | `modules/features/apps/kitty.nix` |
 | **Alternative** | **Foot** | Lightweight Wayland native terminal | `modules/packages/foot/default.nix` |
 | **Multiplexer** | **Tmux** | Backtick prefix, Sesh session picker, resurrect path sanitiser, floating popups | `modules/features/shell/tmux.nix` |
+| **Multiplexer (Alt)** | **Zellij** | Custom Rust WASI status bar (`zjbar`) & command palette (`zjcmd`), stable permissions cache | `modules/features/shell/zellij.nix` |
 | **File Manager** | **Yazi** | Async Rust file manager, image previews, Neovim directory opening | `modules/features/apps/development.nix` |
 | **Cheatsheets** | **Navi** | Fuzzy command cheatsheet insertion bound to `Ctrl+P` | `modules/packages/navi/default.nix` |
 | **Shell** | **Fish 4+** | 5-minute cached FZF search (`__fzf_cache_fd`), Starship prompt | `modules/features/shell/shell.nix` |
@@ -102,6 +103,23 @@ NixConfig includes a custom wrapper script `tmux-resurrect-save`:
 5. Keybindings: `Prefix + S` to save, `Prefix + R` to restore.
 
 ---
+
+## Zellij Workspace Multiplexer & Custom WASI Plugins
+
+Zellij is configured in `modules/features/shell/zellij.nix` as an alternative workspace multiplexer, enhanced with custom Rust/WASI plugins located in `modules/features/shell/zellij-plugin/`:
+
+### Custom WASI Plugins
+- **`zjbar` (`src/main.rs`)**: High-performance, low-latency status bar plugin:
+  - Displays session name, current mode badge (`NORMAL`, `LOCKED`, `PANE`, `TAB`, `RESIZE`, `SCROLL`), tab list with sync badges, and Git branch status.
+  - Dynamically truncates paths with `~`: receives the user's home directory path (`home "/home/${config.username}"`) via Zellij configuration and uses `path.strip_prefix(h)` to replace leading home directory components cleanly.
+- **`zjcmd` (`src/bin/zjcmd.rs`)**: Interactive floating command palette for quick action execution and fuzzy switching, with explicit ANSI SGR reset sequences ensuring bold highlighting does not bleed across rows.
+
+### NixOS Integration & Stable Permissions Cache
+On NixOS, Zellij caches plugin permission grants by the exact file path of the compiled `.wasm` file. If plugins point directly to Nix store paths, every rebuild invalidates cached permissions and prompts the user repeatedly.
+
+NixConfig solves this:
+1. Compiled `.wasm` binaries are symlinked to stable user paths at `~/.local/share/zellij/plugins/{zjbar,zjcmd}.wasm`.
+2. Hjem seeds initial permissions to `~/.cache/zellij/permissions.kdl` using `type = "copy"` (writable mode), allowing Zellij to update its own cache while preserving permissions across builds.
 
 ## Yazi Terminal File Manager
 
@@ -217,8 +235,8 @@ Standard `fzf` file and directory traversal searches the entire directory tree w
 
 NixConfig implements a custom caching function `__fzf_cache_fd`:
 - Calculates a SHA-256 hash of the current working directory path.
-- Stores the output of `fd --strip-cwd-prefix --hidden --exclude .git` in `/tmp/fzf_fd_cache_$USER/<hash>`.
-- Reuses the cached file list for up to **5 minutes** (300 seconds), making subsequent fuzzy file lookups instantaneous.
+- Stores the output of `fd --strip-cwd-prefix --hidden --exclude .git` in `$XDG_RUNTIME_DIR/fzf_fd_cache/<hash>` using atomic temporary-file replacement.
+- Reuses the cached file list for up to **5 minutes** (300 seconds), making subsequent fuzzy file lookups instantaneous while keeping cached data isolated in user RAM.
 
 ### Zoxide Directory Picker (`Alt + Z`)
 

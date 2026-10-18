@@ -69,7 +69,7 @@ Pill {
     id: tooltip
     target: root
     sharedWindow: root.sharedWindow
-    contentWidth: 200
+    contentWidth: 210
 
     contentComponent: Component {
       Rectangle {
@@ -136,7 +136,8 @@ Pill {
                 if (cur === modelData.symbol) return true
                 if (modelData.layoutName && cur.toLowerCase() === modelData.layoutName.toLowerCase()) return true
                 if (modelData.name && cur.toLowerCase() === modelData.name.toLowerCase()) return true
-                if (modelData.symbol === "[M]" && (/^\[\d+\]$/.test(cur) || cur === "monocle")) return true
+                if ((modelData.symbol === "M" || modelData.symbol === "[M]") &&
+                    (cur === "M" || cur === "[M]" || /^\[\d+\]$/.test(cur) || cur.toLowerCase() === "monocle")) return true
                 return false
               }
 

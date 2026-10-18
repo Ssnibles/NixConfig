@@ -8,12 +8,12 @@ import QtQuick
 // details (sizes that only affect one widget) stay hard-coded in each
 // widget's own file.
 Singleton {
-  // --- Fonts ------------------------------------------------------------
+  // Fonts
   readonly property string monoFont: Colours.monoFont !== undefined ? Colours.monoFont : "JetBrainsMono Nerd Font"
   readonly property string sansFont: Colours.sansFont !== undefined ? Colours.sansFont : "SF Pro Text"
   readonly property string serifFont: Colours.serifFont !== undefined ? Colours.serifFont : "Instrument Serif"
 
-  // --- Command Centre State & Geometry ----------------------------------
+  // Command Centre State & Geometry
   property bool commandCentreVisible: false
   property var targetScreen: null
   property var lastActiveScreen: null
@@ -32,29 +32,27 @@ Singleton {
   readonly property string commandCentreClockFormat: "HH:mm"
   readonly property string commandCentreDateFormat: "dddd, MMMM d"
 
-  // --- Status Bars --------------------------------------------------------
+  // Status Bars
   property bool barVisible: true
   readonly property string barType: wm === "niri" ? "niri" : "bar"
   readonly property bool hasTopBar: barVisible && barType !== "niri"
   readonly property bool hasLeftBar: barVisible && barType === "niri" && barSide !== "right"
   readonly property bool hasRightBar: barVisible && barType === "niri" && barSide === "right"
 
-  // --- Window Manager Detection ------------------------------------------
+  // Window Manager Detection
   readonly property string wm: {
     var envWm = (Quickshell.env("QS_BAR") || "").toLowerCase()
     if (envWm !== "") return envWm
 
     var xdg = (Quickshell.env("XDG_CURRENT_DESKTOP") || Quickshell.env("XDG_SESSION_DESKTOP") || "").toLowerCase()
     if (xdg.indexOf("hyprland") !== -1) return "hyprland"
-    if (xdg.indexOf("river") !== -1) return "river"
     if (xdg.indexOf("niri") !== -1) return "niri"
     if (xdg.indexOf("mango") !== -1) return "mangowc"
 
     return "mangowc"
   }
 
-
-  // --- Media --------------------------------------------------------------
+  // Media
   // Whether the command centre's media card always stays visible, showing
   // "Nothing is playing" when no media is active.
   readonly property bool alwaysShowMediaCard: true
@@ -62,10 +60,10 @@ Singleton {
   readonly property int mediaRotationDuration: 4000
   readonly property int mediaSeekDebounceMs: 200
 
-  // --- Clock --------------------------------------------------------------
+  // Clock
   readonly property string timeFormat: "HH:mm"
 
-  // --- Niri vertical bar (niri-bar.qml) ----------------------------------
+  // Niri vertical bar (niri-bar.qml)
   readonly property int barWidth: 42
   property string barSide: {
     var envSide = (Quickshell.env("QS_BAR_SIDE") || "").toLowerCase()
@@ -79,26 +77,26 @@ Singleton {
   readonly property int volBarHeight: 64
   readonly property int wifiMaxTextLength: 90
 
-  // --- Workspaces (WorkspacesWidget.qml) --------------------------------
+  // Workspaces (WorkspacesWidget.qml)
   readonly property int workspaceDotSize: 12
   readonly property int workspaceDotSizeFocused: 34
   readonly property int workspaceDotSpacing: 6
 
-  // --- Top Bar (bar.qml) -------------------------------------------------
+  // Top Bar (bar.qml)
   readonly property int barHeight: 34
   readonly property int barHorizontalMargin: 12
   readonly property int barLeftSpacing: 12
   readonly property int barRightSpacing: 10
   readonly property int mangowcMinWorkspaces: 5
 
-  // --- Audio (VolumeWidget.qml) ------------------------------------------
+  // Audio (VolumeWidget.qml)
   readonly property real volStep: 0.05
 
-  // --- Window Title (WindowTitleWidget.qml) ------------------------------
+  // Window Title (WindowTitleWidget.qml)
   readonly property int windowTitleMaxWidthHorizontal: 350
   readonly property int windowTitleMaxWidthVertical: 120
 
-  // --- Popup / tooltip ---------------------------------------------------
+  // Popup / tooltip
   readonly property int popupGap: 46 // distance from the bar to a popup
   readonly property int popupMaxWidth: 280
   readonly property int popupRadius: 12
@@ -108,7 +106,7 @@ Singleton {
   readonly property int popupFadeMs: 120
   readonly property int popupGraceMs: 700 // generous window so cursor can cross the gap without flicker
 
-  // --- Notifications ------------------------------------------------------
+  // Notifications
   // Notification position on screen:
   //   "top-left", "top-centre" (or "top"), "top-right",
   //   "centre-left", "centre", "centre-right",
@@ -241,8 +239,7 @@ Singleton {
     "mpv"
   ]
 
-
-  // --- Lock Screen --------------------------------------------------------
+  // Lock Screen
   readonly property string lockAvatarPath: Quickshell.shellDir + "/assets/avatar.png"
   readonly property string lockFallbackIcon: "󰀉"
   readonly property string lockWallpaperPath: "file://" + (Quickshell.env("HOME") || ("/home/" + (Quickshell.env("USER") || "user"))) + "/Pictures/wallpaper"
@@ -254,7 +251,7 @@ Singleton {
   readonly property real lockBackgroundDimming: 0.8
   readonly property real lockBlurPercentage: 0.5
 
-  // --- External App & System Commands ------------------------------------
+  // External App & System Commands
   readonly property var cmdMixer: ["pavucontrol"]
   readonly property var cmdNetworkManager: ["kitty", "--single-instance", "-e", "nmtui"]
   readonly property var cmdBluetoothManager: ["blueman-manager"]

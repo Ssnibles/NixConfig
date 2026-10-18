@@ -1,6 +1,4 @@
-# =============================================================================
 # Live Config Symlinks
-# =============================================================================
 # Declarative registry of symlinks from the mutable NixConfig checkout into the
 # user's home. Unlike Hjem (which only accepts store paths and is meant for
 # immutable files), these links intentionally point at the working tree so
@@ -10,7 +8,6 @@
 # into a single `system.activationScripts.live-links` script. Centralising the
 # logic means one place to reason about ownership and ordering, instead of a
 # dozen ad-hoc `ln -sfn`/`chown -R` snippets racing Hjem.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =

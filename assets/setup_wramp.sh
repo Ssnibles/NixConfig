@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# =============================================================================
 # WRAMP Development Container Setup
-# =============================================================================
 # Creates (or recreates) a Distrobox / Podman Ubuntu 22.04 container and
 # installs the complete WRAMP (Waikato RISC Architecture MicroProcessor)
 # toolchain, simulator and utilities published by wandwramp.
@@ -15,7 +13,6 @@
 #   WRAMPmon            monitor firmware, built from source (monitor.mem)
 #
 # Usage: ./setup_wramp.sh [options]
-# =============================================================================
 set -e
 
 CONTAINER_NAME="wramp"
@@ -88,14 +85,14 @@ DISTROBOX_FLAGS="-e GDK_BACKEND=x11 --privileged -v /dev/bus/usb:/dev/bus/usb"
 # Recreate or reuse the container
 if [ "$KEEP_EXISTING" = true ]; then
     echo "=== [1/4] Keeping Existing Container ($CONTAINER_NAME) ==="
-    if ! distrobox list | grep -q "^$CONTAINER_NAME "; then
+    if ! distrobox list | grep -q "^[^|]*| $CONTAINER_NAME "; then
         echo "Container '$CONTAINER_NAME' does not exist. Creating it anyway..."
         pull_image "$IMAGE"
         distrobox create --name "$CONTAINER_NAME" --image "$IMAGE" --additional-flags "$DISTROBOX_FLAGS"
     fi
 else
     echo "=== [1/4] Removing Old Distrobox Container ($CONTAINER_NAME) ==="
-    if distrobox list | grep -q "^$CONTAINER_NAME "; then
+    if distrobox list | grep -q "^[^|]*| $CONTAINER_NAME "; then
         distrobox stop "$CONTAINER_NAME" --yes || true
         distrobox rm "$CONTAINER_NAME" --yes || true
     fi
@@ -179,5 +176,7 @@ WSIM
   ls /opt/wramp/bin
 '
 
-echo "=== [4/4] Setup Complete! Entering Distrobox Container ==="
-distrobox enter "$CONTAINER_NAME"
+echo "=== [4/4] Setup Complete! ==="
+if [ -t 0 ] && [ -t 1 ]; then
+    exec distrobox enter "$CONTAINER_NAME"
+fi

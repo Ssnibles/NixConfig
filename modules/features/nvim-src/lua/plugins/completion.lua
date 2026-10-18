@@ -8,7 +8,7 @@ require("luasnip.loaders.from_lua").lazy_load({
 	paths = { vim.fn.stdpath("config") .. "/lua/snippets" },
 })
 
--- ── Blink.cmp ────────────────────────────────────────────────────────
+-- Blink.cmp
 
 local cmp = require("blink.cmp")
 local ls = require("luasnip")
@@ -215,7 +215,7 @@ cmp.setup({
 	},
 })
 
--- ── Copilot ──────────────────────────────────────────────────────────
+-- Copilot
 
 local copilot_ok, copilot = pcall(require, "copilot")
 if copilot_ok then

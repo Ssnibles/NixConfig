@@ -1,11 +1,8 @@
--- =============================================================================
 -- LSP SERVER DEFINITIONS (pure data — no side effects)
--- =============================================================================
 -- Each key is the server name recognised by vim.lsp.config().
 -- Values are configuration tables passed to register_server() in lsp/init.lua.
--- =============================================================================
 
--- ── Nix helpers ──────────────────────────────────────────────────────
+-- Nix helpers
 
 local NIX_FALLBACK_DIR = (vim.env.HOME or "~") .. "/NixConfig"
 local NIX_DEFAULT_HOST = "desktop"
@@ -30,7 +27,7 @@ local function detect_flake_root()
 end
 
 local function host_exists(root, host)
-	return root and host ~= "" and vim.uv.fs_stat(("%s/hosts/%s"):format(root, host)) ~= nil
+	return root and host ~= "" and vim.uv.fs_stat(("%s/modules/hosts/%s"):format(root, host)) ~= nil
 end
 
 local function detect_nix_host(root)
@@ -78,8 +75,8 @@ in
 
 		options = {
 			nixos = { expr = ("(builtins.getFlake %s).nixosConfigurations.%s.options"):format(ref, attr) },
-			["home-manager"] = {
-				expr = ('(builtins.getFlake %s).nixosConfigurations.%s.options."home-manager".users.type.getSubOptions []'):format(
+			hjem = {
+				expr = ('(builtins.getFlake %s).nixosConfigurations.%s.options.hjem.users.type.getSubOptions []'):format(
 					ref,
 					attr
 				),
@@ -101,11 +98,11 @@ in
 	}
 end
 
--- ── Blink.cmp capabilities (for servers needing extra) ───────────────
+-- Blink.cmp capabilities (for servers needing extra)
 
 local capabilities = require("lsp.capabilities")
 
--- ── Server table ─────────────────────────────────────────────────────
+-- Server table
 
 return {
 	-- Nix
@@ -128,16 +125,10 @@ return {
 				},
 				workspace = {
 					checkThirdParty = false,
-					library = (function()
-						local lib = {
-							vim.env.VIMRUNTIME,
-							vim.fn.stdpath("config"),
-						}
-						for _, path in ipairs(vim.api.nvim_get_runtime_file("lua", true)) do
-							table.insert(lib, path)
-						end
-						return lib
-					end)(),
+					library = {
+						vim.env.VIMRUNTIME,
+						vim.fn.stdpath("config"),
+					},
 				},
 				telemetry = { enable = false },
 			},
@@ -262,6 +253,20 @@ return {
 			nodePath = "",
 			workingDirectory = { mode = "location" },
 		},
+	},
+
+	-- TypeScript / JavaScript
+	vtsls = {
+		cmd = { "vtsls", "--stdio" },
+		filetypes = {
+			"javascript",
+			"javascriptreact",
+			"javascript.jsx",
+			"typescript",
+			"typescriptreact",
+			"typescript.tsx",
+		},
+		root_markers = { "tsconfig.json", "package.json", "jsconfig.json", ".git" },
 	},
 
 	-- JSON

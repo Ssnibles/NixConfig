@@ -1,10 +1,7 @@
-# =============================================================================
 # Minecraft Applications Feature (Desktop Host)
-# =============================================================================
 # Java Edition through PrismLauncher (multi-instance, modded, per-instance
 # Java) and Bedrock Edition through BedrockOnLinux, which runs the Windows
 # GDK build under Wine with native Xbox sign-in.
-# =============================================================================
 { inputs, ... }:
 {
   nixos.modules.desktop =

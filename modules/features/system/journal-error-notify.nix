@@ -1,9 +1,6 @@
-# =============================================================================
 # Boot Journal Error Notification Daemon
-# =============================================================================
 # Inspects systemd journalctl on login for critical boot errors and displays
 # a desktop notification if issues are found. Filters out benign log spam.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -17,10 +14,10 @@
         # and the flatpak auto-update timer racing the network at boot: it fires on a Persistent
         # catch-up, fails to resolve dl.flathub.org, then succeeds ~60s later on its own restart).
         RAW_ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | ${pkgs.gnugrep}/bin/grep -v -E "Ignoring duplicate name|gkr-pam: unable to locate daemon control file|bluetoothd.*Failed to set|i2c_hid_acpi.*incomplete report|graphical-session.target|wayland-session.target|systemd-coredump.*vicinae|flatpak-managed-install-timer.service" || true)
-        ERROR_COUNT=$(echo "$RAW_ERRORS" | ${pkgs.gnugrep}/bin/grep -v '^$' | wc -l)
+        ERROR_COUNT=$(echo "$RAW_ERRORS" | ${pkgs.gnugrep}/bin/grep -v '^$' | ${pkgs.coreutils}/bin/wc -l)
 
         if [ "$ERROR_COUNT" -gt 0 ]; then
-          ERRORS=$(echo "$RAW_ERRORS" | head -n 5)
+          ERRORS=$(echo "$RAW_ERRORS" | ${pkgs.coreutils}/bin/head -n 5)
           ${pkgs.libnotify}/bin/notify-send \
             -u critical \
             -i dialog-error \

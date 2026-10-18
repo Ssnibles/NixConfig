@@ -56,7 +56,7 @@ A custom Lua script (`~/.config/mpv/scripts/nowplaying.lua`) adds a single-key t
 
 The card colours are pulled from the active theme (`bg`, `fg`, `fgMid`). Title/artist text is passed through `drawtext` `textfile`s with `expansion=none`, so quotes, colons, commas and `%` render literally, and long titles are shrunk/ellipsised to stay on the canvas. Pressing **`v`** toggles the mode with a short OSD confirmation, and the state carries across playlist entries. Set `initial=yes` in `script-opts/nowplaying.conf` to start every session in now-playing mode.
 
-The card is only applied once playback has actually started, which avoids reconfiguring the video chain while a network stream is still opening.
+The card is only applied once playback has actually started, which avoids reconfiguring the video chain while a network stream is still opening. When MPV exits, a registered `shutdown` event hook cleans up any temporary metadata files (`/tmp/mpv-nowplaying-<pid>-*.txt`) to prevent stale `/tmp` artifacts.
 
 > **Note:** binding `v` overrides MPV's default subtitle-visibility toggle.
 
@@ -102,11 +102,11 @@ For academic writing, Typst, and LaTeX documents, Zathura is configured for two-
 ```ini
 set synctex-editor-command "nvr --remote-silent +%{line} %{input}"
 ```
-Holding **`Ctrl`** and clicking any paragraph or equation in Zathura automatically opens your running Neovim instance at the exact source file and line number.
+Holding **`Ctrl`** and clicking any paragraph or equation in Zathura automatically opens your running Neovim instance at the exact source file and line number. NixOS provides `neovim-remote` (`nvr`) globally in `environment.systemPackages` to guarantee that inverse search calls connect cleanly to active Neovim server sockets.
 
-### Auto-Reload
+### Native Document Watching & Auto-Reload
 
-With `set watch-files true`, Zathura instantly reloads the PDF on disk whenever a compiler (Typst, tectonic, pdflatex) writes a new build.
+Using native file monitoring (`filemonitor "glib"`), Zathura automatically monitors PDF files on disk and reloads them instantly whenever a compiler (Typst, tectonic, pdflatex) writes a new build.
 
 ---
 

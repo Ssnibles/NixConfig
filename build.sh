@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# =============================================================================
 # NixOS Rebuild + Commit
-# =============================================================================
 # Rebuild a NixOS host, then commit the config changes with a conventional
 # commit message that records the generation (when knowable) and build details.
 #
@@ -20,12 +18,11 @@
 #
 # Host defaults to the current hostname and action to "switch". If -m is
 # omitted on an interactive terminal, you're prompted for the commit message.
-# =============================================================================
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# ── Logging ──────────────────────────────────────────────────────────────────
+# Logging
 if [[ -t 1 ]]; then
   C_BOLD=$'\e[1m'; C_RED=$'\e[31m'; C_GREEN=$'\e[32m'
   C_YELLOW=$'\e[33m'; C_BLUE=$'\e[34m'; C_OFF=$'\e[0m'
@@ -59,7 +56,7 @@ Uses jj + nh when available, otherwise git + nixos-rebuild.
 EOF
 }
 
-# ── Defaults & discovery ─────────────────────────────────────────────────────
+# Defaults & discovery
 HOST=""
 ACTION="switch"
 MESSAGE=""
@@ -78,7 +75,7 @@ ACTIONS=(switch boot test build)
 
 contains() { local n="$1"; shift; local i; for i in "$@"; do [[ "$i" == "$n" ]] && return 0; done; return 1; }
 
-# ── Arguments ────────────────────────────────────────────────────────────────
+# Arguments
 positionals=()
 while (($#)); do
   case "$1" in
@@ -117,7 +114,7 @@ if [[ "$DO_BUILD" == true ]]; then
   contains "$ACTION" "${ACTIONS[@]}" || die "unknown action '$ACTION'"
 fi
 
-# ── Tool detection ───────────────────────────────────────────────────────────
+# Tool detection
 cd "$REPO_ROOT"
 
 # Version control: prefer jj, otherwise require a git work tree.
@@ -135,7 +132,7 @@ if [[ "$DO_BUILD" == true ]] && command -v nh >/dev/null 2>&1; then
   USE_NH=true
 fi
 
-# ── Preflight ────────────────────────────────────────────────────────────────
+# Preflight
 if [[ "$DO_BUILD" == true && "$USE_NH" == false ]] && ! command -v nixos-rebuild >/dev/null 2>&1; then
   die "neither nh nor nixos-rebuild available"
 fi
@@ -153,7 +150,7 @@ if [[ "$EDIT_MESSAGE" == true && ! -t 0 ]]; then
   die "-e/--edit requires an interactive terminal"
 fi
 
-# ── Review ───────────────────────────────────────────────────────────────────
+# Review
 # A long rebuild followed by an auto-staged commit is easy to trigger by
 # accident, so show what's about to happen first. Skipped for -y / non-TTY.
 if [[ "$ASSUME_YES" != true && -t 0 ]]; then
@@ -192,7 +189,7 @@ if [[ "$ASSUME_YES" != true && -t 0 ]]; then
   esac
 fi
 
-# ── Build ────────────────────────────────────────────────────────────────────
+# Build
 if [[ "$DO_BUILD" == true ]]; then
   step "Rebuilding $HOST"
   if [[ "$USE_NH" == true ]]; then
@@ -212,10 +209,10 @@ if [[ "$DO_COMMIT" == false ]]; then
   exit 0
 fi
 
-# Only the local system profile is queryable; for other hosts (or `build`,
-# which registers no generation) we can't know the resulting generation.
+# Only the local system profile is queryable; for other hosts (or `build`/`test`,
+# which register no generation) we can't know the resulting generation.
 GEN="unknown"
-if [[ "$HOST" == "$LOCAL_HOST" && "$ACTION" != build ]] \
+if [[ "$HOST" == "$LOCAL_HOST" && "$ACTION" != build && "$ACTION" != test ]] \
   && command -v nixos-rebuild >/dev/null 2>&1; then
   newest_gen="$(nixos-rebuild list-generations 2>/dev/null \
     | awk 'NR > 1 && $1 ~ /^[0-9]+$/ { print $1 }' \
@@ -223,7 +220,7 @@ if [[ "$HOST" == "$LOCAL_HOST" && "$ACTION" != build ]] \
   [[ -n "$newest_gen" ]] && GEN="$newest_gen"
 fi
 
-# ── Stage ────────────────────────────────────────────────────────────────────
+# Stage
 if [[ "$USE_JJ" == true ]]; then
   # jj has no staging area: `jj commit` takes the whole working copy.
   [[ -n "$(jj -R "$REPO_ROOT" diff --summary 2>/dev/null)" ]] || { warn "no changes to commit"; exit 0; }
@@ -239,7 +236,7 @@ else
   changed_stat="$(git diff --cached --stat)"
 fi
 
-# ── Commit ───────────────────────────────────────────────────────────────────
+# Commit
 if [[ -n "$SCOPE" ]]; then prefix="$TYPE($SCOPE):"; else prefix="$TYPE:"; fi
 
 # A full conventional subject (e.g. "fix: thing") is used verbatim; anything
@@ -273,7 +270,7 @@ fi
 
 if [[ "$DO_BUILD" == true ]]; then
   body_head="NixOS configuration rebuild for $HOST."
-  action_line="nixos-rebuild $ACTION"
+  action_line="$(if [[ "$USE_NH" == true ]]; then echo "nh os $ACTION"; else echo "nixos-rebuild $ACTION"; fi)"
   stamp_line="Built:      $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
   gen_line="$GEN"
 else

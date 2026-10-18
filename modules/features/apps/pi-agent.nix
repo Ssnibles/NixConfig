@@ -1,10 +1,7 @@
-# =============================================================================
 # Pi Coding Agent Feature
-# =============================================================================
 # Terminal coding agent harness (github:lukasl-dev/pi.nix) providing AI-assisted
 # coding, tool calling, skills, prompt extensions, and optional Bubblewrap
 # sandboxing (jail.nix).
-# =============================================================================
 { inputs, ... }:
 {
   nixos.modules.shared =
@@ -153,7 +150,7 @@
           enable = lib.mkEnableOption "Bubblewrap isolation for pi using jail.nix";
         };
 
-        # ── Built-in Extension Toggles ─────────────────────────────────────────
+        # Built-in Extension Toggles
         interactiveChoice = lib.mkOption {
           type = lib.types.bool;
           default = false;

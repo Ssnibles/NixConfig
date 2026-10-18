@@ -39,7 +39,7 @@ Rectangle {
     locked: Boolean(root.notification)
   }
 
-  // --- Multi-tier Icon & Avatar Candidate Resolution ---
+  // Multi-tier Icon & Avatar Candidate Resolution
   property var candidateIcons: {
     var list = []
 
@@ -98,7 +98,7 @@ Rectangle {
       }
     }
 
-    // --- Tier 1: Explicit notification image / avatar / cover art ---
+    // Tier 1: Explicit notification image / avatar / cover art
     if (root.image) {
       addCandidate(root.image)
     }
@@ -125,7 +125,7 @@ Rectangle {
       }
     }
 
-    // --- Tier 2: Configured App Fallback Icons (from Config.notifAppIcons) ---
+    // Tier 2: Configured App Fallback Icons (from Config.notifAppIcons)
     var keysToTry = [
       (root.desktopEntry || "").toLowerCase().replace(/\.desktop$/, "").trim(),
       (root.appName || "").toLowerCase().trim(),
@@ -138,12 +138,12 @@ Rectangle {
       }
     }
 
-    // --- Tier 3: Explicit appIcon from notification ---
+    // Tier 3: Explicit appIcon from notification
     if (root.appIcon) {
       addCandidate(root.appIcon)
     }
 
-    // --- Tier 4: Desktop entry name ---
+    // Tier 4: Desktop entry name
     if (root.desktopEntry) {
       var de = String(root.desktopEntry).trim()
       if (de.endsWith(".desktop")) de = de.substring(0, de.length - 8)
@@ -154,14 +154,14 @@ Rectangle {
       }
     }
 
-    // --- Tier 5: App name ---
+    // Tier 5: App name
     if (root.appName) {
       var an = String(root.appName).trim().toLowerCase()
       addCandidate(an)
       addCandidate(an.replace(/\s+/g, "-"))
     }
 
-    // --- Tier 6: Configured global default fallback logo ---
+    // Tier 6: Configured global default fallback logo
     if (Config.notifDefaultFallbackLogo) {
       addCandidate(Config.notifDefaultFallbackLogo)
     }
@@ -407,4 +407,3 @@ Rectangle {
     }
   }
 }
-

@@ -57,11 +57,32 @@ def binary_search(items, target):
   )
 ]
 
-#figure(caption: [Binary search decision flow])[
-  #mermaid(
-    "graph TD; A[lo, hi] --> B{mid < target?}; B -->|yes| C[lo = mid + 1]; B -->|no| D[hi = mid]; C --> A; D --> A;",
-    theme: mmdr-theme,
-  )
+// The loop is a cycle, so this is CeTZ, not mmdr (see references/diagrams.md).
+#figure(caption: [Binary search loop])[
+  #cetz.canvas({
+    import cetz.draw: *
+    set-style(stroke: (paint: text-colour, thickness: 0.9pt), fill: none)
+    let node(name, x, y, label, w: 3.6, h: 0.8) = {
+      rect((x - w/2, y - h/2), (x + w/2, y + h/2), radius: 0.12, name: name)
+      content((x, y), text(size: 9pt, fill: text-colour)[#label])
+    }
+    let tag(x, y, label) = content((x, y), fill: bg-colour, frame: "rect",
+      stroke: none, padding: 2.5pt, text(size: 8pt, fill: text-colour)[#label])
+
+    node("mid", 0, 0, [$"mid" = ("lo" + "hi") slash 2$])
+    node("cmp", 0, -1.8, [$A_"mid" = "target"$])
+    node("yes", -2.8, -3.8, [return $"mid"$])
+    node("no", 2.8, -3.8, [shrink $["lo", "hi"]$])
+
+    line((0, 1.0), "mid.north", mark: (end: ">", fill: text-colour))
+    line("mid.south", "cmp.north", mark: (end: ">", fill: text-colour))
+    line("cmp.south-west", "yes.north-east", mark: (end: ">", fill: text-colour))
+    tag(-1.6, -3.1, [yes])
+    line("cmp.south-east", "no.north-west", mark: (end: ">", fill: text-colour))
+    tag(1.6, -3.1, [no])
+    // loop edge: right of everything, back up into mid
+    line("no.east", (5.0, -3.8), (5.0, 0), "mid.east", mark: (end: ">", fill: text-colour))
+  })
 ]
 
 #callout("📌", "Key Takeaway:", "#dd6b20")[

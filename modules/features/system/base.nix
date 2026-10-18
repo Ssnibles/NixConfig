@@ -1,9 +1,6 @@
-# =============================================================================
 # System Base Module
-# =============================================================================
 # Core system settings including Nixpkgs overlays, binary caches, locales,
 # timezone, base network configuration, and system maintenance.
-# =============================================================================
 { self, inputs, ... }:
 {
   nixos.modules.shared =
@@ -23,7 +20,7 @@
       ];
 
       config = {
-        # ── Nixpkgs & Overlays ────────────────────────────────────────────────
+        # Nixpkgs & Overlays
         nixpkgs = {
           config = {
             allowUnfree = true;
@@ -70,7 +67,7 @@
           ];
         };
 
-        # ── Nix Settings & Binary Caches ────────────────────────────────────
+        # Nix Settings & Binary Caches
         nix.settings = {
           experimental-features = [
             "nix-command"
@@ -111,7 +108,7 @@
           };
         };
 
-        # ── Localisation & Timezone ──────────────────────────────────────────
+        # Localisation & Timezone
         time.timeZone = "Pacific/Auckland";
 
         i18n.defaultLocale = "en_US.UTF-8";
@@ -127,7 +124,7 @@
           LC_TIME = "en_US.UTF-8";
         };
 
-        # ── Networking & Firewall ───────────────────────────────────────────
+        # Networking & Firewall
         networking = {
           modemmanager.enable = false;
           networkmanager = {
@@ -156,7 +153,7 @@
           };
         };
 
-        # ── DNS Over TLS (systemd-resolved) ─────────────────────────────────
+        # DNS Over TLS (systemd-resolved)
         services.resolved = {
           enable = true;
           settings = {
@@ -175,7 +172,7 @@
           "net.ipv4.tcp_mtu_probing" = 1;
         };
 
-        # ── Base System Packages ──────────────────────────────────────────────
+        # Base System Packages
         environment.systemPackages = with pkgs; [
           swaybg
           wl-clipboard
@@ -193,7 +190,7 @@
           inputs.ytplay.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
 
-        # ── XDG Portals ─────────────────────────────────────────────────────
+        # XDG Portals
         xdg.portal = {
           enable = true;
           # Do NOT set xdgOpenUsePortal: it routes xdg-open through the portal,
@@ -208,11 +205,11 @@
           configPackages = [ pkgs.xdg-desktop-portal-gnome ];
         };
 
-        # ── Hardware & Printing ──────────────────────────────────────────────
+        # Hardware & Printing
         hardware.enableRedistributableFirmware = true;
         services.printing.enable = false;
 
-        # ── System Maintenance & Store Optimisation ─────────────────────────
+        # System Maintenance & Store Optimisation
         programs.nh = {
           enable = true;
           flake = "/home/${config.username}/NixConfig";
@@ -223,7 +220,7 @@
         nix.optimise.automatic = true;
         nix.optimise.dates = [ "weekly" ];
 
-        # ── Dynamic Binary Compatibility (nix-ld) ─────────────────────────────
+        # Dynamic Binary Compatibility (nix-ld)
         # Lets non-nix prebuilt binaries run: Android Studio SDK tools, editor
         # debug adapters, game mods, and `uv`/`cargo`-installed executables.
         programs.nix-ld = {

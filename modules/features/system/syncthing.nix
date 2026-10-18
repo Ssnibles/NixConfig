@@ -1,8 +1,5 @@
-# =============================================================================
 # Syncthing Continuous File Synchronisation Feature
-# =============================================================================
 # Peer-to-peer decentralised folder synchronisation optimised for laptop battery.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -51,11 +48,6 @@
               "Documents" = {
                 id = "pfqwn-dke5x";
                 path = "/home/${config.username}/Documents";
-                devices = [ "homeserver" ];
-              };
-              "Hermes" = {
-                id = "tuyqy-adrau";
-                path = "/home/${config.username}/Hermes";
                 devices = [ "homeserver" ];
               };
             };

@@ -39,7 +39,7 @@
           ;
       };
 
-      # --- navi cheat rendering -------------------------------------------
+      # navi cheat rendering
       # Splits a command on `<...>` placeholders. Returns a list where a
       # placeholder's inner text is a single-element list and literal text is a
       # string. `builtins.split` includes only capture groups, so the group

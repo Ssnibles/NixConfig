@@ -1,9 +1,6 @@
-# =============================================================================
 # Neovim Editor Feature (NVF Flake Module)
-# =============================================================================
 # NVF framework configuration, language server dependencies, formatters,
 # linters, Tree-Sitter grammars, Vim plugins, and nvim-src symlinking.
-# =============================================================================
 { inputs, ... }:
 {
   nixos.modules.shared =
@@ -34,7 +31,7 @@
           # (modules/features/nvim-src) so there is a single source of truth.
           # NVF is used here purely as the plugin/package wrapper.
 
-          # ── Language Servers, Linters & Formatters ─────────────────────────
+          # Language Servers, Linters & Formatters
           extraPackages = with pkgs; [
             nixd
             lua-language-server
@@ -111,6 +108,7 @@
             tinymist
             typstyle
             neovim-remote
+            vtsls
 
             # C / C++ Tooling & Language Servers
             clang-tools
@@ -130,7 +128,7 @@
             tree-sitter
           ];
 
-          # ── Vim Plugins & Grammars ─────────────────────────────────────────
+          # Vim Plugins & Grammars
           startPlugins = with pkgs.vimPlugins; [
             (nvim-treesitter.withPlugins (p: [
               p.nix
@@ -211,7 +209,11 @@
         };
       };
 
-      # ── Live Config Symlinks ───────────────────────────────────────────────
+      environment.systemPackages = [
+        pkgs.neovim-remote
+      ];
+
+      # Live Config Symlinks
       # Point ~/.config/nvim (and the nvf alias) at the custom Lua tree in
       # modules/features/nvim-src. Managed centrally by nixos.liveLinks so it
       # no longer recursively chowns the whole ~/.config on every activation.

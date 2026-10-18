@@ -1,9 +1,6 @@
-# =============================================================================
 # Laptop Host Specific Configuration
-# =============================================================================
 # Hardware definitions, TLP battery power optimisation profiles, i2c_hid ACPI
 # touchpad polling workarounds, ath11k Wi-Fi kernel modules, and DFU udev rules.
-# =============================================================================
 { ... }:
 {
   nixos.modules.laptop =
@@ -60,7 +57,7 @@
         }
       ];
 
-      # ── Hibernation (finish on the laptop) ────────────────────────────────
+      # Hibernation (finish on the laptop)
       # Hibernating to /swapfile needs the file's physical offset, which is only
       # obtainable on the running laptop:
       #   sudo filefrag -v /swapfile | awk 'NR==4 {print $4}'
@@ -88,7 +85,7 @@
         })
       ];
 
-      # ── TLP Power Management Profiles ─────────────────────────────────────
+      # TLP Power Management Profiles
       services.tlp = {
         enable = true;
         settings = {
@@ -128,7 +125,7 @@
         ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", MODE="0666", GROUP="plugdev"
       '';
 
-      # ── Desktop Environment Features ───────────────────────────────────────
+      # Desktop Environment Features
       features.hyprland.enable = false;
       features.mangowc.enable = true;
       features.mangowc.local = true;
@@ -138,7 +135,7 @@
       features.shikane.enable = true;
       features.wramp.enable = true;
       features.frame.enable = true;
-      features.hermes.enable = true;
+      features.hermes.enable = false;
       features.syncthing.enable = true;
       features.tailscale.enable = true;
       features.podman-vm.enable = true;

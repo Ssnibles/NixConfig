@@ -1,9 +1,6 @@
-# =============================================================================
 # Tmux Multiplexer & Window Management Feature
-# =============================================================================
 # Tmux configuration, vi keybindings, tmux plugins (resurrect, extrakto, floax),
 # sesh session manager, interactive window picker, and systemd user daemon.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -19,7 +16,7 @@
         set -euo pipefail
 
         current_win="$(${pkgs.tmux}/bin/tmux display-message -p '#S:#I' 2>/dev/null || echo "")"
-        windows="$(${pkgs.tmux}/bin/tmux list-windows -a -F '#S:#I - #W (#{pane_current_command})' 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E -v "^(''${current_win}|popup-[^:]+|scratch):" || true)"
+        windows="$(${pkgs.tmux}/bin/tmux list-windows -a -F '#S:#I - #W (#{pane_current_command})' 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E -v "^(''${current_win} - |(popup-[^:]+|scratch):)" || true)"
 
         if [ -z "$windows" ]; then
           ${pkgs.tmux}/bin/tmux display-message "No other windows to switch to"
@@ -184,6 +181,7 @@
       config = {
         environment.systemPackages = [
           pkgs.sesh
+          tmuxWindowPicker
           tmuxResurrectSave
           tmuxSeshPicker
           tmuxSeshKiller
@@ -224,7 +222,7 @@
             unbind C-b
             unbind C-z
 
-            # ─── Plugin Configurations (Must precede plugin execution) ────────
+            # Plugin Configurations (Must precede plugin execution)
             # Extrakto text/URL/path extractor keybinding
             set -g @extrakto_key 'u'
 
@@ -257,7 +255,7 @@
             set -g @floax-bind-menu 'P'
             set -g @floax-change-path 'true'
 
-            # ─── Load Plugins (Async -b prevents startup deadlocks in tmux 3.6+) ──
+            # Load Plugins (Async -b prevents startup deadlocks in tmux 3.6+)
             run-shell "${pkgs.tmuxPlugins.yank}/share/tmux-plugins/yank/yank.tmux"
             run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/resurrect.tmux"
             run-shell "${pkgs.tmuxPlugins.extrakto}/share/tmux-plugins/extrakto/extrakto.tmux"
@@ -265,7 +263,7 @@
             run-shell -b "${pkgs.tmuxPlugins.tmux-floax}/share/tmux-plugins/tmux-floax/floax.tmux"
             run-shell -b "${pkgs.tmuxPlugins.jump}/share/tmux-plugins/jump/tmux-jump.tmux"
 
-            # ─── Sesh Session Manager (Prefix + K) ──────────────────────────
+            # Sesh Session Manager (Prefix + K)
             bind-key K display-popup -E -w 80% -h 70% "${tmuxSeshPicker}/bin/tmux-sesh-picker"
 
             # Last session toggle (Prefix + BTab via sesh, preserves history across kills)
@@ -275,7 +273,7 @@
             bind-key S run-shell "${tmuxResurrectSave}/bin/tmux-resurrect-save run"
             bind-key R run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/restore.sh"
 
-            # ─── Session & Window Navigation ─────────────────────────────────
+            # Session & Window Navigation
             # Interactive Session & Window Tree Picker
             bind-key w choose-tree -sZ
 
@@ -296,7 +294,7 @@
               'detach-client' \
               'if-shell -F "#{m/r:^(popup-|scratch),#{session_name}}" "detach-client" "display-popup -d \"#{pane_current_path}\" -w 85% -h 85% -E \"${tmuxJjuiPopup}/bin/tmux-jjui-popup \\\"#{pane_current_path}\\\"\""'
 
-            # ─── Terminal & True Colour support ───────────────────────────────
+            # Terminal & True Colour support
             set-option -a terminal-features ",xterm-256color:RGB,xterm-kitty:RGB,ghostty:RGB,foot:RGB,alacritty:RGB,tmux-256color:RGB,*:RGB"
             set-option -a terminal-features ",*:hyperlinks"
             set-option -a terminal-overrides ",xterm-256color:Tc,xterm-kitty:Tc,ghostty:Tc,foot:Tc,alacritty:Tc,tmux-256color:Tc,*:Tc"
@@ -316,13 +314,13 @@
             set -s exit-empty off
             set -g aggressive-resize on
 
-            # ─── Indexing & Window behaviour ──────────────────────────────────
+            # Indexing & Window behaviour
             set -g pane-base-index 1
             set -g renumber-windows on
             setw -g automatic-rename on
             setw -g automatic-rename-format '#{b:pane_current_command}'
 
-            # ─── Window & Pane splitting ─────────────────────────────────────
+            # Window & Pane splitting
             # Neovim-style: v=side-by-side, s=top/bottom, _/\=full-span
             unbind '"'
             unbind %
@@ -335,7 +333,7 @@
             bind c new-window -c "#{pane_current_path}"
             bind n new-window -c "#{pane_current_path}"
 
-            # ─── Pane lifecycle & zooming ────────────────────────────────────
+            # Pane lifecycle & zooming
             bind q display-panes
             bind Q kill-window
             bind X confirm-before -p "Kill session #S? (y/n)" kill-session
@@ -351,7 +349,7 @@
             bind TAB last-window
             bind m set -g mouse \; display-message "Mouse mode: #{?mouse,ON,OFF}"
 
-            # ─── Window swapping & reordering ────────────────────────────────
+            # Window swapping & reordering
             bind -r < swap-window -d -t -1
             bind -r > swap-window -d -t +1
 
@@ -361,7 +359,7 @@
             bind -r '{' swap-pane -U
             bind -r '}' swap-pane -D
 
-            # ─── Pane resizing (Capital H/L and Alt-hjkl) ────────────────────
+            # Pane resizing (Capital H/L and Alt-hjkl)
             bind -r H resize-pane -L 5
             bind -r L resize-pane -R 5
             bind -r M-h resize-pane -L 5
@@ -369,7 +367,7 @@
             bind -r M-k resize-pane -U 5
             bind -r M-l resize-pane -R 5
 
-            # ─── Window / Buffer Navigation ──────────────────────────────────
+            # Window / Buffer Navigation
             # Alt+Number for direct window selection
             bind -n M-1 select-window -t 1
             bind -n M-2 select-window -t 2
@@ -391,7 +389,7 @@
             bind -n M-k select-pane -U
             bind -n M-l select-pane -R
 
-            # ─── Alt Passthrough Mode (Prefix + a) ──────────────────────────
+            # Alt Passthrough Mode (Prefix + a)
             # Toggle Alt Passthrough mode so Alt+j/k/h/l go directly to Neovim (for mini.move)
             bind a if-shell -F '#{==:#{client_key_table},passthrough}' \
               'switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"' \
@@ -405,13 +403,13 @@
             bind -T passthrough ` switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"
             bind -T passthrough a switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"
 
-            # ─── Utility ─────────────────────────────────────────────────────
+            # Utility
             # Quick config reload
             bind-key r run-shell 'if [ -f ~/.config/tmux/tmux.conf ]; then tmux source-file ~/.config/tmux/tmux.conf && tmux display-message "Reloaded ~/.config/tmux/tmux.conf"; elif [ -f ~/.tmux.conf ]; then tmux source-file ~/.tmux.conf && tmux display-message "Reloaded ~/.tmux.conf"; elif [ -f /etc/tmux.conf ]; then tmux source-file /etc/tmux.conf && tmux display-message "Reloaded /etc/tmux.conf"; else tmux display-message "Failed to reload tmux config"; fi'
             # Clear scrollback history & terminal screen
             bind C-k send-keys -R \; send-keys C-l \; clear-history
 
-            # ─── Vi Copy Mode & Scrollback Search ────────────────────────────
+            # Vi Copy Mode & Scrollback Search
             set -g word-separators " @()[]{}':\""
             bind-key V copy-mode
             bind / copy-mode \; send-keys ?
@@ -431,7 +429,7 @@
             bind-key -T copy-mode-vi WheelDownPane send-keys -X -N 2 scroll-down
             bind p paste-buffer -p
 
-            # ─── Status Bar Styling ──────────────────────────────────────────
+            # Status Bar Styling
             set -g status-position top
             set -g status-interval 5
             set -g status-justify left

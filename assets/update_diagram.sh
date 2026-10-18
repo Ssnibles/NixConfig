@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
-# =============================================================================
 # Update Interactive Architecture Diagram in README.md
-# =============================================================================
 # Scans modules/ and updates the Mermaid diagram between:
 #   <!-- DIAGRAM:START --> and <!-- DIAGRAM:END -->
 #
 # Usage:
 #   ./assets/update_diagram.sh [--check]
-# =============================================================================
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

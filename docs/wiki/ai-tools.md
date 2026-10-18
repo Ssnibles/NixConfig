@@ -65,6 +65,26 @@ The Pi module automatically registers the Cachix binary cache to eliminate long 
 - Cache URL: `https://pi.cachix.org`
 - Public Key: `pi.cachix.org-1:lGeoGJaZ5ZDabuRzkcD5EBTNnDM4HJ1vqeOxlWk1Flk=`
 
+### Pi Agent Skills Suite & Build-Time Verification
+
+NixConfig packages a dedicated suite of documentation, academic, and Typst skills in `modules/features/apps/pi-agent/skills/`, passed into Pi via `features.pi-agent.skills`:
+
+| Skill | Purpose | Key Snippets & Conventions |
+| :--- | :--- | :--- |
+| **`assignment-report`** | University assignment reports | Assignment headers, problem-solution blocks, appendices |
+| **`lab-notes`** | Laboratory experiment documentation | Equipment tables, step-by-step procedures, data logs |
+| **`lecture-notes`** | Academic course lecture notes | `#definition`, `#theorem`, `#example`, `#warning`, `#takeaway` |
+| **`revision-sheets`** | Compact exam revision sheets | Multi-column cheat sheets, formula summaries |
+| **`test-notes`** | Software testing records | Test matrices, test-case definitions, edge-case tables |
+| **`typst-snippets`** | Typst snippet library & conventions | Mathematical sets (`RR`, `NN`, `ZZ`, `QQ`, `CC`), `#uml-class`, diagrams |
+
+Every skill contains an upstream-compatible `SKILL.md` adhering to the Agent Skills standard (YAML frontmatter with `name` and `description`).
+
+#### Automated Verification Tooling
+To prevent documentation drift and broken examples, NixOS tests all skills during derivation builds and CI:
+- **`check-skills.sh`**: Validates `SKILL.md` frontmatter, verifies tool dependencies, and optionally compiles Typst code samples against `modules/packages/uni-notes/theme.typ`.
+- **`check-sync.sh`**: Verifies that Typst preambles, fonts, page setups, and `#uml-class` conventions in `typst-snippets` remain 100% in sync with the `uni-notes` Typst theme.
+
 ### Usage
 
 ```bash
@@ -83,6 +103,9 @@ pi "refactor error handling in src/main.rs"
 ## Hermes AI Agent & Homeserver Ollama Offloading
 
 Hermes is an autonomous agent framework developed by Nous Research, packaged and integrated in `modules/features/apps/hermes.nix`.
+
+> [!NOTE]
+> In the active configuration, Hermes is **disabled** (`features.hermes.enable = false`) across all hosts in favour of the **Pi Coding Agent**, which handles all pair-programming and refactoring workflows. The module remains available for on-demand use if remote Ollama agent invocation is needed.
 
 ### Battery-Saving Architecture
 
@@ -122,7 +145,7 @@ flowchart LR
 
 ### Declarative Config Generation
 
-NixOS automatically generates `~/.hermes/config.yaml` during system activation:
+Managed declaratively via Hjem (`hjem.users."${config.username}".files.".hermes/config.yaml"`):
 
 ```yaml
 # Hermes Agent Configuration - Managed via NixOS

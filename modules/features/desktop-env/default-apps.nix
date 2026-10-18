@@ -1,9 +1,6 @@
-# =============================================================================
 # Default Applications & MIME Handlers Feature
-# =============================================================================
 # Centralised single source of truth for default system applications, session
 # environment variables, and declarative XDG MIME associations via Hjem.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -104,19 +101,8 @@
             "helium"
             "none"
           ];
-          default =
-            if (config.features.helium.enable or false) && (config.features.helium.defaultBrowser or false) then
-              "helium"
-            else if
-              (config.features.firefox.enable or false) && (config.features.firefox.defaultBrowser or false)
-            then
-              "firefox"
-            else if (config.features.helium.enable or false) then
-              "helium"
-            else if (config.features.firefox.enable or false) then
-              "firefox"
-            else
-              "none";
+          default = "none";
+          defaultText = lib.literalMD "Derived from `config.features.helium` and `config.features.firefox`";
           description = "Active default web browser.";
         };
 
@@ -151,7 +137,21 @@
       };
 
       config = lib.mkIf cfg.enable {
-        # ── Global Session Variables ──────────────────────────────────────────
+        features.default-apps.browser = lib.mkDefault (
+          if (config.features.helium.enable or false) && (config.features.helium.defaultBrowser or false) then
+            "helium"
+          else if
+            (config.features.firefox.enable or false) && (config.features.firefox.defaultBrowser or false)
+          then
+            "firefox"
+          else if (config.features.helium.enable or false) then
+            "helium"
+          else if (config.features.firefox.enable or false) then
+            "firefox"
+          else
+            "none"
+        );
+        # Global Session Variables
         environment.sessionVariables = lib.mkMerge [
           {
             EDITOR = cfg.editor;
@@ -164,13 +164,13 @@
           })
         ];
 
-        # ── System-level XDG MIME defaults (/etc/xdg/mimeapps.list) ───────────
+        # System-level XDG MIME defaults (/etc/xdg/mimeapps.list)
         xdg.mime = {
           enable = true;
           defaultApplications = allDefaultApplications;
         };
 
-        # ── User-level XDG MIME defaults (~/.config/mimeapps.list via Hjem) ───
+        # User-level XDG MIME defaults (~/.config/mimeapps.list via Hjem)
         hjem.users."${config.username}".xdg.mime-apps.default-applications = allDefaultApplications;
       };
     };

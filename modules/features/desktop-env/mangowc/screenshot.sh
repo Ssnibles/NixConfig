@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# =============================================================================
 # Wayland Screenshot & OCR Helper (MangoWC & Sway)
-# =============================================================================
+
+set -euo pipefail
 
 # Prevent concurrent slurp sessions
 pgrep -x slurp >/dev/null && exit 0
 
 # Check for MangoWC
 IS_MANGO=false
-if command -v mmsg >/dev/null 2>&1 && { [ -n "$MANGO_INSTANCE_SIGNATURE" ] || [ "$XDG_CURRENT_DESKTOP" = "mango" ] || mmsg get version >/dev/null 2>&1; }; then
+if command -v mmsg >/dev/null 2>&1 && { [ -n "${MANGO_INSTANCE_SIGNATURE:-}" ] || [ "${XDG_CURRENT_DESKTOP:-}" = "mango" ] || mmsg get version >/dev/null 2>&1; }; then
   IS_MANGO=true
 fi
 
@@ -29,8 +29,8 @@ ORIG_X=""
 ORIG_Y=""
 restore_cursor() {
   if [ -n "$ORIG_X" ] && [ -n "$ORIG_Y" ] && [ -n "$WLRCTL" ]; then
-    "$WLRCTL" pointer move -10000 -10000 >/dev/null 2>&1
-    "$WLRCTL" pointer move "$ORIG_X" "$ORIG_Y" >/dev/null 2>&1
+    "$WLRCTL" pointer move -- -10000 -10000 >/dev/null 2>&1 || true
+    "$WLRCTL" pointer move -- "$ORIG_X" "$ORIG_Y" >/dev/null 2>&1 || true
     ORIG_X=""
     ORIG_Y=""
   fi
@@ -94,16 +94,16 @@ fi
 [ -z "$GEOM" ] && exit 0
 
 # Warp cursor away from selection to avoid capturing software cursor
-if [ -n "$WLRCTL" ]; then
-  if [ "$IS_MANGO" = true ]; then
-    pos=$(mmsg get cursorpos 2>/dev/null)
-    if [ -n "$pos" ]; then
-      ORIG_X=$(sed -nE 's/.*"x":[[:space:]]*([0-9]+).*/\1/p' <<<"$pos")
-      ORIG_Y=$(sed -nE 's/.*"y":[[:space:]]*([0-9]+).*/\1/p' <<<"$pos")
-    fi
+if [ "$IS_MANGO" = true ] && [ -n "$WLRCTL" ]; then
+  pos=$(mmsg get cursorpos 2>/dev/null || true)
+  if [ -n "$pos" ]; then
+    ORIG_X=$(sed -nE 's/.*"x":[[:space:]]*(-?[0-9]+).*/\1/p' <<<"$pos")
+    ORIG_Y=$(sed -nE 's/.*"y":[[:space:]]*(-?[0-9]+).*/\1/p' <<<"$pos")
   fi
-  "$WLRCTL" pointer move 10000 10000 >/dev/null 2>&1
-  sleep 0.08
+  if [ -n "$ORIG_X" ] && [ -n "$ORIG_Y" ]; then
+    "$WLRCTL" pointer move -- 10000 10000 >/dev/null 2>&1 || true
+    sleep 0.08
+  fi
 fi
 
 # Action execution

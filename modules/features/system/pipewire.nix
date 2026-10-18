@@ -1,9 +1,6 @@
-# =============================================================================
 # PipeWire Sound Engine Feature
-# =============================================================================
 # Modern low-latency sound server replacing PulseAudio, with ALSA and
 # 32-bit audio emulation support for gaming.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =

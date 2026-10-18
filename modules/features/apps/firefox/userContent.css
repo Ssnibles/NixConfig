@@ -1,13 +1,9 @@
-/* ==========================================================================
-   userContent.css — Web Content, Extension Styling & Internal Pages
-   Startpage · Sidebery v5 · about: pages
-   ========================================================================== */
+/* userContent.css — Web Content, Extension Styling & Internal Pages
+   Startpage · Sidebery v5 · about: pages */
 
 @import url("colours.css");
 
-/* ==========================================================================
-   §1  NEW TAB & BLANK PAGES — Minimalist dark canvas & Instrument Serif
-   ========================================================================== */
+/* §1  NEW TAB & BLANK PAGES — Minimalist dark canvas & Instrument Serif */
 
 @-moz-document url("about:blank"), url("about:newtab"), url("about:home") {
   html,
@@ -54,9 +50,7 @@
   }
 }
 
-/* ==========================================================================
-   §2  INTERNAL BROWSER PAGES (about:preferences, about:addons)
-   ========================================================================== */
+/* §2  INTERNAL BROWSER PAGES (about:preferences, about:addons) */
 
 @-moz-document url-prefix("about:preferences"), url-prefix("about:addons") {
   :root {
@@ -123,9 +117,7 @@
   }
 }
 
-/* ==========================================================================
-   §3  TECHNICAL & CONFIG PAGES (about:config, about:debugging, about:support)
-   ========================================================================== */
+/* §3  TECHNICAL & CONFIG PAGES (about:config, about:debugging, about:support) */
 
 @-moz-document url-prefix("about:config"), url-prefix("about:debugging"), url-prefix("about:support"), url-prefix("about:processes") {
   :root {
@@ -179,14 +171,12 @@
   }
 }
 
-/* ==========================================================================
-   §4  SIDEBERY v5 & WEBEXTENSIONS
-   High-performance native variable overrides & streamlined selectors
-   ========================================================================== */
+/* §4  SIDEBERY v5 & WEBEXTENSIONS
+   High-performance native variable overrides & streamlined selectors */
 
 @-moz-document url-prefix("moz-extension://")
 {
-  /* ── Local design tokens ── */
+  /* Local design tokens */
   :root {
     --sb-bg: var(--fx-bg, #141415);
     --sb-bg-raised: var(--fx-bg-raised, #1c1c24);
@@ -216,9 +206,7 @@
       sans-serif;
   }
 
-  /* ────────────────────────────────────────────────────────────────────────
-     §4.1  Sidebery v5 Native CSS Custom Properties (Single Source of Truth)
-     ──────────────────────────────────────────────────────────────────────── */
+  /* §4.1  Sidebery v5 Native CSS Custom Properties (Single Source of Truth) */
 
   #root {
     /* Frame & Canvas */
@@ -293,9 +281,7 @@
     --scroll-color: var(--sb-bg-subtle) !important;
   }
 
-  /* ────────────────────────────────────────────────────────────────────────
-     §4.2  Base Canvas & Sidebar Containers
-     ──────────────────────────────────────────────────────────────────────── */
+  /* §4.2  Base Canvas & Sidebar Containers */
 
   #root,
   .TabsPanel,
@@ -309,9 +295,7 @@
     font-family: var(--sb-font-ui) !important;
   }
 
-  /* ────────────────────────────────────────────────────────────────────────
-     §4.3  Navigation Bar
-     ──────────────────────────────────────────────────────────────────────── */
+  /* §4.3  Navigation Bar */
 
   .NavigationBar {
     background-color: var(--sb-bg) !important;
@@ -357,9 +341,7 @@
     color: var(--sb-accent) !important;
   }
 
-  /* ────────────────────────────────────────────────────────────────────────
-     §4.4  Pinned Tabs Bar (Compact Responsive Grid Dock)
-     ──────────────────────────────────────────────────────────────────────── */
+  /* §4.4  Pinned Tabs Bar (Compact Responsive Grid Dock) */
 
   .PinnedTabsBar {
     display: flex !important;
@@ -479,9 +461,7 @@
     min-height: 20px !important;
   }
 
-  /* ────────────────────────────────────────────────────────────────────────
-     §4.5  Regular Tab Items & Tree
-     ──────────────────────────────────────────────────────────────────────── */
+  /* §4.5  Regular Tab Items & Tree */
 
   .TabsPanel {
     padding: 4px 2px !important;
@@ -681,9 +661,7 @@
     }
   }
 
-  /* ────────────────────────────────────────────────────────────────────────
-     §4.6  Search Bar
-     ──────────────────────────────────────────────────────────────────────── */
+  /* §4.6  Search Bar */
 
   .SearchBar {
     padding: 4px 6px !important;
@@ -731,9 +709,7 @@
     border-color: var(--sb-accent) !important;
   }
 
-  /* ────────────────────────────────────────────────────────────────────────
-     §4.7  Bottom Dock Bar
-     ──────────────────────────────────────────────────────────────────────── */
+  /* §4.7  Bottom Dock Bar */
 
   .BottomBar {
     background-color: var(--sb-bg) !important;
@@ -756,9 +732,7 @@
     fill: var(--sb-fg) !important;
   }
 
-  /* ────────────────────────────────────────────────────────────────────────
-     §4.8  Context Menus & Popups
-     ──────────────────────────────────────────────────────────────────────── */
+  /* §4.8  Context Menus & Popups */
 
   .CtxMenu {
     background-color: var(--sb-bg-raised) !important;
@@ -786,9 +760,7 @@
     margin: 4px 6px !important;
   }
 
-  /* ────────────────────────────────────────────────────────────────────────
-     §4.9  Bookmarks & History Panels
-     ──────────────────────────────────────────────────────────────────────── */
+  /* §4.9  Bookmarks & History Panels */
 
   .Node,
   .BookmarkNode {
@@ -813,9 +785,7 @@
     color: var(--sb-accent) !important;
   }
 
-  /* ────────────────────────────────────────────────────────────────────────
-     §4.10  Scrollbars — Targeted (Avoids global * selector)
-     ──────────────────────────────────────────────────────────────────────── */
+  /* §4.10  Scrollbars — Targeted (Avoids global * selector) */
 
   :root,
   #root,

@@ -1,11 +1,8 @@
-# =============================================================================
 # Frame Remote Desktop Feature
-# =============================================================================
 # Host-side launcher and desktop entry for the Nutanix Frame App. The client
 # itself runs inside an isolated Ubuntu 24.04 Distrobox container created by
 # assets/setup_frame.sh; this module only exposes a `frame` wrapper on the host
 # and registers the application (and its SSO URL schemes) with the desktop.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =

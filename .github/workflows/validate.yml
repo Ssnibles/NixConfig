@@ -1,7 +1,5 @@
-# =============================================================================
 # GitHub Actions - Nix Flake Validation
 # Runs on every push and pull request to catch configuration errors early.
-# =============================================================================
 name: Validate Nix Flake
 
 on:

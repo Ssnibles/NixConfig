@@ -197,7 +197,7 @@ Scope {
         id: brightnessGetProc
         command: ["brightnessctl", "-m"]
         stdout: StdioCollector {
-          onDataChanged: {
+          onStreamFinished: {
             var lines = this.text.trim().split("\n")
             for (var i = 0; i < lines.length; i++) {
               var parts = lines[i].split(",")
@@ -364,7 +364,7 @@ Scope {
           anchors.margins: 16
           spacing: 14
 
-          // --- HEADER: CLOCK & STATUS PILLS ---
+          // HEADER: CLOCK & STATUS PILLS
           RowLayout {
             Layout.fillWidth: true
             spacing: 12
@@ -391,6 +391,7 @@ Scope {
                     var d = new Date()
                     headerTime.text = Qt.formatDateTime(d, Config.commandCentreClockFormat)
                     headerTime12.text = Qt.formatDateTime(d, "h:mm AP")
+                    headerDate.text = Qt.formatDateTime(d, Config.commandCentreDateFormat)
                     headerTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
                     headerTimer.restart()
                   }
@@ -417,6 +418,7 @@ Scope {
               }
 
               Text {
+                id: headerDate
                 text: Qt.formatDateTime(new Date(), Config.commandCentreDateFormat)
                 color: Colours.fgDim
                 font.family: Config.sansFont
@@ -451,7 +453,7 @@ Scope {
             }
           }
 
-          // --- SYSTEM CONTROLS CARD (VOLUME & BRIGHTNESS) ---
+          // SYSTEM CONTROLS CARD (VOLUME & BRIGHTNESS)
           Rectangle {
             Layout.fillWidth: true
             implicitHeight: sliderCol.implicitHeight + 20
@@ -580,13 +582,13 @@ Scope {
             }
           }
 
-          // --- MEDIA PLAYER CARD ---
+          // MEDIA PLAYER CARD
           MediaCard {
             Layout.fillWidth: true
             showWhenIdle: Config.alwaysShowMediaCard
           }
 
-          // --- NOTIFICATION HISTORY CARD ---
+          // NOTIFICATION HISTORY CARD
           Rectangle {
             id: notifCard
             Layout.fillWidth: true
@@ -818,7 +820,7 @@ Scope {
             }
           }
 
-          // --- SYSTEM POWER/CONTROLS ---
+          // SYSTEM POWER/CONTROLS
           PowerButtons {
             Layout.fillWidth: true
             onActivated: Config.commandCentreVisible = false

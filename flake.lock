@@ -532,10 +532,10 @@
         "scenefx": "scenefx_2"
       },
       "locked": {
-        "lastModified": 1791940281,
-        "narHash": "sha256-paISYJO0PIcZZ2z1VE7BuoBAK0jesfo152oLgH6jzcU=",
-        "rev": "b2b10282fcd0cc59c89f75dea144f765c4b41767",
-        "revCount": 2232,
+        "dirtyRev": "cd84cc2822024f22e3c39ea8952d4b7e238c62b6-dirty",
+        "dirtyShortRev": "cd84cc2-dirty",
+        "lastModified": 1790898883,
+        "narHash": "sha256-1FcoIbhXL+9Jur/XaGQ5ex2tGVwx5rk9veMfjbIpPhA=",
         "type": "git",
         "url": "file:///home/josh/mango"
       },

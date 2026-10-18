@@ -1,16 +1,12 @@
-/* ==========================================================================
-   userChrome.css — Firefox Chrome UI Theme
-   Sidebery vertical tabs · floating viewport · minimal chrome
-   ========================================================================== */
+/* userChrome.css — Firefox Chrome UI Theme
+   Sidebery vertical tabs · floating viewport · minimal chrome */
 
 @import url("colours.css");
 
-/* ==========================================================================
-   §1  BROWSER THEME TOKENS — Firefox 158 "Nova" remap
-   ========================================================================== */
+/* §1  BROWSER THEME TOKENS — Firefox 158 "Nova" remap */
 
 :root {
-  /* ── Chrome, toolbar & accent tokens — Firefox 158 "Nova" names ── */
+  /* Chrome, toolbar & accent tokens — Firefox 158 "Nova" names */
   --toolbar-background-color: var(--fx-bg) !important;
   --toolbar-color: var(--fx-fg) !important;
   --toolbar-text-color: var(--fx-fg) !important;
@@ -23,7 +19,7 @@
   --text-color: var(--fx-fg) !important;
   --chrome-content-separator-color: var(--fx-border) !important;
 
-  /* ── URL bar / search fields ── */
+  /* URL bar / search fields */
   --toolbar-field-background-color: var(--fx-bg-raised) !important;
   --toolbar-field-background-color-focus: var(--fx-bg-raised) !important;
   --toolbar-field-text-color: var(--fx-fg) !important;
@@ -32,37 +28,37 @@
   --toolbar-field-border-color: transparent !important;
   --toolbar-field-border-color-focus: var(--fx-accent) !important;
 
-  /* ── Accent — repoint Nova's violet primary back to the palette accent ── */
+  /* Accent — repoint Nova's violet primary back to the palette accent */
   --color-accent-primary: var(--fx-accent) !important;
   --color-accent-primary-hover: var(--fx-accent) !important;
   --color-accent-primary-active: var(--fx-accent) !important;
   --color-accent-attention: var(--fx-accent) !important;
   --focus-outline-color: var(--fx-accent) !important;
 
-  /* ── Toolbar buttons ── */
+  /* Toolbar buttons */
   --toolbarbutton-icon-fill: var(--fx-fg-mid) !important;
   --toolbarbutton-icon-fill-attention: var(--fx-accent) !important;
   --toolbarbutton-background-color-hover: var(--fx-bg-raised) !important;
   --toolbarbutton-background-color-active: var(--fx-bg-subtle) !important;
 
-  /* ── Firefox internal overrides — lightweight theme ── */
+  /* Firefox internal overrides — lightweight theme */
   --lwt-accent-color: var(--fx-bg) !important;
   --lwt-accent-color-inactive: var(--fx-bg) !important;
   --lwt-text-color: var(--fx-fg) !important;
   --lwt-background-tab-separator-color: transparent !important;
   --tabpanel-background-color: var(--fx-bg) !important;
 
-  /* ── Tabs (native tabs hidden, but keep tokens consistent) ── */
+  /* Tabs (native tabs hidden, but keep tokens consistent) */
   --tab-background-color-selected: var(--fx-bg-subtle) !important;
   --tab-text-color-selected: var(--fx-fg) !important;
   --tab-icon-fill-loading: var(--fx-accent) !important;
 
-  /* ── Sidebar (Sidebery & native) ── */
+  /* Sidebar (Sidebery & native) */
   --sidebar-background-color: var(--fx-bg) !important;
   --sidebar-text-color: var(--fx-fg) !important;
   --sidebar-border-color: transparent !important;
 
-  /* ── Firefox internal overrides — panels, menus & buttons ── */
+  /* Firefox internal overrides — panels, menus & buttons */
   --panel-background: var(--fx-bg-raised) !important;
   --panel-background-color: var(--fx-bg-raised) !important;
   --panel-border-color: var(--fx-border) !important;
@@ -74,9 +70,7 @@
   --toolbarbutton-border-radius: var(--fx-radius-sm) !important;
 }
 
-/* ==========================================================================
-   §2  HIDDEN ELEMENTS — Strip unnecessary chrome
-   ========================================================================== */
+/* §2  HIDDEN ELEMENTS — Strip unnecessary chrome */
 
 /* Horizontal tab bar (Sidebery replaces this) */
 #TabsToolbar {
@@ -123,9 +117,7 @@
   display: none !important;
 }
 
-/* ==========================================================================
-   §3  SUBTLE UI POLISH — Fade states for identity & nav buttons
-   ========================================================================== */
+/* §3  SUBTLE UI POLISH — Fade states for identity & nav buttons */
 
 #identity-box {
   opacity: 0.35 !important;
@@ -143,9 +135,7 @@
   pointer-events: none !important;
 }
 
-/* ==========================================================================
-   §4  NAVIGATOR TOOLBOX & NAV BAR
-   ========================================================================== */
+/* §4  NAVIGATOR TOOLBOX & NAV BAR */
 
 #navigator-toolbox {
   background-color: var(--fx-bg) !important;
@@ -160,16 +150,14 @@
   padding: var(--fx-space-sm) var(--fx-space-md) !important;
 }
 
-/* ==========================================================================
-   §5  URL BAR — Centred pill, single-layer background & breakout elevation
-   ========================================================================== */
+/* §5  URL BAR — Centred pill, single-layer background & breakout elevation */
 
 #urlbar-container {
   max-width: 700px !important;
   margin-inline: auto !important;
 }
 
-/* ── Firefox 158 "joint background" (input half + results half) ──
+/* Firefox 158 "joint background" (input half + results half)
    Sizing, radius and glow all go through Firefox's own tokens: it squares the
    corners where the halves meet and aligns the results edge with the input edge,
    which a direct `border-radius`/`box-shadow` would fight. */
@@ -221,9 +209,7 @@
   text-align: start !important;
 }
 
-/* ==========================================================================
-   §6  URL DROPDOWN / AUTOCOMPLETE — Zero-overdraw single GPU layer
-   ========================================================================== */
+/* §6  URL DROPDOWN / AUTOCOMPLETE — Zero-overdraw single GPU layer */
 
 .urlbarView {
   background-color: transparent !important;
@@ -260,9 +246,7 @@
   background-color: var(--fx-bg-subtle) !important;
 }
 
-/* ==========================================================================
-   §7  TOOLBAR BUTTONS
-   ========================================================================== */
+/* §7  TOOLBAR BUTTONS */
 
 .toolbarbutton-1 {
   border-radius: var(--fx-radius-sm) !important;
@@ -280,9 +264,7 @@
   background-color: var(--fx-bg-subtle) !important;
 }
 
-/* ==========================================================================
-   §8  SIDEBAR — Sidebery container
-   ========================================================================== */
+/* §8  SIDEBAR — Sidebery container */
 
 #sidebar-box,
 #sidebar,
@@ -300,9 +282,7 @@ browser#sidebar,
   border-radius: 0 !important;
 }
 
-/* ==========================================================================
-   §9  FLOATING VIEWPORT — Rounded page area with single-layer clip & border
-   ========================================================================== */
+/* §9  FLOATING VIEWPORT — Rounded page area with single-layer clip & border */
 
 #main-window,
 #appcontent,
@@ -344,9 +324,7 @@ browser#sidebar,
   border: none !important;
 }
 
-/* ==========================================================================
-   §10  PANELS & CONTEXT MENUS
-   ========================================================================== */
+/* §10  PANELS & CONTEXT MENUS */
 
 menupopup,
 panel {
@@ -390,9 +368,7 @@ menuseparator {
   opacity: 0.5 !important;
 }
 
-/* ==========================================================================
-   §11  FINDBAR — Floating pill design
-   ========================================================================== */
+/* §11  FINDBAR — Floating pill design */
 
 findbar {
   background-color: var(--fx-bg-raised) !important;
@@ -434,9 +410,7 @@ findbar .findbar-closebutton {
   margin-inline-start: var(--fx-space-xs) !important;
 }
 
-/* ==========================================================================
-   §12  TOOLTIPS & NOTIFICATIONS
-   ========================================================================== */
+/* §12  TOOLTIPS & NOTIFICATIONS */
 
 tooltip {
   background-color: var(--fx-bg-raised) !important;

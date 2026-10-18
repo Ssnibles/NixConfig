@@ -59,8 +59,8 @@ mirror the expansion, not a LaTeX equivalent.
 
 | Trigger | Expands to |
 |---|---|
-| `real` | `real` |
-| `natural` / `integer` / `rational` / `complex` | `natural` / `integer` / `rational` / `complex` |
+| `real` | `RR` |
+| `natural` / `integer` / `rational` / `complex` | `NN` / `ZZ` / `QQ` / `CC` |
 
 ## Greek letters
 

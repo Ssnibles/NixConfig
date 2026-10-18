@@ -1,9 +1,6 @@
-# =============================================================================
 # Shikane Display Manager Daemon
-# =============================================================================
 # Automatic dynamic display profile management (laptop, dual-monitor, fallback)
 # using Shikane and nwg-displays.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =

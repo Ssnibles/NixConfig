@@ -1,9 +1,6 @@
--- =============================================================================
 -- Shared LSP client capabilities.
--- =============================================================================
 -- Built once from blink.cmp (falling back to the built-in defaults) and reused
 -- by the global client config, the server table, and rustaceanvim.
--- =============================================================================
 
 local lsp = vim.lsp
 

@@ -1,9 +1,6 @@
-# =============================================================================
 # Quickshell UI Engine Feature
-# =============================================================================
 # Quickshell widget framework setup, system activation script, and dynamic QML
 # colour theme singleton generated from active theme palette options.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =

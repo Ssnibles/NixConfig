@@ -104,14 +104,18 @@ Singleton {
   function _matchScore(appId, title, patterns) {
     appId = (appId || "").toLowerCase()
     title = (title || "").toLowerCase()
+    var best = 0
     for (var i = 0; i < patterns.length; i++) {
       var p = String(patterns[i]).toLowerCase()
-      if (appId === p) return 100 - i
-      if (title === p) return 90 - i
-      if (appId.indexOf(p) !== -1) return 80 - i
-      if (title.indexOf(p) !== -1) return 70 - i
+      if (!p) continue
+      var score = 0
+      if (appId === p) score = 100 - i
+      else if (title === p) score = 90 - i
+      else if (appId.indexOf(p) !== -1) score = 80 - i
+      else if (title.indexOf(p) !== -1) score = 70 - i
+      if (score > best) best = score
     }
-    return 0
+    return best
   }
 
   function _bestMatch(list, wm, patterns) {

@@ -1,9 +1,6 @@
-# =============================================================================
 # Media & Document Applications Feature
-# =============================================================================
 # Media viewer (imv) and Zathura PDF reader with dark mode recolouring
 # matching active theme colours and inverse search settings.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -127,7 +124,7 @@
                 local opts = { initial = false }
                 options.read_options(opts, "nowplaying")
 
-                -- Layout / theme -------------------------------------------------
+                -- Layout / theme
                 local W, H = 1280, 720
                 local COVER, RADIUS, COVER_Y = 340, 24, 120
                 local BLUR_SIGMA, TINT_ALPHA = 45, 0.4
@@ -353,6 +350,10 @@
                         show_card()
                     end
                 end)
+                mp.register_event("shutdown", function()
+                    os.remove(title_file)
+                    os.remove(artist_file)
+                end)
               '';
             };
 
@@ -414,18 +415,13 @@
 
             ".config/zathura/zathurarc" = {
               text = ''
-                " Auto-reload PDF on file change
-                set watch-files true
-
-                " Fit width when opening
+                # Fit width when opening
                 set adjust-open "best-fit"
-                set adjust-width "best-fit"
-                set adjust-height "best-fit"
 
-                " Inverse search: Ctrl+Click in Zathura opens Neovim at the line
+                # Inverse search: Ctrl+Click in Zathura opens Neovim at the line
                 set synctex-editor-command "nvr --remote-silent +%{line} %{input}"
 
-                " Preferences
+                # Preferences
                 set pages-per-row 1
                 set scroll-step 50
                 set zoom-min 50

@@ -1,20 +1,20 @@
 local map = vim.keymap.set
 local util = require("util")
 
--- ── General ──────────────────────────────────────────────────────────
+-- General
 map("n", "U", "<C-r>", { desc = "Redo" })
 map("n", "Q", "<Nop>", { desc = "Disable Ex mode" })
 map("n", "<C-z>", "<Nop>", { desc = "Disable suspend" })
 map({ "i", "v" }, "<C-c>", "<Esc>", { desc = "Normalise Ctrl-c to Escape" })
 
--- ── Saving & Quitting ────────────────────────────────────────────────
+-- Saving & Quitting
 map("i", "<C-s>", "<C-o><cmd>update<CR>", { desc = "Save buffer" })
 map({ "n", "v" }, "<C-s>", "<cmd>update<CR>", { desc = "Save buffer" })
 map("n", "<leader>qq", "<cmd>confirm q<CR>", { desc = "Quit window" })
 map("n", "<leader>qw", "<cmd>wq<CR>", { desc = "Save and quit" })
 map("n", "<leader>qa", "<cmd>qa<CR>", { desc = "Quit all" })
 
--- ── Insert Mode ──────────────────────────────────────────────────────
+-- Insert Mode
 local smart_enter = require("smart_enter")
 map("i", "<CR>", smart_enter.cr, { expr = true, desc = "Smart Enter (continue lists & comments)" })
 map("i", "<S-CR>", smart_enter.shift_cr, { expr = true, desc = "Shift-Enter (newline without continuation)" })
@@ -30,11 +30,11 @@ map("i", "<C-j>", "<Down>", { desc = "Move caret down" })
 map("i", "<C-k>", "<Up>", { desc = "Move caret up" })
 map("i", "<C-l>", "<Right>", { desc = "Move caret right" })
 
--- ── Visual Indentation ───────────────────────────────────────────────
+-- Visual Indentation
 map("v", "<", "<gv", { desc = "Indent left (keep selection)" })
 map("v", ">", ">gv", { desc = "Indent right (keep selection)" })
 
--- ── Clipboard & Registers ────────────────────────────────────────────
+-- Clipboard & Registers
 map("x", "<leader>p", '"_dP', { desc = "Paste without yanking" })
 map({ "n", "v" }, "<leader>D", '"_d', { desc = "Delete to void" })
 map("n", "x", '"_x', { desc = "Delete character to void" })
@@ -44,14 +44,14 @@ map({ "n", "v" }, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
 map("n", "<leader>Y", '"+Y', { desc = "Yank line to system clipboard" })
 map("n", "<leader>P", '"+P', { desc = "Paste before from system clipboard" })
 
--- ── Selection & Movement ─────────────────────────────────────────────
+-- Selection & Movement
 map("n", "<leader>va", "ggVG", { desc = "Select all" })
 map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Smart line down" })
 map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Smart line up" })
 map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down (centred)" })
 map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up (centred)" })
 
--- ── Search ───────────────────────────────────────────────────────────
+-- Search
 map("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear search highlight" })
 map("n", "<leader>h", "<cmd>nohlsearch<CR>", { desc = "Clear search highlight" })
 map("n", "n", "nzzzv", { desc = "Next search result (centred)" })
@@ -59,7 +59,7 @@ map("n", "N", "Nzzzv", { desc = "Prev search result (centred)" })
 map("n", "*", "*zz", { desc = "Search word forward (centred)" })
 map("n", "#", "#zz", { desc = "Search word backward (centred)" })
 
--- ── Windows ──────────────────────────────────────────────────────────
+-- Windows
 map("n", "<leader>wv", "<C-w>v", { desc = "Split vertical" })
 map("n", "<leader>ws", "<C-w>s", { desc = "Split horizontal" })
 map("n", "<leader>wq", "<C-w>c", { desc = "Close window" })
@@ -68,7 +68,7 @@ map("n", "<leader>wz", function()
 	if vim.t.zoomed then
 		vim.cmd("tabclose")
 		vim.t.zoomed = false
-	else
+	elseif vim.fn.winnr("$") > 1 then
 		vim.cmd("tab split")
 		vim.t.zoomed = true
 	end
@@ -79,7 +79,7 @@ map("n", "<leader>wl", "<C-w>L", { desc = "Move window right" })
 map("n", "<leader>wj", "<C-w>J", { desc = "Move window down" })
 map("n", "<leader>wk", "<C-w>K", { desc = "Move window up" })
 
--- ── Buffers & Tabs ───────────────────────────────────────────────────
+-- Buffers & Tabs
 map("n", "<leader>bd", function()
 	local ok, bufremove = pcall(require, "mini.bufremove")
 	if ok then
@@ -106,7 +106,7 @@ map("n", "[t", "<cmd>tabprevious<CR>", { desc = "Previous tab" })
 map("n", "<leader>Tn", "<cmd>tabnew<CR>", { desc = "New tab" })
 map("n", "<leader>Tc", "<cmd>tabclose<CR>", { desc = "Close tab" })
 
--- ── Quickfix & Location List ─────────────────────────────────────────
+-- Quickfix & Location List
 -- [q/]q and [l/]l are built-in defaults now (and honour a count), so only
 -- the <leader> variants are kept here.
 map("n", "<leader>qo", "<cmd>copen<CR>", { desc = "Open quickfix" })
@@ -117,7 +117,7 @@ end, { desc = "Toggle quickfix list" })
 map("n", "<leader>ql", "<cmd>lopen<CR>", { desc = "Open location list" })
 map("n", "<leader>qL", "<cmd>lclose<CR>", { desc = "Close location list" })
 
--- ── Diagnostics ──────────────────────────────────────────────────────
+-- Diagnostics
 
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
@@ -145,7 +145,7 @@ map("n", "[e", function()
 	diag_jump(-1, { severity = vim.diagnostic.severity.ERROR })
 end, { desc = "Previous error" })
 
--- ── Toggles ──────────────────────────────────────────────────────────
+-- Toggles
 map("n", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "Toggle wrap" })
 map("n", "<leader>ts", "<cmd>set spell!<CR>", { desc = "Toggle spell" })
 map("n", "<leader>tn", function()
@@ -183,7 +183,7 @@ map("n", "<leader>tc", function()
 	util.notify_toggle("Cursor word highlighting", not vim.g.minicursorword_disable)
 end, { desc = "Toggle cursor word" })
 
--- ── LSP (non-attach) ────────────────────────────────────────────────
+-- LSP (non-attach)
 map("n", "<leader>li", "<cmd>checkhealth vim.lsp<CR>", { desc = "LSP info" })
 map("n", "<leader>lr", function()
 	if #vim.lsp.get_clients({ bufnr = 0 }) == 0 then
@@ -196,7 +196,7 @@ map("n", "<leader>lf", "<cmd>FzfLua lsp_finder<CR>", { desc = "LSP finder" })
 map("n", "<leader>lh", "<cmd>LspHealth<CR>", { desc = "LSP health" })
 map("n", "<leader>lR", "<cmd>SmartRename<CR>", { desc = "Smart rename/replace" })
 
--- ── Pickers (FzfLua) ────────────────────────────────────────────────
+-- Pickers (FzfLua)
 map("n", "<C-p>", "<cmd>FzfLua files<CR>", { desc = "File picker" })
 map("n", "<leader>/", "<cmd>FzfLua live_grep<CR>", { desc = "Search project" })
 map("n", "<leader>ff", "<cmd>FzfLua files<CR>", { desc = "Find files" })
@@ -214,14 +214,14 @@ map("n", "<leader>fk", "<cmd>FzfLua keymaps<CR>", { desc = "Keymaps" })
 map("n", "<leader>f.", "<cmd>FzfLua resume<CR>", { desc = "Resume last picker" })
 map("n", "<leader>fR", "<cmd>GrugFar<CR>", { desc = "Find and replace (project)" })
 
--- ── Git Pickers ──────────────────────────────────────────────────────
+-- Git Pickers
 map("n", "<leader>gl", "<cmd>FzfLua git_commits<CR>", { desc = "Git log" })
 map("n", "<leader>gS", "<cmd>FzfLua git_status<CR>", { desc = "Git status (picker)" })
 map("n", "<leader>gL", "<cmd>FzfLua git_bcommits<CR>", { desc = "Git log (current file)" })
 map("n", "<leader>gB", "<cmd>FzfLua git_branches<CR>", { desc = "Git branches" })
 map("n", "<leader>gF", "<cmd>FzfLua git_stash<CR>", { desc = "Git stash" })
 
--- ── Miscellaneous ────────────────────────────────────────────────────
+-- Miscellaneous
 map("n", "<leader>cd", "<cmd>cd %:p:h<CR>", { desc = "Change to file directory" })
 -- `zz` intentionally left as the built-in "centre cursor"; use `za` to toggle folds.
 map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })

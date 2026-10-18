@@ -11,6 +11,7 @@ Item {
   property string timeStr: ""
   property string hourStr: ""
   property string minuteStr: ""
+  property string dateStr: ""
   property PanelWindow sharedWindow: null
   property bool horizontal: false
 
@@ -22,6 +23,7 @@ Item {
   function updateTime() {
     var d = new Date()
     root.timeStr = Qt.formatTime(d, root.timeFormat)
+    root.dateStr = Utils.getOrdinalDate(d)
     // Keep a 24h hour/minute pair for the stacked vertical layout, independent
     // of `timeFormat` (which may be 12-hour and is not `HH:mm`).
     root.hourStr = Utils.pad2(d.getHours())
@@ -87,7 +89,7 @@ Item {
     sharedWindow: root.sharedWindow
     icon: "\u{F017}"
     iconColour: Colours.accent
-    title: Utils.getOrdinalDate(new Date())
+    title: root.dateStr
     contentWidth: 216
     contentComponent: calendarComponent
   }

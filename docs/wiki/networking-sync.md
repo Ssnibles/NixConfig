@@ -66,7 +66,6 @@ Syncthing is configured in `modules/features/system/syncthing.nix` to synchronis
 | Folder Label | Path | Sync ID | Target Device |
 | :--- | :--- | :--- | :--- |
 | **Documents** | `~/Documents` | `pfqwn-dke5x` | `homeserver` |
-| **Hermes** | `~/Hermes` | `tuyqy-adrau` | `homeserver` |
 
 ### Battery & Mobile Optimisations
 

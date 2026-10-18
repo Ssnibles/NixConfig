@@ -113,7 +113,7 @@ containers and typography stay visually consistent:
 - `ui-surface` — raised panel fill for cards and code blocks.
 - `ui-surface-raised` — header/row fill for code headers and table headers.
 
-**Title layout:** `#note-title(date, title)` renders the date top-left and the
+**Title layout:** `#note-title(date, title)` renders the date centred and the
 title centred beneath it (hyphenation disabled, so a long title wraps to whole
 words). The title is a real level-1 heading, so it feeds the outline and PDF
 bookmarks for free — use it (or the `title` snippet) rather than hand-copying the
@@ -275,7 +275,7 @@ Algorithm cost uses the `big-o` snippet → `#bigo(title, body)` (the blue
 - `code-show-rule` / `raw-show-rule` are only for documents that do **not** use the theme;
   they insert the `lang-meta` map plus a block `code-raw` rule. Do not apply them on top
   of the theme — the rules are redundant and would double the code styling.
-- `cb <lang>` / `code-raw` / ` ``` ` and the language-specific `code-python`, `code-sql`, `code-verilog`/`code-verilog`,
+- `cb <lang>` / `code-raw` / ` ``` ` and the language-specific `code-python`, `code-sql`, `code-verilog`,
   `code-java`, `code-c`, `code-cpp`, `code-rust`, `code-javascript`, `code-typescript`, `code-shell`/`code-bash`, `code-nix`, `code-lua`,
   `code-typst`, `code-asm`, `code-html`, `code-css`, `code-json`, `code-go`, `code-haskell`, `code-php`, `code-xml`,
   `code-csharp`, `code-tcl`, `code-gradle` produce fenced code blocks. Put the filename on the
@@ -358,6 +358,9 @@ templated; do not reintroduce `stroke-colour` or the accent-tinted header.
 - `mermaid-erd`, `mermaid-gantt`, `mermaid` → `#mermaid("...")` wrappers for ER, Gantt, and generic diagrams.
   Always pass `theme: mmdr-theme`; the theme makes the diagram background match
   the page and themes nodes, sequence actors/notes, and edges for both themes.
+  Use mmdr only for **acyclic** flows (one edge per pair of nodes); cycles,
+  parallel labelled edges and `classDiagram`s render overlapping labels — build
+  those in CeTZ instead (`references/diagrams.md`).
 - `circuit` → `#zap.circuit({ import zap: *; cetz.draw.set-style(zap: zap-theme); … })`
   CeTZ/Zap IEEE logic circuit. Always use the theme's `zap-theme` for the
   style — Zap's defaults are black on white, which is illegible on the dark page.
@@ -375,7 +378,12 @@ Diagrams are the number-one source of failed compiles and are **composed, not
 copied**. Before drawing one, read `references/diagrams.md` for the import lines,
 the tool-choice table, the Zap/CeTZ/mmdr templates, and the debugging checklist.
 The essentials: import the package at the top of the file, and compile after
-every diagram you add.
+every diagram you add. **Then render the page to a PNG and look at it** — mmdr's
+auto-layout and hand-placed CeTZ both fail visually (overlapping labels, stacked
+arrowheads, edges through boxes) without any compile error. Pick the tool by
+structure: mmdr only for *acyclic* flows, sequence, Gantt, pie and git; CeTZ for
+anything with a cycle, a class/collaboration diagram, or a block/architecture
+diagram.
 
 ## Headings and layout
 
@@ -409,7 +417,7 @@ are on word boundaries, e.g. `*listeners are the Observer\npattern*`.
 - `key-value` / `term` → bold term + definition.
 - `badge` → inline coloured pill (`#box(fill: rgb("<hex>20"), inset: (x: 6pt, y: 2pt), radius: ui-radius-sm)[...]`).
 - `qa` → `#qa[question][answer]`.
-- `uml-class` → `#uml-class("Name", fields: ("- field: Type"), methods: ("+ method(): Type"))`.
+- `uml-class` → `#uml-class("Name", fields: ("- field: Type",), methods: ("+ method(): Type",))`.
 - `card` → `#card[body]`.
 - `box` → `#box(stroke: 0.5pt + ui-border, inset: (x: 12pt, y: 10pt), radius: ui-radius, width: 100%)[...]`.
 - `todo` / `done` → `- [ ]` / `- [x]`.
@@ -439,7 +447,7 @@ Callouts: `note` `info` `tip` `warning` `caution` `danger` `important`
 `definition` `theorem` `lemma` `corollary` `proposition` `example` `question`
 `problem` `solution` `remark` `takeaway` `proof` `callout` `big-o`
 Code: `code-show-rule` `raw-show-rule` `code-filename` `code-inline` `line-numbers` `no-line-numbers` `with-line-numbers` `code-block` `code-fence` `code-raw` and `code-python` `code-sql` `code-verilog`
-`code-verilog` `code-java` `code-c` `code-cpp` `code-rust` `code-javascript` `code-typescript` `code-shell` `code-bash` `code-nix`
+`code-java` `code-c` `code-cpp` `code-rust` `code-javascript` `code-typescript` `code-shell` `code-bash` `code-nix`
 `code-lua` `code-typst` `code-asm` `code-html` `code-css` `code-json` `code-go` `code-haskell` `code-php` `code-xml`
 `code-csharp` `code-tcl` `code-gradle`
 Notes/lists: `step` `steps` `key-value` `term` `badge` `qa` `uml-class` `card` `box` `todo` `done`

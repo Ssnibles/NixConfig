@@ -1,9 +1,6 @@
-# =============================================================================
 # Vicinae Application Launcher Feature
-# =============================================================================
 # Vicinae layer-shell launcher server, clipboard history script extension,
 # and generated theme styling.
-# =============================================================================
 { ... }:
 {
   nixos.modules.shared =
@@ -30,7 +27,7 @@
         # @vicinae.title Clipboard History
         # @vicinae.mode silent
         set -euo pipefail
-        selection=$(${pkgs.unstable.vicinae}/bin/vicinae dmenu -p "Clipboard history")
+        selection=$(${pkgs.cliphist}/bin/cliphist list | ${pkgs.unstable.vicinae}/bin/vicinae dmenu -p "Clipboard history")
         [ -n "$selection" ] || exit 0
         printf '%s\n' "$selection" | ${pkgs.cliphist}/bin/cliphist decode | ${pkgs.wl-clipboard}/bin/wl-copy
       '';
@@ -98,6 +95,9 @@
                   "snippets": {
                     "enabled": false
                   },
+                  "favorites": [
+                    "clipboard:history"
+                  ],
                   "fallbacks": [],
                   "providers": {
                     "files": {

@@ -40,8 +40,6 @@
         programs.seahorse.enable = true;
 
         environment.sessionVariables = {
-          QS_BAR = "hyprland";
-          XDG_CURRENT_DESKTOP = "Hyprland";
           ELECTRON_OZONE_PLATFORM_HINT = "auto";
         };
 

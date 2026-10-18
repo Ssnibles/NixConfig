@@ -156,8 +156,13 @@ func main() {
 			if err == nil {
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-				lowerContent := bytes.ToLower(content)
-				idx := bytes.Index(lowerContent, []byte("</body>"))
+				asciiLower := bytes.Map(func(r rune) rune {
+					if r >= 'A' && r <= 'Z' {
+						return r + ('a' - 'A')
+					}
+					return r
+				}, content)
+				idx := bytes.Index(asciiLower, []byte("</body>"))
 				if idx != -1 {
 					var buf bytes.Buffer
 					buf.Write(content[:idx])

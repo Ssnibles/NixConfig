@@ -4,28 +4,30 @@ local t = ls.text_node
 local i = ls.insert_node
 
 ls.add_snippets("nix", {
-	s({ trig = "module", desc = "NixOS Module Template" }, {
-		t({ "{ config, lib, pkgs, ... }:", "", "with lib;", "let", "  cfg = config.modules." }),
+	s({ trig = "module", desc = "NixOS Dendritic Module Template" }, {
+		t({ "{ ... }:", "{", "  nixos.modules.shared =", "    {", "      config,", "      lib,", "      pkgs,", "      ...", "    }:", "    let", "      cfg = config.features." }),
 		i(1, "feature"),
-		t({ ";", "in {", "  options.modules." }),
+		t({ ";", "    in", "    {", "      options.features." }),
 		i(2, "feature"),
-		t({ " = {", "    enable = mkEnableOption " }),
+		t({ ".enable = lib.mkEnableOption " }),
 		i(3, '"enable this feature"'),
-		t({ ";", "  };", "", "  config = mkIf cfg.enable {", "    " }),
+		t({ ";", "", "      config = lib.mkIf cfg.enable {", "        " }),
 		i(4),
-		t({ "", "  };", "}" }),
+		t({ "", "      };", "    };", "}" }),
 	}),
 
-	s({ trig = "hm-module", desc = "Home Manager Module Template" }, {
-		t({ "{ config, lib, pkgs, ... }:", "", "with lib;", "let", "  cfg = config.home.modules." }),
+	s({ trig = "hjem-module", desc = "Hjem User Configuration Module Template" }, {
+		t({ "{ ... }:", "{", "  nixos.modules.shared =", "    {", "      config,", "      lib,", "      pkgs,", "      ...", "    }:", "    let", "      cfg = config.features." }),
 		i(1, "feature"),
-		t({ ";", "in {", "  options.home.modules." }),
+		t({ ";", "    in", "    {", "      options.features." }),
 		i(2, "feature"),
-		t({ " = {", "    enable = mkEnableOption " }),
+		t({ ".enable = lib.mkEnableOption " }),
 		i(3, '"enable this feature"'),
-		t({ ";", "  };", "", "  config = mkIf cfg.enable {", "    " }),
-		i(4),
-		t({ "", "  };", "}" }),
+		t({ ";", "", "      config = lib.mkIf cfg.enable {", '        hjem.users."${config.username}".files."' }),
+		i(4, ".config/app/config"),
+		t({ '" = {', "          text = ''", "            " }),
+		i(5),
+		t({ "", "          '';", "        };", "      };", "    };", "}" }),
 	}),
 
 	s({ trig = "pkg", desc = "Nix Package (stdenv.mkDerivation)" }, {
@@ -56,7 +58,7 @@ ls.add_snippets("nix", {
 		t('(pkgs.writeShellScriptBin "'),
 		i(1, "name"),
 		t({ "\" ''", "  " }),
-		i(2, "#!/usr/bin/env bash"),
+		i(2, "set -euo pipefail"),
 		t({ "", "  " }),
 		i(3),
 		t({ "", "''" }),

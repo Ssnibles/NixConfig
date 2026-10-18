@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# =============================================================================
 # NixOS Bootstrap Installer
-# =============================================================================
 set -euo pipefail
 
 # Ensure running as root early before prompting or creating files
@@ -17,7 +15,7 @@ DEFAULT_USERNAME="josh"
 # where these experimental features are not configured by default).
 export NIX_CONFIG="extra-experimental-features = nix-command flakes"
 
-# ── Colours & logging ─────────────────────────────────────────────────────
+# Colours & logging
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 BLUE='\033[0;34m'; BOLD='\033[1m'; DIM='\033[2m'; NC='\033[0m'
 
@@ -29,7 +27,7 @@ die()     { echo -e "${RED}  ERROR:${NC} $*" >&2; exit 1; }
 STEP=0; TOTAL_STEPS=8
 step() { STEP=$((STEP + 1)); echo -e "\n${BOLD}---  [ $STEP / $TOTAL_STEPS ]  $*  ---${NC}"; }
 
-# ── Helpers ───────────────────────────────────────────────────────────────
+# Helpers
 
 # Run git, falling back to `nix run` if the binary is missing (common on the
 # NixOS minimal ISO).
@@ -87,7 +85,7 @@ install_ssh_keys() {
   nixos-enter --root "$MOUNT" -- chown -R "$USERNAME:users" "/home/$USERNAME/.ssh"
 }
 
-# ── Argument parsing ──────────────────────────────────────────────────────
+# Argument parsing
 DISK=""
 DRY_RUN=false
 HOST=""
@@ -153,7 +151,7 @@ EOF
   esac
 done
 
-# ── Interactive prompts for missing values ────────────────────────────────
+# Interactive prompts for missing values
 if [[ -z "$HOST" ]]; then
   echo "  Available host configurations:"
   echo "    desktop"
@@ -170,12 +168,12 @@ esac
 [[ -z "$HOSTNAME" ]]             && HOSTNAME="$HOST"
 [[ "$PROMPT_HOSTNAME" == true ]] && ask HOSTNAME "  Enter hostname" "$HOSTNAME"
 
-# ── Logging ───────────────────────────────────────────────────────────────
+# Logging
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
 touch "$LOG_FILE" || die "Could not create log file: $LOG_FILE"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-# ── Cleanup trap ──────────────────────────────────────────────────────────
+# Cleanup trap
 cleanup() {
   local code=$?
   if [[ $code -ne 0 && "$DRY_RUN" == false ]]; then
@@ -187,7 +185,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# ── Preflight ─────────────────────────────────────────────────────────────
+# Preflight
 echo -e "\n${BOLD}---  NixOS Bootstrap Installer - $HOST  ---${NC}"
 [[ -d /nix/store ]] || die "This doesn't look like a NixOS live environment."
 [[ "$DRY_RUN" == true ]] && warn "DRY-RUN -- no disk changes will be made."
@@ -202,9 +200,7 @@ info "Username: $USERNAME"
 info "Hostname: $HOSTNAME"
 info "Log file: $LOG_FILE"
 
-# ==========================================================================
 # 1 · NETWORK
-# ==========================================================================
 step "Network"
 ping -c1 -W3 1.1.1.1 &>/dev/null || {
   warn "No internet connection. Connect first, then re-run."
@@ -213,9 +209,7 @@ ping -c1 -W3 1.1.1.1 &>/dev/null || {
 }
 success "Network OK"
 
-# ==========================================================================
 # 2 · DISK SELECTION
-# ==========================================================================
 step "Disk"
 
 if [[ "$SKIP_FORMAT" == true ]]; then
@@ -225,7 +219,7 @@ else
   if [[ -z "$DISK" ]]; then
     echo "  Available block devices:"
     lsblk -d -o NAME,SIZE,MODEL --noheadings | grep -v loop \
-      | awk '{printf "    /dev/%-12s %6s  %s\n", $1, $2, $3}'
+      | awk '{name=$1; size=$2; $1=""; $2=""; sub(/^[[:space:]]+/, ""); printf "    /dev/%-12s %6s  %s\n", name, size, $0}'
     echo
     ask DISK "  Enter disk (e.g., /dev/sda or /dev/nvme0n1)"
   fi
@@ -248,9 +242,7 @@ else
   fi
 fi
 
-# ==========================================================================
 # 3 · PARTITIONING (UEFI + ext4)
-# ==========================================================================
 step "Partitioning"
 if [[ "$SKIP_FORMAT" == true ]]; then
   info "Skipping partitioning (using existing labels)."
@@ -291,9 +283,7 @@ else
   success "Disk partitioned and formatted successfully"
 fi
 
-# ==========================================================================
 # 4 · MOUNT
-# ==========================================================================
 step "Mounting"
 if [[ "$DRY_RUN" == false ]]; then
   umount -R "$MOUNT" 2>/dev/null || true
@@ -310,9 +300,7 @@ if [[ "$DRY_RUN" == false ]]; then
   success "Mounted root and EFI"
 fi
 
-# ==========================================================================
 # 5 · CLONE CONFIG
-# ==========================================================================
 step "Cloning NixOS config"
 TARGET="$MOUNT/etc/nixos"
 HOME_TARGET="$MOUNT/home/$USERNAME/NixConfig"
@@ -353,9 +341,7 @@ if [[ "$DRY_RUN" == false ]]; then
   success "Config cloned and symlinked"
 fi
 
-# ==========================================================================
 # 6 · GENERATE HARDWARE CONFIG & INSTALLER OVERRIDES
-# ==========================================================================
 step "Hardware config and installer options"
 if [[ "$DRY_RUN" == true ]]; then
   info "Dry-run: would generate hardware config and installer options for host '$HOST'"
@@ -388,9 +374,7 @@ EOF
     warn "Could not stage installer options; the flake may not see them."
 fi
 
-# ==========================================================================
 # 7 · FLAKE VALIDATION & INSTALL
-# ==========================================================================
 step "Installing NixOS"
 if [[ "$DRY_RUN" == true ]]; then
   info "Dry-run: would validate flake and run nixos-install --flake ${TARGET}#${HOST}"
@@ -409,9 +393,7 @@ else
   success "NixOS installed"
 fi
 
-# ==========================================================================
 # 8 · POST-INSTALL
-# ==========================================================================
 step "Post-install setup"
 if [[ "$DRY_RUN" == false ]]; then
   echo
@@ -447,9 +429,7 @@ if [[ "$DRY_RUN" == false ]]; then
     warn "Could not copy install log to /var/log"
 fi
 
-# ==========================================================================
 # DONE
-# ==========================================================================
 echo -e "\n${BOLD}---  Summary  ---${NC}"
 echo -e "  ${GREEN}${BOLD}Installation complete!${NC}"
 if [[ "$DRY_RUN" == false && -n "$DISK" ]]; then

@@ -1,6 +1,4 @@
-// =============================================================================
 // Shared theme for every Uni note.
-// =============================================================================
 // Single source of truth for page setup, fonts, colours, headings, code blocks,
 // figure captions and the convenience helpers.
 //
@@ -11,13 +9,12 @@
 //
 // and renders its title with `#note-title(date, title)`. Compile with
 // `--root` pointing at the repository root (e.g. `typst compile --root ~/Uni …`).
-// =============================================================================
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/zap:0.6.0"
 #import "@preview/mmdr:0.2.2": mermaid
 
-// ── Palette and design tokens ───────────────────────────────────────────────
+// Palette and design tokens
 // Theme mode: "dark" (default) or "light". Override at compile time with
 // `typst compile --input theme-mode=light …`; the complete-notes generator does
 // this for you via its `--light` flag. Read here, at module load, so that every
@@ -171,7 +168,7 @@
 // again below) to get highlighting without changing the note's content.
 #let _php-opener = "<?php /*__uni-notes-php__*/"
 
-// ── Keep-together helper ────────────────────────────────────────────────────
+// Keep-together helper
 // Wrap content in a block that stays on one page when it fits: instead of
 // splitting and leaving one or two orphan rows, the whole block moves to the
 // next page. Content taller than a page can't be kept together, so it is
@@ -269,7 +266,7 @@
   }
 }
 
-// ── Convenience helpers (expand to the canonical snippet patterns) ──────────
+// Convenience helpers (expand to the canonical snippet patterns)
 #let callout(icon, title, colour, body) = keep-together(block(
   width: 100%,
   stroke: (left: 3pt + rgb(colour), rest: 0.5pt + rgb(colour + "35")),
@@ -326,8 +323,8 @@
   ),
 )
 
-// ── Note title ──────────────────────────────────────────────────────────────
-// Date top-left, then a real level-1 heading so the title is outlined, linkable
+// Note title
+// Date centred above, then a real level-1 heading so the title is outlined, linkable
 // and bookmarked. The `[TOC]` supplement marks it as a complete-notes entry
 // (the outline targets only these, ignoring any stray level-1 headings inside a
 // note). The heading is styled by `theme()`'s level-1 show rule.
@@ -368,7 +365,7 @@
   #heading(level: 1, outlined: true, bookmarked: true, supplement: [TOC])[#title]
 ]
 
-// ── The theme itself ────────────────────────────────────────────────────────
+// The theme itself
 #let theme(course: "", page-type: "notes", force: false, body) = {
   if _uni-notes-stitched and not force {
     // The assembled complete-notes file already applied the theme.

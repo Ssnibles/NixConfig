@@ -1,9 +1,6 @@
-# =============================================================================
 # Global Development Toolchain & Utilities
-# =============================================================================
 # Global developer tools, language runtimes, build utilities, and IDEs.
 # Note: NVF Neovim distribution packages are defined separately in apps/neovim.nix.
-# =============================================================================
 {
   self,
   inputs,

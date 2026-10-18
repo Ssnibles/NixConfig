@@ -14,7 +14,7 @@ This guide explains how Firefox Developer Edition UI customisation works in NixC
 | **`startpage/`** | **Offline New Tab Extension** | Local embedded offline startpage WebExtension loaded into Firefox. |
 
 > [!NOTE]
-> Both `userChrome.css` and `userContent.css` are symlinked directly from your NixConfig workspace (`~/NixConfig/modules/features/apps/firefox/`) into your Firefox profile directory (`~/.mozilla/firefox/default/chrome/`). Any changes saved take effect immediately upon restarting Firefox.
+> `userChrome.css`, `userContent.css`, `tridactylrc`, and `startpage/` are linked into your Firefox profile directory (`~/.mozilla/firefox/dev-edition-default/`) via `nixos.liveLinks`. The startpage uses `contents = true` to symlink individual files into place while letting Hjem declaratively manage generated `colours.css` files, ensuring that live editing is supported without mutating tracked files in your Git workspace. Changes take effect immediately upon restarting Firefox or refreshing the startpage.
 
 ---
 

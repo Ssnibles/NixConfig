@@ -1,6 +1,4 @@
-# =============================================================================
 # Helium Browser Feature
-# =============================================================================
 # Helium Browser (Chromium-based) installation, Chrome Enterprise policies,
 # command-line flags, force-installed Web Store extensions, and default
 # xdg-open MIME associations via the oxcl/nix-flake-helium-browser flake.
@@ -18,7 +16,6 @@
 # is applied to the browser *chrome* through a generated theme extension (loaded
 # with --load-extension, so colours bypass Material You) and to the custom
 # startpage through colours.css (which shares the Firefox --fx-* variables).
-# =============================================================================
 { inputs, ... }:
 {
   nixos.modules.shared =
@@ -55,7 +52,7 @@
       startpageDir = "/home/${config.username}/.config/helium/startpage";
       startpageUrl = "file://${startpageDir}/index.html";
 
-      # ── Browser theme extension ─────────────────────────────────────────
+      # Browser theme extension
       # Chromium has no userChrome.css equivalent. The BrowserThemeColor policy
       # takes a seed but runs it through Material You, so the chrome comes out as
       # a derived tonal palette rather than the requested colours. A classic
@@ -133,7 +130,7 @@
         "AutofillServerCommunication"
       ];
 
-      # ── Command-line flags ──────────────────────────────────────────────
+      # Command-line flags
       # Mirrors the Firefox FastFox/privacy/graphics/theme preference groups.
       # --ozone-platform-hint=auto is injected by the upstream package wrapper
       # when NIXOS_OZONE_WL + WAYLAND_DISPLAY are set, so it is not repeated.
@@ -179,7 +176,7 @@
         ++ cfgAlias.flags
         ++ cfgAlias.extraFlags;
 
-      # ── Startpage theming ───────────────────────────────────────────────
+      # Startpage theming
       # The browser chrome gets the palette via the theme extension above; this
       # file only styles the local startpage (same --fx-* variables as Firefox).
       coloursCss = ''
@@ -212,7 +209,7 @@
         }
       '';
 
-      # ── Extensions ──────────────────────────────────────────────────────
+      # Extensions
       # Chrome Web Store IDs. Helium is Chromium-based and queries the CWS
       # update endpoint for force-installed extensions.
       cwsUpdateUrl = "https://clients2.google.com/service/update2/crx";
@@ -266,7 +263,7 @@
         ExtensionSettings = lib.recursiveUpdate autoExtensionSettings cfg.extensions.extraExtensionSettings;
       };
 
-      # ── Enterprise policies ─────────────────────────────────────────────
+      # Enterprise policies
       # Mirrors the Firefox preference groups. Unknown keys are ignored by
       # Chromium; users can override anything via `policies`/`extraPolicies`.
       # The new-tab page itself is set with --custom-ntp (see startpageFlags);
@@ -277,21 +274,21 @@
       };
 
       defaultPolicies = {
-        # ── Startup ──────────────────────────────────────────────────────
+        # Startup
         RestoreOnStartup = 1; # 1 = restore the last session
         DefaultBrowserSettingEnabled = false;
 
-        # ── Default search provider (SearXNG) ────────────────────────────
+        # Default search provider (DuckDuckGo)
         DefaultSearchProviderEnabled = true;
-        DefaultSearchProviderName = "SearXNG";
-        DefaultSearchProviderKeyword = "searxng";
-        DefaultSearchProviderSearchURL = "https://search.ssnibles.xyz/search?q={searchTerms}";
-        DefaultSearchProviderSuggestURL = "https://search.ssnibles.xyz/autocompleter?q={searchTerms}";
-        DefaultSearchProviderIconURL = "https://search.ssnibles.xyz/static/themes/simple/img/favicon.png";
+        DefaultSearchProviderName = "DuckDuckGo";
+        DefaultSearchProviderKeyword = "ddg";
+        DefaultSearchProviderSearchURL = "https://duckduckgo.com/?q={searchTerms}";
+        DefaultSearchProviderSuggestURL = "https://duckduckgo.com/ac/?q={searchTerms}&type=list";
+        DefaultSearchProviderIconURL = "https://duckduckgo.com/favicon.ico";
         DefaultSearchProviderEncodings = [ "UTF-8" ];
         SearchSuggestEnabled = false;
 
-        # ── Telemetry, reporting, experiments & feedback ─────────────────
+        # Telemetry, reporting, experiments & feedback
         MetricsReportingEnabled = false;
         ChromeVariations = 2; # 2 = disable all variations/experiments
         UserFeedbackAllowed = false;
@@ -306,7 +303,7 @@
         SafeBrowsingProtectionLevel = 1;
         HideWebStoreIcon = true;
 
-        # ── Network & privacy ────────────────────────────────────────────
+        # Network & privacy
         NetworkPredictionOptions = 2; # 2 = never (DNS prefetch / preconnect)
         DnsOverHttpsMode = "off";
         BuiltInDnsClientEnabled = false;
@@ -318,12 +315,12 @@
         PrivacySandboxPromptEnabled = false;
         PrivacySandboxRelatedWebsiteSetsEnabled = false;
 
-        # ── Passwords & autofill (Bitwarden handles this) ────────────────
+        # Passwords & autofill (Bitwarden handles this)
         PasswordManagerEnabled = false;
         AutofillAddressEnabled = false;
         AutofillCreditCardEnabled = false;
 
-        # ── Permissions: default deny (mirrors permissions.default.*) ────
+        # Permissions: default deny (mirrors permissions.default.*)
         DefaultNotificationsSetting = 2; # 2 = block
         DefaultGeolocationSetting = 2;
         DefaultSensorsSetting = 2;
@@ -337,7 +334,7 @@
         DefaultWindowManagementSetting = 2;
         AutoplayAllowed = false;
 
-        # ── Security ─────────────────────────────────────────────────────
+        # Security
         HttpsOnlyMode = "force_enabled";
         PromptForDownloadLocation = true;
         DeveloperToolsAvailability = 0; # 0 = allow DevTools

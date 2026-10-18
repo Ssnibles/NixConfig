@@ -90,7 +90,7 @@ const COMMANDS: &[Command] = &[
     Command { name: "Session manager", desc: "Open the session manager", exec: Exec::Action(&["launch-or-focus-plugin", "zellij:session-manager", "--floating", "--move-to-focused-tab"]), prompt: None },
     Command { name: "Plugin manager", desc: "Open the plugin manager", exec: Exec::Action(&["launch-or-focus-plugin", "zellij:plugin-manager", "--floating", "--move-to-focused-tab"]), prompt: None },
     Command { name: "Detach", desc: "Detach from the session", exec: Exec::Action(&["detach"]), prompt: None },
-    // ── Sessions ─────────────────────────────────────────────────────────────
+    // Sessions
     // `switch_session` creates the session when it does not exist, so "New
     // session" and "Switch session" share an implementation. zellij keeps the
     // old session alive when you switch away (like tmux's switch-client).
@@ -100,13 +100,13 @@ const COMMANDS: &[Command] = &[
     Command { name: "Kill session", desc: "Kill another session by name", exec: Exec::KillSession, prompt: Some("session name ›") },
     Command { name: "Kill+delete this session", desc: "Kill and delete the current session", exec: Exec::KillCurrentSession, prompt: Some("type 'yes' to confirm ›") },
     Command { name: "Delete dead session", desc: "Delete a resurrectable session", exec: Exec::DeleteDeadSession, prompt: Some("session name ›") },
-    // ── Tabs & panes with names ──────────────────────────────────────────────
+    // Tabs & panes with names
     Command { name: "New named tab", desc: "New named tab in the focused cwd", exec: Exec::Action(&["pipe", "--plugin", "zjbar", "--name", "new-tab", "--"]), prompt: Some("tab name ›") },
     Command { name: "New tab at cwd", desc: "Open a new tab in a directory", exec: Exec::Action(&["new-tab", "--cwd"]), prompt: Some("directory ›") },
     Command { name: "Rename tab", desc: "Rename the current tab", exec: Exec::Action(&["rename-tab"]), prompt: Some("new tab name ›") },
     Command { name: "Go to tab by name", desc: "Focus the tab with this name", exec: Exec::Action(&["go-to-tab-name"]), prompt: Some("tab name ›") },
     Command { name: "Rename pane", desc: "Rename the focused pane", exec: Exec::Action(&["rename-pane"]), prompt: Some("new pane name ›") },
-    // ── Free-form input ──────────────────────────────────────────────────────
+    // Free-form input
     Command { name: "Run command", desc: "Run a shell command in a new pane", exec: Exec::Shell(&["new-pane"]), prompt: Some("shell command ›") },
     Command { name: "Run command here", desc: "Run a shell command in place", exec: Exec::Shell(&["new-pane", "--in-place"]), prompt: Some("shell command ›") },
     Command { name: "Write text", desc: "Type text into the focused pane", exec: Exec::Action(&["write-chars"]), prompt: Some("text ›") },
@@ -849,9 +849,9 @@ impl State {
 /// whole width and carries its own background.
 fn row(text: &str, cols: usize, fg: Rgb, bg: Rgb, bold: bool) -> String {
     let padded = pad_to(text, cols);
-    let bold = if bold { "\u{1b}[1m" } else { "" };
+    let bold_code = if bold { "\u{1b}[1m" } else { "\u{1b}[22m" };
     format!(
-        "{bold}\u{1b}[38;2;{};{};{}m\u{1b}[48;2;{};{};{}m{padded}",
+        "\u{1b}[0m{bold_code}\u{1b}[38;2;{};{};{}m\u{1b}[48;2;{};{};{}m{padded}",
         fg.0, fg.1, fg.2, bg.0, bg.1, bg.2
     )
 }
@@ -863,9 +863,9 @@ fn input_row(text: &str, cols: usize, fg: Rgb, bg: Rgb, bold: bool) -> String {
     let text = truncate(text, cols.saturating_sub(1));
     let len = text.chars().count();
     let pad = cols.saturating_sub(len + 1);
-    let bold = if bold { "\u{1b}[1m" } else { "" };
+    let bold_code = if bold { "\u{1b}[1m" } else { "\u{1b}[22m" };
     format!(
-        "{bold}\u{1b}[38;2;{};{};{}m\u{1b}[48;2;{};{};{}m{text}\u{1b}[7m \u{1b}[27m{}",
+        "\u{1b}[0m{bold_code}\u{1b}[38;2;{};{};{}m\u{1b}[48;2;{};{};{}m{text}\u{1b}[7m \u{1b}[27m{}",
         fg.0,
         fg.1,
         fg.2,

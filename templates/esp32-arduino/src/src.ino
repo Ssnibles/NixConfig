@@ -1,8 +1,5 @@
-/*
-  ESP32 Arduino Starter Sketch
-  ----------------------------
-  Demonstrates Serial communication, GPIO output (LED), and Wi-Fi scanning.
-*/
+/* ESP32 Arduino Starter Sketch
+   Demonstrates Serial communication, GPIO output (LED), and Wi-Fi scanning. */
 
 #include <WiFi.h>
 
