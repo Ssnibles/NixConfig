@@ -11,26 +11,23 @@ Item {
   property bool horizontal: false
 
   visible: root.hasMedia
-  width: root.horizontal ? horizontalMediaRow.implicitWidth + 12 : ((parent && !horizontal) ? parent.width : 38)
-  height: root.horizontal ? 24 : mediaLayout.implicitHeight + 8
-  anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
+  implicitWidth: root.horizontal ? horizontalMediaRow.implicitWidth + 12 : 34
+  implicitHeight: root.horizontal ? Config.pillHeightHorizontal : mediaLayout.implicitHeight + 8
+  width: implicitWidth
+  height: implicitHeight
 
   Rectangle {
     id: mediaBg
     anchors.fill: parent
-    radius: 4
-    color: mediaTooltip.hovered ? Colours.bgRaised : "transparent"
-    Behavior on color { ColorAnimation { duration: 100 } }
+    radius: Config.itemRadiusSm
+    color: mediaTooltip.hovered ? Colours.bgSubtle : "transparent"
+    Behavior on color { ColorAnimation { duration: Config.animNormalMs } }
   }
 
   // Centralised MPRIS State from MediaService
-  readonly property var mediaPlayer: MediaService.player
+  readonly property bool isPlaying: MediaService.isPlaying
   readonly property string mediaText: MediaService.mediaText
   readonly property bool hasMedia: MediaService.hasMedia
-
-  function focusMediaPlayer() {
-    MediaService.focusSource()
-  }
 
   // UI Layout (Vertical for Sidebar)
   Column {
@@ -52,8 +49,8 @@ Item {
         anchors.centerIn: parent
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        text: root.mediaPlayer && root.mediaPlayer.isPlaying ? "󰎈" : "󰎆"
-        color: root.mediaPlayer && root.mediaPlayer.isPlaying ? Colours.accent : Colours.fgDim
+        text: root.isPlaying ? "󰎈" : "󰎆"
+        color: root.isPlaying ? Colours.accent : Colours.fgDim
         font.pixelSize: 15
         font.bold: true
         font.family: root.uiFont
@@ -64,7 +61,7 @@ Item {
         from: 0
         to: 360
         duration: Config.mediaRotationDuration
-        running: Config.animateMediaIcon && root.visible && root.mediaPlayer && root.mediaPlayer.isPlaying
+        running: !root.horizontal && Config.animateMediaIcon && root.visible && root.isPlaying
       }
 
     }
@@ -78,7 +75,7 @@ Item {
       Text {
         id: elapsedLabel
         anchors.horizontalCenter: parent.horizontalCenter
-        text: Utils.formatTime(Math.round(MediaService.estimatedPosition))
+        text: !root.horizontal ? Utils.formatTime(Math.round(MediaService.estimatedPosition)) : ""
         color: Colours.fgMid
         font.family: root.uiFont
         font.pixelSize: 11
@@ -87,9 +84,9 @@ Item {
 
       Text {
         id: totalLabel
-        visible: root.mediaPlayer && MediaService.lastLength > 0
+        visible: !root.horizontal && MediaService.hasPlayer && MediaService.lastLength > 0
         anchors.horizontalCenter: parent.horizontalCenter
-        text: Utils.formatTime(Math.round(MediaService.lastLength))
+        text: !root.horizontal ? Utils.formatTime(Math.round(MediaService.lastLength)) : ""
         color: Colours.fgDim
         font.family: root.uiFont
         font.pixelSize: 11
@@ -112,8 +109,8 @@ Item {
 
       Text {
         anchors.centerIn: parent
-        text: root.mediaPlayer && root.mediaPlayer.isPlaying ? "󰎈" : "󰎆"
-        color: root.mediaPlayer && root.mediaPlayer.isPlaying ? Colours.accent : Colours.fgDim
+        text: root.isPlaying ? "󰎈" : "󰎆"
+        color: root.isPlaying ? Colours.accent : Colours.fgDim
         font.pixelSize: 13
         font.bold: true
         font.family: root.uiFont
@@ -124,12 +121,12 @@ Item {
         from: 0
         to: 360
         duration: Config.mediaRotationDuration
-        running: Config.animateMediaIcon && root.visible && root.mediaPlayer && root.mediaPlayer.isPlaying
+        running: root.horizontal && Config.animateMediaIcon && root.visible && root.isPlaying
       }
     }
 
     Text {
-      text: root.mediaText
+      text: root.horizontal ? root.mediaText : ""
       color: Colours.fg
       font.family: Config.sansFont
       font.pixelSize: 12
@@ -146,19 +143,19 @@ Item {
     cursorShape: Qt.PointingHandCursor
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: function(mouse) {
-      if (!root.mediaPlayer) return
+      if (!MediaService.hasPlayer) return
       if (mouse.button === Qt.RightButton) {
-        root.focusMediaPlayer()
+        MediaService.focusSource()
       } else {
-        root.mediaPlayer.isPlaying = !root.mediaPlayer.isPlaying
+        MediaService.playPause()
       }
     }
     onWheel: function(wheel) {
-      if (!root.mediaPlayer) return
+      if (!MediaService.hasPlayer) return
       if (wheel.angleDelta.y > 0) {
-        if (root.mediaPlayer.canGoNext) root.mediaPlayer.next()
+        MediaService.next()
       } else if (wheel.angleDelta.y < 0) {
-        if (root.mediaPlayer.canGoPrevious) root.mediaPlayer.previous()
+        MediaService.previous()
       }
       wheel.accepted = true
     }
@@ -168,6 +165,7 @@ Item {
     id: mediaTooltip
     target: root
     sharedWindow: root.sharedWindow
+    contentWidth: Config.mediaPopupWidth
     contentComponent: mediaPopoverComponent
     onHoveredChanged: MediaService.setConsumer("barMedia", mediaTooltip.hovered)
   }
@@ -177,7 +175,7 @@ Item {
 
     MediaCard {
       id: popoverCard
-      width: 280
+      width: parent ? parent.width : Config.mediaPopupWidth
       cardColour: Colours.bg
       cardRadius: Config.popupRadius
     }

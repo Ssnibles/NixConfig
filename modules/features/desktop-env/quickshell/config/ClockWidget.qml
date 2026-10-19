@@ -1,45 +1,23 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
-import "Utils.js" as Utils
 
 Item {
   id: root
 
   property string uiFont: Config.monoFont
   property string timeFormat: Config.timeFormat
-  property string timeStr: ""
-  property string hourStr: ""
-  property string minuteStr: ""
-  property string dateStr: ""
+  readonly property string timeStr: root.timeFormat === Config.timeFormat
+    ? ClockService.timeStr
+    : Qt.formatTime(ClockService.now, root.timeFormat)
+  readonly property string hourStr: ClockService.hourStr
+  readonly property string minuteStr: ClockService.minuteStr
+  readonly property string dateStr: ClockService.ordinalDateStr
   property PanelWindow sharedWindow: null
   property bool horizontal: false
 
-  anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
-  anchors.verticalCenter: (parent && horizontal) ? parent.verticalCenter : undefined
   implicitWidth: horizontal ? rowClock.implicitWidth : clockCol.implicitWidth
   implicitHeight: horizontal ? rowClock.implicitHeight : clockCol.implicitHeight
-
-  function updateTime() {
-    var d = new Date()
-    root.timeStr = Qt.formatTime(d, root.timeFormat)
-    root.dateStr = Utils.getOrdinalDate(d)
-    // Keep a 24h hour/minute pair for the stacked vertical layout, independent
-    // of `timeFormat` (which may be 12-hour and is not `HH:mm`).
-    root.hourStr = Utils.pad2(d.getHours())
-    root.minuteStr = Utils.pad2(d.getMinutes())
-    timeTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
-    timeTimer.restart()
-  }
-
-  Timer {
-    id: timeTimer
-    running: true
-    repeat: false
-    onTriggered: root.updateTime()
-  }
-
-  Component.onCompleted: updateTime()
 
   // Vertical stacked format (for side bar)
   Column {
@@ -97,15 +75,13 @@ Item {
   Component {
     id: calendarComponent
 
-    Rectangle {
+    Card {
       id: calBg
-      color: Colours.bg
-      radius: 8
-      border.color: Colours.border
-      border.width: 1
+      cardColour: Colours.bg
+      cardRadius: Config.popupRadius
 
-      implicitWidth: calCol.implicitWidth + 20
-      implicitHeight: calCol.implicitHeight + 20
+      implicitWidth: calCol.implicitWidth + Config.popupContentMargins * 2
+      implicitHeight: calCol.implicitHeight + Config.popupContentMargins * 2
       width: implicitWidth
       height: implicitHeight
 
@@ -114,22 +90,12 @@ Item {
         anchors.centerIn: parent
         spacing: 8
 
-        property var today: new Date()
-        readonly property int realYear: today.getFullYear()
-        readonly property int realMonth: today.getMonth()
-        readonly property int realDay: today.getDate()
+        readonly property int realYear: ClockService.year
+        readonly property int realMonth: ClockService.month
+        readonly property int realDay: ClockService.day
 
         property int viewYear: realYear
         property int viewMonth: realMonth
-
-        // Keep the "today" highlight correct if the calendar stays open across
-        // midnight. This component only exists while the tooltip is shown.
-        Timer {
-          interval: 60000
-          repeat: true
-          running: true
-          onTriggered: calCol.today = new Date()
-        }
 
         readonly property bool isCurrentMonth: (viewYear === realYear && viewMonth === realMonth)
 
@@ -189,7 +155,7 @@ Item {
             text: calCol.monthNames[calCol.viewMonth] + " " + calCol.viewYear
             color: Colours.fg
             font.family: root.uiFont
-            font.pixelSize: 13
+            font.pixelSize: Config.fontSizeMd
             font.bold: true
           }
 
@@ -198,79 +164,35 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
 
-            // Previous Month Button
-            Rectangle {
-              width: 22
-              height: 22
+            IconButton {
+              buttonSize: 22
               radius: 4
-              color: prevHover.containsMouse ? Colours.bgSubtle : "transparent"
-
-              Text {
-                anchors.centerIn: parent
-                text: "󰅁"
-                color: prevHover.containsMouse ? Colours.accent : Colours.fgMid
-                font.family: root.uiFont
-                font.pixelSize: 14
-              }
-
-              MouseArea {
-                id: prevHover
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: calCol.prevMonth()
-              }
+              icon: "󰅁"
+              iconSize: 14
+              uiFont: root.uiFont
+              iconColour: Colours.fgMid
+              onClicked: calCol.prevMonth()
             }
 
-            // Jump to Current Month Button
-            Rectangle {
-              width: 22
-              height: 22
+            IconButton {
+              buttonSize: 22
               radius: 4
-              color: (!calCol.isCurrentMonth && todayHover.containsMouse) ? Colours.bgSubtle : "transparent"
-
-              Text {
-                anchors.centerIn: parent
-                text: "󰃭"
-                color: calCol.isCurrentMonth
-                       ? Colours.fgDim
-                       : (todayHover.containsMouse ? Colours.accent : Colours.fgMid)
-                font.family: root.uiFont
-                font.pixelSize: 13
-              }
-
-              MouseArea {
-                id: todayHover
-                anchors.fill: parent
-                hoverEnabled: !calCol.isCurrentMonth
-                cursorShape: calCol.isCurrentMonth ? Qt.ArrowCursor : Qt.PointingHandCursor
-                enabled: !calCol.isCurrentMonth
-                onClicked: calCol.goToCurrent()
-              }
+              icon: "󰃭"
+              iconSize: Config.iconSizeSm
+              uiFont: root.uiFont
+              enabled: !calCol.isCurrentMonth
+              iconColour: Colours.fgMid
+              onClicked: calCol.goToCurrent()
             }
 
-            // Next Month Button
-            Rectangle {
-              width: 22
-              height: 22
+            IconButton {
+              buttonSize: 22
               radius: 4
-              color: nextHover.containsMouse ? Colours.bgSubtle : "transparent"
-
-              Text {
-                anchors.centerIn: parent
-                text: "󰅂"
-                color: nextHover.containsMouse ? Colours.accent : Colours.fgMid
-                font.family: root.uiFont
-                font.pixelSize: 14
-              }
-
-              MouseArea {
-                id: nextHover
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: calCol.nextMonth()
-              }
+              icon: "󰅂"
+              iconSize: 14
+              uiFont: root.uiFont
+              iconColour: Colours.fgMid
+              onClicked: calCol.nextMonth()
             }
           }
         }

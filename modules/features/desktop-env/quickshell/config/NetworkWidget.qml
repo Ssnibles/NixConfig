@@ -1,8 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
-import Quickshell.Networking
-import "Utils.js" as Utils
 
 Pill {
   id: root
@@ -10,47 +8,15 @@ Pill {
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
   property int maxTextWidth: Config.wifiMaxTextLength
-  property bool horizontal: false
   // Disable pointer interaction (used on the lock screen, where the pill is
   // purely informational and must not launch nmtui).
   property bool interactive: true
 
-  // Networking state
-  property var wiredDev: Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wired })
-  property var wifiDev:  Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi && d.connected }) || Utils.findFirst(Networking.devices.values, function(d) { return d.type === DeviceType.Wifi })
-
-  property bool isWired: root.wiredDev && root.wiredDev.connected
-  property bool isWifi:  root.wifiDev  && root.wifiDev.connected
-
-  property var wifiNet: Utils.findFirst(root.wifiDev ? root.wifiDev.networks.values : [], function(n) { return n.connected })
-  property string wifiSsid: root.wifiNet ? root.wifiNet.name : ""
-
-  property string netIcon: {
-    if (root.isWired) return "󰈀"
-    if (root.isWifi)  return "󰤨"
-    return "󰤮"
-  }
-
-  property string netText: {
-    if (root.isWired) return "Ethernet"
-    if (root.isWifi)  return root.wifiSsid !== "" ? root.wifiSsid : "Wi-Fi"
-    return "Offline"
-  }
-
-  property color netColour: (root.isWired || root.isWifi) ? Colours.accent : Colours.fgDim
-
-  // Match Command Centre Wi-Fi Pill styling
-  pillHeight: root.horizontal ? 25 : 30
-  padding: root.horizontal ? 6 : 0
-  orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
-  anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
-
-  pillColour: (root.interactive && netTooltip.hovered) ? Colours.bgSubtle : Colours.bgRaised
-  border.width: 1
-  border.color: Colours.border
-
-  Behavior on pillColour { ColorAnimation { duration: 120 } }
-  Behavior on border.color { ColorAnimation { duration: 120 } }
+  horizontal: false
+  hoverHighlight: root.interactive
+  clickable: root.interactive
+  acceptedButtons: Qt.LeftButton | Qt.RightButton
+  onClicked: SystemService.openNetworkManager()
 
   Row {
     id: labelRow
@@ -60,19 +26,19 @@ Pill {
     transformOrigin: Item.Center
 
     Text {
-      text: root.netIcon
-      color: root.netColour
-      font.family: Config.monoFont
-      font.pixelSize: 12
+      text: SystemService.netIcon
+      color: SystemService.netColour
+      font.family: root.uiFont
+      font.pixelSize: Config.fontSizeSm
       anchors.verticalCenter: parent.verticalCenter
     }
 
     Text {
       visible: root.horizontal
-      text: root.netText
+      text: root.horizontal ? SystemService.netText : ""
       color: Colours.fg
       font.family: Config.sansFont
-      font.pixelSize: 12
+      font.pixelSize: Config.fontSizeSm
       elide: Text.ElideRight
       maximumLineCount: 1
       width: Math.min(implicitWidth, root.maxTextWidth)
@@ -84,28 +50,9 @@ Pill {
     id: netTooltip
     target: root
     sharedWindow: root.sharedWindow
-    icon: root.netIcon
-    iconColour: root.netColour
-    title: {
-      if (root.isWired) return "Wired (" + root.wiredDev.name + ")"
-      if (root.isWifi)  return root.wifiSsid !== "" ? root.wifiSsid : "Connected"
-      return "Disconnected"
-    }
-    details: {
-      var d = []
-      if (root.isWifi && root.wifiNet)
-        d.push("Signal · " + Math.round(root.wifiNet.signalStrength * 100) + "%")
-      d.push("Click · nmtui")
-      return d
-    }
-  }
-
-  MouseArea {
-    id: mouseArea
-    anchors.fill: parent
-    enabled: root.interactive
-    cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
-    acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: Quickshell.execDetached(Config.cmdNetworkManager)
+    icon: SystemService.netIcon
+    iconColour: SystemService.netColour
+    title: SystemService.netTitle
+    details: SystemService.netDetails
   }
 }

@@ -5,30 +5,26 @@ import Quickshell
 Pill {
   id: root
 
-  property var wmService: null
   property var screen: null
   property PanelWindow sharedWindow: null
-  property bool horizontal: true
 
   // Visible when window manager provides layouts (mangowc)
-  readonly property bool active: wmService !== null && wmService.wm === "mangowc"
+  readonly property bool active: WmService.wm === "mangowc"
   visible: active
 
   readonly property string currentLayoutSymbol: {
-    if (!wmService) return ""
     // Depend on the raw tag list so per-output layout changes re-evaluate.
-    var _tags = wmService.allTags
+    var _tags = WmService.allTags
     var screenName = root.screen ? root.screen.name : ""
-    return wmService.getLayoutSymbol(screenName)
+    return WmService.getLayoutSymbol(screenName)
   }
 
-  readonly property var layoutInfo: wmService ? wmService.getLayoutInfo(root.currentLayoutSymbol) : { symbol: "DW", name: "Dwindle", icon: "󱗼", key: "r" }
+  readonly property var layoutInfo: WmService.getLayoutInfo(root.currentLayoutSymbol)
 
-  pillHeight: root.horizontal ? 24 : 32
-  padding: 8
-  orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
   pillColour: Colours.bgSubtle
   border.color: Colours.accent
+  clickable: true
+  onClicked: WmService.nextLayout()
 
   Row {
     id: layoutRow
@@ -39,7 +35,7 @@ Pill {
       text: root.layoutInfo.icon
       color: Colours.accent
       font.family: Config.monoFont
-      font.pixelSize: 13
+      font.pixelSize: Config.iconSizeSm
       anchors.verticalCenter: parent.verticalCenter
     }
 
@@ -47,21 +43,9 @@ Pill {
       text: root.layoutInfo.name
       color: Colours.fg
       font.family: Config.sansFont
-      font.pixelSize: 12
+      font.pixelSize: Config.fontSizeSm
       font.weight: Font.Medium
       anchors.verticalCenter: parent.verticalCenter
-    }
-  }
-
-  MouseArea {
-    id: mouseArea
-    anchors.fill: parent
-    hoverEnabled: true
-    cursorShape: Qt.PointingHandCursor
-    onClicked: function(mouse) {
-      if (mouse.button === Qt.LeftButton && root.wmService) {
-        root.wmService.nextLayout()
-      }
     }
   }
 
@@ -72,15 +56,12 @@ Pill {
     contentWidth: 210
 
     contentComponent: Component {
-      Rectangle {
+      Card {
         id: card
         width: 210
         height: contentCol.implicitHeight + Config.popupContentMargins * 2
-        radius: Config.popupRadius
-        color: Colours.bg
-        border.width: 1
-        border.color: Colours.border
-        antialiasing: true
+        cardRadius: Config.popupRadius
+        cardColour: Colours.bg
 
         Column {
           id: contentCol
@@ -97,7 +78,7 @@ Pill {
               text: "󰕰"
               color: Colours.accent
               font.family: Config.monoFont
-              font.pixelSize: 15
+              font.pixelSize: Config.fontSizeLg
               anchors.verticalCenter: parent.verticalCenter
             }
             Column {
@@ -105,7 +86,7 @@ Pill {
                 text: "Layout Selection"
                 color: Colours.fg
                 font.family: Config.sansFont
-                font.pixelSize: 13
+                font.pixelSize: Config.fontSizeMd
                 font.weight: Font.Bold
               }
               Text {
@@ -125,12 +106,11 @@ Pill {
 
           // Options List
           Repeater {
-            model: root.wmService ? root.wmService.availableLayouts : []
+            model: WmService.availableLayouts
             delegate: Rectangle {
               id: layoutOption
               required property var modelData
               readonly property bool isCurrent: {
-                if (!root.wmService) return false
                 var cur = root.currentLayoutSymbol
                 if (!cur) return false
                 if (cur === modelData.symbol) return true
@@ -143,10 +123,10 @@ Pill {
 
               width: contentCol.width
               height: 28
-              radius: 6
+              radius: Config.itemRadiusSm
               color: isCurrent ? Colours.accent : (rowMouse.containsMouse ? Colours.bgRaised : "transparent")
 
-              Behavior on color { ColorAnimation { duration: 100 } }
+              Behavior on color { ColorAnimation { duration: Config.animFastMs } }
 
               Item {
                 anchors.fill: parent
@@ -162,7 +142,7 @@ Pill {
                     text: layoutOption.modelData.icon
                     color: layoutOption.isCurrent ? Colours.bg : Colours.accent
                     font.family: Config.monoFont
-                    font.pixelSize: 13
+                    font.pixelSize: Config.iconSizeSm
                     anchors.verticalCenter: parent.verticalCenter
                   }
 
@@ -170,7 +150,7 @@ Pill {
                     text: layoutOption.modelData.name
                     color: layoutOption.isCurrent ? Colours.bg : Colours.fg
                     font.family: Config.sansFont
-                    font.pixelSize: 12
+                    font.pixelSize: Config.fontSizeSm
                     font.weight: layoutOption.isCurrent ? Font.Bold : Font.Normal
                     anchors.verticalCenter: parent.verticalCenter
                   }
@@ -192,11 +172,7 @@ Pill {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                  if (root.wmService) {
-                    root.wmService.setLayout(layoutOption.modelData.symbol)
-                  }
-                }
+                onClicked: WmService.setLayout(layoutOption.modelData.symbol)
               }
             }
           }

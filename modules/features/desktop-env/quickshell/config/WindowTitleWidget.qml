@@ -4,21 +4,40 @@ import QtQuick
 Item {
   id: root
 
-  property string titleText: ""
+  property string titleText: WmService.currentTitle
   property string uiFont: Config.monoFont
   property color textColour: Colours.fgMid
-  property int fontSize: 13
+  property int fontSize: Config.fontSizeMd
   property real targetRotation: horizontal ? 0 : 270
   property bool horizontal: false
   property int maxText: horizontal ? Config.windowTitleMaxWidthHorizontal : Config.windowTitleMaxWidthVertical
   property bool italic: true
+  property int horizontalPadding: Config.pillPaddingHorizontal + 2
 
-  implicitWidth: horizontal ? Math.min(titleLabel.implicitWidth, root.maxText) : 26
-  implicitHeight: horizontal ? 24 : Math.min(titleLabel.implicitWidth, root.maxText)
+  readonly property real textExtent: Math.min(titleLabel.implicitWidth, root.maxText)
+
+  implicitWidth: horizontal ? (root.textExtent + root.horizontalPadding * 2) : 26
+  implicitHeight: horizontal ? Config.pillHeightHorizontal : root.textExtent
   width: implicitWidth
   height: implicitHeight
   visible: titleText !== ""
   clip: true
+
+  Behavior on width {
+    enabled: root.horizontal
+    NumberAnimation { duration: Config.animSmoothMs; easing.type: Easing.OutCubic }
+  }
+
+  // Horizontal pill background (used in top bar mode)
+  Rectangle {
+    visible: root.horizontal
+    anchors.fill: parent
+    radius: height / 2
+    color: Colours.bgRaised
+    border.width: 1
+    border.color: Colours.border
+    antialiasing: true
+  }
 
   Text {
     id: titleLabel
@@ -30,7 +49,7 @@ Item {
     elide: root.horizontal ? Text.ElideRight : Text.ElideNone
     verticalAlignment: Text.AlignVCenter
 
-    anchors.verticalCenter: root.horizontal ? parent.verticalCenter : undefined
+    anchors.centerIn: root.horizontal ? parent : undefined
 
     transform: [
       Rotation {
@@ -44,7 +63,7 @@ Item {
       }
     ]
 
-    width: root.horizontal ? Math.min(titleLabel.implicitWidth, root.maxText) : titleLabel.implicitWidth
+    width: root.horizontal ? root.textExtent : titleLabel.implicitWidth
     height: root.horizontal ? parent.height : 26
   }
 }

@@ -4,7 +4,8 @@ import QtQuick
 Item {
   id: root
 
-  property var workspaces: []
+  property var screen: null
+  property var workspaces: WmService.getWorkspaces(root.screen ? root.screen.name : "")
   signal focusRequested(int workspaceId)
   property bool horizontal: false
 
@@ -227,6 +228,7 @@ Item {
           onClicked: {
             var wsId = dotItem.ws ? (dotItem.ws.id || (dotItem.index + 1)) : (dotItem.index + 1)
             root.focusRequested(wsId)
+            WmService.focusWorkspace(wsId)
           }
         }
       }

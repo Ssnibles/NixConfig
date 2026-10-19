@@ -1,8 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
-import Quickshell.Services.Pipewire
-import "Utils.js" as Utils
 
 Item {
   id: root
@@ -11,36 +9,31 @@ Item {
   property string uiFont: Config.monoFont
   property bool horizontal: false
 
-  // Pipewire Audio Binding
-  property var volNodes: Pipewire.ready && Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
-  PwObjectTracker { objects: root.volNodes }
+  readonly property real volPct: SystemService.volume
+  readonly property bool volMuted: SystemService.muted
+  readonly property string volIcon: SystemService.volumeIcon
+  readonly property int volPercent: SystemService.volumePercent
 
-  property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
-  property real volPct: root.volInfo ? root.volInfo.volume : 0
-  property bool volMuted: root.volInfo ? root.volInfo.muted : false
-
-  width: root.horizontal ? horizontalRow.implicitWidth + 16 : ((parent && !horizontal) ? parent.width : 38)
-  height: root.horizontal ? 24 : (volLayout.implicitHeight > 0 ? volLayout.implicitHeight + 8 : 38)
-  anchors.horizontalCenter: (parent && !horizontal) ? parent.horizontalCenter : undefined
+  implicitWidth: root.horizontal ? horizontalRow.implicitWidth + 16 : 34
+  implicitHeight: root.horizontal ? Config.pillHeightHorizontal : (volLayout.implicitHeight > 0 ? volLayout.implicitHeight + 8 : 38)
+  width: implicitWidth
+  height: implicitHeight
 
   Tooltip {
     id: volTooltip
     sharedWindow: root.sharedWindow
-    icon: Utils.volumeIcon(root.volPct, root.volMuted)
+    icon: root.volIcon
     iconColour: root.volMuted ? Colours.red : Colours.accent
-    title: {
-      var pct = Math.round(root.volPct * 100)
-      return root.volMuted ? "Muted" : ("Volume " + pct + "%")
-    }
+    title: root.volMuted ? "Muted" : ("Volume " + root.volPercent + "%")
     details: ["Left click · Mute", "Right click · Mixer", "Scroll · Adjust"]
   }
 
   Rectangle {
     id: volBg
     anchors.fill: parent
-    radius: 6
+    radius: Config.itemRadiusSm
     color: volTooltip.hovered ? Colours.bgSubtle : "transparent"
-    Behavior on color { ColorAnimation { duration: 100 } }
+    Behavior on color { ColorAnimation { duration: Config.animNormalMs } }
   }
 
   MouseArea {
@@ -50,17 +43,13 @@ Item {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: function(mouse) {
       if (mouse.button === Qt.RightButton) {
-        Quickshell.execDetached(Config.cmdMixer)
-      } else if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-        Pipewire.defaultAudioSink.audio.muted = !root.volMuted
+        SystemService.openMixer()
+      } else {
+        SystemService.toggleMute()
       }
     }
     onWheel: function(wheel) {
-      if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return
-      var step = Config.volStep
-      var dir = wheel.angleDelta.y > 0 ? 1 : -1
-      var newVol = Math.max(0, Math.min(1.5, root.volPct + dir * step))
-      Pipewire.defaultAudioSink.audio.volume = newVol
+      SystemService.stepVolume(wheel.angleDelta.y)
       wheel.accepted = true
     }
   }
@@ -106,10 +95,7 @@ Item {
         cursorShape: Qt.PointingHandCursor
 
         function updateVolume(mouseY) {
-          var pct = Math.max(0, Math.min(1.5, (parent.height - mouseY) / parent.height))
-          if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-            Pipewire.defaultAudioSink.audio.volume = pct
-          }
+          SystemService.setVolume((parent.height - mouseY) / parent.height)
         }
 
         onPressed: function(mouse) {
@@ -125,7 +111,7 @@ Item {
 
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
-      text: Utils.volumeIcon(root.volPct, root.volMuted)
+      text: root.volIcon
       color: root.volMuted ? Colours.red : Colours.fg
       font.family: root.uiFont
       font.pixelSize: 15
@@ -133,7 +119,7 @@ Item {
 
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
-      text: Math.round(root.volPct * 100) + "%"
+      text: root.volPercent + "%"
       color: root.volMuted ? Colours.red : Colours.fgMid
       font.family: root.uiFont
       font.pixelSize: 11
@@ -148,7 +134,7 @@ Item {
     spacing: 6
 
     Text {
-      text: Utils.volumeIcon(root.volPct, root.volMuted)
+      text: root.volIcon
       color: root.volMuted ? Colours.red : Colours.accent
       font.family: root.uiFont
       font.pixelSize: 14
@@ -156,7 +142,7 @@ Item {
     }
 
     Text {
-      text: root.volMuted ? "Muted" : Math.round(root.volPct * 100) + "%"
+      text: root.volMuted ? "Muted" : root.volPercent + "%"
       color: root.volMuted ? Colours.red : Colours.fg
       font.family: root.uiFont
       font.pixelSize: 12
