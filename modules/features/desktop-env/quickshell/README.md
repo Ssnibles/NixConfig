@@ -1,6 +1,6 @@
 # Quickshell — Module Reference & Development Guide
 
-This directory contains the [Quickshell](https://quickshell.outfoxxed.me/) configuration for status bars (`niri-bar.qml` and `bar.qml`), the **Command Centre** dashboard, the Wayland **Lock Screen**, the **Notification system**, and shared UI primitives (pills, tooltips, sliders).
+This directory contains the [Quickshell](https://quickshell.outfoxxed.me/) configuration for the unified status bar (`bar.qml`), the **Command Centre** dashboard, the Wayland **Lock Screen**, the **Notification system**, and shared UI primitives (pills, tooltips, sliders).
 
 All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by Nix activation scripts. **QML edits apply immediately on the next quickshell restart** — no Nix rebuild needed for standard QML modifications. Only `Colours.qml` is generated directly by Nix from system theme tokens and requires a rebuild to update.
 
@@ -41,16 +41,18 @@ All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by N
 ```qml
 Scope {
   Loader {
-    source: (bar === "niri") ? "niri-bar.qml" : "bar.qml"
+    source: "bar.qml"
   }
   NotificationOverlay { }
+  OsdOverlay { }
   CommandCentre { }
   LockScreen { }
 }
 ```
 
-- **Status Bar Loading**: Set `QS_BAR=niri` for the vertical Niri bar; defaults to the unified `bar.qml` top bar (which connects to `WmService` for MangoWC, Hyprland, etc.).
-- **Notification Overlay**: Global notification stack present on every display.
+- **Unified Status Bar (`bar.qml`)**: Automatically adapts between a horizontal top bar (MangoWC, Hyprland) and a vertical left/right side bar (Niri, or when `QS_BAR=niri`), powered by the `WmService` singleton.
+- **Notification Overlay**: Global notification stack present on the active display (or all displays).
+- **OSD Overlay (`OsdOverlay.qml`)**: Floating bottom-centre On-Screen Display pill for volume, microphone mute, and screen brightness changes.
 - **Command Centre**: Slide-out dashboard overlay controllable via IPC.
 - **Lock Screen**: Wayland session lock (`WlSessionLock`) with PAM authentication.
 
@@ -116,7 +118,7 @@ Scope {
 | `popupFadeMs` | `120` | Fade transition duration (ms) |
 | `popupGraceMs` | `700` | Grace window for instant-swapping between adjacent popups |
 
-### 3.6 Notifications (`NotificationOverlay.qml` & `NotificationStore.qml`)
+### 3.6 Notifications (`NotificationOverlay.qml` & `NotificationService.qml`)
 | Property | Default | Purpose |
 | --- | --- | --- |
 | `notifPosition` | `"top-right"` | Placement on screen (`"top-left"`, `"top-right"`, `"bottom-left"`, etc.) |
@@ -126,7 +128,7 @@ Scope {
 | `notifTimeoutLowMs` | `3000` | Duration for low-urgency notifications (ms) |
 | `notifTimeoutCriticalMs` | `0` | Duration for critical notifications (`0` = persistent) |
 | `notifMaxVisible` | `5` | Maximum active popup count on screen |
-| `notifMaxHistory` | `30` | Maximum history items retained in `NotificationStore` |
+| `notifMaxHistory` | `30` | Maximum history items retained in `NotificationService` |
 | `notifWidth` | `320` | Notification card width (px) |
 | `notifRadius` | `12` | Notification card corner radius |
 | `notifCardMargins` | `12` | Internal card padding (px) |
@@ -142,7 +144,7 @@ Scope {
 | `notifLeftClickAction` | `"dismiss"` | Action on left-click (`"dismiss"` or `"focus"`) |
 | `notifDefaultFallbackLogo` | `"preferences-desktop-notification"` | System theme fallback icon if app has no icon |
 | `notifDefaultFallbackGlyph` | `"󰂚"` | Fallback Nerd Font glyph |
-| `notifAppIcons` | `({ ... })` | App name/desktop entry to preferred icon/logo/file mapping |
+| `notifAppIcons` | `({ ... })` | App name/desktop entry to preferred icon override mapping |
 | `notifAppGlyphs` | `({ ... })` | App/category to Nerd Font glyph mapping |
 | `notifMediaApps` | `[ ... ]` | List of media player app identifiers |
 
@@ -169,37 +171,40 @@ Scope {
 
 ### 5.1 Bars
 
-#### `niri-bar.qml`
-- **Role**: Vertical side bar for Niri window manager.
-- **Features**: `PanelWindow` hugging `Config.barSide`, displaying clock, active window title, workspace list, system control pills, and hosting `SharedTooltipWindow`.
-
 #### `bar.qml`
-- **Role**: Consolidated horizontal top bar for Wayland compositors (MangoWC, Hyprland, etc.).
-- **Features**: Powered by `WmService.qml` to render workspace dots, active window titles, system status indicators, clock, and tooltips.
+- **Role**: Unified horizontal top bar (MangoWC, Hyprland) and vertical side bar (Niri).
+- **Features**: Powered by singletons (`WmService`, `ClockService`, `SystemService`, `MediaService`) to render workspace dots, layout switcher, active window titles, system status indicators, clock, and `SharedTooltipWindow`.
 
 ---
 
 ### 5.2 Services & Infrastructure
 
 #### `WmService.qml`
-- **Role**: Unified router bridging active compositor backends (`MangoService`, `HyprlandService`) based on `QS_BAR`.
-- **Exposes**: `currentTitle`, `getWorkspaces(outputName)`, `focusWorkspace(id)`.
+- **Role**: Unified `pragma Singleton` bridging active compositor backends (`MangoService`, `HyprlandService`, `NiriService`) based on `Config.wm`.
+- **Exposes**: `currentTitle`, `getWorkspaces(outputName)`, `focusWorkspace(id)`, `getLayoutSymbol(outputName)`, `getLayoutInfo(symbol)`, `setLayout(symbol)`, `nextLayout()`, and active/cursor monitor detection (`resolveTargetScreen(callback)`, `cancelScreenQuery()`, `queryingScreen`).
 
-#### `NiriService.qml`
-- **Role**: IPC service bridging Niri window manager via `niri msg --json event-stream`.
-- **Exposes**: `allWorkspaces`, `currentTitle`, `workspacesForOutput(output)`, `focusWorkspace(id)`, `formatActiveTitle(title, appId)`.
+#### `SystemService.qml`
+- **Role**: Central `pragma Singleton` for PipeWire output sinks, microphone input source, `brightnessctl` + sysfs screen backlight control, OSD state, and `"system"` IPC actions.
+- **Exposes**: `audioSink`, `audioSinks`, `selectAudioSink(node)`, `sinkDisplayName(node)`, `volume`, `muted`, `volumePercent`, `volumeIcon`, `toggleMute()`, `setVolume(val)`, `setVolumeDebounced(val)`, `stepVolume(dir)`, `openMixer()`, `hasMic`, `micVolume`, `micMuted`, `micVolumePercent`, `micIcon`, `toggleMicMute()`, `setMicVolume(val)`, `setMicVolumeDebounced(val)`, `brightness`, `brightnessAvailable`, `brightnessPercent`, `refreshBrightness()`, `setBrightness(val)`, `stepBrightness(dir)`, and OSD state (`osdVisible`, `osdKind`, `osdIcon`, `osdLabel`, `osdValue`, `osdMuted`, `showOsd(...)`).
+
+#### `ClockService.qml`
+- **Role**: Central minute-aligned clock `pragma Singleton` ingested by `ClockWidget`, `CommandCentre`, and `LockScreen`.
+- **Exposes**: `now`, `timeStr`, `hourStr`, `minuteStr`, `ordinalDateStr`, `ccTimeStr`, `ccTime12Str`, `ccDateStr`, `lockTimeStr`, `lockDateStr`.
+
+#### `MangoService.qml`, `HyprlandService.qml`, `NiriService.qml`
+- **Role**: Compositor-specific IPC backends loaded dynamically by `WmService.qml`.
 
 #### `WindowFocuser.qml`
 - **Role**: Singleton that activates a window from a notification / MPRIS player / app descriptor.
 - **Strategy**: Uses Quickshell's native `ToplevelManager` when available; otherwise queries and scores the compositor's IPC (`mmsg` / `niri` / `hyprctl`) directly in QML (replaces the old inline Node fallback). Exposes `focus(patterns)` and `focusSource(source)`.
 
-#### `NotificationStore.qml`
-- **Role**: Central notification daemon state & disk cache manager.
-- **Features**: Subscribes to `Quickshell.Services.Notifications`, manages active stack and history log up to `Config.notifMaxHistory`, auto-dismiss timers, removes toasts when the sender closes them, and cover art disk caching (`~/.cache/quickshell/coverart/`).
+#### `NotificationService.qml`
+- **Role**: Central notification daemon, MPRIS track-toast emitter, icon/avatar resolver, and state manager.
+- **Features**: Subscribes to `Quickshell.Services.Notifications`, retains live `Notification` objects while in active or history models, copies ephemeral `/tmp/` avatars to `~/.cache/quickshell/notif-images/`, resolves app icons and glyphs once per item, manages auto-dismiss timers and hover pausing, and handles action invocation and sender window focusing.
 
 #### `Utils.js`
 - **Role**: Shared JavaScript utility library (`.pragma library`).
-- **Features**: `findFirst`, `findBatteryDevice`, `findActivePlayer`, `pad2`, `formatTime`, `cleanTrackTitle`, `prettifyAppName`, `formatActiveTitle`, and icon helpers (`volumeIcon`, `batteryIcon`).
+- **Features**: `findFirst`, `findBatteryDevice`, `findActivePlayer`, `resolveMprisPlayer`, `cyclePlayer`, `pad2`, `formatTime`, `cleanTrackTitle`, `prettifyAppName`, `formatActiveTitle`, and icon helpers (`volumeIcon`, `micIcon`, `batteryIcon`).
 
 ---
 
@@ -208,8 +213,12 @@ Scope {
 #### `CommandCentre.qml`
 - **Role**: Slide-out quick settings dashboard and system metrics panel.
 - **IPC Target**: `"command-centre"` (functions: `toggle()`, `open()`, `close()`).
-- **Multi-Monitor Cursor Tracking**: Automatically detects which monitor the mouse cursor is located on (via `mmsg get cursorpos` on MangoWC, `hyprctl cursorpos` on Hyprland, `niri msg --json focused-output` on Niri, or bar hover/active window focus fallback) and slides out on that specific monitor while rendering a transparent dismiss overlay across all other screens.
-- **Features**: Header clock & date, status pills (Wi-Fi, Ethernet, Battery, Bluetooth), system sliders (`SliderControl` for Pipewire volume & `brightnessctl` screen brightness), full MPRIS media player card with position seekbar, album art preview, and player selection, plus notification history list.
+- **Multi-Monitor Cursor Tracking**: Delegates active-screen detection to `WmService.resolveTargetScreen(...)` and slides out on that specific monitor while rendering a transparent dismiss overlay across all other screens.
+- **Features**: Header clock & date (via `ClockService`), status pills (Wi-Fi, Ethernet, Battery, Bluetooth), system sliders (`SliderControl` bound to `SystemService` for PipeWire output volume, expandable audio sink switcher, microphone volume/mute, and `brightnessctl` screen brightness), full MPRIS media player card (`MediaCard`), plus notification history list (`NotificationService`).
+
+#### `OsdOverlay.qml`
+- **Role**: Floating bottom-centre On-Screen Display pill driven by `SystemService`.
+- **Features**: Automatically pops up on the active monitor when output volume, mute, microphone mute/volume, or screen brightness changes (suppressed while `CommandCentre` is open).
 
 #### `LockScreen.qml`
 - **Role**: Wayland session screen locker built on `WlSessionLock` and `WlSessionLockSurface`.
@@ -217,16 +226,24 @@ Scope {
 - **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt with Caps Lock warning & error shake animation, secondary screen display lock graphics, background wallpaper with customisable GPU blur (`MultiEffect`) and dimming, read-only `NetworkWidget`/`BatteryWidget` status pills, and system power actions (Sleep/Suspend, Reboot, Power Off).
 
 #### `NotificationOverlay.qml` & `NotificationCard.qml`
-- **Role**: Screen overlay rendering active notification toasts.
-- **Features**: Stack layout driven by `NotificationStore`, animated entry/exit, action buttons, image/icon previews, and manual dismiss.
+- **Role**: Screen overlay and card delegate rendering active notification toasts and history items.
+- **Features**: Stack layout driven by `NotificationService`, animated entry/exit, action buttons, avatar/icon previews with fallback glyphs, and click-to-dismiss or focus.
 
 ---
 
 ### 5.4 Widgets & UI Components
 
 #### `Pill.qml`
-- **Role**: Standardised container for bar widgets.
-- **Properties**: `padding`, `pillHeight`, `pillColour`, `orientation` (`"horizontal"` \| `"vertical"`). Includes hover/active state transitions and auto-sizing.
+- **Role**: Standardised rounded pill container for bar widgets and inline action pills.
+- **Properties**: `horizontal`, `padding`, `pillHeight`, `baseColour`, `hoverColour`, `hoverHighlight`, `pillColour`, `orientation`, `clickable`, `acceptedButtons`, `hovered`; signals `clicked(var mouse)`, `wheel(var wheel)`. Includes built-in hover/border colour transitions, auto-sizing, and optional pointer click/scroll handling.
+
+#### `Card.qml`
+- **Role**: Shared elevated/surface card container used across Command Centre sections, popovers, `MediaCard`, `NotificationCard`, `OsdOverlay`, and `LockScreen`.
+- **Properties**: `cardColour` (defaults to `Colours.bgRaised`), `borderColour` (defaults to `Colours.border`), `cardRadius` (defaults to `Config.commandCentreCardRadius`), with smooth colour and border transitions.
+
+#### `IconButton.qml`
+- **Role**: Shared interactive icon button with hover colour, border, and scale feedback.
+- **Properties**: `icon`, `iconSize`, `buttonSize`, `baseColour`, `hoverColour`, `borderColour`, `hoverBorderColour`, `iconColour`, `hoverIconColour`, `disabledIconColour`, `hoverScale`, `hovered`; signal `clicked(var mouse)`.
 
 #### `SliderControl.qml`
 - **Role**: Reusable interactive horizontal range slider.
@@ -238,7 +255,7 @@ Scope {
 
 #### `MediaCard.qml`
 - **Role**: Shared MPRIS media card used by the Command Centre, the bar media popover and the lock screen.
-- **Properties**: `showWhenIdle`, `seekable`, `interactive`, `cardColour`, `cardRadius`. Renders album art (with fallback), track/artist text, `PlaybackControls` and `MediaProgressRow`.
+- **Properties**: `showWhenIdle`, `seekable`, `interactive`, `cardColour`, `cardRadius`. Renders album art (with fallback), track/artist text, interactive multi-player switcher pill (`MediaService.cyclePlayer`), `PlaybackControls` and `MediaProgressRow`.
 
 #### `PlaybackControls.qml`
 - **Role**: Reusable previous / play-pause / next button cluster.
@@ -257,11 +274,13 @@ Scope {
 - **Properties**: `source`, `sourceSize`, `fillMode`, `radius`; exposes `ready`, `status`, and a `sourceError()` signal for fallback chains.
 
 #### Standard Bar Widgets
-- **`ClockWidget.qml`**: Time/date stack with click-to-popup details.
-- **`WindowTitleWidget.qml`**: Active window title displaying Niri state.
-- **`WorkspacesWidget.qml`**: Interactive workspace indicators connected to `NiriService`.
-- **`MediaWidget.qml`**: MPRIS playback bar button with progress indicator and play/pause controls.
-- **`VolumeWidget.qml`**: PipeWire volume control widget with mute toggle, scroll adjustments, and popup control.
+- **`ClockWidget.qml`**: Time/date stack ingested from `ClockService` with click-to-popup calendar details.
+- **`WindowTitleWidget.qml`**: Active window title ingested from `WmService`.
+- **`WorkspacesWidget.qml`**: Interactive workspace indicators connected to `WmService`.
+- **`LayoutWidget.qml`**: Tiling layout selector connected to `WmService` (auto-shown on MangoWC).
+- **`SystemTrayWidget.qml`**: StatusNotifierItem (SNI) system tray pill supporting left-click activate, right-click menu, scroll, and hover tooltips. Automatically hides when no tray items are registered.
+- **`MediaWidget.qml`**: MPRIS playback bar button ingested from `MediaService`.
+- **`VolumeWidget.qml`**: PipeWire volume control widget ingested from `SystemService`.
 - **`NetworkWidget.qml`**: Network connection monitor displaying Wi-Fi SSID and signal strength. Right-click launches `nmtui`. Set `interactive: false` to render it as a read-only pill (used on the lock screen).
 - **`BluetoothWidget.qml`**: Bluetooth adapter status and device indicator. Right-click launches `blueman-manager`.
 - **`BatteryWidget.qml`**: Laptop battery charge state and status indicator powered by UPower. Auto-hides on desktop systems without batteries. Set `interactive: false` to render it as a read-only pill (used on the lock screen).
@@ -352,11 +371,13 @@ readonly property int cpuPollIntervalMs: 2000
 ```
 
 ### Step 3: Insert into the Status Bar
-Open `niri-bar.qml` (or `bar.qml`) and instantiate your component inside `bottomCol` or `topCol`:
+Open `bar.qml` and instantiate your component inside `startSection` or `endSection`:
 
 ```qml
 CpuWidget {
+  horizontal: root.isHorizontal
   sharedWindow: sharedTipWindow
+  Layout.alignment: Qt.AlignCenter
 }
 ```
 

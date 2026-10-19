@@ -6,7 +6,7 @@ This document details the [Quickshell](https://quickshell.outfoxxed.me/) QML des
 
 ## Architecture Overview
 
-Quickshell powers the horizontal top status bar (`bar.qml`), the vertical Niri status bar (`niri-bar.qml`), the **Command Centre** quick-settings dashboard, the Wayland **Lock Screen**, the desktop **Notification daemon and overlay**, and shared UI primitives.
+Quickshell powers the unified horizontal/vertical status bar (`bar.qml`), the **Command Centre** quick-settings dashboard, the Wayland **Lock Screen**, the desktop **Notification daemon and overlay**, and shared UI primitives.
 
 All QML source files live in `modules/features/desktop-env/quickshell/config/` and are symlinked directly to `~/.config/quickshell/` via `nixos.liveLinks` (`contents = true`), while generated theme files (`Colours.qml`) are managed declaratively by Hjem:
 
@@ -23,21 +23,23 @@ modules/features/desktop-env/quickshell/
     ├── Utils.js                  # Shared JavaScript helper functions
     ├── qmldir.lsp                # Optional staged manifest for editor/LSP tooling
     │
-    ├── bar.qml                   # Top horizontal bar (MangoWC, Hyprland)
-    ├── niri-bar.qml              # Vertical side bar (Niri)
+    ├── bar.qml                   # Unified horizontal top bar (MangoWC, Hyprland) & vertical side bar (Niri)
     ├── CommandCentre.qml         # Slide-out quick settings dashboard
     ├── CommandCentreButton.qml   # Toggle button in status bar
     ├── LockScreen.qml            # Wayland session locker (WlSessionLock + PAM)
     │
     ├── NotificationOverlay.qml   # Toast notification popup overlay
-    ├── NotificationStore.qml     # Notification daemon state manager
+    ├── NotificationService.qml   # Central notification daemon, icon resolver & state singleton
     ├── NotificationCard.qml      # Visual notification card component
+    ├── OsdOverlay.qml            # Floating volume, mic, and brightness OSD pill
     │
-    ├── WmService.qml             # Unified compositor abstraction layer
+    ├── WmService.qml             # Unified compositor & active-screen singleton
     ├── MangoService.qml          # MangoWC IPC backend (mmsg)
     ├── HyprlandService.qml       # Hyprland IPC backend (hyprctl)
     ├── NiriService.qml           # Niri event-stream backend
-    ├── MediaService.qml          # MPRIS media player backend
+    ├── SystemService.qml         # Central PipeWire audio (sinks + mic), backlight & OSD singleton
+    ├── ClockService.qml          # Shared minute-aligned clock & date singleton
+    ├── MediaService.qml          # MPRIS media player backend & multi-player switcher
     ├── WindowFocuser.qml         # Native-first window activation (no Node fallback)
     │
     ├── MediaCard.qml             # Shared media card (Command Centre / popover / lock)
@@ -51,10 +53,13 @@ modules/features/desktop-env/quickshell/
     ├── ClockWidget.qml           # Time and date widget (with calendar popover)
     ├── LayoutWidget.qml          # Active window manager layout widget
     ├── NetworkWidget.qml         # Wi-Fi SSID and signal strength
+    ├── SystemTrayWidget.qml      # StatusNotifierItem system tray icons
     ├── VolumeWidget.qml          # PipeWire volume level & mute status
     ├── WindowTitleWidget.qml     # Focused application window title
     ├── WorkspacesWidget.qml      # Visual workspace and tag indicators
     │
+    ├── Card.qml                  # Shared surface/card container primitive
+    ├── IconButton.qml            # Shared interactive icon button primitive
     ├── Pill.qml                  # Rounded pill container primitive
     ├── SliderControl.qml         # Reusable horizontal slider
     ├── RoundedImage.qml          # Async rounded/masked image
@@ -82,12 +87,12 @@ Generated automatically by Nix based on `config.theme.colours`:
 
 ## Multi-Compositor Routing (`WmService.qml`)
 
-Quickshell does not hardcode compositor dependencies into individual UI widgets. Instead, **`WmService.qml`** abstracts workspace, window focus, and layout queries across compositors:
+Quickshell does not hardcode compositor dependencies into individual UI widgets. Instead, **`WmService.qml`** (`pragma Singleton`) abstracts workspace, window focus, layout, and active-screen queries across compositors:
 - In MangoWC, it communicates via `MangoService.qml` (`mmsg`).
 - In Hyprland, it communicates via `HyprlandService.qml` (`hyprctl`).
 - In Niri, it parses the JSON stream from `NiriService.qml` (`niri msg --json event-stream`).
 
-`NiriService` and `CommandCentre` process CLI output using `StdioCollector` hooked to `onStreamFinished` rather than `onDataChanged`, ensuring complete JSON streams and hardware states are collected before parsing.
+`NiriService` and `SystemService` process CLI output using `StdioCollector` hooked to `onStreamFinished` rather than `onDataChanged`, ensuring complete JSON streams and hardware states are collected before parsing.
 
 This enables swapping between Wayland compositors while keeping the exact same status bar, notification centre, lock screen, and styling.
 
@@ -112,8 +117,8 @@ This enables swapping between Wayland compositors while keeping the exact same s
 ## Notification Daemon & Overlay
 
 Quickshell includes a built-in Freedesktop notification daemon replacement:
-- **`NotificationStore.qml`**: Listens for DBus notifications (`org.freedesktop.Notifications`), filters incoming messages, and manages historical stores.
-- **`NotificationOverlay.qml`**: Renders smooth toast cards on the top-right corner of the active monitor.
+- **`NotificationService.qml`**: Listens for DBus notifications (`org.freedesktop.Notifications`) and MPRIS track transitions, resolves app icons/avatars/glyphs once per notification, retains live `Notification` objects, and manages active toast and history models.
+- **`NotificationOverlay.qml`**: Renders smooth toast cards on the configured corner of the active monitor.
 - Integrates with system daemons like `journal-error-notify` (notifying on boot failures) and `shikane` (display profile changes).
 
 ---

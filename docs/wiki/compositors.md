@@ -99,8 +99,8 @@ Niri (`modules/features/desktop-env/niri/`) is an infinite-strip scrollable-tili
 
 ### Shell & Bar Integration
 
-- Paired with **`niri-bar.qml`**, a dedicated vertical left sidebar powered by Quickshell.
-- Communicates with **`NiriService.qml`** via `niri msg --json event-stream`, providing live workspace, layout, and window title telemetry.
+- Paired with **`bar.qml`** in vertical left/right sidebar mode powered by Quickshell.
+- Communicates with **`NiriService.qml`** (via **`WmService.qml`**) using `niri msg --json event-stream`, providing live workspace, layout, and window title telemetry.
 
 ---
 
