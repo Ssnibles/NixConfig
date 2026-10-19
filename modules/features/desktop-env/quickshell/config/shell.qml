@@ -25,18 +25,12 @@ Scope {
 
   Loader {
     id: barLoader
-    source: (Config.barType === "niri") ? "niri-bar.qml" : "bar.qml"
-  }
-
-  // Propagate barVisible into the loaded bar component
-  Binding {
-    target: barLoader.item
-    property: "barVisible"
-    value: Config.barVisible
-    when: barLoader.item !== null
+    source: "bar.qml"
   }
 
   NotificationOverlay { }
+
+  OsdOverlay { }
 
   CommandCentre { }
 

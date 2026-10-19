@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
-import Quickshell.Services.Pipewire
 import QtQuick
 import QtQuick.Layouts
 import "Utils.js" as Utils
@@ -12,114 +11,19 @@ Scope {
 
   property bool closing: false
   property bool active: Config.commandCentreVisible || ccScope.closing
-  property bool pendingOpen: false
-
-  Timer {
-    id: openTimeoutTimer
-    // Fallback for when the cursor-query process hangs. Kept generous so a
-    // normal (but not instant) WM query isn't pre-empted, which would open the
-    // panel on the stale `lastActiveScreen`.
-    interval: 250
-    repeat: false
-    onTriggered: {
-      if (ccScope.pendingOpen) {
-        ccScope.pendingOpen = false
-        if (!Config.targetScreen) {
-          Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
-        }
-        Config.commandCentreVisible = true
-      }
-    }
-  }
-
-  Process {
-    id: cursorQueryProc
-    stdout: SplitParser {
-      onRead: line => {
-        if (!ccScope.pendingOpen) return
-        var txt = line.trim()
-        if (!txt) return
-
-        var foundScreen = null
-        try {
-          if (Config.wm === "mangowc") {
-            var data = JSON.parse(txt)
-            if (data && data.monitor) {
-              foundScreen = Utils.screenByName(data.monitor, Quickshell.screens)
-            } else if (data && data.x !== undefined && data.y !== undefined) {
-              foundScreen = Utils.screenAt(data.x, data.y, Quickshell.screens)
-            }
-          } else if (Config.wm === "hyprland") {
-            var parts = txt.split(",")
-            if (parts.length >= 2) {
-              var hx = parseInt(parts[0].trim())
-              var hy = parseInt(parts[1].trim())
-              if (!isNaN(hx) && !isNaN(hy)) {
-                foundScreen = Utils.screenAt(hx, hy, Quickshell.screens)
-              }
-            }
-          } else if (Config.wm === "niri") {
-            var niriData = JSON.parse(txt)
-            if (niriData && niriData.name) {
-              foundScreen = Utils.screenByName(niriData.name, Quickshell.screens)
-            }
-          }
-        } catch (e) {}
-
-        if (foundScreen) {
-          Config.targetScreen = foundScreen
-          Config.lastActiveScreen = foundScreen
-        }
-
-        ccScope.pendingOpen = false
-        openTimeoutTimer.stop()
-        if (!Config.targetScreen) {
-          Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
-        }
-        Config.commandCentreVisible = true
-      }
-    }
-
-    onExited: function(exitCode, exitStatus) {
-      if (ccScope.pendingOpen) {
-        ccScope.pendingOpen = false
-        openTimeoutTimer.stop()
-        if (!Config.targetScreen) {
-          Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
-        }
-        Config.commandCentreVisible = true
-      }
-    }
-  }
 
   function openOnActiveScreen(): void {
     if (Config.commandCentreVisible) return
-
-    var cmd = null
-    if (Config.wm === "mangowc") {
-      cmd = ["mmsg", "get", "cursorpos"]
-    } else if (Config.wm === "hyprland") {
-      cmd = ["hyprctl", "cursorpos"]
-    } else if (Config.wm === "niri") {
-      cmd = ["niri", "msg", "--json", "focused-output"]
-    }
-
-    if (cmd) {
-      ccScope.pendingOpen = true
-      openTimeoutTimer.start()
-      cursorQueryProc.exec(cmd)
-    } else {
-      Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
+    WmService.resolveTargetScreen(function() {
       Config.commandCentreVisible = true
-    }
+    })
   }
 
   IpcHandler {
     target: "command-centre"
     function toggle(): void {
-      if (Config.commandCentreVisible || ccScope.pendingOpen) {
-        ccScope.pendingOpen = false
-        openTimeoutTimer.stop()
+      if (Config.commandCentreVisible || WmService.queryingScreen) {
+        WmService.cancelScreenQuery()
         Config.commandCentreVisible = false
       } else {
         ccScope.openOnActiveScreen()
@@ -127,14 +31,13 @@ Scope {
     }
 
     function open(): void {
-      if (!Config.commandCentreVisible) {
+      if (!Config.commandCentreVisible && !WmService.queryingScreen) {
         ccScope.openOnActiveScreen()
       }
     }
 
     function close(): void {
-      ccScope.pendingOpen = false
-      openTimeoutTimer.stop()
+      WmService.cancelScreenQuery()
       Config.commandCentreVisible = false
     }
   }
@@ -147,6 +50,7 @@ Scope {
         if (!Config.targetScreen) {
           Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         }
+        SystemService.refreshBrightness()
       } else if (ccScope.active) {
         ccScope.closing = true
       }
@@ -183,48 +87,16 @@ Scope {
         if (!target) return false
         return panel.modelData === target || (panel.modelData && target && panel.modelData.name === target.name)
       }
-      property bool isPrimaryScreen: isTargetScreen
       readonly property bool isLeft: Config.commandCentreSide === "left"
       readonly property real slideDistance: isLeft ? -Config.commandCentreSlideOffset : Config.commandCentreSlideOffset
       property real panelOpacity: 0
       property real panelSlide: slideDistance
-
-      // Brightness state
-      property real brightnessPct: 0.5
-      property bool brightnessAvailable: false
-
-      Process {
-        id: brightnessGetProc
-        command: ["brightnessctl", "-m"]
-        stdout: StdioCollector {
-          onStreamFinished: {
-            var lines = this.text.trim().split("\n")
-            for (var i = 0; i < lines.length; i++) {
-              var parts = lines[i].split(",")
-              if (parts.length >= 4) {
-                var deviceClass = parts[1]
-                if (deviceClass === "backlight") {
-                  var pctStr = parts[3].replace("%", "")
-                  var pct = parseInt(pctStr) / 100.0
-                  if (!isNaN(pct)) {
-                    panel.brightnessPct = pct
-                    panel.brightnessAvailable = true
-                    return
-                  }
-                }
-              }
-            }
-            panel.brightnessAvailable = false
-          }
-        }
-      }
 
       Component.onCompleted: {
         panelOpacity = 0
         panelSlide = slideDistance
         if (panel.isTargetScreen) {
           outsideDismiss.forceActiveFocus()
-          brightnessGetProc.exec(["brightnessctl", "-m"])
         }
         fadeInAnim.start()
       }
@@ -263,38 +135,8 @@ Scope {
           if (ccScope.closing) {
             ccScope.closing = false
             Config.targetScreen = null
+            Qt.callLater(gc)
           }
-        }
-      }
-
-      // Audio tracking (only tracked on target screen to save resources)
-      property var volNodes: (panel.isTargetScreen && Pipewire.ready && Pipewire.defaultAudioSink) ? [Pipewire.defaultAudioSink] : []
-      PwObjectTracker { objects: panel.volNodes }
-      property var volInfo: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
-      property real volPct: volInfo ? volInfo.volume : 0
-      property bool volMuted: volInfo ? volInfo.muted : false
-
-      // Debounce audio volume setting to avoid spamming PipeWire
-      Timer {
-        id: volSetTimer
-        interval: 50
-        repeat: false
-        property real targetVal: 0
-        onTriggered: {
-          if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-            Pipewire.defaultAudioSink.audio.volume = targetVal
-          }
-        }
-      }
-
-      // Debounce brightness setting
-      Timer {
-        id: brightnessSetTimer
-        interval: 50
-        repeat: false
-        property real targetVal: 0
-        onTriggered: {
-          Quickshell.execDetached(["brightnessctl", "set", Math.round(targetVal * 100) + "%"])
         }
       }
 
@@ -339,9 +181,22 @@ Scope {
       Component {
         id: mainCardComponent
 
-        Rectangle {
+        Card {
           id: mainCard
           anchors.fill: parent
+          cardColour: Colours.bg
+          cardRadius: Config.commandCentreRadius
+
+          property bool sinkPickerOpen: false
+
+          Connections {
+            target: Config
+            function onCommandCentreVisibleChanged() {
+              if (!Config.commandCentreVisible) {
+                mainCard.sinkPickerOpen = false
+              }
+            }
+          }
 
           // Prevent clicks inside mainCard from propagating to outsideDismiss
           MouseArea {
@@ -354,480 +209,545 @@ Scope {
           }
           opacity: panel.panelOpacity
 
-          color: Colours.bg
-          border.color: Colours.border
-          border.width: 1
-          radius: Config.commandCentreRadius
+          ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 16
+            spacing: 14
 
-        ColumnLayout {
-          anchors.fill: parent
-          anchors.margins: 16
-          spacing: 14
-
-          // HEADER: CLOCK & STATUS PILLS
-          RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
-
-            // Clock & Date (Left)
-            Column {
-              Layout.alignment: Qt.AlignTop
-              spacing: 2
-
-              RowLayout {
-                spacing: 6
-
-                Text {
-                  id: headerTime
-                  text: Qt.formatDateTime(new Date(), Config.commandCentreClockFormat)
-                  color: Colours.fg
-                  font.family: Config.serifFont
-                  font.letterSpacing: 2
-                  font.pixelSize: 36
-                  font.italic: true
-                  Layout.alignment: Qt.AlignBaseline
-
-                  function updateTime() {
-                    var d = new Date()
-                    headerTime.text = Qt.formatDateTime(d, Config.commandCentreClockFormat)
-                    headerTime12.text = Qt.formatDateTime(d, "h:mm AP")
-                    headerDate.text = Qt.formatDateTime(d, Config.commandCentreDateFormat)
-                    headerTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
-                    headerTimer.restart()
-                  }
-
-                  Timer {
-                    id: headerTimer
-                    running: panel.panelOpacity > 0
-                    repeat: false
-                    onTriggered: headerTime.updateTime()
-                  }
-
-                  Component.onCompleted: updateTime()
-                }
-
-                // Small 12-hour companion to the 24-hour clock
-                Text {
-                  id: headerTime12
-                  text: Qt.formatDateTime(new Date(), "h:mm AP")
-                  color: Colours.fgDim
-                  font.family: Config.sansFont
-                  font.pixelSize: 13
-                  Layout.alignment: Qt.AlignBaseline
-                }
-              }
-
-              Text {
-                id: headerDate
-                text: Qt.formatDateTime(new Date(), Config.commandCentreDateFormat)
-                color: Colours.fgDim
-                font.family: Config.sansFont
-                font.pixelSize: 14
-              }
-            }
-
-            Item { Layout.fillWidth: true }
-
-            // Wi-Fi / Wired / Battery / Bluetooth Status Pills
-            Row {
-              spacing: 6
-              Layout.alignment: Qt.AlignTop
-
-              // Network Pill (Wi-Fi / Wired)
-              NetworkWidget {
-                horizontal: true
-                anchors.verticalCenter: parent.verticalCenter
-              }
-
-              // Battery Pill
-              BatteryWidget {
-                horizontal: true
-                anchors.verticalCenter: parent.verticalCenter
-              }
-
-              // Bluetooth Pill
-              BluetoothWidget {
-                showLabel: true
-                anchors.verticalCenter: parent.verticalCenter
-              }
-            }
-          }
-
-          // SYSTEM CONTROLS CARD (VOLUME & BRIGHTNESS)
-          Rectangle {
-            Layout.fillWidth: true
-            implicitHeight: sliderCol.implicitHeight + 20
-            color: Colours.bgRaised
-            border.color: Colours.border
-            border.width: 1
-            radius: Config.commandCentreCardRadius
-
-            Column {
-              id: sliderCol
-              anchors.left: parent.left
-              anchors.right: parent.right
-              anchors.top: parent.top
-              anchors.margins: 12
+            // HEADER: CLOCK & STATUS PILLS
+            RowLayout {
+              Layout.fillWidth: true
               spacing: 12
 
-              // Volume Row
-              RowLayout {
-                width: parent.width
-                spacing: 12
+              // Clock & Date (Left)
+              Column {
+                Layout.alignment: Qt.AlignTop
+                spacing: 2
 
-                Rectangle {
-                  id: volIconBox
-                  Layout.preferredWidth: 32
-                  Layout.preferredHeight: 32
-                  radius: 8
-                  color: Colours.bgSubtle
-                  border.width: 1
-                  border.color: panel.volMuted ? Colours.red : Colours.border
+                RowLayout {
+                  spacing: 6
 
                   Text {
-                    anchors.centerIn: parent
-                    text: Utils.volumeIcon(panel.volPct, panel.volMuted)
-                    color: panel.volMuted ? Colours.red : Colours.fg
-                    font.family: Config.monoFont
-                    font.pixelSize: 16
+                    id: headerTime
+                    text: ClockService.ccTimeStr
+                    color: Colours.fg
+                    font.family: Config.serifFont
+                    font.letterSpacing: 2
+                    font.pixelSize: 36
+                    font.italic: true
+                    Layout.alignment: Qt.AlignBaseline
                   }
 
-                  MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
+                  // Small 12-hour companion to the 24-hour clock
+                  Text {
+                    id: headerTime12
+                    text: ClockService.ccTime12Str
+                    color: Colours.fgDim
+                    font.family: Config.sansFont
+                    font.pixelSize: Config.fontSizeMd
+                    Layout.alignment: Qt.AlignBaseline
+                  }
+                }
+
+                Text {
+                  id: headerDate
+                  text: ClockService.ccDateStr
+                  color: Colours.fgDim
+                  font.family: Config.sansFont
+                  font.pixelSize: 14
+                }
+              }
+
+              Item { Layout.fillWidth: true }
+
+              // Wi-Fi / Wired / Battery / Bluetooth Status Pills
+              Row {
+                spacing: 6
+                Layout.alignment: Qt.AlignTop
+
+                NetworkWidget {
+                  horizontal: true
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+
+                BatteryWidget {
+                  horizontal: true
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+
+                BluetoothWidget {
+                  showLabel: true
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+              }
+            }
+
+            // SYSTEM CONTROLS CARD (OUTPUT VOLUME, SINK PICKER, MICROPHONE & BRIGHTNESS)
+            Card {
+              Layout.fillWidth: true
+              implicitHeight: sliderCol.implicitHeight + 24
+
+              Column {
+                id: sliderCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: 12
+                spacing: 10
+
+                // Output Volume Row
+                RowLayout {
+                  width: parent.width
+                  spacing: 10
+
+                  IconButton {
+                    id: volIconBox
+                    buttonSize: 32
+                    icon: SystemService.volumeIcon
+                    baseColour: Colours.bgSubtle
+                    hoverColour: Colours.bgRaised
+                    borderColour: SystemService.muted ? Colours.red : Colours.border
+                    hoverBorderColour: SystemService.muted ? Colours.red : Colours.accent
+                    iconColour: SystemService.muted ? Colours.red : Colours.fg
+                    hoverIconColour: SystemService.muted ? Colours.red : Colours.accent
+                    onClicked: SystemService.toggleMute()
+                  }
+
+                  SliderControl {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                    value: SystemService.volume
+                    fillColour: SystemService.muted ? Colours.red : Colours.accent
+                    snapPercent: 5
+                    onMoved: function(v) {
+                      SystemService.setVolumeDebounced(v)
+                    }
+                  }
+
+                  Text {
+                    Layout.preferredWidth: 42
+                    horizontalAlignment: Text.AlignRight
+                    text: SystemService.volumePercent + "%"
+                    color: SystemService.muted ? Colours.red : Colours.fg
+                    font.family: Config.monoFont
+                    font.pixelSize: 14
+                  }
+
+                  IconButton {
+                    visible: Config.ccShowSinkSwitcher && SystemService.audioSinks.length > 0
+                    buttonSize: 28
+                    icon: mainCard.sinkPickerOpen ? "󰅃" : "󰅀"
+                    iconSize: Config.iconSizeSm
+                    baseColour: mainCard.sinkPickerOpen ? Colours.bgRaised : Colours.bgSubtle
+                    hoverColour: Colours.bgRaised
+                    borderColour: mainCard.sinkPickerOpen ? Colours.accent : Colours.border
+                    hoverBorderColour: Colours.accent
+                    iconColour: mainCard.sinkPickerOpen ? Colours.accent : Colours.fgMid
+                    hoverIconColour: Colours.accent
+                    onClicked: mainCard.sinkPickerOpen = !mainCard.sinkPickerOpen
+                  }
+                }
+
+                // Expandable Audio Output Device Switcher
+                Column {
+                  visible: Config.ccShowSinkSwitcher && mainCard.sinkPickerOpen && SystemService.audioSinks.length > 0
+                  width: parent.width
+                  spacing: 6
+
+                  Repeater {
+                    model: SystemService.audioSinks
+
+                    delegate: Pill {
+                      id: sinkPill
+                      required property var modelData
+                      readonly property bool isCurrent: SystemService.audioSink !== null && modelData.id === SystemService.audioSink.id
+
+                      width: sliderCol.width
+                      pillHeight: 30
+                      radius: Config.itemRadiusMd
+                      baseColour: sinkPill.isCurrent ? Colours.bgRaised : Colours.bgSubtle
+                      hoverColour: Colours.bgRaised
+                      border.color: sinkPill.isCurrent ? Colours.accent : (sinkPill.hovered ? Colours.accent : Colours.border)
+                      clickable: true
+                      onClicked: SystemService.selectAudioSink(sinkPill.modelData)
+
+                      RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
+                        spacing: 8
+
+                        Text {
+                          text: sinkPill.isCurrent ? "󰄬" : "󰓃"
+                          color: sinkPill.isCurrent ? Colours.accent : Colours.fgDim
+                          font.family: Config.monoFont
+                          font.pixelSize: Config.iconSizeSm
+                          Layout.alignment: Qt.AlignVCenter
+                        }
+
+                        Text {
+                          Layout.fillWidth: true
+                          text: SystemService.sinkDisplayName(sinkPill.modelData)
+                          color: sinkPill.isCurrent ? Colours.fg : Colours.fgMid
+                          font.family: Config.sansFont
+                          font.pixelSize: Config.fontSizeSm
+                          font.bold: sinkPill.isCurrent
+                          elide: Text.ElideRight
+                          Layout.alignment: Qt.AlignVCenter
+                        }
+                      }
+                    }
+                  }
+
+                  Pill {
+                    id: mixerPill
+                    width: sliderCol.width
+                    pillHeight: 26
+                    radius: Config.itemRadiusSm
+                    baseColour: "transparent"
+                    hoverColour: Colours.bgSubtle
+                    hoverHighlight: true
+                    clickable: true
                     onClicked: {
-                      if (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) {
-                        Pipewire.defaultAudioSink.audio.muted = !panel.volMuted
+                      SystemService.openMixer()
+                      Config.commandCentreVisible = false
+                    }
+
+                    Row {
+                      anchors.centerIn: parent
+                      spacing: 6
+
+                      Text {
+                        text: "󰒓"
+                        color: mixerPill.hovered ? Colours.accent : Colours.fgDim
+                        font.family: Config.monoFont
+                        font.pixelSize: Config.iconSizeSm
+                        anchors.verticalCenter: parent.verticalCenter
+                      }
+
+                      Text {
+                        text: "Open Audio Mixer"
+                        color: mixerPill.hovered ? Colours.fg : Colours.fgMid
+                        font.family: Config.sansFont
+                        font.pixelSize: Config.fontSizeXs
+                        anchors.verticalCenter: parent.verticalCenter
                       }
                     }
                   }
                 }
 
-                SliderControl {
-                  Layout.fillWidth: true
-                  Layout.alignment: Qt.AlignVCenter
-                  value: panel.volPct
-                  fillColour: panel.volMuted ? Colours.red : Colours.accent
-                  snapPercent: 5
-                  onMoved: function(v) {
-                    volSetTimer.targetVal = v
-                    volSetTimer.restart()
-                  }
-                }
-
-                Text {
-                  Layout.preferredWidth: 42
-                  horizontalAlignment: Text.AlignRight
-                  text: Math.round(panel.volPct * 100) + "%"
-                  color: panel.volMuted ? Colours.red : Colours.fg
-                  font.family: Config.monoFont
-                  font.pixelSize: 14
-                }
-              }
-
-              // Divider if brightness is available
-              Rectangle {
-                visible: panel.brightnessAvailable
-                width: parent.width
-                height: 1
-                color: Colours.border
-              }
-
-              // Brightness Row
-              RowLayout {
-                visible: panel.brightnessAvailable
-                width: parent.width
-                spacing: 12
-
+                // Divider if microphone is available
                 Rectangle {
-                  Layout.preferredWidth: 32
-                  Layout.preferredHeight: 32
-                  radius: 8
-                  color: Colours.bgSubtle
-                  border.width: 1
-                  border.color: Colours.border
+                  visible: Config.ccShowMicSlider && SystemService.hasMic
+                  width: parent.width
+                  height: 1
+                  color: Colours.border
+                }
+
+                // Microphone Row
+                RowLayout {
+                  visible: Config.ccShowMicSlider && SystemService.hasMic
+                  width: parent.width
+                  spacing: 10
+
+                  IconButton {
+                    buttonSize: 32
+                    icon: SystemService.micIcon
+                    baseColour: Colours.bgSubtle
+                    hoverColour: Colours.bgRaised
+                    borderColour: SystemService.micMuted ? Colours.red : Colours.border
+                    hoverBorderColour: SystemService.micMuted ? Colours.red : Colours.accent
+                    iconColour: SystemService.micMuted ? Colours.red : Colours.fg
+                    hoverIconColour: SystemService.micMuted ? Colours.red : Colours.accent
+                    onClicked: SystemService.toggleMicMute()
+                  }
+
+                  SliderControl {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                    value: SystemService.micVolume
+                    fillColour: SystemService.micMuted ? Colours.red : Colours.accent
+                    snapPercent: 5
+                    onMoved: function(v) {
+                      SystemService.setMicVolumeDebounced(v)
+                    }
+                  }
 
                   Text {
-                    anchors.centerIn: parent
-                    text: "󰃠"
-                    color: Colours.yellow
+                    Layout.preferredWidth: 42
+                    horizontalAlignment: Text.AlignRight
+                    text: SystemService.micVolumePercent + "%"
+                    color: SystemService.micMuted ? Colours.red : Colours.fg
                     font.family: Config.monoFont
-                    font.pixelSize: 16
+                    font.pixelSize: 14
                   }
                 }
 
-                SliderControl {
-                  Layout.fillWidth: true
-                  Layout.alignment: Qt.AlignVCenter
-                  value: panel.brightnessPct
-                  fillColour: Colours.yellow
-                  snapPercent: 5
-                  onMoved: function(v) {
-                    panel.brightnessPct = v
-                    brightnessSetTimer.targetVal = v
-                    brightnessSetTimer.restart()
-                  }
+                // Divider if brightness is available
+                Rectangle {
+                  visible: Config.ccShowBrightnessSlider && SystemService.brightnessAvailable
+                  width: parent.width
+                  height: 1
+                  color: Colours.border
                 }
 
-                Text {
-                  Layout.preferredWidth: 42
-                  horizontalAlignment: Text.AlignRight
-                  text: Math.round(panel.brightnessPct * 100) + "%"
-                  color: Colours.fg
-                  font.family: Config.monoFont
-                  font.pixelSize: 14
-                }
-              }
-            }
-          }
+                // Brightness Row
+                RowLayout {
+                  visible: Config.ccShowBrightnessSlider && SystemService.brightnessAvailable
+                  width: parent.width
+                  spacing: 10
 
-          // MEDIA PLAYER CARD
-          MediaCard {
-            Layout.fillWidth: true
-            showWhenIdle: Config.alwaysShowMediaCard
-          }
-
-          // NOTIFICATION HISTORY CARD
-          Rectangle {
-            id: notifCard
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            color: Colours.bgRaised
-            border.color: Colours.border
-            border.width: 1
-            radius: Config.commandCentreCardRadius
-
-            ColumnLayout {
-              anchors.fill: parent
-              anchors.margins: 12
-              spacing: 10
-
-              // Header Row
-              RowLayout {
-                id: notifHeaderRow
-                Layout.fillWidth: true
-                spacing: 8
-
-                Row {
-                  spacing: 6
-                  Layout.alignment: Qt.AlignVCenter
-
-                  Text {
-                    text: NotificationStore.dnd ? "󰂛" : "󰂚"
-                    color: NotificationStore.dnd ? Colours.red : Colours.accent
-                    font.family: Config.monoFont
-                    font.pixelSize: 17
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-
-                  Text {
-                    text: "Notifications"
-                    color: Colours.fg
-                    font.family: Config.sansFont
-                    font.pixelSize: 15
-                    font.bold: true
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-
-                  // Badge count pill
                   Rectangle {
-                    visible: NotificationStore.historyModel.count > 0
-                    height: 18
-                    radius: 9
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+                    radius: Config.itemRadiusMd
                     color: Colours.bgSubtle
-                    border.color: Colours.border
                     border.width: 1
-                    implicitWidth: badgeText.width + 10
-                    anchors.verticalCenter: parent.verticalCenter
+                    border.color: Colours.border
 
                     Text {
-                      id: badgeText
                       anchors.centerIn: parent
-                      text: NotificationStore.historyModel.count
-                      color: Colours.fgDim
-                      font.family: Config.sansFont
-                      font.pixelSize: 11
-                    }
-                  }
-                }
-
-                Item { Layout.fillWidth: true }
-
-                // Controls: Mute toggle & Clear button
-                Row {
-                  spacing: 6
-                  Layout.alignment: Qt.AlignVCenter
-
-                  // Mute / DND Toggle Button
-                  Rectangle {
-                    height: 26
-                    radius: 13
-                    color: NotificationStore.dnd ? Colours.red : (muteHover.containsMouse ? Colours.bgSubtle : "transparent")
-                    border.color: NotificationStore.dnd ? Colours.red : Colours.border
-                    border.width: 1
-                    implicitWidth: muteRow.width + 12
-
-                    Row {
-                      id: muteRow
-                      anchors.centerIn: parent
-                      spacing: 4
-
-                      Text {
-                        text: NotificationStore.dnd ? "󰂛" : "󰂚"
-                        color: NotificationStore.dnd ? Colours.bg : (muteHover.containsMouse ? Colours.red : Colours.fgDim)
-                        font.family: Config.monoFont
-                        font.pixelSize: 13
-                        anchors.verticalCenter: parent.verticalCenter
-                      }
-
-                      Text {
-                        text: NotificationStore.dnd ? "Muted" : "Mute"
-                        color: NotificationStore.dnd ? Colours.bg : (muteHover.containsMouse ? Colours.fg : Colours.fgMid)
-                        font.family: Config.sansFont
-                        font.pixelSize: 12
-                        anchors.verticalCenter: parent.verticalCenter
-                      }
-                    }
-
-                    MouseArea {
-                      id: muteHover
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      cursorShape: Qt.PointingHandCursor
-                      onClicked: NotificationStore.toggleDnd()
+                      text: "󰃠"
+                      color: Colours.yellow
+                      font.family: Config.monoFont
+                      font.pixelSize: Config.iconSizeMd
                     }
                   }
 
-                  // Clear Button
-                  Rectangle {
-                    visible: NotificationStore.historyModel.count > 0
-                    height: 26
-                    radius: 13
-                    color: clearHover.containsMouse ? Colours.bgSubtle : "transparent"
-                    border.color: Colours.border
-                    border.width: 1
-                    implicitWidth: clearRow.width + 12
-
-                    Row {
-                      id: clearRow
-                      anchors.centerIn: parent
-                      spacing: 4
-
-                      Text {
-                        text: "󰎟"
-                        color: clearHover.containsMouse ? Colours.red : Colours.fgDim
-                        font.family: Config.monoFont
-                        font.pixelSize: 13
-                        anchors.verticalCenter: parent.verticalCenter
-                      }
-
-                      Text {
-                        text: "Clear"
-                        color: clearHover.containsMouse ? Colours.fg : Colours.fgMid
-                        font.family: Config.sansFont
-                        font.pixelSize: 12
-                        anchors.verticalCenter: parent.verticalCenter
-                      }
-                    }
-
-                    MouseArea {
-                      id: clearHover
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      cursorShape: Qt.PointingHandCursor
-                      onClicked: NotificationStore.clearHistory()
+                  SliderControl {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                    value: SystemService.brightness
+                    fillColour: Colours.yellow
+                    snapPercent: 5
+                    onMoved: function(v) {
+                      SystemService.setBrightness(v)
                     }
                   }
-                }
-              }
-
-              // Divider line
-              Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: 1
-                color: Colours.border
-              }
-
-              // Empty State view
-              Item {
-                visible: NotificationStore.historyModel.count === 0
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                Row {
-                  anchors.centerIn: parent
-                  spacing: 8
 
                   Text {
-                    text: "󰂜"
-                    color: Colours.fgDim
+                    Layout.preferredWidth: 42
+                    horizontalAlignment: Text.AlignRight
+                    text: SystemService.brightnessPercent + "%"
+                    color: Colours.fg
                     font.family: Config.monoFont
-                    font.pixelSize: 22
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-
-                  Text {
-                    text: "No notifications"
-                    color: Colours.fgDim
-                    font.family: Config.sansFont
                     font.pixelSize: 14
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-                }
-              }
-
-              // Notification History ListView Container
-              Item {
-                visible: NotificationStore.historyModel.count > 0
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-
-                ListView {
-                  id: notifHistList
-                  anchors.fill: parent
-                  anchors.leftMargin: 6
-                  anchors.rightMargin: 6
-                  anchors.topMargin: 2
-                  anchors.bottomMargin: 2
-                  spacing: 6
-                  model: NotificationStore.historyModel
-
-                  delegate: NotificationCard {
-                    id: historyCard
-                    required property var model
-                    required property int index
-                    width: notifHistList.width
-                    notification: model.notification
-                    appName: model.appName || ""
-                    desktopEntry: model.desktopEntry || ""
-                    summary: model.summary || ""
-                    body: model.body || ""
-                    appIcon: model.appIcon || ""
-                    image: model.image || ""
-                    urgency: model.urgency !== undefined ? model.urgency : 1
-                    trackTitle: model.trackTitle || ""
-                    trackArtist: model.trackArtist || ""
-                    isMedia: model.isMedia !== undefined ? model.isMedia : false
-                    timeStr: model.timeStr || ""
-
-                    onDismissed: NotificationStore.removeHistoryAt(index)
-                    onActionTriggered: NotificationStore.invokeActionOrFocus(model)
                   }
                 }
               }
             }
-          }
 
-          // SYSTEM POWER/CONTROLS
-          PowerButtons {
-            Layout.fillWidth: true
-            onActivated: Config.commandCentreVisible = false
+            // MEDIA PLAYER CARD
+            MediaCard {
+              Layout.fillWidth: true
+              showWhenIdle: Config.alwaysShowMediaCard
+            }
+
+            // NOTIFICATION HISTORY CARD
+            Card {
+              id: notifCard
+              Layout.fillWidth: true
+              Layout.fillHeight: true
+
+              ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 12
+                spacing: 10
+
+                // Header Row
+                RowLayout {
+                  id: notifHeaderRow
+                  Layout.fillWidth: true
+                  spacing: 8
+
+                  Row {
+                    spacing: 6
+                    Layout.alignment: Qt.AlignVCenter
+
+                    Text {
+                      text: NotificationService.dnd ? "󰂛" : "󰂚"
+                      color: NotificationService.dnd ? Colours.red : Colours.accent
+                      font.family: Config.monoFont
+                      font.pixelSize: 17
+                      anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                      text: "Notifications"
+                      color: Colours.fg
+                      font.family: Config.sansFont
+                      font.pixelSize: Config.fontSizeLg
+                      font.bold: true
+                      anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    // Badge count pill
+                    Pill {
+                      visible: NotificationService.historyModel.count > 0
+                      pillHeight: 18
+                      padding: 5
+                      pillColour: Colours.bgSubtle
+                      anchors.verticalCenter: parent.verticalCenter
+
+                      Text {
+                        id: badgeText
+                        anchors.centerIn: parent
+                        text: NotificationService.historyModel.count
+                        color: Colours.fgDim
+                        font.family: Config.sansFont
+                        font.pixelSize: Config.fontSizeXs
+                      }
+                    }
+                  }
+
+                  Item { Layout.fillWidth: true }
+
+                  // Controls: Mute toggle & Clear button
+                  Row {
+                    spacing: 6
+                    Layout.alignment: Qt.AlignVCenter
+
+                    // Mute / DND Toggle Button
+                    Pill {
+                      id: mutePill
+                      pillHeight: 26
+                      padding: 6
+                      baseColour: NotificationService.dnd ? Colours.red : "transparent"
+                      hoverColour: NotificationService.dnd ? Colours.red : Colours.bgSubtle
+                      hoverHighlight: true
+                      border.color: NotificationService.dnd ? Colours.red : Colours.border
+                      clickable: true
+                      onClicked: NotificationService.toggleDnd()
+
+                      Row {
+                        id: muteRow
+                        anchors.centerIn: parent
+                        spacing: 4
+
+                        Text {
+                          text: NotificationService.dnd ? "󰂛" : "󰂚"
+                          color: NotificationService.dnd ? Colours.bg : (mutePill.hovered ? Colours.red : Colours.fgDim)
+                          font.family: Config.monoFont
+                          font.pixelSize: Config.iconSizeSm
+                          anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Text {
+                          text: NotificationService.dnd ? "Muted" : "Mute"
+                          color: NotificationService.dnd ? Colours.bg : (mutePill.hovered ? Colours.fg : Colours.fgMid)
+                          font.family: Config.sansFont
+                          font.pixelSize: Config.fontSizeSm
+                          anchors.verticalCenter: parent.verticalCenter
+                        }
+                      }
+                    }
+
+                    // Clear Button
+                    Pill {
+                      id: clearPill
+                      visible: NotificationService.historyModel.count > 0
+                      pillHeight: 26
+                      padding: 6
+                      baseColour: "transparent"
+                      hoverColour: Colours.bgSubtle
+                      hoverHighlight: true
+                      clickable: true
+                      onClicked: NotificationService.clearHistory()
+
+                      Row {
+                        id: clearRow
+                        anchors.centerIn: parent
+                        spacing: 4
+
+                        Text {
+                          text: "󰎟"
+                          color: clearPill.hovered ? Colours.red : Colours.fgDim
+                          font.family: Config.monoFont
+                          font.pixelSize: Config.iconSizeSm
+                          anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Text {
+                          text: "Clear"
+                          color: clearPill.hovered ? Colours.fg : Colours.fgMid
+                          font.family: Config.sansFont
+                          font.pixelSize: Config.fontSizeSm
+                          anchors.verticalCenter: parent.verticalCenter
+                        }
+                      }
+                    }
+                  }
+                }
+
+                // Divider line
+                Rectangle {
+                  Layout.fillWidth: true
+                  implicitHeight: 1
+                  color: Colours.border
+                }
+
+                // Empty State view
+                Item {
+                  visible: NotificationService.historyModel.count === 0
+                  Layout.fillWidth: true
+                  Layout.fillHeight: true
+
+                  Row {
+                    anchors.centerIn: parent
+                    spacing: 8
+
+                    Text {
+                      text: "󰂜"
+                      color: Colours.fgDim
+                      font.family: Config.monoFont
+                      font.pixelSize: 22
+                      anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                      text: "No notifications"
+                      color: Colours.fgDim
+                      font.family: Config.sansFont
+                      font.pixelSize: 14
+                      anchors.verticalCenter: parent.verticalCenter
+                    }
+                  }
+                }
+
+                // Notification History ListView Container
+                Item {
+                  visible: NotificationService.historyModel.count > 0
+                  Layout.fillWidth: true
+                  Layout.fillHeight: true
+                  clip: true
+
+                  ListView {
+                    id: notifHistList
+                    anchors.fill: parent
+                    anchors.leftMargin: 6
+                    anchors.rightMargin: 6
+                    anchors.topMargin: 2
+                    anchors.bottomMargin: 2
+                    spacing: 6
+                    model: NotificationService.historyModel
+
+                    delegate: NotificationCard {
+                      width: notifHistList.width
+                      isHistory: true
+                    }
+                  }
+                }
+              }
+            }
+
+            // SYSTEM POWER/CONTROLS
+            PowerButtons {
+              Layout.fillWidth: true
+              onActivated: Config.commandCentreVisible = false
+            }
           }
         }
       }
     }
   }
-}
 }

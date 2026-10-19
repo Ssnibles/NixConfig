@@ -1,17 +1,15 @@
 pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
+import QtQuick.Layouts
 
+// Unified status bar supporting both horizontal top-bar layouts (MangoWC,
+// Hyprland) and vertical side-bar layouts (Niri), powered by WmService.
 Scope {
   id: root
 
-  // Unified Window Manager Service
-  WmService {
-    id: rootWmService
-  }
-
-  // Bar visibility state (controlled via IPC in shell.qml)
-  property bool barVisible: true
+  property bool barVisible: Config.barVisible
+  readonly property bool isHorizontal: Config.barType !== "niri"
 
   Variants {
     model: Quickshell.screens
@@ -26,16 +24,19 @@ Scope {
 
       anchors {
         top: true
-        left: true
-        right: true
+        bottom: !root.isHorizontal
+        left: root.isHorizontal || Config.barSide !== "right"
+        right: root.isHorizontal || Config.barSide === "right"
       }
-      implicitHeight: Config.barHeight
+      implicitHeight: root.isHorizontal ? Config.barHeight : 0
+      implicitWidth: root.isHorizontal ? 0 : Config.barWidth
       exclusionMode: ExclusionMode.Auto
       color: Colours.bg
 
       mask: Region { item: barPanel.contentItem }
 
-      // Background MouseArea to absorb all hover and pointer events
+      // Background MouseArea to absorb all hover and pointer events,
+      // preventing focus-follows-mouse and clickthrough to windows underneath
       MouseArea {
         anchors.fill: parent
         hoverEnabled: true
@@ -46,12 +47,14 @@ Scope {
         }
       }
 
-      // Thin bottom border line
+      // Thin inner border line separating the bar from workspace windows
       Rectangle {
-        anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.top: root.isHorizontal ? undefined : parent.top
         anchors.bottom: parent.bottom
-        height: 1
+        anchors.left: (!root.isHorizontal && Config.barSide !== "right") ? undefined : parent.left
+        anchors.right: (!root.isHorizontal && Config.barSide === "right") ? undefined : parent.right
+        height: root.isHorizontal ? 1 : 0
+        width: root.isHorizontal ? 0 : 1
         color: Colours.border
       }
 
@@ -59,58 +62,49 @@ Scope {
       Item {
         id: barContent
         anchors.fill: parent
-        anchors.leftMargin: Config.barHorizontalMargin
-        anchors.rightMargin: Config.barHorizontalMargin
+        anchors.topMargin: root.isHorizontal ? 0 : Config.barMarginTop
+        anchors.bottomMargin: root.isHorizontal ? 0 : Config.barMarginBottom
+        anchors.leftMargin: root.isHorizontal ? Config.barHorizontalMargin : Config.barMarginLeft
+        anchors.rightMargin: root.isHorizontal ? Config.barHorizontalMargin : Config.barMarginRight
 
-        // Left Section: Clock, Command Centre Button, Window Title
-        Row {
-          id: leftRow
+        // Start Section (Left on top bar, Top on side bar):
+        // Clock, Command Centre Button, Layout Switcher, Active Window Title
+        GridLayout {
+          id: startSection
+          flow: root.isHorizontal ? GridLayout.LeftToRight : GridLayout.TopToBottom
+          rowSpacing: Config.barSpacing
+          columnSpacing: Config.barLeftSpacing
           anchors.left: parent.left
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: Config.barLeftSpacing
+          anchors.right: root.isHorizontal ? undefined : parent.right
+          anchors.top: root.isHorizontal ? undefined : parent.top
+          anchors.verticalCenter: root.isHorizontal ? parent.verticalCenter : undefined
 
           ClockWidget {
             id: clockWidget
-            horizontal: true
+            horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
+            Layout.alignment: Qt.AlignCenter
           }
 
           CommandCentreButton {
             id: commandCentreButton
-            horizontal: true
+            horizontal: root.isHorizontal
             screen: barPanel.modelData
-            anchors.verticalCenter: parent.verticalCenter
+            Layout.alignment: Qt.AlignCenter
           }
 
           LayoutWidget {
             id: layoutWidget
-            wmService: rootWmService
+            horizontal: root.isHorizontal
             screen: barPanel.modelData
             sharedWindow: sharedTipWindow
-            horizontal: true
-            anchors.verticalCenter: parent.verticalCenter
+            Layout.alignment: Qt.AlignCenter
           }
 
-          Pill {
-            id: windowTitlePill
-            visible: rootWmService.currentTitle !== ""
-            anchors.verticalCenter: parent.verticalCenter
-            pillHeight: 24
-            padding: 10
-            pillColour: Colours.bgRaised
-            clip: true
-
-            Behavior on width {
-              NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
-            }
-
-            WindowTitleWidget {
-              id: windowTitleWidget
-              horizontal: true
-              titleText: rootWmService.currentTitle
-              anchors.verticalCenter: parent.verticalCenter
-              anchors.horizontalCenter: parent.horizontalCenter
-            }
+          WindowTitleWidget {
+            id: windowTitleWidget
+            horizontal: root.isHorizontal
+            Layout.alignment: Qt.AlignCenter
           }
         }
 
@@ -118,46 +112,55 @@ Scope {
         WorkspacesWidget {
           id: workspacesWidget
           anchors.centerIn: parent
-          horizontal: true
-          workspaces: rootWmService.getWorkspaces(barPanel.modelData.name)
-          onFocusRequested: function(workspaceId) {
-            rootWmService.focusWorkspace(workspaceId)
-          }
+          horizontal: root.isHorizontal
+          screen: barPanel.modelData
         }
 
-        // Right Section: Media, Volume, Network, Battery Widgets
-        Row {
-          id: rightRow
+        // End Section (Right on top bar, Bottom on side bar):
+        // System Tray, Media, Volume, Network, Battery Widgets
+        GridLayout {
+          id: endSection
+          flow: root.isHorizontal ? GridLayout.LeftToRight : GridLayout.TopToBottom
+          rowSpacing: Config.barSpacing
+          columnSpacing: Config.barRightSpacing
           anchors.right: parent.right
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: Config.barRightSpacing
+          anchors.left: root.isHorizontal ? undefined : parent.left
+          anchors.bottom: root.isHorizontal ? undefined : parent.bottom
+          anchors.verticalCenter: root.isHorizontal ? parent.verticalCenter : undefined
+
+          SystemTrayWidget {
+            id: systemTrayWidget
+            horizontal: root.isHorizontal
+            sharedWindow: sharedTipWindow
+            Layout.alignment: Qt.AlignCenter
+          }
 
           MediaWidget {
             id: mediaWidget
-            horizontal: true
-            anchors.verticalCenter: parent.verticalCenter
+            horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
+            Layout.alignment: Qt.AlignCenter
           }
 
           VolumeWidget {
             id: volumeWidget
-            horizontal: true
-            anchors.verticalCenter: parent.verticalCenter
+            horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
+            Layout.alignment: Qt.AlignCenter
           }
 
           NetworkWidget {
             id: networkWidget
-            horizontal: true
-            anchors.verticalCenter: parent.verticalCenter
+            horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
+            Layout.alignment: Qt.AlignCenter
           }
 
           BatteryWidget {
             id: batteryWidget
-            horizontal: true
-            anchors.verticalCenter: parent.verticalCenter
+            horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
+            Layout.alignment: Qt.AlignCenter
           }
         }
       }
@@ -166,7 +169,7 @@ Scope {
       SharedTooltipWindow {
         id: sharedTipWindow
         screenTarget: barPanel.modelData
-        barSide: "top"
+        barSide: root.isHorizontal ? "top" : Config.barSide
       }
     }
   }

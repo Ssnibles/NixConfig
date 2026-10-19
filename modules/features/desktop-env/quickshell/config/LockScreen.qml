@@ -126,6 +126,8 @@ Scope {
         lockScope.pendingPassword = ""
         lockScope.enteredPassword = ""
         pam.start()
+      } else {
+        Qt.callLater(gc)
       }
     }
   }
@@ -158,26 +160,10 @@ Scope {
         // Check if this screen is the main interactive screen (first screen in list)
         property bool isPrimaryScreen: surface.screen === undefined || surface.screen === Quickshell.screens[0]
 
-        property string currentTimeStr: Qt.formatDateTime(new Date(), Config.lockClockFormat)
-        property string currentDateStr: Qt.formatDateTime(new Date(), Config.lockDateFormat)
-
-        function updateTime() {
-          var d = new Date()
-          surface.currentTimeStr = Qt.formatDateTime(d, Config.lockClockFormat)
-          surface.currentDateStr = Qt.formatDateTime(d, Config.lockDateFormat)
-          clockTimer.interval = 60000 - (d.getSeconds() * 1000 + d.getMilliseconds())
-          clockTimer.restart()
-        }
-
-        Timer {
-          id: clockTimer
-          running: lockRoot.locked
-          repeat: false
-          onTriggered: surface.updateTime()
-        }
+        readonly property string currentTimeStr: ClockService.lockTimeStr
+        readonly property string currentDateStr: ClockService.lockDateStr
 
         Component.onCompleted: {
-          surface.updateTime()
           if (surface.isPrimaryScreen) {
             mainBg.forceActiveFocus()
           }
@@ -269,6 +255,8 @@ Scope {
             id: lockBgImage
             anchors.fill: parent
             source: Config.lockWallpaperPath
+            asynchronous: true
+            cache: false
             fillMode: Image.PreserveAspectCrop
             sourceSize: Qt.size(parent.width > 0 ? parent.width : 1920, parent.height > 0 ? parent.height : 1080)
             smooth: true
@@ -359,19 +347,14 @@ Scope {
             }
 
             // USER & AUTHENTICATION CARD
-            Rectangle {
+            Card {
               Layout.fillWidth: true
               implicitHeight: authCol.implicitHeight + 36
-              color: Colours.bgRaised
               border.color: surface.errorMessage !== "" ? Colours.red : Colours.border
-              border.width: 1
-              radius: Config.commandCentreCardRadius
 
               transform: Translate {
                 x: surface.shakeOffset
               }
-
-              Behavior on border.color { ColorAnimation { duration: 150 } }
 
               ColumnLayout {
                 id: authCol
@@ -446,7 +429,7 @@ Scope {
                   border.color: passInput.activeFocus ? Colours.accent : Colours.border
                   border.width: passInput.activeFocus ? 2 : 1
 
-                  Behavior on border.color { ColorAnimation { duration: 150 } }
+                  Behavior on border.color { ColorAnimation { duration: Config.animSmoothMs } }
 
                   // Background click area for card margin focusing
                   MouseArea {
@@ -466,7 +449,7 @@ Scope {
                       text: surface.authenticating ? "󱎟" : "󰌾"
                       color: passInput.activeFocus ? Colours.accent : Colours.fgDim
                       font.family: Config.monoFont
-                      font.pixelSize: 18
+                      font.pixelSize: Config.iconSizeLg
                       Layout.alignment: Qt.AlignVCenter
                     }
 
@@ -524,38 +507,22 @@ Scope {
                     }
 
                     // Submit Button Pill
-                    Rectangle {
+                    IconButton {
                       id: submitBtn
-                      Layout.preferredWidth: 32
-                      Layout.preferredHeight: 32
                       Layout.alignment: Qt.AlignVCenter
-                      radius: 8
-                      color: submitHover.containsMouse ? Colours.accent : Colours.bgRaised
-                      border.color: Colours.border
-                      border.width: 1
-
-                      Behavior on scale { NumberAnimation { duration: 100 } }
-
-                      Text {
-                        anchors.centerIn: parent
-                        text: "󰁔"
-                        color: submitHover.containsMouse ? Colours.bg : Colours.fg
-                        font.family: Config.monoFont
-                        font.pixelSize: 16
-                      }
-
-                      MouseArea {
-                        id: submitHover
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onEntered: parent.scale = 0.92
-                        onExited: parent.scale = 1.0
-                        onClicked: {
-                          if (lockScope.enteredPassword.length > 0 && !surface.authenticating) {
-                            lockScope.submitPassword(lockScope.enteredPassword)
-                            lockScope.enteredPassword = ""
-                          }
+                      buttonSize: 32
+                      icon: "󰁔"
+                      baseColour: Colours.bgRaised
+                      hoverColour: Colours.accent
+                      borderColour: Colours.border
+                      hoverBorderColour: Colours.accent
+                      iconColour: Colours.fg
+                      hoverIconColour: Colours.bg
+                      hoverScale: 0.92
+                      onClicked: {
+                        if (lockScope.enteredPassword.length > 0 && !surface.authenticating) {
+                          lockScope.submitPassword(lockScope.enteredPassword)
+                          lockScope.enteredPassword = ""
                         }
                       }
                     }
