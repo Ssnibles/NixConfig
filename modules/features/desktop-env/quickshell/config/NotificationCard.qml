@@ -1,208 +1,57 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
-import "Utils.js" as Utils
 
-// Single notification card. Rendered by NotificationOverlay for each queued
-// notification and by CommandCentre for history items.
-Rectangle {
+// Single notification card rendered by NotificationOverlay (live toasts) and
+// CommandCentre (notification history). Consumes normalized items produced by
+// NotificationService directly via `model`.
+Card {
   id: root
 
-  property var notification: null
-  property string appName: ""
-  property string desktopEntry: ""
+  required property var model
+  required property int index
+  property bool isHistory: false
 
-  property string summary: ""
-  property string body: ""
-  property string appIcon: ""
-  property string image: ""
-  property int urgency: 1 // 0 = Low, 1 = Normal, 2 = Critical
-  property string trackTitle: ""
-  property string trackArtist: ""
-  property bool isMedia: false
-  property string timeStr: ""
+  readonly property int uid: model.uid !== undefined ? model.uid : -1
+  readonly property bool isMedia: Boolean(model.isMedia)
+  readonly property int urgency: model.urgency !== undefined ? model.urgency : 1
+  readonly property string primaryIcon: model.primaryIcon || ""
+  readonly property string fallbackIcon: model.fallbackIcon || ""
+  readonly property string glyph: model.glyph || Config.notifDefaultFallbackGlyph || "󰂚"
+  readonly property var actions: (Config.notifShowActions && model.hasActions)
+    ? NotificationService.actionsFor(root.uid)
+    : []
+
+  property bool primaryFailed: false
+  property bool fallbackFailed: false
+  onPrimaryIconChanged: primaryFailed = false
+  onFallbackIconChanged: fallbackFailed = false
+
+  readonly property string iconSource: (!primaryFailed && primaryIcon !== "")
+    ? primaryIcon
+    : ((!fallbackFailed && fallbackIcon !== "") ? fallbackIcon : "")
+
   readonly property bool isHovered: hoverArea.containsMouse
-  readonly property bool _hasNonDefaultActions: {
-    if (!root.notification || !root.notification.actions) return false
-    var actions = root.notification.actions
-    for (var i = 0; i < actions.length; i++) {
-      if (actions[i].identifier !== "default") return true
-    }
-    return false
+  onIsHoveredChanged: {
+    if (!root.isHistory) NotificationService.setHovered(root.uid, root.isHovered)
   }
-  signal dismissed()
-  signal actionTriggered()
-
-  // Retain the notification object while this card is shown.
-  RetainableLock {
-    object: root.notification
-    locked: Boolean(root.notification)
-  }
-
-  // Multi-tier Icon & Avatar Candidate Resolution
-  property var candidateIcons: {
-    var list = []
-
-    function addCandidate(s) {
-      if (!s) return
-      var str = String(s).trim()
-      if (str.charAt(0) === '"' && str.charAt(str.length - 1) === '"') {
-        str = str.slice(1, -1).trim()
-      }
-      if (!str) return
-
-      // Normalise file paths to file:// scheme for Qt Quick Image
-      if (str.startsWith("/")) {
-        str = "file://" + str
-      }
-
-      // If candidate is an image://icon/ URL, verify existence or check alias
-      if (str.startsWith("image://icon/")) {
-        var iconName = str.substring(13).split("?")[0].trim()
-        if (!Quickshell.hasThemeIcon(iconName) && !Quickshell.iconPath(iconName, true)) {
-          var a = (Config.notifAppIcons && Config.notifAppIcons[iconName.toLowerCase()]) ? Config.notifAppIcons[iconName.toLowerCase()] : ""
-          if (a) {
-            str = a.startsWith("/") ? ("file://" + a) : (Quickshell.iconPath(a, true) || ("image://icon/" + a))
-          } else {
-            return // Skip invalid icon name so Quickshell doesn't throw a warning
-          }
-        }
-      }
-
-      // If candidate is a theme icon name without URL scheme
-      if (!str.startsWith("file://") && !str.startsWith("http://") && !str.startsWith("https://") && !str.startsWith("image://")) {
-        var clean = str.replace(/\.(png|svg|xpm|ico)$/i, "")
-        // Check Config.notifAppIcons alias first
-        var alias = (Config.notifAppIcons && Config.notifAppIcons[clean.toLowerCase()]) ? Config.notifAppIcons[clean.toLowerCase()] : ""
-        if (alias) {
-          if (alias.startsWith("/") || alias.startsWith("file://") || alias.startsWith("image://")) {
-            str = alias.startsWith("/") ? ("file://" + alias) : alias
-          } else {
-            var aliasPath = Quickshell.iconPath(alias, true)
-            str = aliasPath ? aliasPath : (Quickshell.hasThemeIcon(alias) ? ("image://icon/" + alias) : "")
-          }
-        } else {
-          var path = Quickshell.iconPath(clean, true)
-          if (path) {
-            str = path
-          } else if (Quickshell.hasThemeIcon(clean)) {
-            str = "image://icon/" + clean
-          } else {
-            return // Skip nonexistent icon
-          }
-        }
-      }
-
-      if (str && str !== "" && list.indexOf(str) === -1) {
-        list.push(str)
-      }
-    }
-
-    // Tier 1: Explicit notification image / avatar / cover art
-    if (root.image) {
-      addCandidate(root.image)
-    }
-
-    if (root.isMedia) {
-      var cachedArt = NotificationStore.getCoverArt(root.trackTitle, root.trackArtist, root.image)
-      if (cachedArt) {
-        addCandidate(cachedArt)
-      }
-
-      var isCurrentTrack = false
-      if (NotificationStore.mediaPlayer && NotificationStore.mediaPlayer.trackTitle) {
-        var curTitle = Utils.cleanTrackTitle(NotificationStore.mediaPlayer.trackTitle).toLowerCase()
-        var myTitle = Utils.cleanTrackTitle(root.trackTitle || "").toLowerCase()
-        if (curTitle !== "" && curTitle === myTitle) {
-          isCurrentTrack = true
-        }
-      }
-
-      if (isCurrentTrack) {
-        if (NotificationStore.mediaPlayer && NotificationStore.mediaPlayer.trackArtUrl) {
-          addCandidate(NotificationStore.mediaPlayer.trackArtUrl)
-        }
-      }
-    }
-
-    // Tier 2: Configured App Fallback Icons (from Config.notifAppIcons)
-    var keysToTry = [
-      (root.desktopEntry || "").toLowerCase().replace(/\.desktop$/, "").trim(),
-      (root.appName || "").toLowerCase().trim(),
-      (root.appIcon || "").toLowerCase().replace(/\.(png|svg|xpm|ico)$/i, "").trim()
-    ]
-    for (var k = 0; k < keysToTry.length; k++) {
-      var key = keysToTry[k]
-      if (key && Config.notifAppIcons && Config.notifAppIcons[key]) {
-        addCandidate(Config.notifAppIcons[key])
-      }
-    }
-
-    // Tier 3: Explicit appIcon from notification
-    if (root.appIcon) {
-      addCandidate(root.appIcon)
-    }
-
-    // Tier 4: Desktop entry name
-    if (root.desktopEntry) {
-      var de = String(root.desktopEntry).trim()
-      if (de.endsWith(".desktop")) de = de.substring(0, de.length - 8)
-      addCandidate(de)
-      var deParts = de.split(".")
-      if (deParts.length > 1) {
-        addCandidate(deParts[deParts.length - 1])
-      }
-    }
-
-    // Tier 5: App name
-    if (root.appName) {
-      var an = String(root.appName).trim().toLowerCase()
-      addCandidate(an)
-      addCandidate(an.replace(/\s+/g, "-"))
-    }
-
-    // Tier 6: Configured global default fallback logo
-    if (Config.notifDefaultFallbackLogo) {
-      addCandidate(Config.notifDefaultFallbackLogo)
-    }
-
-    return list
-  }
-
-  // Sequential candidate fallback: if candidate 0 (avatar) fails or errors, try candidate 1 (app logo), etc.
-  property int candidateIndex: 0
-  readonly property string currentCandidate: (candidateIndex >= 0 && candidateIndex < candidateIcons.length) ? candidateIcons[candidateIndex] : ""
-
-  onCandidateIconsChanged: {
-    candidateIndex = 0
-  }
-
-  function nextCandidate() {
-    if (candidateIndex + 1 < candidateIcons.length) {
-      candidateIndex++
-    } else {
-      candidateIndex = candidateIcons.length
-    }
+  Component.onDestruction: {
+    if (!root.isHistory && root.uid >= 0) NotificationService.setHovered(root.uid, false)
   }
 
   readonly property int targetIconSize: isMedia ? (Config.notifMediaIconSize || 48) : (Config.notifIconSize || 40)
-  readonly property int targetIconRadius: Config.notifIconRadius || 8
+  readonly property int targetIconRadius: Config.notifIconRadius || Config.itemRadiusMd
 
   width: parent ? parent.width : Config.notifWidth
   height: Math.max(contentCol.implicitHeight, targetIconSize) + Config.notifCardMargins * 2
-  radius: Config.notifRadius
-
-  color: hoverArea.containsMouse ? Colours.bgRaised : Colours.bg
+  cardRadius: Config.notifRadius
+  cardColour: hoverArea.containsMouse ? Colours.bgRaised : Colours.bg
   border.color: hoverArea.containsMouse
     ? (isMedia ? Colours.teal : (urgency === 2 ? Colours.red : Colours.accent))
     : (urgency === 2 ? Colours.red : Colours.border)
-  border.width: 1
 
   scale: hoverArea.containsMouse ? (hoverArea.pressed ? 0.98 : 1.01) : 1.0
 
-  Behavior on color { ColorAnimation { duration: 150 } }
-  Behavior on border.color { ColorAnimation { duration: 150 } }
-  Behavior on scale { NumberAnimation { duration: 100 } }
+  Behavior on scale { NumberAnimation { duration: Config.animFastMs } }
 
   MouseArea {
     id: hoverArea
@@ -211,48 +60,15 @@ Rectangle {
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
     onClicked: function(mouse) {
-      if (mouse.button === Qt.RightButton) {
-        root.actionTriggered()
+      if (mouse.button === Qt.RightButton || Config.notifLeftClickAction === "focus") {
+        NotificationService.activate(root.uid, root.isHistory)
       } else {
-        if (Config.notifLeftClickAction === "focus") {
-          root.actionTriggered()
-        } else {
-          root.dismissed()
-        }
+        NotificationService.dismiss(root.uid, root.isHistory)
       }
     }
   }
 
-  // Correlated fallback icon glyph based on Config.notifAppGlyphs
-  property string fallbackGlyph: {
-    if (isMedia) return "󰎈"
-
-    var app = (appName || desktopEntry || appIcon || "").toLowerCase().trim()
-    var sum = (summary || "").toLowerCase().trim()
-
-    // 1. Check Config.notifAppGlyphs
-    if (Config.notifAppGlyphs) {
-      for (var key in Config.notifAppGlyphs) {
-        if (app.indexOf(key) !== -1 || sum.indexOf(key) !== -1) {
-          return Config.notifAppGlyphs[key]
-        }
-      }
-    }
-
-    // 2. Urgency level fallbacks
-    if (urgency === 2) return "󰀦"
-
-    // 3. First letter fallback if program name / desktop entry is available
-    var cleanApp = (appName || desktopEntry || appIcon || summary || "").trim()
-    if (cleanApp.length > 0) {
-      var match = cleanApp.match(/[a-zA-Z0-9]/)
-      if (match) return match[0].toUpperCase()
-    }
-
-    return Config.notifDefaultFallbackGlyph || "󰂚"
-  }
-
-  // Left-side Icon/Image Container
+  // Left-side Icon / Avatar Container
   Item {
     id: iconContainer
     anchors.left: parent.left
@@ -269,14 +85,13 @@ Rectangle {
       border.color: Colours.border
       border.width: 1
 
-      // Fallback Nerd Font icon glyph or first letter
       Text {
         anchors.centerIn: parent
-        text: root.fallbackGlyph
+        text: root.glyph
         color: root.isMedia ? Colours.fgDim : (root.urgency === 2 ? Colours.red : Colours.accent)
-        font.pixelSize: (root.fallbackGlyph.length === 1) ? 18 : 20
-        font.bold: root.fallbackGlyph.length === 1
-        font.family: (root.fallbackGlyph.length === 1) ? Config.sansFont : Config.monoFont
+        font.pixelSize: (root.glyph.length === 1) ? 18 : 20
+        font.bold: root.glyph.length === 1
+        font.family: (root.glyph.length === 1) ? Config.sansFont : Config.monoFont
         visible: !iconImage.ready
       }
 
@@ -285,20 +100,26 @@ Rectangle {
         anchors.fill: parent
         sourceSize: Qt.size(root.targetIconSize * 2, root.targetIconSize * 2)
         radius: root.targetIconRadius
-        source: root.currentCandidate
-        onSourceError: root.nextCandidate()
+        source: root.iconSource
+        onSourceError: {
+          if (!root.primaryFailed && root.primaryIcon !== "") {
+            root.primaryFailed = true
+          } else {
+            root.fallbackFailed = true
+          }
+        }
       }
 
       MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.actionTriggered()
+        onClicked: NotificationService.activate(root.uid, root.isHistory)
       }
     }
   }
 
-  // Text and Actions Column
+  // Text & Actions Column
   Column {
     id: contentCol
     anchors.left: iconContainer.right
@@ -309,14 +130,14 @@ Rectangle {
     anchors.topMargin: Config.notifCardMargins
     spacing: 3
 
-    // Header row: Title / Summary + Timestamp
+    // Header Row: Title + Timestamp
     Row {
       width: parent.width
       spacing: 6
 
       Text {
         width: timeLabel.visible ? (parent.width - timeLabel.implicitWidth - 6) : parent.width
-        text: root.isMedia ? "Now Playing" : root.summary
+        text: root.model.title || ""
         color: root.isMedia ? Colours.teal : (root.urgency === 2 ? Colours.red : Colours.accent)
         font.bold: true
         font.pixelSize: root.isMedia ? 12 : 13
@@ -326,18 +147,18 @@ Rectangle {
 
       Text {
         id: timeLabel
-        text: root.timeStr
+        text: root.model.timeStr || ""
         color: Colours.fgDim
         font.pixelSize: 11
         font.family: Config.sansFont
-        visible: root.timeStr !== ""
+        visible: text !== ""
       }
     }
 
-    // Body Text
+    // Body / Track Title
     Text {
       width: parent.width
-      text: root.isMedia ? root.trackTitle : root.body
+      text: root.model.body || ""
       color: Colours.fg
       font.pixelSize: 13
       font.family: Config.sansFont
@@ -347,60 +168,45 @@ Rectangle {
       visible: text !== ""
     }
 
-    // Media Artist Subtext
+    // Subtext / Media Artist
     Text {
       width: parent.width
-      text: root.trackArtist
+      text: root.model.subtext || ""
       color: Colours.fgMid
       font.pixelSize: 12
       font.family: Config.sansFont
       elide: Text.ElideRight
-      visible: root.isMedia && text !== ""
+      visible: text !== ""
     }
 
-    // Action Buttons Row (if notification has actions and Config.notifShowActions is enabled)
+    // Action Buttons Row
     Row {
-      id: actionsRow
       spacing: 6
-      visible: Config.notifShowActions && root._hasNonDefaultActions
+      visible: root.actions.length > 0
 
       Repeater {
-        id: actionsRepeater
-        model: (root.notification && root.notification.actions) ? root.notification.actions : []
-        delegate: Rectangle {
+        model: root.actions
+        delegate: Pill {
           id: actionBtn
           required property var modelData
-          visible: actionBtn.modelData.identifier !== "default"
-          height: 24
-          radius: 6
-          implicitWidth: actionText.implicitWidth + 16
-          color: actionHover.containsMouse ? Colours.bgRaised : Colours.bgSubtle
-          border.color: actionHover.containsMouse ? Colours.accent : Colours.border
-          border.width: 1
+          pillHeight: Config.pillHeightHorizontal
+          pillRadius: Config.itemRadiusSm
+          padding: 8
+          baseColour: Colours.bgSubtle
+          hoverColour: Colours.bgRaised
+          hoverHighlight: true
+          border.color: actionBtn.hovered ? Colours.accent : Colours.border
+          clickable: true
+          onClicked: NotificationService.invokeAction(root.uid, actionBtn.modelData, root.isHistory)
 
           Text {
             id: actionText
             anchors.centerIn: parent
             text: actionBtn.modelData.text || actionBtn.modelData.identifier
-            font.pixelSize: 11
+            font.pixelSize: Config.fontSizeXs
             font.bold: true
             font.family: Config.sansFont
-            color: actionHover.containsMouse ? Colours.accent : Colours.fgMid
-          }
-
-          MouseArea {
-            id: actionHover
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-              try {
-                actionBtn.modelData.invoke()
-              } catch(e) {}
-              if (Config.notifDismissOnAction && root.notification && !root.notification.resident) {
-                root.dismissed()
-              }
-            }
+            color: actionBtn.hovered ? Colours.accent : Colours.fgMid
           }
         }
       }
