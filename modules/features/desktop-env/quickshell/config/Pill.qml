@@ -1,14 +1,27 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 
-// Smart rounded pill container used across bars and command centre.
+// Smart rounded pill container used across bars, popovers, and command centre.
 Rectangle {
   id: root
 
-  property int padding: 8
-  property int pillHeight: 22
-  property color pillColour: Colours.bgRaised
-  property int orientation: Qt.Horizontal // Qt.Horizontal | Qt.Vertical
+  property bool horizontal: true
+  property int orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
+  property int pillHeight: root.horizontal ? Config.pillHeightHorizontal : Config.pillHeightVertical
+  property int padding: root.horizontal ? Config.pillPaddingHorizontal : 0
+
+  property color baseColour: Colours.bgRaised
+  property color hoverColour: Colours.bgSubtle
+  property bool hoverHighlight: false
+  property color pillColour: (root.hoverHighlight && root.hovered) ? root.hoverColour : root.baseColour
+
+  // Optional built-in pointer interaction for pill buttons
+  property bool clickable: false
+  property int acceptedButtons: Qt.LeftButton
+  signal clicked(var mouse)
+  signal wheel(var wheel)
+
+  readonly property bool hovered: _hoverHandler.hovered
 
   // Default radius is half of the smaller dimension (caps on ends)
   property real pillRadius: Math.min(width, height) / 2
@@ -20,8 +33,12 @@ Rectangle {
   border.width: 1
   border.color: Colours.border
 
-  Behavior on pillColour { ColorAnimation { duration: 120 } }
-  Behavior on border.color { ColorAnimation { duration: 120 } }
+  Behavior on color { ColorAnimation { duration: Config.animNormalMs } }
+  Behavior on border.color { ColorAnimation { duration: Config.animNormalMs } }
+
+  HoverHandler {
+    id: _hoverHandler
+  }
 
   default property alias contentData: contentItem.data
 
@@ -31,7 +48,7 @@ Rectangle {
     var children = contentItem.children
     for (var i = 0; i < children.length; i++) {
       var child = children[i]
-      if (child.visible !== false) {
+      if (child.visible !== false && child !== _clickArea) {
         var isRotated = (child.rotation === 90 || child.rotation === 270)
         var iw = isRotated ? child.implicitHeight : child.implicitWidth
         if (iw > maxW) maxW = iw
@@ -46,7 +63,7 @@ Rectangle {
     var children = contentItem.children
     for (var i = 0; i < children.length; i++) {
       var child = children[i]
-      if (child.visible !== false) {
+      if (child.visible !== false && child !== _clickArea) {
         var isRotated = (child.rotation === 90 || child.rotation === 270)
         var ih = isRotated ? child.implicitWidth : child.implicitHeight
         if (ih > maxH) maxH = ih
@@ -69,5 +86,20 @@ Rectangle {
   Item {
     id: contentItem
     anchors.fill: parent
+
+    MouseArea {
+      id: _clickArea
+      visible: root.clickable
+      enabled: root.clickable
+      anchors.fill: parent
+      cursorShape: root.clickable ? Qt.PointingHandCursor : Qt.ArrowCursor
+      acceptedButtons: root.acceptedButtons
+      onClicked: function(mouse) {
+        root.clicked(mouse)
+      }
+      onWheel: function(wheel) {
+        root.wheel(wheel)
+      }
+    }
   }
 }

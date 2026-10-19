@@ -230,6 +230,11 @@ function volumeIcon(volPct, muted) {
   return "\u{F057E}"
 }
 
+function micIcon(volPct, muted) {
+  if (muted || volPct <= 0) return "\u{F036D}"
+  return "\u{F036C}"
+}
+
 var _batteryGlyphs = [
   "\u{F007A}", // <= 10%
   "\u{F007B}", // <= 20%
@@ -254,10 +259,15 @@ function batteryIcon(pct, charging, plugged, present) {
 function goToSource(source) {
   if (!source) return []
 
-  // 1. If source is an MPRIS player or media object with raise() method, invoke it
+  // 1. If source is an MPRIS player or tray item with raise()/activate(), invoke it
   try {
     if (typeof source.raise === "function") {
       source.raise()
+    }
+  } catch (e) {}
+  try {
+    if (typeof source.activate === "function" && !source.onlyMenu) {
+      source.activate()
     }
   } catch (e) {}
 
@@ -276,11 +286,29 @@ function goToSource(source) {
 
   // 3. Extract target patterns for window matching
   var targets = []
+  var aliases = {
+    "discord": ["vesktop", "webcord"],
+    "vesktop": ["discord"],
+    "spotify-client": ["spotify"],
+    "telegramdesktop": ["telegram", "org.telegram.desktop"]
+  }
 
   function addTarget(str) {
     if (!str) return
     var s = String(str).trim()
     if (!s) return
+
+    // Ignore internal Quickshell pixmap handles
+    if (s.indexOf("image://qsimage/") === 0) return
+
+    // Extract icon name from image://icon/<name>?path=...
+    if (s.indexOf("image://icon/") === 0) {
+      s = s.slice("image://icon/".length).split("?")[0].trim()
+      if (!s) return
+    }
+
+    // Ignore generic Chromium/Electron status icon placeholders
+    if (/^(chrome|chromium|electron)_status_icon/i.test(s)) return
 
     // Strip surrounding quotes
     if (s.charAt(0) === '"' && s.charAt(s.length - 1) === '"') {
@@ -293,8 +321,9 @@ function goToSource(source) {
       s = s.substring(s.lastIndexOf("/") + 1)
     }
 
-    // Strip image file extensions
+    // Strip image file extensions and tray status suffixes
     s = s.replace(/\.(png|svg|xpm|ico|jpg|jpeg|webp)$/i, "")
+    s = s.replace(/_status_icon(_\d+)?$/i, "")
     if (!s) return
 
     // Strip MPRIS DBus prefix and instance suffix
@@ -310,7 +339,16 @@ function goToSource(source) {
     }
 
     if (targets.indexOf(s) === -1) targets.push(s)
-    if (targets.indexOf(s.toLowerCase()) === -1) targets.push(s.toLowerCase())
+    var sLower = s.toLowerCase()
+    if (targets.indexOf(sLower) === -1) targets.push(sLower)
+
+    // Add known cross-app aliases (e.g. Discord SNI tray -> Vesktop window)
+    if (aliases[sLower]) {
+      for (var al = 0; al < aliases[sLower].length; al++) {
+        var aliasName = aliases[sLower][al]
+        if (targets.indexOf(aliasName) === -1) targets.push(aliasName)
+      }
+    }
 
     // If reverse domain identifier (e.g. org.mozilla.firefox, com.spotify.Client)
     if (sNoDesktop.indexOf(".") !== -1) {
@@ -360,7 +398,10 @@ function goToSource(source) {
     addTarget(source.desktopEntry)
     addTarget(source.appName || source.name)
     addTarget(source.identity)
-    addTarget(source.appIcon)
+    addTarget(source.title)
+    addTarget(source.tooltipTitle)
+    if (typeof source.id === "string") addTarget(source.id)
+    addTarget(source.appIcon || source.icon)
     if (source.dbusName) addTarget(source.dbusName)
 
     if (notif) {
@@ -371,6 +412,32 @@ function goToSource(source) {
   }
 
   return targets
+}
+
+function cleanMenuText(text) {
+  if (!text) return ""
+  return String(text).replace(/&&/g, "\u0000").replace(/&/g, "").replace(/\u0000/g, "&").trim()
+}
+
+function isTrayItemHidden(item, hiddenList) {
+  if (!item || !hiddenList || hiddenList.length === 0) return false
+  var fields = [
+    item.id,
+    item.title,
+    item.tooltipTitle,
+    item.icon
+  ]
+  for (var i = 0; i < hiddenList.length; i++) {
+    var pat = String(hiddenList[i] || "").trim().toLowerCase()
+    if (!pat) continue
+    for (var f = 0; f < fields.length; f++) {
+      var val = String(fields[f] || "").trim().toLowerCase()
+      if (val && (val === pat || val.indexOf(pat) !== -1)) {
+        return true
+      }
+    }
+  }
+  return false
 }
 
 function cleanUrl(url) {
@@ -428,6 +495,24 @@ function findActivePlayer(players, pausedEnum) {
       return false
     }
   })
+}
+
+function resolveMprisPlayer(players, selectedPlayer, pausedEnum) {
+  if (!players || players.length === 0) return null
+  if (selectedPlayer && players.indexOf(selectedPlayer) !== -1) {
+    return selectedPlayer
+  }
+  return findActivePlayer(players, pausedEnum)
+}
+
+function cyclePlayer(players, currentPlayer, step) {
+  if (!players || players.length === 0) return null
+  if (players.length === 1) return players[0]
+  var dir = (step === undefined || step >= 0) ? 1 : -1
+  var idx = currentPlayer ? players.indexOf(currentPlayer) : -1
+  if (idx === -1) return players[0]
+  var nextIdx = (idx + dir + players.length) % players.length
+  return players[nextIdx]
 }
 
 function findBatteryDevice(upowerDevices, displayDevice) {
@@ -489,6 +574,33 @@ function resolveActiveScreen(targetScreen, lastActiveScreen, screens) {
     if (len > 0) return list[0] || (list.get ? list.get(0) : null)
   }
   return null
+}
+
+function parseOverlayPosition(pos, fallback) {
+  var p = String(pos || fallback || "top-right").toLowerCase().trim()
+  var onTop = p.indexOf("top") === 0 || p === "top"
+  var onBottom = p.indexOf("bottom") === 0 || p === "bottom"
+  var onLeft = p.slice(-4) === "left" || p === "left"
+  var onRight = p.slice(-5) === "right" || p === "right"
+  return {
+    onTop: onTop,
+    onBottom: onBottom,
+    isVertCentre: !onTop && !onBottom,
+    onLeft: onLeft,
+    onRight: onRight,
+    isHorizCentre: !onLeft && !onRight
+  }
+}
+
+function resolveOverlayScreens(allScreensMode, isActive, frozenScreen, lastActiveScreen, screens) {
+  if (!isActive) return []
+  var list = (screens && screens.screens) ? screens.screens : (screens || [])
+  if (allScreensMode) return list
+  var s = frozenScreen || lastActiveScreen || (list.length > 0 ? list[0] : null)
+  if (s && list.length > 0 && list.indexOf(s) === -1) {
+    s = list[0]
+  }
+  return s ? [s] : []
 }
 
 function getOrdinalDate(date) {

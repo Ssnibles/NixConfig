@@ -11,6 +11,7 @@ Item {
   property alias source: img.source
   property alias sourceSize: img.sourceSize
   property alias fillMode: img.fillMode
+  property alias cache: img.cache
   property real radius: 8
   readonly property bool ready: img.source !== "" && img.status === Image.Ready
   readonly property int status: img.status
@@ -23,7 +24,7 @@ Item {
     id: maskItem
     anchors.fill: parent
     visible: false
-    layer.enabled: img.visible
+    layer.enabled: img.visible && root.radius > 0
     Rectangle {
       anchors.fill: parent
       radius: root.radius
@@ -35,10 +36,11 @@ Item {
     id: img
     anchors.fill: parent
     asynchronous: true
+    cache: false
     fillMode: Image.PreserveAspectCrop
     visible: root.ready
     onStatusChanged: if (status === Image.Error) root.sourceError()
-    layer.enabled: visible
+    layer.enabled: visible && root.radius > 0
     layer.effect: MultiEffect {
       maskEnabled: true
       maskSource: maskItem

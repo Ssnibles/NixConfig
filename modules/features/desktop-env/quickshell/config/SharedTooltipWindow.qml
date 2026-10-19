@@ -67,6 +67,7 @@ PanelWindow {
     interval: Config.popupFadeMs
     onTriggered: {
       root.cachedActive = null
+      Qt.callLater(gc)
     }
   }
 
@@ -80,25 +81,46 @@ PanelWindow {
 
   mask: Region { item: tipLoader.item }
 
+  function closeNow() {
+    graceFadeTimer.stop()
+    fadeTimer.stop()
+    root._active = null
+    root.cardOpacity = 0
+    root.cachedActive = null
+    root.recentlyActive = false
+    Qt.callLater(gc)
+  }
+
+  readonly property int screenW: screenTarget ? screenTarget.width : 1920
+  readonly property int screenH: screenTarget ? screenTarget.height : 1080
+  readonly property int cardW: root.cachedActive
+    ? (root.cachedActive.contentWidth > 0 ? root.cachedActive.contentWidth : root.cachedActive.maxWidth)
+    : 1
+  readonly property int cardH: (tipLoader.item && tipLoader.item.height > 0)
+    ? Math.ceil(tipLoader.item.height)
+    : 1
+
   anchors {
     top: true
-    bottom: root.barSide !== "top"
+    bottom: false
     left: root.barSide !== "right"
-    right: root.barSide !== "left"
+    right: root.barSide === "right"
   }
   margins {
-    top: root.barSide === "top" ? (Config.barHeight + 6) : 0
-    left: root.barSide === "left" ? Config.popupGap : 0
+    top: root.barSide === "top"
+      ? (Config.barHeight + 6)
+      : Math.round(Math.max(6, Math.min(tipLoader.targetCentreY - root.cardH / 2, root.screenH - root.cardH - 6)))
+    left: root.barSide === "top"
+      ? Math.round(Math.max(12, Math.min(tipLoader.targetCentreX - root.cardW / 2, root.screenW - root.cardW - 12)))
+      : (root.barSide === "left" ? Config.popupGap : 0)
     right: root.barSide === "right" ? Config.popupGap : 0
   }
-  implicitWidth: root.barSide === "top" ? (screenTarget ? screenTarget.width : 1920) : (root.cachedActive
-    ? (root.cachedActive.contentWidth > 0 ? root.cachedActive.contentWidth : root.cachedActive.maxWidth)
-    : Config.popupMaxWidth)
-  implicitHeight: root.barSide === "top" ? 300 : (screenTarget ? screenTarget.height : 1080)
+  implicitWidth: root.cardW
+  implicitHeight: root.cardH
 
   Loader {
     id: tipLoader
-    width: root.cachedActive ? (root.cachedActive.contentWidth > 0 ? root.cachedActive.contentWidth : root.cachedActive.maxWidth) : Config.popupMaxWidth
+    width: root.cardW
     opacity: root.cardOpacity
 
     HoverHandler {
@@ -119,33 +141,16 @@ PanelWindow {
       return p ? p.x : 0
     }
 
-    x: {
-      if (root.barSide !== "top") return 0
-      if (!src) return 0
-      var w = item ? item.width : Config.popupMaxWidth
-      return Math.round(Math.max(12, Math.min(targetCentreX - w / 2, root.width - w - 12)))
-    }
-
-    y: {
-      if (root.barSide === "top") return 0
-      if (!src) return 0
-      var h = item ? item.height : 0
-      return Math.round(Math.max(6, Math.min(targetCentreY - h / 2, root.height - h - 6)))
-    }
-
     sourceComponent: src ? (src.contentComponent ? src.contentComponent : defaultCard) : null
 
     Component {
       id: defaultCard
-      Rectangle {
+      Card {
         id: card
         width: parent ? parent.width : 0
         height: content.implicitHeight + Config.popupContentMargins * 2
-        radius: Config.popupRadius
-        color: Colours.bg
-        antialiasing: true
-        border.width: 1
-        border.color: Colours.border
+        cardRadius: Config.popupRadius
+        cardColour: Colours.bg
 
         property var _src: root.cachedActive
 
@@ -170,7 +175,7 @@ PanelWindow {
               text: card._src ? card._src.title : ""
               color: Colours.fg
               font.family: Config.sansFont
-              font.pixelSize: 15
+              font.pixelSize: Config.fontSizeLg
               anchors.verticalCenter: parent.verticalCenter
             }
           }
@@ -189,7 +194,7 @@ PanelWindow {
               text: modelData
               color: Colours.fgMid
               font.family: Config.sansFont
-              font.pixelSize: 13
+              font.pixelSize: Config.fontSizeMd
             }
           }
         }

@@ -46,6 +46,24 @@ Item {
     }
   }
 
+  function openNow() {
+    _delayTimer.stop()
+    root._ready = true
+    if (root.sharedWindow) {
+      root.sharedWindow._active = root
+      root.sharedWindow.cachedActive = root
+      root.sharedWindow.cardOpacity = 1
+    }
+  }
+
+  function closeNow() {
+    _delayTimer.stop()
+    root._ready = false
+    if (root.sharedWindow) {
+      root.sharedWindow.closeNow()
+    }
+  }
+
   property bool _ready: false
 
   Timer {

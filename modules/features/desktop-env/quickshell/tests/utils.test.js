@@ -26,14 +26,21 @@ const exported = [
   'prettifyAppName',
   'formatActiveTitle',
   'volumeIcon',
+  'micIcon',
   'batteryIcon',
   'findActivePlayer',
+  'resolveMprisPlayer',
+  'cyclePlayer',
   'findBatteryDevice',
   'screenAt',
   'screenByName',
   'getOrdinalDate',
   'goToSource',
-  'resolveActiveScreen'
+  'cleanMenuText',
+  'isTrayItemHidden',
+  'resolveActiveScreen',
+  'parseOverlayPosition',
+  'resolveOverlayScreens'
 ]
 
 const sandbox = {
@@ -203,4 +210,90 @@ test('resolveActiveScreen selects targetScreen, lastActiveScreen, or screen list
   assert.equal(U.resolveActiveScreen(null, null, []), null)
   assert.equal(U.resolveActiveScreen(null, null, null), null)
 })
+
+test('micIcon returns muted glyph when muted or zero and active glyph otherwise', () => {
+  assert.equal(U.micIcon(0.8, true), '\u{F036D}')
+  assert.equal(U.micIcon(0, false), '\u{F036D}')
+  assert.equal(U.micIcon(0.5, false), '\u{F036C}')
+})
+
+test('resolveMprisPlayer honours selectedPlayer when present and falls back to findActivePlayer', () => {
+  const p1 = { isPlaying: true, playbackState: 0, trackTitle: 'Song 1' }
+  const p2 = { isPlaying: false, playbackState: 1, trackTitle: 'Song 2' }
+  const pGone = { isPlaying: true, playbackState: 0, trackTitle: 'Closed' }
+  assert.equal(U.resolveMprisPlayer([p1, p2], p2, 1), p2)
+  assert.equal(U.resolveMprisPlayer([p1, p2], pGone, 1), p1)
+  assert.equal(U.resolveMprisPlayer([p1, p2], null, 1), p1)
+})
+
+test('cyclePlayer steps forward and backward with wrap-around', () => {
+  const p1 = { id: 1 }
+  const p2 = { id: 2 }
+  const p3 = { id: 3 }
+  assert.equal(U.cyclePlayer([p1, p2, p3], p1, 1), p2)
+  assert.equal(U.cyclePlayer([p1, p2, p3], p3, 1), p1)
+  assert.equal(U.cyclePlayer([p1, p2, p3], p1, -1), p3)
+  assert.equal(U.cyclePlayer([p1], p1, 1), p1)
+  assert.equal(U.cyclePlayer([], null, 1), null)
+})
+
+test('goToSource handles SystemTrayItem activate, titles, aliases, and image://icon URLs', () => {
+  let activated = false
+  const trayItem = {
+    id: 'chrome_status_icon_1',
+    title: 'Discord',
+    tooltipTitle: 'Vesktop',
+    icon: 'image://icon/vesktop?path=/tmp/icons',
+    onlyMenu: false,
+    activate: () => { activated = true }
+  }
+  const targets = U.goToSource(trayItem)
+  assert.equal(activated, true)
+  assert.ok(targets.includes('vesktop'))
+  assert.ok(targets.includes('discord'))
+  assert.ok(!targets.includes('chrome_status_icon_1'))
+})
+
+test('cleanMenuText strips Qt mnemonics and preserves escaped ampersands', () => {
+  assert.equal(U.cleanMenuText('&Show Discord'), 'Show Discord')
+  assert.equal(U.cleanMenuText('Rock && Roll (&1)'), 'Rock & Roll (1)')
+  assert.equal(U.cleanMenuText(''), '')
+})
+
+test('isTrayItemHidden matches configured app ids and titles case-insensitively', () => {
+  const item = { id: 'nm-applet', title: 'NetworkManager Applet', tooltipTitle: 'Wired connection' }
+  assert.equal(U.isTrayItemHidden(item, ['blueman', 'NM-Applet']), true)
+  assert.equal(U.isTrayItemHidden(item, ['networkmanager']), true)
+  assert.equal(U.isTrayItemHidden(item, ['spotify', 'steam']), false)
+  assert.equal(U.isTrayItemHidden(item, []), false)
+})
+
+test('parseOverlayPosition resolves edges and centres accurately', () => {
+  const tr = U.parseOverlayPosition('top-right', 'bottom')
+  assert.equal(tr.onTop, true)
+  assert.equal(tr.onRight, true)
+  assert.equal(tr.isVertCentre, false)
+  assert.equal(tr.isHorizCentre, false)
+
+  const bot = U.parseOverlayPosition('bottom', 'top-right')
+  assert.equal(bot.onBottom, true)
+  assert.equal(bot.isHorizCentre, true)
+
+  const mid = U.parseOverlayPosition('centre', 'bottom')
+  assert.equal(mid.isVertCentre, true)
+  assert.equal(mid.isHorizCentre, true)
+})
+
+test('resolveOverlayScreens returns empty when inactive, all screens when allScreensMode, or active screen', () => {
+  const s1 = { name: 'eDP-1' }
+  const s2 = { name: 'HDMI-1' }
+  const disconnected = { name: 'DP-9' }
+  assert.deepEqual(Array.from(U.resolveOverlayScreens(false, false, s1, s2, [s1, s2])), [])
+  assert.deepEqual(Array.from(U.resolveOverlayScreens(true, true, s1, s2, [s1, s2])), [s1, s2])
+  assert.deepEqual(Array.from(U.resolveOverlayScreens(false, true, s2, s1, [s1, s2])), [s2])
+  assert.deepEqual(Array.from(U.resolveOverlayScreens(false, true, disconnected, s2, [s1, s2])), [s1])
+})
+
+
+
 

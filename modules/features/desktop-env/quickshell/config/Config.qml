@@ -8,10 +8,28 @@ import QtQuick
 // details (sizes that only affect one widget) stay hard-coded in each
 // widget's own file.
 Singleton {
-  // Fonts
+  // Fonts & Typography Scale
   readonly property string monoFont: Colours.monoFont !== undefined ? Colours.monoFont : "JetBrainsMono Nerd Font"
   readonly property string sansFont: Colours.sansFont !== undefined ? Colours.sansFont : "SF Pro Text"
   readonly property string serifFont: Colours.serifFont !== undefined ? Colours.serifFont : "Instrument Serif"
+
+  readonly property int fontSizeXs: 11
+  readonly property int fontSizeSm: 12
+  readonly property int fontSizeMd: 13
+  readonly property int fontSizeLg: 15
+  readonly property int iconSizeSm: 13
+  readonly property int iconSizeMd: 16
+  readonly property int iconSizeLg: 18
+
+  // Shared Pill, Surface & Animation Tokens
+  readonly property int pillHeightHorizontal: 24
+  readonly property int pillHeightVertical: 30
+  readonly property int pillPaddingHorizontal: 8
+  readonly property int itemRadiusSm: 6
+  readonly property int itemRadiusMd: 8
+  readonly property int animFastMs: 100
+  readonly property int animNormalMs: 120
+  readonly property int animSmoothMs: 150
 
   // Command Centre State & Geometry
   property bool commandCentreVisible: false
@@ -31,6 +49,9 @@ Singleton {
   readonly property int commandCentreCloseDuration: 180
   readonly property string commandCentreClockFormat: "HH:mm"
   readonly property string commandCentreDateFormat: "dddd, MMMM d"
+  readonly property bool ccShowSinkSwitcher: true
+  readonly property bool ccShowMicSlider: true
+  readonly property bool ccShowBrightnessSlider: true
 
   // Status Bars
   property bool barVisible: true
@@ -52,10 +73,13 @@ Singleton {
     return "mangowc"
   }
 
-  // Media
+  // Media (MediaService.qml, MediaCard.qml, MediaWidget.qml)
   // Whether the command centre's media card always stays visible, showing
   // "Nothing is playing" when no media is active.
   readonly property bool alwaysShowMediaCard: true
+  readonly property bool mediaShowPlayerBadge: true
+  readonly property bool mediaAllowPlayerSwitch: true
+  readonly property int mediaPopupWidth: 320
   readonly property bool animateMediaIcon: false
   readonly property int mediaRotationDuration: 4000
   readonly property int mediaSeekDebounceMs: 200
@@ -63,7 +87,7 @@ Singleton {
   // Clock
   readonly property string timeFormat: "HH:mm"
 
-  // Niri vertical bar (niri-bar.qml)
+  // Vertical side bar (bar.qml in Niri mode)
   readonly property int barWidth: 42
   property string barSide: {
     var envSide = (Quickshell.env("QS_BAR_SIDE") || "").toLowerCase()
@@ -89,12 +113,54 @@ Singleton {
   readonly property int barRightSpacing: 10
   readonly property int mangowcMinWorkspaces: 5
 
-  // Audio (VolumeWidget.qml)
+  // Audio, Microphone, Brightness & OSD (SystemService.qml, VolumeWidget.qml, OsdOverlay.qml)
   readonly property real volStep: 0.05
+  readonly property real volMax: 1.5
+  readonly property real micStep: 0.05
+  readonly property real brightnessStep: 0.05
+  readonly property bool osdEnabled: true
+  // OSD position on screen:
+  //   "bottom" (or "bottom-centre"), "top" (or "top-centre"), "centre",
+  //   "top-left", "top-right", "bottom-left", "bottom-right"
+  property string osdPosition: "bottom"
+  readonly property bool osdAllScreens: false
+  readonly property int osdTimeoutMs: 1800
+  readonly property int osdWidth: 260
+  readonly property int osdHeight: 46
+  readonly property int osdRadius: -1 // -1 = full pill capsule (osdHeight / 2)
+  readonly property int osdMarginX: 24
+  readonly property int osdMarginY: 64
+  readonly property int osdMarginBottom: osdMarginY
 
   // Window Title (WindowTitleWidget.qml)
   readonly property int windowTitleMaxWidthHorizontal: 350
   readonly property int windowTitleMaxWidthVertical: 120
+
+  // System Tray (SystemTrayWidget.qml)
+  property bool trayEnabled: true
+  // Case-insensitive list of tray app IDs, titles, or substrings to hide by
+  // default (e.g. ["nm-applet", "blueman", "steam"]).
+  readonly property var trayHiddenApps: []
+  // Whether to show the expand/collapse arrow button (󰅁/󰅂) when hidden tray
+  // items exist. When false, hidden items are completely omitted without an
+  // expand arrow, and if no visible items remain, the entire tray pill hides.
+  property bool trayShowExpandButton: true
+  // Whether the hidden tray items section is currently expanded.
+  property bool trayExpanded: false
+  // Shared session-hidden / session-unhidden tray app IDs (synced across monitors).
+  property var runtimeHiddenTrayApps: []
+  property var runtimeUnhiddenTrayApps: []
+  // Left-click behaviour on tray icons:
+  //   "focus"    = activate + focus application window across workspaces
+  //   "activate" = native StatusNotifierItem activate() only
+  //   "menu"     = open the context menu on left-click too
+  readonly property string trayLeftClickAction: "focus"
+  readonly property int trayIconSize: 15
+  readonly property int trayButtonSize: 20
+  readonly property int traySpacing: 4
+  readonly property int trayMenuWidth: 240
+  readonly property bool trayShowAppIdInMenu: true
+  readonly property bool trayAllowSessionHide: true
 
   // Popup / tooltip
   readonly property int popupGap: 46 // distance from the bar to a popup
@@ -135,41 +201,22 @@ Singleton {
   readonly property string notifDefaultFallbackLogo: "preferences-desktop-notification"
   readonly property string notifDefaultFallbackGlyph: "󰂚"
 
-  // App Name / Desktop Entry -> Preferred System Icon name, custom image path, or fallback logo
-  // When an app sends a notification without a profile picture (or if avatar loading fails),
-  // this map ensures the card accurately falls back to the app's real logo.
+  // App Name / Desktop Entry -> Preferred System Icon override.
+  // Apps whose icon name matches their appName or .desktop entry are resolved
+  // automatically by NotificationService via Quickshell.iconPath / DesktopEntries.
   readonly property var notifAppIcons: ({
     "discord": "vesktop",
-    "vesktop": "vesktop",
     "webcord": "vesktop",
-    "com.discordapp.discord": "vesktop",
     "spotify": "spotify-client",
-    "spotify-client": "spotify-client",
     "firefox": "firefox-devedition",
-    "firefox-developer-edition": "firefox-devedition",
-    "firefox-devedition": "firefox-devedition",
-    "firefoxdevedition": "firefox-devedition",
     "helium": "helium",
-    "helium-browser": "helium",
-    "kitty": "kitty",
-    "foot": "foot",
-    "alacritty": "alacritty",
-    "code": "code",
     "vscode": "code",
-    "vscodium": "vscodium",
-    "nvim": "nvim",
     "neovim": "nvim",
-    "steam": "steam",
     "telegram": "telegram",
-    "telegramdesktop": "telegram",
-    "slack": "slack",
     "signal": "signal-desktop",
-    "signal-desktop": "signal-desktop",
-    "thunderbird": "thunderbird",
     "amberol": "io.bassi.Amberol",
     "boxbuddy": "io.github.dvlv.boxbuddyrs",
     "pavucontrol": "org.pulseaudio.pavucontrol",
-    "blueman": "blueman",
     "nix": "nix-snowflake"
   })
 
