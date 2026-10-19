@@ -1,8 +1,15 @@
+pragma Singleton
 pragma ComponentBehavior: Bound
-import Quickshell
-import QtQuick
 
-Scope {
+import Quickshell
+import Quickshell.Io
+import QtQuick
+import "Utils.js" as Utils
+
+// Unified Window Manager singleton bridging MangoWC, Hyprland, and Niri
+// backends for workspaces, active window title, layouts, and active-screen
+// resolution.
+Singleton {
   id: root
 
   readonly property string wm: Config.wm
@@ -13,6 +20,7 @@ Scope {
       switch (root.wm) {
         case "mangowc":  return "MangoService.qml"
         case "hyprland": return "HyprlandService.qml"
+        case "niri":     return "NiriService.qml"
         default:         return "MangoService.qml"
       }
     }
@@ -114,5 +122,119 @@ Scope {
 
   function focusWindow(patterns) {
     WindowFocuser.focus(patterns)
+  }
+
+  // =========================================================================
+  // Active / Cursor Screen Detection
+  // =========================================================================
+  property var _screenQueryCallback: null
+  readonly property bool queryingScreen: root._screenQueryCallback !== null
+
+  function _finishScreenQuery(foundScreen) {
+    var cb = root._screenQueryCallback
+    root._screenQueryCallback = null
+    screenQueryTimer.stop()
+
+    if (foundScreen) {
+      Config.targetScreen = foundScreen
+      Config.lastActiveScreen = foundScreen
+    } else if (!Config.targetScreen) {
+      Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
+    }
+
+    if (typeof cb === "function") {
+      cb(Config.targetScreen)
+    }
+  }
+
+  function cancelScreenQuery() {
+    root._screenQueryCallback = null
+    screenQueryTimer.stop()
+  }
+
+  function resolveTargetScreen(callback) {
+    if (Quickshell.screens.length <= 1) {
+      root._screenQueryCallback = callback || null
+      root._finishScreenQuery(Quickshell.screens.length === 1 ? Quickshell.screens[0] : null)
+      return
+    }
+
+    var cmd = null
+    if (root.wm === "mangowc") {
+      cmd = ["mmsg", "get", "cursorpos"]
+    } else if (root.wm === "hyprland") {
+      cmd = ["hyprctl", "cursorpos"]
+    } else if (root.wm === "niri") {
+      cmd = ["niri", "msg", "--json", "focused-output"]
+    }
+
+    if (!cmd) {
+      root._screenQueryCallback = callback || null
+      root._finishScreenQuery(null)
+      return
+    }
+
+    root._screenQueryCallback = callback || null
+    screenQueryTimer.restart()
+    cursorQueryProc.exec(cmd)
+  }
+
+  Timer {
+    id: screenQueryTimer
+    // Fallback for when the cursor-query process hangs. Kept generous so a
+    // normal (but not instant) WM query isn't pre-empted, which would open the
+    // panel on the stale `lastActiveScreen`.
+    interval: 250
+    repeat: false
+    onTriggered: {
+      if (root.queryingScreen) {
+        root._finishScreenQuery(null)
+      }
+    }
+  }
+
+  Process {
+    id: cursorQueryProc
+    stdout: SplitParser {
+      onRead: line => {
+        if (!root.queryingScreen) return
+        var txt = line.trim()
+        if (!txt) return
+
+        var foundScreen = null
+        try {
+          if (root.wm === "mangowc") {
+            var data = JSON.parse(txt)
+            if (data && data.monitor) {
+              foundScreen = Utils.screenByName(data.monitor, Quickshell.screens)
+            } else if (data && data.x !== undefined && data.y !== undefined) {
+              foundScreen = Utils.screenAt(data.x, data.y, Quickshell.screens)
+            }
+          } else if (root.wm === "hyprland") {
+            var parts = txt.split(",")
+            if (parts.length >= 2) {
+              var hx = parseInt(parts[0].trim())
+              var hy = parseInt(parts[1].trim())
+              if (!isNaN(hx) && !isNaN(hy)) {
+                foundScreen = Utils.screenAt(hx, hy, Quickshell.screens)
+              }
+            }
+          } else if (root.wm === "niri") {
+            var niriData = JSON.parse(txt)
+            if (niriData && niriData.name) {
+              foundScreen = Utils.screenByName(niriData.name, Quickshell.screens)
+            }
+          }
+        } catch (e) {}
+
+        root._finishScreenQuery(foundScreen)
+      }
+    }
+
+    onExited: function() {
+      if (root.queryingScreen) {
+        root._finishScreenQuery(null)
+      }
+    }
   }
 }

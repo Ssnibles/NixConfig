@@ -2,6 +2,7 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Mpris
 import QtQuick
 import "Utils.js" as Utils
@@ -25,15 +26,42 @@ Singleton {
 
   // Active MPRIS Player (Single Source of Truth)
   readonly property var mediaPlayers: Mpris.players.values
-  readonly property var player: Utils.findActivePlayer(root.mediaPlayers, MprisPlaybackState.Paused)
+  property var selectedPlayer: null
+  readonly property var player: Utils.resolveMprisPlayer(root.mediaPlayers, root.selectedPlayer, MprisPlaybackState.Paused)
   readonly property bool hasPlayer: !!root.player
   readonly property bool isPlaying: !!(root.player && root.player.isPlaying)
+  readonly property int playerCount: root.mediaPlayers ? root.mediaPlayers.length : 0
+  readonly property int playerIndex: (root.player && root.mediaPlayers) ? root.mediaPlayers.indexOf(root.player) : -1
+  readonly property string playerName: root.player ? Utils.prettifyAppName(root.player.identity || root.player.desktopEntry || "Media") : ""
+  readonly property string playerGlyph: {
+    var key = root.playerName.toLowerCase()
+    if (Config.notifAppGlyphs && Config.notifAppGlyphs[key]) return Config.notifAppGlyphs[key]
+    return "󰎈"
+  }
+
+  onMediaPlayersChanged: {
+    if (root.selectedPlayer && (!root.mediaPlayers || root.mediaPlayers.indexOf(root.selectedPlayer) === -1)) {
+      root.selectedPlayer = null
+    }
+  }
+
+  function cyclePlayer(step) {
+    var next = Utils.cyclePlayer(root.mediaPlayers, root.player, step)
+    if (next) root.selectedPlayer = next
+  }
+
+  function selectPlayer(p) {
+    root.selectedPlayer = p
+  }
 
   // Track Metadata
   readonly property string rawTrackTitle: root.player ? (root.player.trackTitle || "") : ""
   readonly property string trackTitle: Utils.cleanTrackTitle(root.rawTrackTitle)
   readonly property string trackArtist: root.player ? (root.player.trackArtist || "") : ""
-  readonly property string trackArtUrl: root.player ? (root.player.trackArtUrl || "") : ""
+  readonly property string trackArtUrl: {
+    var u = Utils.cleanUrl(root.player ? (root.player.trackArtUrl || "") : "")
+    return u.startsWith("/") ? ("file://" + u) : u
+  }
   readonly property bool canSeek: !!(root.player && root.player.canSeek)
   readonly property bool canGoNext: !!(root.player && root.player.canGoNext)
   readonly property bool canGoPrevious: !!(root.player && root.player.canGoPrevious)
@@ -67,11 +95,15 @@ Singleton {
     root.activeConsumers = n
   }
 
-  readonly property bool isConsumerActive: (
+  readonly property bool isSeekbarConsumerActive: (
     Config.commandCentreVisible ||
     root.lockActive ||
-    (Config.barType === "niri" && Config.barVisible) ||
     root.activeConsumers > 0
+  )
+
+  readonly property bool isConsumerActive: (
+    root.isSeekbarConsumerActive ||
+    (Config.barType === "niri" && Config.barVisible)
   )
 
   // Position & Progress Sampling
@@ -86,7 +118,7 @@ Singleton {
   readonly property bool isLive: root.hasPlayer && !root.player.lengthSupported
   readonly property bool hasPosition: root.hasPlayer && root.player.positionSupported
 
-  readonly property int tickInterval: 300
+  readonly property int tickInterval: root.isSeekbarConsumerActive ? 400 : 1000
 
   // True between a seek request and the debounced seek being issued. Sampling is
   // suspended during this window so a tick can't clobber the optimistic
@@ -281,5 +313,25 @@ Singleton {
   function focusSource() {
     if (!root.player) return
     WindowFocuser.focusSource(root.player)
+  }
+
+  IpcHandler {
+    target: "media"
+
+    function playPause(): void {
+      root.playPause()
+    }
+
+    function next(): void {
+      root.next()
+    }
+
+    function previous(): void {
+      root.previous()
+    }
+
+    function cyclePlayer(): void {
+      root.cyclePlayer(1)
+    }
   }
 }
