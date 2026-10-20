@@ -4,23 +4,25 @@ vim.g.disable_autoformat_ft = vim.g.disable_autoformat_ft or {}
 local conform = require("conform")
 local util = require("util")
 
+local prettier = { "prettierd", "prettier", stop_after_first = true }
+
 conform.setup({
 	formatters_by_ft = {
 		lua = { "stylua" },
 		python = { "isort", "black" },
 		c = { "clang-format" },
 		cpp = { "clang-format" },
-		html = { "prettierd", "prettier", stop_after_first = true },
-		css = { "prettierd", "prettier", stop_after_first = true },
-		scss = { "prettierd", "prettier", stop_after_first = true },
-		less = { "prettierd", "prettier", stop_after_first = true },
-		javascript = { "prettierd", "prettier", stop_after_first = true },
-		javascriptreact = { "prettierd", "prettier", stop_after_first = true },
-		typescript = { "prettierd", "prettier", stop_after_first = true },
-		typescriptreact = { "prettierd", "prettier", stop_after_first = true },
-		json = { "prettierd", "prettier", stop_after_first = true },
-		yaml = { "prettierd", "prettier", stop_after_first = true },
-		markdown = { "prettierd", "prettier", stop_after_first = true },
+		html = prettier,
+		css = prettier,
+		scss = prettier,
+		less = prettier,
+		javascript = prettier,
+		javascriptreact = prettier,
+		typescript = prettier,
+		typescriptreact = prettier,
+		json = prettier,
+		yaml = prettier,
+		markdown = prettier,
 		nix = { "nixfmt" },
 		sh = { "shfmt" },
 		kotlin = { "ktlint" },
@@ -48,14 +50,14 @@ conform.setup({
 })
 
 vim.api.nvim_create_user_command("Format", function(opts)
-	conform.format({ bufnr = 0, lsp_format = "fallback" })
+	conform.format({ lsp_format = "fallback" })
 	if opts.bang then
 		vim.cmd("noautocmd write")
 	end
 end, { desc = "Format buffer (:Format! also saves)", bang = true })
 
 vim.keymap.set({ "n", "v" }, "<leader>cf", function()
-	conform.format({ bufnr = 0, lsp_format = "fallback" })
+	conform.format({ lsp_format = "fallback" })
 end, { desc = "Format buffer" })
 
 vim.keymap.set("n", "<leader>tF", function()

@@ -19,10 +19,11 @@ PanelWindow {
 
   on_ActiveChanged: {
     if (_active !== null) {
-      cachedActive = _active
-      recentlyActive = true
+      graceFadeTimer.stop()
       recentTimer.stop()
       fadeTimer.stop()
+      cachedActive = _active
+      recentlyActive = true
       cardOpacity = 1
     } else {
       if (!root.hovered) {
@@ -80,6 +81,16 @@ PanelWindow {
   color: "transparent"
 
   mask: Region { item: tipLoader.item }
+
+  function openNow(tooltip) {
+    graceFadeTimer.stop()
+    recentTimer.stop()
+    fadeTimer.stop()
+    root._active = tooltip
+    root.cachedActive = tooltip
+    root.recentlyActive = true
+    root.cardOpacity = 1
+  }
 
   function closeNow() {
     graceFadeTimer.stop()

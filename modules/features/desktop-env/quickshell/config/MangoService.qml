@@ -202,6 +202,10 @@ QtObject {
     Quickshell.execDetached(["mmsg", "dispatch", "view," + tagNum.toString()])
   }
 
+  function focusWorkspace(id) {
+    focusTag(id)
+  }
+
   function tagsForOutput(outputName) {
     if (!root.allMonitorsTags || root.allMonitorsTags.length === 0) return []
     for (var i = 0; i < root.allMonitorsTags.length; i++) {
@@ -210,6 +214,33 @@ QtObject {
       }
     }
     return root.allMonitorsTags[0] ? (root.allMonitorsTags[0].tags || []) : []
+  }
+
+  function workspacesForOutput(outputName) {
+    var tags = tagsForOutput(outputName)
+    var maxIdx = 1
+    for (var i = 0; i < tags.length; i++) {
+      if (tags[i].is_active || tags[i].client_count > 0) {
+        maxIdx = Math.max(maxIdx, tags[i].index)
+      }
+    }
+    var minCount = (typeof Config !== "undefined" && Config.mangowcMinWorkspaces) ? Config.mangowcMinWorkspaces : 5
+    var count = Math.max(minCount, maxIdx)
+    var res = []
+    for (var j = 0; j < count; j++) {
+      var tData = (tags && j < tags.length) ? tags[j] : null
+      var active = tData ? tData.is_active : false
+      var countClients = tData ? (tData.client_count > 0) : false
+      var urgent = tData ? (tData.is_urgent === true) : false
+      res.push({
+        id: j + 1,
+        is_focused: active,
+        is_active: active,
+        is_occupied: countClients,
+        is_urgent: urgent
+      })
+    }
+    return res
   }
 
   function layoutForOutput(outputName) {

@@ -275,6 +275,21 @@ test('parseOverlayPosition resolves edges and centres accurately', () => {
   assert.equal(tr.isVertCentre, false)
   assert.equal(tr.isHorizCentre, false)
 
+  const tl = U.parseOverlayPosition('top-left', 'top-right')
+  assert.equal(tl.onTop, true)
+  assert.equal(tl.onLeft, true)
+  assert.equal(tl.onRight, false)
+
+  const br = U.parseOverlayPosition('bottom-right', 'top-right')
+  assert.equal(br.onBottom, true)
+  assert.equal(br.onRight, true)
+  assert.equal(br.onLeft, false)
+
+  const bl = U.parseOverlayPosition('bottom-left', 'top-right')
+  assert.equal(bl.onBottom, true)
+  assert.equal(bl.onLeft, true)
+  assert.equal(bl.onRight, false)
+
   const bot = U.parseOverlayPosition('bottom', 'top-right')
   assert.equal(bot.onBottom, true)
   assert.equal(bot.isHorizCentre, true)

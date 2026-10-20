@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQml
 
 Item {
   id: root
@@ -10,8 +9,6 @@ Item {
   property real snapPercent: 0
 
   signal moved(real value)
-  signal dragStarted()
-  signal dragEnded()
 
   implicitHeight: 36
   implicitWidth: 120
@@ -54,7 +51,7 @@ Item {
       color: Colours.bgSubtle
       border.width: 1
       border.color: mouse.containsMouse ? root.fillColour : "transparent"
-      Behavior on border.color { ColorAnimation { duration: 120 } }
+      Behavior on border.color { ColorAnimation { duration: Config.animNormalMs } }
     }
 
     Rectangle {
@@ -63,10 +60,10 @@ Item {
       anchors.left: parent.left
       anchors.bottom: parent.verticalCenter
       anchors.bottomMargin: -root._trackHeight / 2
-      width: parent.width * root._visualValue
+      width: parent.width * Math.max(0, Math.min(1, root._visualValue))
       radius: 4
       color: root.fillColour
-      Behavior on color { ColorAnimation { duration: 150 } }
+      Behavior on color { ColorAnimation { duration: Config.animSmoothMs } }
     }
 
     MouseArea {
@@ -93,7 +90,6 @@ Item {
           root._pendingValue = -1
           pendingClearTimer.stop()
           dragging = true
-          root.dragStarted()
         }
         root._dragValue = _computeValue(mouse.x)
         root.moved(root._dragValue)
@@ -103,7 +99,6 @@ Item {
         dragging = false
         root._pendingValue = root._dragValue
         pendingClearTimer.restart()
-        root.dragEnded()
       }
       onPositionChanged: function(mouse) {
         if (dragging) {

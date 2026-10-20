@@ -5,8 +5,10 @@ Item {
   id: root
 
   property var screen: null
-  property var workspaces: WmService.getWorkspaces(root.screen ? root.screen.name : "")
-  signal focusRequested(int workspaceId)
+  property var workspaces: {
+    var _dep = WmService.workspacesDependency
+    return WmService.getWorkspaces(root.screen ? root.screen.name : "")
+  }
   property bool horizontal: false
 
   property int dotSize: Config.workspaceDotSize
@@ -23,6 +25,10 @@ Item {
     for (var i = 0; i < workspaces.length; i++) {
       var w = workspaces[i]
       if (w && (w.is_focused || w.isFocused)) return i
+    }
+    for (var j = 0; j < workspaces.length; j++) {
+      var wj = workspaces[j]
+      if (wj && (wj.is_active || wj.isActive)) return j
     }
     return 0
   }
@@ -227,7 +233,6 @@ Item {
           cursorShape: Qt.PointingHandCursor
           onClicked: {
             var wsId = dotItem.ws ? (dotItem.ws.id || (dotItem.index + 1)) : (dotItem.index + 1)
-            root.focusRequested(wsId)
             WmService.focusWorkspace(wsId)
           }
         }

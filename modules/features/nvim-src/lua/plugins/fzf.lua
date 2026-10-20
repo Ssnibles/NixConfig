@@ -3,12 +3,11 @@ local fzf = require("fzf-lua")
 -- Excluded filetypes for buffer pickers
 local excluded_ft = {
 	oil = true,
-	fugitive = true,
 	qf = true,
 	help = true,
 	fzf = true,
-	ministarter = true,
-	Trouble = true,
+	startinator = true,
+	sshinator = true,
 }
 
 fzf.setup({
@@ -52,26 +51,16 @@ fzf.setup({
 			if not vim.api.nvim_buf_is_valid(bufnr) or not vim.bo[bufnr].buflisted then
 				return false
 			end
-			local bt = vim.bo[bufnr].buftype
-			local ft = vim.bo[bufnr].filetype
-			local name = vim.api.nvim_buf_get_name(bufnr)
-
+			local bt, ft = vim.bo[bufnr].buftype, vim.bo[bufnr].filetype
 			-- fzf-lua's picker is itself a terminal buffer (filetype "fzf") and can
 			-- outlive a hidden picker; never offer it as a buffer to switch to.
-			if excluded_ft[ft] then
-				return false
-			end
-
-			if bt == "terminal" or ft == "terminal" or name:match("^term://") then
-				return true
-			end
-			if bt ~= "" or name == "" then
-				return false
-			end
 			if excluded_ft[ft] or ft:find("^grug%-far") then
 				return false
 			end
-			return true
+			if bt == "terminal" then
+				return true
+			end
+			return bt == "" and vim.api.nvim_buf_get_name(bufnr) ~= ""
 		end,
 	},
 	grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'" },

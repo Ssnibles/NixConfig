@@ -9,9 +9,9 @@ import QtQuick
 // widget's own file.
 Singleton {
     // Fonts & Typography Scale
-    readonly property string monoFont: Colours.monoFont !== undefined ? Colours.monoFont : "JetBrainsMono Nerd Font"
-    readonly property string sansFont: Colours.sansFont !== undefined ? Colours.sansFont : "SF Pro Text"
-    readonly property string serifFont: Colours.serifFont !== undefined ? Colours.serifFont : "Instrument Serif"
+    readonly property string monoFont: Colours.monoFont || "JetBrainsMono Nerd Font"
+    readonly property string sansFont: Colours.sansFont || "SF Pro Text"
+    readonly property string serifFont: Colours.serifFont || "Instrument Serif"
 
     readonly property int fontSizeXs: 11
     readonly property int fontSizeSm: 12
@@ -127,7 +127,7 @@ Singleton {
     // OSD position on screen:
     //   "bottom" (or "bottom-centre"), "top" (or "top-centre"), "centre",
     //   "top-left", "top-right", "bottom-left", "bottom-right"
-    property string osdPosition: "bottom"
+    property string osdPosition: "bottom-centre"
     readonly property bool osdAllScreens: false
     readonly property int osdTimeoutMs: 1800
     readonly property int osdWidth: 260
@@ -285,9 +285,20 @@ Singleton {
     readonly property string lockDateFormat: "dddd, MMMM d"
     readonly property int lockCardWidth: 440
     readonly property int lockAvatarSize: 64
-    readonly property int lockInputRadius: 10
+    readonly property int lockInputRadius: 12
     readonly property real lockBackgroundDimming: 0.8
     readonly property real lockBlurPercentage: 0.5
+    // Status pill cluster corner position:
+    //   "top-right" (default), "top-left", "bottom-right", "bottom-left", or "split" / "corners"
+    property string lockStatusPosition: {
+        var envPos = (Quickshell.env("QS_LOCK_STATUS_POS") || "").toLowerCase().trim();
+        if (envPos === "top-left" || envPos === "top-right" || envPos === "bottom-left" || envPos === "bottom-right" || envPos === "split" || envPos === "corners") {
+            return envPos;
+        }
+        return "top-right";
+    }
+    readonly property int lockStatusMargin: 24
+    readonly property int lockStatusSpacing: 8
 
     // External App & System Commands
     readonly property var cmdMixer: ["pavucontrol"]

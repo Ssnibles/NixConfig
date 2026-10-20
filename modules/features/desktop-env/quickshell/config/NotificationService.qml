@@ -63,7 +63,7 @@ Singleton {
       property string src: ""
       property string dst: ""
       command: ["cp", "-f", src, dst]
-      running: true
+      Component.onCompleted: running = true
       onExited: function(code) {
         if (code === 0) service._setItemProperty(proc.uid, "primaryIcon", "file://" + proc.dst)
         proc.destroy()
@@ -234,7 +234,7 @@ Singleton {
         nextMap[uidKey] = n
         if (keepObjects.indexOf(n) === -1) keepObjects.push(n)
       } else if (n) {
-        try { if (n.tracked) n.dismiss() } catch (e) {}
+        try { if (n.tracked) n.tracked = false } catch (e) {}
       }
     }
     service._notificationsByUid = nextMap
@@ -378,8 +378,18 @@ Singleton {
       if (activeModel.get(a).isMedia) { activeIdx = a; break }
     }
 
+    var resolvedUid = activeIdx !== -1 ? activeModel.get(activeIdx).uid : undefined
+    if (resolvedUid === undefined && historyModel.count > 0) {
+      var topCandidate = historyModel.get(0)
+      var topCandidateSame = topCandidate && topCandidate.isMedia && (topCandidate.trackTitle || "").toLowerCase().trim() === trackKey
+      var topCandidatePlaceholder = topCandidate && topCandidate.isMedia && (Date.now() - (topCandidate.createdAt || 0) < 20000) && topCandidate.subtext === "Unknown Artist"
+      if (topCandidateSame || topCandidatePlaceholder) {
+        resolvedUid = topCandidate.uid
+      }
+    }
+
     var item = _buildItem({
-      uid: activeIdx !== -1 ? activeModel.get(activeIdx).uid : undefined,
+      uid: resolvedUid,
       isMedia: true,
       trackTitle: cleanT,
       trackArtist: cleanA,
@@ -407,7 +417,6 @@ Singleton {
       var topSame = top && top.isMedia && (top.trackTitle || "").toLowerCase().trim() === trackKey
       var topPlaceholder = top && top.isMedia && (Date.now() - (top.createdAt || 0) < 20000) && top.subtext === "Unknown Artist"
       if (topSame || topPlaceholder) {
-        item.uid = top.uid
         if (opts.notification) _trackNotification(item.uid, opts.notification)
         historyModel.set(0, item)
         _gcNotifications()

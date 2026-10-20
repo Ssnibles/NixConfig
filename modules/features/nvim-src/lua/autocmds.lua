@@ -8,7 +8,8 @@ local close_with_q = { "help", "man", "qf", "checkhealth", "notify", "oil", "gru
 local trim_skip = { markdown = true, ["markdown.mdx"] = true, text = true, gitcommit = true, diff = true }
 
 -- Filetypes using indent folding instead of treesitter
-local fold_indent = { "markdown", "markdown.mdx", "text", "gitcommit", "typst", "txt", "yaml", "json", "toml" }
+local fold_indent_prose = { "markdown", "markdown.mdx", "text", "gitcommit", "typst", "txt" }
+local fold_indent_data = { "yaml", "json", "toml" }
 
 -- Tree-sitter highlighting
 autocmd("FileType", {
@@ -69,8 +70,8 @@ autocmd("FileType", {
 	group = augroup,
 	pattern = close_with_q,
 	callback = function(ev)
-		vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = ev.buf, silent = true })
-		vim.keymap.set("n", "<Esc>", "<cmd>close<CR>", { buffer = ev.buf, silent = true })
+		vim.keymap.set("n", "q", "<cmd>silent! close<CR>", { buffer = ev.buf, silent = true })
+		vim.keymap.set("n", "<Esc>", "<cmd>silent! close<CR>", { buffer = ev.buf, silent = true })
 	end,
 })
 
@@ -133,13 +134,21 @@ autocmd({ "WinEnter", "WinLeave" }, {
 	end,
 })
 
--- Indent folding for structured text
+-- Indent folding for prose and structured data
 autocmd("FileType", {
 	group = augroup,
-	pattern = fold_indent,
+	pattern = fold_indent_prose,
 	callback = function()
 		vim.opt_local.foldmethod = "indent"
 		vim.opt_local.foldenable = false
+	end,
+})
+
+autocmd("FileType", {
+	group = augroup,
+	pattern = fold_indent_data,
+	callback = function()
+		vim.opt_local.foldmethod = "indent"
 	end,
 })
 
@@ -149,30 +158,6 @@ autocmd("FileType", {
 	pattern = { "lua", "vim" },
 	callback = function()
 		vim.bo.keywordprg = ":help"
-	end,
-})
-
--- Typst preview & Zathura sync
-autocmd("FileType", {
-	group = augroup,
-	pattern = "typst",
-	callback = function(ev)
-		vim.keymap.set("n", "<leader>tp", function()
-			vim.cmd("TypstPreviewToggle")
-		end, { buffer = ev.buf, desc = "Toggle Typst preview" })
-
-		vim.keymap.set("n", "<leader>zo", function()
-			local pdf = vim.fn.expand("%:p:r") .. ".pdf"
-			if vim.fn.filereadable(pdf) == 1 then
-				vim.system({
-					"zathura",
-					"--synctex-forward=" .. vim.fn.line(".") .. ":0:" .. vim.api.nvim_buf_get_name(ev.buf),
-					pdf,
-				}, { detach = true })
-			else
-				vim.notify("PDF not found: " .. pdf, vim.log.levels.WARN)
-			end
-		end, { buffer = ev.buf, desc = "Open PDF in Zathura" })
 	end,
 })
 

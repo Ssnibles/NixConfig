@@ -57,6 +57,71 @@ Scope {
     }
   }
 
+  // Reusable slider row used for Volume, Microphone, and Brightness controls
+  component ControlSliderRow: RowLayout {
+    id: rowRoot
+    property string icon: ""
+    property color iconColour: Colours.fg
+    property color iconBorderColour: Colours.border
+    property bool iconClickable: false
+    signal iconClicked()
+    property real sliderValue: 0
+    property color sliderFillColour: Colours.accent
+    signal sliderMoved(real value)
+    property string percentText: ""
+    property color percentColour: Colours.fg
+    property bool reserveTrailingSpace: false
+    default property alias trailingContent: trailingSlot.data
+
+    width: parent ? parent.width : 0
+    spacing: 10
+
+    IconButton {
+      buttonSize: 32
+      icon: rowRoot.icon
+      baseColour: Colours.bgSubtle
+      hoverColour: Colours.bgRaised
+      borderColour: rowRoot.iconBorderColour
+      hoverBorderColour: rowRoot.iconClickable ? rowRoot.iconBorderColour : Colours.border
+      iconColour: rowRoot.iconColour
+      hoverIconColour: rowRoot.iconClickable ? rowRoot.iconColour : rowRoot.iconColour
+      enabled: rowRoot.iconClickable
+      onClicked: rowRoot.iconClicked()
+    }
+
+    SliderControl {
+      Layout.fillWidth: true
+      Layout.alignment: Qt.AlignVCenter
+      value: rowRoot.sliderValue
+      fillColour: rowRoot.sliderFillColour
+      snapPercent: 5
+      onMoved: function(v) { rowRoot.sliderMoved(v) }
+    }
+
+    Text {
+      text: rowRoot.percentText
+      color: rowRoot.percentColour
+      font.family: Config.monoFont
+      font.pixelSize: 14
+      Layout.alignment: Qt.AlignVCenter
+    }
+
+    RowLayout {
+      id: trailingSlot
+      readonly property bool hasVisibleChild: {
+        for (var i = 0; i < children.length; i++) {
+          if (children[i].visible) return true
+        }
+        return false
+      }
+      visible: hasVisibleChild || rowRoot.reserveTrailingSpace
+      Layout.preferredWidth: visible ? 28 : 0
+      Layout.preferredHeight: 28
+      Layout.alignment: Qt.AlignVCenter
+      spacing: 6
+    }
+  }
+
   Variants {
     id: root
     model: ccScope.active ? Quickshell.screens : []
@@ -296,42 +361,19 @@ Scope {
                 spacing: 10
 
                 // Output Volume Row
-                RowLayout {
-                  width: parent.width
-                  spacing: 10
-
-                  IconButton {
-                    id: volIconBox
-                    buttonSize: 32
-                    icon: SystemService.volumeIcon
-                    baseColour: Colours.bgSubtle
-                    hoverColour: Colours.bgRaised
-                    borderColour: SystemService.muted ? Colours.red : Colours.border
-                    hoverBorderColour: SystemService.muted ? Colours.red : Colours.accent
-                    iconColour: SystemService.muted ? Colours.red : Colours.fg
-                    hoverIconColour: SystemService.muted ? Colours.red : Colours.accent
-                    onClicked: SystemService.toggleMute()
+                ControlSliderRow {
+                  icon: SystemService.volumeIcon
+                  iconColour: SystemService.muted ? Colours.red : Colours.fg
+                  iconBorderColour: SystemService.muted ? Colours.red : Colours.border
+                  iconClickable: true
+                  onIconClicked: SystemService.toggleMute()
+                  sliderValue: SystemService.volume
+                  sliderFillColour: SystemService.muted ? Colours.red : Colours.accent
+                  onSliderMoved: function(v) {
+                    SystemService.setVolumeDebounced(v)
                   }
-
-                  SliderControl {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    value: SystemService.volume
-                    fillColour: SystemService.muted ? Colours.red : Colours.accent
-                    snapPercent: 5
-                    onMoved: function(v) {
-                      SystemService.setVolumeDebounced(v)
-                    }
-                  }
-
-                  Text {
-                    Layout.preferredWidth: 42
-                    horizontalAlignment: Text.AlignRight
-                    text: SystemService.volumePercent + "%"
-                    color: SystemService.muted ? Colours.red : Colours.fg
-                    font.family: Config.monoFont
-                    font.pixelSize: 14
-                  }
+                  percentText: SystemService.volumePercent + "%"
+                  percentColour: SystemService.muted ? Colours.red : Colours.fg
 
                   IconButton {
                     visible: Config.ccShowSinkSwitcher && SystemService.audioSinks.length > 0
@@ -445,42 +487,21 @@ Scope {
                 }
 
                 // Microphone Row
-                RowLayout {
+                ControlSliderRow {
                   visible: Config.ccShowMicSlider && SystemService.hasMic
-                  width: parent.width
-                  spacing: 10
-
-                  IconButton {
-                    buttonSize: 32
-                    icon: SystemService.micIcon
-                    baseColour: Colours.bgSubtle
-                    hoverColour: Colours.bgRaised
-                    borderColour: SystemService.micMuted ? Colours.red : Colours.border
-                    hoverBorderColour: SystemService.micMuted ? Colours.red : Colours.accent
-                    iconColour: SystemService.micMuted ? Colours.red : Colours.fg
-                    hoverIconColour: SystemService.micMuted ? Colours.red : Colours.accent
-                    onClicked: SystemService.toggleMicMute()
+                  icon: SystemService.micIcon
+                  iconColour: SystemService.micMuted ? Colours.red : Colours.fg
+                  iconBorderColour: SystemService.micMuted ? Colours.red : Colours.border
+                  iconClickable: true
+                  onIconClicked: SystemService.toggleMicMute()
+                  sliderValue: SystemService.micVolume
+                  sliderFillColour: SystemService.micMuted ? Colours.red : Colours.accent
+                  onSliderMoved: function(v) {
+                    SystemService.setMicVolumeDebounced(v)
                   }
-
-                  SliderControl {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    value: SystemService.micVolume
-                    fillColour: SystemService.micMuted ? Colours.red : Colours.accent
-                    snapPercent: 5
-                    onMoved: function(v) {
-                      SystemService.setMicVolumeDebounced(v)
-                    }
-                  }
-
-                  Text {
-                    Layout.preferredWidth: 42
-                    horizontalAlignment: Text.AlignRight
-                    text: SystemService.micVolumePercent + "%"
-                    color: SystemService.micMuted ? Colours.red : Colours.fg
-                    font.family: Config.monoFont
-                    font.pixelSize: 14
-                  }
+                  percentText: SystemService.micVolumePercent + "%"
+                  percentColour: SystemService.micMuted ? Colours.red : Colours.fg
+                  reserveTrailingSpace: Config.ccShowSinkSwitcher && SystemService.audioSinks.length > 0
                 }
 
                 // Divider if brightness is available
@@ -492,47 +513,20 @@ Scope {
                 }
 
                 // Brightness Row
-                RowLayout {
+                ControlSliderRow {
                   visible: Config.ccShowBrightnessSlider && SystemService.brightnessAvailable
-                  width: parent.width
-                  spacing: 10
-
-                  Rectangle {
-                    Layout.preferredWidth: 32
-                    Layout.preferredHeight: 32
-                    radius: Config.itemRadiusMd
-                    color: Colours.bgSubtle
-                    border.width: 1
-                    border.color: Colours.border
-
-                    Text {
-                      anchors.centerIn: parent
-                      text: "󰃠"
-                      color: Colours.yellow
-                      font.family: Config.monoFont
-                      font.pixelSize: Config.iconSizeMd
-                    }
+                  icon: "󰃠"
+                  iconColour: Colours.yellow
+                  iconBorderColour: Colours.border
+                  iconClickable: false
+                  sliderValue: SystemService.brightness
+                  sliderFillColour: Colours.yellow
+                  onSliderMoved: function(v) {
+                    SystemService.setBrightness(v)
                   }
-
-                  SliderControl {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    value: SystemService.brightness
-                    fillColour: Colours.yellow
-                    snapPercent: 5
-                    onMoved: function(v) {
-                      SystemService.setBrightness(v)
-                    }
-                  }
-
-                  Text {
-                    Layout.preferredWidth: 42
-                    horizontalAlignment: Text.AlignRight
-                    text: SystemService.brightnessPercent + "%"
-                    color: Colours.fg
-                    font.family: Config.monoFont
-                    font.pixelSize: 14
-                  }
+                  percentText: SystemService.brightnessPercent + "%"
+                  percentColour: Colours.fg
+                  reserveTrailingSpace: Config.ccShowSinkSwitcher && SystemService.audioSinks.length > 0
                 }
               }
             }

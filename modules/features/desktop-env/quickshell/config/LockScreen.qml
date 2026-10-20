@@ -6,6 +6,7 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
+import "Utils.js" as Utils
 
 Scope {
   id: lockScope
@@ -26,7 +27,15 @@ Scope {
     target: "lockscreen"
 
     function lock(): void {
-      lockScope.active = true
+      if (!lockScope.active) {
+        lockScope.active = true
+      } else if (lockLoader.item && !lockLoader.item.locked) {
+        // If active remained true while already unlocked, force a clean component reload
+        lockScope.active = false
+        Qt.callLater(function() {
+          lockScope.active = true
+        })
+      }
     }
 
     function unlock(): void {
@@ -34,10 +43,13 @@ Scope {
     }
 
     function toggle(): void {
-      if (lockScope.active) {
+      if (lockScope.active && lockLoader.item && lockLoader.item.locked) {
         lockScope.unlockSession()
       } else {
-        lockScope.active = true
+        lockScope.active = false
+        Qt.callLater(function() {
+          lockScope.active = true
+        })
       }
     }
   }
@@ -45,9 +57,12 @@ Scope {
   function unlockSession(): void {
     if (lockLoader.item && lockLoader.item.locked) {
       lockLoader.item.locked = false
-    } else {
-      lockScope.active = false
     }
+    // Defer unloading the Loader by one event tick so WlSessionLock can cleanly
+    // flush the unlock_and_destroy protocol request before its surfaces and QML item are destroyed.
+    Qt.callLater(function() {
+      lockScope.active = false
+    })
   }
 
   // Single PAM Service Context for the lock session across all screens
@@ -127,6 +142,9 @@ Scope {
         lockScope.enteredPassword = ""
         pam.start()
       } else {
+        if (pam.active) {
+          pam.abort()
+        }
         Qt.callLater(gc)
       }
     }
@@ -138,24 +156,22 @@ Scope {
     WlSessionLock {
       id: lockRoot
       locked: true
+      onLockStateChanged: {
+        if (!locked) {
+          lockScope.active = false
+        }
+      }
 
       WlSessionLockSurface {
         id: surface
         color: Colours.bg
 
-        Connections {
-          target: lockRoot
-          function onLockedChanged() {
-            if (!lockRoot.locked) {
-              lockScope.active = false
-            }
-          }
-        }
-
         readonly property bool authenticating: lockScope.authenticating
         readonly property string errorMessage: lockScope.errorMessage
         property real shakeOffset: 0
         property bool capsLockOn: false
+        property bool revealPassword: false
+        readonly property bool isStatusSplit: Config.lockStatusPosition === "split" || Config.lockStatusPosition === "corners"
 
         // Check if this screen is the main interactive screen (first screen in list)
         property bool isPrimaryScreen: surface.screen === undefined || surface.screen === Quickshell.screens[0]
@@ -172,7 +188,6 @@ Scope {
         Connections {
           target: lockScope
           function onShakeTriggerChanged() {
-            lockScope.enteredPassword = ""
             if (surface.isPrimaryScreen) {
               shakeAnimation.start()
               mainBg.forceActiveFocus()
@@ -201,11 +216,17 @@ Scope {
           Keys.onPressed: function(event) {
             surface.capsLockOn = (event.modifiers & Qt.CapsLockModifier) !== 0
 
+            // Clear previous error message immediately on fresh typing
+            if (lockScope.errorMessage !== "") {
+              lockScope.errorMessage = ""
+            }
+
             // Don't queue keystrokes in the disabled field while PAM is busy.
             if (surface.authenticating) return
 
             if (event.key === Qt.Key_Escape) {
               lockScope.enteredPassword = ""
+              surface.revealPassword = false
               if (surface.isPrimaryScreen && passInput) {
                 passInput.focus = false
               }
@@ -214,16 +235,17 @@ Scope {
               return
             }
 
-            // Ignore standalone modifier keys or tabs
+            // Ignore standalone modifier keys, tabs, and Delete
             if (event.key === Qt.Key_Shift || event.key === Qt.Key_Control ||
                 event.key === Qt.Key_Alt || event.key === Qt.Key_Meta ||
                 event.key === Qt.Key_CapsLock || event.key === Qt.Key_Tab ||
-                event.key === Qt.Key_Backtab) {
+                event.key === Qt.Key_Backtab || event.key === Qt.Key_Delete) {
               return
             }
 
             if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
               if (lockScope.enteredPassword.length > 0 && !surface.authenticating) {
+                surface.revealPassword = false
                 lockScope.submitPassword(lockScope.enteredPassword)
                 lockScope.enteredPassword = ""
               }
@@ -245,8 +267,11 @@ Scope {
             }
 
             if (event.text && event.text.length > 0) {
-              lockScope.enteredPassword += event.text
-              event.accepted = true
+              var code = event.text.charCodeAt(0)
+              if (code >= 32 && code !== 127) {
+                lockScope.enteredPassword += event.text
+                event.accepted = true
+              }
             }
           }
 
@@ -282,26 +307,184 @@ Scope {
             onClicked: mainBg.forceActiveFocus()
           }
 
-          // Bottom Left Wi-Fi / Network Status (shared pill widget)
+          // Clustered Status Pills (default; docked to Config.lockStatusPosition corner)
+          Row {
+            id: statusCluster
+            visible: !surface.isStatusSplit
+            spacing: Config.lockStatusSpacing
+            z: 10
+
+            readonly property var pos: Utils.parseOverlayPosition(Config.lockStatusPosition, "top-right")
+
+            anchors.top: pos.onBottom ? undefined : mainBg.top
+            anchors.bottom: pos.onBottom ? mainBg.bottom : undefined
+            anchors.left: pos.onLeft ? mainBg.left : undefined
+            anchors.right: pos.onLeft ? undefined : mainBg.right
+            anchors.margins: Config.lockStatusMargin
+
+            // Hostname Pill
+            Pill {
+              horizontal: true
+              clickable: false
+              baseColour: Colours.bgRaised
+              border.color: Colours.border
+
+              Row {
+                anchors.centerIn: parent
+                spacing: 6
+
+                Text {
+                  text: "󰌾"
+                  color: Colours.accent
+                  font.family: Config.monoFont
+                  font.pixelSize: Config.iconSizeSm
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Text {
+                  text: Quickshell.env("HOSTNAME") || Quickshell.env("HOST") || "NixOS"
+                  color: Colours.fgMid
+                  font.family: Config.sansFont
+                  font.pixelSize: Config.fontSizeSm
+                  font.bold: true
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+              }
+            }
+
+            // Network Widget Pill
+            NetworkWidget {
+              horizontal: true
+              interactive: false
+            }
+
+            // Battery Widget Pill
+            BatteryWidget {
+              id: lockClusterBattery
+              visible: lockClusterBattery.batPresent
+              horizontal: true
+              interactive: false
+            }
+
+            // Volume & Mute Status Pill
+            Pill {
+              horizontal: true
+              clickable: false
+              baseColour: Colours.bgRaised
+              border.color: SystemService.muted ? Colours.red : Colours.border
+
+              Row {
+                anchors.centerIn: parent
+                spacing: 6
+
+                Text {
+                  text: SystemService.volumeIcon
+                  color: SystemService.muted ? Colours.red : Colours.accent
+                  font.family: Config.monoFont
+                  font.pixelSize: Config.iconSizeSm
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Text {
+                  text: SystemService.muted ? "Muted" : (SystemService.volumePercent + "%")
+                  color: SystemService.muted ? Colours.red : Colours.fgMid
+                  font.family: Config.sansFont
+                  font.pixelSize: Config.fontSizeSm
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+              }
+            }
+          }
+
+          // Top Left Hostname / System Status (when Config.lockStatusPosition is "split" or "corners")
+          Pill {
+            visible: surface.isStatusSplit
+            horizontal: true
+            clickable: false
+            baseColour: Colours.bgRaised
+            border.color: Colours.border
+            anchors.left: mainBg.left
+            anchors.top: mainBg.top
+            anchors.margins: Config.lockStatusMargin
+            z: 10
+
+            Row {
+              anchors.centerIn: parent
+              spacing: 6
+
+              Text {
+                text: "󰌾"
+                color: Colours.accent
+                font.family: Config.monoFont
+                font.pixelSize: Config.iconSizeSm
+                anchors.verticalCenter: parent.verticalCenter
+              }
+
+              Text {
+                text: Quickshell.env("HOSTNAME") || Quickshell.env("HOST") || "NixOS"
+                color: Colours.fgMid
+                font.family: Config.sansFont
+                font.pixelSize: Config.fontSizeSm
+                font.bold: true
+                anchors.verticalCenter: parent.verticalCenter
+              }
+            }
+          }
+
+          // Top Right Volume & Mute Status (when Config.lockStatusPosition is "split" or "corners")
+          Pill {
+            visible: surface.isStatusSplit
+            horizontal: true
+            clickable: false
+            baseColour: Colours.bgRaised
+            border.color: SystemService.muted ? Colours.red : Colours.border
+            anchors.right: mainBg.right
+            anchors.top: mainBg.top
+            anchors.margins: Config.lockStatusMargin
+            z: 10
+
+            Row {
+              anchors.centerIn: parent
+              spacing: 6
+
+              Text {
+                text: SystemService.volumeIcon
+                color: SystemService.muted ? Colours.red : Colours.accent
+                font.family: Config.monoFont
+                font.pixelSize: Config.iconSizeSm
+                anchors.verticalCenter: parent.verticalCenter
+              }
+
+              Text {
+                text: SystemService.muted ? "Muted" : (SystemService.volumePercent + "%")
+                color: SystemService.muted ? Colours.red : Colours.fgMid
+                font.family: Config.sansFont
+                font.pixelSize: Config.fontSizeSm
+                anchors.verticalCenter: parent.verticalCenter
+              }
+            }
+          }
+
+          // Bottom Left Wi-Fi / Network Status (when Config.lockStatusPosition is "split" or "corners")
           NetworkWidget {
-            visible: surface.isPrimaryScreen
+            visible: surface.isStatusSplit
             horizontal: true
             interactive: false
             anchors.left: mainBg.left
             anchors.bottom: mainBg.bottom
-            anchors.margins: 24
+            anchors.margins: Config.lockStatusMargin
             z: 10
           }
 
-          // Bottom Right Battery Status (shared pill widget)
+          // Bottom Right Battery Status (when Config.lockStatusPosition is "split" or "corners")
           BatteryWidget {
-            id: lockBattery
-            visible: surface.isPrimaryScreen && lockBattery.batPresent
+            id: lockSplitBattery
+            visible: surface.isStatusSplit && lockSplitBattery.batPresent
             horizontal: true
             interactive: false
             anchors.right: mainBg.right
             anchors.bottom: mainBg.bottom
-            anchors.margins: 24
+            anchors.margins: Config.lockStatusMargin
             z: 10
           }
 
@@ -350,7 +533,7 @@ Scope {
             Card {
               Layout.fillWidth: true
               implicitHeight: authCol.implicitHeight + 36
-              border.color: surface.errorMessage !== "" ? Colours.red : Colours.border
+              borderColour: surface.errorMessage !== "" ? Colours.red : Colours.border
 
               transform: Translate {
                 x: surface.shakeOffset
@@ -363,6 +546,8 @@ Scope {
                 anchors.top: parent.top
                 anchors.margins: 20
                 spacing: 16
+
+                readonly property bool isInputActive: passInput.activeFocus || lockScope.enteredPassword.length > 0
 
                 // Avatar & Username Header
                 ColumnLayout {
@@ -426,8 +611,8 @@ Scope {
                   height: 48
                   radius: Config.lockInputRadius
                   color: Colours.bgSubtle
-                  border.color: passInput.activeFocus ? Colours.accent : Colours.border
-                  border.width: passInput.activeFocus ? 2 : 1
+                  border.color: authCol.isInputActive ? Colours.accent : Colours.border
+                  border.width: authCol.isInputActive ? 2 : 1
 
                   Behavior on border.color { ColorAnimation { duration: Config.animSmoothMs } }
 
@@ -444,13 +629,33 @@ Scope {
                     anchors.rightMargin: 8
                     spacing: 10
 
-                    // Lock / Auth Icon
+                    // Lock / Auth Icon with spinner animation when authenticating
                     Text {
+                      id: authIcon
                       text: surface.authenticating ? "󱎟" : "󰌾"
-                      color: passInput.activeFocus ? Colours.accent : Colours.fgDim
+                      color: authCol.isInputActive ? Colours.accent : Colours.fgDim
                       font.family: Config.monoFont
                       font.pixelSize: Config.iconSizeLg
                       Layout.alignment: Qt.AlignVCenter
+                      transformOrigin: Item.Center
+
+                      NumberAnimation {
+                        id: spinAnim
+                        target: authIcon
+                        property: "rotation"
+                        from: 0
+                        to: 360
+                        loops: Animation.Infinite
+                        duration: 1000
+                        running: surface.authenticating
+                      }
+
+                      Connections {
+                        target: surface
+                        function onAuthenticatingChanged() {
+                          if (!surface.authenticating) authIcon.rotation = 0
+                        }
+                      }
                     }
 
                     // Password Input Field
@@ -458,7 +663,7 @@ Scope {
                       id: passInput
                       Layout.fillWidth: true
                       Layout.alignment: Qt.AlignVCenter
-                      echoMode: TextInput.Password
+                      echoMode: surface.revealPassword ? TextInput.Normal : TextInput.Password
                       color: Colours.fg
                       font.family: Config.sansFont
                       font.pixelSize: 16
@@ -467,6 +672,12 @@ Scope {
                       enabled: !surface.authenticating
                       cursorVisible: activeFocus
                       text: lockScope.enteredPassword
+
+                      Binding {
+                        target: passInput
+                        property: "text"
+                        value: lockScope.enteredPassword
+                      }
 
                       onTextEdited: {
                         lockScope.enteredPassword = passInput.text
@@ -482,6 +693,7 @@ Scope {
                         surface.capsLockOn = (event.modifiers & Qt.CapsLockModifier) !== 0
                         if (event.key === Qt.Key_Escape) {
                           lockScope.enteredPassword = ""
+                          surface.revealPassword = false
                           passInput.focus = false
                           mainBg.forceActiveFocus()
                           event.accepted = true
@@ -500,9 +712,26 @@ Scope {
 
                       onAccepted: {
                         if (lockScope.enteredPassword.length > 0 && !surface.authenticating) {
+                          surface.revealPassword = false
                           lockScope.submitPassword(lockScope.enteredPassword)
                           lockScope.enteredPassword = ""
                         }
+                      }
+                    }
+
+                    // Reveal Password Toggle Button
+                    IconButton {
+                      id: revealBtn
+                      Layout.alignment: Qt.AlignVCenter
+                      buttonSize: 32
+                      visible: lockScope.enteredPassword.length > 0
+                      icon: surface.revealPassword ? "󰈉" : "󰈈"
+                      baseColour: "transparent"
+                      hoverColour: Colours.bgRaised
+                      iconColour: surface.revealPassword ? Colours.accent : Colours.fgDim
+                      hoverIconColour: Colours.accent
+                      onClicked: {
+                        surface.revealPassword = !surface.revealPassword
                       }
                     }
 
@@ -512,15 +741,17 @@ Scope {
                       Layout.alignment: Qt.AlignVCenter
                       buttonSize: 32
                       icon: "󰁔"
-                      baseColour: Colours.bgRaised
-                      hoverColour: Colours.accent
-                      borderColour: Colours.border
-                      hoverBorderColour: Colours.accent
-                      iconColour: Colours.fg
-                      hoverIconColour: Colours.bg
+                      baseColour: lockScope.enteredPassword.length > 0 ? Colours.accent : Colours.bgRaised
+                      hoverColour: lockScope.enteredPassword.length > 0 ? Colours.accent : Colours.bgSubtle
+                      borderColour: lockScope.enteredPassword.length > 0 ? Colours.accent : Colours.border
+                      hoverBorderColour: lockScope.enteredPassword.length > 0 ? Colours.accent : Colours.border
+                      iconColour: lockScope.enteredPassword.length > 0 ? Colours.bg : Colours.fgDim
+                      hoverIconColour: lockScope.enteredPassword.length > 0 ? Colours.bg : Colours.accent
                       hoverScale: 0.92
+                      enabled: lockScope.enteredPassword.length > 0 && !surface.authenticating
                       onClicked: {
                         if (lockScope.enteredPassword.length > 0 && !surface.authenticating) {
+                          surface.revealPassword = false
                           lockScope.submitPassword(lockScope.enteredPassword)
                           lockScope.enteredPassword = ""
                         }
@@ -597,7 +828,7 @@ Scope {
             Pill {
               anchors.horizontalCenter: parent.horizontalCenter
               pillColour: Colours.bgRaised
-              border.color: Colours.border
+              border.color: surface.errorMessage !== "" ? Colours.red : (lockScope.enteredPassword.length > 0 ? Colours.accent : Colours.border)
               padding: 10
 
               Row {
@@ -605,21 +836,35 @@ Scope {
                 spacing: 8
 
                 Text {
-                  text: "󰌾"
-                  color: Colours.accent
+                  text: surface.authenticating ? "󱎟" : (surface.errorMessage !== "" ? "󰅙" : "󰌾")
+                  color: surface.errorMessage !== "" ? Colours.red : Colours.accent
                   font.family: Config.monoFont
                   font.pixelSize: 16
                   anchors.verticalCenter: parent.verticalCenter
                 }
 
                 Text {
-                  text: "Locked"
-                  color: Colours.fgDim
+                  text: surface.authenticating
+                    ? "Authenticating..."
+                    : (surface.errorMessage !== ""
+                        ? surface.errorMessage
+                        : (lockScope.enteredPassword.length > 0
+                            ? ("Typing (" + lockScope.enteredPassword.length + " characters)...")
+                            : "System Locked"))
+                  color: surface.errorMessage !== "" ? Colours.red : (lockScope.enteredPassword.length > 0 ? Colours.fg : Colours.fgDim)
                   font.family: Config.sansFont
                   font.pixelSize: 15
                   anchors.verticalCenter: parent.verticalCenter
                 }
               }
+            }
+
+            MediaCard {
+              anchors.horizontalCenter: parent.horizontalCenter
+              width: Config.lockCardWidth
+              seekable: false
+              interactive: false
+              visible: MediaService.hasPlayer && (MediaService.isPlaying || MediaService.trackTitle !== "")
             }
           }
         }

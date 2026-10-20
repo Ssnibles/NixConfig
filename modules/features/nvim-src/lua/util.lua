@@ -28,6 +28,24 @@ function M.find_debug_adapter()
 	return M.first_executable({ "codelldb", "lldb-dap", "lldb-vscode" })
 end
 
+--- Build a nvim-dap adapter definition for the available LLDB binary.
+--- @return table|nil
+function M.lldb_dap_adapter()
+	local lldb = M.find_debug_adapter()
+	if not lldb then
+		return nil
+	end
+	if lldb:match("codelldb$") then
+		return {
+			type = "server",
+			host = "127.0.0.1",
+			port = "${port}",
+			executable = { command = lldb, args = { "--port", "${port}" } },
+		}
+	end
+	return { type = "executable", command = lldb, name = "lldb" }
+end
+
 --- Report a toggle's new state in a consistent format.
 --- @param name string Human-readable feature name
 --- @param enabled boolean Whether the feature is now enabled

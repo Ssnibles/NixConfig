@@ -17,14 +17,12 @@ map("n", "<leader>qa", "<cmd>qa<CR>", { desc = "Quit all" })
 -- Insert Mode
 local smart_enter = require("smart_enter")
 map("i", "<CR>", smart_enter.cr, { expr = true, desc = "Smart Enter (continue lists & comments)" })
-map("i", "<S-CR>", smart_enter.shift_cr, { expr = true, desc = "Shift-Enter (newline without continuation)" })
-map("i", "<M-CR>", smart_enter.shift_cr, { expr = true, desc = "Alt-Enter (newline without continuation)" })
-
-map("i", "<C-BS>", "<C-w>", { desc = "Delete previous word" })
-map("i", "<M-BS>", "<C-w>", { desc = "Delete previous word" })
-map("i", "\x1f", "<C-w>", { desc = "Delete previous word (Ctrl+BS)" })
-map("i", "<C-_>", "<C-w>", { desc = "Delete previous word (Ctrl+BS)" })
-map("i", "<C-/>", "<C-w>", { desc = "Delete previous word (Ctrl+BS)" })
+for _, lhs in ipairs({ "<S-CR>", "<M-CR>" }) do
+	map("i", lhs, smart_enter.shift_cr, { expr = true, desc = "Newline without continuation" })
+end
+for _, lhs in ipairs({ "<C-BS>", "<M-BS>", "<C-_>", "<C-/>" }) do
+	map("i", lhs, "<C-w>", { desc = "Delete previous word" })
+end
 map("i", "<C-h>", "<Left>", { desc = "Move caret left" })
 map("i", "<C-j>", "<Down>", { desc = "Move caret down" })
 map("i", "<C-k>", "<Up>", { desc = "Move caret up" })
@@ -167,6 +165,7 @@ map("n", "<leader>td", function()
 			tid.disable()
 		end
 	end
+	util.notify_toggle("Diagnostics", new_state)
 end, { desc = "Toggle diagnostics" })
 map("n", "<leader>tD", function()
 	local ok, tid = pcall(require, "tiny-inline-diagnostic")
@@ -176,7 +175,9 @@ map("n", "<leader>tD", function()
 end, { desc = "Toggle inline diagnostics" })
 map("n", "<leader>ti", function()
 	local bufnr = vim.api.nvim_get_current_buf()
-	vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), { bufnr = bufnr })
+	local enabled = not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
+	vim.lsp.inlay_hint.enable(enabled, { bufnr = bufnr })
+	util.notify_toggle("Inlay hints", enabled)
 end, { desc = "Toggle inlay hints" })
 map("n", "<leader>tc", function()
 	vim.g.minicursorword_disable = not vim.g.minicursorword_disable

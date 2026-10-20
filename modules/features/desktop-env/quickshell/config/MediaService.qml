@@ -50,10 +50,6 @@ Singleton {
     if (next) root.selectedPlayer = next
   }
 
-  function selectPlayer(p) {
-    root.selectedPlayer = p
-  }
-
   // Track Metadata
   readonly property string rawTrackTitle: root.player ? (root.player.trackTitle || "") : ""
   readonly property string trackTitle: Utils.cleanTrackTitle(root.rawTrackTitle)
@@ -116,7 +112,6 @@ Singleton {
   // lengthSupported == false (and its `length` getter falls back to `position`).
   // Such a track must never be rendered as a seekable bar with a bogus total.
   readonly property bool isLive: root.hasPlayer && !root.player.lengthSupported
-  readonly property bool hasPosition: root.hasPlayer && root.player.positionSupported
 
   readonly property int tickInterval: root.isSeekbarConsumerActive ? 400 : 1000
 

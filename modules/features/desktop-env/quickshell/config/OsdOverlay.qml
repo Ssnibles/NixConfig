@@ -150,14 +150,11 @@ Scope {
           }
 
           Text {
-            Layout.preferredWidth: 52
-            horizontalAlignment: Text.AlignRight
             text: SystemService.osdLabel
             color: SystemService.osdMuted ? Colours.red : Colours.fg
             font.family: Config.monoFont
             font.pixelSize: Config.fontSizeMd
             font.bold: true
-            elide: Text.ElideRight
             Layout.alignment: Qt.AlignVCenter
           }
         }

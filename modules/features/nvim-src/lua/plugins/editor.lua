@@ -1,4 +1,4 @@
--- Editor plugins: oil, gitsigns, grug-far, flash, smart-splits, sshinator
+-- Editor plugins: oil, gitsigns, grug-far, flash, smart-splits, dial, markview, dev plugins, jjui
 
 -- Oil (file explorer)
 
@@ -144,10 +144,9 @@ vim.keymap.set("n", "<leader>fr", function()
 end, { desc = "Find and replace (buffer)" })
 
 vim.keymap.set("x", "<leader>fr", function()
-	local sel = table.concat(
-		vim.fn.getregion(vim.fn.getpos("."), vim.fn.getpos("v"), { type = vim.fn.mode() }),
-		"\n"
-	):match("^[^\r\n]*")
+	local sel = table
+		.concat(vim.fn.getregion(vim.fn.getpos("."), vim.fn.getpos("v"), { type = vim.fn.mode() }), "\n")
+		:match("^[^\r\n]*")
 	buffer_find_replace(sel)
 end, { desc = "Find and replace selection (buffer)" })
 
@@ -158,7 +157,8 @@ local flash = require("flash")
 local excluded_ft = {
 	fzf = true,
 	oil = true,
-	fugitive = true,
+	startinator = true,
+	sshinator = true,
 	["grug-far"] = true,
 	qf = true,
 	help = true,
@@ -211,6 +211,57 @@ vim.keymap.set("n", "<C-S-j>", splits.resize_down, { desc = "Resize down" })
 vim.keymap.set("n", "<C-S-k>", splits.resize_up, { desc = "Resize up" })
 vim.keymap.set("n", "<C-S-l>", splits.resize_right, { desc = "Resize right" })
 
+-- Dial (smarter <C-a>/<C-x> for dates, hex, semver, booleans, …)
+
+local ok_dial, dial_map = pcall(require, "dial.map")
+if ok_dial then
+	local ok_augend, augend = pcall(require, "dial.augend")
+	if ok_augend then
+		require("dial.config").augends:register_group({
+			default = {
+				augend.integer.alias.decimal,
+				augend.integer.alias.hex,
+				augend.integer.alias.binary,
+				augend.integer.alias.octal,
+				augend.date.alias["%Y-%m-%d"],
+				augend.date.alias["%d.%m.%Y"],
+				augend.date.alias["%H:%M:%S"],
+				augend.constant.alias.bool,
+				augend.semver.alias.semver,
+			},
+		})
+	end
+
+	local function map_dial(mode, lhs, direction, dial_mode, desc)
+		vim.keymap.set(mode, lhs, function()
+			dial_map.manipulate(direction, dial_mode)
+		end, { desc = desc, silent = true })
+	end
+
+	map_dial("n", "<C-a>", "increment", "normal", "Increment (dial)")
+	map_dial("n", "<C-x>", "decrement", "normal", "Decrement (dial)")
+	map_dial("n", "g<C-a>", "increment", "gnormal", "Increment sequential (dial)")
+	map_dial("n", "g<C-x>", "decrement", "gnormal", "Decrement sequential (dial)")
+	map_dial("x", "<C-a>", "increment", "visual", "Increment selection (dial)")
+	map_dial("x", "<C-x>", "decrement", "visual", "Decrement selection (dial)")
+	map_dial("x", "g<C-a>", "increment", "gvisual", "Increment selection sequential (dial)")
+	map_dial("x", "g<C-x>", "decrement", "gvisual", "Decrement selection sequential (dial)")
+end
+
+-- Markview (in-buffer Markdown rendering; loaded after theme)
+
+local ok_mv, markview = pcall(require, "markview")
+if ok_mv then
+	markview.setup({
+		preview = {
+			-- Markdown only; Typst/LaTeX keep their dedicated external previews
+			-- (tinymist + zathura/typst-preview) to avoid fighting over conceal.
+			filetypes = { "markdown", "markdown.mdx", "quarto", "rmd" },
+			icon_provider = "mini",
+		},
+	})
+end
+
 -- Dev plugins (simple setups)
 
 local ok_ssh, sshinator = pcall(require, "sshinator")
@@ -260,10 +311,6 @@ vim.keymap.set("n", "<leader>gg", function()
 		title = " jjui ",
 		title_pos = "center",
 	})
-	vim.wo[win].number = false
-	vim.wo[win].relativenumber = false
-	vim.wo[win].signcolumn = "no"
-	vim.wo[win].cursorline = false
 	vim.fn.termopen("jjui", {
 		on_exit = function()
 			if vim.api.nvim_win_is_valid(win) then
@@ -272,7 +319,7 @@ vim.keymap.set("n", "<leader>gg", function()
 			if vim.api.nvim_buf_is_valid(buf) then
 				vim.api.nvim_buf_delete(buf, { force = true })
 			end
+			vim.cmd("checktime")
 		end,
 	})
-	vim.cmd("startinsert")
 end, { desc = "Open jjui (Jujutsu TUI)" })

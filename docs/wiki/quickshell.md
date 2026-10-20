@@ -92,7 +92,7 @@ Quickshell does not hardcode compositor dependencies into individual UI widgets.
 - In Hyprland, it communicates via `HyprlandService.qml` (`hyprctl`).
 - In Niri, it parses the JSON stream from `NiriService.qml` (`niri msg --json event-stream`).
 
-`NiriService` and `SystemService` process CLI output using `StdioCollector` hooked to `onStreamFinished` rather than `onDataChanged`, ensuring complete JSON streams and hardware states are collected before parsing.
+`WmService`, `NiriService`, and `SystemService` process CLI output using `StdioCollector` hooked to `onStreamFinished` rather than `onDataChanged`, ensuring complete JSON streams and hardware states are collected before parsing.
 
 This enables swapping between Wayland compositors while keeping the exact same status bar, notification centre, lock screen, and styling.
 
@@ -110,6 +110,9 @@ This enables swapping between Wayland compositors while keeping the exact same s
 - Utilises the Wayland `ext-session-lock-v1` protocol, guaranteeing that no windows or notifications leak while locked.
 - Authenticates directly against system PAM for password validation.
 - **Unified Multi-Monitor Focus**: Password input state (`enteredPassword`) is stored on the root singleton `Scope` rather than inside per-monitor surface text inputs. When multi-monitor setups lock, keystrokes captured on secondary surfaces route directly to the active password buffer on the primary screen, eliminating secondary-monitor focus traps.
+- **Visual Feedback & UI Polish**: Features a user avatar, input field with smooth accent border transitions on typing, an interactive password reveal/peek eye toggle, an animated rotating spinner during PAM authentication, an accent-glowing submit arrow, and an error shake animation.
+- **Secondary Display Integration**: Non-primary monitors display live typing feedback (indicating character count and auth state) and an embedded `MediaCard` for active audio playback.
+- **Configurable Status Pill Cluster**: Groups system status indicators (Hostname, Network Wi-Fi/Ethernet, Battery, and PipeWire Volume/Mute) into a clean, docked corner cluster (defaults to `top-right`). Configurable to any corner (`"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`) or 4-corner mode (`"split"` / `"corners"`) via `Config.lockStatusPosition` or the `QS_LOCK_STATUS_POS` environment variable.
 - **Modifier Filtering**: Keypress handlers explicitly guard against `Ctrl` and `Alt` modifiers (`!(event.modifiers & (Qt.ControlModifier | Qt.AltModifier))`), preventing control characters from corrupting typed passwords.
 
 ---

@@ -19,6 +19,51 @@ Pill {
   implicitWidth: root.horizontal ? (trayLayout.implicitWidth + root.padding * 2) : 34
   implicitHeight: root.horizontal ? Config.pillHeightHorizontal : (trayLayout.implicitHeight + 10)
 
+  // Shared action pill for tray menu top actions (focus, hide, toggle expand)
+  component ActionPill: Pill {
+    id: actRoot
+    property string icon: ""
+    property string label: ""
+    property color activeIconColour: Colours.accent
+    property color idleIconColour: Colours.fgMid
+    property bool isBold: false
+    property int textSize: Config.fontSizeSm
+    pillHeight: 26
+    radius: Config.itemRadiusSm
+    baseColour: "transparent"
+    hoverColour: Colours.bgSubtle
+    hoverHighlight: true
+    border.color: "transparent"
+    clickable: true
+
+    RowLayout {
+      anchors.fill: parent
+      anchors.leftMargin: 8
+      anchors.rightMargin: 8
+      spacing: 8
+
+      Text {
+        visible: actRoot.icon !== ""
+        text: actRoot.icon
+        color: actRoot.hovered ? actRoot.activeIconColour : actRoot.idleIconColour
+        font.family: Config.monoFont
+        font.pixelSize: Config.iconSizeSm
+        Layout.alignment: Qt.AlignVCenter
+      }
+
+      Text {
+        Layout.fillWidth: true
+        text: actRoot.label
+        color: actRoot.hovered ? Colours.fg : actRoot.idleIconColour
+        font.family: Config.sansFont
+        font.pixelSize: actRoot.textSize
+        font.bold: actRoot.isBold
+        elide: Text.ElideRight
+        Layout.alignment: Qt.AlignVCenter
+      }
+    }
+  }
+
   // Shared menu entry pill used for both top-level and submenu DBusMenu items
   component MenuEntryPill: Pill {
     id: entryRoot
@@ -148,11 +193,16 @@ Pill {
           : "transparent"
         Behavior on color { ColorAnimation { duration: Config.animFastMs } }
 
+        property var _focusTargets: []
+
         function focusApp() {
           if (!trayDelegate.modelData) return
           trayTip.closeNow()
-          WindowFocuser.focusSource(trayDelegate.modelData)
-          focusFollowUpTimer.restart()
+          trayDelegate._focusTargets = Utils.goToSource(trayDelegate.modelData)
+          if (trayDelegate._focusTargets && trayDelegate._focusTargets.length > 0) {
+            WindowFocuser.focus(trayDelegate._focusTargets)
+            focusFollowUpTimer.restart()
+          }
         }
 
         Timer {
@@ -160,8 +210,8 @@ Pill {
           interval: 180
           repeat: false
           onTriggered: {
-            if (trayDelegate.modelData) {
-              WindowFocuser.focusSource(trayDelegate.modelData)
+            if (trayDelegate._focusTargets && trayDelegate._focusTargets.length > 0) {
+              WindowFocuser.focus(trayDelegate._focusTargets)
             }
           }
         }
@@ -307,43 +357,17 @@ Pill {
         }
 
         // Primary Action: Focus / Bring Up Application
-        Pill {
+        ActionPill {
           id: focusAppPill
           width: parent.width
           pillHeight: 28
-          radius: Config.itemRadiusSm
           baseColour: Colours.bgSubtle
           hoverColour: Colours.bgRaised
-          hoverHighlight: true
           border.color: focusAppPill.hovered ? Colours.accent : Colours.border
-          clickable: true
+          icon: "󰀻"
+          label: "Focus Application"
+          isBold: true
           onClicked: if (menuCard.activeDelegate) menuCard.activeDelegate.focusApp()
-
-          RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 10
-            anchors.rightMargin: 10
-            spacing: 8
-
-            Text {
-              text: "󰀻"
-              color: focusAppPill.hovered ? Colours.accent : Colours.fgMid
-              font.family: Config.monoFont
-              font.pixelSize: Config.iconSizeSm
-              Layout.alignment: Qt.AlignVCenter
-            }
-
-            Text {
-              Layout.fillWidth: true
-              text: "Focus Application"
-              color: focusAppPill.hovered ? Colours.fg : Colours.fgMid
-              font.family: Config.sansFont
-              font.pixelSize: Config.fontSizeSm
-              font.bold: true
-              elide: Text.ElideRight
-              Layout.alignment: Qt.AlignVCenter
-            }
-          }
         }
 
         // App-provided DBusMenu Items
@@ -427,88 +451,32 @@ Pill {
         }
 
         // Hide / Unhide in Tray Action
-        Pill {
+        ActionPill {
           id: hideItemPill
           visible: Config.trayAllowSessionHide
           width: parent.width
-          pillHeight: 26
-          radius: Config.itemRadiusSm
-          baseColour: "transparent"
-          hoverColour: Colours.bgSubtle
-          hoverHighlight: true
-          border.color: "transparent"
-          clickable: true
+          icon: menuCard.isHiddenItem ? "󰈈" : "󰈉"
+          label: menuCard.isHiddenItem ? "Unhide in Tray" : "Hide from Tray"
+          idleIconColour: Colours.fgDim
+          textSize: Config.fontSizeXs
           onClicked: {
             if (menuCard.activeItem) SystemService.toggleTrayItemHidden(menuCard.activeItem)
             if (menuCard.activeTip) menuCard.activeTip.closeNow()
           }
-
-          RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 8
-            anchors.rightMargin: 8
-            spacing: 8
-
-            Text {
-              text: menuCard.isHiddenItem ? "󰈈" : "󰈉"
-              color: hideItemPill.hovered ? Colours.accent : Colours.fgDim
-              font.family: Config.monoFont
-              font.pixelSize: Config.iconSizeSm
-              Layout.alignment: Qt.AlignVCenter
-            }
-
-            Text {
-              Layout.fillWidth: true
-              text: menuCard.isHiddenItem ? "Unhide in Tray" : "Hide from Tray"
-              color: hideItemPill.hovered ? Colours.fg : Colours.fgDim
-              font.family: Config.sansFont
-              font.pixelSize: Config.fontSizeXs
-              elide: Text.ElideRight
-              Layout.alignment: Qt.AlignVCenter
-            }
-          }
         }
 
         // Toggle showing the expand arrow for hidden tray items
-        Pill {
+        ActionPill {
           id: toggleExpandBtnPill
           visible: Config.trayAllowSessionHide && (SystemService.trayHiddenCount > 0 || !Config.trayShowExpandButton)
           width: parent.width
-          pillHeight: 26
-          radius: Config.itemRadiusSm
-          baseColour: "transparent"
-          hoverColour: Colours.bgSubtle
-          hoverHighlight: true
-          border.color: "transparent"
-          clickable: true
+          icon: Config.trayShowExpandButton ? "󰅁" : "󰅂"
+          label: Config.trayShowExpandButton ? "Hide Expand Arrow" : "Show Expand Arrow"
+          idleIconColour: Colours.fgDim
+          textSize: Config.fontSizeXs
           onClicked: {
             Config.trayShowExpandButton = !Config.trayShowExpandButton
             if (menuCard.activeTip) menuCard.activeTip.closeNow()
-          }
-
-          RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 8
-            anchors.rightMargin: 8
-            spacing: 8
-
-            Text {
-              text: Config.trayShowExpandButton ? "󰅁" : "󰅂"
-              color: toggleExpandBtnPill.hovered ? Colours.accent : Colours.fgDim
-              font.family: Config.monoFont
-              font.pixelSize: Config.iconSizeSm
-              Layout.alignment: Qt.AlignVCenter
-            }
-
-            Text {
-              Layout.fillWidth: true
-              text: Config.trayShowExpandButton ? "Hide Expand Arrow" : "Show Expand Arrow"
-              color: toggleExpandBtnPill.hovered ? Colours.fg : Colours.fgDim
-              font.family: Config.sansFont
-              font.pixelSize: Config.fontSizeXs
-              elide: Text.ElideRight
-              Layout.alignment: Qt.AlignVCenter
-            }
           }
         }
       }

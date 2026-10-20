@@ -10,24 +10,6 @@ local CONFIG = {
 	max_height_ratio = 0.4,
 }
 
--- Diagnostics
-
-vim.diagnostic.config({
-	virtual_text = false,
-	underline = true,
-	signs = {
-		text = {
-			[vim.diagnostic.severity.ERROR] = "×",
-			[vim.diagnostic.severity.WARN] = "▲",
-			[vim.diagnostic.severity.HINT] = "•",
-			[vim.diagnostic.severity.INFO] = "•",
-		},
-	},
-	severity_sort = true,
-	float = { border = CONFIG.border, source = "if_many", max_width = 70 },
-	update_in_insert = false,
-})
-
 -- Capabilities
 
 local capabilities = require("lsp.capabilities")
@@ -87,19 +69,8 @@ local function attach_lsp_keymaps(bufnr)
 		pcall(lsp.codelens.run)
 	end, "CodeLens action")
 
-	-- Code outline (Aerial → fzf-lua → built-in)
-	map("<leader>co", function()
-		if vim.fn.exists(":AerialToggle") == 2 then
-			vim.cmd("AerialToggle!")
-		else
-			local fzf_ok, fzf = pcall(require, "fzf-lua")
-			if fzf_ok then
-				fzf.lsp_document_symbols()
-			else
-				lsp.buf.document_symbol()
-			end
-		end
-	end, "Code Outline")
+	-- Code outline
+	map("<leader>co", "<cmd>AerialToggle!<CR>", "Code Outline")
 
 	-- Switch source/header
 	map("<leader>ch", function()
@@ -155,12 +126,7 @@ local function attach_lsp_keymaps(bufnr)
 		if vim.fn.exists(":ClangdSymbolInfo") == 2 then
 			vim.cmd("ClangdSymbolInfo")
 		else
-			local fzf_ok, fzf = pcall(require, "fzf-lua")
-			if fzf_ok then
-				fzf.lsp_document_symbols()
-			else
-				lsp.buf.document_symbol()
-			end
+			require("fzf-lua").lsp_document_symbols()
 		end
 	end, "Symbol Info")
 
@@ -197,56 +163,21 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	end,
 })
 
--- Global LSP defaults
+-- Global LSP defaults & server registration
 
 lsp.config("*", { capabilities = capabilities })
 
--- Server registration
-
 local managed_servers = {}
 
---- Register and enable an LSP server if its binary exists on PATH
-local function register_server(name, config)
-	if type(config) == "function" then
-		config = config()
-	end
-	config = config or {}
-
-	local cmd = config.cmd
-	local exe = config.exe
-	if not exe then
-		if type(cmd) == "table" and cmd[1] then
-			exe = cmd[1]
-		elseif type(cmd) == "string" then
-			exe = cmd
-		else
-			exe = name
-		end
-	end
-
-	local lsp_opts = vim.deepcopy(config)
-	lsp_opts.exe = nil
-
-	local is_exec = vim.fn.executable(exe) == 1
-	table.insert(managed_servers, { name = name, cmd = exe, active = is_exec })
-
-	if is_exec then
-		if not lsp_opts.cmd then
-			lsp_opts.cmd = { exe }
-		end
-		if next(lsp_opts) ~= nil then
-			lsp.config(name, lsp_opts)
-		end
+for name, cfg in pairs(require("lsp.servers")) do
+	cfg = type(cfg) == "function" and cfg() or cfg
+	local exe = (cfg.cmd and cfg.cmd[1]) or name
+	local active = vim.fn.executable(exe) == 1
+	managed_servers[#managed_servers + 1] = { name = name, cmd = exe, active = active }
+	if active then
+		lsp.config(name, cfg)
 		lsp.enable(name)
-	elseif config.warn_if_missing then
-		vim.notify(("Skipped %s LSP: `%s` not found"):format(name, exe), vim.log.levels.WARN)
 	end
-end
-
--- Load and register all servers from the data table
-local servers = require("lsp.servers")
-for name, config in pairs(servers) do
-	register_server(name, config)
 end
 
 -- SmartRename command
@@ -353,17 +284,7 @@ vim.api.nvim_create_user_command("LspHealth", function()
 	vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "LSP Health" })
 end, { desc = "Show LSP health details" })
 
--- Third-party plugin setups
-
--- Typst preview
-local ok_tp, tp = pcall(require, "typst-preview")
-if ok_tp then
-	tp.setup({
-		get_root = function(path)
-			return os.getenv("TYPST_ROOT") or vim.fn.fnamemodify(path, ":h")
-		end,
-	})
-end
+-- Third-party LSP UI plugins
 
 -- Aerial (code outline)
 local ok_aerial, aerial = pcall(require, "aerial")
@@ -379,12 +300,6 @@ if ok_aerial then
 		highlight_on_hover = true,
 		autojump = false,
 	})
-end
-
--- Fidget (notifications + LSP progress)
-local ok_fidget, fidget = pcall(require, "fidget")
-if ok_fidget then
-	fidget.setup({ notification = { override_vim_notify = true } })
 end
 
 -- Inc-rename

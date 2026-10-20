@@ -79,26 +79,6 @@ if debugpy then
 	}
 end
 
--- .NET
-
-local netcoredbg = util.executable("netcoredbg")
-if netcoredbg then
-	dap.adapters.coreclr = { type = "executable", command = netcoredbg, args = { "--interpreter=vscode" } }
-	dap.configurations.cs = {
-		{
-			type = "coreclr",
-			name = "Launch .NET DLL",
-			request = "launch",
-			program = function()
-				return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file")
-			end,
-			cwd = "${workspaceFolder}",
-			stopAtEntry = false,
-		},
-		{ type = "coreclr", name = "Attach to process", request = "attach", processId = dap_utils.pick_process },
-	}
-end
-
 -- Go
 
 local delve = util.executable("dlv")
@@ -120,16 +100,11 @@ end
 -- nvim-jdtls; plain jdtls is not enough. It is intentionally left unwired
 -- here so `:DapContinue` does not offer configurations that cannot start.
 
--- C / C++ (LLDB)
+-- C / C++ / Rust (LLDB)
 
-local lldb = util.find_debug_adapter()
-if lldb then
-	if lldb:match("codelldb$") then
-		dap.adapters.lldb =
-			{ type = "server", port = "${port}", executable = { command = lldb, args = { "--port", "${port}" } } }
-	else
-		dap.adapters.lldb = { type = "executable", command = lldb, name = "lldb" }
-	end
+local lldb_adapter = util.lldb_dap_adapter()
+if lldb_adapter then
+	dap.adapters.lldb = lldb_adapter
 	local function make_lldb_config(default_path_fn)
 		return {
 			{
@@ -211,9 +186,5 @@ map("n", "<leader>mO", dap.step_out, { desc = "Step out" })
 map("n", "<leader>mr", dap.repl.toggle, { desc = "REPL" })
 map("n", "<leader>mu", dapui.toggle, { desc = "DAP UI toggle" })
 map("n", "<leader>mt", dap.terminate, { desc = "Terminate" })
-map("n", "<leader>mj", function()
-	dap.down()
-end, { desc = "Go down in stack" })
-map("n", "<leader>mk", function()
-	dap.up()
-end, { desc = "Go up in stack" })
+map("n", "<leader>mj", dap.down, { desc = "Go down in stack" })
+map("n", "<leader>mk", dap.up, { desc = "Go up in stack" })

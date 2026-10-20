@@ -16,6 +16,52 @@ local function wrap(trig, open, close, desc)
 	})
 end
 
+-- Helper for static single-token / symbol snippets
+local function sym(trig, text, desc)
+	return s({ trig = trig, desc = desc }, { t(text) })
+end
+
+-- Helper for bordered tables with header row and tabstop cells
+local function make_table(trig, ncols, nrows, hdr_fmt, cell_fmt, desc)
+	local auto_cols = {}
+	for _ = 1, ncols do
+		table.insert(auto_cols, "auto")
+	end
+	local nodes = {
+		t({
+			"#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border)[",
+			"  #table(",
+			"    columns: (" .. table.concat(auto_cols, ", ") .. "),",
+			"    fill: (col, row) => if row == 0 { ui-surface-raised } else { none },",
+			"    inset: (x: 10pt, y: 6pt),",
+			"    stroke: (x, y) => (top: if y > 0 { 0.5pt + ui-border } else { none }, left: if x > 0 { 0.5pt + ui-border } else { none }),",
+			"    table.header([*",
+		}),
+	}
+	local idx = 1
+	for col = 1, ncols do
+		if col > 1 then
+			table.insert(nodes, t("*], [*"))
+		end
+		table.insert(nodes, i(idx, string.format(hdr_fmt, col)))
+		idx = idx + 1
+	end
+	table.insert(nodes, t("*]),"))
+	for row = 1, nrows do
+		table.insert(nodes, t({ "", "    [" }))
+		for col = 1, ncols do
+			if col > 1 then
+				table.insert(nodes, t("], ["))
+			end
+			table.insert(nodes, i(idx, string.format(cell_fmt, row, col)))
+			idx = idx + 1
+		end
+		table.insert(nodes, t("],"))
+	end
+	table.insert(nodes, t({ "", "  )", "]" }))
+	return s({ trig = trig, desc = desc }, nodes)
+end
+
 -- Helper for uniform callout blocks with icons, names, borders, and background fills
 -- Callouts now expand to the theme helper (`#callout(icon, title, colour, body)`)
 -- rather than the verbose `#block(...)` markup, matching how notes actually use them.
@@ -156,13 +202,7 @@ ls.add_snippets("typst", {
 	}),
 
 	-- NOTE BLOCKS & CALLOUTS (With icons, names, and background fills)
-	make_callout(
-		"note",
-		"Note",
-		"📝",
-		"#3182ce",
-		"Note callout box with blue border, 📝 icon, and background fill"
-	),
+	make_callout("note", "Note", "📝", "#3182ce", "Note callout box with blue border, 📝 icon, and background fill"),
 	make_callout("info", "Info", "ℹ", "#3182ce", "Info callout box with blue border, ℹ icon, and background fill"),
 	make_callout("tip", "Tip", "💡", "#38a169", "Tip callout box with green border, 💡 icon, and background fill"),
 	make_callout("warning", "Warning", "⚠", "#dd6b20", "Warning callout box (alias)"),
@@ -497,85 +537,24 @@ ls.add_snippets("typst", {
 	}),
 
 	-- TABLES
-	s({ trig = "table", desc = "2-column table with a rounded border that hugs the content" }, {
-		t({
-			"#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border)[",
-			"  #table(",
-			"    columns: (auto, auto),",
-			"    fill: (col, row) => if row == 0 { ui-surface-raised } else { none },",
-			"    inset: (x: 10pt, y: 6pt),",
-			"    stroke: (x, y) => (top: if y > 0 { 0.5pt + ui-border } else { none }, left: if x > 0 { 0.5pt + ui-border } else { none }),",
-			"    table.header([*",
-		}),
-		i(1, "Header 1"),
-		t("*], [*"),
-		i(2, "Header 2"),
-		t({ "*]),", "    [" }),
-		i(3, "Row 1 Cell 1"),
-		t("], ["),
-		i(4, "Row 1 Cell 2"),
-		t({ "],", "    [" }),
-		i(5, "Row 2 Cell 1"),
-		t("], ["),
-		i(6, "Row 2 Cell 2"),
-		t({ "],", "  )", "]" }),
-	}),
-	s({ trig = "table-3", desc = "3-column table with a rounded border that hugs the content" }, {
-		t({
-			"#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border)[",
-			"  #table(",
-			"    columns: (auto, auto, auto),",
-			"    fill: (col, row) => if row == 0 { ui-surface-raised } else { none },",
-			"    inset: (x: 10pt, y: 6pt),",
-			"    stroke: (x, y) => (top: if y > 0 { 0.5pt + ui-border } else { none }, left: if x > 0 { 0.5pt + ui-border } else { none }),",
-			"    table.header([*",
-		}),
-		i(1, "Header 1"),
-		t("*], [*"),
-		i(2, "Header 2"),
-		t("*], [*"),
-		i(3, "Header 3"),
-		t({ "*]),", "    [" }),
-		i(4, "Row 1 Cell 1"),
-		t("], ["),
-		i(5, "Row 1 Cell 2"),
-		t("], ["),
-		i(6, "Row 1 Cell 3"),
-		t({ "],", "    [" }),
-		i(7, "Row 2 Cell 1"),
-		t("], ["),
-		i(8, "Row 2 Cell 2"),
-		t("], ["),
-		i(9, "Row 2 Cell 3"),
-		t({ "],", "  )", "]" }),
-	}),
-	s({ trig = "table-4", desc = "4-column table with a rounded border that hugs the content" }, {
-		t({
-			"#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border)[",
-			"  #table(",
-			"    columns: (auto, auto, auto, auto),",
-			"    fill: (col, row) => if row == 0 { ui-surface-raised } else { none },",
-			"    inset: (x: 10pt, y: 6pt),",
-			"    stroke: (x, y) => (top: if y > 0 { 0.5pt + ui-border } else { none }, left: if x > 0 { 0.5pt + ui-border } else { none }),",
-			"    table.header([*",
-		}),
-		i(1, "Col 1"),
-		t("*], [*"),
-		i(2, "Col 2"),
-		t("*], [*"),
-		i(3, "Col 3"),
-		t("*], [*"),
-		i(4, "Col 4"),
-		t({ "*]),", "    [" }),
-		i(5, "R1C1"),
-		t("], ["),
-		i(6, "R1C2"),
-		t("], ["),
-		i(7, "R1C3"),
-		t("], ["),
-		i(8, "R1C4"),
-		t({ "],", "  )", "]" }),
-	}),
+	make_table(
+		"table",
+		2,
+		2,
+		"Header %d",
+		"Row %d Cell %d",
+		"2-column table with a rounded border that hugs the content"
+	),
+	make_table(
+		"table-3",
+		3,
+		2,
+		"Header %d",
+		"Row %d Cell %d",
+		"3-column table with a rounded border that hugs the content"
+	),
+	make_table("table-4", 4, 1, "Col %d", "R%dC%d", "4-column table with a rounded border that hugs the content"),
+	make_table("table-5", 5, 2, "Col %d", "R%dC%d", "5-column table with a rounded border that hugs the content"),
 	s({ trig = "truthtable", desc = "Digital logic truth table that hugs its content" }, {
 		t({
 			"#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border)[",
@@ -600,7 +579,6 @@ ls.add_snippets("typst", {
 		i(4, "1"),
 		t({ "],", "  )", "]" }),
 	}),
-
 	s({ trig = "truthtable-3", desc = "3-input digital logic truth table that hugs its content" }, {
 		t({
 			"#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border)[",
@@ -632,21 +610,6 @@ ls.add_snippets("typst", {
 		t({ "],", "    table.hline(stroke: 0.5pt + ui-border),", "    [1], [1], [1], [" }),
 		i(8, "0"),
 		t({ "],", "  )", "]" }),
-	}),
-	s({ trig = "table-5", desc = "5-column table with a rounded border that hugs the content" }, {
-		t({
-			"#block(radius: ui-radius, clip: true, stroke: 0.5pt + ui-border)[",
-			"  #table(",
-			"    columns: (auto, auto, auto, auto, auto),",
-			"    fill: (col, row) => if row == 0 { ui-surface-raised } else { none },",
-			"    inset: (x: 10pt, y: 6pt),",
-			"    stroke: (x, y) => (top: if y > 0 { 0.5pt + ui-border } else { none }, left: if x > 0 { 0.5pt + ui-border } else { none }),",
-			"    table.header([*Col 1*], [*Col 2*], [*Col 3*], [*Col 4*], [*Col 5*]),",
-			"    [R1C1], [R1C2], [R1C3], [R1C4], [R1C5],",
-			"    [R2C1], [R2C2], [R2C3], [R2C4], [R2C5],",
-			"  )",
-			"]",
-		}),
 	}),
 	-- FIGURES, MEDIA & DIAGRAMS
 	s({ trig = "figure", desc = "Figure block with embedded image and caption" }, {
@@ -731,9 +694,7 @@ ls.add_snippets("typst", {
 	s({ trig = "cetz-setup", desc = "Import CeTZ and Zap for diagrams and circuits" }, {
 		t({ '#import "@preview/cetz:0.5.2"', '#import "@preview/zap:0.6.0"' }),
 	}),
-	s({ trig = "mermaid-setup", desc = "Import mmdr for Mermaid diagrams" }, {
-		t('#import "@preview/mmdr:0.2.2": mermaid'),
-	}),
+	sym("mermaid-setup", '#import "@preview/mmdr:0.2.2": mermaid', "Import mmdr for Mermaid diagrams"),
 	s({ trig = "mermaid-erd", desc = "Mermaid Entity-Relationship Diagram (Database design)" }, {
 		t({ "#mermaid(", "" }),
 		t({ '  "erDiagram', "" }),
@@ -802,8 +763,8 @@ ls.add_snippets("typst", {
 		i(1),
 		t({ "", "]" }),
 	}),
-	s({ trig = "column-break", desc = "Column break" }, { t("#colbreak()") }),
-	s({ trig = "page-break", desc = "Page break" }, { t("#pagebreak()") }),
+	sym("column-break", "#colbreak()", "Column break"),
+	sym("page-break", "#pagebreak()", "Page break"),
 	s({ trig = "align", desc = "Content alignment block (centre, left, right)" }, {
 		t("#align("),
 		c(1, {
@@ -834,8 +795,8 @@ ls.add_snippets("typst", {
 	wrap("subscript", "#sub[", "]", "Subscript text"),
 
 	-- MATHEMATICS
-	s({ trig = "$", desc = "Inline math block" }, { t("$"), i(1), t("$") }),
-	s({ trig = "$$", desc = "Display math block" }, { t("$ "), i(1), t(" $") }),
+	wrap("$", "$", "$", "Inline math block"),
+	wrap("$$", "$ ", " $", "Display math block"),
 	s({ trig = "equation", desc = "Multi-line block equation syntax" }, {
 		t({ "$ " }),
 		i(1),
@@ -874,13 +835,13 @@ ls.add_snippets("typst", {
 		{ trig = "lim", desc = "Mathematical limit expression target" },
 		{ t("lim_("), i(1, "x"), t(" -> "), i(2, "inf"), t(") "), i(3) }
 	),
-	s({ trig = "sqrt", desc = "Mathematical square root radical function" }, { t("sqrt("), i(1), t(")") }),
+	wrap("sqrt", "sqrt(", ")", "Mathematical square root radical function"),
 	s(
 		{ trig = "root", desc = "Mathematical nth-order root function" },
 		{ t("root("), i(1, "n"), t(", "), i(2, "x"), t(")") }
 	),
-	s({ trig = "abs", desc = "Absolute value bracket wrapper" }, { t("|"), i(1), t("|") }),
-	s({ trig = "norm", desc = "Mathematical norm bracket wrapper" }, { t("||"), i(1), t("||") }),
+	wrap("abs", "|", "|", "Absolute value bracket wrapper"),
+	wrap("norm", "||", "||", "Mathematical norm bracket wrapper"),
 	s(
 		{ trig = "pdiff", desc = "Partial derivative fractional notation template" },
 		{ t("(diff "), i(1, "f"), t(")/(diff "), i(2, "x"), t(")") }
@@ -893,13 +854,13 @@ ls.add_snippets("typst", {
 		{ trig = "binom", desc = "Binomial coefficient matrix notation" },
 		{ t("binom("), i(1, "n"), t(", "), i(2, "k"), t(")") }
 	),
-	s({ trig = "ceil", desc = "Mathematical ceiling rounding bracket function" }, { t("ceil("), i(1), t(")") }),
-	s({ trig = "floor", desc = "Mathematical floor rounding bracket function" }, { t("floor("), i(1), t(")") }),
-	s({ trig = "cases", desc = "Piecewise math function cases container" }, { t("cases("), i(1), t(")") }),
+	wrap("ceil", "ceil(", ")", "Mathematical ceiling rounding bracket function"),
+	wrap("floor", "floor(", ")", "Mathematical floor rounding bracket function"),
+	wrap("cases", "cases(", ")", "Piecewise math function cases container"),
 
 	-- Matrices & Vectors
-	s({ trig = "vec", desc = "Vector column array template" }, { t("vec("), i(1), t(")") }),
-	s({ trig = "mat", desc = "Generic structural matrix template" }, { t("mat("), i(1), t(")") }),
+	wrap("vec", "vec(", ")", "Vector column array template"),
+	wrap("mat", "mat(", ")", "Generic structural matrix template"),
 	s({ trig = "mat2", desc = "Two-by-two square matrix matrix notation template" }, {
 		t("mat("),
 		i(1, "a"),
@@ -932,93 +893,87 @@ ls.add_snippets("typst", {
 		i(9, "i"),
 		t(")"),
 	}),
-	s({ trig = "det", desc = "Matrix determinant operator prefix" }, { t("det "), i(1) }),
-	s({ trig = "trace", desc = "Matrix trace operator prefix" }, { t("tr "), i(1) }),
-	s({ trig = "transpose", desc = "Matrix transpose mathematical superscript" }, { i(1), t("^T") }),
-	s({ trig = "inv", desc = "Matrix inverse mathematical power superscript" }, { i(1), t("^(-1)") }),
+	wrap("det", "det ", "", "Matrix determinant operator prefix"),
+	wrap("trace", "tr ", "", "Matrix trace operator prefix"),
+	wrap("transpose", "", "^T", "Matrix transpose mathematical superscript"),
+	wrap("inv", "", "^(-1)", "Matrix inverse mathematical power superscript"),
 
 	-- Accents & Brackets
-	s({ trig = "conj", desc = "Complex conjugate modifier function" }, { t("conj("), i(1), t(")") }),
-	s({ trig = "hat", desc = "Hat accent mathematical symbol modifier" }, { t("hat("), i(1), t(")") }),
-	s({ trig = "bar", desc = "Overline bar accent mathematical symbol modifier" }, { t("overline("), i(1), t(")") }),
-	s({ trig = "tilde", desc = "Tilde accent mathematical symbol modifier" }, { t("tilde("), i(1), t(")") }),
-	s({ trig = "dot", desc = "Single dot accent mathematical symbol modifier" }, { t("dot("), i(1), t(")") }),
-	s({ trig = "ddot", desc = "Double dot accent mathematical symbol modifier" }, { t("dot.double("), i(1), t(")") }),
-	s({ trig = "delimiters", desc = "Dynamic sizing left-right parentheses wrapper" }, { t("lr("), i(1), t(")") }),
-	s(
-		{ trig = "delimiters-bracket", desc = "Dynamic sizing left-right square brackets wrapper" },
-		{ t("lr(["), i(1), t("])") }
-	),
-	s(
-		{ trig = "delimiters-curly", desc = "Dynamic sizing left-right curly braces wrapper" },
-		{ t("lr({"), i(1), t("})") }
-	),
-	s({ trig = "set", desc = "Mathematical set notation" }, { t("{ "), i(1), t(" }") }),
+	wrap("conj", "conj(", ")", "Complex conjugate modifier function"),
+	wrap("hat", "hat(", ")", "Hat accent mathematical symbol modifier"),
+	wrap("bar", "overline(", ")", "Overline bar accent mathematical symbol modifier"),
+	wrap("tilde", "tilde(", ")", "Tilde accent mathematical symbol modifier"),
+	wrap("dot", "dot(", ")", "Single dot accent mathematical symbol modifier"),
+	wrap("ddot", "dot.double(", ")", "Double dot accent mathematical symbol modifier"),
+	wrap("delimiters", "lr(", ")", "Dynamic sizing left-right parentheses wrapper"),
+	wrap("delimiters-bracket", "lr([", "])", "Dynamic sizing left-right square brackets wrapper"),
+	wrap("delimiters-curly", "lr({", "})", "Dynamic sizing left-right curly braces wrapper"),
+	wrap("set", "{ ", " }", "Mathematical set notation"),
 	s(
 		{ trig = "set-builder", desc = "Set builder notation with condition" },
 		{ t("{ "), i(1, "x"), t(" in "), i(2, "S"), t(" : "), i(3, "P(x)"), t(" }") }
 	),
 
 	-- Math Symbols, Relations & Arrows
-	s({ trig = "infinity", desc = "Infinity mathematical symbol" }, { t("infinity") }),
-	s({ trig = "nabla", desc = "Nabla gradient mathematical operator" }, { t("nabla") }),
-	s({ trig = "arrow", desc = "Standard math relation arrow direction" }, { t("arrow") }),
-	s({ trig = "arrow-right", desc = "Rightward pointing relation arrow" }, { t("arrow.r") }),
-	s({ trig = "arrow-left", desc = "Leftward pointing relation arrow" }, { t("arrow.l") }),
-	s({ trig = "arrow-up", desc = "Upward pointing relation arrow" }, { t("arrow.t") }),
-	s({ trig = "arrow-down", desc = "Downward pointing relation arrow" }, { t("arrow.b") }),
-	s({ trig = "iff", desc = "If and only if logical equivalence arrow" }, { t("<==>") }),
-	s({ trig = "==>", desc = "Logical implication rightward relation arrow" }, { t("==>") }),
-	s({ trig = "therefore", desc = "Therefore logical conclusion conclusion symbol" }, { t("therefore") }),
-	s({ trig = "because", desc = "Because logical explanation symbol" }, { t("because") }),
-	s({ trig = "forall", desc = "For all universal quantifier symbol" }, { t("forall") }),
-	s({ trig = "exists", desc = "Exists existential quantifier symbol" }, { t("exists") }),
-	s({ trig = "elem", desc = "Element of set membership symbol" }, { t("in") }),
-	s({ trig = "notin", desc = "Not an element of set membership negation symbol" }, { t("in.not") }),
-	s({ trig = "subset", desc = "Subset inclusion operation relation symbol" }, { t("subset") }),
-	s({ trig = "cup", desc = "Union set operation symbol" }, { t("union") }),
-	s({ trig = "cap", desc = "Intersection set operation symbol" }, { t("intersection") }),
-	s({ trig = "empty", desc = "Empty set null space placeholder symbol" }, { t("nothing") }),
-	s({ trig = "neq", desc = "Not equal relation symbol" }, { t("!=") }),
-	s({ trig = "leq", desc = "Less than or equal relation symbol" }, { t("<=") }),
-	s({ trig = "geq", desc = "Greater than or equal relation symbol" }, { t(">=") }),
-	s({ trig = "approx", desc = "Approximately equal relation symbol" }, { t("approx") }),
-	s({ trig = "times", desc = "Multiplication cross symbol" }, { t("times") }),
-	s({ trig = "cdot", desc = "Centre dot multiplication symbol" }, { t("dot.c") }),
+	sym("infinity", "infinity", "Infinity mathematical symbol"),
+	sym("nabla", "nabla", "Nabla gradient mathematical operator"),
+	sym("arrow", "arrow", "Standard math relation arrow direction"),
+	sym("arrow-right", "arrow.r", "Rightward pointing relation arrow"),
+	sym("arrow-left", "arrow.l", "Leftward pointing relation arrow"),
+	sym("arrow-up", "arrow.t", "Upward pointing relation arrow"),
+	sym("arrow-down", "arrow.b", "Downward pointing relation arrow"),
+	sym("iff", "<==>", "If and only if logical equivalence arrow"),
+	sym("==>", "==>", "Logical implication rightward relation arrow"),
+	sym("therefore", "therefore", "Therefore logical conclusion symbol"),
+	sym("because", "because", "Because logical explanation symbol"),
+	sym("forall", "forall", "For all universal quantifier symbol"),
+	sym("exists", "exists", "Exists existential quantifier symbol"),
+	sym("elem", "in", "Element of set membership symbol"),
+	sym("notin", "in.not", "Not an element of set membership negation symbol"),
+	sym("subset", "subset", "Subset inclusion operation relation symbol"),
+	sym("supset", "supset", "Superset relation symbol"),
+	sym("subset-equal", "subset.eq", "Subset-or-equal relation symbol"),
+	sym("superset-equal", "supset.eq", "Superset-or-equal relation symbol"),
+	sym("cup", "union", "Union set operation symbol"),
+	sym("cap", "intersection", "Intersection set operation symbol"),
+	sym("empty", "nothing", "Empty set null space placeholder symbol"),
+	sym("neq", "!=", "Not equal relation symbol"),
+	sym("leq", "<=", "Less than or equal relation symbol"),
+	sym("geq", ">=", "Greater than or equal relation symbol"),
+	sym("approx", "approx", "Approximately equal relation symbol"),
+	sym("times", "times", "Multiplication cross symbol"),
+	sym("cdot", "dot.c", "Centre dot multiplication symbol"),
 
 	-- Number sets (Blackboard Bold)
-	s({ trig = "real", desc = "Set of real numbers blackboard bold identifier" }, { t("RR") }),
-	s({ trig = "natural", desc = "Set of natural numbers blackboard bold identifier" }, { t("NN") }),
-	s({ trig = "integer", desc = "Set of integers blackboard bold identifier" }, { t("ZZ") }),
-	s({ trig = "rational", desc = "Set of rational numbers blackboard bold identifier" }, { t("QQ") }),
-	s({ trig = "complex", desc = "Set of complex numbers blackboard bold identifier" }, { t("CC") }),
+	sym("real", "RR", "Set of real numbers blackboard bold identifier"),
+	sym("natural", "NN", "Set of natural numbers blackboard bold identifier"),
+	sym("integer", "ZZ", "Set of integers blackboard bold identifier"),
+	sym("rational", "QQ", "Set of rational numbers blackboard bold identifier"),
+	sym("complex", "CC", "Set of complex numbers blackboard bold identifier"),
 
 	-- Greek lowercase letters
-	s({ trig = "alpha", desc = "Greek lowercase letter alpha" }, { t("alpha") }),
-	s({ trig = "beta", desc = "Greek lowercase letter beta" }, { t("beta") }),
-	s({ trig = "gamma", desc = "Greek lowercase letter gamma" }, { t("gamma") }),
-	s({ trig = "delta", desc = "Greek lowercase letter delta" }, { t("delta") }),
-	s({ trig = "epsilon", desc = "Greek lowercase letter epsilon" }, { t("epsilon") }),
-	s({ trig = "theta", desc = "Greek lowercase letter theta" }, { t("theta") }),
-	s({ trig = "lambda", desc = "Greek lowercase letter lambda" }, { t("lambda") }),
-	s({ trig = "mu", desc = "Greek lowercase letter mu" }, { t("mu") }),
-	s({ trig = "pi", desc = "Greek lowercase letter pi" }, { t("pi") }),
-	s({ trig = "sigma", desc = "Greek lowercase letter sigma" }, { t("sigma") }),
-	s({ trig = "omega", desc = "Greek lowercase letter omega" }, { t("omega") }),
-	s({ trig = "phi", desc = "Greek lowercase letter phi" }, { t("phi") }),
-	s({ trig = "psi", desc = "Greek lowercase letter psi" }, { t("psi") }),
-	s({ trig = "rho", desc = "Greek lowercase letter rho" }, { t("rho") }),
-	s({ trig = "tau", desc = "Greek lowercase letter tau" }, { t("tau") }),
-	s({ trig = "zeta", desc = "Greek lowercase letter zeta" }, { t("zeta") }),
-	s({ trig = "eta", desc = "Greek lowercase letter eta" }, { t("eta") }),
-	s({ trig = "iota", desc = "Greek lowercase letter iota" }, { t("iota") }),
-	s({ trig = "kappa", desc = "Greek lowercase letter kappa" }, { t("kappa") }),
-	s({ trig = "nu", desc = "Greek lowercase letter nu" }, { t("nu") }),
-	s({ trig = "xi", desc = "Greek lowercase letter xi" }, { t("xi") }),
-	s({ trig = "chi", desc = "Greek lowercase letter chi" }, { t("chi") }),
-	s({ trig = "upsilon", desc = "Greek lowercase letter upsilon" }, { t("upsilon") }),
-	s({ trig = "omicron", desc = "Greek lowercase letter omicron" }, { t("omicron") }),
-	s({ trig = "supset", desc = "Superset relation symbol" }, { t("supset") }),
-	s({ trig = "subset-equal", desc = "Subset-or-equal relation symbol" }, { t("subset.eq") }),
-	s({ trig = "superset-equal", desc = "Superset-or-equal relation symbol" }, { t("supset.eq") }),
+	sym("alpha", "alpha", "Greek lowercase letter alpha"),
+	sym("beta", "beta", "Greek lowercase letter beta"),
+	sym("gamma", "gamma", "Greek lowercase letter gamma"),
+	sym("delta", "delta", "Greek lowercase letter delta"),
+	sym("epsilon", "epsilon", "Greek lowercase letter epsilon"),
+	sym("theta", "theta", "Greek lowercase letter theta"),
+	sym("lambda", "lambda", "Greek lowercase letter lambda"),
+	sym("mu", "mu", "Greek lowercase letter mu"),
+	sym("pi", "pi", "Greek lowercase letter pi"),
+	sym("sigma", "sigma", "Greek lowercase letter sigma"),
+	sym("omega", "omega", "Greek lowercase letter omega"),
+	sym("phi", "phi", "Greek lowercase letter phi"),
+	sym("psi", "psi", "Greek lowercase letter psi"),
+	sym("rho", "rho", "Greek lowercase letter rho"),
+	sym("tau", "tau", "Greek lowercase letter tau"),
+	sym("zeta", "zeta", "Greek lowercase letter zeta"),
+	sym("eta", "eta", "Greek lowercase letter eta"),
+	sym("iota", "iota", "Greek lowercase letter iota"),
+	sym("kappa", "kappa", "Greek lowercase letter kappa"),
+	sym("nu", "nu", "Greek lowercase letter nu"),
+	sym("xi", "xi", "Greek lowercase letter xi"),
+	sym("chi", "chi", "Greek lowercase letter chi"),
+	sym("upsilon", "upsilon", "Greek lowercase letter upsilon"),
+	sym("omicron", "omicron", "Greek lowercase letter omicron"),
 })

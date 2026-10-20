@@ -181,7 +181,7 @@ Scope {
 
 #### `WmService.qml`
 - **Role**: Unified `pragma Singleton` bridging active compositor backends (`MangoService`, `HyprlandService`, `NiriService`) based on `Config.wm`.
-- **Exposes**: `currentTitle`, `getWorkspaces(outputName)`, `focusWorkspace(id)`, `getLayoutSymbol(outputName)`, `getLayoutInfo(symbol)`, `setLayout(symbol)`, `nextLayout()`, and active/cursor monitor detection (`resolveTargetScreen(callback)`, `cancelScreenQuery()`, `queryingScreen`).
+- **Exposes**: `currentTitle`, `workspacesDependency`, `getWorkspaces(outputName)`, `focusWorkspace(id)`, `getLayoutSymbol(outputName)`, `getLayoutInfo(symbol)`, `setLayout(symbol)`, `nextLayout()`, and active/cursor monitor detection (`resolveTargetScreen(callback)`, `cancelScreenQuery()`, `queryingScreen`).
 
 #### `SystemService.qml`
 - **Role**: Central `pragma Singleton` for PipeWire output sinks, microphone input source, `brightnessctl` + sysfs screen backlight control, OSD state, and `"system"` IPC actions.
@@ -223,7 +223,7 @@ Scope {
 #### `LockScreen.qml`
 - **Role**: Wayland session screen locker built on `WlSessionLock` and `WlSessionLockSurface`.
 - **IPC Target**: `"lockscreen"` (functions: `lock()`, `unlock()`, `toggle()`).
-- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt with Caps Lock warning & error shake animation, secondary screen display lock graphics, background wallpaper with customisable GPU blur (`MultiEffect`) and dimming, read-only `NetworkWidget`/`BatteryWidget` status pills, and system power actions (Sleep/Suspend, Reboot, Power Off).
+- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt with user avatar, real-time accent highlight on keystrokes, rotating authentication spinner, password peek/reveal eye toggle, Caps Lock warning & error shake animation, secondary screen display lock graphics with live typing indicator & MPRIS `MediaCard`, customisable status pill cluster docked to any corner (default `"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`, or `"split"` / `"corners"` via `Config.lockStatusPosition` or `QS_LOCK_STATUS_POS`), background wallpaper with customisable GPU blur (`MultiEffect`) and dimming, and system power actions (Sleep/Suspend, Reboot, Power Off).
 
 #### `NotificationOverlay.qml` & `NotificationCard.qml`
 - **Role**: Screen overlay and card delegate rendering active notification toasts and history items.
@@ -235,7 +235,7 @@ Scope {
 
 #### `Pill.qml`
 - **Role**: Standardised rounded pill container for bar widgets and inline action pills.
-- **Properties**: `horizontal`, `padding`, `pillHeight`, `baseColour`, `hoverColour`, `hoverHighlight`, `pillColour`, `orientation`, `clickable`, `acceptedButtons`, `hovered`; signals `clicked(var mouse)`, `wheel(var wheel)`. Includes built-in hover/border colour transitions, auto-sizing, and optional pointer click/scroll handling.
+- **Properties**: `horizontal`, `padding`, `pillHeight`, `baseColour`, `hoverColour`, `hoverHighlight`, `pillColour`, `orientation`, `clickable`, `acceptedButtons`, `hovered`, `radius`; signals `clicked(var mouse)`, `wheel(var wheel)`. Includes built-in hover/border colour transitions, auto-sizing, and optional pointer click/scroll handling.
 
 #### `Card.qml`
 - **Role**: Shared elevated/surface card container used across Command Centre sections, popovers, `MediaCard`, `NotificationCard`, `OsdOverlay`, and `LockScreen`.

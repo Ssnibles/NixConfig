@@ -5,7 +5,19 @@ local i = ls.insert_node
 
 ls.add_snippets("nix", {
 	s({ trig = "module", desc = "NixOS Dendritic Module Template" }, {
-		t({ "{ ... }:", "{", "  nixos.modules.shared =", "    {", "      config,", "      lib,", "      pkgs,", "      ...", "    }:", "    let", "      cfg = config.features." }),
+		t({
+			"{ ... }:",
+			"{",
+			"  nixos.modules.shared =",
+			"    {",
+			"      config,",
+			"      lib,",
+			"      pkgs,",
+			"      ...",
+			"    }:",
+			"    let",
+			"      cfg = config.features.",
+		}),
 		i(1, "feature"),
 		t({ ";", "    in", "    {", "      options.features." }),
 		i(2, "feature"),
@@ -17,7 +29,19 @@ ls.add_snippets("nix", {
 	}),
 
 	s({ trig = "hjem-module", desc = "Hjem User Configuration Module Template" }, {
-		t({ "{ ... }:", "{", "  nixos.modules.shared =", "    {", "      config,", "      lib,", "      pkgs,", "      ...", "    }:", "    let", "      cfg = config.features." }),
+		t({
+			"{ ... }:",
+			"{",
+			"  nixos.modules.shared =",
+			"    {",
+			"      config,",
+			"      lib,",
+			"      pkgs,",
+			"      ...",
+			"    }:",
+			"    let",
+			"      cfg = config.features.",
+		}),
 		i(1, "feature"),
 		t({ ";", "    in", "    {", "      options.features." }),
 		i(2, "feature"),

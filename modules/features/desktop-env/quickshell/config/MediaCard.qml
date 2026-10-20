@@ -23,9 +23,9 @@ Card {
   // bar popover, where the widget's own hover has already ended).
   HoverHandler {
     id: cardHover
-    onHoveredChanged: MediaService.setConsumer("mediaCard", hovered)
+    onHoveredChanged: MediaService.setConsumer("mediaCard-" + String(root), hovered)
   }
-  Component.onDestruction: MediaService.setConsumer("mediaCard", false)
+  Component.onDestruction: MediaService.setConsumer("mediaCard-" + String(root), false)
 
   // Card-wide right-click focuses the player.
   MouseArea {

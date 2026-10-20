@@ -5,8 +5,6 @@ M.colours = {
 	fg = "#cdcdcd",
 	comment = "#606079",
 	bgSubtle = "#252530",
-	bgFloat = "#1a1a22",
-	gutter = "#252530",
 	border = "#2e2e3c",
 	blue = "#6e94b2",
 	purple = "#bb9dbd",
@@ -73,7 +71,6 @@ function M.setup()
 	for _, g in ipairs({
 		"NormalNC",
 		"SignColumn",
-		"FoldColumn",
 		"StatusLine",
 		"StatusLineNC",
 		"WinBar",
@@ -82,12 +79,12 @@ function M.setup()
 		"MsgSeparator",
 		"PmenuSbar",
 		"PmenuThumb",
-		"MiniAnimateNormalFloat",
 		"TreesitterContext",
 		"TreesitterContextLineNumber",
 		"TabLine",
 		"TabLineFill",
 		"OilNormal",
+		"OilFile",
 	}) do
 		hl(g, { link = "Normal" })
 	end
@@ -137,20 +134,32 @@ function M.setup()
 	hl("LineNrAbove", { fg = c.comment })
 	hl("LineNrBelow", { fg = c.comment })
 
-	-- Separators & borders
+	-- Separators, borders & titles
 	hl("WinSeparator", { fg = separator })
 	hl("GlobalBorder", { fg = c.border })
-	hl("FloatBorder", { link = "GlobalBorder" })
+	for _, g in ipairs({
+		"FloatBorder",
+		"LspInfoBorder",
+		"FzfLuaBorder",
+		"FzfLuaPreviewBorder",
+		"FzfLuaPromptBorder",
+		"FzfLuaHelpBorder",
+		"MiniClueBorder",
+		"MiniClueSeparator",
+		"BlinkCmpMenuBorder",
+		"BlinkCmpDocBorder",
+		"BlinkCmpSignatureHelpBorder",
+		"BlinkCmpScrollBarThumb",
+	}) do
+		hl(g, { link = "GlobalBorder" })
+	end
 	hl("FloatTitle", { fg = c.blue, bold = true })
+	for _, g in ipairs({ "LspInfoTitle", "FzfLuaTitle", "MiniClueTitle" }) do
+		hl(g, { link = "FloatTitle" })
+	end
 	hl("FloatFooter", { fg = c.comment })
-	hl("LspInfoBorder", { fg = c.border })
-	hl("LspInfoTitle", { fg = c.blue, bold = true })
 
 	-- FzfLua
-	for _, g in ipairs({ "FzfLuaBorder", "FzfLuaPreviewBorder", "FzfLuaPromptBorder", "FzfLuaHelpBorder" }) do
-		hl(g, { fg = c.border })
-	end
-	hl("FzfLuaTitle", { fg = c.blue, bold = true })
 	hl("FzfLuaScrollFloatEmpty", { fg = c.comment })
 	hl("FzfLuaScrollFloatFull", { fg = c.blue })
 	hl("FzfLuaHeaderText", { fg = c.comment })
@@ -160,17 +169,11 @@ function M.setup()
 	hl("FzfLuaFilePart", { fg = c.fg })
 
 	-- Mini.clue
-	hl("MiniClueBorder", { fg = c.border })
-	hl("MiniClueTitle", { fg = c.blue, bold = true })
 	hl("MiniClueDescGroup", { fg = c.comment })
 	hl("MiniClueNextKey", { fg = c.blue, bold = true })
 	hl("MiniClueNextKeyWithPostkeys", { fg = c.blue, bold = true })
-	hl("MiniClueSeparator", { fg = c.border })
 
 	-- Blink.cmp
-	hl("BlinkCmpMenuBorder", { fg = c.border })
-	hl("BlinkCmpDocBorder", { fg = c.border })
-	hl("BlinkCmpSignatureHelpBorder", { fg = c.border })
 	hl("BlinkCmpMenuSelection", { fg = c.fg, bg = c.selection, bold = true })
 	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
 	hl("BlinkCmpLabelDetail", { fg = c.comment, italic = true })
@@ -178,6 +181,8 @@ function M.setup()
 	hl("BlinkCmpSource", { fg = c.comment })
 	hl("BlinkCmpKind", { fg = c.comment })
 	hl("BlinkCmpGhostText", { fg = c.comment })
+	hl("BlinkCmpSignatureHelpActiveParameter", { fg = c.blue, bold = true })
+	hl("BlinkCmpScrollBarGutter", { fg = c.bgSubtle })
 
 	local kind_colours = {
 		Field = c.purple,
@@ -208,12 +213,6 @@ function M.setup()
 	for kind, colour in pairs(kind_colours) do
 		hl("BlinkCmpKind" .. kind, { fg = colour })
 	end
-
-	hl("BlinkCmpDoc", { link = "Normal" })
-	hl("BlinkCmpSignatureHelp", { link = "Normal" })
-	hl("BlinkCmpSignatureHelpActiveParameter", { fg = c.blue, bold = true })
-	hl("BlinkCmpScrollBarThumb", { fg = c.border })
-	hl("BlinkCmpScrollBarGutter", { fg = c.bgSubtle })
 
 	-- Pmenu
 	hl("PmenuSel", { fg = c.fg, bg = c.selection, bold = true })
@@ -291,7 +290,7 @@ function M.setup()
 
 	-- Folding
 	hl("Folded", { fg = blend(c.blue, c.comment, 0.4), bg = blend(c.blue, c.bg, 0.07) })
-	hl("FoldColumn", { fg = c.comment })
+	hl("FoldColumn", { fg = c.comment, bg = c.bg })
 
 	vim.opt.foldtext = [[v:lua.require('theme').fold_text()]]
 	function M.fold_text()
@@ -321,23 +320,10 @@ function M.setup()
 	hl("MiniIndentscopeSymbol", { fg = indent })
 	hl("MiniCursorword", { bg = c.selection })
 	hl("MiniCursorwordCurrent", { bg = c.selection })
-	hl("MiniPickNormal", { link = "Normal" })
-	hl("MiniPickBorder", { link = "GlobalBorder" })
-	hl("MiniPickMatchCurrent", { fg = c.blue, bold = true })
-	hl("MiniPickMatchMarked", { fg = c.blue, bold = true })
-	hl("MiniPickPreviewLine", { fg = c.comment })
-	hl("MiniStarterHeader", { fg = c.blue, bold = true })
-	hl("MiniStarterSection", { fg = c.purple, bold = true })
-	hl("MiniStarterItem", { fg = c.fg })
-	hl("MiniStarterItemBullet", { fg = c.cyan })
-	hl("MiniStarterItemPrefix", { fg = c.blue, bold = true })
-	hl("MiniStarterFooter", { fg = c.comment, italic = true })
-	hl("MiniStarterQuery", { fg = c.yellow, bold = true })
 
 	-- Oil
 	hl("OilDir", { fg = c.blue, bold = true })
 	hl("OilDirIcon", { fg = c.blue })
-	hl("OilFile", { link = "Normal" })
 
 	-- Statusline mode highlights
 	hl("StlModeN", { fg = c.bg, bg = c.blue, bold = true })

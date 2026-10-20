@@ -139,8 +139,8 @@ Item {
         }
 
         function goToCurrent() {
-          viewYear = realYear
-          viewMonth = realMonth
+          viewYear = Qt.binding(() => calCol.realYear)
+          viewMonth = Qt.binding(() => calCol.realMonth)
         }
 
         // Calendar Header: Month + Year title & Nav Buttons

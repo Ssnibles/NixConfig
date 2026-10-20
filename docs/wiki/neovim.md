@@ -27,25 +27,26 @@ Because `nvim-src/` is symlinked directly from your Git workspace, you can edit 
 modules/features/nvim-src/
 ├── init.lua                            # Top-level Lua entry point
 └── lua/
-    ├── autocmds.lua                    # Auto-commands (highlight on yank, cursor recall)
+    ├── autocmds.lua                    # Auto-commands (highlight on yank, cursor recall, fold rules)
     ├── keymaps.lua                     # Global keybindings (<leader> = Space)
     ├── smart_enter.lua                 # Context-aware Enter key handling
     ├── theme.lua                       # Dynamic colour overrides matching system palette
+    ├── util.lua                        # Shared helpers (toggle notifications, LLDB DAP adapter)
     │
     ├── lsp/
-    │   ├── init.lua                    # LSP client configuration & diagnostic handlers
+    │   ├── init.lua                    # LSP client configuration & attachment keymaps
     │   └── servers.lua                 # Server definitions (nixd, pyright, marksman, tinymist, etc.)
     │
     ├── plugins/
     │   ├── completion.lua              # Blink.cmp, Luasnip, Copilot, friendly-snippets
     │   ├── dap.lua                     # nvim-dap, DAP UI, Python & LLDB debug adapters
-    │   ├── diagnostics.lua             # tiny-inline-diagnostic-nvim, fidget status notifications
-    │   ├── editor.lua                  # Oil, Gitsigns, Grug-far, Flash, smart-splits, jjui popup
+    │   ├── diagnostics.lua             # vim.diagnostic, tiny-inline-diagnostic-nvim, fidget
+    │   ├── editor.lua                  # Oil, Gitsigns, Grug-far, Flash, Markview, Dial, smart-splits, jjui
     │   ├── format.lua                  # Conform.nvim formatting definitions
     │   ├── fzf.lua                     # FZF-Lua fuzzy finders
-    │   ├── lang.lua                    # Rustaceanvim, Clangd extensions, GenerateCompileFlags
+    │   ├── lang.lua                    # Rustaceanvim, Clangd extensions, Typst preview, GenerateCompileFlags
     │   ├── lint.lua                    # nvim-lint static linters
-    │   ├── mini.lua                    # Mini.nvim (pairs, surround, ai, move, comment)
+    │   ├── mini.lua                    # Mini.nvim (pairs, surround, ai, move, comment, hipatterns, clue)
     │   ├── terminal.lua                # Embedded floating terminal buffers
     │   └── treesitter.lua              # Treesitter context & text-objects
     │
@@ -96,7 +97,7 @@ Pressing **`<leader>gg`** spawns an embedded terminal floating window (85% width
 
 ### 6. Fast Find & Replace
 - **`<leader>fr`**: Triggers a buffer-local find-and-replace prompt with the current word under cursor pre-filled.
-- **`<leader>sg`**: Opens **Grug-far** for project-wide interactive search and replace with live diffing.
+- **`<leader>fR`**: Opens **Grug-far** for project-wide interactive search and replace with live diffing.
 
 ### 7. Rust Development (`Rustaceanvim`)
 - **`<leader>rr`**: Runnables picker
@@ -115,11 +116,11 @@ Format-on-save is managed by `conform.nvim` across all major languages:
 | :--- | :--- | :--- | :--- |
 | **Rust** | `rust-analyzer` (via rustaceanvim) | `rustfmt` | `clippy` |
 | **Zig** | `zls` (Wayland header wrapped) | `zig fmt` | compiler diagnostics |
-| **C / C++** | `clangd` (with clangd_extensions) | `clang-format` | `cppcheck`, `cpplint` |
+| **C / C++** | `clangd` (with clangd_extensions) | `clang-format` | `cppcheck` |
 | **Nix** | `nixd` | `nixfmt` | `statix`, `deadnix` |
-| **Python** | `pyright` | `black`, `isort` | `ruff` / `flake8` |
-| **JavaScript / TypeScript** | `vtsls` / `eslint` | `prettierd` | `eslint` |
-| **Lua** | `lua-language-server` | `stylua` | `luacheck` |
-| **Typst** | `tinymist` | `typstyle` | `tinymist` |
-| **QML / QtQuick** | `qmlls` (QtQuick wrapped) | manual | `qmlls` |
-| **Java / Kotlin** | `jdtls` / `kotlin-ls` | `google-java-format`, `ktlint` | compiler diagnostics |
+| **Python** | `pyright`, `ruff` | `ruff_organize_imports`, `ruff_format` | `ruff`, `mypy` |
+| **JavaScript / TypeScript** | `vtsls`, `eslint` | `prettier` | `eslint` |
+| **Lua** | `lua-language-server` | `stylua` | `lua-language-server` |
+| **Typst** | `tinymist`, `ltex_plus` | `typstyle` | `tinymist`, `ltex_plus` |
+| **QML / QtQuick** | `qmlls` (QtQuick wrapped) | `qmlformat` | `qmlls` |
+| **Java** | `jdtls` | `google-java-format` | `checkstyle` |

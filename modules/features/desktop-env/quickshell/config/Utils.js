@@ -526,32 +526,41 @@ function findBatteryDevice(upowerDevices, displayDevice) {
   return (displayDevice && displayDevice.ready) ? displayDevice : null
 }
 
+function _screenList(screens) {
+  var list = (screens && screens.screens) ? screens.screens : screens
+  if (!list && typeof Quickshell !== "undefined") {
+    list = Quickshell.screens
+  }
+  return list || null
+}
+
+function _screenCount(list) {
+  if (!list) return 0
+  return list.length !== undefined ? list.length : (list.count !== undefined ? list.count : 0)
+}
+
+function _screenItem(list, i) {
+  return list[i] || (list.get ? list.get(i) : null)
+}
+
 function screenByName(arg1, arg2) {
   var name = typeof arg1 === "string" ? arg1 : (typeof arg2 === "string" ? arg2 : null)
-  var screens = (arg1 && typeof arg1 !== "string") ? arg1 : ((arg2 && typeof arg2 !== "string") ? arg2 : null)
-  if (screens && screens.screens) screens = screens.screens
-  if (!screens && typeof Quickshell !== "undefined") {
-    screens = Quickshell.screens
-  }
-  if (!name || !screens) return null
-  var len = screens.length !== undefined ? screens.length : (screens.count !== undefined ? screens.count : 0)
+  var rawScreens = (arg1 && typeof arg1 !== "string") ? arg1 : ((arg2 && typeof arg2 !== "string") ? arg2 : null)
+  var list = _screenList(rawScreens)
+  if (!name || !list) return null
+  var len = _screenCount(list)
   for (var i = 0; i < len; i++) {
-    var s = screens[i] || (screens.get ? screens.get(i) : null)
+    var s = _screenItem(list, i)
     if (s && s.name === name) return s
   }
   return null
 }
 
 function screenAt(x, y, screens) {
-  var list = screens
-  if (list && list.screens) list = list.screens
-  if (!list && typeof Quickshell !== "undefined") {
-    list = Quickshell.screens
-  }
-  if (!list) return null
-  var len = list.length !== undefined ? list.length : (list.count !== undefined ? list.count : 0)
+  var list = _screenList(screens)
+  var len = _screenCount(list)
   for (var i = 0; i < len; i++) {
-    var s = list[i] || (list.get ? list.get(i) : null)
+    var s = _screenItem(list, i)
     if (s && x >= s.x && x < s.x + s.width && y >= s.y && y < s.y + s.height) {
       return s
     }
@@ -564,16 +573,8 @@ function resolveActiveScreen(targetScreen, lastActiveScreen, screens) {
   if (target) return target
   var last = lastActiveScreen || (typeof Config !== "undefined" ? Config.lastActiveScreen : null)
   if (last) return last
-  var list = screens
-  if (list && list.screens) list = list.screens
-  if (!list && typeof Quickshell !== "undefined") {
-    list = Quickshell.screens
-  }
-  if (list) {
-    var len = list.length !== undefined ? list.length : (list.count !== undefined ? list.count : 0)
-    if (len > 0) return list[0] || (list.get ? list.get(0) : null)
-  }
-  return null
+  var list = _screenList(screens)
+  return _screenCount(list) > 0 ? _screenItem(list, 0) : null
 }
 
 function parseOverlayPosition(pos, fallback) {
@@ -594,7 +595,7 @@ function parseOverlayPosition(pos, fallback) {
 
 function resolveOverlayScreens(allScreensMode, isActive, frozenScreen, lastActiveScreen, screens) {
   if (!isActive) return []
-  var list = (screens && screens.screens) ? screens.screens : (screens || [])
+  var list = _screenList(screens) || []
   if (allScreensMode) return list
   var s = frozenScreen || lastActiveScreen || (list.length > 0 ? list[0] : null)
   if (s && list.length > 0 && list.indexOf(s) === -1) {

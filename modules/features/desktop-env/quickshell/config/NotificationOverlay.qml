@@ -43,7 +43,7 @@ Scope {
       WlrLayershell.layer: WlrLayer.Overlay
       exclusionMode: ExclusionMode.Ignore
 
-      readonly property var pos: Utils.parseOverlayPosition(root.position || Config.notifPosition, "top-right")
+      readonly property var pos: Utils.parseOverlayPosition(root.position, "top-right")
 
       anchors {
         top: panel.pos.onTop

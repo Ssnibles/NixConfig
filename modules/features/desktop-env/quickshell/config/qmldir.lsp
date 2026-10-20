@@ -47,6 +47,7 @@ SharedTooltipWindow 1.0 SharedTooltipWindow.qml
 SliderControl 1.0 SliderControl.qml
 SystemTrayWidget 1.0 SystemTrayWidget.qml
 Tooltip 1.0 Tooltip.qml
+Utils 1.0 Utils.js
 VolumeWidget 1.0 VolumeWidget.qml
 WindowTitleWidget 1.0 WindowTitleWidget.qml
 WorkspacesWidget 1.0 WorkspacesWidget.qml

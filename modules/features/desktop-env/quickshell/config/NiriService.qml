@@ -147,10 +147,6 @@ QtObject {
     Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", id.toString()])
   }
 
-  function focusWindow(patterns) {
-    WindowFocuser.focus(patterns)
-  }
-
 
   function workspacesForOutput(outputName) {
     var result = []

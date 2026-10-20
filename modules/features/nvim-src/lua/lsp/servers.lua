@@ -76,7 +76,7 @@ in
 		options = {
 			nixos = { expr = ("(builtins.getFlake %s).nixosConfigurations.%s.options"):format(ref, attr) },
 			hjem = {
-				expr = ('(builtins.getFlake %s).nixosConfigurations.%s.options.hjem.users.type.getSubOptions []'):format(
+				expr = ("(builtins.getFlake %s).nixosConfigurations.%s.options.hjem.users.type.getSubOptions []"):format(
 					ref,
 					attr
 				),
@@ -235,14 +235,10 @@ return {
 			"eslint.config.mjs",
 			"eslint.config.cjs",
 			"eslint.config.ts",
-			"package.json",
-			".git",
 		},
 		settings = {
 			validate = "on",
 			packageManager = "npm",
-			useESLintClass = false,
-			experimental = { useFlatConfig = false },
 			codeActionOnSave = { enable = false, mode = "all" },
 			format = true,
 			quiet = false,
@@ -251,7 +247,7 @@ return {
 			run = "onType",
 			problems = { shortenToSingleLine = false },
 			nodePath = "",
-			workingDirectory = { mode = "location" },
+			workingDirectory = { mode = "auto" },
 		},
 	},
 
@@ -379,6 +375,11 @@ return {
 		cmd = { "ltex-ls-plus" },
 		filetypes = { "tex", "latex", "bib", "markdown", "org" },
 		root_markers = { ".git" },
+		settings = {
+			ltex = {
+				language = "en-GB",
+			},
+		},
 	},
 
 	-- Typst

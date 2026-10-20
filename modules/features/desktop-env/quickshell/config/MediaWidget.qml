@@ -167,8 +167,9 @@ Item {
     sharedWindow: root.sharedWindow
     contentWidth: Config.mediaPopupWidth
     contentComponent: mediaPopoverComponent
-    onHoveredChanged: MediaService.setConsumer("barMedia", mediaTooltip.hovered)
+    onHoveredChanged: MediaService.setConsumer("barMedia-" + String(root), mediaTooltip.hovered)
   }
+  Component.onDestruction: MediaService.setConsumer("barMedia-" + String(root), false)
 
   Component {
     id: mediaPopoverComponent

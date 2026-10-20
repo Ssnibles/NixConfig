@@ -130,11 +130,11 @@ vim.opt.smoothscroll = true
 -- kind it does not explicitly draw silently disappears (this was the cause of
 -- `:!cmd` output vanishing and the editor appearing to freeze).
 require("vim._core.ui2").enable({
-  msg = {
-    -- Ephemeral messages (`:!` output, `:echo`, errors, …) go to the floating
-    -- message window instead of the cmdline, so they auto-dismiss.
-    targets = { default = "msg" },
-  },
+	msg = {
+		-- Ephemeral messages (`:!` output, `:echo`, errors, …) go to the floating
+		-- message window instead of the cmdline, so they auto-dismiss.
+		targets = { default = "msg" },
+	},
 })
 -- `wait` is required whenever `hit-enter` is omitted. `timeout` is how long a
 -- message stays visible in the message window (ms).
@@ -147,20 +147,12 @@ vim.o.messagesopt = "history:200,wait:0,timeout:4000,maxheight:50,pager:<CR>"
 -- unaffected. If a future Neovim renames these methods this simply becomes a
 -- no-op and the duplicate would return (not an error).
 do
-  local ui2 = require("vim._core.ui2")
-  if ui2.cmd then
-    for _, ev in ipairs({
-      "cmdline_show",
-      "cmdline_pos",
-      "cmdline_hide",
-      "cmdline_special_char",
-      "cmdline_block_show",
-      "cmdline_block_append",
-      "cmdline_block_hide",
-    }) do
-      ui2.cmd[ev] = nil
-    end
-  end
+	local ui2 = require("vim._core.ui2")
+	for k, v in pairs(ui2.cmd or {}) do
+		if type(v) == "function" then
+			ui2.cmd[k] = nil
+		end
+	end
 end
 
 -- Listen address for neovim-remote.
@@ -191,8 +183,6 @@ require("plugins.dap")
 require("plugins.terminal")
 require("plugins.lang")
 require("plugins.diagnostics")
-require("plugins.markview")
-require("plugins.dial")
 
 -- Set after plugins so nothing overrides it.
 -- v:relnum is *always* the relative offset inside 'statuscolumn', regardless

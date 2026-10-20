@@ -23,11 +23,9 @@ Rectangle {
 
   readonly property bool hovered: _hoverHandler.hovered
 
-  // Default radius is half of the smaller dimension (caps on ends)
-  property real pillRadius: Math.min(width, height) / 2
-
   color: root.pillColour
-  radius: root.pillRadius
+  // Default radius is half of the smaller dimension (caps on ends)
+  radius: Math.min(width, height) / 2
   antialiasing: true
   clip: true
   border.width: 1

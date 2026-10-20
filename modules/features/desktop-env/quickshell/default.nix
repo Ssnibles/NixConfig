@@ -43,6 +43,7 @@
             ".config/quickshell/Colours.qml" = {
               text = ''
                 pragma Singleton
+                pragma ComponentBehavior: Bound
 
                 import Quickshell
                 import QtQuick

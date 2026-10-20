@@ -9,7 +9,8 @@ local function is_user_terminal(buf)
 	if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].buftype ~= "terminal" then
 		return false
 	end
-	return vim.bo[buf].filetype ~= "fzf"
+	local ft = vim.bo[buf].filetype
+	return ft ~= "fzf" and ft ~= "sshinator-terminal"
 end
 
 local function find_terminal_buf()
@@ -100,19 +101,17 @@ end, { desc = "Toggle terminal (float)" })
 -- Terminal autocommands
 
 vim.api.nvim_create_autocmd({ "TermOpen", "BufWinEnter" }, {
-	callback = function()
-		if vim.bo.buftype ~= "terminal" then
+	group = vim.api.nvim_create_augroup("UserTerminal", { clear = true }),
+	callback = function(ev)
+		if vim.bo[ev.buf].buftype ~= "terminal" then
 			return
 		end
 		-- 'number', 'relativenumber' and 'signcolumn' are already forced off by
 		-- the default TermOpen autocmd; only these two are not.
 		vim.wo.cursorline = false
 		vim.wo.statuscolumn = ""
-	end,
-})
-
-vim.api.nvim_create_autocmd("TermOpen", {
-	callback = function()
-		vim.cmd("startinsert")
+		if ev.event == "TermOpen" then
+			vim.cmd("startinsert")
+		end
 	end,
 })

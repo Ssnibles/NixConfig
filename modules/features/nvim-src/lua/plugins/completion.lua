@@ -21,6 +21,12 @@ vim.keymap.set("s", "<C-]>", function()
 	end
 end, { desc = "Snippet forward", silent = true })
 
+local function cancel_if_visible(c)
+	if c.is_visible() then
+		c.cancel()
+	end
+end
+
 local keymap = {
 	preset = "none",
 	["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
@@ -28,22 +34,8 @@ local keymap = {
 	["<Tab>"] = { "select_and_accept", "fallback" },
 	["<C-]>"] = { "snippet_forward", "fallback" },
 	["<S-Tab>"] = { "fallback" },
-	["<Esc>"] = {
-		function(cmp)
-			if cmp.is_visible() then
-				cmp.cancel()
-			end
-		end,
-		"fallback",
-	},
-	["<C-c>"] = {
-		function(cmp)
-			if cmp.is_visible() then
-				cmp.cancel()
-			end
-		end,
-		"fallback",
-	},
+	["<Esc>"] = { cancel_if_visible, "fallback" },
+	["<C-c>"] = { cancel_if_visible, "fallback" },
 	["<C-e>"] = { "cancel", "fallback" },
 	["<C-y>"] = { "select_and_accept", "fallback" },
 	["<Up>"] = { "select_prev", "fallback" },
@@ -97,23 +89,16 @@ cmp.setup({
 		sorts = { "exact", "score", "sort_text" },
 	},
 	sources = {
-		-- Context-aware: in comments, suppress LSP symbol noise and favour prose/buffer/spell/copilot
+		-- Context-aware: in comments, suppress LSP symbol noise and favour prose/buffer/spell/copilot.
+		-- `spell` is gated by `vim.wo.spell` in its provider config below, so including it in
+		-- `default` activates it automatically for prose filetypes and when toggled via <leader>ts.
 		default = function()
 			local ok, node = pcall(vim.treesitter.get_node)
-			if ok and node then
-				local node_type = node:type()
-				if node_type:match("comment") then
-					return { "buffer", "copilot", "spell" }
-				end
+			if ok and node and node:type():match("comment") then
+				return { "buffer", "copilot", "spell" }
 			end
-			return { "lsp", "copilot", "snippets", "buffer", "path" }
+			return { "lsp", "copilot", "snippets", "buffer", "path", "spell" }
 		end,
-		per_filetype = {
-			typst = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
-			markdown = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
-			text = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
-			gitcommit = { "lsp", "copilot", "snippets", "buffer", "path", "spell" },
-		},
 		providers = {
 			lsp = {
 				name = "LSP",

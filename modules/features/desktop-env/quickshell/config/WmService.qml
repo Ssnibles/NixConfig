@@ -34,15 +34,13 @@ Singleton {
   // Bumps whenever the backend's tag/workspace list changes so per-output
   // layout bindings re-evaluate (method calls alone are not reactive).
   readonly property var allTags: (activeSvc && activeSvc.allMonitorsTags !== undefined) ? activeSvc.allMonitorsTags : []
+  readonly property var workspacesDependency: (activeSvc && activeSvc.allMonitorsTags !== undefined)
+    ? activeSvc.allMonitorsTags
+    : ((activeSvc && activeSvc.allWorkspaces !== undefined)
+        ? activeSvc.allWorkspaces
+        : (activeSvc ? activeSvc.workspacesList : []))
 
   readonly property string currentTitle: activeSvc ? (activeSvc.currentTitle || "") : ""
-
-  readonly property string currentLayoutSymbol: {
-    if (activeSvc && activeSvc.currentLayoutSymbol !== undefined) {
-      return activeSvc.currentLayoutSymbol || ""
-    }
-    return ""
-  }
 
   readonly property var availableLayouts: {
     if (activeSvc && activeSvc.availableLayouts !== undefined) {
@@ -80,48 +78,15 @@ Singleton {
 
   function getWorkspaces(outputName) {
     if (!activeSvc) return []
-
-    if (root.wm === "mangowc") {
-      var tags = activeSvc.tagsForOutput(outputName)
-      var maxIdx = 1
-      for (var i = 0; i < tags.length; i++) {
-        if (tags[i].is_active || tags[i].client_count > 0) {
-          maxIdx = Math.max(maxIdx, tags[i].index)
-        }
-      }
-      var minCount = (typeof Config !== "undefined" && Config.mangowcMinWorkspaces) ? Config.mangowcMinWorkspaces : 5
-      var count = Math.max(minCount, maxIdx)
-      var res = []
-      for (var j = 0; j < count; j++) {
-        var tData = (tags && j < tags.length) ? tags[j] : null
-        var active = tData ? tData.is_active : false
-        var countClients = tData ? (tData.client_count > 0) : false
-        var urgent = tData ? (tData.is_urgent === true) : false
-        res.push({
-          id: j + 1,
-          is_focused: active,
-          is_active: active,
-          is_occupied: countClients,
-          is_urgent: urgent
-        })
-      }
-      return res
-    }
-
-    if (root.wm === "hyprland") return activeSvc.workspacesList || []
-    if (root.wm === "niri") return activeSvc.workspacesForOutput(outputName)
+    if (activeSvc.workspacesForOutput) return activeSvc.workspacesForOutput(outputName)
+    if (activeSvc.workspacesList) return activeSvc.workspacesList
     return []
   }
 
   function focusWorkspace(id) {
-    if (!activeSvc) return
-    if (root.wm === "mangowc") activeSvc.focusTag(id)
-    else if (root.wm === "hyprland") activeSvc.focusWorkspace(id)
-    else if (root.wm === "niri") activeSvc.focusWorkspace(id)
-  }
-
-  function focusWindow(patterns) {
-    WindowFocuser.focus(patterns)
+    if (activeSvc && activeSvc.focusWorkspace) {
+      activeSvc.focusWorkspace(id)
+    }
   }
 
   // =========================================================================
@@ -195,11 +160,14 @@ Singleton {
 
   Process {
     id: cursorQueryProc
-    stdout: SplitParser {
-      onRead: line => {
+    stdout: StdioCollector {
+      onStreamFinished: {
         if (!root.queryingScreen) return
-        var txt = line.trim()
-        if (!txt) return
+        var txt = this.text ? this.text.trim() : ""
+        if (!txt) {
+          root._finishScreenQuery(null)
+          return
+        }
 
         var foundScreen = null
         try {

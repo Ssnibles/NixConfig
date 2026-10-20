@@ -10,14 +10,12 @@ QtObject {
   property bool active: false
   property var workspacesList: []
   property string currentTitle: ""
-  property int currentFocusedId: 1
 
   function updateData() {
     var focusedId = 1
     if (Hyprland.focusedWorkspace && Hyprland.focusedWorkspace.id > 0) {
       focusedId = Hyprland.focusedWorkspace.id
     }
-    root.currentFocusedId = focusedId
 
     // Quickshell exposes the focused window through `activeToplevel`; the app
     // class lives on its raw IPC object (`class` / `initialClass`).
@@ -97,7 +95,6 @@ QtObject {
   }
 
   function focusWorkspace(id) {
-    root.currentFocusedId = id
     Hyprland.dispatch("workspace " + id)
     root.scheduleUpdate()
   }

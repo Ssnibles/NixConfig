@@ -1,6 +1,4 @@
--- Language-specific configurations: Rust, C/C++
--- Previously separate rust.lua and c.lua files, now consolidated since both
--- are filetype-deferred language support modules.
+-- Language-specific configurations: Rust, C/C++, Typst
 
 local M = {}
 
@@ -36,19 +34,7 @@ vim.g.rustaceanvim = {
 	},
 	dap = {
 		adapter = function()
-			local codelldb = util.find_debug_adapter()
-			if not codelldb then
-				return false
-			end
-			if codelldb:match("codelldb$") then
-				return {
-					type = "server",
-					port = "${port}",
-					host = "127.0.0.1",
-					executable = { command = codelldb, args = { "--port", "${port}" } },
-				}
-			end
-			return { type = "executable", command = codelldb, name = "lldb" }
+			return util.lldb_dap_adapter() or false
 		end,
 	},
 }
@@ -97,13 +83,6 @@ end, { desc = "Rust restart server" })
 local ok_ext, clangd_ext = pcall(require, "clangd_extensions")
 if ok_ext then
 	clangd_ext.setup({
-		inlay_hints = {
-			inline = true,
-			show_parameter_hints = true,
-			parameter_hints_prefix = "<- ",
-			other_hints_prefix = "=> ",
-			highlight = "Comment",
-		},
 		ast = {
 			role_icons = {
 				type = "🅉",
@@ -128,9 +107,16 @@ if ok_ext then
 	})
 end
 
+local cached_c_flags = nil
+
 --- Gathers C compiler include flags from the Nix environment & pkg-config
+--- @param refresh? boolean Force recomputation of cached flags
 --- @return string[]
-function M.get_nix_c_flags()
+function M.get_nix_c_flags(refresh)
+	if cached_c_flags and not refresh then
+		return cached_c_flags
+	end
+
 	local flags = { "-std=c11", "-Wall", "-Wextra" }
 	local seen = { ["-std=c11"] = true, ["-Wall"] = true, ["-Wextra"] = true }
 
@@ -158,33 +144,22 @@ function M.get_nix_c_flags()
 		add(flag)
 	end
 
-	-- pkg-config
+	-- pkg-config (batched into a single subshell invocation)
 	if vim.fn.executable("pkg-config") == 1 then
-		for _, pkg in ipairs({
-			"raylib",
-			"wayland-client",
-			"wlroots",
-			"gl",
-			"glfw3",
-			"sdl2",
-			"libxkbcommon",
-			"libinput",
-		}) do
-			local handle = io.popen(("pkg-config --cflags %s 2>/dev/null"):format(pkg))
-			if handle then
-				for flag in handle:read("*a"):gmatch("%S+") do
-					add(flag)
-				end
-				handle:close()
-			end
+		local out = vim.fn.system(
+			"for p in raylib wayland-client wlroots gl glfw3 sdl2 libxkbcommon libinput; do pkg-config --cflags $p 2>/dev/null; done"
+		)
+		for flag in out:gmatch("%S+") do
+			add(flag)
 		end
 	end
 
+	cached_c_flags = flags
 	return flags
 end
 
 vim.api.nvim_create_user_command("GenerateCompileFlags", function()
-	local flags = M.get_nix_c_flags()
+	local flags = M.get_nix_c_flags(true)
 	local file, err = io.open(vim.fn.getcwd() .. "/compile_flags.txt", "w")
 	if not file then
 		vim.notify("Failed: " .. tostring(err), vim.log.levels.ERROR)
@@ -197,5 +172,48 @@ vim.api.nvim_create_user_command("GenerateCompileFlags", function()
 	vim.notify("Generated compile_flags.txt")
 	pcall(vim.cmd, "lsp restart")
 end, { desc = "Generate compile_flags.txt from environment & pkg-config" })
+
+-- Typst (typst-preview, Zathura synctex, and #noln / #ln surrounds)
+
+local ok_tp, tp = pcall(require, "typst-preview")
+if ok_tp then
+	tp.setup({
+		get_root = function(path)
+			return os.getenv("TYPST_ROOT") or vim.fn.fnamemodify(path, ":h")
+		end,
+	})
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+	group = vim.api.nvim_create_augroup("UserTypst", { clear = true }),
+	pattern = "typst",
+	callback = function(ev)
+		-- `san` wraps a range/selection in `#noln[…]` and `sal` wraps it in `#ln[…]`.
+		vim.b[ev.buf].minisurround_config = {
+			custom_surroundings = {
+				n = { output = { left = "#noln[", right = "]" } },
+				l = { output = { left = "#ln[", right = "]" } },
+			},
+		}
+
+		vim.keymap.set("n", "<leader>tp", "<cmd>TypstPreviewToggle<CR>", {
+			buffer = ev.buf,
+			desc = "Toggle Typst preview",
+		})
+
+		vim.keymap.set("n", "<leader>zo", function()
+			local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+			if vim.fn.filereadable(pdf) == 1 then
+				vim.system({
+					"zathura",
+					"--synctex-forward=" .. vim.fn.line(".") .. ":0:" .. vim.api.nvim_buf_get_name(ev.buf),
+					pdf,
+				}, { detach = true })
+			else
+				vim.notify("PDF not found: " .. pdf, vim.log.levels.WARN)
+			end
+		end, { buffer = ev.buf, desc = "Open PDF in Zathura" })
+	end,
+})
 
 return M

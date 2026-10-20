@@ -45,7 +45,7 @@ Card {
   height: Math.max(contentCol.implicitHeight, targetIconSize) + Config.notifCardMargins * 2
   cardRadius: Config.notifRadius
   cardColour: hoverArea.containsMouse ? Colours.bgRaised : Colours.bg
-  border.color: hoverArea.containsMouse
+  borderColour: hoverArea.containsMouse
     ? (isMedia ? Colours.teal : (urgency === 2 ? Colours.red : Colours.accent))
     : (urgency === 2 ? Colours.red : Colours.border)
 
@@ -190,7 +190,7 @@ Card {
           id: actionBtn
           required property var modelData
           pillHeight: Config.pillHeightHorizontal
-          pillRadius: Config.itemRadiusSm
+          radius: Config.itemRadiusSm
           padding: 8
           baseColour: Colours.bgSubtle
           hoverColour: Colours.bgRaised

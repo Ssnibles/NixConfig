@@ -115,8 +115,7 @@ Singleton {
   readonly property real volume: root.audioInfo ? root.audioInfo.volume : 0
   readonly property bool muted: root.audioInfo ? root.audioInfo.muted : false
   readonly property int volumePercent: Math.round(root.volume * 100)
-  readonly property string volumeIcon: Utils.volumeIcon(root.volumePercent / 100, root.muted)
-  readonly property string activeSinkName: root.sinkDisplayName(root.audioSink)
+  readonly property string volumeIcon: Utils.volumeIcon(root.volume, root.muted)
 
   function sinkDisplayName(node) {
     if (!node) return "Audio Output"
@@ -170,7 +169,7 @@ Singleton {
   readonly property real micVolume: root.audioSourceInfo ? root.audioSourceInfo.volume : 0
   readonly property bool micMuted: root.audioSourceInfo ? root.audioSourceInfo.muted : false
   readonly property int micVolumePercent: Math.round(root.micVolume * 100)
-  readonly property string micIcon: Utils.micIcon(root.micVolumePercent / 100, root.micMuted)
+  readonly property string micIcon: Utils.micIcon(root.micVolume, root.micMuted)
 
   function toggleMicMute() {
     if (root.audioSourceInfo) {
@@ -261,12 +260,15 @@ Singleton {
   property bool brightnessAvailable: false
   property string backlightDevice: ""
   property bool _notifyBrightnessOnNextRead: false
+  property bool _brightnessRefreshPending: false
   readonly property int brightnessPercent: Math.round(root.brightness * 100)
 
   function refreshBrightness(notifyOsd) {
     if (notifyOsd) root._notifyBrightnessOnNextRead = true
     if (!brightnessGetProc.running) {
       brightnessGetProc.exec(["brightnessctl", "-m"])
+    } else {
+      root._brightnessRefreshPending = true
     }
   }
 
@@ -315,11 +317,19 @@ Singleton {
               if (shouldNotify && root.brightnessPercent !== prevPct) {
                 root.showOsd("brightness")
               }
+              if (root._brightnessRefreshPending) {
+                root._brightnessRefreshPending = false
+                brightnessGetProc.exec(["brightnessctl", "-m"])
+              }
               return
             }
           }
         }
         root.brightnessAvailable = false
+        if (root._brightnessRefreshPending) {
+          root._brightnessRefreshPending = false
+          brightnessGetProc.exec(["brightnessctl", "-m"])
+        }
       }
     }
   }

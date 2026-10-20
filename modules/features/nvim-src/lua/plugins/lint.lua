@@ -67,7 +67,6 @@ local filetypes = {
 	c = { "cppcheck" },
 	cpp = { "cppcheck" },
 	php = { "php", "phpstan" },
-	lua = { "luacheck" },
 }
 
 lint.linters_by_ft = filetypes
@@ -79,7 +78,7 @@ local function run_lint()
 		if vim.bo.modified and vim.api.nvim_buf_get_name(0) == "" then
 			return
 		end
-		lint.try_lint()
+		lint.try_lint(nil, { ignore_errors = true })
 	end
 end
 

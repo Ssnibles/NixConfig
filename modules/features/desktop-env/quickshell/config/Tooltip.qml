@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQml
 
 Item {
   id: root
@@ -14,7 +13,6 @@ Item {
   property int maxWidth: Config.popupMaxWidth
   property int contentWidth: 0
   property Component contentComponent: null
-  property real topOffset: 0
   property var sharedWindow: null
 
   readonly property bool hovered: _hoverHandler.hovered
@@ -50,9 +48,7 @@ Item {
     _delayTimer.stop()
     root._ready = true
     if (root.sharedWindow) {
-      root.sharedWindow._active = root
-      root.sharedWindow.cachedActive = root
-      root.sharedWindow.cardOpacity = 1
+      root.sharedWindow.openNow(root)
     }
   }
 

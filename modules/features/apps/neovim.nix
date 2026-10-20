@@ -74,10 +74,8 @@
 
             rust-analyzer
             rustfmt
-            cargo
             rustc
             clippy
-            zig
             (writeShellScriptBin "zls" ''
               export CPATH="${
                 lib.makeSearchPathOutput "dev" "include" [
@@ -101,19 +99,13 @@
               }''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
               exec "${zls}/bin/zls" "$@"
             '')
-            pkg-config
-            wayland
-            wlroots
-            wayland-protocols
             tinymist
             typstyle
-            neovim-remote
             vtsls
 
             # C / C++ Tooling & Language Servers
             clang-tools
             cppcheck
-            cpplint
             gdb
             cmake
             ninja

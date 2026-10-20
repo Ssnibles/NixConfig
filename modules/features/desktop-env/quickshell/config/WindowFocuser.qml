@@ -109,10 +109,10 @@ Singleton {
       var p = String(patterns[i]).toLowerCase()
       if (!p) continue
       var score = 0
-      if (appId === p) score = 100 - i
-      else if (title === p) score = 90 - i
-      else if (appId.indexOf(p) !== -1) score = 80 - i
-      else if (title.indexOf(p) !== -1) score = 70 - i
+      if (appId === p) score = 1000 - i
+      else if (title === p) score = 900 - i
+      else if (appId.indexOf(p) !== -1) score = 800 - i
+      else if (title.indexOf(p) !== -1) score = 700 - i
       if (score > best) best = score
     }
     return best
