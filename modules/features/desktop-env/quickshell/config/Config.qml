@@ -8,302 +8,293 @@ import QtQuick
 // details (sizes that only affect one widget) stay hard-coded in each
 // widget's own file.
 Singleton {
-  // Fonts & Typography Scale
-  readonly property string monoFont: Colours.monoFont !== undefined ? Colours.monoFont : "JetBrainsMono Nerd Font"
-  readonly property string sansFont: Colours.sansFont !== undefined ? Colours.sansFont : "SF Pro Text"
-  readonly property string serifFont: Colours.serifFont !== undefined ? Colours.serifFont : "Instrument Serif"
+    // Fonts & Typography Scale
+    readonly property string monoFont: Colours.monoFont !== undefined ? Colours.monoFont : "JetBrainsMono Nerd Font"
+    readonly property string sansFont: Colours.sansFont !== undefined ? Colours.sansFont : "SF Pro Text"
+    readonly property string serifFont: Colours.serifFont !== undefined ? Colours.serifFont : "Instrument Serif"
 
-  readonly property int fontSizeXs: 11
-  readonly property int fontSizeSm: 12
-  readonly property int fontSizeMd: 13
-  readonly property int fontSizeLg: 15
-  readonly property int iconSizeSm: 13
-  readonly property int iconSizeMd: 16
-  readonly property int iconSizeLg: 18
+    readonly property int fontSizeXs: 11
+    readonly property int fontSizeSm: 12
+    readonly property int fontSizeMd: 13
+    readonly property int fontSizeLg: 15
+    readonly property int iconSizeSm: 13
+    readonly property int iconSizeMd: 16
+    readonly property int iconSizeLg: 18
 
-  // Shared Pill, Surface & Animation Tokens
-  readonly property int pillHeightHorizontal: 24
-  readonly property int pillHeightVertical: 30
-  readonly property int pillPaddingHorizontal: 8
-  readonly property int itemRadiusSm: 6
-  readonly property int itemRadiusMd: 8
-  readonly property int animFastMs: 100
-  readonly property int animNormalMs: 120
-  readonly property int animSmoothMs: 150
+    // Shared Pill, Surface & Animation Tokens
+    readonly property int pillHeightHorizontal: 24
+    readonly property int pillHeightVertical: 30
+    readonly property int pillPaddingHorizontal: 8
+    readonly property int itemRadiusSm: 6
+    readonly property int itemRadiusMd: 8
+    readonly property int animFastMs: 100
+    readonly property int animNormalMs: 120
+    readonly property int animSmoothMs: 150
 
-  // Command Centre State & Geometry
-  property bool commandCentreVisible: false
-  property var targetScreen: null
-  property var lastActiveScreen: null
-  property string commandCentreSide: {
-    var envSide = (Quickshell.env("QS_COMMAND_CENTRE_SIDE") || "").toLowerCase()
-    if (envSide === "left" || envSide === "right") return envSide
-    return "left" // "left" | "right"
-  }
-  readonly property int commandCentreWidth: 500
-  readonly property int commandCentreRadius: 16
-  readonly property int commandCentreCardRadius: 12
-  readonly property int commandCentreMargin: 12
-  readonly property int commandCentreSlideOffset: 60
-  readonly property int commandCentreAnimDuration: 250
-  readonly property int commandCentreCloseDuration: 180
-  readonly property string commandCentreClockFormat: "HH:mm"
-  readonly property string commandCentreDateFormat: "dddd, MMMM d"
-  readonly property bool ccShowSinkSwitcher: true
-  readonly property bool ccShowMicSlider: true
-  readonly property bool ccShowBrightnessSlider: true
+    // Command Centre State & Geometry
+    property bool commandCentreVisible: false
+    property var targetScreen: null
+    property var lastActiveScreen: null
+    property string commandCentreSide: {
+        var envSide = (Quickshell.env("QS_COMMAND_CENTRE_SIDE") || "").toLowerCase();
+        if (envSide === "left" || envSide === "right")
+            return envSide;
+        return "left"; // "left" | "right"
+    }
+    readonly property int commandCentreWidth: 500
+    readonly property int commandCentreRadius: 16
+    readonly property int commandCentreCardRadius: 12
+    readonly property int commandCentreMargin: 12
+    readonly property int commandCentreSlideOffset: 60
+    readonly property int commandCentreAnimDuration: 250
+    readonly property int commandCentreCloseDuration: 180
+    readonly property string commandCentreClockFormat: "HH:mm"
+    readonly property string commandCentreDateFormat: "dddd, MMMM d"
+    readonly property bool ccShowSinkSwitcher: true
+    readonly property bool ccShowMicSlider: true
+    readonly property bool ccShowBrightnessSlider: true
 
-  // Status Bars
-  property bool barVisible: true
-  readonly property string barType: wm === "niri" ? "niri" : "bar"
-  readonly property bool hasTopBar: barVisible && barType !== "niri"
-  readonly property bool hasLeftBar: barVisible && barType === "niri" && barSide !== "right"
-  readonly property bool hasRightBar: barVisible && barType === "niri" && barSide === "right"
+    // Status Bars
+    property bool barVisible: true
+    readonly property string barType: wm === "niri" ? "niri" : "bar"
+    readonly property bool hasTopBar: barVisible && barType !== "niri"
+    readonly property bool hasLeftBar: barVisible && barType === "niri" && barSide !== "right"
+    readonly property bool hasRightBar: barVisible && barType === "niri" && barSide === "right"
 
-  // Window Manager Detection
-  readonly property string wm: {
-    var envWm = (Quickshell.env("QS_BAR") || "").toLowerCase()
-    if (envWm !== "") return envWm
+    // Window Manager Detection
+    readonly property string wm: {
+        var envWm = (Quickshell.env("QS_BAR") || "").toLowerCase();
+        if (envWm !== "")
+            return envWm;
 
-    var xdg = (Quickshell.env("XDG_CURRENT_DESKTOP") || Quickshell.env("XDG_SESSION_DESKTOP") || "").toLowerCase()
-    if (xdg.indexOf("hyprland") !== -1) return "hyprland"
-    if (xdg.indexOf("niri") !== -1) return "niri"
-    if (xdg.indexOf("mango") !== -1) return "mangowc"
+        var xdg = (Quickshell.env("XDG_CURRENT_DESKTOP") || Quickshell.env("XDG_SESSION_DESKTOP") || "").toLowerCase();
+        if (xdg.indexOf("hyprland") !== -1)
+            return "hyprland";
+        if (xdg.indexOf("niri") !== -1)
+            return "niri";
+        if (xdg.indexOf("mango") !== -1)
+            return "mangowc";
 
-    return "mangowc"
-  }
+        return "mangowc";
+    }
 
-  // Media (MediaService.qml, MediaCard.qml, MediaWidget.qml)
-  // Whether the command centre's media card always stays visible, showing
-  // "Nothing is playing" when no media is active.
-  readonly property bool alwaysShowMediaCard: true
-  readonly property bool mediaShowPlayerBadge: true
-  readonly property bool mediaAllowPlayerSwitch: true
-  readonly property int mediaPopupWidth: 320
-  readonly property bool animateMediaIcon: false
-  readonly property int mediaRotationDuration: 4000
-  readonly property int mediaSeekDebounceMs: 200
+    // Media (MediaService.qml, MediaCard.qml, MediaWidget.qml)
+    // Whether the command centre's media card always stays visible, showing
+    // "Nothing is playing" when no media is active.
+    readonly property bool alwaysShowMediaCard: true
+    readonly property bool mediaShowPlayerBadge: true
+    readonly property bool mediaAllowPlayerSwitch: true
+    readonly property int mediaPopupWidth: 320
+    readonly property bool animateMediaIcon: false
+    readonly property int mediaRotationDuration: 4000
+    readonly property int mediaSeekDebounceMs: 200
 
-  // Clock
-  readonly property string timeFormat: "HH:mm"
+    // Clock
+    readonly property string timeFormat: "HH:mm"
 
-  // Vertical side bar (bar.qml in Niri mode)
-  readonly property int barWidth: 42
-  property string barSide: {
-    var envSide = (Quickshell.env("QS_BAR_SIDE") || "").toLowerCase()
-    return (envSide === "left" || envSide === "right") ? envSide : "left"
-  }
-  readonly property int barMarginTop: 8
-  readonly property int barMarginBottom: 8
-  readonly property int barMarginLeft: 4
-  readonly property int barMarginRight: 4
-  readonly property int barSpacing: 8
-  readonly property int volBarHeight: 64
-  readonly property int wifiMaxTextLength: 90
+    // Vertical side bar (bar.qml in Niri mode)
+    readonly property int barWidth: 42
+    property string barSide: {
+        var envSide = (Quickshell.env("QS_BAR_SIDE") || "").toLowerCase();
+        return (envSide === "left" || envSide === "right") ? envSide : "left";
+    }
+    readonly property int barMarginTop: 8
+    readonly property int barMarginBottom: 8
+    readonly property int barMarginLeft: 4
+    readonly property int barMarginRight: 4
+    readonly property int barSpacing: 8
+    readonly property int volBarHeight: 64
+    readonly property int wifiMaxTextLength: 90
 
-  // Workspaces (WorkspacesWidget.qml)
-  readonly property int workspaceDotSize: 12
-  readonly property int workspaceDotSizeFocused: 34
-  readonly property int workspaceDotSpacing: 6
+    // Workspaces (WorkspacesWidget.qml)
+    readonly property int workspaceDotSize: 12
+    readonly property int workspaceDotSizeFocused: 34
+    readonly property int workspaceDotSpacing: 6
 
-  // Top Bar (bar.qml)
-  readonly property int barHeight: 34
-  readonly property int barHorizontalMargin: 12
-  readonly property int barLeftSpacing: 12
-  readonly property int barRightSpacing: 10
-  readonly property int mangowcMinWorkspaces: 5
+    // Top Bar (bar.qml)
+    readonly property int barHeight: 34
+    readonly property int barHorizontalMargin: 12
+    readonly property int barLeftSpacing: 12
+    readonly property int barRightSpacing: 10
+    readonly property int mangowcMinWorkspaces: 5
 
-  // Audio, Microphone, Brightness & OSD (SystemService.qml, VolumeWidget.qml, OsdOverlay.qml)
-  readonly property real volStep: 0.05
-  readonly property real volMax: 1.5
-  readonly property real micStep: 0.05
-  readonly property real brightnessStep: 0.05
-  readonly property bool osdEnabled: true
-  // OSD position on screen:
-  //   "bottom" (or "bottom-centre"), "top" (or "top-centre"), "centre",
-  //   "top-left", "top-right", "bottom-left", "bottom-right"
-  property string osdPosition: "bottom"
-  readonly property bool osdAllScreens: false
-  readonly property int osdTimeoutMs: 1800
-  readonly property int osdWidth: 260
-  readonly property int osdHeight: 46
-  readonly property int osdRadius: -1 // -1 = full pill capsule (osdHeight / 2)
-  readonly property int osdMarginX: 24
-  readonly property int osdMarginY: 64
-  readonly property int osdMarginBottom: osdMarginY
+    // Audio, Microphone, Brightness & OSD (SystemService.qml, VolumeWidget.qml, OsdOverlay.qml)
+    readonly property real volStep: 0.05
+    readonly property real volMax: 1.5
+    readonly property real micStep: 0.05
+    readonly property real brightnessStep: 0.05
+    readonly property bool osdEnabled: true
+    // OSD position on screen:
+    //   "bottom" (or "bottom-centre"), "top" (or "top-centre"), "centre",
+    //   "top-left", "top-right", "bottom-left", "bottom-right"
+    property string osdPosition: "bottom"
+    readonly property bool osdAllScreens: false
+    readonly property int osdTimeoutMs: 1800
+    readonly property int osdWidth: 260
+    readonly property int osdHeight: 46
+    readonly property int osdRadius: -1 // -1 = full pill capsule (osdHeight / 2)
+    readonly property int osdMarginX: 24
+    readonly property int osdMarginY: 64
+    readonly property int osdMarginBottom: osdMarginY
 
-  // Window Title (WindowTitleWidget.qml)
-  readonly property int windowTitleMaxWidthHorizontal: 350
-  readonly property int windowTitleMaxWidthVertical: 120
+    // Window Title (WindowTitleWidget.qml)
+    readonly property int windowTitleMaxWidthHorizontal: 350
+    readonly property int windowTitleMaxWidthVertical: 120
 
-  // System Tray (SystemTrayWidget.qml)
-  property bool trayEnabled: true
-  // Case-insensitive list of tray app IDs, titles, or substrings to hide by
-  // default (e.g. ["nm-applet", "blueman", "steam"]).
-  readonly property var trayHiddenApps: []
-  // Whether to show the expand/collapse arrow button (󰅁/󰅂) when hidden tray
-  // items exist. When false, hidden items are completely omitted without an
-  // expand arrow, and if no visible items remain, the entire tray pill hides.
-  property bool trayShowExpandButton: true
-  // Whether the hidden tray items section is currently expanded.
-  property bool trayExpanded: false
-  // Shared session-hidden / session-unhidden tray app IDs (synced across monitors).
-  property var runtimeHiddenTrayApps: []
-  property var runtimeUnhiddenTrayApps: []
-  // Left-click behaviour on tray icons:
-  //   "focus"    = activate + focus application window across workspaces
-  //   "activate" = native StatusNotifierItem activate() only
-  //   "menu"     = open the context menu on left-click too
-  readonly property string trayLeftClickAction: "focus"
-  readonly property int trayIconSize: 15
-  readonly property int trayButtonSize: 20
-  readonly property int traySpacing: 4
-  readonly property int trayMenuWidth: 240
-  readonly property bool trayShowAppIdInMenu: true
-  readonly property bool trayAllowSessionHide: true
+    // System Tray (SystemTrayWidget.qml)
+    property bool trayEnabled: true
+    // Case-insensitive list of tray app IDs, titles, or substrings to hide by
+    // default (e.g. ["nm-applet", "blueman", "steam"]).
+    readonly property var trayHiddenApps: ["nm-applet", "vicinae"]
+    // Whether to show the expand/collapse arrow button (󰅁/󰅂) when hidden tray
+    // items exist. When false, hidden items are completely omitted without an
+    // expand arrow, and if no visible items remain, the entire tray pill hides.
+    property bool trayShowExpandButton: true
+    // Whether the hidden tray items section is currently expanded.
+    property bool trayExpanded: false
+    // Shared session-hidden / session-unhidden tray app IDs (synced across monitors).
+    property var runtimeHiddenTrayApps: []
+    property var runtimeUnhiddenTrayApps: []
+    // Left-click behaviour on tray icons:
+    //   "focus"    = activate + focus application window across workspaces
+    //   "activate" = native StatusNotifierItem activate() only
+    //   "menu"     = open the context menu on left-click too
+    readonly property string trayLeftClickAction: "focus"
+    readonly property int trayIconSize: 15
+    readonly property int trayButtonSize: 20
+    readonly property int traySpacing: 4
+    readonly property int trayMenuWidth: 240
+    readonly property bool trayShowAppIdInMenu: true
+    readonly property bool trayAllowSessionHide: true
 
-  // Popup / tooltip
-  readonly property int popupGap: 46 // distance from the bar to a popup
-  readonly property int popupMaxWidth: 280
-  readonly property int popupRadius: 12
-  readonly property int popupContentMargins: 12
-  readonly property int popupContentSpacing: 6
-  readonly property int popupShowDelay: 150 // ms before a tooltip appears
-  readonly property int popupFadeMs: 120
-  readonly property int popupGraceMs: 700 // generous window so cursor can cross the gap without flicker
+    // Popup / tooltip
+    readonly property int popupGap: 46 // distance from the bar to a popup
+    readonly property int popupMaxWidth: 280
+    readonly property int popupRadius: 12
+    readonly property int popupContentMargins: 12
+    readonly property int popupContentSpacing: 6
+    readonly property int popupShowDelay: 150 // ms before a tooltip appears
+    readonly property int popupFadeMs: 120
+    readonly property int popupGraceMs: 700 // generous window so cursor can cross the gap without flicker
 
-  // Notifications
-  // Notification position on screen:
-  //   "top-left", "top-centre" (or "top"), "top-right",
-  //   "centre-left", "centre", "centre-right",
-  //   "bottom-left", "bottom-centre" (or "bottom"), "bottom-right"
-  property string notifPosition: "top-right"
-  readonly property int notifMarginX: 12
-  readonly property int notifMarginY: 12
-  readonly property int notifTimeoutMs: 5000
-  readonly property int notifTimeoutLowMs: 3000
-  readonly property int notifTimeoutCriticalMs: 0 // 0 = persistent, do not auto-dismiss
-  readonly property int notifMaxVisible: 5
-  readonly property int notifMaxHistory: 30
-  readonly property int notifWidth: 320
-  readonly property int notifRadius: 12
-  readonly property int notifCardMargins: 12
-  readonly property int notifSpacing: 8
-  readonly property int notifIconSize: 40
-  readonly property int notifMediaIconSize: 48
-  readonly property int notifIconRadius: 8
-  readonly property int notifMaxLines: 5
-  readonly property bool notifShowActions: true
-  readonly property bool notifDismissOnAction: true
-  readonly property bool notifShowMediaToasts: true
-  readonly property bool notifAllScreens: false
-  readonly property string notifLeftClickAction: "dismiss" // "dismiss" or "focus"
-  readonly property string notifDefaultFallbackLogo: "preferences-desktop-notification"
-  readonly property string notifDefaultFallbackGlyph: "󰂚"
+    // Notifications
+    // Notification position on screen:
+    //   "top-left", "top-centre" (or "top"), "top-right",
+    //   "centre-left", "centre", "centre-right",
+    //   "bottom-left", "bottom-centre" (or "bottom"), "bottom-right"
+    property string notifPosition: "top-right"
+    readonly property int notifMarginX: 12
+    readonly property int notifMarginY: 12
+    readonly property int notifTimeoutMs: 5000
+    readonly property int notifTimeoutLowMs: 3000
+    readonly property int notifTimeoutCriticalMs: 0 // 0 = persistent, do not auto-dismiss
+    readonly property int notifMaxVisible: 5
+    readonly property int notifMaxHistory: 30
+    readonly property int notifWidth: 320
+    readonly property int notifRadius: 12
+    readonly property int notifCardMargins: 12
+    readonly property int notifSpacing: 8
+    readonly property int notifIconSize: 40
+    readonly property int notifMediaIconSize: 48
+    readonly property int notifIconRadius: 8
+    readonly property int notifMaxLines: 5
+    readonly property bool notifShowActions: true
+    readonly property bool notifDismissOnAction: true
+    readonly property bool notifShowMediaToasts: true
+    readonly property bool notifAllScreens: false
+    readonly property string notifLeftClickAction: "dismiss" // "dismiss" or "focus"
+    readonly property string notifDefaultFallbackLogo: "preferences-desktop-notification"
+    readonly property string notifDefaultFallbackGlyph: "󰂚"
 
-  // App Name / Desktop Entry -> Preferred System Icon override.
-  // Apps whose icon name matches their appName or .desktop entry are resolved
-  // automatically by NotificationService via Quickshell.iconPath / DesktopEntries.
-  readonly property var notifAppIcons: ({
-    "discord": "vesktop",
-    "webcord": "vesktop",
-    "spotify": "spotify-client",
-    "firefox": "firefox-devedition",
-    "helium": "helium",
-    "vscode": "code",
-    "neovim": "nvim",
-    "telegram": "telegram",
-    "signal": "signal-desktop",
-    "amberol": "io.bassi.Amberol",
-    "boxbuddy": "io.github.dvlv.boxbuddyrs",
-    "pavucontrol": "org.pulseaudio.pavucontrol",
-    "nix": "nix-snowflake"
-  })
+    // App Name / Desktop Entry -> Preferred System Icon override.
+    // Apps whose icon name matches their appName or .desktop entry are resolved
+    // automatically by NotificationService via Quickshell.iconPath / DesktopEntries.
+    readonly property var notifAppIcons: ({
+            "discord": "vesktop",
+            "webcord": "vesktop",
+            "spotify": "spotify-client",
+            "firefox": "firefox-devedition",
+            "helium": "helium",
+            "vscode": "code",
+            "neovim": "nvim",
+            "telegram": "telegram",
+            "signal": "signal-desktop",
+            "amberol": "io.bassi.Amberol",
+            "boxbuddy": "io.github.dvlv.boxbuddyrs",
+            "pavucontrol": "org.pulseaudio.pavucontrol",
+            "nix": "nix-snowflake"
+        })
 
-  // Fallback Nerd Font glyphs when no icon or image is available
-  readonly property var notifAppGlyphs: ({
-    "discord": "󰙯",
-    "vesktop": "󰙯",
-    "webcord": "󰙯",
-    "spotify": "󰓇",
-    "music": "󰎈",
-    "amberol": "󰎈",
-    "firefox": "󰈹",
-    "chrome": "󰊯",
-    "chromium": "󰊯",
-    "brave": "󰊯",
-    "browser": "󰈹",
-    "terminal": "󰅍",
-    "kitty": "󰅍",
-    "foot": "󰅍",
-    "alacritty": "󰅍",
-    "code": "󰨞",
-    "vscode": "󰨞",
-    "vscodium": "󰨞",
-    "editor": "󰨞",
-    "nvim": "󰨞",
-    "neovim": "󰨞",
-    "steam": "󰓓",
-    "telegram": "󰔁",
-    "slack": "󰒱",
-    "signal": "󰍡",
-    "mail": "󰇮",
-    "thunderbird": "󰇮",
-    "volume": "󰕾",
-    "audio": "󰕾",
-    "pipewire": "󰕾",
-    "wireplumber": "󰕾",
-    "network": "󰤨",
-    "wifi": "󰤨",
-    "bluetooth": "󰂯",
-    "battery": "󰂄",
-    "power": "󰂄",
-    "upower": "󰂄",
-    "brightness": "󰃠",
-    "backlight": "󰃠",
-    "screenshot": "󰄄",
-    "grim": "󰄄",
-    "slurp": "󰄄",
-    "package": "󰏗",
-    "nix": "󰏗",
-    "system": "󰍹"
-  })
+    // Fallback Nerd Font glyphs when no icon or image is available
+    readonly property var notifAppGlyphs: ({
+            "discord": "󰙯",
+            "vesktop": "󰙯",
+            "webcord": "󰙯",
+            "spotify": "󰓇",
+            "music": "󰎈",
+            "amberol": "󰎈",
+            "firefox": "󰈹",
+            "chrome": "󰊯",
+            "chromium": "󰊯",
+            "brave": "󰊯",
+            "browser": "󰈹",
+            "terminal": "󰅍",
+            "kitty": "󰅍",
+            "foot": "󰅍",
+            "alacritty": "󰅍",
+            "code": "󰨞",
+            "vscode": "󰨞",
+            "vscodium": "󰨞",
+            "editor": "󰨞",
+            "nvim": "󰨞",
+            "neovim": "󰨞",
+            "steam": "󰓓",
+            "telegram": "󰔁",
+            "slack": "󰒱",
+            "signal": "󰍡",
+            "mail": "󰇮",
+            "thunderbird": "󰇮",
+            "volume": "󰕾",
+            "audio": "󰕾",
+            "pipewire": "󰕾",
+            "wireplumber": "󰕾",
+            "network": "󰤨",
+            "wifi": "󰤨",
+            "bluetooth": "󰂯",
+            "battery": "󰂄",
+            "power": "󰂄",
+            "upower": "󰂄",
+            "brightness": "󰃠",
+            "backlight": "󰃠",
+            "screenshot": "󰄄",
+            "grim": "󰄄",
+            "slurp": "󰄄",
+            "package": "󰏗",
+            "nix": "󰏗",
+            "system": "󰍹"
+        })
 
-  // Known browser / media player apps for media detection
-  readonly property var notifMediaApps: [
-    "spotify",
-    "amberol",
-    "zen",
-    "helium",
-    "qutebrowser",
-    "firefox",
-    "chrome",
-    "chromium",
-    "brave",
-    "vivaldi",
-    "librewolf",
-    "vlc",
-    "mpv"
-  ]
+    // Known browser / media player apps for media detection
+    readonly property var notifMediaApps: ["spotify", "amberol", "zen", "helium", "qutebrowser", "firefox", "chrome", "chromium", "brave", "vivaldi", "librewolf", "vlc", "mpv"]
 
-  // Lock Screen
-  readonly property string lockAvatarPath: Quickshell.shellDir + "/assets/avatar.png"
-  readonly property string lockFallbackIcon: "󰀉"
-  readonly property string lockWallpaperPath: "file://" + (Quickshell.env("HOME") || ("/home/" + (Quickshell.env("USER") || "user"))) + "/Pictures/wallpaper"
-  readonly property string lockClockFormat: "HH:mm"
-  readonly property string lockDateFormat: "dddd, MMMM d"
-  readonly property int lockCardWidth: 440
-  readonly property int lockAvatarSize: 64
-  readonly property int lockInputRadius: 10
-  readonly property real lockBackgroundDimming: 0.8
-  readonly property real lockBlurPercentage: 0.5
+    // Lock Screen
+    readonly property string lockAvatarPath: Quickshell.shellDir + "/assets/avatar.png"
+    readonly property string lockFallbackIcon: "󰀉"
+    readonly property string lockWallpaperPath: "file://" + (Quickshell.env("HOME") || ("/home/" + (Quickshell.env("USER") || "user"))) + "/Pictures/wallpaper"
+    readonly property string lockClockFormat: "HH:mm"
+    readonly property string lockDateFormat: "dddd, MMMM d"
+    readonly property int lockCardWidth: 440
+    readonly property int lockAvatarSize: 64
+    readonly property int lockInputRadius: 10
+    readonly property real lockBackgroundDimming: 0.8
+    readonly property real lockBlurPercentage: 0.5
 
-  // External App & System Commands
-  readonly property var cmdMixer: ["pavucontrol"]
-  readonly property var cmdNetworkManager: ["kitty", "--single-instance", "-e", "nmtui"]
-  readonly property var cmdBluetoothManager: ["blueman-manager"]
-  readonly property var cmdLock: ["quickshell", "ipc", "call", "lockscreen", "lock"]
-  readonly property var cmdSleep: ["systemctl", "suspend"]
-  readonly property var cmdReboot: ["systemctl", "reboot"]
-  readonly property var cmdPoweroff: ["systemctl", "poweroff"]
+    // External App & System Commands
+    readonly property var cmdMixer: ["pavucontrol"]
+    readonly property var cmdNetworkManager: ["kitty", "--single-instance", "-e", "nmtui"]
+    readonly property var cmdBluetoothManager: ["blueman-manager"]
+    readonly property var cmdLock: ["quickshell", "ipc", "call", "lockscreen", "lock"]
+    readonly property var cmdSleep: ["systemctl", "suspend"]
+    readonly property var cmdReboot: ["systemctl", "reboot"]
+    readonly property var cmdPoweroff: ["systemctl", "poweroff"]
 }
