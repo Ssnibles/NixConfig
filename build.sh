@@ -15,6 +15,7 @@
 #   ./build.sh -m "fix: wifi drops"  rebuild + commit with a message
 #   ./build.sh laptop boot -t feat -s niri -m "add sticky rules"
 #   ./build.sh -b -m "docs: ..."     commit without rebuilding
+#   ./build.sh -u                    rebuild with updated flake inputs (nh)
 #
 # Host defaults to the current hostname and action to "switch". If -m is
 # omitted on an interactive terminal, you're prompted for the commit message.
@@ -48,6 +49,7 @@ Options:
   -s, --scope <scope>   Conventional commit scope
   -n, --no-commit       Rebuild but do not commit
   -b, --no-build        Commit without rebuilding
+  -u, --update          Update all flake inputs before building (nh only)
   -e, --edit            Edit the commit message in $EDITOR
   -y, --yes             Skip the proceed confirmation
   -h, --help            Show this help
@@ -64,6 +66,7 @@ TYPE="build"
 SCOPE=""
 DO_BUILD=true
 DO_COMMIT=true
+DO_UPDATE=false
 ASSUME_YES=false
 EDIT_MESSAGE=false
 
@@ -84,6 +87,7 @@ while (($#)); do
     -s|--scope)     [[ $# -ge 2 ]] || die "$1 needs a value"; SCOPE="$2";   shift 2 ;;
     -n|--no-commit) DO_COMMIT=false;   shift ;;
     -b|--no-build)  DO_BUILD=false;    shift ;;
+    -u|--update)    DO_UPDATE=true;    shift ;;
     -e|--edit)      EDIT_MESSAGE=true; shift ;;
     -y|--yes)       ASSUME_YES=true;   shift ;;
     -h|--help)      usage; exit 0 ;;
@@ -139,6 +143,13 @@ fi
 if [[ "$DO_BUILD" == false && "$DO_COMMIT" == false ]]; then
   die "nothing to do (--no-build and --no-commit)"
 fi
+if [[ "$DO_UPDATE" == true ]]; then
+  if [[ "$DO_BUILD" == false ]]; then
+    warn "--update is ignored with --no-build"
+  elif [[ "$USE_NH" == false ]]; then
+    die "--update requires nh (only nixos-rebuild is available)"
+  fi
+fi
 if [[ "$DO_BUILD" == true && "$HOST" != "$LOCAL_HOST" && "$ACTION" != build ]]; then
   die "'$ACTION' would activate $HOST's config on $LOCAL_HOST; use the 'build' action, or run this on $HOST"
 fi
@@ -158,7 +169,7 @@ if [[ "$ASSUME_YES" != true && -t 0 ]]; then
   info "host:   $HOST"
   info "action: $ACTION"
   if [[ "$DO_BUILD" == true ]]; then
-    info "build:  $(if [[ "$USE_NH" == true ]]; then echo "nh os $ACTION"; else echo "nixos-rebuild $ACTION"; fi)"
+    info "build:  $(if [[ "$USE_NH" == true ]]; then echo "nh os $ACTION$([[ "$DO_UPDATE" == true ]] && echo ' --update')"; else echo "nixos-rebuild $ACTION"; fi)"
   else
     info "build:  skipped (--no-build)"
   fi
@@ -193,8 +204,10 @@ fi
 if [[ "$DO_BUILD" == true ]]; then
   step "Rebuilding $HOST"
   if [[ "$USE_NH" == true ]]; then
-    info "nh os $ACTION $REPO_ROOT --hostname $HOST"
-    nh os "$ACTION" "$REPO_ROOT" --hostname "$HOST"
+    nh_args=(os "$ACTION" "$REPO_ROOT" --hostname "$HOST")
+    [[ "$DO_UPDATE" == true ]] && nh_args+=(--update)
+    info "nh ${nh_args[*]}"
+    nh "${nh_args[@]}"
   else
     info "sudo nixos-rebuild $ACTION --flake $REPO_ROOT#$HOST"
     sudo nixos-rebuild "$ACTION" --flake "$REPO_ROOT#$HOST"
@@ -270,7 +283,7 @@ fi
 
 if [[ "$DO_BUILD" == true ]]; then
   body_head="NixOS configuration rebuild for $HOST."
-  action_line="$(if [[ "$USE_NH" == true ]]; then echo "nh os $ACTION"; else echo "nixos-rebuild $ACTION"; fi)"
+  action_line="$(if [[ "$USE_NH" == true ]]; then echo "nh os $ACTION$([[ "$DO_UPDATE" == true ]] && echo ' --update')"; else echo "nixos-rebuild $ACTION"; fi)"
   stamp_line="Built:      $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
   gen_line="$GEN"
 else
