@@ -22,6 +22,7 @@ Rectangle {
   readonly property bool hovered: mouseArea.containsMouse
 
   signal clicked(var mouse)
+  signal secondaryClicked(var mouse)
 
   implicitWidth: root.buttonSize
   implicitHeight: root.buttonSize
@@ -54,9 +55,14 @@ Rectangle {
     anchors.fill: parent
     enabled: root.enabled
     hoverEnabled: root.enabled
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
     cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
     onClicked: function(mouse) {
-      root.clicked(mouse)
+      if (mouse.button === Qt.RightButton) {
+        root.secondaryClicked(mouse)
+      } else {
+        root.clicked(mouse)
+      }
     }
   }
 }

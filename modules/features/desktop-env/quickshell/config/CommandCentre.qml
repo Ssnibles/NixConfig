@@ -12,6 +12,20 @@ Scope {
   property bool closing: false
   property bool active: Config.commandCentreVisible || ccScope.closing
 
+  // Distance from the screen edge to the near edge of the card: the side bar
+  // (when there is one) plus the command centre margin. Shared by the card's
+  // anchors and the tooltip window so the two cannot drift apart.
+  readonly property int cardMargin: {
+    var barSpace = (Config.commandCentreSide === "right" ? Config.hasRightBar : Config.hasLeftBar) ? Config.barWidth : 0
+    return barSpace + Config.commandCentreMargin
+  }
+
+  // Side rows park their tooltip just outside the card, facing the centre.
+  readonly property int tooltipEdgeOffset: ccScope.cardMargin + Config.commandCentreWidth + 8
+
+  // Gates both the output picker content and the width it needs.
+  readonly property bool showSinkPicker: Config.ccShowSinkSwitcher && SystemService.audioSinks.length > 0
+
   function openOnActiveScreen(): void {
     if (Config.commandCentreVisible) return
     WmService.resolveTargetScreen(function() {
@@ -61,20 +75,38 @@ Scope {
   component ControlSliderRow: RowLayout {
     id: rowRoot
     property string icon: ""
-    property color iconColour: Colours.fg
-    property color iconBorderColour: Colours.border
+    // Red tint for muted/unavailable states; drives all the derived colours.
+    property bool alert: false
+    property color accent: Colours.accent
+    property color iconColour: rowRoot.alert ? Colours.red : Colours.fg
+    property color iconBorderColour: rowRoot.alert ? Colours.red : Colours.border
+    property color sliderFillColour: rowRoot.alert ? Colours.red : rowRoot.accent
+    property color percentColour: rowRoot.alert ? Colours.red : Colours.fg
     property bool iconClickable: false
     signal iconClicked()
+    signal iconSecondaryClicked()
     property real sliderValue: 0
-    property color sliderFillColour: Colours.accent
     signal sliderMoved(real value)
     property string percentText: ""
-    property color percentColour: Colours.fg
-    property bool reserveTrailingSpace: false
-    default property alias trailingContent: trailingSlot.data
+    // Width of the fixed percentage column, measured below.
+    readonly property real percentColumnWidth: Math.ceil(percentSizer.implicitWidth)
+
+    // Tooltip is opt-in: rows that leave tooltipWindow null show nothing.
+    property var tooltipWindow: null
+    property string tooltipTitle: ""
+    property var tooltipDetails: []
+    property int tooltipShowDelay: Config.popupShowDelay
+    // Optional custom card content for the tooltip (see Tooltip.contentComponent)
+    property Component tooltipContent: null
+    property int tooltipContentWidth: 0
+    readonly property alias tooltip: iconTip
 
     width: parent ? parent.width : 0
     spacing: 10
+
+    // Hovering anywhere on the row (icon, slider or percentage) keeps the
+    // row's tooltip open, not just hovering the icon.
+    HoverHandler { id: rowHover }
 
     IconButton {
       buttonSize: 32
@@ -82,14 +114,29 @@ Scope {
       baseColour: Colours.bgSubtle
       hoverColour: Colours.bgRaised
       borderColour: rowRoot.iconBorderColour
-      hoverBorderColour: rowRoot.iconClickable ? rowRoot.iconBorderColour : Colours.border
+      hoverBorderColour: rowRoot.iconBorderColour
       iconColour: rowRoot.iconColour
-      hoverIconColour: rowRoot.iconClickable ? rowRoot.iconColour : rowRoot.iconColour
+      hoverIconColour: rowRoot.iconColour
       enabled: rowRoot.iconClickable
       onClicked: rowRoot.iconClicked()
+      onSecondaryClicked: rowRoot.iconSecondaryClicked()
+
+      Tooltip {
+        id: iconTip
+        sharedWindow: rowRoot.tooltipWindow
+        icon: rowRoot.icon
+        iconColour: rowRoot.iconColour
+        title: rowRoot.tooltipTitle
+        details: rowRoot.tooltipDetails
+        contentWidth: rowRoot.tooltipContentWidth
+        contentComponent: rowRoot.tooltipContent
+        showDelay: rowRoot.tooltipShowDelay
+        extraHover: rowHover.hovered && !slider.dragging
+      }
     }
 
     SliderControl {
+      id: slider
       Layout.fillWidth: true
       Layout.alignment: Qt.AlignVCenter
       value: rowRoot.sliderValue
@@ -98,27 +145,29 @@ Scope {
       onMoved: function(v) { rowRoot.sliderMoved(v) }
     }
 
+    // Fixed, right aligned column sized to the widest value ("000%" covers
+    // 100% and the 150% volume ceiling), so the slider keeps the same length as
+    // the digits change.
     Text {
+      id: percentLabel
       text: rowRoot.percentText
       color: rowRoot.percentColour
       font.family: Config.monoFont
       font.pixelSize: 14
+      Layout.minimumWidth: rowRoot.percentColumnWidth
+      Layout.preferredWidth: rowRoot.percentColumnWidth
+      Layout.maximumWidth: rowRoot.percentColumnWidth
+      horizontalAlignment: Text.AlignRight
       Layout.alignment: Qt.AlignVCenter
     }
 
-    RowLayout {
-      id: trailingSlot
-      readonly property bool hasVisibleChild: {
-        for (var i = 0; i < children.length; i++) {
-          if (children[i].visible) return true
-        }
-        return false
-      }
-      visible: hasVisibleChild || rowRoot.reserveTrailingSpace
-      Layout.preferredWidth: visible ? 28 : 0
-      Layout.preferredHeight: 28
-      Layout.alignment: Qt.AlignVCenter
-      spacing: 6
+    // Hidden twin: measures the widest value with the same font. Layouts skip
+    // invisible items, so it costs no space.
+    Text {
+      id: percentSizer
+      visible: false
+      text: "000%"
+      font: percentLabel.font
     }
   }
 
@@ -218,7 +267,11 @@ Scope {
         }
         Keys.onPressed: function(event) {
           if (event.key === Qt.Key_Escape) {
-            Config.commandCentreVisible = false
+            if (ccTipWindow.isOpen) {
+              ccTipWindow.closeNow()
+            } else {
+              Config.commandCentreVisible = false
+            }
             event.accepted = true
           }
         }
@@ -239,8 +292,146 @@ Scope {
         anchors.right: panel.isLeft ? undefined : parent.right
         anchors.topMargin: Config.hasTopBar ? (Config.barHeight + Config.commandCentreMargin) : Config.commandCentreMargin
         anchors.bottomMargin: Config.commandCentreMargin
-        anchors.leftMargin: panel.isLeft ? (Config.hasLeftBar ? (Config.barWidth + Config.commandCentreMargin) : Config.commandCentreMargin) : 0
-        anchors.rightMargin: !panel.isLeft ? (Config.hasRightBar ? (Config.barWidth + Config.commandCentreMargin) : Config.commandCentreMargin) : 0
+        anchors.leftMargin: panel.isLeft ? ccScope.cardMargin : 0
+        anchors.rightMargin: panel.isLeft ? 0 : ccScope.cardMargin
+      }
+
+      // Shared tooltip window for the slider rows, parked just outside the card
+      SharedTooltipWindow {
+        id: ccTipWindow
+        screenTarget: panel.modelData
+        barSide: Config.commandCentreSide
+        edgeOffset: ccScope.tooltipEdgeOffset
+        // The command centre panel lives on the overlay layer, so the tooltip
+        // has to as well. Otherwise the panel's full screen backdrop is stacked
+        // above the tooltip and swallows clicks meant for the output picker.
+        WlrLayershell.layer: WlrLayer.Overlay
+      }
+
+      // Custom tooltip content for the volume icon: the audio output picker.
+      // It renders inside the shared tooltip window, so it floats beside the
+      // card instead of pushing the card's contents around.
+      Component {
+        id: outputPickerComponent
+
+        Card {
+          width: parent ? parent.width : Config.ccOutputPickerWidth
+          height: outputPickerCol.implicitHeight + Config.popupContentMargins * 2
+          cardRadius: Config.popupRadius
+          cardColour: Colours.bg
+
+          ColumnLayout {
+            id: outputPickerCol
+            anchors.fill: parent
+            anchors.margins: Config.popupContentMargins
+            spacing: Config.popupContentSpacing
+
+            Text {
+              Layout.leftMargin: 2
+              Layout.bottomMargin: 2
+              text: "Audio Output"
+              color: Colours.fgDim
+              font.family: Config.sansFont
+              font.pixelSize: Config.fontSizeXs
+              font.letterSpacing: 0.5
+            }
+
+            Repeater {
+              model: SystemService.audioSinks
+
+              delegate: Pill {
+                id: outputPill
+                required property var modelData
+                readonly property bool isCurrent: SystemService.audioSink !== null && modelData.id === SystemService.audioSink.id
+
+                Layout.fillWidth: true
+                pillHeight: 30
+                radius: Config.itemRadiusMd
+                baseColour: outputPill.isCurrent ? Colours.bgSubtle : "transparent"
+                hoverColour: Colours.bgSubtle
+                hoverHighlight: true
+                border.color: (outputPill.isCurrent || outputPill.hovered) ? Colours.accent : Colours.border
+                clickable: true
+                onClicked: {
+                  SystemService.selectAudioSink(outputPill.modelData)
+                  ccTipWindow.closeNow()
+                }
+
+                RowLayout {
+                  anchors.fill: parent
+                  anchors.leftMargin: 10
+                  anchors.rightMargin: 10
+                  spacing: 8
+
+                  Text {
+                    text: outputPill.isCurrent ? "󰄬" : "󰓃"
+                    color: outputPill.isCurrent ? Colours.accent : Colours.fgDim
+                    font.family: Config.monoFont
+                    font.pixelSize: Config.iconSizeSm
+                    Layout.alignment: Qt.AlignVCenter
+                  }
+
+                  Text {
+                    Layout.fillWidth: true
+                    text: SystemService.sinkDisplayName(outputPill.modelData)
+                    color: outputPill.isCurrent ? Colours.fg : Colours.fgMid
+                    font.family: Config.sansFont
+                    font.pixelSize: Config.fontSizeSm
+                    font.bold: outputPill.isCurrent
+                    elide: Text.ElideRight
+                    Layout.alignment: Qt.AlignVCenter
+                  }
+                }
+              }
+            }
+
+            Rectangle {
+              Layout.fillWidth: true
+              implicitHeight: 1
+              Layout.topMargin: 2
+              Layout.bottomMargin: 2
+              color: Colours.border
+            }
+
+            Pill {
+              id: outputMixerPill
+              Layout.fillWidth: true
+              pillHeight: 26
+              radius: Config.itemRadiusSm
+              baseColour: "transparent"
+              hoverColour: Colours.bgSubtle
+              hoverHighlight: true
+              border.color: "transparent"
+              clickable: true
+              onClicked: {
+                SystemService.openMixer()
+                ccTipWindow.closeNow()
+                Config.commandCentreVisible = false
+              }
+
+              Row {
+                anchors.centerIn: parent
+                spacing: 6
+
+                Text {
+                  text: "󰒓"
+                  color: outputMixerPill.hovered ? Colours.accent : Colours.fgDim
+                  font.family: Config.monoFont
+                  font.pixelSize: Config.iconSizeSm
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Text {
+                  text: "Open Audio Mixer"
+                  color: outputMixerPill.hovered ? Colours.fg : Colours.fgMid
+                  font.family: Config.sansFont
+                  font.pixelSize: Config.fontSizeXs
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+              }
+            }
+          }
+        }
       }
 
       Component {
@@ -252,14 +443,10 @@ Scope {
           cardColour: Colours.bg
           cardRadius: Config.commandCentreRadius
 
-          property bool sinkPickerOpen: false
-
           Connections {
             target: Config
             function onCommandCentreVisibleChanged() {
-              if (!Config.commandCentreVisible) {
-                mainCard.sinkPickerOpen = false
-              }
+              if (!Config.commandCentreVisible && ccTipWindow.isOpen) ccTipWindow.closeNow()
             }
           }
 
@@ -360,122 +547,27 @@ Scope {
                 anchors.margins: 12
                 spacing: 10
 
-                // Output Volume Row
+                // Output Volume Row. Hovering the row (or right clicking the
+                // icon) floats the audio output picker beside the card.
                 ControlSliderRow {
                   icon: SystemService.volumeIcon
-                  iconColour: SystemService.muted ? Colours.red : Colours.fg
-                  iconBorderColour: SystemService.muted ? Colours.red : Colours.border
+                  alert: SystemService.muted
                   iconClickable: true
                   onIconClicked: SystemService.toggleMute()
+                  onIconSecondaryClicked: tooltip.openNow()
+                  tooltipWindow: ccTipWindow
+                  // A beat longer than the default so a quick volume drag does
+                  // not throw the output picker open.
+                  tooltipShowDelay: 300
+                  tooltipTitle: "Volume " + SystemService.volumePercent + "%"
+                  tooltipDetails: ["Left click · Mute"]
+                  tooltipContent: ccScope.showSinkPicker ? outputPickerComponent : null
+                  tooltipContentWidth: ccScope.showSinkPicker ? Config.ccOutputPickerWidth : 0
                   sliderValue: SystemService.volume
-                  sliderFillColour: SystemService.muted ? Colours.red : Colours.accent
                   onSliderMoved: function(v) {
                     SystemService.setVolumeDebounced(v)
                   }
                   percentText: SystemService.volumePercent + "%"
-                  percentColour: SystemService.muted ? Colours.red : Colours.fg
-
-                  IconButton {
-                    visible: Config.ccShowSinkSwitcher && SystemService.audioSinks.length > 0
-                    buttonSize: 28
-                    icon: mainCard.sinkPickerOpen ? "󰅃" : "󰅀"
-                    iconSize: Config.iconSizeSm
-                    baseColour: mainCard.sinkPickerOpen ? Colours.bgRaised : Colours.bgSubtle
-                    hoverColour: Colours.bgRaised
-                    borderColour: mainCard.sinkPickerOpen ? Colours.accent : Colours.border
-                    hoverBorderColour: Colours.accent
-                    iconColour: mainCard.sinkPickerOpen ? Colours.accent : Colours.fgMid
-                    hoverIconColour: Colours.accent
-                    onClicked: mainCard.sinkPickerOpen = !mainCard.sinkPickerOpen
-                  }
-                }
-
-                // Expandable Audio Output Device Switcher
-                Column {
-                  visible: Config.ccShowSinkSwitcher && mainCard.sinkPickerOpen && SystemService.audioSinks.length > 0
-                  width: parent.width
-                  spacing: 6
-
-                  Repeater {
-                    model: SystemService.audioSinks
-
-                    delegate: Pill {
-                      id: sinkPill
-                      required property var modelData
-                      readonly property bool isCurrent: SystemService.audioSink !== null && modelData.id === SystemService.audioSink.id
-
-                      width: sliderCol.width
-                      pillHeight: 30
-                      radius: Config.itemRadiusMd
-                      baseColour: sinkPill.isCurrent ? Colours.bgRaised : Colours.bgSubtle
-                      hoverColour: Colours.bgRaised
-                      border.color: sinkPill.isCurrent ? Colours.accent : (sinkPill.hovered ? Colours.accent : Colours.border)
-                      clickable: true
-                      onClicked: SystemService.selectAudioSink(sinkPill.modelData)
-
-                      RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 10
-                        anchors.rightMargin: 10
-                        spacing: 8
-
-                        Text {
-                          text: sinkPill.isCurrent ? "󰄬" : "󰓃"
-                          color: sinkPill.isCurrent ? Colours.accent : Colours.fgDim
-                          font.family: Config.monoFont
-                          font.pixelSize: Config.iconSizeSm
-                          Layout.alignment: Qt.AlignVCenter
-                        }
-
-                        Text {
-                          Layout.fillWidth: true
-                          text: SystemService.sinkDisplayName(sinkPill.modelData)
-                          color: sinkPill.isCurrent ? Colours.fg : Colours.fgMid
-                          font.family: Config.sansFont
-                          font.pixelSize: Config.fontSizeSm
-                          font.bold: sinkPill.isCurrent
-                          elide: Text.ElideRight
-                          Layout.alignment: Qt.AlignVCenter
-                        }
-                      }
-                    }
-                  }
-
-                  Pill {
-                    id: mixerPill
-                    width: sliderCol.width
-                    pillHeight: 26
-                    radius: Config.itemRadiusSm
-                    baseColour: "transparent"
-                    hoverColour: Colours.bgSubtle
-                    hoverHighlight: true
-                    clickable: true
-                    onClicked: {
-                      SystemService.openMixer()
-                      Config.commandCentreVisible = false
-                    }
-
-                    Row {
-                      anchors.centerIn: parent
-                      spacing: 6
-
-                      Text {
-                        text: "󰒓"
-                        color: mixerPill.hovered ? Colours.accent : Colours.fgDim
-                        font.family: Config.monoFont
-                        font.pixelSize: Config.iconSizeSm
-                        anchors.verticalCenter: parent.verticalCenter
-                      }
-
-                      Text {
-                        text: "Open Audio Mixer"
-                        color: mixerPill.hovered ? Colours.fg : Colours.fgMid
-                        font.family: Config.sansFont
-                        font.pixelSize: Config.fontSizeXs
-                        anchors.verticalCenter: parent.verticalCenter
-                      }
-                    }
-                  }
                 }
 
                 // Divider if microphone is available
@@ -490,18 +582,14 @@ Scope {
                 ControlSliderRow {
                   visible: Config.ccShowMicSlider && SystemService.hasMic
                   icon: SystemService.micIcon
-                  iconColour: SystemService.micMuted ? Colours.red : Colours.fg
-                  iconBorderColour: SystemService.micMuted ? Colours.red : Colours.border
+                  alert: SystemService.micMuted
                   iconClickable: true
                   onIconClicked: SystemService.toggleMicMute()
                   sliderValue: SystemService.micVolume
-                  sliderFillColour: SystemService.micMuted ? Colours.red : Colours.accent
                   onSliderMoved: function(v) {
                     SystemService.setMicVolumeDebounced(v)
                   }
                   percentText: SystemService.micVolumePercent + "%"
-                  percentColour: SystemService.micMuted ? Colours.red : Colours.fg
-                  reserveTrailingSpace: Config.ccShowSinkSwitcher && SystemService.audioSinks.length > 0
                 }
 
                 // Divider if brightness is available
@@ -517,16 +605,12 @@ Scope {
                   visible: Config.ccShowBrightnessSlider && SystemService.brightnessAvailable
                   icon: "󰃠"
                   iconColour: Colours.yellow
-                  iconBorderColour: Colours.border
-                  iconClickable: false
+                  accent: Colours.yellow
                   sliderValue: SystemService.brightness
-                  sliderFillColour: Colours.yellow
                   onSliderMoved: function(v) {
                     SystemService.setBrightness(v)
                   }
                   percentText: SystemService.brightnessPercent + "%"
-                  percentColour: Colours.fg
-                  reserveTrailingSpace: Config.ccShowSinkSwitcher && SystemService.audioSinks.length > 0
                 }
               }
             }

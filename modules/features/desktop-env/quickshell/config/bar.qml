@@ -90,6 +90,7 @@ Scope {
             id: commandCentreButton
             horizontal: root.isHorizontal
             screen: barPanel.modelData
+            sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 

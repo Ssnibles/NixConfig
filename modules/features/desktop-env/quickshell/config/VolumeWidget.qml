@@ -142,7 +142,10 @@ Item {
     }
 
     Text {
-      text: root.volMuted ? "Muted" : root.volPercent + "%"
+      // Numeric even when muted - the red tint marks mute, no wording. Plain
+      // implicit width here: unlike the card and the OSD, this is a bar pill
+      // that should hug its content rather than hold a fixed label column.
+      text: root.volPercent + "%"
       color: root.volMuted ? Colours.red : Colours.fg
       font.family: root.uiFont
       font.pixelSize: 12

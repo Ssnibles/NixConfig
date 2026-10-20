@@ -17,12 +17,18 @@ RowLayout {
 
   signal seekRequested(real progress)
 
+  // Width of both fixed time columns, measured below.
+  readonly property real timeLabelWidth: Math.ceil(timeSizer.implicitWidth)
+
   Text {
+    id: positionText
     text: Utils.formatTime(Math.round(root.position))
     color: Colours.fgDim
     font.family: Config.sansFont
     font.pixelSize: 12
-    Layout.preferredWidth: 38
+    Layout.minimumWidth: root.timeLabelWidth
+    Layout.preferredWidth: root.timeLabelWidth
+    Layout.maximumWidth: root.timeLabelWidth
     horizontalAlignment: Text.AlignRight
   }
 
@@ -41,7 +47,9 @@ RowLayout {
     color: Colours.fgDim
     font.family: Config.sansFont
     font.pixelSize: 12
-    Layout.preferredWidth: 38
+    Layout.minimumWidth: root.timeLabelWidth
+    Layout.preferredWidth: root.timeLabelWidth
+    Layout.maximumWidth: root.timeLabelWidth
   }
 
   Text {
@@ -53,5 +61,15 @@ RowLayout {
     font.bold: true
     Layout.fillWidth: true
     horizontalAlignment: Text.AlignRight
+  }
+
+  // Hidden twin: measures the widest time ("000:00" covers up to 999:59) with
+  // the same font, so the seekbar keeps the same length as the minutes digits
+  // change. Layouts skip invisible items, so it costs no space.
+  Text {
+    id: timeSizer
+    visible: false
+    text: "000:00"
+    font: positionText.font
   }
 }

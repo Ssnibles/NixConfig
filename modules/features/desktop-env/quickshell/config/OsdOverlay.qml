@@ -114,10 +114,14 @@ Scope {
         }
 
         RowLayout {
+          id: osdRow
           anchors.fill: parent
           anchors.leftMargin: 16
           anchors.rightMargin: 16
           spacing: 12
+
+          // Width of the fixed label column, measured below.
+          readonly property real labelColumnWidth: Math.ceil(labelSizer.implicitWidth)
 
           Text {
             text: SystemService.osdIcon
@@ -149,13 +153,30 @@ Scope {
             }
           }
 
+          // Fixed, right aligned column sized to the widest value ("000%"
+          // covers 100% and the 150% volume ceiling), so the progress bar keeps
+          // the same length as the digits change.
           Text {
+            id: osdLabelText
             text: SystemService.osdLabel
             color: SystemService.osdMuted ? Colours.red : Colours.fg
             font.family: Config.monoFont
             font.pixelSize: Config.fontSizeMd
             font.bold: true
+            Layout.minimumWidth: osdRow.labelColumnWidth
+            Layout.preferredWidth: osdRow.labelColumnWidth
+            Layout.maximumWidth: osdRow.labelColumnWidth
+            horizontalAlignment: Text.AlignRight
             Layout.alignment: Qt.AlignVCenter
+          }
+
+          // Hidden twin: measures the widest value with the same font. Layouts
+          // skip invisible items, so it costs no space.
+          Text {
+            id: labelSizer
+            visible: false
+            text: "000%"
+            font: osdLabelText.font
           }
         }
       }

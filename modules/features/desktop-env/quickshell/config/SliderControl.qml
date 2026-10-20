@@ -20,6 +20,8 @@ Item {
   property real _dragValue: 0
   property real _pendingValue: -1
   readonly property real _visualValue: mouse.dragging ? _dragValue : (_pendingValue >= 0 ? _pendingValue : value)
+  // Exposed so surrounding UI (e.g. hover tooltips) can tell a drag from a hover.
+  readonly property bool dragging: mouse.dragging
 
   // Clear the pending value once the external source reflects our drag.
   onValueChanged: {

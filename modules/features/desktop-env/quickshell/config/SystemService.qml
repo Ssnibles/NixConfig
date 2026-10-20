@@ -42,17 +42,18 @@ Singleton {
     return root.volumeIcon
   }
 
-  readonly property string osdLabel: {
-    if (root.osdKind === "mic") return root.micMuted ? "Mic Muted" : (root.micVolumePercent + "%")
-    if (root.osdKind === "brightness") return root.brightnessPercent + "%"
-    return root.muted ? "Muted" : (root.volumePercent + "%")
-  }
+  // The level currently being shown, as a 0..1+ fraction (mic and volume can
+  // exceed 100%). Single source for the label and the progress bar.
+  readonly property real _osdLevel: root.osdKind === "mic"
+    ? root.micVolume
+    : (root.osdKind === "brightness" ? root.brightness : root.volume)
 
-  readonly property real osdValue: {
-    if (root.osdKind === "mic") return root.micMuted ? 0 : Math.max(0, Math.min(1.0, root.micVolume))
-    if (root.osdKind === "brightness") return Math.max(0, Math.min(1.0, root.brightness))
-    return root.muted ? 0 : Math.max(0, Math.min(1.0, root.volume))
-  }
+  // Always numeric, even when muted: mute is signalled by the icon, the pill
+  // border and the label colour, so the level stays visible and the label width
+  // stays stable across mute and digit-count changes.
+  readonly property string osdLabel: Math.round(root._osdLevel * 100) + "%"
+
+  readonly property real osdValue: Math.max(0, Math.min(1.0, root._osdLevel))
 
   function showOsd(kind) {
     if (!Config.osdEnabled || Config.commandCentreVisible) return

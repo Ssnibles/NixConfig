@@ -1,10 +1,12 @@
 pragma ComponentBehavior: Bound
+import Quickshell
 import QtQuick
 
 Pill {
   id: root
 
   property var screen: null
+  property PanelWindow sharedWindow: null
 
   horizontal: false
   padding: 4
@@ -29,5 +31,13 @@ Pill {
     font.family: Config.monoFont
     font.pixelSize: Config.iconSizeMd
     anchors.centerIn: parent
+  }
+
+  Tooltip {
+    sharedWindow: root.sharedWindow
+    icon: "󰘳"
+    iconColour: Colours.accent
+    title: "Command Centre"
+    details: [Config.commandCentreVisible ? "Left click · Close" : "Left click · Open"]
   }
 }

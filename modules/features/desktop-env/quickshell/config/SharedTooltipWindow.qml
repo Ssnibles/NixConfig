@@ -10,9 +10,17 @@ PanelWindow {
 
   property string barSide: "left" // "left" | "right" | "top"
 
+  // Distance from the anchored screen edge. A negative value keeps the default
+  // bar gap; set it to park the tooltip next to something that is not a bar
+  // (e.g. just outside the command centre card).
+  property int edgeOffset: -1
+  readonly property int edgeDistance: root.edgeOffset >= 0 ? root.edgeOffset : Config.popupGap
+
   property var _active: null
   property bool recentlyActive: false
   property var cachedActive: null
+  // True while a tooltip (or its custom content) is on screen.
+  readonly property bool isOpen: root.cachedActive !== null
   property real cardOpacity: 0
 
   readonly property bool hovered: tipLoader.item !== null && cardHover.hovered
@@ -74,7 +82,7 @@ PanelWindow {
 
   Behavior on cardOpacity { NumberAnimation { duration: Config.popupFadeMs; easing.type: Easing.OutQuad } }
 
-  visible: cachedActive !== null
+  visible: root.isOpen
   focusable: false
   aboveWindows: true
   exclusionMode: ExclusionMode.Ignore
@@ -123,8 +131,8 @@ PanelWindow {
       : Math.round(Math.max(6, Math.min(tipLoader.targetCentreY - root.cardH / 2, root.screenH - root.cardH - 6)))
     left: root.barSide === "top"
       ? Math.round(Math.max(12, Math.min(tipLoader.targetCentreX - root.cardW / 2, root.screenW - root.cardW - 12)))
-      : (root.barSide === "left" ? Config.popupGap : 0)
-    right: root.barSide === "right" ? Config.popupGap : 0
+      : (root.barSide === "left" ? root.edgeDistance : 0)
+    right: root.barSide === "right" ? root.edgeDistance : 0
   }
   implicitWidth: root.cardW
   implicitHeight: root.cardH
