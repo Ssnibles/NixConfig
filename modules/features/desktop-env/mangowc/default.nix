@@ -30,29 +30,29 @@
       # (https://github.com/wlrfx/scenefx/pull/177). The patched scenefx is
       # threaded into both builds below so it keeps working for both inputs;
       # drop this once upstream merges/releases the fix.
-      scenefx = inputs.scenefx.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (oldAttrs: {
-        postPatch = (oldAttrs.postPatch or "") + ''
-          substituteInPlace render/egl.c \
-            --replace-fail 'attribs[atti++] = 2;' 'attribs[atti++] = 3;'
-          substituteInPlace render/fx_renderer/shaders.c \
-            --replace-fail 'glShaderSource(shader, 1, &src, NULL);' \
-              'const char *prefix = (type == GL_FRAGMENT_SHADER) ? "#ifndef GL_FRAGMENT_PRECISION_HIGH\n#define GL_FRAGMENT_PRECISION_HIGH 1\n#endif\n" : ""; const GLchar *sources[] = { prefix, src }; glShaderSource(shader, 2, sources, NULL);'
-        '';
-      });
+      scenefx =
+        inputs.scenefx.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
+          (oldAttrs: {
+            postPatch = (oldAttrs.postPatch or "") + ''
+              substituteInPlace render/egl.c \
+                --replace-fail 'attribs[atti++] = 2;' 'attribs[atti++] = 3;'
+              substituteInPlace render/fx_renderer/shaders.c \
+                --replace-fail 'glShaderSource(shader, 1, &src, NULL);' \
+                  'const char *prefix = (type == GL_FRAGMENT_SHADER) ? "#ifndef GL_FRAGMENT_PRECISION_HIGH\n#define GL_FRAGMENT_PRECISION_HIGH 1\n#endif\n" : ""; const GLchar *sources[] = { prefix, src }; glShaderSource(shader, 2, sources, NULL);'
+            '';
+          });
 
-      mango-remote =
-        (inputs.mangowc.packages.${pkgs.stdenv.hostPlatform.system}.default)
-        .override {
-          inherit scenefx;
-        };
+      mango-remote = (inputs.mangowc.packages.${pkgs.stdenv.hostPlatform.system}.default).override {
+        inherit scenefx;
+      };
 
       # Local development build from the checked-in input, only evaluated when
       # features.mangowc.local is on.
       mango-local-base =
-        (inputs.mangowc-local.packages.${pkgs.stdenv.hostPlatform.system}.default)
-        .override {
-          inherit scenefx;
-        };
+        (inputs.mangowc-local.packages.${pkgs.stdenv.hostPlatform.system}.default).override
+          {
+            inherit scenefx;
+          };
 
       # Development wrapper: at runtime it prefers a freshly built binary from
       # /home/${config.username}/mango/result, so local changes can be tested
@@ -184,6 +184,8 @@
           chooser_cmd = "${screencast-chooser}";
         };
 
+        environment.sessionVariables.SDL_VIDEO_DRIVER = "wayland";
+
         programs.mango.enable = true;
 
         # The plain "Mango" session always uses the pinned upstream package. The
@@ -192,8 +194,7 @@
 
         # Adds share/wayland-sessions/mango-local.desktop (picked up by ly and
         # other display managers) on top of the upstream mango.desktop session.
-        services.displayManager.sessionPackages =
-          lib.mkIf cfg.local [ mango-local-session ];
+        services.displayManager.sessionPackages = lib.mkIf cfg.local [ mango-local-session ];
 
         nixos.liveLinks = {
           "mango-config" = {
