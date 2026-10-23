@@ -1,6 +1,5 @@
-# Tmux Multiplexer & Window Management Feature
-# Tmux configuration, vi keybindings, tmux plugins (resurrect, extrakto, floax),
-# sesh session manager, interactive window picker, and systemd user daemon.
+# Tmux setup.
+# Plugins, session management, window picking, and a user service.
 { ... }:
 {
   nixos.modules.shared =
@@ -58,10 +57,10 @@
         resurrect_dir="$HOME/.tmux/resurrect"
         ${pkgs.coreutils}/bin/mkdir -p "$resurrect_dir"
 
-        # Remove 0-byte corrupt save files
+        # Remove empty save files.
         ${pkgs.findutils}/bin/find "$resurrect_dir" -maxdepth 1 -name "tmux_resurrect_*.txt" -type f -size 0 -delete 2>/dev/null || true
 
-        # If called directly or via keybinding, execute resurrect save script first
+        # Save first when the wrapper is called for a manual save.
         if [ "''${1:-}" = "--force" ] || [ "''${1:-}" = "run" ]; then
           ${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/save.sh || true
         fi
@@ -76,7 +75,7 @@
           exit 0
         fi
 
-        # Sanitise Nix store paths, wrapped binaries, and Neovim --cmd flags in save file
+        # Remove Nix store paths, wrapper names, and Neovim flags from the save.
         ${pkgs.gnused}/bin/sed -i -E \
           -e 's|/nix/store/[a-z0-9]{32}-[^/]+/bin/\.([a-zA-Z0-9_-]+)-wrapped|\1|g' \
           -e 's|/nix/store/[a-z0-9]{32}-[^/]+/bin/||g' \
@@ -91,8 +90,7 @@
 
         current_size=$(${pkgs.coreutils}/bin/stat -c %s "$last_target" 2>/dev/null || echo 0)
 
-        # Single dummy sessions (default/bootstrap) are typically under 200 bytes.
-        # Real multi-window session saves are > 250 bytes.
+        # Ignore tiny saves that only contain the dummy default session.
         if [ "$current_size" -lt 200 ]; then
           best_save=$(${pkgs.coreutils}/bin/ls -t "$resurrect_dir"/tmux_resurrect_*.txt 2>/dev/null | ${pkgs.findutils}/bin/xargs -r ${pkgs.coreutils}/bin/stat -c '%s %n' 2>/dev/null | ${pkgs.gawk}/bin/gawk '$1 > 250 {print $2}' | ${pkgs.coreutils}/bin/head -n 1 || echo "")
           if [ -n "$best_save" ] && [ -f "$best_save" ]; then
@@ -106,7 +104,7 @@
         target="''${1:-}"
         [ -z "$target" ] && exit 0
 
-        # Strip icon prefix if present (e.g. "⚡ main" -> "main", "📁 /path" -> "/path")
+        # Strip an icon prefix from the session name, if present.
         clean_target=$(echo "$target" | ${pkgs.gnused}/bin/sed -E 's/^[^a-zA-Z0-9/~._-]+ //' | ${pkgs.gnused}/bin/sed 's/^[[:space:]]*//')
 
         if [ -n "$clean_target" ] && ${pkgs.tmux}/bin/tmux has-session -t "$clean_target" 2>/dev/null; then
@@ -162,8 +160,8 @@
         ${pkgs.tmux}/bin/tmux kill-session -t popup-jjui 2>/dev/null || true
       '';
 
-      # Navi cheatsheet popup: pick a cheat in a floating popup, then paste it
-      # (unexecuted) into the pane that opened the popup.
+      # Show the cheatsheet in a popup, then paste the chosen command into the
+      # pane that opened it without running it.
       tmuxNaviPopup = pkgs.writeShellScriptBin "tmux-navi-popup" ''
         set -eu
         target_pane="''${1:-}"
@@ -211,25 +209,23 @@
             set-option -g prefix `
             bind-key ` send-prefix
 
-            # Ensure default shell is set to Fish
+            # Use Fish as the default shell.
             set -g default-shell "${pkgs.unstable.fish}/bin/fish"
 
-            # Ensure system tools are always available to tmux subprocesses & tmux-fzf & sesh
+            # Keep tools available to tmux, tmux-fzf, and sesh.
             set-environment -g PATH "/etc/profiles/per-user/${config.username}/bin:/run/current-system/sw/bin:${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.tmux}/bin:${pkgs.sesh}/bin:${pkgs.zoxide}/bin:${pkgs.coreutils}/bin:${pkgs.gnused}/bin:${pkgs.gawk}/bin:${pkgs.findutils}/bin:${pkgs.git}/bin:${pkgs.procps}/bin:${pkgs.wl-clipboard}/bin:${pkgs.jujutsu}/bin:${pkgs.jjui}/bin:$PATH"
             set-environment -g TMUX_FZF_PREVIEW 0
 
-            # Unbind default Ctrl shortcuts so tmux never intercepts Control keys
+            # Stop tmux from taking Ctrl keys.
             unbind C-b
             unbind C-z
 
-            # Plugin Configurations (Must precede plugin execution)
-            # Extrakto text/URL/path extractor keybinding
+            # Plugin settings. These must come before the plugin is loaded.
             set -g @extrakto_key 'u'
 
-            # Tmux-Jump configuration (flash.nvim / EasyMotion style jump to position)
             set -g @jump-key 'space'
 
-            # Resurrect (manual snapshot & full restoration)
+            # Resurrect snapshot and restore.
             set -g @resurrect-save-key 'S'
             set -g @resurrect-restore-key 'R'
             set -g @resurrect-strategy-nvim 'session'
@@ -238,14 +234,14 @@
             set -g @resurrect-capture-pane-contents 'on'
             set -g @resurrect-hook-post-save-all '${tmuxResurrectSave}/bin/tmux-resurrect-save'
 
-            # Tmux-FZF configuration
+            # tmux-fzf.
             set-environment -g TMUX_FZF_LAUNCH_KEY 'f'
             set -g @tmux-fzf-launch-key 'f'
             set -g @tmux-fzf-options '-p -w 80% -h 60% -m --no-preview'
             set -g @tmux-fzf-preview '0'
             set -g @tmux-fzf-order 'command:session:window:pane:keybinding:clipboard:process'
 
-            # tmux-floax configuration (Prefix + t to toggle scratchpad terminal)
+            # tmux-floax scratch terminal on prefix and t.
             unbind t
             set -g @floax-width '80%'
             set -g @floax-height '80%'
@@ -255,7 +251,7 @@
             set -g @floax-bind-menu 'P'
             set -g @floax-change-path 'true'
 
-            # Load Plugins (Async -b prevents startup deadlocks in tmux 3.6+)
+            # Load plugins asynchronously to avoid startup deadlocks in tmux 3.6.
             run-shell "${pkgs.tmuxPlugins.yank}/share/tmux-plugins/yank/yank.tmux"
             run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/resurrect.tmux"
             run-shell "${pkgs.tmuxPlugins.extrakto}/share/tmux-plugins/extrakto/extrakto.tmux"
@@ -263,45 +259,41 @@
             run-shell -b "${pkgs.tmuxPlugins.tmux-floax}/share/tmux-plugins/tmux-floax/floax.tmux"
             run-shell -b "${pkgs.tmuxPlugins.jump}/share/tmux-plugins/jump/tmux-jump.tmux"
 
-            # Sesh Session Manager (Prefix + K)
+            # Sesh session manager on prefix and K.
             bind-key K display-popup -E -w 80% -h 70% "${tmuxSeshPicker}/bin/tmux-sesh-picker"
 
-            # Last session toggle (Prefix + BTab via sesh, preserves history across kills)
+            # Go to the last session without losing history.
             bind -N "last-session (via sesh)" BTab run-shell "${pkgs.sesh}/bin/sesh last"
 
-            # Explicit manual session save & restore bindings using safe wrapper
             bind-key S run-shell "${tmuxResurrectSave}/bin/tmux-resurrect-save run"
             bind-key R run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/restore.sh"
 
-            # Session & Window Navigation
-            # Interactive Session & Window Tree Picker
             bind-key w choose-tree -sZ
 
-            # Fast Interactive Floating Window Switcher (popup)
             bind-key o display-popup -E -w 75% -h 65% "${tmuxWindowPicker}/bin/tmux-window-picker"
 
-            # Navi cheatsheet popup (Prefix + Ctrl-g): insert selected cheat into this pane
+            # Navi cheatsheet popup. Prefix and Ctrl-g.
             bind-key C-g display-popup -E -w 80% -h 70% -d "#{pane_current_path}" "${tmuxNaviPopup}/bin/tmux-navi-popup #{pane_id}"
             bind-key N command-prompt -p "New Session Name:" "if-shell -F '%1' 'new-session -A -s \"%1\"'"
 
-            # Smart Command Mode & Auto-Completion (: and tmux-fzf launcher)
+            # Smart command mode and the tmux-fzf launcher.
             set -g status-keys emacs
             bind-key : command-prompt -T command
             bind-key \; run-shell -b "TMUX_FZF_OPTIONS='-p -w 80% -h 60% --no-preview' TMUX_FZF_PREVIEW=0 TMUX_FZF_CLIENT='#{client_tty}' ${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/command.sh"
 
-            # Native Floating jjui Popup (Prefix + g) - toggleable
+            # Floating jjui popup on prefix and g. Press again to close.
             bind g if-shell -F '#{==:#{session_name},popup-jjui}' \
               'detach-client' \
               'if-shell -F "#{m/r:^(popup-|scratch),#{session_name}}" "detach-client" "display-popup -d \"#{pane_current_path}\" -w 85% -h 85% -E \"${tmuxJjuiPopup}/bin/tmux-jjui-popup \\\"#{pane_current_path}\\\"\""'
 
-            # Terminal & True Colour support
+            # True colour support.
             set-option -a terminal-features ",xterm-256color:RGB,xterm-kitty:RGB,ghostty:RGB,foot:RGB,alacritty:RGB,tmux-256color:RGB,*:RGB"
             set-option -a terminal-features ",*:hyperlinks"
             set-option -a terminal-overrides ",xterm-256color:Tc,xterm-kitty:Tc,ghostty:Tc,foot:Tc,alacritty:Tc,tmux-256color:Tc,*:Tc"
             set-option -a terminal-overrides ',*:Smulx=\E[4::%p1%dm'
             set-option -a terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d;m'
 
-            # Ensure COLORTERM=truecolor is always exported to all Tmux windows/panes
+            # Keep truecolor in every tmux window and pane.
             set-environment -g COLORTERM "truecolor"
             set -g update-environment "DISPLAY SSH_AUTH_SOCK SSH_CONNECTION WINDOWID XAUTHORITY SWAYSOCK WAYLAND_DISPLAY PATH COLORTERM TERM TERM_PROGRAM KITTY_WINDOW_ID KITTY_PID"
             set -gw xterm-keys on
@@ -314,14 +306,13 @@
             set -s exit-empty off
             set -g aggressive-resize on
 
-            # Indexing & Window behaviour
+            # Window numbering.
             set -g pane-base-index 1
             set -g renumber-windows on
             setw -g automatic-rename on
             setw -g automatic-rename-format '#{b:pane_current_command}'
 
-            # Window & Pane splitting
-            # Neovim-style: v=side-by-side, s=top/bottom, _/\=full-span
+            # Neovim style splits. v is side by side, s is top and bottom.
             unbind '"'
             unbind %
             bind v split-window -h -c "#{pane_current_path}"
@@ -333,7 +324,7 @@
             bind c new-window -c "#{pane_current_path}"
             bind n new-window -c "#{pane_current_path}"
 
-            # Pane lifecycle & zooming
+            # Pane lifecycle and zoom.
             bind q display-panes
             bind Q kill-window
             bind X confirm-before -p "Kill session #S? (y/n)" kill-session
@@ -349,17 +340,17 @@
             bind TAB last-window
             bind m set -g mouse \; display-message "Mouse mode: #{?mouse,ON,OFF}"
 
-            # Window swapping & reordering
+            # Window swapping.
             bind -r < swap-window -d -t -1
             bind -r > swap-window -d -t +1
 
-            # Pane joining & fast pane swapping
+            # Join and swap panes.
             bind J choose-window 'join-pane -h -s "%%"'
             bind j choose-window 'join-pane -v -s "%%"'
             bind -r '{' swap-pane -U
             bind -r '}' swap-pane -D
 
-            # Pane resizing (Capital H/L and Alt-hjkl)
+            # Resize panes with capital H and L, or Alt with hjkl.
             bind -r H resize-pane -L 5
             bind -r L resize-pane -R 5
             bind -r M-h resize-pane -L 5
@@ -367,8 +358,7 @@
             bind -r M-k resize-pane -U 5
             bind -r M-l resize-pane -R 5
 
-            # Window / Buffer Navigation
-            # Alt+Number for direct window selection
+            # Alt and a number selects a window directly.
             bind -n M-1 select-window -t 1
             bind -n M-2 select-window -t 2
             bind -n M-3 select-window -t 3
@@ -383,14 +373,14 @@
             bind [ previous-window
             bind ] next-window
 
-            # Pane navigation (Alt+hjkl for seamless movement without Ctrl collisions)
+            # Alt with hjkl moves between panes.
             bind -n M-h select-pane -L
             bind -n M-j select-pane -D
             bind -n M-k select-pane -U
             bind -n M-l select-pane -R
 
-            # Alt Passthrough Mode (Prefix + a)
-            # Toggle Alt Passthrough mode so Alt+j/k/h/l go directly to Neovim (for mini.move)
+            # Alt passthrough on prefix and a. Alt with hjkl then reaches
+            # Neovim, which uses it for mini.move.
             bind a if-shell -F '#{==:#{client_key_table},passthrough}' \
               'switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"' \
               'switch-client -T passthrough \; display-message "ALT PASSTHROUGH: ON (Leader+a or Esc to exit)"'
@@ -403,13 +393,12 @@
             bind -T passthrough ` switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"
             bind -T passthrough a switch-client -T root \; display-message "ALT NAVIGATION: ENABLED"
 
-            # Utility
-            # Quick config reload
+            # Reload the config.
             bind-key r run-shell 'if [ -f ~/.config/tmux/tmux.conf ]; then tmux source-file ~/.config/tmux/tmux.conf && tmux display-message "Reloaded ~/.config/tmux/tmux.conf"; elif [ -f ~/.tmux.conf ]; then tmux source-file ~/.tmux.conf && tmux display-message "Reloaded ~/.tmux.conf"; elif [ -f /etc/tmux.conf ]; then tmux source-file /etc/tmux.conf && tmux display-message "Reloaded /etc/tmux.conf"; else tmux display-message "Failed to reload tmux config"; fi'
-            # Clear scrollback history & terminal screen
+            # Clear scrollback and redraw the screen.
             bind C-k send-keys -R \; send-keys C-l \; clear-history
 
-            # Vi Copy Mode & Scrollback Search
+            # Vi copy mode and scrollback search.
             set -g word-separators " @()[]{}':\""
             bind-key V copy-mode
             bind / copy-mode \; send-keys ?
@@ -429,7 +418,7 @@
             bind-key -T copy-mode-vi WheelDownPane send-keys -X -N 2 scroll-down
             bind p paste-buffer -p
 
-            # Status Bar Styling
+            # Status bar.
             set -g status-position top
             set -g status-interval 5
             set -g status-justify left
@@ -447,14 +436,14 @@
             set -g status-right-length 100
             set -g status-right "#{?window_zoomed_flag,#[fg=#${c.bg},bg=#${c.yellow},bold] ZOOM #[default] ,}#[fg=#${c.teal},bold]#(${tmuxPathFormatter} '#{pane_current_path}') "
 
-            # Solid pane split borders & rounded popup borders
+            # Pane borders and popup borders.
             set -g pane-border-lines single
             set -g pane-border-style "fg=#${c.border}"
             set -g pane-active-border-style "fg=#${c.accent}"
             set -g popup-border-lines rounded
             set -g popup-border-style "fg=#${c.border}"
 
-            # Copy-mode selection styling & pane overlay styling
+            # Copy mode and display pane colours.
             set -g mode-style "fg=#${c.bg},bg=#${c.accent},bold"
             set -g display-panes-colour "#${c.fgMid}"
             set -g display-panes-active-colour "#${c.accent}"
@@ -472,13 +461,13 @@
           '';
         };
 
-        # Systemd User Service to automatically launch tmux daemon on boot/login
+        # Start tmux at login.
         systemd.user.services.tmux = {
           description = "Tmux terminal multiplexer daemon";
           documentation = [ "man:tmux(1)" ];
           wantedBy = [ "default.target" ];
           environment = {
-            # Match NixOS programs.tmux.secureSocket socket directory in user shells
+            # Match the socket directory used by programs.tmux in user shells.
             TMUX_TMPDIR = "%t";
           };
           path = with pkgs; [
@@ -501,7 +490,6 @@
           };
         };
 
-        # Hjem Dotfiles for Sesh Fish function & configuration
         hjem.users.${config.username}.files = {
           ".config/fish/functions/ta.fish" = {
             clobber = true;
@@ -525,7 +513,7 @@
           };
         };
 
-        # Shell aliases for tmux
+        # Tmux aliases.
         programs.fish.shellAliases = {
           t = "tmux";
           tls = "tmux ls";

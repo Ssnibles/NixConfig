@@ -1,10 +1,9 @@
-# Default Applications & MIME Handlers Feature
-# Centralised single source of truth for default system applications, session
-# environment variables, and declarative XDG MIME associations via Hjem.
+# Default applications and MIME types.
 { ... }:
 {
   nixos.modules.shared =
     {
+      pkgs,
       lib,
       config,
       ...
@@ -12,7 +11,7 @@
     let
       cfg = config.features.default-apps;
 
-      # Standard web and protocol MIME types
+      # Standard web and protocol types.
       webMimeTypes = [
         "text/html"
         "text/xml"
@@ -32,7 +31,7 @@
         "application/x-extension-xht"
       ];
 
-      # Desktop entries for known browsers
+      # Desktop entries for each browser.
       browserDesktopEntries = {
         firefox = [
           "firefox-devedition.desktop"
@@ -51,8 +50,7 @@
         "inode/directory" = [ cfg.fileManager ];
       };
 
-      # Media viewers (zathura / imv / mpv). Kept here as the single source of
-      # truth for MIME defaults; apps/media.nix no longer duplicates them.
+      # Media viewers.
       mediaAssociations = {
         "application/pdf" = [ "org.pwmt.zathura.desktop" ];
         "application/x-pdf" = [ "org.pwmt.zathura.desktop" ];
@@ -83,9 +81,38 @@
         "application/ogg" = [ "mpv.desktop" ];
       };
 
-      # Combined MIME associations for default-apps
+      # Open all text files in the configured editor. Expand text/* here because
+      # Hjem writes the user mimeapps.list verbatim and GIO does not expand
+      # globs. Browser types stay out of this set.
+      editorDesktopEntry = "${cfg.editor}.desktop";
+
+      textMimeTypes = builtins.filter (
+        type: lib.hasPrefix "text/" type && !(builtins.elem type webMimeTypes)
+      ) (lib.splitString "\n" (builtins.readFile "${pkgs.shared-mime-info}/share/mime/types"));
+
+      editorAssociations = lib.genAttrs (
+        textMimeTypes
+        ++ [
+          # JSON and config types that are not text/*.
+          "application/json"
+          "application/json5"
+          "application/json-patch+json"
+          "application/ld+json"
+          "application/schema+json"
+          "application/toml"
+          "application/yaml"
+          "application/x-desktop"
+          "application/sql"
+          "application/x-ipynb+json"
+        ]
+      ) (_: [ editorDesktopEntry ]);
+
       allDefaultApplications =
-        mediaAssociations // browserMimeAssociations // fileManagerAssociation // cfg.extraAssociations;
+        mediaAssociations
+        // editorAssociations
+        // browserMimeAssociations
+        // fileManagerAssociation
+        // cfg.extraAssociations;
     in
     {
       options.features.default-apps = {
@@ -120,7 +147,7 @@
 
         fileManager = lib.mkOption {
           type = lib.types.str;
-          default = "yazi.desktop";
+          default = "thunar.desktop";
           description = "Default file manager desktop entry for directory MIME handling.";
         };
 
@@ -129,7 +156,7 @@
           default = { };
           example = lib.literalExpression ''
             {
-              "inode/directory" = [ "yazi.desktop" ];
+              "inode/directory" = [ "thunar.desktop" ];
             }
           '';
           description = "Additional custom MIME associations merged into default applications.";
@@ -151,7 +178,7 @@
           else
             "none"
         );
-        # Global Session Variables
+        # Session variables.
         environment.sessionVariables = lib.mkMerge [
           {
             EDITOR = cfg.editor;
@@ -164,13 +191,13 @@
           })
         ];
 
-        # System-level XDG MIME defaults (/etc/xdg/mimeapps.list)
+        # System level defaults in /etc/xdg/mimeapps.list.
         xdg.mime = {
           enable = true;
           defaultApplications = allDefaultApplications;
         };
 
-        # User-level XDG MIME defaults (~/.config/mimeapps.list via Hjem)
+        # User defaults in ~/.config/mimeapps.list.
         hjem.users."${config.username}".xdg.mime-apps.default-applications = allDefaultApplications;
       };
     };

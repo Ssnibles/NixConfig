@@ -12,6 +12,8 @@ and stays out of the way otherwise.
 
 | Skill | Loads when | Depends on |
 |---|---|---|
+| [`base-conventions`](base-conventions/SKILL.md) | Every task, before anything else | — |
+| [`programming-conventions`](programming-conventions/SKILL.md) | Any code, configuration, or refactoring work | `base-conventions` |
 | [`typst-snippets`](typst-snippets/SKILL.md) | Writing or editing any `.typ` file | — |
 | [`lecture-notes`](lecture-notes/SKILL.md) | Turning slides, recordings or readings into study notes | `typst-snippets` |
 | [`test-notes`](test-notes/SKILL.md) | Working through a past test, exam or practice paper | `typst-snippets` |
@@ -19,10 +21,13 @@ and stays out of the way otherwise.
 | [`assignment-report`](assignment-report/SKILL.md) | Answering a brief in an assignment, report or design doc | `typst-snippets` |
 | [`revision-sheets`](revision-sheets/SKILL.md) | Making a cram sheet or active-recall question bank | `typst-snippets` |
 
-`typst-snippets` is the foundation: it defines the shared theme, the helper
-functions (`#callout`, `#card`, `#qa`, `#uml-class`, …), the palette, and the
-"how it should look" rules. The other skills define *what* a document should
-contain and all tell pi to load `typst-snippets` as well.
+`base-conventions` applies to everything: British English, plain words, and
+short comments. `programming-conventions` adds the rules for code work and
+tells pi to load `base-conventions` too. `typst-snippets` is the foundation for
+the notes skills: it defines the shared theme, the helper functions
+(`#callout`, `#card`, `#qa`, `#uml-class`, and so on), the palette, and the
+appearance rules. The other skills define what a document should contain and
+all tell pi to load `typst-snippets` as well.
 
 ## Shared conventions
 

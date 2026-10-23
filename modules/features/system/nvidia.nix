@@ -1,6 +1,4 @@
-# NVIDIA GPU Hardware Feature (Desktop Host)
-# Proprietary NVIDIA driver configuration, DRM modesetting parameters,
-# VA-API hardware decoding, and Wayland compositor environment overrides.
+# NVIDIA GPU setup for the desktop.
 { ... }:
 {
   nixos.modules.desktop =
@@ -43,25 +41,28 @@
         ];
       };
 
-      # Wayland & EGL / GBM environment variables for NVIDIA GPUs
+      # Wayland and VA-API environment for NVIDIA.
       environment.sessionVariables = {
-        # Force applications to use Wayland natively
-        NIXOS_OZONE_WL = "1"; # For Chromium/Electron apps (VS Code, Discord, Slack)
+        # Run Chromium and Electron applications on Wayland.
+        NIXOS_OZONE_WL = "1";
         ELECTRON_OZONE_PLATFORM_HINT = "auto";
-        # Keep GLX and Video Acceleration pointed to NVIDIA
+        # Use the NVIDIA drivers for GLX and video decoding.
         __GLX_VENDOR_LIBRARY_NAME = "nvidia";
         LIBVA_DRIVER_NAME = "nvidia";
 
-        # WebKitGTK (Tauri, GNOME Web, DBeaver's embedded browser) selects a
-        # DMA-BUF renderer that is broken/slow on the proprietary NVIDIA
-        # driver: WebKit ends up stuttering or falling back to software.
-        # Disable *only* that renderer and keep GPU (EGL) compositing.
+        # NVIDIA's EGL explicit-fence sync breaks WebKitGTK's DMA-BUF
+        # compositing: it either segfaults in WebKit::AcceleratedBackingStore
+        # or stalls for a frame or more at a time. Work around it at the driver
+        # level so WebKit keeps full GPU compositing.
         #
-        # Do NOT set WEBKIT_DISABLE_COMPOSITING_MODE: that turns off all GPU
-        # compositing and makes WebKit apps paint on the CPU. Some Tauri apps
-        # (e.g. Twintail Launcher) set it themselves -- see the Flatpak
-        # override in system/flatpak.nix for that case.
-        WEBKIT_DISABLE_DMABUF_RENDERER = "1";
+        # Do NOT set WEBKIT_DISABLE_DMABUF_RENDERER=1 here: it stops the
+        # crashes, but on WebKit 2.44+ it forces a much slower rendering path
+        # and is what makes apps like the Modrinth App feel laggy. Likewise
+        # never set WEBKIT_DISABLE_COMPOSITING_MODE, which is pure CPU
+        # rendering. If one specific WebKit app still renders blank or crashes,
+        # set WEBKIT_DISABLE_DMABUF_RENDERER=1 for that app only (wrapper or
+        # Flatpak override), not for the whole session.
+        __NV_DISABLE_EXPLICIT_SYNC = "1";
       };
     };
 }

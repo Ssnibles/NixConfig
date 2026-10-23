@@ -1,5 +1,4 @@
-# Podman Container & Virtualisation Feature
-# OCI container virtualisation stack, Docker CLI alias wrapper, and Distrobox.
+# Podman containers and virtualisation.
 { ... }:
 {
   nixos.modules.shared =
@@ -34,7 +33,7 @@
           distrobox
         ];
 
-        # Disable auto-starting podman daemon and root system socket on boot
+        # Podman should not start on boot. Containers are started when needed.
         systemd.services.podman.wantedBy = lib.mkForce [ ];
         systemd.sockets.podman.wantedBy = lib.mkForce [ ];
       };

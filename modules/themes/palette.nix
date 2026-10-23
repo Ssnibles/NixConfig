@@ -1,6 +1,6 @@
-# Global Colour Palettes Registry
-# Defines central colour palette dictionaries mapped to `config.theme.colours` based
-# on `config.theme.active`. Used across Tmux, Qutebrowser, Firefox, Vicinae, Quickshell, etc.
+# Colour palettes.
+# Each scheme feeds config.theme.colours and is used by tmux, Firefox, Vicinae,
+# Quickshell, and the other themed modules.
 { ... }:
 {
   nixos.modules.shared =

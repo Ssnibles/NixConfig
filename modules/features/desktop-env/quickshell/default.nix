@@ -1,6 +1,4 @@
-# Quickshell UI Engine Feature
-# Quickshell widget framework setup, system activation script, and dynamic QML
-# colour theme singleton generated from active theme palette options.
+# Quickshell.
 { ... }:
 {
   nixos.modules.shared =
@@ -78,9 +76,8 @@
           };
         };
 
-        # Symlink every QML/profile file into ~/.config/quickshell. `contents`
-        # mode prunes only links that point back into the source tree, so the
-        # Hjem-managed Colours.qml (a /nix/store link) is left alone.
+        # Link the QML files into ~/.config/quickshell. Only links back into the
+        # source tree are pruned, so the Hjem managed Colours.qml is left alone.
         nixos.liveLinks."quickshell-config" = {
           source = "${config.nixos.configRepo}/modules/features/desktop-env/quickshell/config";
           target = ".config/quickshell";

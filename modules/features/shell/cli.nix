@@ -1,6 +1,4 @@
-# Command-Line Tools, Git & Jujutsu (jj) Integration
-# Common CLI tools (bat, btop, fzf, ripgrep), nix-index-database, and Git/jj
-# user profiles.
+# Command line tools, Git, and Jujutsu.
 { inputs, ... }:
 {
   nixos.modules.shared =
@@ -10,7 +8,7 @@
       ...
     }:
     {
-      # Nix-index database provides command-not-found package suggestions & `nix-locate`
+      # Provides command-not-found suggestions and nix-locate.
       imports = [
         inputs.nix-index-database.nixosModules.default
       ];
@@ -19,7 +17,7 @@
         environment.systemPackages = with pkgs; [
           bat
           btop
-          chafa # Terminal image viewer with Sixel support
+          chafa # Terminal image viewer with Sixel support.
           microfetch
           fd
           file
@@ -45,7 +43,6 @@
           enableSSHSupport = true;
         };
 
-        # Git Identity & Conditional Includes
         hjem.users.${config.username}.files = {
           ".config/git/config-uni" = {
             text = ''
@@ -70,11 +67,8 @@
             '';
           };
 
-          # Jujutsu Identity & Config
-          # jj reads its global config from ~/.config/jj/config.toml.
-          # Conditional identity per repo-root is handled via per-repo config
-          # (.jj/repo/config.toml) or by running `jj config set --repo` once
-          # inside a workspace. The global identity mirrors the git identity.
+          # Jujutsu reads its global config from ~/.config/jj/config.toml.
+          # Per-repository identity is set with jj config set --repo.
           ".config/jj/config.toml" = {
             clobber = true;
             text = ''
@@ -92,27 +86,26 @@
               max-new-file-size = "10MiB"
 
               [git]
-              # Automatically create local bookmarks when tracking remote branches
+              # Create local bookmarks when remote branches are tracked.
               auto-track-bookmarks = true
 
               [revsets]
-              # Keeps `jj log` fast and clean by default: shows trunk, bookmarks, and recent local work
+              # Keep jj log fast and focused on trunk, bookmarks, and recent work.
               log = "present(@) | ancestors(immutable_heads().., 2) | present(trunk())"
 
               [aliases]
               pull = ["git", "fetch"]
               up = ["new", "trunk()"]
-              # Handy shortcuts
+              # Shortcuts.
               l = ["log"]
               d = ["diff"]
               s = ["status"]
             '';
           };
 
-          # jjui Theme Overrides
-          # jjui defaults use "bright black" for both dimmed text AND selection
-          # highlight backgrounds — a conflict on dark terminals. We override
-          # each use-case independently with explicit theme hex values.
+          # jjui uses bright black for both dimmed text and selected
+          # backgrounds, which is hard to read on a dark terminal. Set both
+          # cases explicitly.
           ".config/jjui/config.toml" = {
             clobber = true;
             text =
@@ -121,14 +114,14 @@
               in
               ''
                 [colors]
-                # Dimmed / secondary text — use fgDim: readable muted grey
+                # Dimmed text. fgDim is a readable muted grey.
                 "revset completion dimmed"         = { fg = "#${c.fgDim}" }
                 "revset completion selected dimmed" = { fg = "#${c.fgDim}" }
                 "revisions details selected dimmed" = { fg = "#${c.fgDim}" }
                 "picker dimmed"                    = { fg = "#${c.fgDim}" }
                 "confirmation dimmed"              = { fg = "#${c.fgDim}" }
 
-                # Selection highlight backgrounds — use bgSubtle: dark & subtle
+                # Selection backgrounds. bgSubtle is dark and subtle.
                 "revisions details selected"       = { bg = "#${c.bgSubtle}", bold = true }
                 "revset completion selected"       = { bg = "#${c.bgSubtle}", bold = true }
                 "picker selected"                  = { bg = "#${c.bgSubtle}", bold = true }

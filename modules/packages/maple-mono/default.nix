@@ -1,6 +1,4 @@
-# Custom Maple Mono Font Package
-# Custom built Maple Mono fonts configured with narrow width and frozen
-# stylistic features (cv01, cv02, cv31-37, ss03, ss08-11), including Nerd Font icons.
+# Maple Mono font with Nerd Font icons and the selected stylistic features.
 { ... }:
 let
   mkMapleMono =

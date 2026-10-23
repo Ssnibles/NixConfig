@@ -1,5 +1,4 @@
-# Desktop Environment Fonts Feature
-# Provides system UI typography (Inter, Noto), serif, and monospace Nerd Fonts.
+# Desktop fonts.
 { ... }:
 {
   nixos.modules.shared =
@@ -13,8 +12,8 @@
         nerd-fonts.jetbrains-mono
       ];
 
-      # Match the fonts chosen via `theme.fonts`: monospace is the same family
-      # Kitty uses, so GTK/Qt/XWayland agree with the terminal and Quickshell.
+      # Use the same family as Kitty so GTK, Qt, XWayland, and Quickshell match
+      # the terminal.
       fonts.fontconfig.defaultFonts = {
         monospace = [ config.theme.fonts.monospace ];
         sansSerif = [

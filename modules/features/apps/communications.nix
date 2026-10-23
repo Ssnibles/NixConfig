@@ -1,5 +1,4 @@
-# Communication Applications Feature
-# Messaging and chat clients (Vesktop / Discord client).
+# Chat clients.
 { ... }:
 {
   nixos.modules.shared =

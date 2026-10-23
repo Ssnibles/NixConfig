@@ -123,7 +123,7 @@ NixConfig solves this:
 
 ## Yazi Terminal File Manager
 
-Yazi is configured in `modules/features/apps/development.nix` and set as the default directory opener (`inode/directory` in `default-apps.nix`):
+Yazi is configured in `modules/features/apps/development.nix` and is available from the shell (`y`). It is intentionally **not** the default `inode/directory` handler: that is Thunar (`modules/features/apps/media.nix`), so graphical applications asking the session to open or reveal a folder always get a window instead of trying to spawn a terminal app and hanging.
 
 ### Custom Opener Rules
 

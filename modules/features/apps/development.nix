@@ -1,6 +1,5 @@
-# Global Development Toolchain & Utilities
-# Global developer tools, language runtimes, build utilities, and IDEs.
-# Note: NVF Neovim distribution packages are defined separately in apps/neovim.nix.
+# Development tools.
+# Neovim is configured in apps/neovim.nix.
 {
   self,
   inputs,
@@ -23,17 +22,15 @@
       config = {
         environment.systemPackages =
           (with pkgs; [
-            # Database & Tools
             dbeaver-bin
 
-            # Runtimes & Compilers
             nodejs
             cargo
             zig
             gcc
             go
 
-            # Wayland build headers
+            # Wayland build headers.
             pkg-config
             wayland
             wlroots
@@ -42,11 +39,11 @@
             pixman
             libinput
 
-            # Embedded & Microcontroller Dev
+            # Embedded development.
             arduino-cli
             esptool
 
-            # CLI Dev Utilities
+            # Command line tools.
             devenv
             yazi
             jujutsu
@@ -59,7 +56,6 @@
           ])
           ++ pomodoroPkg
           ++ (with pkgs.unstable; [
-            # Editors & AI tools
             antigravity-cli
             opencode
             android-studio
@@ -69,9 +65,8 @@
           files = {
             ".config/yazi/yazi.toml" = {
               text = ''
-                # yazi 25+ uses `%s` (and `%s1`, `%S`, ...) as the path
-                # placeholder. The old `$@` form is no longer substituted,
-                # which made Neovim open the *cwd* instead of the file.
+                # yazi 25+ uses %s for the path. The old $@ form is no longer
+                # replaced, which made Neovim open the current directory.
                 [opener]
                 edit = [
                   { run = "''${EDITOR:-nvim} %s", block = true, desc = "Edit in $EDITOR" }
@@ -88,8 +83,7 @@
                   { mime = "inode/empty", use = "edit" }
                 ]
 
-                # NOTE: the section is `[mgr]`, not `[manager]`, in yazi 25+.
-                # Everything under the old name was silently ignored.
+                # The section is [mgr], not [manager], in yazi 25+.
                 [mgr]
                 linemode = "size"
                 show_hidden = true

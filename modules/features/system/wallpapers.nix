@@ -1,5 +1,4 @@
-# Wallpaper Deployment Feature
-# Deploys active wallpaper asset to defined target destinations via Hjem.
+# Wallpaper deployment.
 { ... }:
 {
   nixos.modules.shared =

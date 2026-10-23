@@ -1,13 +1,7 @@
-# Live Config Symlinks
-# Declarative registry of symlinks from the mutable NixConfig checkout into the
-# user's home. Unlike Hjem (which only accepts store paths and is meant for
-# immutable files), these links intentionally point at the working tree so
-# edits take effect immediately, without a rebuild.
-#
-# Every consumer registers an entry in `nixos.liveLinks`; this module turns them
-# into a single `system.activationScripts.live-links` script. Centralising the
-# logic means one place to reason about ownership and ordering, instead of a
-# dozen ad-hoc `ln -sfn`/`chown -R` snippets racing Hjem.
+# Live config symlinks.
+# Links from the NixConfig checkout into the home directory. They point at the
+# working tree, so edits take effect without a rebuild. Consumers register an
+# entry in nixos.liveLinks and this module writes one activation script.
 { ... }:
 {
   nixos.modules.shared =
@@ -19,10 +13,10 @@
     let
       cfg = config.nixos.liveLinks;
 
-      # Shell-quote a value for inclusion in the activation script.
+      # Quote a value for the activation script.
       q = lib.escapeShellArg;
 
-      # One `file` link: replace whatever is at the target with a symlink.
+      # Link one file and replace anything already at the target.
       fileLink =
         link:
         let
@@ -37,11 +31,8 @@
           chown -h ${q owner} ${q target} || true
         '';
 
-      # One `contents` link: symlink every entry of the source directory into the
-      # target directory, then prune stale links that point back into the source.
-      # Only links whose resolved target lives under the source are removed, so
-      # Hjem-managed store symlinks (e.g. Colours.qml) in the same directory are
-      # left untouched.
+      # Link every entry of a directory into the target, then remove stale links
+      # that point back into the source. Links managed by Hjem are left alone.
       contentsLink =
         link:
         let
@@ -50,9 +41,8 @@
           owner = "${link.user}:${config.users.users.${link.user}.group}";
         in
         ''
-          # A previous setup may have left a symlink to a directory here (e.g.
-          # an older activation script). Remove it first so the per-entry links
-          # below are not written through it into the source tree.
+          # Remove a directory symlink left by an older activation script, so
+          # the links below are not written through it into the source tree.
           if [ -L ${q target} ]; then rm -f ${q target}; fi
           mkdir -p ${q target}
           chown ${q owner} ${q target} || true

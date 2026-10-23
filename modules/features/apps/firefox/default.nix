@@ -1,7 +1,4 @@
-# Firefox Browser Feature (Developer Edition)
-# Firefox Developer Edition setup, FastFox performance preferences, custom CSS
-# userChrome/userContent styles, Sidebery extension managed storage, enterprise policies,
-# and live-reloaded startpage.
+# Firefox Developer Edition.
 { ... }:
 {
   nixos.modules.shared =
@@ -58,7 +55,7 @@
         }
       '';
 
-      # Map Nix primitive values to JS literals for user.js
+      # Turn Nix values into JavaScript literals for user.js.
       toJsValue =
         val:
         if builtins.isBool val then
@@ -70,18 +67,18 @@
         else
           ''"${toString val}"'';
 
-      # Combine base default about:config preferences with user extra settings
+      # Base preferences plus user settings.
       allSettings = cfg.settings // cfg.extraSettings;
 
-      # Combine base default Sidebery settings with user extra settings
+      # Base Sidebery settings plus user settings.
       allSideberySettings = cfg.sideberySettings // cfg.extraSideberySettings;
 
-      # Generate user.js file contents: user_pref("key", val);
+      # Build the user.js contents.
       userJsContent = lib.concatStringsSep "\n" (
         lib.mapAttrsToList (name: value: ''user_pref("${name}", ${toJsValue value});'') allSettings
       );
 
-      # Canonical extension registrations (id -> download URL)
+      # Extension IDs and their download URLs.
       extensionCatalogue = {
         "uBlock0@raymondhill.net" =
           "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
@@ -97,7 +94,7 @@
           "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
       };
 
-      # Slug/id aliases resolving to canonical extension IDs
+      # Short names for the extension IDs.
       extensionAliases = {
         "ublock-origin" = "uBlock0@raymondhill.net";
         "ublock" = "uBlock0@raymondhill.net";
@@ -110,7 +107,7 @@
         "tridactyl.vim@cmcaine.co.uk" = "tridactyl.vim.betas.nonewtab@cmcaine.co.uk";
       };
 
-      # Known extension mappings (name/slug or id -> id & download URL), resolved from the catalogue
+      # Extension lookup by name or ID.
       knownExtensions =
         lib.mapAttrs' (id: url: lib.nameValuePair id { inherit id url; }) extensionCatalogue
         // lib.mapAttrs' (
@@ -121,7 +118,7 @@
           }
         ) extensionAliases;
 
-      # Build custom New Tab WebExtension package (.xpi)
+      # Build the custom new tab extension.
       customNewTabXpi = pkgs.runCommand "custom-newtab.xpi" { buildInputs = [ pkgs.zip ]; } ''
                 mkdir -p tmp_ext
                 cp -r ${./startpage}/* tmp_ext/
@@ -132,10 +129,8 @@
                 zip -r $out ./*
       '';
 
-      # Build custom "discard pinned tabs on startup" WebExtension (.xpi)
-      # Workaround for Firefox bug 1853047: lazily-restored pinned tabs still
-      # spawn per-site content processes (~20MB each). Discarding them on
-      # startup frees the processes until the tabs are visited.
+      # Discard pinned tabs on startup. Firefox bug 1853047 keeps their content
+      # processes alive even when the tabs are restored lazily.
       pinnedUnloadXpi = pkgs.runCommand "pinned-unload.xpi" { buildInputs = [ pkgs.zip ]; } ''
         mkdir -p tmp_ext
         cp -r ${./pinnedunload}/* tmp_ext/
@@ -144,7 +139,7 @@
         zip -r $out ./*
       '';
 
-      # Auto-generate extension settings for enterprise policies
+      # Extension policy settings.
       autoExtensionSettings =
         (
           if cfg.extensions.enable then
@@ -177,7 +172,7 @@
             install_url = "file://${pinnedUnloadXpi}";
             installation_mode = "force_installed";
           };
-          # Block standard AMO Tridactyl so it gets cleanly uninstalled and cannot override newtab
+          # Block the normal Tridactyl build so it cannot replace the new tab.
           "tridactyl.vim@cmcaine.co.uk" = {
             installation_mode = "blocked";
           };
@@ -248,7 +243,7 @@
         sideberySettings = lib.mkOption {
           type = lib.types.attrs;
           default = {
-            # Visual Style & Theme
+            # Visual style.
             theme = "proton";
             colorScheme = "dark";
             density = "compact";
@@ -256,7 +251,7 @@
             animations = true;
             animationSpeed = "fast";
 
-            # Navigation Bar (Panels & Tabs Switcher)
+            # Navigation bar.
             navBarLayout = "horizontal";
             navBarInline = true;
             navBarSide = "left";
@@ -265,7 +260,7 @@
             hideDiscardedTabPanels = false;
             navSwitchPanelsWheel = true;
 
-            # Pinned Tabs (Compact Grid Dock)
+            # Pinned tabs.
             pinnedTabsPosition = "panel";
             pinnedTabsList = false;
             pinnedNoUnload = false;
@@ -273,7 +268,7 @@
             pinnedForcedDiscard = true;
             tabPinnedMiddleClick = "discard";
 
-            # Tabs Tree Hierarchy & Folding
+            # Tab tree.
             tabsTree = true;
             tabsTreeLimit = "none";
             autoFoldTabs = true;
@@ -286,7 +281,7 @@
             tabsTreeBookmarks = true;
             treeRmOutdent = "branch";
 
-            # Tab Behaviour, Activation & Lifecycle
+            # Tab behaviour.
             moveNewTab = "last_child";
             moveNewTabParent = "last_child";
             activateLastTabOnPanelSwitching = true;
@@ -308,7 +303,7 @@
             tabsReloadLimit = 5;
             tabsReloadLimitNotif = true;
 
-            # Scrollbars & Search
+            # Scrollbars and search.
             nativeScrollbars = true;
             nativeScrollbarsThin = true;
             searchBarMode = "dynamic";
@@ -328,7 +323,7 @@
             lib.types.either lib.types.bool (lib.types.either lib.types.int lib.types.str)
           );
           default = {
-            # CORE UI & EXPERIENCE
+            # Core interface.
             "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
             "browser.aboutConfig.showWarning" = false;
             "browser.compactmode.show" = true;
@@ -342,28 +337,28 @@
             "browser.bookmarks.openInTabClosesMenu" = false;
             "findbar.highlightAll" = true;
 
-            # Allow unsigned extensions in Developer Edition
+            # Allow unsigned extensions in Developer Edition.
             "xpinstall.signatures.required" = false;
             "xpinstall.whitelist.required" = false;
             "extensions.autoDisableScopes" = 0;
 
-            # Disable default Firefox Home / Activity Stream elements
+            # Remove the default home page modules.
             "browser.newtabpage.activity-stream.feeds.topsites" = false;
             "browser.newtabpage.activity-stream.feeds.snippets" = false;
             "browser.newtabpage.activity-stream.section.highlights.includeVisited" = false;
             "browser.newtabpage.activity-stream.section.highlights.includeBookmarks" = false;
 
-            # FASTFOX — RENDERING & NETWORK PERFORMANCE
-            # Font/canvas/image caches — larger = fewer re-decodes
+            # Performance.
+            # Larger font, canvas, and image caches avoid repeated decoding.
             "gfx.content.skia-font-cache-size" = 20;
             "gfx.canvas.accelerated.cache-size" = 32;
             "image.mem.decode_bytes_at_a_time" = 32768;
 
-            # Media cache — better video/audio buffering
+            # Media cache.
             "media.cache_readahead_limit" = 3600;
             "media.cache_resume_threshold" = 1800;
 
-            # Network buffer tuning
+            # Network buffers.
             "network.buffer.cache.size" = 65535;
             "network.buffer.cache.count" = 48;
             "network.http.max-connections" = 900;
@@ -373,7 +368,7 @@
             "accessibility.force_disabled" = 1;
             "media.autoplay.default" = 5;
 
-            # PRIVACY & SECURITY
+            # Privacy and security.
             "browser.contentblocking.category" = "strict";
             "privacy.donottrackheader.enabled" = true;
             "privacy.fingerprintingProtection" = true;
@@ -383,7 +378,7 @@
             "privacy.trackingprotection.cryptomining.enabled" = true;
             "privacy.globalprivacycontrol.enabled" = true;
 
-            # Session restore & lazy loading
+            # Restore tabs on demand.
             "browser.sessionstore.restore_on_demand" = true;
             "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
             "browser.sessionstore.restore_tabs_lazily" = true;
@@ -391,43 +386,43 @@
             "browser.sessionstore.pause_tab_loading_on_startup" = true;
             "browser.tabs.loadDormantOnSelect" = true;
 
-            # HTTPS-only mode
+            # HTTPS only.
             "dom.security.https_only_mode" = true;
             "dom.security.https_only_mode_error_page_user_suggestions" = true;
 
-            # OCSP off — CRLite is faster and more private
+            # CRLite is faster and more private than OCSP.
             "security.OCSP.enabled" = 0;
             "security.ssl.treat_unsafe_negotiation_as_broken" = true;
             "security.tls.enable_0rtt_data" = false;
             "security.csp.reporting.enabled" = false;
 
-            # Disable built-in password capture (Bitwarden handles this)
+            # Bitwarden handles password capture.
             "signon.formlessCapture.enabled" = false;
             "signon.privateBrowsingCapture.enabled" = false;
             "network.auth.subresource-http-auth-allow" = 1;
 
-            # Trim cross-origin referers for privacy
+            # Trim cross origin referrers.
             "network.http.referer.XOriginTrimmingPolicy" = 2;
 
-            # Show punycode to prevent IDN homograph attacks
+            # Show punycode to stop IDN homograph attacks.
             "network.IDN_show_punycode" = true;
 
-            # Disable PDF scripting (security)
+            # Disable scripting in PDFs.
             "pdfjs.enableScripting" = false;
 
-            # Safe browsing — keep local but disable remote download checks
+            # Keep local Safe Browsing, but skip remote download checks.
             "browser.safebrowsing.downloads.remote.enabled" = false;
 
-            # Default-deny notifications and geolocation
+            # Deny notifications and location by default.
             "permissions.default.desktop-notification" = 2;
             "permissions.default.geo" = 2;
             "geo.provider.network.url" = "https://beacondb.net/v1/geolocate";
             "permissions.manager.defaultsUrl" = "";
 
-            # Container tabs
+            # Container tabs.
             "privacy.userContext.ui.enabled" = true;
 
-            # SPECULATIVE LOADING — DISABLE (saves CPU, network, privacy)
+            # Disable speculative loading to save CPU and network.
             "network.http.speculative-parallel-limit" = 0;
             "network.dns.disablePrefetch" = true;
             "network.dns.disablePrefetchFromHTTPS" = true;
@@ -436,18 +431,18 @@
             "browser.urlbar.speculativeConnect.enabled" = false;
             "browser.places.speculativeConnect.enabled" = false;
 
-            # DISK AVOIDANCE — RAM CACHE (faster, less SSD wear)
+            # Keep the cache in RAM to avoid disk writes.
             "browser.cache.disk.enable" = false;
             "browser.cache.memory.enable" = true;
-            "browser.cache.memory.capacity" = 65536; # 64MB RAM cache
+            "browser.cache.memory.capacity" = 65536; # 64 MB
             "browser.privatebrowsing.forceMediaMemoryCache" = true;
             "media.memory_cache_max_size" = 65536;
-            "browser.sessionstore.interval" = 600000; # 10min session saves
+            "browser.sessionstore.interval" = 600000; # Every 10 minutes.
             "browser.sessionstore.max_tabs_undo" = 5;
             "browser.tabs.unloadOnLowMemory" = true;
             "browser.download.start_downloads_in_tmp_dir" = true;
 
-            # TELEMETRY — COMPLETE DISABLE
+            # Disable telemetry.
             "datareporting.policy.dataSubmissionEnabled" = false;
             "datareporting.healthreport.uploadEnabled" = false;
             "datareporting.usage.uploadEnabled" = false;
@@ -467,12 +462,12 @@
             "browser.newtabpage.activity-stream.telemetry" = false;
             "browser.tabs.crashReporting.sendReport" = false;
 
-            # EXPERIMENTS & STUDIES — DISABLE
+            # Disable experiments and studies.
             "app.shield.optoutstudies.enabled" = false;
             "app.normandy.enabled" = false;
             "app.normandy.api_url" = "";
 
-            # PESKYFOX — UI DECLUTTER & ANNOYANCE REMOVAL
+            # Remove interface clutter.
             "extensions.getAddons.showPane" = false;
             "extensions.getAddons.cache.enabled" = false;
             "extensions.htmlaboutaddons.recommendations.enabled" = false;
@@ -490,14 +485,14 @@
             "browser.urlbar.trending.featureGate" = false;
             "browser.formfill.enable" = false;
 
-            # Kill sponsored content
+            # Remove sponsored content.
             "browser.newtabpage.activity-stream.default.sites" = "";
             "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
             "browser.newtabpage.activity-stream.feeds.section.topstories" = false;
             "browser.newtabpage.activity-stream.showSponsored" = false;
             "browser.newtabpage.activity-stream.showSponsoredCheckboxes" = false;
 
-            # Disable Firefox AI features
+            # Disable Firefox AI features.
             "browser.ai.control.default" = "blocked";
             "browser.ml.enable" = false;
             "browser.ml.chat.enabled" = false;
@@ -505,24 +500,24 @@
             "browser.tabs.groups.smart.enabled" = false;
             "browser.ml.linkPreview.enabled" = false;
 
-            # Instant fullscreen transitions
+            # Instant fullscreen.
             "full-screen-api.transition-duration.enter" = "0 0";
             "full-screen-api.transition-duration.leave" = "0 0";
             "full-screen-api.warning.timeout" = 0;
 
-            # Disable cosmetic UI animations (reduces CPU)
+            # Disable cosmetic animations.
             "toolkit.cosmeticAnimations.enabled" = false;
             "browser.download.animateNotifications" = false;
             "browser.download.manager.addToRecentDocs" = false;
             "browser.download.open_pdf_attachments_inline" = true;
 
-            # GRAPHICS & HARDWARE ACCELERATION
+            # Hardware acceleration.
             "media.ffmpeg.vaapi.enabled" = true;
 
-            # Smooth scrolling
+            # Smooth scrolling.
             "general.smoothScroll" = true;
 
-            # DARK MODE & THEME
+            # Dark mode.
             "ui.systemUsesDarkTheme" = 1;
             "layout.css.prefers-color-scheme.content-override" = 0;
             "browser.in-content.dark-mode" = true;
@@ -593,9 +588,8 @@
           pkgs.tridactyl-native
         ];
 
-        # Firefox Enterprise Managed Storage Policy for WebExtension Sidebery
-        # Sidebery merges browser.storage.managed over its local storage, so this
-        # is the single declarative channel for its settings (no storage.js seeding).
+        # Sidebery settings through managed storage. Sidebery merges this over
+        # its local storage, so no storage.js seeding is needed.
         environment.etc."firefox/policies/managed/{3c078156-979c-498b-8990-85f7987dd929}.json".text =
           builtins.toJSON
             {
@@ -610,10 +604,9 @@
         programs.firefox = {
           enable = true;
           package = lib.mkDefault cfg.package;
-          # Preferences are written to the profile's user.js (see the Hjem file
-          # below). Do NOT also set `programs.firefox.preferences`: in nixpkgs
-          # 26.05 that becomes a *locked* Enterprise Policy, making every pref
-          # immutable in about:config and duplicating the user.js channel.
+          # Preferences go to user.js below. Do not also set
+          # programs.firefox.preferences: nixpkgs 26.05 turns that into a locked
+          # policy, which makes every preference read only in about:config.
           autoConfig = "";
           policies = lib.mkMerge [
             cfg.policies
@@ -626,7 +619,7 @@
         hjem.users."${config.username}" = {
           enable = true;
           files = {
-            # Hide standard firefox.desktop launcher entry so only Firefox Developer Edition appears
+            # Hide the normal Firefox entry so only Developer Edition appears.
             ".local/share/applications/firefox.desktop".text = ''
               [Desktop Entry]
               Type=Application
@@ -634,7 +627,7 @@
               NoDisplay=true
             '';
 
-            # Profile initialisation config
+            # Profile setup.
             ".mozilla/firefox/profiles.ini".text = ''
               [Profile0]
               Name=default
@@ -659,10 +652,10 @@
               Locked=0
             '';
 
-            # Automatically write preferences to about:config via user.js
+            # Write the preferences to user.js.
             ".mozilla/firefox/${cfg.profileName}/user.js".text = userJsContent;
 
-            # Hjem declarative files for generated colours and native messaging hosts
+            # Theme colours and native messaging.
             ".mozilla/firefox/${cfg.profileName}/chrome/colours.css".text = coloursCss;
             ".mozilla/firefox/${cfg.profileName}/startpage/colours.css".text = coloursCss;
             ".mozilla/native-messaging-hosts/tridactyl.json".source =
@@ -674,8 +667,8 @@
           };
         };
 
-        # Direct repository symlinks for live-reloading UI customisation (userChrome, userContent, startpage)
-        # Bypasses Nix store so edits in NixConfig take effect immediately on Firefox refresh/restart
+        # Live links for the interface files and startpage, so edits apply on
+        # refresh or restart without a rebuild.
         nixos.liveLinks = lib.mkMerge [
           {
             "firefox-startpage" = {

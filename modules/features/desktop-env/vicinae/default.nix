@@ -1,6 +1,4 @@
-# Vicinae Application Launcher Feature
-# Vicinae layer-shell launcher server, clipboard history script extension,
-# and generated theme styling.
+# Vicinae launcher.
 { ... }:
 {
   nixos.modules.shared =
@@ -127,10 +125,8 @@
           wantedBy = [ "wayland-session.target" ];
           after = [ "wayland-session.target" ];
           partOf = [ "wayland-session.target" ];
-          # vicinae calls `pactl` for its audio/volume provider. PipeWire's
-          # PulseAudio shim (services.pipewire.pulse) does not expose the
-          # PulseAudio client tools on the system PATH, so the launcher logs
-          # "pactl not found, audio control will not work". Supply them.
+          # Vicinae uses pactl for audio, but PipeWire does not put the
+          # PulseAudio tools on PATH. Add them so the audio provider works.
           path = [
             config.system.path
             pkgs.pulseaudio

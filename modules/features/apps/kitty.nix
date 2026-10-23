@@ -1,4 +1,4 @@
-# Kitty Terminal Emulator Feature
+# Kitty terminal.
 { ... }:
 {
   nixos.modules.shared =
@@ -26,38 +26,34 @@
         ;
 
       kittyConfig = ''
-        # Server Mode (single shared instance)
-        # Enables the Unix-domain socket so `kitty --single-instance` invocations
-        # open new windows inside this one process instead of forking duplicates.
-        # All windows then share a single GPU sprite cache and process, cutting
-        # per-window RAM dramatically (same idea as foot-server / ghostty -1).
+        # Use one shared process for single instance launches. All windows then
+        # share a GPU sprite cache and use less memory.
         ${lib.optionalString cfg.singleInstance ''
           allow_remote_control ${cfg.allowRemoteControl}
         ''}
 
-        # Font family and size
+        # Font.
         font_family ${cfg.fontFamily}
         font_size ${toString cfg.fontSize}
 
-        # Window padding
+        # Padding.
         window_padding_width ${toString cfg.paddingY} ${toString cfg.paddingX}
 
-        # Cursor settings
+        # Cursor.
         cursor_shape ${cfg.cursorShape}
         cursor_blink_interval ${if cfg.cursorBlink then "-1" else "0"}
 
-        # Window behaviour & decorations
+        # Window behaviour.
         confirm_os_window_close ${if cfg.confirmCloseSurface then "1" else "0"}
         hide_window_decorations ${if cfg.windowDecoration then "no" else "yes"}
 
-        # Scrollback & resource limits
+        # Scrollback and limits.
         scrollback_lines ${toString cfg.scrollbackLines}
         max_image_bytes ${toString cfg.imageStorageLimit}
 
-        # Disable the separate pager-scrollback history buffer (extra RAM).
+        # Do not keep a second pager history buffer.
         scrollback_pager_history_size 0
 
-        # Miscellaneous
         enable_audio_bell no
         canvas_max_size 4096
         sync_to_monitor yes
@@ -65,14 +61,14 @@
         map ctrl+shift+enter no_op
         map ctrl+shift+t no_op
 
-        # Colour scheme
+        # Colours.
         background #${bg}
         foreground #${fg}
         selection_background #${accent}
         selection_foreground #${bg}
         cursor #${fg}
 
-        # 16 ANSI Palette Colours
+        # ANSI palette.
         color0  #${bgSubtle}
         color1  #${red}
         color2  #${green}
@@ -207,7 +203,13 @@
       };
 
       config = lib.mkIf cfg.enable {
-        environment.systemPackages = [ cfg.package ];
+        environment.systemPackages = [
+          cfg.package
+
+          # GIO launches Terminal=true entries through xdg-terminal-exec. Without
+          # it, opening a text file from Thunar or another GTK app does nothing.
+          pkgs.xdg-terminal-exec
+        ];
 
         hjem.users."${config.username}".files = {
           ".config/kitty/kitty.conf" = {

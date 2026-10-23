@@ -1,21 +1,7 @@
-# Zellij Multiplexer Feature
-# Zellij with tmux-compatible, leader-based interaction and a minimal UI.
-#
-# Zellij is modal by default (Ctrl+p for panes, Ctrl+t for tabs, ...), which
-# collides with editor/readline keybinds. To keep the tmux muscle memory this
-# module instead starts Zellij in "locked" mode (everything is passed through to
-# the running program) and exposes a single tmux-style leader key (`) that opens
-# a dedicated command mode. All tmux binds live there, so the interaction model
-# matches tmux rather than Zellij's built-in modes.
-#
-# The UI is reduced to a single-line compact bar (vs. Zellij's default double
-# tab/status bars), hover popups are disabled, and the theme is generated from
-# the active `config.theme.colours` palette.
-#
-# Besides drawing the bar, the custom `zjbar` plugin doubles as an always-on
-# control plugin: a few leader actions that need live session state (new tab in
-# the focused pane's cwd, the floating yazi popup) are sent to it with
-# `MessagePlugin`, since Zellij's own actions cannot read the focused cwd.
+# Zellij setup.
+# Zellij runs in locked mode with a tmux style leader key, a one line bar, and
+# colours from the active theme. The zjbar plugin also handles actions that need
+# the current pane path.
 { ... }:
 {
   nixos.modules.shared =
@@ -29,27 +15,18 @@
       zellijBin = "${pkgs.zellij}/bin/zellij";
       fishBin = "${pkgs.unstable.fish}/bin/fish";
 
-      # Absolute, stable location the built plugin wasms are exposed at.
-      # Zellij keys both its plugin-permission cache and serialised session
-      # layouts by a plugin's absolute path. Pointing at the content-addressed
-      # `${zellijPlugins}` store path directly means every rebuild produces a
-      # new path, so the pre-granted permission no longer matches and
-      # reattaching to a session serialised before the rebuild re-prompts once
-      # per tab (each tab's bar is a separate plugin instance). Serving the
-      # wasms from a fixed symlink path keeps the key stable across rebuilds.
+      # Stable path for the built wasm plugins. Zellij stores permissions and
+      # session layouts by absolute plugin path, so a new store path on every
+      # rebuild would ask for permission again.
       zellijPluginDir = "/home/${config.username}/.local/share/zellij/plugins";
 
-      # Custom wasm plugins (see ./zellij-plugin):
-      #   zjbar - tmux-shaped status bar; also services the `leader` keybind
-      #           `MessagePlugin` actions (new tab with cwd / yazi popup).
-      #   zjcmd - the `leader :` command palette.
-      # zellij's built-in compact-bar hardcodes a "Zellij" label and the raw
-      # mode name, and neither it nor zjstatus can show the focused pane's cwd.
+      # zjbar draws the bar and handles leader actions that need the current
+      # path. zjcmd is the leader command palette. The built-in bar cannot show
+      # the current path and hardcodes its own label.
       zellijPlugins = pkgs.pkgsCross.wasi32.rustPlatform.buildRustPackage {
         pname = "zellij-plugins";
         version = "0.1.0";
-        # Exclude the local cargo target dir; cleanSource does not, and it is
-        # ~433MB of cached build artefacts from a different target.
+        # Exclude the local cargo target directory from the source.
         src = pkgs.lib.cleanSourceWith {
           src = ./zellij-plugin;
           filter = path: _: builtins.baseNameOf path != "target";
@@ -60,16 +37,16 @@
         doCheck = false;
       };
 
-      # Zellij theme colours are quoted hex strings (e.g. "#cdd6f4").
+      # Zellij theme colours are quoted hex strings.
       hex = x: "\"#${x}\"";
 
-      # A single StyleDeclaration (base/background + 4 emphasis slots).
+      # One style declaration with a base, a background, and four accents.
       mkStyle =
         base: bg: e0: e1: e2: e3:
         "base ${hex base}; background ${hex bg}; emphasis_0 ${hex e0}; emphasis_1 ${hex e1}; emphasis_2 ${hex e2}; emphasis_3 ${hex e3};";
 
-      # Theme generated from the active palette so Zellij matches the rest of
-      # the desktop (shell prompt, tmux, bar, etc.).
+      # Build the theme from the active palette so Zellij matches the rest of
+      # the desktop.
       zellijTheme = ''
         themes {
           nixos {
@@ -411,30 +388,18 @@
         pkgs.zellij
       ];
 
-      # Hjem Dotfiles
       hjem.users.${config.username}.files = {
         ".config/zellij/config.kdl" = {
           clobber = true;
           text = zellijConfig;
         };
 
-        # Mirror the built plugins to the stable path referenced by the config
-        # and the permission cache (see zellijPluginDir). Without this, every
-        # rebuild would change the plugin path and bust the permission cache.
+        # Put the plugins at the stable path used by the config and cache.
         ".local/share/zellij/plugins/zjbar.wasm".source = "${zellijPlugins}/bin/zjbar.wasm";
         ".local/share/zellij/plugins/zjcmd.wasm".source = "${zellijPlugins}/bin/zjcmd.wasm";
 
-        # Pre-grant the plugins the permissions they ask for. Without this, the
-        # first launch shows zellij's plugin permission prompt, which is awkward
-        # to answer for a top-bar plugin (the bar must be focused first). zellij
-        # keys the cache by the plugin's absolute path.
-        #
-        # `type = "copy"` (rather than hjem's default symlink) is important:
-        # this file is zellij's *writable* permission cache. As a symlink into
-        # the read-only /nix/store, zellij cannot persist permissions it grants
-        # at runtime, so prompts for plugins that aren't pre-granted come back
-        # forever. A real copy is writable; hjem refreshes it on each activation
-        # with the stable plugin paths (see zellijPluginDir).
+        # Grant the plugin permissions up front. This needs a writable copy,
+        # not a store symlink, or Zellij cannot save new permissions later.
         ".cache/zellij/permissions.kdl" = {
           clobber = true;
           type = "copy";
@@ -452,7 +417,7 @@
           '';
         };
 
-        # Custom layout: single-line status bar pinned to the top.
+        # One line bar at the top.
         ".config/zellij/layouts/minimal.kdl" = {
           clobber = true;
           text = ''
@@ -465,8 +430,7 @@
           '';
         };
 
-        # Swap layouts tell zellij how to decorate NEW tabs; without this the
-        # status bar would only appear on the first tab.
+        # New tabs need the same bar, not just the first tab.
         ".config/zellij/layouts/minimal.swap.kdl" = {
           clobber = true;
           text = ''
@@ -579,7 +543,7 @@
           '';
         };
 
-        # Session picker mirroring the tmux `ta` helper.
+        # Session picker like the tmux ta helper.
         ".config/fish/functions/za.fish" = {
           clobber = true;
           text = ''
@@ -602,7 +566,7 @@
         };
       };
 
-      # Shell aliases for zellij (avoid `z`, which zoxide owns).
+      # Zellij aliases. z is left to zoxide.
       programs.fish.shellAliases = {
         zj = "zellij";
         zja = "zellij attach";

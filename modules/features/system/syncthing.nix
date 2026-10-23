@@ -1,5 +1,4 @@
-# Syncthing Continuous File Synchronisation Feature
-# Peer-to-peer decentralised folder synchronisation optimised for laptop battery.
+# Syncthing file synchronisation.
 { ... }:
 {
   nixos.modules.shared =
@@ -28,7 +27,7 @@
           guiAddress = "127.0.0.1:8384";
           openDefaultPorts = true;
 
-          # Keep dynamically added or auto-accepted devices and folders
+          # Keep devices and folders that were added or accepted at runtime.
           overrideDevices = false;
           overrideFolders = false;
 
@@ -53,12 +52,12 @@
             };
 
             options = {
-              # Laptop battery optimisation: disable battery-draining internet relaying & global discovery
+              # Battery saving: no internet relaying or global discovery.
               globalAnnounceEnabled = false;
               relaysEnabled = false;
               natEnabled = false;
-              localAnnounceEnabled = true; # Direct discovery on local Wi-Fi
-              urAccepted = -1; # Disable anonymous usage reporting
+              localAnnounceEnabled = true; # Discovery on the local network.
+              urAccepted = -1; # No usage reporting.
               defaultFolderPath = "~";
             };
             gui = {
@@ -69,7 +68,7 @@
 
         systemd.services.syncthing.serviceConfig.WorkingDirectory = "/home/${config.username}";
 
-        # Defer syncthing to graphical.target to eliminate ~1.5s blocking delay during early boot
+        # Start at graphical.target so early boot is not delayed.
         systemd.services.syncthing.wantedBy = lib.mkForce [ "graphical.target" ];
         systemd.services.syncthing-init.wantedBy = lib.mkForce [ "graphical.target" ];
       };

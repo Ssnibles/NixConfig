@@ -1,23 +1,25 @@
-# Media & Document Applications Feature
-# Media viewer (imv) and Zathura PDF reader with dark mode recolouring
-# matching active theme colours and inverse search settings.
+# Media and document applications.
+# imv, Zathura, mpv, and Thunar as the graphical file manager.
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     let
       c = config.theme.colours;
 
-      # Zathura parses colours with GDK, which accepts `rgba(r, g, b, a)` but
-      # not 8-digit hex. Convert a theme hex triplet (no leading '#') plus an
-      # alpha into an rgba() string.
+      # Zathura accepts rgba() but not 8 digit hex. Convert a theme hex
+      # triplet and an alpha value to an rgba() string.
       hexByte = pos: hex: (builtins.fromTOML "v = 0x${builtins.substring (pos * 2) 2 hex}").v;
       rgba =
         alpha: hex:
         "rgba(${toString (hexByte 0 hex)}, ${toString (hexByte 1 hex)}, ${toString (hexByte 2 hex)}, ${builtins.toJSON alpha})";
 
-      # Highlight rectangles are 70% transparent (alpha 0.3) so the text they
-      # cover stays readable instead of being hidden behind an opaque block.
+      # Keep search highlights translucent so the text stays readable.
       highlightAlpha = 0.3;
     in
     {
@@ -37,8 +39,20 @@
             ];
           })
           spotatui
+
+          # Thunar also provides org.freedesktop.FileManager1, so apps that ask
+          # to reveal a folder open a window instead of waiting for a handler.
           thunar
+          thunar-volman
+          tumbler
         ];
+
+        # gvfs adds trash, MTP, and network mounts. tumbler makes thumbnails
+        # and thunar-volman handles removable media.
+        services.gvfs.enable = true;
+
+        # Yazi stays available in the shell.
+        features.default-apps.fileManager = lib.mkDefault "thunar.desktop";
 
         hjem.users.${config.username} = {
           files = {
@@ -50,63 +64,56 @@
                 keepaspect=yes
                 keepaspect-window=yes
 
-                # Hardware decoding + Vulkan GPU pipeline (NVIDIA Wayland)
+                # Hardware decoding with Vulkan on NVIDIA Wayland.
                 hwdec=auto-safe
                 vo=gpu-next
                 gpu-api=vulkan
                 hwdec-codecs=all
-                # Zero-copy decode where supported (avoids an extra NV buffer copy)
+                # Zero copy decode where supported.
                 vd-lavc-dr=yes
 
-                # YouTube AV1 adaptive streams ("Invalid OBU length",
-                # "Packet corrupt") fail to demux cleanly while streamed via
-                # ffmpeg http. Prefer the more robust VP9 stream for web video
-                # and buffer enough so fragments arrive whole (halved from the
-                # original 512MiB / 60s to reduce RAM footprint).
+                # YouTube AV1 streams can fail to demux over ffmpeg http. Use VP9
+                # and buffer enough for whole fragments.
                 ytdl-format=bestvideo[vcodec^=vp9]+bestaudio/best
                 demuxer-readahead-secs=30
                 demuxer-max-bytes=256MiB
 
-                # Modernz (OSC) conflicts with watch-later restoring sub-pos;
-                # drop it from the saved options set (modernz manages sub margins itself).
+                # Modernz manages subtitle margins, so do not restore sub-pos.
                 watch-later-options-remove=sub-pos
               '';
             };
 
             ".config/mpv/input.conf" = {
               text = ''
-                # Vim-style seeking
+                # Seek with vim keys.
                 h seek -5
                 j seek -10
                 k seek +10
                 l seek +5
 
-                # Toggle now-playing card <-> video mode. The card shows the
-                # cover art (embedded art, or the YouTube thumbnail) scaled,
-                # rounded and centred with the title/artist below it; files
-                # without any cover get a text-only card.
-                # Note: overrides the default subtitle-visibility toggle.
+                # Show the now playing card or the video. The card shows cover
+                # art and the title and artist, or only text when there is no
+                # cover. This replaces the subtitle toggle.
                 v script-message toggle-nowplaying
               '';
             };
 
-            # Start each session in now-playing mode (yes) or video mode (no).
+            # Start in now playing mode (yes) or video mode (no).
             ".config/mpv/script-opts/nowplaying.conf" = {
               text = ''
                 initial=no
               '';
             };
 
-            # Add the best YouTube thumbnail as an image track so the card has
-            # cover art for videos too. The thumbnail is added unselected, so
-            # normal video mode still plays the real video.
+            # Use the YouTube thumbnail as cover art. It is added unselected,
+            # so video mode still plays the real video.
             ".config/mpv/script-opts/ytdl_hook.conf" = {
               text = ''
                 thumbnails=best
               '';
             };
 
-            # Custom now-playing card <-> video mode toggle (bound to `v` above).
+            # Toggle the card with v.
             ".config/mpv/scripts/nowplaying.lua" = {
               text = ''
                 local mp = require "mp"
@@ -359,24 +366,24 @@
 
             ".config/mpv/script-opts/thumbfast.conf" = {
               text = ''
-                # Enable thumbnails for YouTube / remote streams (disabled by default)
+                # Thumbnails for remote streams.
                 network=yes
                 spawn_first=yes
 
-                # Use hardware decode in the thumbnailer process to cut CPU load
+                # Hardware decode in the thumbnail process.
                 hwdec=yes
 
-                # Reap the background thumbnailer process when idle to free RAM/CPU
+                # Stop the thumbnail process when idle.
                 quit_after_inactivity=60
               '';
             };
 
             ".config/mpv/script-opts/modernz.conf" = {
               text = ''
-                # Disable built-in window control buttons
+                # Hide the window controls.
                 window_controls=no
 
-                # Theme colours
+                # Theme colours.
                 osc_color=#${c.bgRaised}
                 window_title_color=#${c.fg}
                 window_controls_color=#${c.fg}
@@ -415,13 +422,13 @@
 
             ".config/zathura/zathurarc" = {
               text = ''
-                # Fit width when opening
+                # Fit the page width when it opens.
                 set adjust-open "best-fit"
 
-                # Inverse search: Ctrl+Click in Zathura opens Neovim at the line
+                # Ctrl+click opens Neovim at the matching line.
                 set synctex-editor-command "nvr --remote-silent +%{line} %{input}"
 
-                # Preferences
+                # Reading.
                 set pages-per-row 1
                 set scroll-step 50
                 set zoom-min 50
@@ -430,46 +437,45 @@
                 set window-title-home-tilde true
                 set selection-clipboard clipboard
 
-                # Reading ergonomics
                 set scroll-page-aware true
                 set scroll-full-overlap 0.1
                 set link-zoom false
                 set abort-clear-search true
 
-                # Statusbar formatting
+                # Status bar.
                 set statusbar-page-percent true
                 set statusbar-home-tilde true
 
-                # Prevent white flash on page load
+                # Avoid a white flash while a page loads.
                 set render-loading false
                 set render-loading-bg "#${c.bg}"
                 set render-loading-fg "#${c.fg}"
 
-                # Enable dark mode recolouring by default
+                # Dark mode recolouring.
                 set recolor true
                 set recolor-keephue true
                 set recolor-reverse-video true
 
-                # Keybindings
+                # Key bindings.
                 map t recolor
                 map Y copy_filepath
                 map b toggle_statusbar
 
-                # Core layout colours
+                # Layout colours.
                 set default-bg "#${c.bg}"
                 set default-fg "#${c.fg}"
                 set recolor-lightcolor "#${c.bg}"
                 set recolor-darkcolor "#${c.fg}"
 
-                # Statusbar colours
+                # Status bar colours.
                 set statusbar-bg "#${c.bg}"
                 set statusbar-fg "#${c.fg}"
 
-                # Input bar colours
+                # Input bar colours.
                 set inputbar-bg "#${c.bg}"
                 set inputbar-fg "#${c.fg}"
 
-                # Completion menu palette
+                # Completion menu colours.
                 set completion-bg "#${c.bgRaised}"
                 set completion-fg "#${c.fg}"
                 set completion-highlight-bg "#${c.accent}"
@@ -477,7 +483,7 @@
                 set completion-group-bg "#${c.bg}"
                 set completion-group-fg "#${c.fgDim}"
 
-                # Notification and error styling
+                # Notifications and errors.
                 set notification-bg "#${c.bgRaised}"
                 set notification-fg "#${c.fg}"
                 set notification-error-bg "#${c.bgRaised}"
@@ -485,15 +491,13 @@
                 set notification-warning-bg "#${c.bgRaised}"
                 set notification-warning-fg "#${c.yellow}"
 
-                # Highlight and selection colours. The highlight fill must be
-                # translucent so search hits don't cover the text, and
-                # highlight-fg must not be the background colour or the matched
-                # glyphs themselves would be painted invisible.
+                # Highlight colours. The fill is translucent so search results
+                # stay readable.
                 set highlight-color "${rgba highlightAlpha c.yellow}"
                 set highlight-active-color "${rgba highlightAlpha c.orange}"
                 set highlight-fg "#${c.fg}"
 
-                # Index (Table of Contents) colours
+                # Index colours.
                 set index-bg "#${c.bg}"
                 set index-fg "#${c.fg}"
                 set index-active-bg "#${c.accent}"

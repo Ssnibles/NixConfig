@@ -1,6 +1,6 @@
-# Desktop Host Specific Configuration
-# Hardware definitions, rfkill bluetooth workaround for ASUS motherboard WMI,
-# Logitech wireless peripheral support, local firewall rules, and state version.
+# Desktop host settings.
+# Bluetooth workaround for the ASUS motherboard, wireless peripherals, firewall
+# ports, and Wi-Fi roaming.
 { ... }:
 {
   nixos.modules.desktop =
@@ -17,10 +17,10 @@
 
       nixos.hostRole = "desktop";
 
-      # Desktop-specific USB Bluetooth kernel modules
+      # Desktop USB Bluetooth modules.
       boot.kernelModules = [ "btusb" ];
 
-      # Unblock Bluetooth adapter at boot (asus_wmi soft-blocks the adapter on desktop startup)
+      # asus_wmi blocks the adapter at boot, so unblock it before Bluetooth.
       systemd.services.unblock-bluetooth = {
         description = "Unblock Bluetooth rfkill for ASUS WMI";
         after = [ "sysinit.target" ];
@@ -33,16 +33,14 @@
         script = "${pkgs.util-linux}/bin/rfkill unblock bluetooth";
       };
 
-      # Desktop workstation: keep Bluetooth powered on at boot for wireless peripherals
       hardware.bluetooth.powerOnBoot = true;
 
-      # Desktop workstation CPU governor for low gaming latency and high frame pacing
+      # Low latency and steady frame pacing for games.
       powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
 
       hardware.logitech.wireless.enable = true;
 
-      # Spread IRQs across CPU cores (favours gaming throughput on a many-core
-      # desktop). Optional: disable if it hurts latency on a given workload.
+      # Spread interrupts across cores for gaming throughput.
       services.irqbalance.enable = true;
 
       environment.systemPackages = with pkgs.unstable; [
@@ -52,19 +50,13 @@
         sigil
       ];
 
-      # Open desktop local discovery & streaming ports
+      # Local discovery and streaming.
       networking.firewall.allowedTCPPorts = [ 5353 ];
       networking.firewall.allowedUDPPorts = [ 5353 ];
 
-      # Wi-Fi tuning
-      # The only in-range AP for this SSID sits at ~-79 dBm, below iwd's
-      # default RoamThreshold5G (-76), so iwd roam-scans every ~60s looking
-      # for a better BSSID that doesn't exist. That spikes latency. This is a
-      # stationary desktop, so disable roaming scans. (The laptop, which
-      # actually roams, keeps the default.)
+      # The only access point in range is below iwd's roaming threshold, so
+      # roam scans find nothing and only add latency. This desktop does not move.
       networking.wireless.iwd.settings.Scan.DisableRoamingScan = true;
-
-      # Feature toggles (shared and per-host) live in modules/core/options.nix.
 
       system.stateVersion = "26.05";
     };

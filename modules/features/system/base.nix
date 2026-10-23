@@ -1,6 +1,5 @@
-# System Base Module
-# Core system settings including Nixpkgs overlays, binary caches, locales,
-# timezone, base network configuration, and system maintenance.
+# Core system settings.
+# Nix, caches, locale, networking, base packages, and maintenance.
 { self, inputs, ... }:
 {
   nixos.modules.shared =
@@ -11,7 +10,7 @@
       ...
     }:
     let
-      # Packages permitted despite upstream deprecation/security warnings
+      # Packages allowed despite deprecation or security warnings.
       permittedInsecure = [ ];
     in
     {
@@ -20,7 +19,6 @@
       ];
 
       config = {
-        # Nixpkgs & Overlays
         nixpkgs = {
           config = {
             allowUnfree = true;
@@ -30,8 +28,8 @@
           overlays = [
             inputs.millennium.overlays.default
             (_: prev: {
-              # Rolling channel escape hatch (also the system default while
-              # flake.nix's nixpkgs follows "nixpkgs-unstable").
+              # Extra channel for packages that need a newer or older release.
+              # Also the system default while nixpkgs follows unstable.
               unstable = import inputs.nixpkgs-unstable {
                 inherit (prev.stdenv.hostPlatform) system;
                 config = {
@@ -40,9 +38,7 @@
                   permittedInsecurePackages = permittedInsecure;
                 };
               };
-              # Stable channel escape hatch: use pkgs.stable.<pkg> if something
-              # breaks on the rolling channel (and the system default when
-              # flake.nix's nixpkgs follows "nixpkgs-stable").
+              # Use pkgs.stable.<pkg> if a package breaks on unstable.
               stable = import inputs.nixpkgs-stable {
                 inherit (prev.stdenv.hostPlatform) system;
                 config = {
@@ -52,13 +48,9 @@
                 };
               };
             })
-            # nixpkgs forces sesh to build with Go 1.27, but its preBuild
-            # mock-generation step (and mockery's own checkPhase) uses
-            # mockery 3.8.0, whose vendored golang.org/x/tools v0.49.0 only
-            # understands unified IR export data up to v4 while Go 1.27 emits
-            # v5. sesh's go.mod only requires Go 1.26, so build it (and the
-            # mockery it uses) with the default Go 1.26, whose v2 export data
-            # x/tools can read. Drop this once nixpkgs fixes the Go pairing.
+            # nixpkgs builds sesh with Go 1.27, but its mock generation uses
+            # mockery 3.8.0, which cannot read the Go 1.27 export data. Build
+            # sesh with Go 1.26 until nixpkgs fixes the pairing.
             (_: prev: {
               sesh = prev.sesh.override {
                 buildGo127Module = prev.buildGo126Module;
@@ -67,14 +59,12 @@
           ];
         };
 
-        # Nix Settings & Binary Caches
         nix.settings = {
           experimental-features = [
             "nix-command"
             "flakes"
           ];
-          # cache.nixos.org is already the upstream default, so only add extras
-          # here; repeating it produced duplicate entries in nix.settings.
+          # cache.nixos.org is already the default, so only add extra caches.
           substituters = [
             "https://nix-community.cachix.org"
           ];
@@ -83,12 +73,22 @@
           ];
           download-buffer-size = 524288000;
           auto-optimise-store = true;
-          # The checkout is a git work tree that is almost always dirty; suppress
-          # the per-command "Git tree is dirty" noise.
+          # The checkout is usually dirty, so suppress the warning on every command.
           warn-dirty = false;
+
+          # Limit build parallelism so jobs and cores do not oversubscribe the
+          # CPU. For one large build, override it on the command line.
+          max-jobs = 8;
+          cores = 2;
+
+          # Faster cache downloads without waiting too long on a dead cache.
+          max-substitution-jobs = 32;
+          http-connections = 50;
+          connect-timeout = 5;
+          stalled-download-timeout = 60;
         };
 
-        # Allow unfree packages for nix-shell, nix-build, nix-env, and impure commands
+        # Keep NIXPKGS_ALLOW_UNFREE for nix-shell and other impure commands.
         environment.sessionVariables = {
           NIXPKGS_ALLOW_UNFREE = "1";
         };
@@ -108,7 +108,7 @@
           };
         };
 
-        # Localisation & Timezone
+        # Local time and locale.
         time.timeZone = "Pacific/Auckland";
 
         i18n.defaultLocale = "en_US.UTF-8";
@@ -124,7 +124,6 @@
           LC_TIME = "en_US.UTF-8";
         };
 
-        # Networking & Firewall
         networking = {
           modemmanager.enable = false;
           networkmanager = {
@@ -139,7 +138,7 @@
             General = {
               Country = "NZ";
               EnableNetworkConfiguration = false;
-              # Opportunistic Wireless Encryption (Enhanced Open)
+              # Opportunistic Wireless Encryption.
               EnableOWE = true;
             };
           };
@@ -153,7 +152,6 @@
           };
         };
 
-        # DNS Over TLS (systemd-resolved)
         services.resolved = {
           enable = true;
           settings = {
@@ -168,11 +166,10 @@
 
         boot.kernel.sysctl = {
           "net.ipv4.ip_forward" = 1;
-          # Automatically probe and clamp MSS when Path MTU black holes occur (e.g. PPPoE 1480 MTU)
+          # Probe the path MTU when black holes occur, such as PPPoE.
           "net.ipv4.tcp_mtu_probing" = 1;
         };
 
-        # Base System Packages
         environment.systemPackages = with pkgs; [
           swaybg
           wl-clipboard
@@ -190,14 +187,10 @@
           inputs.ytplay.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
 
-        # XDG Portals
         xdg.portal = {
           enable = true;
-          # Do NOT set xdgOpenUsePortal: it routes xdg-open through the portal,
-          # which resolves handlers itself (via xdg-desktop-portal-gnome here)
-          # and pops a chooser instead of honouring ~/.config/mimeapps.list.
-          # Leaving it off keeps mimeapps.list authoritative: use the configured
-          # default, only ever prompting when nothing is set.
+          # Do not set xdgOpenUsePortal. It sends xdg-open through the portal,
+          # which shows a chooser instead of using the configured mimeapps.list.
           extraPortals = [
             pkgs.xdg-desktop-portal-gtk
             pkgs.xdg-desktop-portal-wlr
@@ -205,11 +198,9 @@
           configPackages = [ pkgs.xdg-desktop-portal-gnome ];
         };
 
-        # Hardware & Printing
         hardware.enableRedistributableFirmware = true;
         services.printing.enable = false;
 
-        # System Maintenance & Store Optimisation
         programs.nh = {
           enable = true;
           flake = "/home/${config.username}/NixConfig";
@@ -220,9 +211,9 @@
         nix.optimise.automatic = true;
         nix.optimise.dates = [ "weekly" ];
 
-        # Dynamic Binary Compatibility (nix-ld)
-        # Lets non-nix prebuilt binaries run: Android Studio SDK tools, editor
-        # debug adapters, game mods, and `uv`/`cargo`-installed executables.
+        # Let prebuilt binaries that are not packaged in Nix run. This covers
+        # Android Studio tools, editor debug adapters, game mods, and uv or
+        # cargo installed programs.
         programs.nix-ld = {
           enable = true;
           libraries = with pkgs; [
@@ -244,13 +235,13 @@
           ];
         };
 
-        # GSettings backend for GTK/GNOME apps (Seahorse, portals, ...).
         programs.dconf.enable = true;
 
-        # Put ~/.local/bin on the session PATH for uv/cargo/pipx tools.
+        # Add ~/.local/bin to the session PATH for uv, cargo, and pipx tools.
         environment.localBinInPath = true;
 
-        # Firmware/BIOS updates via `fwupdmgr`; D-Bus activated, no always-on daemon.
+        # Firmware updates through fwupdmgr. It is D-Bus activated, so no service
+        # runs in the background.
         services.fwupd.enable = true;
       };
     };

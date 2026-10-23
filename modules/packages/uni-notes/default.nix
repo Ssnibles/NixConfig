@@ -1,8 +1,6 @@
-# Uni Notes — Typst Theme
-# The canonical shared Typst theme for the notes repositories lives here
-# (`theme.typ`). The `typst-snippets` skill bundles a copy for reference, and
-# notes bootstrap it with `uni-notes-theme`, which copies it into
-# `templates/theme.typ` in the current notes repo.
+# Shared Typst theme for the notes repositories. The typst-snippets skill
+# bundles a copy for reference, and uni-notes-theme copies it into a notes
+# repository as templates/theme.typ.
 { ... }:
 let
   mkUniNotesTheme =

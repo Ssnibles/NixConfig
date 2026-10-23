@@ -1,21 +1,7 @@
-# Helium Browser Feature
-# Helium Browser (Chromium-based) installation, Chrome Enterprise policies,
-# command-line flags, force-installed Web Store extensions, and default
-# xdg-open MIME associations via the oxcl/nix-flake-helium-browser flake.
-#
-# This module deliberately mirrors the behaviour/theming of
-# modules/features/apps/firefox/default.nix as closely as Chromium allows:
-#   * FastFox performance tuning        -> GPU/network/cache flags + policies
-#   * Privacy, telemetry & studies off  -> Enterprise policies + flags
-#   * PeskyFox UI declutter / AI off    -> policies + --disable-features flags
-#   * Theme palette                     -> generated theme extension (literal colours)
-#   * Custom startpage / new tab        -> live-linked startpage + --custom-ntp flag
-#   * uBlock/Bitwarden/DarkReader/etc.  -> ExtensionSettings force-install
-#
-# NOTE: Chromium has no userChrome.css / userContent.css equivalent. The palette
-# is applied to the browser *chrome* through a generated theme extension (loaded
-# with --load-extension, so colours bypass Material You) and to the custom
-# startpage through colours.css (which shares the Firefox --fx-* variables).
+# Helium browser.
+# Helium is Chromium based. This module mirrors the Firefox setup where it can:
+# performance flags, privacy policies, force installed extensions, a generated
+# theme, and a local startpage.
 { inputs, ... }:
 {
   nixos.modules.shared =
@@ -46,18 +32,13 @@
         orange
         ;
 
-      # Where the startpage is materialised. The hand-written page files are
-      # live symlinks into the checkout (nixos.liveLinks) and colours.css is a
-      # generated Hjem file, so both land in the same directory.
+      # Startpage location. The page files are live links, and colours.css is
+      # written by Hjem into the same directory.
       startpageDir = "/home/${config.username}/.config/helium/startpage";
       startpageUrl = "file://${startpageDir}/index.html";
 
-      # Browser theme extension
-      # Chromium has no userChrome.css equivalent. The BrowserThemeColor policy
-      # takes a seed but runs it through Material You, so the chrome comes out as
-      # a derived tonal palette rather than the requested colours. A classic
-      # theme extension applies its colours literally, so generate one from the
-      # active palette and load it with --load-extension.
+      # Chromium has no userChrome.css. A theme extension applies the palette
+      # directly and avoids Material You colour derivation.
       hexToRgb =
         hex:
         let
@@ -72,7 +53,7 @@
 
       bgRgb = hexToRgb bg;
 
-      # Perceived luminance, used only to pick a light/dark color_scheme.
+      # Used only to choose a light or dark color_scheme.
       isDarkTheme =
         (
           0.299 * (builtins.elemAt bgRgb 0)
@@ -111,18 +92,17 @@
         }
       );
 
-      # Chromium expects a single comma-separated --enable/--disable-features flag.
+      # Chromium expects one comma separated feature flag.
       enabledFeatures = [
         "TouchpadOverscrollHistoryNavigation"
-        # Hardware video decoding/encoding (VA-API, incl. NVIDIA through
-        # nvidia-vaapi-driver). Named for the Chromium version Helium ships.
+        # VA-API video decode and encode, including NVIDIA.
         "VaapiVideoDecoder"
         "VaapiVideoEncodeAccelerator"
         "OverlayScrollbar"
       ];
 
       disabledFeatures = [
-        # PeskyFox: remove shipping clutter / integrations we never use
+        # Remove features we do not use.
         "Translate"
         "OptimizationHints"
         "OptimizationGuideModelDownloading"
@@ -135,37 +115,33 @@
         "AutofillServerCommunication"
       ];
 
-      # Command-line flags
-      # Mirrors the Firefox FastFox/privacy/graphics/theme preference groups.
-      # --ozone-platform-hint=auto is injected by the upstream package wrapper
-      # when NIXOS_OZONE_WL + WAYLAND_DISPLAY are set, so it is not repeated.
+      # Flags that match the Firefox settings above. The upstream wrapper adds
+      # --ozone-platform-hint=auto, so it is not repeated here.
       defaultFlags = [
-        # Wayland / Ozone
+        # Wayland.
         "--enable-features=${lib.concatStringsSep "," enabledFeatures}"
         "--disable-features=${lib.concatStringsSep "," disabledFeatures}"
 
-        # GPU / hardware acceleration
+        # GPU acceleration.
         "--ignore-gpu-blocklist"
         "--enable-gpu-rasterization"
         "--enable-zero-copy"
         "--enable-accelerated-video-decode"
 
-        # Cosmetic animations off (mirrors toolkit.cosmeticAnimations.enabled=false)
+        # Disable cosmetic animations.
         "--force-prefers-reduced-motion"
 
-        # Network / privacy: speculative loading & preconnect off
+        # Less network prefetching.
         "--dns-prefetch-disable"
         "--disable-preconnect"
         "--no-pings"
         "--no-default-browser-check"
 
-        # Disk avoidance: cap the on-disk cache (keeps RAM footprint low)
+        # Keep the disk cache small.
         "--disk-cache-size=52428800"
       ];
 
-      # Helium only accepts a local (file://) new-tab page through the
-      # ungoogled-chromium `--custom-ntp` switch; the NewTabPageLocation policy
-      # silently drops non-http(s) URLs.
+      # Helium only accepts a local new tab page through --custom-ntp.
       startpageFlags = lib.optionals cfg.enableCustomStartpage [
         "--custom-ntp=${cfg.newTabPage}"
       ];
@@ -181,9 +157,7 @@
         ++ cfgAlias.flags
         ++ cfgAlias.extraFlags;
 
-      # Startpage theming
-      # The browser chrome gets the palette via the theme extension above; this
-      # file only styles the local startpage (same --fx-* variables as Firefox).
+      # Startpage colours. The chrome uses the theme extension above.
       coloursCss = ''
         :root {
           --fx-bg: #${bg};
@@ -214,9 +188,8 @@
         }
       '';
 
-      # Extensions
-      # Chrome Web Store IDs. Helium is Chromium-based and queries the CWS
-      # update endpoint for force-installed extensions.
+      # Extensions from the Chrome Web Store. Helium checks that store for
+      # updates to force installed extensions.
       cwsUpdateUrl = "https://clients2.google.com/service/update2/crx";
       extensionCatalogue = {
         "ublock-origin" = {
@@ -268,22 +241,19 @@
         ExtensionSettings = lib.recursiveUpdate autoExtensionSettings cfg.extensions.extraExtensionSettings;
       };
 
-      # Enterprise policies
-      # Mirrors the Firefox preference groups. Unknown keys are ignored by
-      # Chromium; users can override anything via `policies`/`extraPolicies`.
-      # The new-tab page itself is set with --custom-ntp (see startpageFlags);
-      # here we only wire the home button to that same page.
+      # Enterprise policies. Unknown keys are ignored by Chromium. The home
+      # button uses the same page as --custom-ntp.
       startupPolicies = lib.optionalAttrs cfg.enableCustomStartpage {
         HomepageIsNewTabPage = true;
         ShowHomeButton = true;
       };
 
       defaultPolicies = {
-        # Startup
-        RestoreOnStartup = 1; # 1 = restore the last session
+        # Startup.
+        RestoreOnStartup = 1; # Restore the last session.
         DefaultBrowserSettingEnabled = false;
 
-        # Default search provider (DuckDuckGo)
+        # Search.
         DefaultSearchProviderEnabled = true;
         DefaultSearchProviderName = "DuckDuckGo";
         DefaultSearchProviderKeyword = "ddg";
@@ -293,23 +263,23 @@
         DefaultSearchProviderEncodings = [ "UTF-8" ];
         SearchSuggestEnabled = false;
 
-        # Telemetry, reporting, experiments & feedback
+        # Telemetry and experiments.
         MetricsReportingEnabled = false;
-        ChromeVariations = 2; # 2 = disable all variations/experiments
+        ChromeVariations = 2; # Disable all variations.
         UserFeedbackAllowed = false;
         CloudReportingEnabled = false;
         SafeBrowsingExtendedReportingEnabled = false;
         UrlKeyedAnonymizedDataCollectionEnabled = false;
         PromotionalTabsEnabled = false;
         BackgroundModeEnabled = false;
-        BrowserSignin = 0; # disable browser sign-in
+        BrowserSignin = 0; # Disable sign in.
         SyncDisabled = true;
-        # Keep local Safe Browsing, drop the remote download verdict lookups
+        # Keep local Safe Browsing, but skip remote checks.
         SafeBrowsingProtectionLevel = 1;
         HideWebStoreIcon = true;
 
-        # Network & privacy
-        NetworkPredictionOptions = 2; # 2 = never (DNS prefetch / preconnect)
+        # Network and privacy.
+        NetworkPredictionOptions = 2; # Never prefetch.
         DnsOverHttpsMode = "off";
         BuiltInDnsClientEnabled = false;
         DNSInterceptionChecksEnabled = false;
@@ -320,13 +290,13 @@
         PrivacySandboxPromptEnabled = false;
         PrivacySandboxRelatedWebsiteSetsEnabled = false;
 
-        # Passwords & autofill (Bitwarden handles this)
+        # Bitwarden handles passwords and autofill.
         PasswordManagerEnabled = false;
         AutofillAddressEnabled = false;
         AutofillCreditCardEnabled = false;
 
-        # Permissions: default deny (mirrors permissions.default.*)
-        DefaultNotificationsSetting = 2; # 2 = block
+        # Deny permissions by default.
+        DefaultNotificationsSetting = 2; # Block.
         DefaultGeolocationSetting = 2;
         DefaultSensorsSetting = 2;
         DefaultSerialGuardSetting = 2;
@@ -339,10 +309,10 @@
         DefaultWindowManagementSetting = 2;
         AutoplayAllowed = false;
 
-        # Security
+        # Security.
         HttpsOnlyMode = "force_enabled";
         PromptForDownloadLocation = true;
-        DeveloperToolsAvailability = 0; # 0 = allow DevTools
+        DeveloperToolsAvailability = 0; # Allow DevTools.
       };
 
       effectivePolicies =
@@ -524,10 +494,8 @@
           features.default-apps.browser = lib.mkIf isDefaultBrowser (lib.mkDefault "helium");
         })
 
-        # Themed startpage. The hand-written page files are live symlinks into
-        # the checkout (same pattern as quickshell) while colours.css is a
-        # generated Hjem file in the same directory; `contents` mode leaves the
-        # Hjem symlink alone, so activation never writes into the checkout.
+        # Themed startpage. The page files are live links, and colours.css is
+        # written by Hjem in the same directory.
         (lib.mkIf (enabled && cfg.enableCustomStartpage) {
           hjem.users."${config.username}" = {
             enable = true;

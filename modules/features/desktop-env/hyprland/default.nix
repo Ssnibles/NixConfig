@@ -55,9 +55,8 @@
           };
         };
 
-        # hyprland.lua is a live symlink into the checkout (see nixos.liveLinks);
-        # the previous jq edit of Hjem's manifest is unnecessary because Hjem
-        # only manages .config/hypr/generated.lua.
+        # The Hyprland config is a live link into the checkout, so edits apply
+        # at once. Hjem only manages generated.lua in the same directory.
         nixos.liveLinks."hyprland-config" = {
           source = "${config.nixos.configRepo}/modules/features/desktop-env/hyprland/hyprland.lua";
           target = ".config/hypr/hyprland.lua";

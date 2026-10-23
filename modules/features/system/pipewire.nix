@@ -1,6 +1,4 @@
-# PipeWire Sound Engine Feature
-# Modern low-latency sound server replacing PulseAudio, with ALSA and
-# 32-bit audio emulation support for gaming.
+# PipeWire audio.
 { ... }:
 {
   nixos.modules.shared =
@@ -10,7 +8,6 @@
         pavucontrol
       ];
 
-      # Disable legacy PulseAudio service
       services.pulseaudio.enable = false;
       security.rtkit.enable = true;
 

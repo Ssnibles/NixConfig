@@ -1,7 +1,4 @@
-# Pi Coding Agent Feature
-# Terminal coding agent harness (github:lukasl-dev/pi.nix) providing AI-assisted
-# coding, tool calling, skills, prompt extensions, and optional Bubblewrap
-# sandboxing (jail.nix).
+# Pi coding agent.
 { inputs, ... }:
 {
   nixos.modules.shared =
@@ -35,9 +32,8 @@
 
       allExtensions = enabledBuiltinExtensions ++ headerExtension ++ cfg.extensions;
 
-      # Vendored Typst packages the shared theme imports (`cetz`, `zap`, `mmdr`
-      # and `cetz`'s own `oxifmt` dependency). Pinning them lets the skill
-      # reference examples be compiled offline during the build.
+      # Typst packages used by the shared theme. Pinning them lets the skill
+      # examples compile offline during the build.
       typstPreviewPackages = pkgs.runCommand "pi-skill-typst-packages" { } ''
         mkdir -p $out/preview
         extract() {
@@ -69,7 +65,7 @@
           }
         } mmdr 0.2.2
 
-        # Fail loudly if a tarball layout ever changes.
+        # Fail if a package layout changes.
         for pkg in cetz/0.5.2 oxifmt/1.0.0 zap/0.6.0 mmdr/0.2.2; do
           test -f "$out/preview/$pkg/typst.toml" || {
             echo "typst package $pkg missing its typst.toml" >&2
@@ -78,9 +74,8 @@
         done
       '';
 
-      # Bundle a skill, validate its SKILL.md frontmatter and compile its
-      # reference examples offline against the shared theme (see
-      # check-skills.sh). A drift or a broken example fails the build.
+      # Bundle a skill, check its SKILL.md, and compile its examples. A broken
+      # example or a bad skill fails the build.
       mkSkill =
         name: src:
         pkgs.runCommand "pi-skill-${name}"
@@ -99,9 +94,8 @@
               --font-path ${pkgs.dejavu_fonts}/share/fonts/truetype
           '';
 
-      # Skill bundling the user's canonical Typst snippet library. The LuaSnip
-      # source of truth lives in the Neovim config; copy it in at build time so
-      # the skill can never drift from the snippets.
+      # The Typst snippet skill. The LuaSnip source lives in the Neovim config,
+      # so copy it in at build time to keep the skill in sync.
       typstSnippetsSkill = pkgs.runCommand "pi-skill-typst-snippets" { } ''
         mkdir -p $out/references
         install -m 0444 ${./pi-agent/skills/typst-snippets/SKILL.md} $out/SKILL.md
@@ -113,15 +107,19 @@
         install -m 0444 ${./pi-agent/skills/typst-snippets/references/example.typ} $out/references/example.typ
         install -m 0444 ${../nvim-src/lua/snippets/typst.lua} $out/references/typst.lua
 
-        # Fail the build if the theme, `page` snippet and page-preamble.typ drift apart.
+        # Fail if the theme, page snippet, and page-preamble.typ drift.
         bash ${./pi-agent/skills/typst-snippets/check-sync.sh} $out/references
 
-        # Validate the skill's own frontmatter.
+        # Check the skill frontmatter.
         bash ${./pi-agent/skills/check-skills.sh} $out --expect typst-snippets
       '';
 
       bundledSkills =
-        lib.optional cfg.typstSnippets typstSnippetsSkill
+        lib.optional cfg.baseConventions (mkSkill "base-conventions" ./pi-agent/skills/base-conventions)
+        ++ lib.optional cfg.programmingConventions (
+          mkSkill "programming-conventions" ./pi-agent/skills/programming-conventions
+        )
+        ++ lib.optional cfg.typstSnippets typstSnippetsSkill
         ++ lib.optional cfg.lectureNotes (mkSkill "lecture-notes" ./pi-agent/skills/lecture-notes)
         ++ lib.optional cfg.testNotes (mkSkill "test-notes" ./pi-agent/skills/test-notes)
         ++ lib.optional cfg.labNotes (mkSkill "lab-notes" ./pi-agent/skills/lab-notes)
@@ -262,13 +260,30 @@
           description = "List of skill directories passed to pi via --skill.";
         };
 
+        baseConventions = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Bundle the base-conventions skill. It sets British English and
+            short, plain comments for every task.
+          '';
+        };
+
+        programmingConventions = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Bundle the programming-conventions skill. It sets the rules for
+            any code, configuration, or refactoring work.
+          '';
+        };
+
         typstSnippets = lib.mkOption {
           type = lib.types.bool;
           default = true;
           description = ''
-            Bundle the typst-snippets skill, which teaches pi the canonical
-            Typst conventions from the Neovim LuaSnip library so generated
-            .typ files match the user's established style.
+            Bundle the typst-snippets skill. It teaches pi the Typst
+            conventions from the Neovim snippet library.
           '';
         };
 
@@ -336,7 +351,7 @@
           extensions = lib.mkIf (allExtensions != [ ]) (lib.mkDefault allExtensions);
         };
 
-        # Binary cache for faster builds & substituters
+        # Faster builds from binary caches.
         nix.settings = {
           substituters = [ "https://pi.cachix.org" ];
           trusted-public-keys = [

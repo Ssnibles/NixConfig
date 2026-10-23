@@ -1,6 +1,5 @@
-# Laptop Host Specific Configuration
-# Hardware definitions, TLP battery power optimisation profiles, i2c_hid ACPI
-# touchpad polling workarounds, ath11k Wi-Fi kernel modules, and DFU udev rules.
+# Laptop host settings.
+# Power profiles, touchpad and Wi-Fi workarounds, firmware pin, and DFU rules.
 { ... }:
 {
   nixos.modules.laptop =
@@ -17,10 +16,8 @@
 
       nixos.hostRole = "laptop";
 
-      # Standard mount options for /boot (no automount to avoid dbus-broker ProtectSystem=full deadlocks).
-      # mkForce is required because _hardware-generated.nix also sets `options`
-      # (fmask/dmask=0022); list options concatenate, which left duplicate and
-      # conflicting fmask/dmask values.
+      # mkForce is needed because _hardware-generated.nix also sets options.
+      # List options are joined, so the old fmask and dmask values conflicted.
       fileSystems."/boot" = {
         fsType = "vfat";
         options = lib.mkForce [
@@ -32,24 +29,24 @@
         ];
       };
 
-      # NVMe is in availableKernelModules; TPM modules removed from initrd as root is unencrypted
+      # The NVMe driver is available, and root is not encrypted, so no extra
+      # initrd modules are needed.
       boot.initrd.kernelModules = [ ];
 
-      # Kernel modules: ath11k_pci Wi-Fi driver is auto-loaded asynchronously by udev
+      # ath11k_pci is loaded by udev.
       boot.kernelModules = [ ];
 
-      # Blacklist sp5100_tco hardware watchdog: `nowatchdog` only disables the NMI/softlockup
-      # watchdog, not hardware watchdog modules. Without this, sp5100_tco loads and causes
-      # "watchdog did not stop!" errors on every reboot.
+      # nowatchdog does not stop hardware watchdogs. sp5100_tco loads and then
+      # logs watchdog errors on every reboot, so block it.
       boot.blacklistedKernelModules = [ "sp5100_tco" ];
 
-      # Set max PWM brightness for HP elitebook (0x40000), disable PSR (0x10) & Panel Replay (0x400) to fix external monitor flicker/resets, & force PCIe ASPM power saving
+      # Set the maximum PWM brightness for the HP EliteBook and disable panel
+      # self refresh and panel replay, which cause flicker on an external screen.
       boot.kernelParams = [
         "amdgpu.dcdebugmask=0x40410"
         "pcie_aspm.policy=powersupersave"
       ];
 
-      # Physical NVMe swap file for laptop (secondary to zramSwap)
       swapDevices = [
         {
           device = "/swapfile";
@@ -57,20 +54,18 @@
         }
       ];
 
-      # Hibernation (finish on the laptop)
-      # Hibernating to /swapfile needs the file's physical offset, which is only
-      # obtainable on the running laptop:
+      # Hibernation is not enabled yet. It needs the physical offset of
+      # /swapfile, which must be read on the running laptop:
       #   sudo filefrag -v /swapfile | awk 'NR==4 {print $4}'
-      # Then uncomment the two lines below (strip the trailing "..") and rebuild.
-      # Do NOT set boot.resumeDevice without the offset: a half-configured
-      # hibernation writes an image it cannot resume from, losing unsaved data.
+      # Then uncomment the lines below and rebuild. Do not set resumeDevice
+      # without the offset, or the machine may write an image it cannot resume.
       # boot.resumeDevice = "/dev/disk/by-uuid/b58b4a43-9a29-463d-944d-fc52976d110c";
       # boot.kernelParams = [ "resume_offset=NNNNNNN" ];
 
-      # Laptop battery: keep Bluetooth radio powered off at boot until explicitly needed
+      # Keep the Bluetooth radio off at boot to save battery.
       hardware.bluetooth.powerOnBoot = false;
 
-      # Lock linux-firmware to known-good 20260810 release to avoid Yellow Carp DMCUB regression in 20260910
+      # Pin linux-firmware to 20260810 to avoid the Yellow Carp DMCUB bug in 20260910.
       nixpkgs.overlays = [
         (_: prev: {
           linux-firmware = prev.linux-firmware.overrideAttrs (_: rec {
@@ -85,7 +80,6 @@
         })
       ];
 
-      # TLP Power Management Profiles
       services.tlp = {
         enable = true;
         settings = {
@@ -110,22 +104,19 @@
         };
       };
 
-      # Hardware tools & microcontrollers (OpenOCD)
       environment.systemPackages = with pkgs.unstable; [
         openocd
       ];
 
       services.udev.packages = [ pkgs.openocd ];
 
-      # Define udev rules for DFU devices & Meshtastic hardware
+      # Rules for DFU devices and Meshtastic hardware.
       services.udev.extraRules = ''
         SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0666", GROUP="dialout"
         SUBSYSTEM=="usb", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", MODE="0666", GROUP="dialout"
         ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0666", GROUP="plugdev"
         ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", MODE="0666", GROUP="plugdev"
       '';
-
-      # Feature toggles (shared and per-host) live in modules/core/options.nix.
 
       system.stateVersion = "26.05";
     };

@@ -1,5 +1,5 @@
-# Core Flake Templates
-# Exposes re-usable flake templates exported by this repository.
+# Flake templates.
+# Templates exported by this repository.
 { ... }:
 {
   flake.templates = {

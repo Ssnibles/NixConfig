@@ -1,5 +1,4 @@
-# Core Flake Systems
-# Supported target system architectures for perSystem flake outputs.
+# Supported target systems.
 {
   config = {
     systems = [

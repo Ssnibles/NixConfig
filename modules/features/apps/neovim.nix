@@ -1,6 +1,4 @@
-# Neovim Editor Feature (NVF Flake Module)
-# NVF framework configuration, language server dependencies, formatters,
-# linters, Tree-Sitter grammars, Vim plugins, and nvim-src symlinking.
+# Neovim with NVF.
 { inputs, ... }:
 {
   nixos.modules.shared =
@@ -20,18 +18,14 @@
         defaultEditor = true;
 
         settings.vim = {
-          # Nightly (unwrapped) Neovim from nix-community/neovim-nightly-overlay.
-          # NVF wraps this with the plugin set declared below.
+          # Nightly Neovim. NVF adds the plugins below.
           package = inputs.neovim-nightly.packages.${pkgs.stdenv.hostPlatform.system}.neovim;
 
           viAlias = true;
           vimAlias = true;
 
-          # Editor options, keymaps, globals and themes all live in the Lua tree
-          # (modules/features/nvim-src) so there is a single source of truth.
-          # NVF is used here purely as the plugin/package wrapper.
-
-          # Language Servers, Linters & Formatters
+          # Options, keymaps, globals, and themes live in the Lua tree at
+          # modules/features/nvim-src. NVF only wraps the plugins here.
           extraPackages = with pkgs; [
             nixd
             lua-language-server
@@ -52,7 +46,7 @@
             ltex-ls-plus
             imagemagick
 
-            # qmlls from qt6.qtdeclarative, wrapped for QtQuick & Quickshell types
+            # qmlls wrapped with the QtQuick and Quickshell types.
             (writeShellScriptBin "qmlls" ''
               exec "${pkgs.unstable.qt6.qtdeclarative}/bin/qmlls" \
                 -I "${pkgs.unstable.qt6.qtdeclarative}/lib/qt-6/qml" \
@@ -103,7 +97,7 @@
             typstyle
             vtsls
 
-            # C / C++ Tooling & Language Servers
+            # C and C++ tools.
             clang-tools
             cppcheck
             gdb
@@ -120,7 +114,7 @@
             tree-sitter
           ];
 
-          # Vim Plugins & Grammars
+          # Plugins and grammars.
           startPlugins = with pkgs.vimPlugins; [
             (nvim-treesitter.withPlugins (p: [
               p.nix
@@ -205,10 +199,9 @@
         pkgs.neovim-remote
       ];
 
-      # Live Config Symlinks
-      # Point ~/.config/nvim (and the nvf alias) at the custom Lua tree in
-      # modules/features/nvim-src. Managed centrally by nixos.liveLinks so it
-      # no longer recursively chowns the whole ~/.config on every activation.
+      # Link ~/.config/nvim and ~/.config/nvf to the Lua tree in
+      # modules/features/nvim-src. This is handled by nixos.liveLinks, so
+      # activation does not change ownership of all of ~/.config.
       nixos.liveLinks = {
         "nvim-config" = {
           source = "${config.nixos.configRepo}/modules/features/nvim-src";

@@ -1,5 +1,4 @@
-# Tailscale Mesh VPN Feature
-# Secure, zero-config WireGuard mesh network connecting hosts to the tailnet.
+# Tailscale mesh VPN.
 { ... }:
 {
   nixos.modules.shared =

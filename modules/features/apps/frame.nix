@@ -1,8 +1,6 @@
-# Frame Remote Desktop Feature
-# Host-side launcher and desktop entry for the Nutanix Frame App. The client
-# itself runs inside an isolated Ubuntu 24.04 Distrobox container created by
-# assets/setup_frame.sh; this module only exposes a `frame` wrapper on the host
-# and registers the application (and its SSO URL schemes) with the desktop.
+# Frame remote desktop.
+# The client runs in a Distrobox container. This module provides the launcher
+# and desktop entry.
 { ... }:
 {
   nixos.modules.shared =
@@ -17,8 +15,7 @@
 
       container = "frame";
 
-      # Launch the client inside the container, forwarding any URLs (e.g. the
-      # frame:// SSO callback) and audio/display through Distrobox.
+      # Run the client in the container and pass through URLs.
       frame = pkgs.writeShellScriptBin "frame" ''
         if ! ${pkgs.distrobox}/bin/distrobox list 2>/dev/null | grep -q "| ${container} "; then
           echo "frame: Distrobox container '${container}' was not found." >&2
@@ -28,8 +25,7 @@
         exec ${pkgs.distrobox}/bin/distrobox enter ${container} -- frame "$@"
       '';
 
-      # Install the application icon into the hicolor theme so the desktop
-      # entry resolves Icon=frame.
+      # Add the icon to the hicolor theme for the desktop entry.
       frame-icon = pkgs.runCommand "frame-icon" { } ''
         install -Dm644 ${../../../assets/frame.svg} \
           $out/share/icons/hicolor/scalable/apps/frame.svg
@@ -46,7 +42,7 @@
           "Network"
           "Utility"
         ];
-        # Frame uses these schemes for single sign-on callbacks.
+        # Single sign-on callback schemes.
         mimeTypes = [
           "x-scheme-handler/frame"
           "x-scheme-handler/frameapp"
@@ -68,9 +64,8 @@
           frame-desktop
         ];
 
-        # USB device redirection: the vendor rules grant access to the device
-        # classes Frame forwards into a remote session. They run on the host
-        # (the rootless container has no udev) and rely on the `plugdev` group.
+        # The container has no udev, so the rules run on the host and rely on
+        # the plugdev group.
         services.udev.extraRules = lib.mkAfter ''
           SUBSYSTEMS=="usb", ATTRS{idVendor}=="1008", MODE="0664", GROUP="plugdev"
           SUBSYSTEMS=="usb", ATTRS{idVendor}=="1050", MODE="0664", GROUP="plugdev"

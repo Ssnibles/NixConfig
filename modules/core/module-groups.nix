@@ -1,5 +1,5 @@
-# Core Module Groups
-# Declares high-level module options for merging features into hosts.
+# Module groups.
+# Options for merging features into hosts.
 { lib, ... }:
 {
   options.nixos.modules = {

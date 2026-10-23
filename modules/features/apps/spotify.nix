@@ -1,8 +1,4 @@
-# Spotify & Spicetify Application Feature
-# Spotify desktop music player configured and customised with Spicetify.
-# Uses a hand-written "Vague" theme (modules/features/apps/spicetify-theme)
-# that mirrors the active system palette, typography and rounded desktop
-# styling, plus useful extensions and custom sidebar apps.
+# Spotify with Spicetify.
 { inputs, ... }:
 {
   nixos.modules.shared =
@@ -36,23 +32,22 @@
 
           spotifyPackage = lib.mkDefault pkgs.unstable.spotify;
 
-          # Custom theme: a minimal, modern look built around the active
-          # palette. `builtins.path` copies the repo directory into the Nix
-          # store so it satisfies the theme's `pathInStore` option type.
+          # Theme built from the active palette. builtins.path copies it into
+          # the store for the theme's pathInStore option.
           theme = lib.mkDefault {
             name = "Vague";
             src = builtins.path {
               path = ./spicetify-theme;
               name = "spicetify-vague";
             };
-            # The theme is pure CSS; there is no theme.js to inject.
+            # Pure CSS theme, so there is no theme.js.
             injectThemeJs = false;
           };
 
-          # Colour scheme written to color.ini. Spicetify exposes every key as
-          # `--spice-<key>` / `--spice-rgb-<key>`, which is what user.css uses.
+          # Colours written to color.ini. Spicetify exposes each key as
+          # --spice-<key> and --spice-rgb-<key>, which user.css uses.
           customColorScheme = lib.mkDefault {
-            # Standard Spicetify keys
+            # Standard Spicetify keys.
             text = c.fg;
             subtext = c.fgMid;
             main = c.bg;
@@ -69,7 +64,7 @@
             notification-error = c.red;
             misc = c.bgSubtle;
 
-            # Extended keys used by the custom theme
+            # Extra keys used by this theme.
             inherit (c)
               accent
               border
@@ -99,10 +94,8 @@
             ]
           );
 
-          # `betterLibrary` is intentionally omitted: its extension moves the
-          # whole library into the main view and leaves a wrapping
-          # "Open in the main view" placeholder in the sidebar, which looks
-          # broken. The stock library is used instead.
+          # betterLibrary is left out. It moves the whole library into the main
+          # view and leaves a broken placeholder in the sidebar.
           enabledCustomApps = lib.mkDefault (
             with spicePkgs.apps;
             [

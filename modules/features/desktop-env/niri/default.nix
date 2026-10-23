@@ -1,6 +1,4 @@
-# Niri Scrollable-Tiling Compositor Feature
-# Enables Niri window manager, links config.kdl, and installs helper utilities
-# like xwayland-satellite.
+# Niri compositor.
 { ... }:
 {
   nixos.modules.shared =

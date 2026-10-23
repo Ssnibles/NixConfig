@@ -42,7 +42,7 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 
 ### Application Packaging & Sandboxing
 - **[Flatpak & Sandboxed Applications](flatpak.md)**  
-  Declarative Flatpak management via `nix-flatpak`: the Flathub remote, Sober (Roblox) from Flathub, the hash-pinned Nuvio Desktop `.flatpak` bundle, activation-time installation, update behaviour, overrides, and troubleshooting.
+  Declarative Flatpak management via `nix-flatpak`: the Flathub remote, remote-backed apps such as Sober (Roblox), GitHub-release bundle tracking for Nuvio Desktop and Spotifast without Nix pins, activation-time installation, update behaviour, overrides, and troubleshooting.
 
 ### Networking & Synchronisation
 - **[Networking, Tailscale & Syncthing Synchronisation](networking-sync.md)**  

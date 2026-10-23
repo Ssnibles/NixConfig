@@ -1,6 +1,4 @@
-# Mango Wayland Compositor Feature
-# Enables Mango Wayland compositor, links config & keybindings, and generates
-# theme colours file via Hjem.
+# Mango Wayland compositor.
 { ... }:
 {
   nixos.modules.shared =
@@ -18,18 +16,11 @@
         border
         ;
 
-      # "Mango" (the plain login-screen entry) is always the pinned upstream
-      # input, so a known-good remote build stays available while iterating.
-      # The local development input (git+file:///home/josh/mango) powers the
-      # separate "Mango Local" entry, exposed only when features.mangowc.local
-      # is enabled. Note: the programs.mango module itself is imported
-      # unconditionally — the two inputs ship the same module — only the package
-      # source differs.
+      # Mango is the pinned upstream session. Mango Local is built from the
+      # local checkout and only exposed when features.mangowc.local is on.
       #
-      # Temporary workaround for broken borders on NVIDIA proprietary drivers
-      # (https://github.com/wlrfx/scenefx/pull/177). The patched scenefx is
-      # threaded into both builds below so it keeps working for both inputs;
-      # drop this once upstream merges/releases the fix.
+      # The scenefx patch fixes broken borders on the NVIDIA driver. Remove it
+      # when the upstream fix is released.
       scenefx =
         inputs.scenefx.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
           (oldAttrs: {
@@ -46,19 +37,16 @@
         inherit scenefx;
       };
 
-      # Local development build from the checked-in input, only evaluated when
-      # features.mangowc.local is on.
+      # Local development build from the checked-in input.
       mango-local-base =
         inputs.mangowc-local.packages.${pkgs.stdenv.hostPlatform.system}.default.override
           {
             inherit scenefx;
           };
 
-      # Development wrapper: at runtime it prefers a freshly built binary from
-      # /home/${config.username}/mango/result, so local changes can be tested
-      # with just `nix build` in ~/mango followed by a session restart, without
-      # a full nixos-rebuild. If no local build is present it falls back to the
-      # packaged binary and logs the fallback so it is never silent.
+      # Prefer a freshly built binary in ~/mango/result at runtime, so a local
+      # change only needs nix build and a session restart. Fall back to the
+      # packaged binary and log when no local build is present.
       mango-dev = pkgs.symlinkJoin {
         name = "mango-dev";
         paths = [ mango-local-base ];
@@ -80,11 +68,8 @@
         meta.mainProgram = "mango";
       };
 
-      # A second, independent login-screen entry ("Mango Local"). The upstream
-      # package only ships `mango.desktop`, which points at whatever is in
-      # environment.systemPackages; this one hard-codes the dev wrapper and
-      # prepends its bin dir so `mmsg` etc. also come from the local build.
-      # providedSessions is required by services.displayManager.sessionPackages.
+      # A separate login entry for Mango Local. It runs the dev wrapper and
+      # puts its bin directory first so mmsg also comes from the local build.
       mango-local-session =
         (pkgs.runCommand "mango-local-session" { } ''
           mkdir -p $out/bin $out/share/wayland-sessions
@@ -111,11 +96,9 @@
           providedSessions = [ "mango-local" ];
         };
 
-      # Vesktop opens three portal sessions for a single share and
-      # xdg-desktop-portal-wlr runs the chooser once per session. Cache the
-      # pick for a short window so the user only chooses once per share, while
-      # later shares still get a fresh picker (or a new pick when the offered
-      # source list changes).
+      # Vesktop opens three portal sessions for one share. Cache the choice for
+      # a short time so the picker only appears once, unless the source list
+      # changes.
       screencast-chooser = pkgs.writeShellScript "wlr-screencast-chooser" ''
         cache="''${XDG_RUNTIME_DIR:-/tmp}/wlr-screencast-choice"
         input=$(${pkgs.coreutils}/bin/cat)
@@ -159,28 +142,13 @@
       config = lib.mkIf cfg.enable {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
 
-        # The upstream mango NixOS module enables xdg-desktop-portal-wlr but
-        # leaves its settings empty. NixOS always launches the portal with
-        # `--config=<generated.ini>`, so a hand-written
-        # ~/.config/xdg-desktop-portal-wlr/config is ignored and the portal
-        # falls back to its default chooser chain (slurp/wofi/rofi/bemenu/...),
-        # which all fail on this host. That makes ScreenCast calls fail with
-        # "no output found", so Electron's desktopCapturer.getSources()
-        # errors out and Vesktop never shows its screen-share picker.
-        #
-        # Use a dmenu-style chooser: the portal pipes one line per selectable
-        # source ("Monitor: <name> <desc>" and "Window: <title> (<id>)") to
-        # the command's stdin and reads the chosen line back from stdout.
-        # Vicinae's `dmenu` mode renders that list as a fuzzy-searchable native
-        # picker covering monitors *and* windows -- nicer than slurp's
-        # monitor-only region drag. `-f data` makes it echo the chosen line
-        # verbatim instead of an index.
-        # For a single-monitor setup with zero interaction, swap this for:
-        #   chooser_type = "none";  # optionally + output_name = "DP-1";
+        # The upstream mango module enables xdg-desktop-portal-wlr but leaves
+        # its settings empty. NixOS always passes its own config file, so the
+        # default chooser fails and Vesktop cannot share a screen. Use Vicinae
+        # as the chooser. It can pick a monitor or a window.
         xdg.portal.wlr.settings.screencast = {
           chooser_type = "dmenu";
-          # Vesktop opens three portal sessions per share and the portal runs
-          # the chooser for each, so the wrapper caches the pick for 30s.
+          # Vesktop opens three sessions per share, so cache the choice.
           chooser_cmd = "${screencast-chooser}";
         };
 
@@ -188,12 +156,10 @@
 
         programs.mango.enable = true;
 
-        # The plain "Mango" session always uses the pinned upstream package. The
-        # dev wrapper is exposed as the separate "Mango Local" session below.
+        # The normal Mango session keeps the pinned upstream package.
         programs.mango.package = mango-remote;
 
-        # Adds share/wayland-sessions/mango-local.desktop (picked up by ly and
-        # other display managers) on top of the upstream mango.desktop session.
+        # Adds mango-local.desktop to the login screen.
         services.displayManager.sessionPackages = lib.mkIf cfg.local [ mango-local-session ];
 
         nixos.liveLinks = {

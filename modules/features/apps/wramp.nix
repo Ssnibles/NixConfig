@@ -1,6 +1,4 @@
-# WRAMP Toolchain & Simulator Distrobox Feature
-# Distrobox launcher scripts and desktop entry for the WRAMP (Waikato RISC
-# Architecture MicroProcessor) toolchain and wsim simulator.
+# WRAMP toolchain in Distrobox.
 { ... }:
 {
   nixos.modules.shared =
@@ -15,8 +13,7 @@
 
       container = "wramp";
 
-      # Thin wrappers that execute a WRAMP tool inside the Distrobox container,
-      # so the toolchain can be driven directly from the host (Neovim, shell).
+      # Run each WRAMP tool inside the container.
       wramp-tools = [
         "wasm"
         "wlink"

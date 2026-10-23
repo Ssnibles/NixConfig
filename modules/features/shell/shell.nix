@@ -1,4 +1,4 @@
-# Interactive Shell Environment (Fish, Starship, Direnv)
+# Interactive shell setup.
 { ... }:
 {
   nixos.modules.shared =
@@ -25,7 +25,6 @@
         enableFishIntegration = true;
       };
 
-      # Hjem Dotfiles for Shell Configuration
       hjem.users.${config.username}.files = {
 
         ".config/fish/config.fish" = {
@@ -178,7 +177,7 @@
           '';
         };
 
-        # Pure function definition (bindings handled in interactiveShellInit)
+        # The function is defined here. The key binding is set below.
         ".config/fish/functions/navi-pick.fish" = {
           text = ''
             function navi-pick --description "Fuzzy search cheatsheets and insert into command line"
@@ -219,7 +218,6 @@
         MANPAGER = "sh -c 'col -bx | bat -l man -p'";
       };
 
-      # Fish Program Configuration
       programs.fish = {
         enable = true;
         package = pkgs.unstable.fish;
@@ -234,18 +232,18 @@
           set -g fish_greeting
           stty -ixon 2>/dev/null
 
-          # Cheatsheet picker keybindings
+          # Cheatsheet picker.
           bind \cp navi-pick
           bind -M insert \cp navi-pick
 
-          # Zoxide directory picker (Alt+Z) — fuzzy jump via zoxide frecency
+          # Alt+Z opens the zoxide directory picker.
           bind \ez zi
           bind -M insert \ez zi
 
-          # Bind Ctrl+L to clear terminal scrollback and repaint prompt cleanly
+          # Ctrl+L clears the screen and redraws the prompt.
           bind \cl 'clear; commandline -f repaint'
 
-          # Bind Ctrl+Backspace (\c_, \x1f, CSI u) to delete previous word
+          # Ctrl+Backspace deletes the previous word.
           bind \c_ backward-kill-word
           bind \x1f backward-kill-word
           bind \e\[127\;5u backward-kill-word
@@ -260,7 +258,6 @@
         nix-direnv.enable = true;
       };
 
-      # Starship Prompt Configuration
       programs.starship = {
         enable = true;
         package = pkgs.unstable.starship;

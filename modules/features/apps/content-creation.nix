@@ -1,5 +1,4 @@
-# Content Creation Applications Feature
-# Audio/video processing tools (FFmpeg, FLAC).
+# Audio and video tools.
 { ... }:
 {
   nixos.modules.shared =

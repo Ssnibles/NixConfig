@@ -1,6 +1,5 @@
-# Shared Host Base Configuration
-# Core hardware tuning, bootloader (Limine), graphics acceleration, login manager (Ly),
-# udev kernel remaps (Caps/Esc swap), swap, and systemd service optimisations.
+# Shared host settings.
+# Bootloader, graphics, login manager, keyboard remaps, swap, and systemd tuning.
 { ... }:
 {
   nixos.modules.shared =
@@ -13,13 +12,11 @@
     {
       nixpkgs.hostPlatform = "x86_64-linux";
 
-      # Bootloader & Firmware
       boot.loader.limine.enable = true;
       boot.loader.limine.maxGenerations = 10;
       boot.loader.efi.canTouchEfiVariables = true;
       boot.loader.timeout = 5;
 
-      # Hardware Graphics Acceleration (Mesa / Vulkan)
       hardware.graphics = {
         enable = true;
         enable32Bit = true;
@@ -27,7 +24,6 @@
 
       hardware.keyboard.qmk.enable = true;
 
-      # Kernel & Performance Tuning
       boot.kernelPackages = pkgs.unstable.linuxPackages_latest;
 
       boot.initrd.systemd.enable = true;
@@ -56,13 +52,12 @@
         "fs.inotify.max_user_instances" = 1024;
       };
 
-      # Force Chromium & Electron applications to run natively under Wayland
+      # Force Chromium and Electron applications to use Wayland natively.
       environment.sessionVariables = {
         NIXOS_OZONE_WL = "1";
         ELECTRON_OZONE_PLATFORM_HINT = "auto";
       };
 
-      # System Journal & Power Management
       services.journald.settings.Journal = {
         SystemMaxUse = "50M";
         SystemMaxFileSize = "10M";
@@ -72,18 +67,15 @@
 
       services.upower.enable = true;
 
-      # Display Manager & Authentication
       services.displayManager.ly.enable = true;
       security.pam.services.ly.enableGnomeKeyring = true;
       services.gnome.gnome-keyring.enable = true;
 
-      # Security Hardening
       # Show asterisks while typing a sudo password.
       security.sudo.extraConfig = "Defaults pwfeedback";
-      # Default AppArmor profile set (kernel LSM, no user-space daemon).
       security.apparmor.enable = true;
 
-      # Kernel-level Keyboard Mapping (Caps Lock <-> Escape Swap)
+      # Swap Caps Lock and Escape at kernel level.
       services.udev.extraHwdb = ''
         evdev:atkbd:dmi:bvn*:bvr*:bd*:svn*:pn*:pvr*
          KEYBOARD_KEY_3a=esc
@@ -93,14 +85,13 @@
          KEYBOARD_KEY_70029=capslock
       '';
 
-      # Networking & Filesystems
       networking.hostName = "nixos";
 
       fileSystems."/" = {
         options = [ "noatime" ];
       };
 
-      # Compressed in-memory swap to avoid SSD write wear and NVMe PCIe wakeups
+      # In-memory compressed swap avoids SSD wear and NVMe wakeups.
       zramSwap = {
         enable = true;
         algorithm = "zstd";
@@ -108,13 +99,13 @@
         priority = 100;
       };
 
-      # Systemd Boot & Service Optimisations
+      # Systemd boot and service tuning.
       systemd.services.NetworkManager-wait-online.enable = false;
 
-      # Disable systemd-boot random seed update since Limine is used (saves ~8.9s on boot)
+      # Limine is used, so the systemd-boot random seed service is not needed.
       systemd.services.systemd-boot-random-seed.enable = false;
 
-      # Prevent DBus restart triggers during nixos-rebuild to keep GUI apps running
+      # Keep GUI applications alive across nixos-rebuild.
       systemd.services.dbus-broker.restartIfChanged = false;
       systemd.user.services.dbus-broker.restartIfChanged = false;
       systemd.services.dbus.restartIfChanged = false;
@@ -125,28 +116,17 @@
       systemd.services.dbus.restartTriggers = lib.mkForce [ ];
       systemd.user.services.dbus.restartTriggers = lib.mkForce [ ];
 
-      # D-Bus duplicate-service-name log spam
-      # NixOS' generated /etc/dbus-1/{session,system}.conf lists both
-      # <standard_session_servicedirs/> (which resolves $XDG_DATA_DIRS, including
-      # /run/current-system/sw/share where every package's dbus-1/services is
-      # symlinked) and an explicit <servicedir> per package. dbus-broker-launch
-      # therefore sees each service twice and logs
-      #   "Ignoring duplicate name '…' in service file '…'"
-      # (~50 lines per login). LogFilterPatterns= cannot suppress those on the
-      # *user* bus -- systemd documents it as "only available in system
-      # services" -- so the system bus relies on LogFilterPatterns and the user
-      # bus sends the launcher's log stream through a filter. dbus-broker only
-      # writes to the journal socket while stderr *is* that socket; handing it a
-      # pipe makes it fall back to stderr, which grep cleans before journald
-      # ever records the line.
+      # NixOS lists each D-Bus service twice, which makes dbus-broker log a
+      # duplicate name warning about 50 times per login. Filter it on the system
+      # bus with LogFilterPatterns and on the user bus by cleaning stderr.
       systemd.services.dbus.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
       systemd.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
       systemd.user.services.dbus-broker.serviceConfig.ExecStart =
         lib.mkIf (config.services.dbus.implementation == "broker")
           (
             lib.mkForce [
-              # Leading empty element resets the packaged unit's ExecStart so this
-              # replaces it instead of appending a second launcher.
+              # An empty first element replaces the packaged ExecStart instead
+              # of adding a second launcher.
               ""
               "${pkgs.bash}/bin/bash -c 'exec ${config.services.dbus.brokerPackage}/bin/dbus-broker-launch --scope user 2> >(${pkgs.gnugrep}/bin/grep --line-buffered -v \"Ignoring duplicate name\" >&2)'"
             ]

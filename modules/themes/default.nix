@@ -1,5 +1,4 @@
-# Theme Engine Option Schema
-# Exposes theme selection options (active theme palette, colours, and fonts).
+# Theme options.
 { ... }:
 {
   nixos.modules.shared =

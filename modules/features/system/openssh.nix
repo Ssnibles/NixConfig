@@ -1,7 +1,6 @@
-# OpenSSH Server Feature
-# Key-only SSH server. The firewall is left closed so sshd is only reachable
-# over trusted interfaces (tailscale0), which is where the authorised keys are
-# meant to be used.
+# OpenSSH server.
+# Password login is disabled. sshd is only reachable over trusted interfaces
+# such as tailscale0.
 { ... }:
 {
   nixos.modules.shared =
@@ -20,8 +19,7 @@
         };
       };
 
-      # Declarative replacement for install.sh's imperative
-      # ~/.ssh/authorized_keys write. Mirrored from github.com/Ssnibles.keys.
+      # Installed declaratively instead of writing authorized_keys in install.sh.
       users.users.${config.username}.openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIML005i/5k2e1dOrzqZ5U2UIkv5bPluW85BViniWc/PJ"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAXZTaFjH5NB2JNLE1Us7aw3fXeuhIQRWehNwJas7yab"

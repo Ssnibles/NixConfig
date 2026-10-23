@@ -16,20 +16,16 @@
       naviDir = "/home/${config.username}/.config/navi";
       cheatsDir = "${naviDir}/cheats";
 
-      # Cheats are declared as typed Nix data and rendered to navi `.cheat`
-      # files. pet's `<name=default>` placeholders are translated to navi's
-      # `<name>` variables plus a `$ name: ...` suggestion line, so the old
-      # defaults still show up pre-selected in the picker.
-      #
-      # The generated files are read-only store symlinks; this module is the
-      # source of truth, so add snippets here and rebuild.
+      # Cheats are Nix data rendered to navi cheat files. Placeholders written
+      # as <name=default> become navi variables with a suggestion line, so the
+      # old defaults still appear in the picker. Add snippets here and rebuild.
       mk = description: command: tag: {
         inherit description command tag;
         extraSuggestions = [ ];
       };
 
-      # Same as `mk`, but with raw navi `$ name: ...` suggestion lines, used for
-      # dependent defaults (e.g. making the binary name follow the package).
+      # Like mk, but with extra navi suggestion lines. Used when one default
+      # depends on another, such as a binary name following the package.
       mkSuggestions = extraSuggestions: description: command: tag: {
         inherit
           description
@@ -39,15 +35,12 @@
           ;
       };
 
-      # navi cheat rendering
-      # Splits a command on `<...>` placeholders. Returns a list where a
-      # placeholder's inner text is a single-element list and literal text is a
-      # string. `builtins.split` includes only capture groups, so the group
-      # captures everything between the angle brackets.
+      # Split a command on <...> placeholders. A placeholder is returned as a
+      # one element list and literal text as a string.
       splitOnVars = command: builtins.split "<([^>]*)>" command;
       varInner = m: builtins.elemAt m 0;
 
-      # `name=default` -> { name, default }; `name` -> { name, default = null }.
+      # Parse name=default into a name and default. A bare name has no default.
       parseVar =
         inner:
         let
@@ -64,7 +57,7 @@
             default = builtins.elemAt m 1;
           };
 
-      # Rewrites `<name=default>` to navi's `<name>`.
+      # Rewrite <name=default> to navi's <name>.
       renderCommand =
         command:
         lib.concatStringsSep "" (
@@ -73,7 +66,7 @@
           )
         );
 
-      # Unique variables in first-seen order, each with its default.
+      # Unique variables in order, each with its default.
       paramVars =
         command:
         let
@@ -89,14 +82,13 @@
           } vars
         ) names;
 
-      # navi suggestion line for a variable, or null when it has no default.
+      # Suggestion line for a variable, or null when there is no default.
       suggestion =
         v:
         if v.default == null then
           null
         else if lib.hasPrefix "$(" v.default && lib.hasSuffix ")" v.default then
-          # The old default was itself a shell command, e.g.
-          # `$(git branch --show-current)`: let navi run it for suggestions.
+          # The old default was a shell command, so let navi run it.
           "$ ${v.name}: ${lib.removeSuffix ")" (lib.removePrefix "$(" v.default)}"
         else
           "$ ${v.name}: echo ${lib.escapeShellArg v.default}";
@@ -618,8 +610,7 @@
                   - ${cheatsDir}
               finder:
                 command: fzf
-                # navi already runs `navi preview {}`; this widens the pane,
-                # wraps long commands, and toggles it with Ctrl-/.
+                # Widen the preview and wrap long commands. Ctrl-/ toggles it.
                 overrides: --preview-window 'right:55%:wrap' --bind 'ctrl-/:toggle-preview'
             '';
           };

@@ -1,6 +1,4 @@
-# Gaming Applications Feature (Desktop Host)
-# Steam with Millennium skin overlay support, Gamescope session integration,
-# GameMode performance daemon, and PlayStation DualSense controller drivers.
+# Gaming on the desktop.
 { self, ... }:
 {
   nixos.modules.desktop =
@@ -14,7 +12,7 @@
       };
       programs.gamemode.enable = true;
 
-      # DualSense controller kernel support & pairing utilities
+      # DualSense controller support.
       boot.kernelModules = [ "hid-playstation" ];
       hardware.steam-hardware.enable = true;
 

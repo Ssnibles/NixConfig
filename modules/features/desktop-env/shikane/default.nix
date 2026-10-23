@@ -1,6 +1,4 @@
-# Shikane Display Manager Daemon
-# Automatic dynamic display profile management (laptop, dual-monitor, fallback)
-# using Shikane and nwg-displays.
+# Shikane display profiles.
 { ... }:
 {
   nixos.modules.shared =
@@ -48,9 +46,7 @@
           files = {
             ".config/shikane/config.toml" = {
               text = ''
-                # Shikane Dynamic Display Configuration
-
-                # Dual Monitor Setup (External display on top/primary, laptop below)
+                # Dual monitor setup with the external display above the laptop.
                 [[profile]]
                 name = "dual_laptop_external"
                 exec = ["${pkgs.libnotify}/bin/notify-send -a shikane -i video-display 'Display Manager' 'Dual monitor profile applied'"]
@@ -71,7 +67,7 @@
                 position = "0,0"
                 adaptive_sync = false
 
-                # Laptop Display Profile
+                # Laptop only.
                 [[profile]]
                 name = "laptop"
                 exec = ["${pkgs.libnotify}/bin/notify-send -a shikane -i video-display 'Display Manager' 'Laptop profile applied'"]
@@ -84,7 +80,7 @@
                 position = "0,0"
                 adaptive_sync = false
 
-                # Fallback Profile (Auto-enable any connected monitors)
+                # Turn on any connected monitor.
                 [[profile]]
                 name = "fallback"
                 exec = ["${pkgs.libnotify}/bin/notify-send -a shikane -i video-display 'Display Manager' 'Fallback display profile applied'"]

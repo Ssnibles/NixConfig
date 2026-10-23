@@ -1,7 +1,4 @@
-# Hermes AI Agent Feature
-# Hermes AI agent (Nous Research) configured with remote Ollama inference
-# (qwen2.5:7b) over Tailscale for private, battery-friendly tool-calling,
-# coding, and autonomous workflows.
+# Hermes AI agent.
 { ... }:
 {
   nixos.modules.shared =
@@ -15,7 +12,7 @@
       cfg = config.features.hermes;
 
       model = "qwen2.5:7b";
-      ollamaHost = "100.124.73.101"; # Homeserver Tailscale IP
+      ollamaHost = "100.124.73.101"; # Homeserver Tailscale address.
       ollamaPort = 11434;
 
       hermesLauncher = pkgs.writeShellScriptBin "hermes" ''
@@ -31,7 +28,7 @@
       '';
 
       hermesConfig = ''
-        # Hermes Agent Configuration — Managed via NixOS
+        # Hermes agent config, managed by NixOS.
         model:
           default: "${model}"
           provider: "custom"
@@ -56,7 +53,7 @@
           pkgs.uv
         ];
 
-        # Offload heavy LLM inference to the homeserver to maximise laptop battery
+        # Run inference on the homeserver to save laptop battery.
         services.ollama.enable = false;
 
         environment.sessionVariables = {

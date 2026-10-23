@@ -16,9 +16,10 @@ The media stack is optimised for hardware acceleration, low latency, and aesthet
 | **Audio Server** | **PipeWire** | Low-latency audio with WirePlumber, ALSA, PulseAudio, and JACK support | `modules/features/system/pipewire.nix` |
 | **Streaming CLI** | **ytplay** | Terminal command for direct YouTube playback in MPV | `modules/features/system/base.nix` |
 | **Spotify** | **Spicetify & spotatui** | Themed desktop Spotify client and terminal TUI | `modules/features/apps/spotify.nix` & `media.nix` |
-| **Nuvio Desktop** | **Flatpak bundle** | Stremio-addon media player (`com.nuvio.media.desktop`) installed from a hash-pinned `.flatpak` bundle | `modules/features/system/flatpak.nix` |
+| **Spotifast** | **Flatpak bundle** | Native Rust Spotify client (`rocks.spotifast.Spotifast`) installed from a GitHub-release `.flatpak` bundle tracked at the latest release | `modules/features/system/flatpak.nix` |
+| **Nuvio Desktop** | **Flatpak bundle** | Stremio-addon media player (`com.nuvio.media.desktop`) installed from a GitHub-release `.flatpak` bundle tracked at the latest release | `modules/features/system/flatpak.nix` |
 
-> **Nuvio Desktop** is delivered as a sandboxed Flatpak rather than a Nix package because it is not published on Flathub. Installation, pinning, and updates are covered in the [Flatpak & Sandboxed Applications Guide](flatpak.md).
+> **Spotifast** and **Nuvio Desktop** are delivered as sandboxed Flatpaks rather than Nix packages because they are not published on Flathub. Installation, GitHub-release tracking, and updates are covered in the [Flatpak & Sandboxed Applications Guide](flatpak.md).
 
 ---
 

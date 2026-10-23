@@ -1,5 +1,4 @@
-# System Bluetooth Feature
-# Enables Bluetooth hardware stack, Blueman daemon, and suppresses benign log spam.
+# Bluetooth support.
 { ... }:
 {
   nixos.modules.shared =
@@ -20,7 +19,7 @@
 
         services.blueman.enable = true;
 
-        # Suppress benign log filter pattern in systemd journal
+        # This message is harmless and only adds noise to the journal.
         systemd.services.bluetooth.serviceConfig.LogFilterPatterns = [
           "~Failed to set default system config"
         ];
