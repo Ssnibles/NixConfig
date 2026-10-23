@@ -83,12 +83,18 @@
 
       # Canonical extension registrations (id -> download URL)
       extensionCatalogue = {
-        "uBlock0@raymondhill.net" = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
-        "{3c078156-979c-498b-8990-85f7987dd929}" = "https://addons.mozilla.org/firefox/downloads/latest/sidebery/latest.xpi";
-        "{446900e4-71c2-419f-a6a7-df9c091e268b}" = "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi";
-        "addon@darkreader.org" = "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest.xpi";
-        "sponsorBlocker@ajay.app" = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
-        "tridactyl.vim.betas.nonewtab@cmcaine.co.uk" = "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
+        "uBlock0@raymondhill.net" =
+          "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
+        "{3c078156-979c-498b-8990-85f7987dd929}" =
+          "https://addons.mozilla.org/firefox/downloads/latest/sidebery/latest.xpi";
+        "{446900e4-71c2-419f-a6a7-df9c091e268b}" =
+          "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi";
+        "addon@darkreader.org" =
+          "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest.xpi";
+        "sponsorBlocker@ajay.app" =
+          "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
+        "tridactyl.vim.betas.nonewtab@cmcaine.co.uk" =
+          "https://tridactyl.cmcaine.co.uk/betas/nonewtab/tridactyl_no_new_tab_beta-latest.xpi";
       };
 
       # Slug/id aliases resolving to canonical extension IDs
@@ -107,7 +113,13 @@
       # Known extension mappings (name/slug or id -> id & download URL), resolved from the catalogue
       knownExtensions =
         lib.mapAttrs' (id: url: lib.nameValuePair id { inherit id url; }) extensionCatalogue
-        // lib.mapAttrs' (alias: id: lib.nameValuePair alias { inherit id; url = extensionCatalogue.${id}; }) extensionAliases;
+        // lib.mapAttrs' (
+          alias: id:
+          lib.nameValuePair alias {
+            inherit id;
+            url = extensionCatalogue.${id};
+          }
+        ) extensionAliases;
 
       # Build custom New Tab WebExtension package (.xpi)
       customNewTabXpi = pkgs.runCommand "custom-newtab.xpi" { buildInputs = [ pkgs.zip ]; } ''
@@ -125,11 +137,11 @@
       # spawn per-site content processes (~20MB each). Discarding them on
       # startup frees the processes until the tabs are visited.
       pinnedUnloadXpi = pkgs.runCommand "pinned-unload.xpi" { buildInputs = [ pkgs.zip ]; } ''
-                mkdir -p tmp_ext
-                cp -r ${./pinnedunload}/* tmp_ext/
-                cd tmp_ext
-                chmod -R +w .
-                zip -r $out ./*
+        mkdir -p tmp_ext
+        cp -r ${./pinnedunload}/* tmp_ext/
+        cd tmp_ext
+        chmod -R +w .
+        zip -r $out ./*
       '';
 
       # Auto-generate extension settings for enterprise policies
@@ -175,7 +187,7 @@
       options.features.firefox = {
         enable = lib.mkOption {
           type = lib.types.bool;
-          default = true;
+          default = false;
           description = "Whether to enable the custom Firefox module.";
         };
 
@@ -570,7 +582,9 @@
       };
 
       config = lib.mkIf cfg.enable {
-        features.default-apps.browser = lib.mkIf (cfg.defaultBrowser && !config.features.helium.enable) (lib.mkDefault "firefox");
+        features.default-apps.browser = lib.mkIf (cfg.defaultBrowser && !config.features.helium.enable) (
+          lib.mkDefault "firefox"
+        );
 
         environment.systemPackages = [
           (pkgs.writeShellScriptBin "firefox" ''

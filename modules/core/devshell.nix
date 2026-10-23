@@ -12,8 +12,7 @@
         # then cannot write its task cache to the read-only store path. Fall back
         # to the checkout path (matching the `path:` inputs in flake.nix); the
         # impure devenv CLI still sees the real $PWD.
-        devenv.root =
-          if builtins.getEnv "PWD" != "" then builtins.getEnv "PWD" else "/home/josh/NixConfig";
+        devenv.root = if builtins.getEnv "PWD" != "" then builtins.getEnv "PWD" else "/home/josh/NixConfig";
 
         packages = with pkgs; [
           # Rust extras (toolchain managed by languages.rust)

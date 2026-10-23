@@ -42,14 +42,14 @@
             '';
           });
 
-      mango-remote = (inputs.mangowc.packages.${pkgs.stdenv.hostPlatform.system}.default).override {
+      mango-remote = inputs.mangowc.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
         inherit scenefx;
       };
 
       # Local development build from the checked-in input, only evaluated when
       # features.mangowc.local is on.
       mango-local-base =
-        (inputs.mangowc-local.packages.${pkgs.stdenv.hostPlatform.system}.default).override
+        inputs.mangowc-local.packages.${pkgs.stdenv.hostPlatform.system}.default.override
           {
             inherit scenefx;
           };

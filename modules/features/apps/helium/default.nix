@@ -74,8 +74,11 @@
 
       # Perceived luminance, used only to pick a light/dark color_scheme.
       isDarkTheme =
-        (0.299 * (builtins.elemAt bgRgb 0) + 0.587 * (builtins.elemAt bgRgb 1) + 0.114 * (builtins.elemAt bgRgb 2))
-        < 128;
+        (
+          0.299 * (builtins.elemAt bgRgb 0)
+          + 0.587 * (builtins.elemAt bgRgb 1)
+          + 0.114 * (builtins.elemAt bgRgb 2)
+        ) < 128;
 
       themeColors = {
         frame = bgRgb;
@@ -96,15 +99,17 @@
         ntp_link = hexToRgb accent;
       };
 
-      themeExtension = pkgs.writeTextDir "manifest.json" (builtins.toJSON {
-        manifest_version = 3;
-        name = "NixConfig ${config.theme.active}";
-        version = "1.0";
-        theme = {
-          colors = themeColors;
-          properties.color_scheme = if isDarkTheme then "dark" else "light";
-        };
-      });
+      themeExtension = pkgs.writeTextDir "manifest.json" (
+        builtins.toJSON {
+          manifest_version = 3;
+          name = "NixConfig ${config.theme.active}";
+          version = "1.0";
+          theme = {
+            colors = themeColors;
+            properties.color_scheme = if isDarkTheme then "dark" else "light";
+          };
+        }
+      );
 
       # Chromium expects a single comma-separated --enable/--disable-features flag.
       enabledFeatures = [
@@ -341,8 +346,7 @@
       };
 
       effectivePolicies =
-        lib.recursiveUpdate
-          (lib.recursiveUpdate defaultPolicies (extensionPolicies // startupPolicies))
+        lib.recursiveUpdate (lib.recursiveUpdate defaultPolicies (extensionPolicies // startupPolicies))
           (
             lib.recursiveUpdate cfg.policies (
               lib.recursiveUpdate cfg.extraPolicies (lib.recursiveUpdate cfgAlias.policies cfgAlias.extraPolicies)
@@ -366,7 +370,7 @@
 
         defaultBrowser = lib.mkOption {
           type = lib.types.bool;
-          default = false;
+          default = true;
           description = "Set Helium as the default browser in xdg.mime and DEFAULT_BROWSER.";
         };
 
@@ -512,7 +516,7 @@
         (lib.mkIf enabled {
           programs.helium = {
             enable = true;
-            package = cfg.package;
+            inherit (cfg) package;
             flags = effectiveFlags;
             policies = effectivePolicies;
           };

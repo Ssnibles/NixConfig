@@ -4,7 +4,12 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       nixpkgs.hostPlatform = "x86_64-linux";
 
@@ -58,8 +63,6 @@
       };
 
       # System Journal & Power Management
-      features.foot.enable = false;
-
       services.journald.settings.Journal = {
         SystemMaxUse = "50M";
         SystemMaxFileSize = "10M";
@@ -138,14 +141,16 @@
       # ever records the line.
       systemd.services.dbus.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
       systemd.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
-      systemd.user.services.dbus-broker.serviceConfig.ExecStart = lib.mkIf (
-        config.services.dbus.implementation == "broker"
-      ) (lib.mkForce [
-        # Leading empty element resets the packaged unit's ExecStart so this
-        # replaces it instead of appending a second launcher.
-        ""
-        "${pkgs.bash}/bin/bash -c 'exec ${config.services.dbus.brokerPackage}/bin/dbus-broker-launch --scope user 2> >(${pkgs.gnugrep}/bin/grep --line-buffered -v \"Ignoring duplicate name\" >&2)'"
-      ]);
+      systemd.user.services.dbus-broker.serviceConfig.ExecStart =
+        lib.mkIf (config.services.dbus.implementation == "broker")
+          (
+            lib.mkForce [
+              # Leading empty element resets the packaged unit's ExecStart so this
+              # replaces it instead of appending a second launcher.
+              ""
+              "${pkgs.bash}/bin/bash -c 'exec ${config.services.dbus.brokerPackage}/bin/dbus-broker-launch --scope user 2> >(${pkgs.gnugrep}/bin/grep --line-buffered -v \"Ignoring duplicate name\" >&2)'"
+            ]
+          );
       systemd.services.display-manager.serviceConfig.LogFilterPatterns = [
         "~gkr-pam: unable to locate daemon control file"
       ];

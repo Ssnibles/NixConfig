@@ -4,7 +4,12 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     let
       cfg = config.features.wramp;
 
@@ -29,10 +34,12 @@
         fi
       '';
 
-      tool-wrapper = tool: pkgs.writeShellScriptBin tool ''
-        ${check_container}
-        exec ${pkgs.distrobox}/bin/distrobox enter ${container} -- ${tool} "$@"
-      '';
+      tool-wrapper =
+        tool:
+        pkgs.writeShellScriptBin tool ''
+          ${check_container}
+          exec ${pkgs.distrobox}/bin/distrobox enter ${container} -- ${tool} "$@"
+        '';
 
       wsim-script = pkgs.writeShellScriptBin "wsim" ''
         ${check_container}
@@ -60,7 +67,8 @@
         environment.systemPackages = [
           wsim-script
           wsim-desktop
-        ] ++ map tool-wrapper wramp-tools;
+        ]
+        ++ map tool-wrapper wramp-tools;
       };
     };
 }

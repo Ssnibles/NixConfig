@@ -8,7 +8,6 @@ Pill {
   property var screen: null
   property PanelWindow sharedWindow: null
 
-  horizontal: false
   padding: 4
   clickable: true
   pillColour: (root.hovered || Config.commandCentreVisible) ? Colours.bgSubtle : Colours.bgRaised
@@ -34,6 +33,7 @@ Pill {
   }
 
   Tooltip {
+    target: root
     sharedWindow: root.sharedWindow
     icon: "󰘳"
     iconColour: Colours.accent

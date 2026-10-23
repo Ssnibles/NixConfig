@@ -14,11 +14,8 @@ Item {
   property int contentWidth: 0
   property Component contentComponent: null
   property var sharedWindow: null
-  // Lets a caller widen the hover area beyond the tooltip's own item (e.g. a
-  // whole control row) without moving the tooltip off its anchor.
-  property bool extraHover: false
 
-  readonly property bool hovered: _hoverHandler.hovered || root.extraHover
+  readonly property bool hovered: _hoverHandler.hovered
   readonly property bool tipVisible: root.hovered && _ready
 
   anchors.fill: parent

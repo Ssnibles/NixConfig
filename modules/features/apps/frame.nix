@@ -42,7 +42,10 @@
         comment = "Nutanix Frame remote desktop client";
         exec = "frame %U";
         icon = "frame";
-        categories = [ "Network" "Utility" ];
+        categories = [
+          "Network"
+          "Utility"
+        ];
         # Frame uses these schemes for single sign-on callbacks.
         mimeTypes = [
           "x-scheme-handler/frame"

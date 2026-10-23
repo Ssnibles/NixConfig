@@ -21,7 +21,9 @@
         services.blueman.enable = true;
 
         # Suppress benign log filter pattern in systemd journal
-        systemd.services.bluetooth.serviceConfig.LogFilterPatterns = [ "~Failed to set default system config" ];
+        systemd.services.bluetooth.serviceConfig.LogFilterPatterns = [
+          "~Failed to set default system config"
+        ];
       };
     };
 }

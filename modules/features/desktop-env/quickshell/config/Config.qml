@@ -53,7 +53,6 @@ Singleton {
     readonly property bool ccShowSinkSwitcher: true
     readonly property bool ccShowMicSlider: true
     readonly property bool ccShowBrightnessSlider: true
-    readonly property int ccOutputPickerWidth: 250
 
     // Status Bars
     property bool barVisible: true

@@ -15,8 +15,7 @@
       cfg = config.features.minecraft;
 
       # Upstream only publishes `packages.<system>.default`; no overlay needed.
-      bedrock =
-        inputs.bedrock-on-linux.packages.${pkgs.stdenv.hostPlatform.system}.default;
+      bedrock = inputs.bedrock-on-linux.packages.${pkgs.stdenv.hostPlatform.system}.default;
     in
     {
       options.features.minecraft = {

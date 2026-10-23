@@ -64,32 +64,7 @@
       # actually roams, keeps the default.)
       networking.wireless.iwd.settings.Scan.DisableRoamingScan = true;
 
-      # Desktop Environment Features
-      features.hyprland.enable = true;
-      features.mangowc.enable = true;
-      # Temporary: build/run the local ~/mango checkout (mango-dev wrapper
-      # prefers ~/mango/result). Set back to false to return to upstream.
-      features.mangowc.local = false;
-      features.niri.enable = false;
-      features.quickshell.enable = true;
-      features.vicinae.enable = true;
-      features.shikane.enable = true;
-      features.wramp.enable = false;
-      features.frame.enable = true;
-      features.hermes.enable = false;
-      features.syncthing.enable = true;
-      features.tailscale.enable = true;
-      features.podman-vm.enable = true;
-      features.bluetooth.enable = true;
-      features.flatpak.enable = true;
-      features.helium.enable = true;
-      features.minecraft.enable = true;
-      features.pi-agent = {
-        enable = true;
-        interactiveChoice = true;
-        gitCheckpoint = true;
-        protectedPaths = true;
-      };
+      # Feature toggles (shared and per-host) live in modules/core/options.nix.
 
       system.stateVersion = "26.05";
     };

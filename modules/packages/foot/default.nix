@@ -16,7 +16,6 @@
 
       inherit (config.theme.colours)
         bg
-        bgRaised
         bgSubtle
         fg
         fgDim

@@ -22,11 +22,8 @@
     {
       config = {
         environment.systemPackages =
-          with pkgs;
-          [
-            # Editors & AI tools
-            pkgs.unstable.antigravity-cli
-            pkgs.unstable.opencode
+          (with pkgs; [
+            # Database & Tools
             dbeaver-bin
 
             # Runtimes & Compilers
@@ -59,9 +56,12 @@
             sshpass
             sqlite
             self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
-          ]
+          ])
           ++ pomodoroPkg
           ++ (with pkgs.unstable; [
+            # Editors & AI tools
+            antigravity-cli
+            opencode
             android-studio
           ]);
 

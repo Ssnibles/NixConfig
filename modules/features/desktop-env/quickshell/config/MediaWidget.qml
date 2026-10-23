@@ -3,40 +3,69 @@ import QtQuick
 import Quickshell
 import "Utils.js" as Utils
 
-Item {
+Pill {
   id: root
 
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
-  property bool horizontal: false
-
-  visible: root.hasMedia
-  implicitWidth: root.horizontal ? horizontalMediaRow.implicitWidth + 12 : 34
-  implicitHeight: root.horizontal ? Config.pillHeightHorizontal : mediaLayout.implicitHeight + 8
-  width: implicitWidth
-  height: implicitHeight
-
-  Rectangle {
-    id: mediaBg
-    anchors.fill: parent
-    radius: Config.itemRadiusSm
-    color: mediaTooltip.hovered ? Colours.bgSubtle : "transparent"
-    Behavior on color { ColorAnimation { duration: Config.animNormalMs } }
-  }
 
   // Centralised MPRIS State from MediaService
   readonly property bool isPlaying: MediaService.isPlaying
   readonly property string mediaText: MediaService.mediaText
   readonly property bool hasMedia: MediaService.hasMedia
 
+  visible: root.hasMedia
+  hoverHighlight: true
+  clickable: true
+  acceptedButtons: Qt.LeftButton | Qt.RightButton
+  padding: root.horizontal ? Config.pillPaddingHorizontal : 4
+
+  onClicked: function(mouse) {
+    if (!MediaService.hasPlayer) return
+    if (mouse.button === Qt.RightButton) {
+      MediaService.focusSource()
+    } else {
+      MediaService.playPause()
+    }
+  }
+
+  onWheel: function(wheel) {
+    if (!MediaService.hasPlayer) return
+    if (wheel.angleDelta.y > 0) {
+      MediaService.next()
+    } else if (wheel.angleDelta.y < 0) {
+      MediaService.previous()
+    }
+    wheel.accepted = true
+  }
+
+  Tooltip {
+    id: mediaTooltip
+    target: root
+    sharedWindow: root.sharedWindow
+    contentWidth: Config.mediaPopupWidth
+    contentComponent: mediaPopoverComponent
+    onHoveredChanged: MediaService.setConsumer("barMedia-" + String(root), mediaTooltip.hovered)
+  }
+  Component.onDestruction: MediaService.setConsumer("barMedia-" + String(root), false)
+
+  Component {
+    id: mediaPopoverComponent
+
+    MediaCard {
+      id: popoverCard
+      width: parent ? parent.width : Config.mediaPopupWidth
+      cardColour: Colours.bg
+      cardRadius: Config.popupRadius
+    }
+  }
+
   // UI Layout (Vertical for Sidebar)
   Column {
     id: mediaLayout
     visible: !root.horizontal
-    spacing: 8
-    anchors.top: parent.top
-    anchors.topMargin: 6
-    anchors.horizontalCenter: parent.horizontalCenter
+    spacing: 6
+    anchors.centerIn: parent
 
     Item {
       id: spinningContainer
@@ -63,7 +92,6 @@ Item {
         duration: Config.mediaRotationDuration
         running: !root.horizontal && Config.animateMediaIcon && root.visible && root.isPlaying
       }
-
     }
 
     // Position indicator (elapsed / total stacked vertically)
@@ -134,51 +162,6 @@ Item {
       maximumLineCount: 1
       width: Math.min(implicitWidth, 200)
       anchors.verticalCenter: parent.verticalCenter
-    }
-  }
-
-  // Fallback click on non-control areas to toggle/focus
-  MouseArea {
-    anchors.fill: parent
-    cursorShape: Qt.PointingHandCursor
-    acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: function(mouse) {
-      if (!MediaService.hasPlayer) return
-      if (mouse.button === Qt.RightButton) {
-        MediaService.focusSource()
-      } else {
-        MediaService.playPause()
-      }
-    }
-    onWheel: function(wheel) {
-      if (!MediaService.hasPlayer) return
-      if (wheel.angleDelta.y > 0) {
-        MediaService.next()
-      } else if (wheel.angleDelta.y < 0) {
-        MediaService.previous()
-      }
-      wheel.accepted = true
-    }
-  }
-
-  Tooltip {
-    id: mediaTooltip
-    target: root
-    sharedWindow: root.sharedWindow
-    contentWidth: Config.mediaPopupWidth
-    contentComponent: mediaPopoverComponent
-    onHoveredChanged: MediaService.setConsumer("barMedia-" + String(root), mediaTooltip.hovered)
-  }
-  Component.onDestruction: MediaService.setConsumer("barMedia-" + String(root), false)
-
-  Component {
-    id: mediaPopoverComponent
-
-    MediaCard {
-      id: popoverCard
-      width: parent ? parent.width : Config.mediaPopupWidth
-      cardColour: Colours.bg
-      cardRadius: Config.popupRadius
     }
   }
 }

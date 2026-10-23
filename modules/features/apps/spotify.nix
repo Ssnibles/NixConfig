@@ -70,16 +70,18 @@
             misc = c.bgSubtle;
 
             # Extended keys used by the custom theme
-            accent = c.accent;
+            inherit (c)
+              accent
+              border
+              yellow
+              green
+              ;
             accent-active = c.accent;
             accent-inactive = c.bgSubtle;
-            border = c.border;
             border-active = c.accent;
             border-inactive = c.border;
             header = c.fgDim;
             highlight = c.bgSubtle;
-            yellow = c.yellow;
-            green = c.green;
           };
 
           enabledExtensions = lib.mkDefault (

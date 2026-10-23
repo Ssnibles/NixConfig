@@ -11,7 +11,7 @@
       ...
     }:
     let
-      lib = pkgs.lib;
+      inherit (pkgs) lib;
 
       naviDir = "/home/${config.username}/.config/navi";
       cheatsDir = "${naviDir}/cheats";
@@ -595,7 +595,7 @@
       };
 
       allSnippets = {
-        core = core;
+        inherit core;
       }
       // snippets;
 

@@ -125,29 +125,7 @@
         ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", MODE="0666", GROUP="plugdev"
       '';
 
-      # Desktop Environment Features
-      features.hyprland.enable = false;
-      features.mangowc.enable = true;
-      features.mangowc.local = true;
-      features.niri.enable = false;
-      features.quickshell.enable = true;
-      features.vicinae.enable = true;
-      features.shikane.enable = true;
-      features.wramp.enable = true;
-      features.frame.enable = true;
-      features.hermes.enable = false;
-      features.syncthing.enable = true;
-      features.tailscale.enable = true;
-      features.podman-vm.enable = true;
-      features.bluetooth.enable = true;
-      features.flatpak.enable = true;
-      features.helium.enable = true;
-      features.pi-agent = {
-        enable = true;
-        interactiveChoice = true;
-        gitCheckpoint = true;
-        protectedPaths = true;
-      };
+      # Feature toggles (shared and per-host) live in modules/core/options.nix.
 
       system.stateVersion = "26.05";
     };

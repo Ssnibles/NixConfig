@@ -4,7 +4,12 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     let
       cfg = config.features.quickshell;
 

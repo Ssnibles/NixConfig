@@ -7,27 +7,27 @@
     { pkgs, ... }:
     let
       checkBootJournalErrors = pkgs.writeShellScriptBin "check-boot-journal-errors" ''
-        # Allow notification daemon time to start up during login session
-        sleep 3
+                # Allow notification daemon time to start up during login session
+                sleep 3
 
-        # Filter out known benign log spam (e.g. duplicate dbus names, PAM notices, touchpad probes,
-        # and the flatpak auto-update timer racing the network at boot: it fires on a Persistent
-        # catch-up, fails to resolve dl.flathub.org, then succeeds ~60s later on its own restart).
-        RAW_ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | ${pkgs.gnugrep}/bin/grep -v -E "Ignoring duplicate name|gkr-pam: unable to locate daemon control file|bluetoothd.*Failed to set|i2c_hid_acpi.*incomplete report|graphical-session.target|wayland-session.target|systemd-coredump.*vicinae|flatpak-managed-install-timer.service" || true)
-        ERROR_COUNT=$(echo "$RAW_ERRORS" | ${pkgs.gnugrep}/bin/grep -v '^$' | ${pkgs.coreutils}/bin/wc -l)
+                # Filter out known benign log spam (e.g. duplicate dbus names, PAM notices, touchpad probes,
+                # and the flatpak auto-update timer racing the network at boot: it fires on a Persistent
+                # catch-up, fails to resolve dl.flathub.org, then succeeds ~60s later on its own restart).
+                RAW_ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | ${pkgs.gnugrep}/bin/grep -v -E "Ignoring duplicate name|gkr-pam: unable to locate daemon control file|bluetoothd.*Failed to set|i2c_hid_acpi.*incomplete report|graphical-session.target|wayland-session.target|systemd-coredump.*vicinae|flatpak-managed-install-timer.service" || true)
+                ERROR_COUNT=$(echo "$RAW_ERRORS" | ${pkgs.gnugrep}/bin/grep -v '^$' | ${pkgs.coreutils}/bin/wc -l)
 
-        if [ "$ERROR_COUNT" -gt 0 ]; then
-          ERRORS=$(echo "$RAW_ERRORS" | ${pkgs.coreutils}/bin/head -n 5)
-          ${pkgs.libnotify}/bin/notify-send \
-            -u critical \
-            -i dialog-error \
-            -a "Boot Error Checker" \
-            "Boot Errors Detected ($ERROR_COUNT)" \
-            "Found $ERROR_COUNT error(s) in journalctl during boot. Check 'journalctl -b -p err' for details.
+                if [ "$ERROR_COUNT" -gt 0 ]; then
+                  ERRORS=$(echo "$RAW_ERRORS" | ${pkgs.coreutils}/bin/head -n 5)
+                  ${pkgs.libnotify}/bin/notify-send \
+                    -u critical \
+                    -i dialog-error \
+                    -a "Boot Error Checker" \
+                    "Boot Errors Detected ($ERROR_COUNT)" \
+                    "Found $ERROR_COUNT error(s) in journalctl during boot. Check 'journalctl -b -p err' for details.
 
-Sample errors:
-$ERRORS"
-        fi
+        Sample errors:
+        $ERRORS"
+                fi
       '';
     in
     {

@@ -409,7 +409,6 @@
     {
       environment.systemPackages = [
         pkgs.zellij
-        pkgs.wl-clipboard
       ];
 
       # Hjem Dotfiles

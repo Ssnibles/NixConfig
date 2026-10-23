@@ -2,25 +2,38 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 
-Item {
+Pill {
   id: root
 
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
-  property bool horizontal: false
 
   readonly property real volPct: SystemService.volume
   readonly property bool volMuted: SystemService.muted
   readonly property string volIcon: SystemService.volumeIcon
   readonly property int volPercent: SystemService.volumePercent
 
-  implicitWidth: root.horizontal ? horizontalRow.implicitWidth + 16 : 34
-  implicitHeight: root.horizontal ? Config.pillHeightHorizontal : (volLayout.implicitHeight > 0 ? volLayout.implicitHeight + 8 : 38)
-  width: implicitWidth
-  height: implicitHeight
+  hoverHighlight: true
+  clickable: true
+  acceptedButtons: Qt.LeftButton | Qt.RightButton
+  padding: root.horizontal ? Config.pillPaddingHorizontal : 4
+
+  onClicked: function(mouse) {
+    if (mouse.button === Qt.RightButton) {
+      SystemService.openMixer()
+    } else {
+      SystemService.toggleMute()
+    }
+  }
+
+  onWheel: function(wheel) {
+    SystemService.stepVolume(wheel.angleDelta.y)
+    wheel.accepted = true
+  }
 
   Tooltip {
     id: volTooltip
+    target: root
     sharedWindow: root.sharedWindow
     icon: root.volIcon
     iconColour: root.volMuted ? Colours.red : Colours.accent
@@ -28,39 +41,11 @@ Item {
     details: ["Left click · Mute", "Right click · Mixer", "Scroll · Adjust"]
   }
 
-  Rectangle {
-    id: volBg
-    anchors.fill: parent
-    radius: Config.itemRadiusSm
-    color: volTooltip.hovered ? Colours.bgSubtle : "transparent"
-    Behavior on color { ColorAnimation { duration: Config.animNormalMs } }
-  }
-
-  MouseArea {
-    id: volMouse
-    anchors.fill: parent
-    cursorShape: Qt.PointingHandCursor
-    acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: function(mouse) {
-      if (mouse.button === Qt.RightButton) {
-        SystemService.openMixer()
-      } else {
-        SystemService.toggleMute()
-      }
-    }
-    onWheel: function(wheel) {
-      SystemService.stepVolume(wheel.angleDelta.y)
-      wheel.accepted = true
-    }
-  }
-
   // Vertical layout for sidebar
   Column {
     id: volLayout
     visible: !root.horizontal
-    anchors.top: parent.top
-    anchors.topMargin: 4
-    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.centerIn: parent
     spacing: 4
 
     Item {
@@ -105,6 +90,10 @@ Item {
           if (pressed) {
             updateVolume(mouse.y)
           }
+        }
+        onWheel: function(wheel) {
+          SystemService.stepVolume(wheel.angleDelta.y)
+          wheel.accepted = true
         }
       }
     }

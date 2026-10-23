@@ -44,22 +44,30 @@
           mkdir -p "$out/preview/$2/$3"
           tar -xzf "$1" -C "$out/preview/$2/$3"
         }
-        extract ${pkgs.fetchurl {
-          url = "https://packages.typst.org/preview/cetz-0.5.2.tar.gz";
-          sha256 = "0gzjj9r1kh88awdpf6cpvg5a116jj6kfy4ascrp4rq2a26889kvp";
-        }} cetz 0.5.2
-        extract ${pkgs.fetchurl {
-          url = "https://packages.typst.org/preview/oxifmt-1.0.0.tar.gz";
-          sha256 = "0ksrb7ysd3m9bxv10mwf67wmy8m4c1rkrc5j7kn405yhibya25vx";
-        }} oxifmt 1.0.0
-        extract ${pkgs.fetchurl {
-          url = "https://packages.typst.org/preview/zap-0.6.0.tar.gz";
-          sha256 = "1682mh2rzxcf20dsazyvjjwignc49dg4h94swdj0gvy4lh4g9b9f";
-        }} zap 0.6.0
-        extract ${pkgs.fetchurl {
-          url = "https://packages.typst.org/preview/mmdr-0.2.2.tar.gz";
-          sha256 = "11nck1gxsdlsccy8j362d84pnrxs16r92h90jqws4sdjm3l58yz8";
-        }} mmdr 0.2.2
+        extract ${
+          pkgs.fetchurl {
+            url = "https://packages.typst.org/preview/cetz-0.5.2.tar.gz";
+            sha256 = "0gzjj9r1kh88awdpf6cpvg5a116jj6kfy4ascrp4rq2a26889kvp";
+          }
+        } cetz 0.5.2
+        extract ${
+          pkgs.fetchurl {
+            url = "https://packages.typst.org/preview/oxifmt-1.0.0.tar.gz";
+            sha256 = "0ksrb7ysd3m9bxv10mwf67wmy8m4c1rkrc5j7kn405yhibya25vx";
+          }
+        } oxifmt 1.0.0
+        extract ${
+          pkgs.fetchurl {
+            url = "https://packages.typst.org/preview/zap-0.6.0.tar.gz";
+            sha256 = "1682mh2rzxcf20dsazyvjjwignc49dg4h94swdj0gvy4lh4g9b9f";
+          }
+        } zap 0.6.0
+        extract ${
+          pkgs.fetchurl {
+            url = "https://packages.typst.org/preview/mmdr-0.2.2.tar.gz";
+            sha256 = "11nck1gxsdlsccy8j362d84pnrxs16r92h90jqws4sdjm3l58yz8";
+          }
+        } mmdr 0.2.2
 
         # Fail loudly if a tarball layout ever changes.
         for pkg in cetz/0.5.2 oxifmt/1.0.0 zap/0.6.0 mmdr/0.2.2; do
@@ -73,19 +81,23 @@
       # Bundle a skill, validate its SKILL.md frontmatter and compile its
       # reference examples offline against the shared theme (see
       # check-skills.sh). A drift or a broken example fails the build.
-      mkSkill = name: src: pkgs.runCommand "pi-skill-${name}" {
-        nativeBuildInputs = [ pkgs.typst ];
-      } ''
-        mkdir -p $out
-        cp -r ${src}/. $out/
-        export HOME=$(mktemp -d)
-        export XDG_CACHE_HOME=$HOME/.cache
-        bash ${./pi-agent/skills/check-skills.sh} \
-          $out --expect ${name} --compile \
-          --theme ${../../packages/uni-notes/theme.typ} \
-          --package-path ${typstPreviewPackages} \
-          --font-path ${pkgs.dejavu_fonts}/share/fonts/truetype
-      '';
+      mkSkill =
+        name: src:
+        pkgs.runCommand "pi-skill-${name}"
+          {
+            nativeBuildInputs = [ pkgs.typst ];
+          }
+          ''
+            mkdir -p $out
+            cp -r ${src}/. $out/
+            export HOME=$(mktemp -d)
+            export XDG_CACHE_HOME=$HOME/.cache
+            bash ${./pi-agent/skills/check-skills.sh} \
+              $out --expect ${name} --compile \
+              --theme ${../../packages/uni-notes/theme.typ} \
+              --package-path ${typstPreviewPackages} \
+              --font-path ${pkgs.dejavu_fonts}/share/fonts/truetype
+          '';
 
       # Skill bundling the user's canonical Typst snippet library. The LuaSnip
       # source of truth lives in the Neovim config; copy it in at build time so
@@ -113,12 +125,13 @@
         ++ lib.optional cfg.lectureNotes (mkSkill "lecture-notes" ./pi-agent/skills/lecture-notes)
         ++ lib.optional cfg.testNotes (mkSkill "test-notes" ./pi-agent/skills/test-notes)
         ++ lib.optional cfg.labNotes (mkSkill "lab-notes" ./pi-agent/skills/lab-notes)
-        ++ lib.optional cfg.assignmentReport (mkSkill "assignment-report" ./pi-agent/skills/assignment-report)
+        ++ lib.optional cfg.assignmentReport (
+          mkSkill "assignment-report" ./pi-agent/skills/assignment-report
+        )
         ++ lib.optional cfg.revisionSheets (mkSkill "revision-sheets" ./pi-agent/skills/revision-sheets);
 
       defaultSettings = {
-        defaultProvider = cfg.defaultProvider;
-        defaultModel = cfg.defaultModel;
+        inherit (cfg) defaultProvider defaultModel;
       };
     in
     {
@@ -317,7 +330,9 @@
           jail.enable = lib.mkIf cfg.jail.enable (lib.mkDefault true);
           settings = lib.mkDefault (defaultSettings // cfg.settings);
           rules = lib.mkIf (cfg.rules != null) (lib.mkDefault cfg.rules);
-          skills = lib.mkIf (cfg.skills != [ ] || bundledSkills != [ ]) (lib.mkDefault (bundledSkills ++ cfg.skills));
+          skills = lib.mkIf (cfg.skills != [ ] || bundledSkills != [ ]) (
+            lib.mkDefault (bundledSkills ++ cfg.skills)
+          );
           extensions = lib.mkIf (allExtensions != [ ]) (lib.mkDefault allExtensions);
         };
 

@@ -6,7 +6,6 @@
   nixos.modules.desktop =
     {
       pkgs,
-      lib,
       config,
       ...
     }:
