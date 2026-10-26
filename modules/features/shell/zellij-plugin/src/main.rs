@@ -325,16 +325,18 @@ impl State {
     /// Open a new tab, carrying over the focused pane's working directory.
     fn open_new_tab(&self, name: Option<&str>) {
         let cwd = self.cwd_path.as_ref().map(|path| path.display().to_string());
-        let mut argv: Vec<&str> = vec![self.zellij_bin.as_str(), "action", "new-tab"];
+        let mut argv = self.zellij_argv();
+        argv.push("action".to_owned());
+        argv.push("new-tab".to_owned());
         if let Some(name) = name.filter(|name| !name.is_empty()) {
-            argv.push("--name");
-            argv.push(name);
+            argv.push("--name".to_owned());
+            argv.push(name.to_owned());
         }
-        if let Some(cwd) = cwd.as_deref() {
-            argv.push("--cwd");
+        if let Some(cwd) = cwd {
+            argv.push("--cwd".to_owned());
             argv.push(cwd);
         }
-        run_command(&argv, BTreeMap::new());
+        self.run_zellij(&argv);
     }
 
     /// Focus (or open) a floating yazi popup, closing it when it already has
@@ -364,80 +366,86 @@ impl State {
         let y = coord("yazi_y", "7%");
         let width = coord("yazi_width", "86%");
         let height = coord("yazi_height", "86%");
-        let mut argv: Vec<&str> = vec![
-            self.zellij_bin.as_str(),
-            "action",
-            "new-pane",
-            "--floating",
-            "--close-on-exit",
-            "--x",
-            x.as_str(),
-            "--y",
-            y.as_str(),
-            "--width",
-            width.as_str(),
-            "--height",
-            height.as_str(),
-        ];
-        if let Some(cwd) = cwd.as_deref() {
-            argv.push("--cwd");
+        let mut argv = self.zellij_argv();
+        argv.extend(
+            ["action", "new-pane", "--floating", "--close-on-exit", "--x"]
+                .iter()
+                .map(|arg| (*arg).to_owned()),
+        );
+        argv.push(x);
+        argv.push("--y".to_owned());
+        argv.push(y);
+        argv.push("--width".to_owned());
+        argv.push(width);
+        argv.push("--height".to_owned());
+        argv.push(height);
+        if let Some(cwd) = cwd {
+            argv.push("--cwd".to_owned());
             argv.push(cwd);
         }
-        argv.push("--");
-        argv.push(self.yazi_bin.as_str());
+        argv.push("--".to_owned());
+        argv.push(self.yazi_bin.clone());
+        self.run_zellij(&argv);
+    }
+
+    /// The start of a `zellij` invocation for this session. The CLI cannot tell
+    /// which session a plugin belongs to, so without `--session` it fails once
+    /// two sessions are running.
+    fn zellij_argv(&self) -> Vec<String> {
+        let mut argv = vec![self.zellij_bin.clone()];
+        if let Some(session) = &self.session_name {
+            argv.push("--session".to_owned());
+            argv.push(session.clone());
+        }
+        argv
+    }
+
+    fn run_zellij(&self, argv: &[String]) {
+        let argv: Vec<&str> = argv.iter().map(String::as_str).collect();
         run_command(&argv, BTreeMap::new());
     }
 
     /// Run a `zellij action ...` command with the bar as the caller.
     fn run_action(&self, args: &[&str]) {
-        let mut argv: Vec<&str> = vec![self.zellij_bin.as_str(), "action"];
-        argv.extend_from_slice(args);
-        run_command(&argv, BTreeMap::new());
+        let mut argv = self.zellij_argv();
+        argv.push("action".to_owned());
+        argv.extend(args.iter().map(|arg| (*arg).to_owned()));
+        self.run_zellij(&argv);
     }
 
     /// Whether this bar instance lives in the currently focused tab. A pipe to
     /// the `zjbar` alias reaches every tab's bar, so this gate keeps exactly
     /// one instance acting on a control message.
-    ///
-    /// `pane_manifest` is keyed by tab *position*, but `get_focused_pane_info`
-    /// returns the focused tab's stable *id* (not its position), so comparing
-    /// the two directly breaks as soon as tabs are moved or closed. Match by
-    /// pane id instead: locate this bar and the focused pane in the manifest and
-    /// check whether they live in the same tab.
     fn in_focused_tab(&self) -> bool {
-        let Ok((_tab, focused_pane)) = get_focused_pane_info() else {
-            return false;
-        };
-        let position_of = |target: PaneId| {
-            self.pane_manifest
-                .panes
-                .iter()
-                .find_map(|(position, panes)| {
-                    panes
-                        .iter()
-                        .any(|pane| {
-                            let pane_id = if pane.is_plugin {
-                                PaneId::Plugin(pane.id)
-                            } else {
-                                PaneId::Terminal(pane.id)
-                            };
-                            pane_id == target
-                        })
-                        .then_some(*position)
-                })
-        };
         matches!(
             (
-                position_of(PaneId::Plugin(self.plugin_id)),
-                position_of(focused_pane)
+                self.position_of(PaneId::Plugin(self.plugin_id)),
+                self.focused_tab_position()
             ),
             (Some(own), Some(focused)) if own == focused
         )
     }
 
-    /// Floating pane running yazi, if any (ie. the popup we opened).
+    /// Tab position that holds the focused pane. The manifest is keyed by tab
+    /// position, while `get_focused_pane_info` returns IDs, so match by pane.
+    fn focused_tab_position(&self) -> Option<usize> {
+        let (_tab, focused) = get_focused_pane_info().ok()?;
+        self.position_of(focused)
+    }
+
+    fn position_of(&self, target: PaneId) -> Option<usize> {
+        self.pane_manifest
+            .panes
+            .iter()
+            .find(|(_, panes)| panes.iter().any(|pane| pane_id(pane) == target))
+            .map(|(position, _)| *position)
+    }
+
+    /// Floating pane running yazi in the focused tab, if any. Looking only at
+    /// this tab keeps the popup local instead of jumping to another tab's yazi.
     fn find_yazi_pane(&self) -> Option<PaneId> {
-        self.pane_manifest.panes.values().flatten().find_map(|pane| {
+        let panes = self.pane_manifest.panes.get(&self.focused_tab_position()?)?;
+        panes.iter().find_map(|pane| {
             if pane.is_plugin || !pane.is_floating {
                 return None;
             }
@@ -478,6 +486,14 @@ fn pane_ref(pane_id: PaneId) -> String {
     match pane_id {
         PaneId::Terminal(id) => format!("terminal_{id}"),
         PaneId::Plugin(id) => format!("plugin_{id}"),
+    }
+}
+
+fn pane_id(pane: &PaneInfo) -> PaneId {
+    if pane.is_plugin {
+        PaneId::Plugin(pane.id)
+    } else {
+        PaneId::Terminal(pane.id)
     }
 }
 

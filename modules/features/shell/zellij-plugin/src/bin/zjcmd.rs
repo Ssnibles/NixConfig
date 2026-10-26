@@ -585,21 +585,19 @@ impl State {
         let has_arg = command.prompt.is_some();
         match command.exec {
             Exec::Action(prefix) => {
-                let mut argv: Vec<&str> = vec![self.zellij_bin.as_str(), "action"];
-                argv.extend_from_slice(prefix);
+                let mut args: Vec<&str> = prefix.to_vec();
                 if has_arg {
-                    argv.push(arg);
+                    args.push(arg);
                 }
-                run_command(&argv, BTreeMap::new());
+                self.run_action(&args);
             },
             Exec::Shell(prefix) => {
-                let mut argv: Vec<&str> = vec![self.zellij_bin.as_str(), "action"];
-                argv.extend_from_slice(prefix);
-                argv.push("--");
-                argv.push(self.shell_bin.as_str());
-                argv.push("-lc");
-                argv.push(arg);
-                run_command(&argv, BTreeMap::new());
+                let mut args: Vec<&str> = prefix.to_vec();
+                args.push("--");
+                args.push(self.shell_bin.as_str());
+                args.push("-lc");
+                args.push(arg);
+                self.run_action(&args);
             },
             Exec::SwitchSession => switch_session(Some(arg)),
             // Session mutations go through the CLI rather than the plugin API.
@@ -637,6 +635,20 @@ impl State {
             // The picker is opened by `activate_selected`, never executed.
             Exec::SessionPicker => {},
         }
+    }
+
+    /// Run `zellij [--session NAME] action <args>` as a separate process.
+    /// Without the session name the CLI refuses to act once two sessions run.
+    fn run_action(&self, args: &[&str]) {
+        let mut argv: Vec<String> = vec![self.zellij_bin.clone()];
+        if let Some(session) = &self.session_name {
+            argv.push("--session".to_owned());
+            argv.push(session.clone());
+        }
+        argv.push("action".to_owned());
+        argv.extend(args.iter().map(|arg| (*arg).to_owned()));
+        let argv: Vec<&str> = argv.iter().map(String::as_str).collect();
+        run_command(&argv, BTreeMap::new());
     }
 
     /// Run `zellij <args>` as a separate process.

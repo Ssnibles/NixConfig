@@ -1,7 +1,7 @@
 # Zellij setup.
-# Zellij runs in locked mode with a tmux style leader key, a one line bar, and
-# colours from the active theme. The zjbar plugin also handles actions that need
-# the current pane path.
+# Zellij runs in locked mode with a tmux style leader (backtick), one bar row on
+# top of every tab, and colours from the active theme. The bar and the leader
+# command palette are built from ./zellij-plugin.
 { ... }:
 {
   nixos.modules.shared =
@@ -15,18 +15,11 @@
       zellijBin = "${pkgs.zellij}/bin/zellij";
       fishBin = "${pkgs.unstable.fish}/bin/fish";
 
-      # Stable path for the built wasm plugins. Zellij stores permissions and
-      # session layouts by absolute plugin path, so a new store path on every
-      # rebuild would ask for permission again.
-      zellijPluginDir = "/home/${config.username}/.local/share/zellij/plugins";
-
-      # zjbar draws the bar and handles leader actions that need the current
-      # path. zjcmd is the leader command palette. The built-in bar cannot show
-      # the current path and hardcodes its own label.
+      # Plugin permissions are keyed by absolute path, so the config and the
+      # permission file below use the same store paths.
       zellijPlugins = pkgs.pkgsCross.wasi32.rustPlatform.buildRustPackage {
         pname = "zellij-plugins";
         version = "0.1.0";
-        # Exclude the local cargo target directory from the source.
         src = pkgs.lib.cleanSourceWith {
           src = ./zellij-plugin;
           filter = path: _: builtins.baseNameOf path != "target";
@@ -36,61 +29,61 @@
         RUSTFLAGS = "-C linker=wasm-ld";
         doCheck = false;
       };
+      zjbar = "${zellijPlugins}/bin/zjbar.wasm";
+      zjcmd = "${zellijPlugins}/bin/zjcmd.wasm";
 
       # Zellij theme colours are quoted hex strings.
       hex = x: "\"#${x}\"";
 
       # One style declaration with a base, a background, and four accents.
-      mkStyle =
+      style =
         base: bg: e0: e1: e2: e3:
         "base ${hex base}; background ${hex bg}; emphasis_0 ${hex e0}; emphasis_1 ${hex e1}; emphasis_2 ${hex e2}; emphasis_3 ${hex e3};";
 
-      # Build the theme from the active palette so Zellij matches the rest of
-      # the desktop.
+      # Colours come from the active palette so Zellij matches the desktop.
       zellijTheme = ''
         themes {
           nixos {
             text_unselected {
-              ${mkStyle c.fg c.bg c.yellow c.teal c.green c.purple}
+              ${style c.fg c.bg c.yellow c.teal c.green c.purple}
             }
             text_selected {
-              ${mkStyle c.fg c.bgSubtle c.yellow c.teal c.green c.purple}
+              ${style c.fg c.bgSubtle c.yellow c.teal c.green c.purple}
             }
-            // Tabs: match tmux's window-status.
-            //   focused   -> accent on bgSubtle
-            //   unfocused -> fgMid on the bar background (draws no block)
+            // Focused tab: accent on bgSubtle. Unfocused: fgMid on the bar
+            // background, which draws no block.
             ribbon_selected {
-              ${mkStyle c.accent c.bgSubtle c.red c.orange c.purple c.teal}
+              ${style c.accent c.bgSubtle c.red c.orange c.purple c.teal}
             }
             ribbon_unselected {
-              ${mkStyle c.fgMid c.bg c.red c.orange c.purple c.teal}
+              ${style c.fgMid c.bg c.red c.orange c.purple c.teal}
             }
             table_title {
-              ${mkStyle c.accent c.bg c.yellow c.teal c.green c.purple}
+              ${style c.accent c.bg c.yellow c.teal c.green c.purple}
             }
             table_cell_selected {
-              ${mkStyle c.fg c.bgSubtle c.yellow c.teal c.green c.purple}
+              ${style c.fg c.bgSubtle c.yellow c.teal c.green c.purple}
             }
             table_cell_unselected {
-              ${mkStyle c.fg c.bg c.yellow c.teal c.green c.purple}
+              ${style c.fg c.bg c.yellow c.teal c.green c.purple}
             }
             list_selected {
-              ${mkStyle c.fg c.bgSubtle c.yellow c.teal c.green c.purple}
+              ${style c.fg c.bgSubtle c.yellow c.teal c.green c.purple}
             }
             list_unselected {
-              ${mkStyle c.fg c.bg c.yellow c.teal c.green c.purple}
+              ${style c.fg c.bg c.yellow c.teal c.green c.purple}
             }
             frame_selected {
-              ${mkStyle c.accent c.bg c.yellow c.teal c.green c.purple}
+              ${style c.accent c.bg c.yellow c.teal c.green c.purple}
             }
             frame_highlight {
-              ${mkStyle c.yellow c.bg c.purple c.yellow c.yellow c.yellow}
+              ${style c.yellow c.bg c.purple c.yellow c.yellow c.yellow}
             }
             exit_code_success {
-              ${mkStyle c.green c.bg c.teal c.bg c.purple c.teal}
+              ${style c.green c.bg c.teal c.bg c.purple c.teal}
             }
             exit_code_error {
-              ${mkStyle c.red c.bg c.yellow c.bg c.bg c.bg}
+              ${style c.red c.bg c.yellow c.bg c.bg c.bg}
             }
             multiplayer_user_colors {
               player_1 ${hex c.purple};
@@ -110,68 +103,176 @@
         theme "nixos"
       '';
 
+      # The bar is a plugin pane, so it has to be part of the tab template. The
+      # template applies to the first tab and to every tab opened later.
+      #
+      # Swap layouts belong in this file. A sibling minimal.swap.kdl is not
+      # loaded, which is why the old two-file split left `=` without layouts.
+      zellijLayout = ''
+        layout {
+          default_tab_template {
+            pane size=1 borderless=true {
+              plugin location="zjbar"
+            }
+            children
+          }
+
+          swap_tiled_layout name="vertical" {
+            tab max_panes=4 {
+              pane split_direction="vertical" {
+                pane
+                pane { children; }
+              }
+            }
+            tab max_panes=7 {
+              pane split_direction="vertical" {
+                pane { children; }
+                pane { pane; pane; pane; pane; }
+              }
+            }
+            tab max_panes=11 {
+              pane split_direction="vertical" {
+                pane { children; }
+                pane { pane; pane; pane; pane; }
+                pane { pane; pane; pane; pane; }
+              }
+            }
+          }
+
+          swap_tiled_layout name="horizontal" {
+            tab max_panes=3 {
+              pane
+              pane
+            }
+            tab max_panes=7 {
+              pane {
+                pane split_direction="vertical" { children; }
+                pane split_direction="vertical" { pane; pane; pane; pane; }
+              }
+            }
+            tab max_panes=11 {
+              pane {
+                pane split_direction="vertical" { children; }
+                pane split_direction="vertical" { pane; pane; pane; pane; }
+                pane split_direction="vertical" { pane; pane; pane; pane; }
+              }
+            }
+          }
+
+          swap_tiled_layout name="stacked" {
+            tab min_panes=3 {
+              pane stacked=true { children; }
+            }
+          }
+
+          swap_tiled_layout name="half-stacked" {
+            tab min_panes=4 {
+              pane split_direction="vertical" {
+                pane
+                pane stacked=true { children; }
+              }
+            }
+          }
+
+          swap_floating_layout name="staggered" {
+            floating_panes
+          }
+
+          swap_floating_layout name="enlarged" {
+            floating_panes max_panes=10 {
+              pane { x "5%"; y 1; width "90%"; height "90%"; }
+              pane { x "5%"; y 2; width "90%"; height "90%"; }
+              pane { x "5%"; y 3; width "90%"; height "90%"; }
+              pane { x "5%"; y 4; width "90%"; height "90%"; }
+              pane { x "5%"; y 5; width "90%"; height "90%"; }
+              pane { x "5%"; y 6; width "90%"; height "90%"; }
+              pane { x "5%"; y 7; width "90%"; height "90%"; }
+              pane { x "5%"; y 8; width "90%"; height "90%"; }
+              pane { x "5%"; y 9; width "90%"; height "90%"; }
+              pane { x 10; y 10; width "90%"; height "90%"; }
+            }
+          }
+
+          swap_floating_layout name="spread" {
+            floating_panes max_panes=1 {
+              pane { y "50%"; x "50%"; }
+            }
+            floating_panes max_panes=2 {
+              pane { x "1%"; y "25%"; width "45%"; }
+              pane { x "50%"; y "25%"; width "45%"; }
+            }
+            floating_panes max_panes=3 {
+              pane { y "55%"; width "45%"; height "45%"; }
+              pane { x "1%"; y "1%"; width "45%"; }
+              pane { x "50%"; y "1%"; width "45%"; }
+            }
+            floating_panes max_panes=4 {
+              pane { x "1%"; y "55%"; width "45%"; height "45%"; }
+              pane { x "50%"; y "55%"; width "45%"; height "45%"; }
+              pane { x "1%"; y "1%"; width "45%"; height "45%"; }
+              pane { x "50%"; y "1%"; width "45%"; height "45%"; }
+            }
+          }
+        }
+      '';
+
       zellijConfig = ''
-        // Keybindings
-        // clear-defaults wipes Zellij's modal bindings. The leader (backtick)
-        // opens a tmux command mode; most actions return to Locked so the very
-        // next keystroke goes straight back to the focused program.
+        // Keys
+        // clear-defaults removes Zellij's own modal bindings. Locked sends
+        // every key to the program except the leader, like tmux with a prefix.
         keybinds clear-defaults=true {
-          // Default mode: everything reaches the program except the leader.
           locked {
             bind "`" { SwitchToMode "Tmux"; }
           }
 
-          // tmux leader mode (leader = `). Esc / leader twice cancels.
-          // Resize actions intentionally stay in this mode so they can repeat
-          // (tmux's `bind -r`), exit with Esc.
+          // Leader. Single step actions return to Locked. Resize and the
+          // scroll/search modes stay open so they can repeat.
           tmux {
-            bind "Esc" "`" { SwitchToMode "Locked"; }
+            // tmux's send-prefix: a doubled leader writes one literal
+            // backtick, which keeps nested sessions usable.
+            bind "`" { Write 96; SwitchToMode "Locked"; }
+            bind "Esc" "Ctrl c" { SwitchToMode "Locked"; }
 
-            // panes: split
-            bind "v" "|" { NewPane "Right"; SwitchToMode "Locked"; }
-            bind "s" "-" { NewPane "Down"; SwitchToMode "Locked"; }
-            bind "\\" { NewPane "Right"; SwitchToMode "Locked"; }
-            bind "_" { NewPane "Down"; SwitchToMode "Locked"; }
+            // v / | split right, s / - split down. \ and _ are the tmux
+            // config aliases for the same two splits.
+            bind "v" "|" "\\" { NewPane "Right"; SwitchToMode "Locked"; }
+            bind "s" "-" "_" { NewPane "Down"; SwitchToMode "Locked"; }
 
-            // panes: focus
             bind "h" "Left" { MoveFocus "Left"; SwitchToMode "Locked"; }
             bind "j" "Down" { MoveFocus "Down"; SwitchToMode "Locked"; }
             bind "k" "Up" { MoveFocus "Up"; SwitchToMode "Locked"; }
             bind "l" "Right" { MoveFocus "Right"; SwitchToMode "Locked"; }
             bind "q" { FocusNextPane; SwitchToMode "Locked"; }
+            bind ";" { FocusLastPane; SwitchToMode "Locked"; }
 
-            // panes: resize (sticky)
+            // Resize repeats until Esc.
             bind "H" { Resize "Increase Left"; }
             bind "L" { Resize "Increase Right"; }
             bind "J" { Resize "Increase Down"; }
             bind "K" { Resize "Increase Up"; }
 
-            // panes: lifecycle & layout
             bind "x" { CloseFocus; SwitchToMode "Locked"; }
             bind "z" { ToggleFocusFullscreen; SwitchToMode "Locked"; }
-            // `b` toggles the per-pane borders. With `pane_frames false` below
-            // this is NOT tmux's status-bar toggle (zellij has no such action),
-            // it simply draws/removes a border row around every pane.
             bind "b" { TogglePaneFrames; SwitchToMode "Locked"; }
             bind "f" { ToggleFloatingPanes; SwitchToMode "Locked"; }
-            // `e` toggles a floating yazi popup rooted at the focused pane's
-            // cwd (handled by the bar plugin). Embed/float moved to `E`.
-            bind "e" {
-              MessagePlugin "zjbar" { name "toggle-yazi"; payload ""; }
-              SwitchToMode "Locked"
-            }
             bind "E" { TogglePaneEmbedOrFloating; SwitchToMode "Locked"; }
-            bind "m" { ToggleMouseMode; SwitchToMode "Locked"; }
             bind "B" { BreakPane; SwitchToMode "Locked"; }
             bind "y" { ToggleActiveSyncTab; SwitchToMode "Locked"; }
+            bind "m" { ToggleMouseMode; SwitchToMode "Locked"; }
             bind "=" { NextSwapLayout; SwitchToMode "Locked"; }
             bind "{" { MovePane "Left"; SwitchToMode "Locked"; }
             bind "}" { MovePane "Right"; SwitchToMode "Locked"; }
             bind "Ctrl k" { Clear; SwitchToMode "Locked"; }
 
-            // windows (zellij tabs). New tabs inherit the focused pane's cwd:
-            // Zellij's own NewTab action cannot do that, so we ask the bar's
-            // plugin (which reads the live cwd) to open the tab instead.
+            // Floating yazi rooted at the focused pane's cwd. The bar reads
+            // the live cwd and toggles the popup.
+            bind "e" {
+              MessagePlugin "zjbar" { name "toggle-yazi"; payload ""; }
+              SwitchToMode "Locked"
+            }
+
+            // Tabs. New tabs inherit the focused pane's cwd, which NewTab
+            // cannot do, so the bar opens them.
             bind "c" "n" {
               MessagePlugin "zjbar" { name "new-tab"; payload ""; }
               SwitchToMode "Locked"
@@ -193,7 +294,7 @@
             bind ">" { MoveTab "Right"; SwitchToMode "Locked"; }
             bind "," { SwitchToMode "RenameTab"; TabNameInput 0; }
 
-            // command palette (tmux's `:` command prompt)
+            // zjcmd is the tmux `:` command prompt, plus a session picker.
             bind ":" {
               LaunchOrFocusPlugin "zjcmd" {
                 floating true
@@ -201,20 +302,6 @@
               }
               SwitchToMode "Locked"
             }
-
-            // copy / search. tmux parity: `V` enters copy (Scroll) mode,
-            // and `/` / `?` start a search prompt.
-            bind "V" { SwitchToMode "Scroll"; }
-            bind "/" "?" { SwitchToMode "EnterSearch"; SearchInput 0; }
-
-            // sessions
-            // (tmux also binds `K` to the sesh picker, but zellij keeps the
-            // LAST bind for a key, which silently killed Resize "Increase Up".
-            // `w` already opens the session-manager, so `K` stays a resize.)
-            bind "d" { Detach; }
-            bind "X" { Quit; }
-            // `w` opens zellij's session-manager; `S` is a lighter picker that
-            // lists running + resurrectable sessions and switches directly.
             bind "S" {
               LaunchOrFocusPlugin "zjcmd" {
                 floating true
@@ -223,6 +310,16 @@
               }
               SwitchToMode "Locked"
             }
+
+            // Copy / search, modelled on tmux copy-mode-vi.
+            bind "V" { SwitchToMode "Scroll"; }
+            bind "/" "?" { SwitchToMode "EnterSearch"; SearchInput 0; }
+
+            // Sessions. detach has to reset the mode: zellij keeps the input
+            // mode for the session, so a reattach would otherwise land in
+            // leader mode.
+            bind "d" { Detach; SwitchToMode "Locked"; }
+            bind "X" { Quit; }
             bind "w" {
               LaunchOrFocusPlugin "session-manager" {
                 floating true
@@ -232,16 +329,14 @@
             }
           }
 
-          // Scrollback / copy mode (leader + V), modelled on tmux copy-mode-vi.
+          // Scrollback / copy mode (leader + V).
           //
-          // NOTE: zellij has no keyboard text selection. There is no
-          // BeginSelection / SelectLine / block-select action and therefore no
-          // `v`, `V` or `Ctrl v` keybind (zellij-org/zellij#1486, #2840). Text
-          // is selected with the mouse -- double-click = word, triple-click =
-          // line, drag = range -- and copied automatically because of
-          // `copy_on_select true`; `y` below re-copies the active selection.
+          // Zellij has no keyboard text selection (no BeginSelection or
+          // SelectLine action), so v / V / Ctrl v cannot be bound. Text is
+          // selected with the mouse and copied by copy_on_select; `y`
+          // re-copies the active selection.
           scroll {
-            bind "Ctrl c" "Ctrl s" "Esc" "q" { ScrollToBottom; SwitchToMode "Locked"; }
+            bind "Esc" "Ctrl c" "Ctrl s" "q" { ScrollToBottom; SwitchToMode "Locked"; }
             bind "j" "Down" { ScrollDown; }
             bind "k" "Up" { ScrollUp; }
             bind "g" { ScrollToTop; }
@@ -250,24 +345,19 @@
             bind "u" { HalfPageScrollUp; }
             bind "Ctrl f" "PageDown" "Right" "l" { PageScrollDown; }
             bind "Ctrl b" "PageUp" "Left" "h" { PageScrollUp; }
-            // tmux copy-mode-vi search: `/` forward, `?` backward, `n` next,
-            // `N` previous. Direction is picked with n/N after the query.
             bind "/" "?" { SwitchToMode "EnterSearch"; SearchInput 0; }
             bind "n" { Search "down"; }
             bind "N" { Search "up"; }
-            // tmux `y` (copy-pipe-and-cancel). Safe no-op without a selection.
             bind "y" { Copy; SwitchToMode "Locked"; }
-            bind "s" { SwitchToMode "EnterSearch"; SearchInput 0; }
             bind "[" { ScrollToPreviousPrompt; }
             bind "]" { ScrollToNextPrompt; }
             bind "m" { SelectCommandAtScrollPosition; }
             bind "c" { CopyLastCommandOutput; SwitchToMode "Locked"; }
           }
 
-          // Search (leader + /). `n`/`N` mirror tmux copy-mode-vi next/prev;
-          // `p` is kept as zellij's native "up" alias, `/`/`?` re-prompt.
+          // Search mode (leader + /, or from scroll mode).
           search {
-            bind "Ctrl c" "Esc" "q" { ScrollToBottom; SwitchToMode "Locked"; }
+            bind "Esc" "Ctrl c" "Ctrl s" "q" { ScrollToBottom; SwitchToMode "Locked"; }
             bind "j" "Down" { ScrollDown; }
             bind "k" "Up" { ScrollUp; }
             bind "n" { Search "down"; }
@@ -282,38 +372,34 @@
             bind "Enter" { SwitchToMode "Search"; }
           }
 
-          // Tab rename (leader + ,).
+          // Rename prompts (leader + , and the palette's rename entries).
           renametab {
             bind "Ctrl c" "Esc" { UndoRenameTab; SwitchToMode "Locked"; }
             bind "Enter" { SwitchToMode "Locked"; }
           }
-
-          // Pane rename safety. clear-defaults removes the default exits, so
-          // add one in case RenamePane is ever triggered (plugin/mouse).
           renamepane {
             bind "Ctrl c" "Esc" { UndoRenamePane; SwitchToMode "Locked"; }
             bind "Enter" { SwitchToMode "Locked"; }
           }
 
-          // Confirmation prompts (kept so dialogues never trap the user).
+          // Confirmation prompts, so a dialogue can never trap the user.
           prompt {
             bind "y" "Enter" { Confirm; SwitchToMode "Locked"; }
             bind "n" "Esc" { Deny; SwitchToMode "Locked"; }
           }
         }
 
-        // Status bar + command palette plugins
-        // Custom plugins (see ./zellij-plugin): zjbar is the tmux-shaped bar,
-        // zjcmd is the `leader :` command palette.
+        // Plugins
+        // zjbar draws the bar and handles the leader actions that need the
+        // current pane path. zjcmd is the `leader :` command palette.
         plugins {
-          zjbar location="file:${zellijPluginDir}/zjbar.wasm" {
+          zjbar location="file:${zjbar}" {
             bg        "#${c.bg}"
             fg_mid    "#${c.fgMid}"
             accent    "#${c.accent}"
             bg_subtle "#${c.bgSubtle}"
             yellow    "#${c.yellow}"
             teal      "#${c.teal}"
-            // Keybind control actions (new tab with cwd / yazi popup).
             home        "/home/${config.username}"
             zellij_bin  "${zellijBin}"
             yazi_bin    "${pkgs.yazi}/bin/yazi"
@@ -322,13 +408,10 @@
             yazi_width  "86%"
             yazi_height "86%"
           }
-          zjcmd location="file:${zellijPluginDir}/zjcmd.wasm" {
+          zjcmd location="file:${zjcmd}" {
             zellij_bin "${zellijBin}"
-            // Shell used by the palette's "Run command" entries.
             shell      "${fishBin}"
-            // Used to detach the kill+delete of the current session.
             setsid_bin "${pkgs.util-linux}/bin/setsid"
-            // floating-window geometry (percent of the viewport)
             x          "20%"
             y          "25%"
             width      "60%"
@@ -340,29 +423,25 @@
           }
         }
 
-        // UI (kept deliberately small, tmux-shaped)
-        // Custom layout: a single status bar pinned to the TOP (see
-        // layouts/minimal.kdl + minimal.swap.kdl).
+        // UI
         default_layout "minimal"
 
-        // `simplified_ui` drops the powerline/arrow glyph separators, giving
-        // flat rectangular tab blocks like tmux's status bar.
+        // Flat rectangular tab blocks, like tmux's status bar.
         simplified_ui true
 
-        // No pane frames at all: panes butt right up against each other with
-        // no title/border rows eating vertical space. This also keeps tabs
-        // numbered (Tab #1, Tab #2, ...), because zellij only swaps a tab's
-        // name for the focused pane's terminal title (the running program)
-        // when frames are drawn in "titles" mode.
+        // No pane frames: panes touch each other and no title row eats space.
         pane_frames false
 
-        ui {
-          pane_frames {
-            hide_session_name true
-          }
-        }
+        // New panes split the focused pane instead of rearranging the tab
+        // into a preset swap layout. `=` still cycles the layouts by hand.
+        auto_layout false
 
-        // Reduce ambient noise: no hover popups / tips or release-notes screen.
+        // Panes keep their size when the window shrinks, and Ctrl+wheel does
+        // not resize them.
+        stacked_resize false
+        mouse_scroll_resize false
+
+        // Quiet startup and quiet mouse behaviour.
         advanced_mouse_actions false
         mouse_hover_effects false
         mouse_hover_tips false
@@ -394,22 +473,24 @@
           text = zellijConfig;
         };
 
-        # Put the plugins at the stable path used by the config and cache.
-        ".local/share/zellij/plugins/zjbar.wasm".source = "${zellijPlugins}/bin/zjbar.wasm";
-        ".local/share/zellij/plugins/zjcmd.wasm".source = "${zellijPlugins}/bin/zjcmd.wasm";
+        ".config/zellij/layouts/minimal.kdl" = {
+          clobber = true;
+          text = zellijLayout;
+        };
 
-        # Grant the plugin permissions up front. This needs a writable copy,
-        # not a store symlink, or Zellij cannot save new permissions later.
+        # Permissions are keyed by plugin path, so seed them for the exact
+        # store paths in the config. The file has to be writable for zellij to
+        # save later changes, hence the copy instead of a store symlink.
         ".cache/zellij/permissions.kdl" = {
           clobber = true;
           type = "copy";
           permissions = "644";
           text = ''
-            "${zellijPluginDir}/zjbar.wasm" {
+            "${zjbar}" {
                 ReadApplicationState
                 RunCommands
             }
-            "${zellijPluginDir}/zjcmd.wasm" {
+            "${zjcmd}" {
                 ChangeApplicationState
                 ReadApplicationState
                 RunCommands
@@ -417,133 +498,7 @@
           '';
         };
 
-        # One line bar at the top.
-        ".config/zellij/layouts/minimal.kdl" = {
-          clobber = true;
-          text = ''
-            layout {
-                pane size=1 borderless=true {
-                    plugin location="zjbar"
-                }
-                pane
-            }
-          '';
-        };
-
-        # New tabs need the same bar, not just the first tab.
-        ".config/zellij/layouts/minimal.swap.kdl" = {
-          clobber = true;
-          text = ''
-            tab_template name="ui" {
-                pane size=1 borderless=true {
-                    plugin location="zjbar"
-                }
-                children
-            }
-
-            swap_tiled_layout name="vertical" {
-                ui max_panes=4 {
-                    pane split_direction="vertical" {
-                        pane
-                        pane { children; }
-                    }
-                }
-                ui max_panes=7 {
-                    pane split_direction="vertical" {
-                        pane { children; }
-                        pane { pane; pane; pane; pane; }
-                    }
-                }
-                ui max_panes=11 {
-                    pane split_direction="vertical" {
-                        pane { children; }
-                        pane { pane; pane; pane; pane; }
-                        pane { pane; pane; pane; pane; }
-                    }
-                }
-            }
-
-            swap_tiled_layout name="horizontal" {
-                ui max_panes=3 {
-                    pane
-                    pane
-                }
-                ui max_panes=7 {
-                    pane {
-                        pane split_direction="vertical" { children; }
-                        pane split_direction="vertical" { pane; pane; pane; pane; }
-                    }
-                }
-                ui max_panes=11 {
-                    pane {
-                        pane split_direction="vertical" { children; }
-                        pane split_direction="vertical" { pane; pane; pane; pane; }
-                        pane split_direction="vertical" { pane; pane; pane; pane; }
-                    }
-                }
-            }
-
-            swap_tiled_layout name="stacked" {
-                ui min_panes=3 {
-                    pane stacked=true { children; }
-                }
-            }
-
-            swap_tiled_layout name="half-stacked" {
-                ui min_panes=4 {
-                    pane split_direction="vertical" {
-                        pane
-                        pane stacked=true { children; }
-                    }
-                }
-            }
-
-            // Floating swap layouts. Without these, overriding the tiled swap
-            // layouts above also wipes zellij's built-in floating layouts, so
-            // `=` (NextSwapLayout) does nothing for floating panes.
-            swap_floating_layout name="staggered" {
-                floating_panes
-            }
-
-            swap_floating_layout name="enlarged" {
-                floating_panes max_panes=10 {
-                    pane { x "5%"; y 1; width "90%"; height "90%"; }
-                    pane { x "5%"; y 2; width "90%"; height "90%"; }
-                    pane { x "5%"; y 3; width "90%"; height "90%"; }
-                    pane { x "5%"; y 4; width "90%"; height "90%"; }
-                    pane { x "5%"; y 5; width "90%"; height "90%"; }
-                    pane { x "5%"; y 6; width "90%"; height "90%"; }
-                    pane { x "5%"; y 7; width "90%"; height "90%"; }
-                    pane { x "5%"; y 8; width "90%"; height "90%"; }
-                    pane { x "5%"; y 9; width "90%"; height "90%"; }
-                    pane { x 10; y 10; width "90%"; height "90%"; }
-                }
-            }
-
-            swap_floating_layout name="spread" {
-                floating_panes max_panes=1 {
-                    pane { y "50%"; x "50%"; }
-                }
-                floating_panes max_panes=2 {
-                    pane { x "1%"; y "25%"; width "45%"; }
-                    pane { x "50%"; y "25%"; width "45%"; }
-                }
-                floating_panes max_panes=3 {
-                    pane { y "55%"; width "45%"; height "45%"; }
-                    pane { x "1%"; y "1%"; width "45%"; }
-                    pane { x "50%"; y "1%"; width "45%"; }
-                }
-                floating_panes max_panes=4 {
-                    pane { x "1%"; y "55%"; width "45%"; height "45%"; }
-                    pane { x "50%"; y "55%"; width "45%"; height "45%"; }
-                    pane { x "1%"; y "1%"; width "45%"; height "45%"; }
-                    pane { x "50%"; y "1%"; width "45%"; height "45%"; }
-                }
-            }
-          '';
-        };
-
-        # Session picker like the tmux ta helper.
+        # Session picker, like the tmux ta helper.
         ".config/fish/functions/za.fish" = {
           clobber = true;
           text = ''

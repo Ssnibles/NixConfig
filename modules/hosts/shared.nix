@@ -26,12 +26,10 @@
 
       boot.kernelPackages = pkgs.unstable.linuxPackages_latest;
 
-      boot.initrd.systemd.enable = true;
       boot.initrd.compressor = "zstd";
       boot.initrd.compressorArgs = [ "-1" ];
 
       boot.consoleLogLevel = 0;
-      boot.initrd.verbose = false;
       boot.kernelParams = [
         "mitigations=off"
         "8250.nr_uarts=0"
