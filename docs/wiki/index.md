@@ -67,5 +67,5 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 | **Firefox & Helium** | `modules/features/apps/firefox/`, `apps/helium/` | `userChrome.css`, `userContent.css`, `startpage/` | [firefox.md](firefox.md) |
 | **Gaming & Minecraft** | `modules/features/apps/gaming.nix`, `apps/minecraft.nix` | `dualsense-pair/`, Prism Launcher, BedrockOnLinux | [gaming.md](gaming.md) |
 | **Frame Remote Desktop** | `modules/features/apps/frame.nix` | `assets/setup_frame.sh` | [frame.md](frame.md) |
-| **Flatpak & Sandboxed Apps** | `modules/features/system/flatpak.nix` | `nix-flatpak`, Flathub remote | [flatpak.md](flatpak.md) |
+| **Flatpak & Sandboxed Apps** | `modules/features/system/flatpak/` | `nix-flatpak`, Flathub remote | [flatpak.md](flatpak.md) |
 | **Tailscale & Syncthing** | `modules/features/system/tailscale.nix`, `syncthing.nix` | Tailscale client, Syncthing service | [networking-sync.md](networking-sync.md) |

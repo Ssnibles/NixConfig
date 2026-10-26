@@ -116,7 +116,7 @@ Roblox is played through **Sober** (`org.vinegarhq.Sober`), a community-built Li
 flatpak run org.vinegarhq.Sober
 ```
 
-Sober is declared in [`modules/features/system/flatpak.nix`](../../modules/features/system/flatpak.nix) and pulled from Flathub, then refreshed on a daily schedule so it keeps matching the live Roblox client version. Installation, updates, and pinning are covered in the [Flatpak & Sandboxed Applications Guide](flatpak.md).
+Sober is declared in [`modules/features/system/flatpak/default.nix`](../../modules/features/system/flatpak/default.nix) and pulled from Flathub, then refreshed on a daily schedule so it keeps matching the live Roblox client version. Installation, updates, and pinning are covered in the [Flatpak & Sandboxed Applications Guide](flatpak.md).
 
 ---
 

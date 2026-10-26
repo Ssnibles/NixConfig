@@ -6,14 +6,14 @@ This guide documents declarative Flatpak management in NixConfig: the Flathub re
 
 ## Overview
 
-Flatpak support is enabled through a dedicated feature module, [`modules/features/system/flatpak.nix`](../../modules/features/system/flatpak.nix), and the [`nix-flatpak`](https://github.com/gmodena/nix-flatpak) flake module.
+Flatpak support is enabled through a dedicated feature module, [`modules/features/system/flatpak/default.nix`](../../modules/features/system/flatpak/default.nix), and the [`nix-flatpak`](https://github.com/gmodena/nix-flatpak) flake module.
 
 > **Why nix-flatpak?** NixOS' built-in `services.flatpak` only exposes `services.flatpak.enable` — it does not know how to declare remotes or applications. The `nix-flatpak` module layers the declarative `services.flatpak.remotes`, `services.flatpak.packages`, `services.flatpak.update`, and `services.flatpak.overrides` options on top of it.
 
 | Layer | Technology | Purpose | Configuration |
 | :--- | :--- | :--- | :--- |
 | **Declarative manager** | **nix-flatpak** (`v0.7.0`) | Remotes, remote-backed packages, updates, overrides | `flake.nix` input |
-| **Flathub remote** | `flathub` | Source repository for sandboxed apps | `modules/features/system/flatpak.nix` |
+| **Flathub remote** | `flathub` | Source repository for sandboxed apps | `modules/features/system/flatpak/default.nix` |
 | **Roblox client** | **Sober** (`org.vinegarhq.Sober`) | Play, chat and explore on Roblox | Flathub (auto-updated) |
 | **Launcher** | **Twintail Launcher** (`app.twintaillauncher.ttl`) | Game launcher | Flathub (auto-updated) |
 | **Media player** | **Nuvio Desktop** (`com.nuvio.media.desktop`) | Stremio-addon media player | GitHub `releases/latest` (tracked, checksum-verified) |
@@ -51,13 +51,14 @@ Enabling the feature merges the `nix-flatpak` NixOS module and configures `servi
    - uninstalls packages removed from `services.flatpak.packages`,
    - adds/removes remotes,
    - applies overrides.
-3. **GitHub-release bundles** — a separate `flatpak-bundles` **systemd oneshot** runs after `flatpak-managed-install`. For every entry in `features.flatpak.bundles` it:
+3. **GitHub-release bundles** — a separate `flatpak-bundles` **systemd oneshot** runs after `flatpak-managed-install`. It waits for GitHub to be reachable (two minutes by default) so an offline boot is deferred to the timer instead of being logged as a failure. For every entry in `features.flatpak.bundles` it:
    - resolves the repository's `releases/latest` tag,
+   - skips the download when the recorded tag matches and the app is still installed,
    - downloads the matching `.flatpak` asset,
    - verifies it against the release's checksum asset (`SHA256SUMS.txt` by default),
    - installs or updates the app with `flatpak install --or-update`,
    - records the installed tag in `/var/lib/flatpak-bundles/<appId>.tag`.
-4. **State tracking** — nix-flatpak serialises its desired state to `/nix/var/nix/gcroots/flatpak-state.json`. Bundle state is tracked separately by the tag files above; a bundle already at the latest tag is not downloaded again.
+4. **State tracking** — nix-flatpak serialises its desired state to `/nix/var/nix/gcroots/flatpak-state.json`. Bundle state is tracked separately by the tag files above; a bundle already at the latest tag and still installed is not downloaded again.
 5. **Portal assertion** — the stock Flatpak module asserts that `xdg.portal.enable = true`. This is already satisfied globally in [`modules/features/system/base.nix`](../../modules/features/system/base.nix).
 
 > **Convergent, not exhaustive.** `services.flatpak.uninstallUnmanaged` defaults to `false`, so apps you install manually with `flatpak install` are left alone. Nuvio and Spotifast are intentionally *not* in `services.flatpak.packages`; they are unmanaged by nix-flatpak and owned by the `flatpak-bundles` service instead. Leave `uninstallUnmanaged = false` (the module asserts this when bundles are declared), otherwise nix-flatpak would remove tracked bundles on every activation.
@@ -76,13 +77,13 @@ features.flatpak.packages = [
   "app.twintaillauncher.ttl"
 ];
 
-features.flatpak.bundles."com.nuvio.media.desktop".github = {
+features.flatpak.bundles."com.nuvio.media.desktop" = {
   owner = "NuvioMedia";
   repo = "NuvioDesktop";
   asset = "Nuvio-Linux-x86_64-{version}.flatpak";
 };
 
-features.flatpak.bundles."rocks.spotifast.Spotifast".github = {
+features.flatpak.bundles."rocks.spotifast.Spotifast" = {
   owner = "crmne";
   repo = "spotifast";
   asset = "spotifast-{tag}-x86_64.flatpak";
@@ -129,10 +130,10 @@ Because the module and the host both define the list normally, this **appends** 
 
 ### GitHub-release bundle
 
-Add an entry keyed by application ID. The key is used as `appId` unless you override it:
+Add an entry keyed by application ID:
 
 ```nix
-features.flatpak.bundles."com.example.App".github = {
+features.flatpak.bundles."com.example.App" = {
   owner = "example";
   repo = "ExampleApp";
   asset = "Example-{version}-x86_64.flatpak";   # {tag} = full tag, {version} = tag without a leading "v"
@@ -170,7 +171,7 @@ update.auto = {
 };
 ```
 
-The bundle installer is idempotent: if the recorded tag already matches `releases/latest`, it exits without downloading the (large) `.flatpak` again.
+The bundle installer is idempotent: if the recorded tag matches `releases/latest` and the app is still installed, it exits without downloading the (large) `.flatpak` again.
 
 > Unlike most Nix-managed software, Flatpak apps update over the network independently of `nixos-rebuild`. This is a deliberate trade-off so Sober keeps matching the live Roblox version and GitHub-release apps like Nuvio and Spotifast can be tracked without constant hash bumps.
 
@@ -247,7 +248,7 @@ cat /var/lib/flatpak-bundles/rocks.spotifast.Spotifast.tag
 
 Common failures:
 
-- **`cannot resolve the latest release`** — no network, GitHub unreachable, or the repository/owner is wrong.
+- **`cannot resolve the latest release`** — GitHub is still unreachable after the install service waited, or the repository/owner is wrong. An offline boot is not an error; the service leaves the bundles for the daily timer. Run `sudo systemctl start flatpak-bundles` once the network is up.
 - **`failed to download`** — the `asset` template does not match the release asset name. Check the release page; remember `{version}` strips a leading `v`.
 - **`checksum mismatch`** — the download was corrupted or upstream replaced the asset without bumping the tag. Re-run once; if it persists, inspect the release.
 - **`has no entry for ...`** — upstream changed the checksum asset or the asset name. Update `checksums` / `asset`.
@@ -283,7 +284,8 @@ flatpak --system list --runtime | grep -E 'org\.(gnome|freedesktop)\.Platform'
 
 | Path | Role |
 | :--- | :--- |
-| `modules/features/system/flatpak.nix` | Feature module: enable toggle, Flathub remote, package/bundle/override options, bundle installer |
+| `modules/features/system/flatpak/default.nix` | Feature module: enable toggle, Flathub remote, package/bundle/override options, bundle service |
+| `modules/features/system/flatpak/bundles.sh` | Bundle installer: network wait, release lookup, checksum verification and icon fallback |
 | `flake.nix` | `nix-flatpak` input (`v0.7.0`) |
 | `/var/lib/flatpak` | System Flatpak installation and app data |
 | `/var/lib/flatpak-bundles` | Last installed upstream tag per GitHub-release bundle |

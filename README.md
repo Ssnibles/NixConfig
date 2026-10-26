@@ -274,7 +274,7 @@ For Steam skinning, Gamescope launch parameters, and controller pairing, refer t
 
 For declarative app management, GitHub-release bundle tracking, and update behaviour, refer to the **[Flatpak & Sandboxed Applications Guide](docs/wiki/flatpak.md)**:
 
-- **Declarative Flatpak Management**: The Flathub remote and application set are declared in [`flatpak.nix`](file:///home/josh/NixConfig/modules/features/system/flatpak.nix) through the [nix-flatpak](https://github.com/gmodena/nix-flatpak) module (NixOS core only provides `services.flatpak.enable`). A `flatpak-managed-install` oneshot handles remote-backed apps, while a `flatpak-bundles` oneshot tracks GitHub-release bundles without Nix pins.
+- **Declarative Flatpak Management**: The Flathub remote and application set are declared in [`flatpak/default.nix`](file:///home/josh/NixConfig/modules/features/system/flatpak/default.nix) through the [nix-flatpak](https://github.com/gmodena/nix-flatpak) module (NixOS core only provides `services.flatpak.enable`). A `flatpak-managed-install` oneshot handles remote-backed apps, while a `flatpak-bundles` oneshot tracks GitHub-release bundles without Nix pins.
 - **Sober (Roblox)**: Roblox client for Linux (`org.vinegarhq.Sober`) from Flathub, refreshed daily so it tracks the live Roblox version.
 - **Nuvio Desktop**: Stremio-addon media player (`com.nuvio.media.desktop`) — not published on Flathub, so it is installed from the latest GitHub release `.flatpak` bundle and verified against the release checksums.
 - **Spotifast**: Native Rust Spotify client (`rocks.spotifast.Spotifast`) — not published on Flathub, so it is installed from the latest GitHub release `.flatpak` bundle and verified against the release checksums.
@@ -356,7 +356,9 @@ NixConfig/
     │   ├── system/                    # Core system layers
     │   │   ├── base.nix               # Nixpkgs overlays, caches, network, nh GC, ytplay
     │   │   ├── bluetooth.nix          # Bluetooth stack & Blueman service
-    │   │   ├── flatpak.nix            # Declarative Flathub apps + tracked GitHub-release bundles
+    │   │   ├── flatpak/               # Declarative Flathub apps + tracked GitHub-release bundles
+    │   │   │   ├── default.nix        # Feature module and systemd units
+    │   │   │   └── bundles.sh         # GitHub release installer
     │   │   ├── journal-error-notify.nix # Boot error detection notification daemon
     │   │   ├── nvidia.nix             # Proprietary NVIDIA GPU drivers & Wayland flags
     │   │   ├── pipewire.nix           # Low-latency PipeWire & WirePlumber audio
