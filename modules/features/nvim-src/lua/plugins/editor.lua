@@ -1,5 +1,7 @@
 -- Editor plugins: oil, gitsigns, grug-far, flash, smart-splits, dial, markview, dev plugins, jjui
 
+local util = require("util")
+
 -- Oil (file explorer)
 
 local function paste_image_to_oil()
@@ -154,22 +156,10 @@ end, { desc = "Find and replace selection (buffer)" })
 
 local flash = require("flash")
 
-local excluded_ft = {
-	fzf = true,
-	oil = true,
-	startinator = true,
-	sshinator = true,
-	["grug-far"] = true,
-	qf = true,
-	help = true,
-	jj = true,
-	terminal = true,
-}
-
 local function is_main_editor(win)
 	local w = win or vim.api.nvim_get_current_win()
 	local buf = vim.api.nvim_win_get_buf(w)
-	if vim.bo[buf].buftype ~= "" or excluded_ft[vim.bo[buf].filetype] then
+	if vim.bo[buf].buftype ~= "" or util.is_helper_ft(vim.bo[buf].filetype) then
 		return false
 	end
 	return vim.api.nvim_win_get_config(w).relative == ""

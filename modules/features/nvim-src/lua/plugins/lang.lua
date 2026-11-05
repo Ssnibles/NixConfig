@@ -1,7 +1,5 @@
 -- Language-specific configurations: Rust, C/C++, Typst
 
-local M = {}
-
 local util = require("util")
 
 -- Rust (rustaceanvim)
@@ -80,57 +78,6 @@ end, { desc = "Rust restart server" })
 
 -- C / C++ (clangd extensions)
 
-
-local cached_c_flags = nil
-
---- Gathers C compiler include flags from the Nix environment & pkg-config
---- @param refresh? boolean Force recomputation of cached flags
---- @return string[]
-function M.get_nix_c_flags(refresh)
-	if cached_c_flags and not refresh then
-		return cached_c_flags
-	end
-
-	local flags = { "-std=c11", "-Wall", "-Wextra" }
-	local seen = { ["-std=c11"] = true, ["-Wall"] = true, ["-Wextra"] = true }
-
-	local function add(flag)
-		if flag and flag ~= "" and not seen[flag] then
-			seen[flag] = true
-			flags[#flags + 1] = flag
-		end
-	end
-
-	-- Nix include paths
-	local cpath = (vim.env.CPATH or "")
-		.. ":"
-		.. (vim.env.C_INCLUDE_PATH or "")
-		.. ":"
-		.. (vim.env.CPLUS_INCLUDE_PATH or "")
-	for path in cpath:gmatch("[^:]+") do
-		if path ~= "" then
-			add("-I" .. path)
-		end
-	end
-
-	-- NIX_CFLAGS_COMPILE
-	for flag in (vim.env.NIX_CFLAGS_COMPILE or ""):gmatch("%S+") do
-		add(flag)
-	end
-
-	-- pkg-config (batched into a single subshell invocation)
-	if vim.fn.executable("pkg-config") == 1 then
-		local out = vim.fn.system(
-			"for p in raylib wayland-client wlroots gl glfw3 sdl2 libxkbcommon libinput; do pkg-config --cflags $p 2>/dev/null; done"
-		)
-		for flag in out:gmatch("%S+") do
-			add(flag)
-		end
-	end
-
-	cached_c_flags = flags
-	return flags
-end
 require("clangd_extensions").setup({
 	ast = {
 		role_icons = {
@@ -157,7 +104,7 @@ require("clangd_extensions").setup({
 
 
 vim.api.nvim_create_user_command("GenerateCompileFlags", function()
-	local flags = M.get_nix_c_flags(true)
+	local flags = util.nix_c_flags(true)
 	local file, err = io.open(vim.fn.getcwd() .. "/compile_flags.txt", "w")
 	if not file then
 		vim.notify("Failed: " .. tostring(err), vim.log.levels.ERROR)
@@ -210,5 +157,3 @@ vim.api.nvim_create_autocmd("FileType", {
 		end, { buffer = ev.buf, desc = "Open PDF in Zathura" })
 	end,
 })
-
-return M

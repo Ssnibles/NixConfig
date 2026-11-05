@@ -2,6 +2,8 @@
 -- Each key is the server name recognised by vim.lsp.config().
 -- Values are configuration tables passed to register_server() in lsp/init.lua.
 
+local util = require("util")
+
 -- Nix helpers
 
 local NIX_FALLBACK_DIR = (vim.env.HOME or "~") .. "/NixConfig"
@@ -468,13 +470,8 @@ return {
 		-- `vim.lsp.config` ignores; inject the Nix include flags via `before_init`
 		-- (which receives the initialise params just before they are sent).
 		before_init = function(params)
-			local ok_c, c_mod = pcall(require, "plugins.lang")
-			local flags = { "-std=c11", "-Wall", "-Wextra" }
-			if ok_c and type(c_mod.get_nix_c_flags) == "function" then
-				flags = c_mod.get_nix_c_flags()
-			end
 			params.initializationOptions = params.initializationOptions or {}
-			params.initializationOptions.fallbackFlags = flags
+			params.initializationOptions.fallbackFlags = util.nix_c_flags()
 		end,
 	},
 }

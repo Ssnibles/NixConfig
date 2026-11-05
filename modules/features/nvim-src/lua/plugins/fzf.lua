@@ -1,14 +1,5 @@
 local fzf = require("fzf-lua")
-
--- Excluded filetypes for buffer pickers
-local excluded_ft = {
-	oil = true,
-	qf = true,
-	help = true,
-	fzf = true,
-	startinator = true,
-	sshinator = true,
-}
+local util = require("util")
 
 fzf.setup({
 	winopts = {
@@ -54,7 +45,7 @@ fzf.setup({
 			local bt, ft = vim.bo[bufnr].buftype, vim.bo[bufnr].filetype
 			-- fzf-lua's picker is itself a terminal buffer (filetype "fzf") and can
 			-- outlive a hidden picker; never offer it as a buffer to switch to.
-			if excluded_ft[ft] or ft:find("^grug%-far") then
+			if util.is_helper_ft(ft) then
 				return false
 			end
 			if bt == "terminal" then
