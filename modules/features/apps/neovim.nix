@@ -60,7 +60,6 @@
             marksman
 
             ltex-ls-plus
-            imagemagick
 
             # qmlls wrapped with the QtQuick and Quickshell types.
             (writeShellScriptBin "qmlls" ''
@@ -126,8 +125,6 @@
             gopls
             lldb
             vscode-js-debug
-
-            tree-sitter
           ];
 
           # Plugins and grammars.
@@ -192,7 +189,6 @@
             nvim-ts-autotag
 
             mini-nvim
-            plenary-nvim
             typst-preview-nvim
             rustaceanvim
             clangd_extensions-nvim
