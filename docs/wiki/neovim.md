@@ -32,7 +32,7 @@ modules/features/nvim-src/
     ├── keymaps.lua                     # Global keybindings (<leader> = Space)
     ├── smart_enter.lua                 # Context-aware Enter key handling
     ├── theme.lua                       # Dynamic colour overrides matching system palette
-    ├── util.lua                        # Shared helpers (toggle notifications, LLDB DAP adapter)
+    ├── util.lua                        # Shared helpers (helper-buffer predicate, C flags, LLDB DAP adapter)
     │
     ├── lsp/
     │   ├── init.lua                    # LSP client configuration & attachment keymaps
@@ -40,15 +40,16 @@ modules/features/nvim-src/
     │
     ├── plugins/
     │   ├── completion.lua              # Blink.cmp, Luasnip, Copilot, friendly-snippets
-    │   ├── dap.lua                     # nvim-dap, DAP UI, Python & LLDB debug adapters
+    │   ├── dap.lua                     # nvim-dap, nvim-dap-view, Python/Go/JS/LLDB adapters
     │   ├── diagnostics.lua             # vim.diagnostic, tiny-inline-diagnostic-nvim, fidget
     │   ├── editor.lua                  # Oil, Gitsigns, Grug-far, Flash, Markview, Dial, smart-splits, jjui
     │   ├── format.lua                  # Conform.nvim formatting definitions
     │   ├── fzf.lua                     # FZF-Lua fuzzy finders
+    │   ├── java.lua                    # nvim-jdtls, java-debug adapter, JUnit runner
     │   ├── lang.lua                    # Rustaceanvim, Clangd extensions, Typst preview, GenerateCompileFlags
     │   ├── lint.lua                    # nvim-lint static linters
     │   ├── mini.lua                    # Mini.nvim (pairs, surround, ai, move, comment, hipatterns, clue)
-    │   ├── terminal.lua                # Embedded floating terminal buffers
+    │   ├── terminal.lua                # Reused shell buffer, toggled as split or float
     │   └── treesitter.lua              # Treesitter context & text-objects
     │
     └── snippets/                       # Filetype snippets (Nix, Typst, Java)
@@ -107,6 +108,21 @@ Pressing **`<leader>gg`** spawns an embedded terminal floating window (85% width
 - **`<leader>ro`**: Open docs for symbol
 - **`<leader>rs`**: Restart Rust-Analyzer server
 
+### 8. Debugging (`nvim-dap` + `nvim-dap-view`)
+All debugging sections share one window on the right, with the REPL, scopes, threads, watches, breakpoints and exceptions as switchable views (`g?` inside the window lists its keys). Variable values render as inline virtual text.
+
+- **`<leader>mb` / `<leader>mB`**: Toggle / conditional breakpoint
+- **`<leader>mc`**, **`<leader>mi`**, **`<leader>mo`**, **`<leader>mO`**, **`<leader>mt`**: Continue, step into/over/out, terminate
+- **`<leader>mu`**: Toggle the debug window
+- **`<leader>mr`**: Jump to the REPL view
+- **`<leader>mw`**, **`<leader>mh`**: Watch the expression under the cursor, evaluate it in a hover
+
+Java is driven by `nvim-jdtls` (`plugins/java.lua`) rather than `vim.lsp.enable`, because debugging and JUnit runs need the adapter bundles. Nix extracts those jars from the `vscode-java-debug` and `vscode-java-test` extensions and passes them as `vim.g.java_debug_bundles`.
+
+- **`<leader>cjo`**: Organise imports
+- **`<leader>cjt`**, **`<leader>cjc`**: Run nearest test / test class
+- **`<leader>cju`**: Update project configuration
+
 ---
 
 ## Language Support & Formatters
@@ -119,9 +135,11 @@ Format-on-save is managed by `conform.nvim` across all major languages:
 | **Zig** | `zls` (Wayland header wrapped) | `zig fmt` | compiler diagnostics |
 | **C / C++** | `clangd` (with clangd_extensions) | `clang-format` | `cppcheck` |
 | **Nix** | `nixd` | `nixfmt` | `statix`, `deadnix` |
-| **Python** | `pyright`, `ruff` | `ruff_organize_imports`, `ruff_format` | `ruff`, `mypy` |
-| **JavaScript / TypeScript** | `vtsls`, `eslint` | `prettier` | `eslint` |
+| **Python** | `pyright` | `isort`, `black` | `pyright` |
+| **JavaScript / TypeScript** | `vtsls`, `eslint`, `emmet_ls` | `prettierd` | `eslint` |
 | **Lua** | `lua-language-server` | `stylua` | `lua-language-server` |
 | **Typst** | `tinymist`, `ltex_plus` | `typstyle` | `tinymist`, `ltex_plus` |
-| **QML / QtQuick** | `qmlls` (QtQuick wrapped) | `qmlformat` | `qmlls` |
-| **Java** | `jdtls` | `google-java-format` | `checkstyle` |
+| **QML / QtQuick** | `qmlls` (QtQuick wrapped) | none | `qmlls` |
+| **Java** | `jdtls` (via nvim-jdtls) | `google-java-format` | `jdtls` |
+| **Kotlin** | `kotlin-language-server` | `ktlint` | `ktlint` |
+| **Go** | `gopls` | `gopls` | `gopls` |
