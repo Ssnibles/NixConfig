@@ -66,7 +66,6 @@ local filetypes = {
 	nix = { "deadnix_nvim", "statix_nvim" },
 	c = { "cppcheck" },
 	cpp = { "cppcheck" },
-	php = { "php", "phpstan" },
 }
 
 lint.linters_by_ft = filetypes

@@ -59,12 +59,6 @@
             jdk
             marksman
 
-            # PHP
-            intelephense
-            php
-            php84Packages.composer
-            php84Packages.php-cs-fixer
-            phpstan
             ltex-ls-plus
             imagemagick
 
@@ -166,8 +160,6 @@
               p.vimdoc
               p.query
               p.qmljs
-              p.php
-              p.phpdoc
             ]))
             nvim-treesitter-context
             nvim-treesitter-textobjects
