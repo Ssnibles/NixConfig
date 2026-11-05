@@ -57,7 +57,6 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.signcolumn = "yes"
 vim.opt.conceallevel = 2
-vim.opt.list = false
 vim.opt.pumheight = 12
 
 -- Wrapping
@@ -68,7 +67,6 @@ vim.opt.breakindent = true
 -- Splits & windows
 vim.opt.splitright = true
 vim.opt.splitbelow = true
-vim.opt.splitkeep = "cursor"
 vim.opt.laststatus = 3
 vim.opt.cmdheight = 0
 vim.opt.showcmdloc = "statusline"
@@ -77,16 +75,13 @@ vim.opt.showcmdloc = "statusline"
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.opt.foldlevelstart = 99
-vim.opt.foldcolumn = "0"
 
 -- Search
-vim.opt.incsearch = true
 vim.opt.inccommand = "split"
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 
 -- Editing behaviour
-vim.opt.autoread = true
 vim.opt.confirm = true
 vim.opt.swapfile = false
 vim.opt.undofile = true
@@ -99,7 +94,6 @@ vim.opt.clipboard = "unnamedplus"
 vim.opt.wildmode = "longest:full,full"
 vim.opt.wildoptions = "fuzzy"
 vim.opt.wildignorecase = true
-vim.opt.grepformat = "%f:%l:%c:%m"
 vim.opt.shortmess = "sIcWFoOuCF"
 
 -- Timing
@@ -111,12 +105,10 @@ vim.opt.ttimeoutlen = 10
 vim.opt.jumpoptions = "view"
 vim.opt.diffopt:append("vertical")
 vim.opt.diffopt:append("linematch:60")
-vim.opt.display = "lastline"
 vim.opt.whichwrap:append("<,>,[,],h,l")
 vim.opt.sessionoptions:append("globals")
 vim.opt.scrolloff = 999
 vim.opt.sidescrolloff = 8
-vim.opt.joinspaces = false
 vim.opt.fillchars = { eob = " ", foldopen = "▾", foldclose = "▸", foldsep = "│", diff = "╱", lastline = "…" }
 vim.opt.grepprg = "rg --vimgrep --smart-case --hidden"
 vim.opt.smoothscroll = true
