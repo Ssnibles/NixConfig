@@ -240,16 +240,7 @@ return {
 		},
 		settings = {
 			validate = "on",
-			packageManager = "npm",
-			codeActionOnSave = { enable = false, mode = "all" },
-			format = true,
-			quiet = false,
-			onIgnoredFiles = "off",
-			rulesCustomizations = {},
 			run = "onType",
-			problems = { shortenToSingleLine = false },
-			nodePath = "",
-			workingDirectory = { mode = "auto" },
 		},
 	},
 
