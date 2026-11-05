@@ -87,42 +87,6 @@ local function attach_lsp_keymaps(bufnr)
 		end
 		pcall(vim.cmd, "b#")
 	end, "Switch Source/Header")
-
-	-- AST view
-	map("<leader>cA", function()
-		if vim.fn.exists(":ClangdAST") == 2 then
-			vim.cmd("ClangdAST")
-		elseif vim.fn.exists(":InspectTree") == 2 then
-			vim.cmd("InspectTree")
-		end
-	end, "View AST")
-
-	-- Type hierarchy
-	map("<leader>cT", function()
-		if vim.fn.exists(":ClangdTypeHierarchy") == 2 then
-			vim.cmd("ClangdTypeHierarchy")
-		elseif lsp.buf.type_hierarchy then
-			lsp.buf.type_hierarchy()
-		end
-	end, "Type Hierarchy")
-
-	-- Symbol info
-	map("<leader>cI", function()
-		if vim.fn.exists(":ClangdSymbolInfo") == 2 then
-			vim.cmd("ClangdSymbolInfo")
-		else
-			require("fzf-lua").lsp_document_symbols()
-		end
-	end, "Symbol Info")
-
-	-- Memory / status
-	map("<leader>cM", function()
-		if vim.fn.exists(":ClangdMemoryUsage") == 2 then
-			vim.cmd("ClangdMemoryUsage")
-		else
-			vim.cmd("checkhealth vim.lsp")
-		end
-	end, "LSP Memory/Status")
 end
 
 -- LSP Attach Autocommand

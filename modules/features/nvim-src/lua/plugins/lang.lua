@@ -102,6 +102,24 @@ require("clangd_extensions").setup({
 	symbol_info = { border = "rounded" },
 })
 
+-- Commands from clangd_extensions, attached only to clangd buffers so the
+-- shared LSP keymaps stay language neutral.
+vim.api.nvim_create_autocmd("LspAttach", {
+	group = vim.api.nvim_create_augroup("UserClangd", { clear = true }),
+	callback = function(ev)
+		local client = vim.lsp.get_client_by_id(ev.data.client_id)
+		if not client or client.name ~= "clangd" then
+			return
+		end
+		local function map_buf(keys, command, desc)
+			vim.keymap.set("n", keys, "<cmd>" .. command .. "<CR>", { buffer = ev.buf, desc = desc })
+		end
+		map_buf("<leader>cA", "ClangdAST", "AST view")
+		map_buf("<leader>cT", "ClangdTypeHierarchy", "Type hierarchy")
+		map_buf("<leader>cI", "ClangdSymbolInfo", "Symbol info")
+		map_buf("<leader>cM", "ClangdMemoryUsage", "Clangd memory usage")
+	end,
+})
 
 vim.api.nvim_create_user_command("GenerateCompileFlags", function()
 	local flags = util.nix_c_flags(true)
