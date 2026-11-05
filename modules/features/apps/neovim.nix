@@ -8,6 +8,28 @@
       config,
       ...
     }:
+    let
+      # Jars for eclipse.jdt.ls, taken from the VS Code extensions that ship the
+      # java-debug adapter and the JUnit runner. nvim-jdtls loads them through
+      # `init_options.bundles`; the paths are handed to Lua below.
+      extensionJars =
+        extension: subdir: excluded:
+        let
+          dir = "${extension}/share/vscode/extensions/${subdir}/server";
+        in
+        map (name: "${dir}/${name}") (
+          builtins.filter (
+            name: lib.hasSuffix ".jar" name && !(builtins.elem name excluded)
+          ) (builtins.attrNames (builtins.readDir dir))
+        );
+
+      javaBundles =
+        extensionJars pkgs.vscode-extensions.vscjava.vscode-java-debug "vscjava.vscode-java-debug" [ ]
+        ++ extensionJars pkgs.vscode-extensions.vscjava.vscode-java-test "vscjava.vscode-java-test" [
+          "com.microsoft.java.test.runner-jar-with-dependencies.jar"
+          "jacocoagent.jar"
+        ];
+    in
     {
       imports = [
         inputs.nvf.nixosModules.default
@@ -161,6 +183,7 @@
             nvim-dap
             nvim-dap-view
             nvim-dap-python
+            nvim-jdtls
 
             fzf-lua
             oil-nvim
@@ -188,6 +211,7 @@
           ];
 
           luaConfigRC.user-config = ''
+            vim.g.java_debug_bundles = { ${lib.concatMapStringsSep ", " (jar: "\"${jar}\"") javaBundles} }
             dofile(vim.fn.stdpath("config") .. "/init.lua")
           '';
         };

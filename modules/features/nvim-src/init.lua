@@ -182,6 +182,7 @@ require("plugins.lint")
 require("plugins.dap")
 require("plugins.terminal")
 require("plugins.lang")
+require("plugins.java")
 require("plugins.diagnostics")
 
 -- Set after plugins so nothing overrides it.
