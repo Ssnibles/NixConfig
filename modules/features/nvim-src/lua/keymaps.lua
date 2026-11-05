@@ -175,7 +175,6 @@ map("n", "<leader>tc", function()
 end, { desc = "Toggle cursor word" })
 
 -- LSP (non-attach)
-map("n", "<leader>li", "<cmd>checkhealth vim.lsp<CR>", { desc = "LSP info" })
 map("n", "<leader>lr", function()
 	if #vim.lsp.get_clients({ bufnr = 0 }) == 0 then
 		vim.notify("No LSP client attached to this buffer", vim.log.levels.WARN)
