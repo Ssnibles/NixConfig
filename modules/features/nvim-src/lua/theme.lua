@@ -206,7 +206,7 @@ function M.setup()
 		File = c.blue,
 		Folder = c.blue,
 		Event = c.orange,
-		Constr = c.orange,
+		Constructor = c.orange,
 	}
 	for kind, colour in pairs(kind_colours) do
 		hl("BlinkCmpKind" .. kind, { fg = colour })
@@ -315,7 +315,6 @@ function M.setup()
 	hl("MiniHipatternsTodo", { fg = c.bg, bg = c.orange, bold = true })
 	hl("MiniHipatternsNote", { fg = c.bg, bg = c.blue, bold = true })
 	hl("MiniHipatternsHack", { fg = c.bg, bg = c.purple, bold = true })
-	hl("MiniIndentscopeSymbol", { fg = indent })
 	hl("MiniCursorword", { bg = c.selection })
 	hl("MiniCursorwordCurrent", { bg = c.selection })
 
