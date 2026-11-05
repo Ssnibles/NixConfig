@@ -1,104 +1,78 @@
--- Terminal toggle
+-- Terminal toggles. One shell buffer is reused, so its state survives hiding
+-- and reopening. Picker and dev-plugin terminal buffers are never adopted.
 
--- fzf-lua runs its picker inside a terminal buffer too (filetype "fzf").
--- When a picker is hidden (default <M-Esc> = "hide" / the `hide` profile) the
--- buffer is kept alive with 'bufhidden=hide' rather than deleted. It must not
--- be treated as the user's shell terminal, otherwise toggling the terminal
--- would resurrect the hidden picker instead of showing a shell.
-local function is_user_terminal(buf)
-	if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].buftype ~= "terminal" then
-		return false
-	end
-	local ft = vim.bo[buf].filetype
-	return ft ~= "fzf" and ft ~= "sshinator-terminal"
+local util = require("util")
+
+local function is_shell(buf)
+	return vim.api.nvim_buf_is_valid(buf)
+		and vim.bo[buf].buftype == "terminal"
+		and not util.is_helper_ft(vim.bo[buf].filetype)
 end
 
-local function find_terminal_buf()
+-- The most recently used shell buffer, if there is one.
+local function shell_buf()
 	local best, best_used = nil, -1
 	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-		if is_user_terminal(buf) then
-			local info = vim.fn.getbufinfo(buf)[1]
-			local used = (info and info.lastused) or 0
+		if is_shell(buf) then
+			local used = vim.fn.getbufinfo(buf)[1].lastused or 0
 			if used > best_used then
-				best_used, best = used, buf
+				best, best_used = buf, used
 			end
 		end
 	end
 	return best
 end
 
-local function find_terminal_win(buf)
-	for _, win in ipairs(vim.api.nvim_list_wins()) do
-		if vim.api.nvim_win_get_buf(win) == buf then
-			return win
-		end
-	end
-	return nil
-end
-
-local function open_terminal(position, existing)
+local function open_window(position)
 	if position == "float" then
-		local buf = existing or vim.api.nvim_create_buf(false, true)
-		local w = math.floor(vim.o.columns * 0.8)
-		local h = math.floor(vim.o.lines * 0.8)
-		vim.api.nvim_open_win(buf, true, {
+		local width = math.floor(vim.o.columns * 0.8)
+		local height = math.floor(vim.o.lines * 0.8)
+		vim.api.nvim_open_win(vim.api.nvim_create_buf(false, true), true, {
 			relative = "editor",
-			width = w,
-			height = h,
-			row = math.floor((vim.o.lines - h) / 2),
-			col = math.floor((vim.o.columns - w) / 2),
+			width = width,
+			height = height,
+			row = math.floor((vim.o.lines - height) / 2),
+			col = math.floor((vim.o.columns - width) / 2),
 			style = "minimal",
 			border = "rounded",
+			title = " terminal ",
+			title_pos = "center",
 		})
-		if existing then
-			vim.cmd("buffer " .. buf)
-			vim.cmd("startinsert")
-		else
-			vim.cmd("terminal")
-		end
-		return
-	end
-
-	local cmd = "botright split"
-	if position == "bottom" then
-		cmd = "botright " .. math.floor(vim.o.lines * 0.30) .. "split"
 	elseif position == "right" then
-		cmd = "botright vertical " .. math.floor(vim.o.columns * 0.30) .. "split"
-	end
-
-	if existing then
-		vim.cmd(cmd .. " | buffer " .. existing)
-		vim.cmd("startinsert")
+		vim.cmd("belowright " .. math.floor(vim.o.columns * 0.3) .. "vsplit")
 	else
-		vim.cmd(cmd .. " | terminal")
+		vim.cmd("belowright " .. math.floor(vim.o.lines * 0.3) .. "split")
 	end
 end
 
-local function toggle_terminal(position)
-	local buf = find_terminal_buf()
-	if buf then
-		local win = find_terminal_win(buf)
-		if win then
+local function toggle(position)
+	local buf = shell_buf()
+	local win = buf and vim.fn.bufwinid(buf) or -1
+	if win ~= -1 then
+		-- Hiding the last window is an error, and there is nowhere to return to.
+		if #vim.api.nvim_tabpage_list_wins(vim.api.nvim_win_get_tabpage(win)) > 1 then
 			vim.api.nvim_win_hide(win)
-			return
 		end
-		open_terminal(position, buf)
 		return
 	end
-	open_terminal(position)
+	open_window(position)
+	if buf then
+		vim.api.nvim_win_set_buf(0, buf)
+	else
+		vim.cmd("terminal")
+	end
+	vim.cmd("startinsert")
 end
 
 vim.keymap.set("n", "<leader>tt", function()
-	toggle_terminal("bottom")
+	toggle("bottom")
 end, { desc = "Toggle terminal (bottom)" })
 vim.keymap.set("n", "<leader>tr", function()
-	toggle_terminal("right")
+	toggle("right")
 end, { desc = "Toggle terminal (right)" })
 vim.keymap.set("n", "<leader>tf", function()
-	toggle_terminal("float")
+	toggle("float")
 end, { desc = "Toggle terminal (float)" })
-
--- Terminal autocommands
 
 vim.api.nvim_create_autocmd({ "TermOpen", "BufWinEnter" }, {
 	group = vim.api.nvim_create_augroup("UserTerminal", { clear = true }),
