@@ -41,8 +41,10 @@
 
         xdg.portal = {
           enable = true;
+          # The Hyprland portal is added automatically by
+          # programs.hyprland.enable. Listing it again pulls in a second build
+          # of the same unit, which breaks the user-units symlink farm.
           extraPortals = [
-            pkgs.xdg-desktop-portal-hyprland
             pkgs.xdg-desktop-portal-gtk
           ];
           config.hyprland = {
