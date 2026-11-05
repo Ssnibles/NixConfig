@@ -29,11 +29,9 @@ autocmd("BufWritePre", {
 		if vim.bo.buftype ~= "" or trim_skip[vim.bo.filetype] then
 			return
 		end
-		local ok, trailspace = pcall(require, "mini.trailspace")
-		if ok then
-			trailspace.trim()
-			trailspace.trim_last_lines()
-		end
+		local trailspace = require("mini.trailspace")
+		trailspace.trim()
+		trailspace.trim_last_lines()
 	end,
 })
 

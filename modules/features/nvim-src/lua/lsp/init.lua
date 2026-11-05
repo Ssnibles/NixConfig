@@ -4,29 +4,16 @@
 
 local lsp = vim.lsp
 
-local CONFIG = {
-	border = "rounded",
-	max_width_ratio = 0.6,
-	max_height_ratio = 0.4,
-}
-
--- Capabilities
-
 local capabilities = require("lsp.capabilities")
-
--- goto-preview (peek definitions/references in a floating window)
-local ok_gp, goto_preview = pcall(require, "goto-preview")
-if not ok_gp then
-	goto_preview = nil
-end
+local goto_preview = require("goto-preview")
 
 -- LSP Keymaps (attached per buffer)
 
 local function show_hover_doc()
 	lsp.buf.hover({
-		border = CONFIG.border,
-		max_width = math.floor(vim.o.columns * CONFIG.max_width_ratio),
-		max_height = math.floor(vim.o.lines * CONFIG.max_height_ratio),
+		border = "rounded",
+		max_width = math.floor(vim.o.columns * 0.6),
+		max_height = math.floor(vim.o.lines * 0.4),
 	})
 end
 
@@ -51,14 +38,12 @@ local function attach_lsp_keymaps(bufnr)
 	map("L", lsp.buf.signature_help, "Signature help")
 
 	-- Peek (goto-preview)
-	if goto_preview then
-		map("gpd", goto_preview.goto_preview_definition, "Peek definition")
-		map("gpD", goto_preview.goto_preview_declaration, "Peek declaration")
-		map("gpi", goto_preview.goto_preview_implementation, "Peek implementation")
-		map("gpr", goto_preview.goto_preview_references, "Peek references")
-		map("gpt", goto_preview.goto_preview_type_definition, "Peek type definition")
-		map("<leader>cp", goto_preview.close_all_win, "Close previews")
-	end
+	map("gpd", goto_preview.goto_preview_definition, "Peek definition")
+	map("gpD", goto_preview.goto_preview_declaration, "Peek declaration")
+	map("gpi", goto_preview.goto_preview_implementation, "Peek implementation")
+	map("gpr", goto_preview.goto_preview_references, "Peek references")
+	map("gpt", goto_preview.goto_preview_type_definition, "Peek type definition")
+	map("<leader>cp", goto_preview.close_all_win, "Close previews")
 
 	-- Refactoring
 	map("<leader>rn", function()
@@ -209,11 +194,7 @@ local function escape_rg(text)
 end
 
 local function open_grug_far(prefills)
-	local ok, grug = pcall(require, "grug-far")
-	if not ok then
-		return
-	end
-	local instance = grug.open({ prefills = prefills })
+	local instance = require("grug-far").open({ prefills = prefills })
 	if instance and type(instance.when_ready) == "function" and type(instance.goto_input) == "function" then
 		instance:when_ready(function()
 			instance:goto_input("replacement")
@@ -287,30 +268,20 @@ end, { desc = "Show LSP health details" })
 -- Third-party LSP UI plugins
 
 -- Aerial (code outline)
-local ok_aerial, aerial = pcall(require, "aerial")
-if ok_aerial then
-	aerial.setup({
-		on_attach = function(bufnr)
-			vim.keymap.set("n", "[a", "<cmd>AerialPrev<CR>", { buffer = bufnr, desc = "Previous symbol (Aerial)" })
-			vim.keymap.set("n", "]a", "<cmd>AerialNext<CR>", { buffer = bufnr, desc = "Next symbol (Aerial)" })
-		end,
-		show_guides = true,
-		layout = { max_width = { 40, 0.2 }, min_width = 30, default_direction = "prefer_right" },
-		filter_kind = false,
-		highlight_on_hover = true,
-		autojump = false,
-	})
-end
+require("aerial").setup({
+	on_attach = function(bufnr)
+		vim.keymap.set("n", "[a", "<cmd>AerialPrev<CR>", { buffer = bufnr, desc = "Previous symbol (Aerial)" })
+		vim.keymap.set("n", "]a", "<cmd>AerialNext<CR>", { buffer = bufnr, desc = "Next symbol (Aerial)" })
+	end,
+	show_guides = true,
+	layout = { max_width = { 40, 0.2 }, min_width = 30, default_direction = "prefer_right" },
+	filter_kind = false,
+	highlight_on_hover = true,
+	autojump = false,
+})
 
--- Inc-rename
-local ok_ir, ir = pcall(require, "inc_rename")
-if ok_ir then
-	ir.setup({})
-end
+require("inc_rename").setup({})
 
--- goto-preview
-if goto_preview then
-	goto_preview.setup({
-		references = { provider = "fzf_lua" },
-	})
-end
+goto_preview.setup({
+	references = { provider = "fzf_lua" },
+})

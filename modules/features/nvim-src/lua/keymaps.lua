@@ -79,12 +79,7 @@ map("n", "<leader>wk", "<C-w>K", { desc = "Move window up" })
 
 -- Buffers & Tabs
 map("n", "<leader>bd", function()
-	local ok, bufremove = pcall(require, "mini.bufremove")
-	if ok then
-		bufremove.delete(0, false)
-	else
-		vim.cmd("bdelete")
-	end
+	require("mini.bufremove").delete(0, false)
 end, { desc = "Delete buffer" })
 
 map("n", "<leader>bo", function()
@@ -157,21 +152,16 @@ end, { desc = "Toggle relative numbers" })
 map("n", "<leader>td", function()
 	local new_state = not vim.diagnostic.is_enabled()
 	vim.diagnostic.enable(new_state)
-	local ok, tid = pcall(require, "tiny-inline-diagnostic")
-	if ok then
-		if new_state then
-			tid.enable()
-		else
-			tid.disable()
-		end
+	local tid = require("tiny-inline-diagnostic")
+	if new_state then
+		tid.enable()
+	else
+		tid.disable()
 	end
 	util.notify_toggle("Diagnostics", new_state)
 end, { desc = "Toggle diagnostics" })
 map("n", "<leader>tD", function()
-	local ok, tid = pcall(require, "tiny-inline-diagnostic")
-	if ok then
-		tid.toggle()
-	end
+	require("tiny-inline-diagnostic").toggle()
 end, { desc = "Toggle inline diagnostics" })
 map("n", "<leader>ti", function()
 	local bufnr = vim.api.nvim_get_current_buf()

@@ -80,32 +80,6 @@ end, { desc = "Rust restart server" })
 
 -- C / C++ (clangd extensions)
 
-local ok_ext, clangd_ext = pcall(require, "clangd_extensions")
-if ok_ext then
-	clangd_ext.setup({
-		ast = {
-			role_icons = {
-				type = "🅉",
-				declaration = "🄳",
-				expression = "🄴",
-				statement = "🅂",
-				specifier = "🅂",
-				["template argument"] = "🅃",
-			},
-			kind_icons = {
-				Compound = "🄲",
-				Recovery = "2",
-				TranslationUnit = "🅄",
-				PackExpansion = "🄿",
-				TemplateTypeParm = "🅃",
-				TemplateTemplateParm = "🅃",
-				TemplateParamObject = "🅃",
-			},
-		},
-		memory_usage = { border = "rounded" },
-		symbol_info = { border = "rounded" },
-	})
-end
 
 local cached_c_flags = nil
 
@@ -157,6 +131,30 @@ function M.get_nix_c_flags(refresh)
 	cached_c_flags = flags
 	return flags
 end
+require("clangd_extensions").setup({
+	ast = {
+		role_icons = {
+			type = "🅉",
+			declaration = "🄳",
+			expression = "🄴",
+			statement = "🅂",
+			specifier = "🅂",
+			["template argument"] = "🅃",
+		},
+		kind_icons = {
+			Compound = "🄲",
+			Recovery = "2",
+			TranslationUnit = "🅄",
+			PackExpansion = "🄿",
+			TemplateTypeParm = "🅃",
+			TemplateTemplateParm = "🅃",
+			TemplateParamObject = "🅃",
+		},
+	},
+	memory_usage = { border = "rounded" },
+	symbol_info = { border = "rounded" },
+})
+
 
 vim.api.nvim_create_user_command("GenerateCompileFlags", function()
 	local flags = M.get_nix_c_flags(true)
@@ -175,14 +173,11 @@ end, { desc = "Generate compile_flags.txt from environment & pkg-config" })
 
 -- Typst (typst-preview, Zathura synctex, and #noln / #ln surrounds)
 
-local ok_tp, tp = pcall(require, "typst-preview")
-if ok_tp then
-	tp.setup({
-		get_root = function(path)
-			return os.getenv("TYPST_ROOT") or vim.fn.fnamemodify(path, ":h")
-		end,
-	})
-end
+require("typst-preview").setup({
+	get_root = function(path)
+		return os.getenv("TYPST_ROOT") or vim.fn.fnamemodify(path, ":h")
+	end,
+})
 
 vim.api.nvim_create_autocmd("FileType", {
 	group = vim.api.nvim_create_augroup("UserTypst", { clear = true }),
