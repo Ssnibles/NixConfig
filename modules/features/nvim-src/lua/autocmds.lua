@@ -2,13 +2,13 @@ local augroup = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 local autocmd = vim.api.nvim_create_autocmd
 
 -- Filetypes closed by pressing 'q' or '<Esc>'
-local close_with_q = { "help", "man", "qf", "checkhealth", "notify", "oil", "grug-far", "cargo" }
+local close_with_q = { "help", "man", "qf", "checkhealth", "oil", "grug-far" }
 
 -- Filetypes that skip trailing whitespace trimming
 local trim_skip = { markdown = true, ["markdown.mdx"] = true, text = true, gitcommit = true, diff = true }
 
 -- Filetypes using indent folding instead of treesitter
-local fold_indent_prose = { "markdown", "markdown.mdx", "text", "gitcommit", "typst", "txt" }
+local fold_indent_prose = { "markdown", "markdown.mdx", "text", "gitcommit", "typst" }
 local fold_indent_data = { "yaml", "json", "toml" }
 
 -- Tree-sitter highlighting
