@@ -43,6 +43,24 @@
           main ${lib.concatMapStringsSep " " lib.escapeShellArg bundleArgs}
         '';
       };
+
+      waitForFlathub = pkgs.writeShellApplication {
+        name = "flatpak-wait-for-flathub";
+        runtimeInputs = with pkgs; [
+          coreutils
+          curl
+        ];
+        text = ''
+          deadline=$((SECONDS + 120))
+          while ! curl --fail --silent --location --head --max-time 10 --output /dev/null https://dl.flathub.org/repo/summary.idx; do
+            if ((SECONDS >= deadline)); then
+              printf 'flatpak-managed-install-timer: Flathub is unreachable after 120s; skipping until next timer run\n'
+              exit 1
+            fi
+            sleep 5
+          done
+        '';
+      };
     in
     {
       imports = [
@@ -199,6 +217,21 @@
           };
 
           inherit (cfg) packages overrides;
+        };
+
+        # NetworkManager-wait-online is off on these hosts, so the persistent
+        # timer catch-up at boot can run before DNS is ready. Wait for Flathub
+        # in ExecCondition (exiting 1 skips the run cleanly while offline) and
+        # order after flatpak-managed-install so both services do not touch
+        # /var/lib/flatpak at the same time.
+        systemd.services."flatpak-managed-install-timer" = {
+          after = [
+            "multi-user.target"
+            "network-online.target"
+            "flatpak-managed-install.service"
+          ];
+          wants = [ "network-online.target" ];
+          serviceConfig.ExecCondition = lib.getExe waitForFlathub;
         };
 
         # Install or update the bundles in features.flatpak.bundles. Start after
