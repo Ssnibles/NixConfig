@@ -1,4 +1,4 @@
-vim.filetype.add({ extension = { qml = "qml" } })
+vim.filetype.add({ extension = { qml = "qml", mdx = "markdown.mdx" } })
 
 require("nvim-treesitter-textobjects").setup({
 	select = { lookahead = true },
