@@ -101,8 +101,6 @@ function M.setup()
 		"FzfLuaPromptNormal",
 		"FzfLuaHelpNormal",
 		"MiniClueNormal",
-		"DAPUINormal",
-		"DAPUIFloatNormal",
 	}) do
 		hl(g, { link = "NormalFloat" })
 	end

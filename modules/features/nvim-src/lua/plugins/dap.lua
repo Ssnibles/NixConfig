@@ -1,35 +1,15 @@
 local dap = require("dap")
-local dapui = require("dapui")
 
--- DAP UI
-
-dapui.setup({
-	icons = { expanded = "▾", collapsed = "▸", current_frame = "▸" },
-	controls = { enabled = true, element = "repl" },
-	floating = { border = "rounded" },
+-- UI: nvim-dap-view keeps every section (scopes, threads, watches, breakpoints,
+-- REPL, exceptions) in one window, unlike the dap-ui grid of floating panels.
+-- It also renders variable values as inline virtual text.
+local dap_view = require("dap-view")
+dap_view.setup({
+	auto_toggle = true,
+	windows = { size = 0.3, position = "right" },
+	winbar = { default_section = "scopes" },
+	virtual_text = { enabled = true, position = "inline" },
 })
-
-require("nvim-dap-virtual-text").setup({
-	enabled = true,
-	enabled_commands = true,
-	highlight_changed_variables = true,
-	virt_text_pos = "eol",
-	all_frames = false,
-})
-
--- Auto open/close UI
-dap.listeners.before.attach.dapui_config = function()
-	dapui.open()
-end
-dap.listeners.before.launch.dapui_config = function()
-	dapui.open()
-end
-dap.listeners.before.event_terminated.dapui_config = function()
-	dapui.close()
-end
-dap.listeners.before.event_exited.dapui_config = function()
-	dapui.close()
-end
 
 -- Helpers
 
@@ -183,8 +163,18 @@ map("n", "<leader>mc", dap.continue, { desc = "Continue/start" })
 map("n", "<leader>mi", dap.step_into, { desc = "Step into" })
 map("n", "<leader>mo", dap.step_over, { desc = "Step over" })
 map("n", "<leader>mO", dap.step_out, { desc = "Step out" })
-map("n", "<leader>mr", dap.repl.toggle, { desc = "REPL" })
-map("n", "<leader>mu", dapui.toggle, { desc = "DAP UI toggle" })
+map("n", "<leader>mr", function()
+	dap_view.jump_to_view("repl")
+end, { desc = "REPL" })
+map("n", "<leader>mu", function()
+	dap_view.toggle()
+end, { desc = "DAP view toggle" })
+map("n", "<leader>mw", function()
+	dap_view.add_expr()
+end, { desc = "Watch expression" })
+map("n", "<leader>mh", function()
+	dap_view.hover()
+end, { desc = "Evaluate expression under cursor" })
 map("n", "<leader>mt", dap.terminate, { desc = "Terminate" })
 map("n", "<leader>mj", dap.down, { desc = "Go down in stack" })
 map("n", "<leader>mk", dap.up, { desc = "Go up in stack" })
