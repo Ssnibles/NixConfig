@@ -14,7 +14,8 @@ NixOS Module (modules/features/apps/neovim.nix)
 ├── LSPs, formatters, linters, and DAPs pinned via Nixpkgs
 ├── Tree-Sitter grammars compiled ahead of time
 └── Centralised nixos.liveLinks:
-    symlinks modules/features/nvim-src/ -> ~/.config/nvim and ~/.config/nvf
+    symlinks modules/features/nvim-src/ -> ~/.config/nvim and ~/.config/nvf,
+    plus the same links under /root so `sudo nvim` runs your config too
 ```
 
 Because `nvim-src/` is symlinked directly from your Git workspace, you can edit Lua plugins, keymaps, and autocommands with instant reloading without requiring a full `nixos-rebuild`.

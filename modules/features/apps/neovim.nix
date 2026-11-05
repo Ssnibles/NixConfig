@@ -212,6 +212,10 @@
       # Link ~/.config/nvim and ~/.config/nvf to the Lua tree in
       # modules/features/nvim-src. This is handled by nixos.liveLinks, so
       # activation does not change ownership of all of ~/.config.
+      #
+      # Root gets the same links: `sudo nvim` runs with HOME=/root, and NVF
+      # loads its Lua with dofile(stdpath("config") .. "/init.lua"). Without
+      # these, root starts with the NVF plugin set but none of the Lua config.
       nixos.liveLinks = {
         "nvim-config" = {
           source = "${config.nixos.configRepo}/modules/features/nvim-src";
@@ -220,6 +224,16 @@
         "nvf-config" = {
           source = "${config.nixos.configRepo}/modules/features/nvim-src";
           target = ".config/nvf";
+        };
+        "nvim-config-root" = {
+          source = "${config.nixos.configRepo}/modules/features/nvim-src";
+          target = ".config/nvim";
+          user = "root";
+        };
+        "nvf-config-root" = {
+          source = "${config.nixos.configRepo}/modules/features/nvim-src";
+          target = ".config/nvf";
+          user = "root";
         };
       };
     };
