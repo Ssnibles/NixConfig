@@ -12,32 +12,7 @@ if command -v mmsg >/dev/null 2>&1 && { [ -n "${MANGO_INSTANCE_SIGNATURE:-}" ] |
   IS_MANGO=true
 fi
 
-# Locate wlrctl (check PATH, then nix store fallback)
-WLRCTL=""
-if command -v wlrctl >/dev/null 2>&1; then
-  WLRCTL="wlrctl"
-else
-  for p in /nix/store/*-wlrctl-*/bin/wlrctl; do
-    if [ -x "$p" ]; then
-      WLRCTL="$p"
-      break
-    fi
-  done
-fi
-
-ORIG_X=""
-ORIG_Y=""
-restore_cursor() {
-  if [ -n "$ORIG_X" ] && [ -n "$ORIG_Y" ] && [ -n "$WLRCTL" ]; then
-    "$WLRCTL" pointer move -- -10000 -10000 >/dev/null 2>&1 || true
-    "$WLRCTL" pointer move -- "$ORIG_X" "$ORIG_Y" >/dev/null 2>&1 || true
-    ORIG_X=""
-    ORIG_Y=""
-  fi
-}
-
 cleanup() {
-  restore_cursor
   [ -n "${TMP_IMG:-}" ] && rm -f "$TMP_IMG"
 }
 trap cleanup EXIT INT TERM HUP
@@ -93,24 +68,10 @@ fi
 
 [ -z "$GEOM" ] && exit 0
 
-# Warp cursor away from selection to avoid capturing software cursor
-if [ "$IS_MANGO" = true ] && [ -n "$WLRCTL" ]; then
-  pos=$(mmsg get cursorpos 2>/dev/null || true)
-  if [ -n "$pos" ]; then
-    ORIG_X=$(sed -nE 's/.*"x":[[:space:]]*(-?[0-9]+).*/\1/p' <<<"$pos")
-    ORIG_Y=$(sed -nE 's/.*"y":[[:space:]]*(-?[0-9]+).*/\1/p' <<<"$pos")
-  fi
-  if [ -n "$ORIG_X" ] && [ -n "$ORIG_Y" ]; then
-    "$WLRCTL" pointer move -- 10000 10000 >/dev/null 2>&1 || true
-    sleep 0.08
-  fi
-fi
-
 # Action execution
 if [ "${1:-}" = "ocr" ]; then
   TMP_IMG=$(mktemp --suffix=.png /tmp/screenshot_ocr.XXXXXX)
   grim -g "$GEOM" "$TMP_IMG"
-  restore_cursor
   tesseract "$TMP_IMG" stdout -l eng 2>/dev/null | wl-copy && notify-send 'OCR Complete' 'Text copied to clipboard.'
 else
   target_dir="${XDG_PICTURES_DIR:-$HOME/Pictures}"
@@ -118,5 +79,4 @@ else
   filename="$target_dir/screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png"
 
   grim -g "$GEOM" - | tee "$filename" | wl-copy -t image/png
-  restore_cursor
 fi
