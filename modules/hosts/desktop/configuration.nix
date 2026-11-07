@@ -51,7 +51,10 @@
       ];
 
       # Local discovery and streaming.
-      networking.firewall.allowedTCPPorts = [ 5353 ];
+      networking.firewall.allowedTCPPorts = [
+        5353
+        9090
+      ];
       networking.firewall.allowedUDPPorts = [ 5353 ];
 
       # The only access point in range is below iwd's roaming threshold, so
