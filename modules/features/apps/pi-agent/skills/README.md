@@ -20,6 +20,7 @@ and stays out of the way otherwise.
 | [`lab-notes`](lab-notes/SKILL.md) | Recording a lab, practical or exercise | `typst-snippets` |
 | [`assignment-report`](assignment-report/SKILL.md) | Answering a brief in an assignment, report or design doc | `typst-snippets` |
 | [`revision-sheets`](revision-sheets/SKILL.md) | Making a cram sheet or active-recall question bank | `typst-snippets` |
+| [`ebook-library`](ebook-library/SKILL.md) | Curating a Calibre library or Kobo reader | — |
 
 `base-conventions` applies to everything: British English, plain words, and
 short comments. `programming-conventions` adds the rules for code work and

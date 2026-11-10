@@ -77,6 +77,7 @@ NixConfig packages a dedicated suite of documentation, academic, and Typst skill
 | **`revision-sheets`** | Compact exam revision sheets | Multi-column cheat sheets, formula summaries |
 | **`test-notes`** | Software testing records | Test matrices, test-case definitions, edge-case tables |
 | **`typst-snippets`** | Typst snippet library & conventions | Mathematical sets (`RR`, `NN`, `ZZ`, `QQ`, `CC`), `#uml-class`, diagrams |
+| **`ebook-library`** | Calibre and Kobo library curation | Tag vocabulary, bookshop-style shelves, `metadata.db` and `KoboReader.sqlite` SQL traps |
 
 Every skill contains an upstream-compatible `SKILL.md` adhering to the Agent Skills standard (YAML frontmatter with `name` and `description`).
 

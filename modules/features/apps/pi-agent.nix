@@ -126,7 +126,8 @@
         ++ lib.optional cfg.assignmentReport (
           mkSkill "assignment-report" ./pi-agent/skills/assignment-report
         )
-        ++ lib.optional cfg.revisionSheets (mkSkill "revision-sheets" ./pi-agent/skills/revision-sheets);
+        ++ lib.optional cfg.revisionSheets (mkSkill "revision-sheets" ./pi-agent/skills/revision-sheets)
+        ++ lib.optional cfg.ebookLibrary (mkSkill "ebook-library" ./pi-agent/skills/ebook-library);
 
       defaultSettings = {
         inherit (cfg) defaultProvider defaultModel;
@@ -334,6 +335,16 @@
             Bundle the revision-sheets skill, which compresses a course or
             topic into dense one-page revision sheets and active-recall
             question banks.
+          '';
+        };
+
+        ebookLibrary = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Bundle the ebook-library skill, which curates a Calibre library
+            and a Kobo reader: tags, collections, series, authors, identifiers
+            and formats.
           '';
         };
       };
