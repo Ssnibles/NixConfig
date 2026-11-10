@@ -62,6 +62,7 @@ Scope {
       focusable: false
 
       readonly property var pos: Utils.parseOverlayPosition(Config.osdPosition, "bottom")
+      readonly property var insets: Utils.overlayMargins(panel.pos, Config.osdMarginX, Config.osdMarginY, Config)
 
       anchors {
         top: panel.pos.onTop
@@ -71,10 +72,10 @@ Scope {
       }
 
       margins {
-        top: panel.pos.onTop ? (Config.hasTopBar ? (Config.barHeight + Config.osdMarginY) : Config.osdMarginY) : 0
-        bottom: panel.pos.onBottom ? Config.osdMarginY : 0
-        left: panel.pos.onLeft ? (Config.hasLeftBar ? (Config.barWidth + Config.osdMarginX) : Config.osdMarginX) : 0
-        right: panel.pos.onRight ? (Config.hasRightBar ? (Config.barWidth + Config.osdMarginX) : Config.osdMarginX) : 0
+        top: panel.insets.top
+        bottom: panel.insets.bottom
+        left: panel.insets.left
+        right: panel.insets.right
       }
 
       implicitWidth: Config.osdWidth + 16
@@ -84,12 +85,14 @@ Scope {
 
       mask: Region { item: osdCard }
 
-      property bool shown: false
-      Component.onCompleted: shown = true
+      // Starts at zero and flips once on completion so the entry fade runs.
+      property real revealProgress: 0
+      Component.onCompleted: revealProgress = 1
 
-      readonly property real targetOpacity: (panel.shown && !root.closing) ? 1.0 : 0.0
+      readonly property bool revealing: panel.revealProgress > 0 && !root.closing
+      readonly property real targetOpacity: revealing ? panel.revealProgress : 0.0
       readonly property real slideDir: panel.pos.onTop ? -10 : 10
-      readonly property real targetSlide: (panel.shown && !root.closing) ? 0 : panel.slideDir
+      readonly property real targetSlide: revealing ? panel.slideDir * (1 - panel.revealProgress) : panel.slideDir
 
       readonly property color activeAccent: {
         if (SystemService.osdMuted) return Colours.red

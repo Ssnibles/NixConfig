@@ -126,13 +126,12 @@ Item {
   onHorizontalChanged: updatePillTarget()
   Component.onCompleted: updatePillTarget()
 
-  implicitWidth: root.horizontal
-    ? (root.workspaces && root.workspaces.length > 0 ? (root.dotSizeFocused + (root.workspaces.length - 1) * (root.dotSize + root.dotSpacing)) : root.dotSize)
+  readonly property int trackLength: (root.workspaces && root.workspaces.length > 0)
+    ? (root.dotSizeFocused + (root.workspaces.length - 1) * (root.dotSize + root.dotSpacing))
     : root.dotSize
 
-  implicitHeight: root.horizontal
-    ? root.dotSize
-    : (root.workspaces && root.workspaces.length > 0 ? (root.dotSizeFocused + (root.workspaces.length - 1) * (root.dotSize + root.dotSpacing)) : root.dotSize)
+  implicitWidth: root.horizontal ? root.trackLength : root.dotSize
+  implicitHeight: root.horizontal ? root.dotSize : root.trackLength
 
   width: implicitWidth
   height: implicitHeight
@@ -178,13 +177,7 @@ Item {
         readonly property real targetPos: {
           var step = root.dotSize + root.dotSpacing
           var extra = root.dotSizeFocused - root.dotSize
-          if (index < root.focusedIndex) {
-            return index * step
-          } else if (index === root.focusedIndex) {
-            return index * step
-          } else {
-            return index * step + extra
-          }
+          return index * step + (index > root.focusedIndex ? extra : 0)
         }
 
         readonly property real targetSize: isFocused ? root.dotSizeFocused : root.dotSize

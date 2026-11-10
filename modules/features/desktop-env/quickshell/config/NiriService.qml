@@ -132,15 +132,11 @@ QtObject {
   function applyFocusedWindow(win) {
     if (win && win.title !== undefined) {
       if (win.id !== undefined) root.focusedWindowId = win.id
-      root.currentTitle = root.formatActiveTitle(win.title, win.app_id || win.appId || "")
+      root.currentTitle = Utils.formatActiveTitle(win.title, win.app_id || win.appId || "")
     } else {
       root.focusedWindowId = null
       root.currentTitle = ""
     }
-  }
-
-  function formatActiveTitle(title, appId) {
-    return Utils.formatActiveTitle(title, appId)
   }
 
   function focusWorkspace(id) {

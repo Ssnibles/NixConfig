@@ -47,7 +47,7 @@ QtObject {
       if (topl.length > 0) occupiedMap[wsObj.id] = true
     }
 
-    var totalCount = Math.max(5, highestId)
+    var totalCount = Math.max(Config.minWorkspaces, highestId)
     var result = []
 
     for (var i = 1; i <= totalCount; i++) {

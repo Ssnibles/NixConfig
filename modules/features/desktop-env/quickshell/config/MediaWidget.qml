@@ -60,6 +60,34 @@ Pill {
     }
   }
 
+  // Compact spinning disc shared by the sidebar and top-bar layouts.
+  component SpinningIcon: Item {
+    id: spinner
+    property int iconSize: 16
+    property int fontPx: 15
+    property bool active: false
+
+    width: spinner.iconSize
+    height: spinner.iconSize
+
+    Text {
+      anchors.centerIn: parent
+      text: root.isPlaying ? "󰎈" : "󰎆"
+      color: root.isPlaying ? Colours.accent : Colours.fgDim
+      font.pixelSize: spinner.fontPx
+      font.bold: true
+      font.family: root.uiFont
+    }
+
+    NumberAnimation on rotation {
+      loops: Animation.Infinite
+      from: 0
+      to: 360
+      duration: Config.mediaRotationDuration
+      running: spinner.active && Config.animateMediaIcon && root.visible && root.isPlaying
+    }
+  }
+
   // UI Layout (Vertical for Sidebar)
   Column {
     id: mediaLayout
@@ -67,31 +95,11 @@ Pill {
     spacing: 6
     anchors.centerIn: parent
 
-    Item {
-      id: spinningContainer
-      width: 16
-      height: 16
+    SpinningIcon {
+      iconSize: 16
+      fontPx: 15
+      active: !root.horizontal
       anchors.horizontalCenter: parent.horizontalCenter
-
-      Text {
-        id: mediaIcon
-        anchors.centerIn: parent
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        text: root.isPlaying ? "󰎈" : "󰎆"
-        color: root.isPlaying ? Colours.accent : Colours.fgDim
-        font.pixelSize: 15
-        font.bold: true
-        font.family: root.uiFont
-      }
-
-      NumberAnimation on rotation {
-        loops: Animation.Infinite
-        from: 0
-        to: 360
-        duration: Config.mediaRotationDuration
-        running: !root.horizontal && Config.animateMediaIcon && root.visible && root.isPlaying
-      }
     }
 
     // Position indicator (elapsed / total stacked vertically)
@@ -130,27 +138,11 @@ Pill {
     anchors.centerIn: parent
     spacing: 6
 
-    Item {
-      width: 14
-      height: 14
+    SpinningIcon {
+      iconSize: 14
+      fontPx: 13
+      active: root.horizontal
       anchors.verticalCenter: parent.verticalCenter
-
-      Text {
-        anchors.centerIn: parent
-        text: root.isPlaying ? "󰎈" : "󰎆"
-        color: root.isPlaying ? Colours.accent : Colours.fgDim
-        font.pixelSize: 13
-        font.bold: true
-        font.family: root.uiFont
-      }
-
-      NumberAnimation on rotation {
-        loops: Animation.Infinite
-        from: 0
-        to: 360
-        duration: Config.mediaRotationDuration
-        running: root.horizontal && Config.animateMediaIcon && root.visible && root.isPlaying
-      }
     }
 
     Text {

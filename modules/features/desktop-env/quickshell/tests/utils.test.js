@@ -19,6 +19,8 @@ const source = fs
 
 const exported = [
   'findFirst',
+  'envChoice',
+  'overlayMargins',
   'cleanTrackTitle',
   'cleanUrl',
   'pad2',
@@ -312,3 +314,25 @@ test('resolveOverlayScreens returns empty when inactive, all screens when allScr
 
 
 
+test('envChoice accepts allowed values case-insensitively and falls back', () => {
+  assert.equal(U.envChoice('Right', ['left', 'right'], 'left'), 'right')
+  assert.equal(U.envChoice(undefined, ['left', 'right'], 'left'), 'left')
+  assert.equal(U.envChoice('top', ['left', 'right'], 'left'), 'left')
+})
+
+test('overlayMargins offsets past any visible bar', () => {
+  const pos = U.parseOverlayPosition('top-left', 'top-right')
+  const cfg = {
+    hasTopBar: true,
+    barHeight: 30,
+    hasLeftBar: true,
+    hasRightBar: false,
+    barWidth: 40
+  }
+  assert.deepEqual({ ...U.overlayMargins(pos, 10, 20, cfg) },
+    { top: 50, bottom: 0, left: 50, right: 0 })
+
+  const bottomRight = U.parseOverlayPosition('bottom-right', 'top-right')
+  assert.deepEqual({ ...U.overlayMargins(bottomRight, 10, 20, cfg) },
+    { top: 0, bottom: 20, left: 0, right: 10 })
+})

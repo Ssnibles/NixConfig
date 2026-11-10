@@ -15,39 +15,29 @@ Pill {
   acceptedButtons: Qt.LeftButton | Qt.RightButton
   onClicked: function(mouse) {
     if (mouse.button === Qt.LeftButton) {
-      SystemService.toggleBluetooth()
+      BluetoothService.toggleBluetooth()
     } else {
-      SystemService.openBluetoothManager()
+      BluetoothService.openBluetoothManager()
     }
   }
 
-  // Bar mode content (centred icon, pixelSize 18)
-  Text {
-    visible: !root.showLabel
-    anchors.centerIn: parent
-    text: SystemService.btIcon
-    color: SystemService.btColour
-    font.family: root.uiFont
-    font.pixelSize: Config.iconSizeLg
-  }
-
-  // Pill / CommandCentre mode content (icon + text row, matching Wi-Fi & Battery layout)
+  // Icon-only in the bar, icon plus status label in the Command Centre.
   Row {
     id: labelRow
-    visible: root.showLabel
     anchors.centerIn: parent
     spacing: 4
 
     Text {
-      text: SystemService.btIcon
-      color: SystemService.btColour
+      text: BluetoothService.btIcon
+      color: BluetoothService.btColour
       font.family: root.uiFont
-      font.pixelSize: Config.fontSizeSm
+      font.pixelSize: root.showLabel ? Config.fontSizeSm : Config.iconSizeLg
       anchors.verticalCenter: parent.verticalCenter
     }
 
     Text {
-      text: root.showLabel ? SystemService.btStatusText : ""
+      visible: root.showLabel
+      text: root.showLabel ? BluetoothService.btStatusText : ""
       color: Colours.fg
       font.family: Config.sansFont
       font.pixelSize: Config.fontSizeSm
@@ -60,9 +50,9 @@ Pill {
     visible: !root.showLabel
     target: root
     sharedWindow: root.sharedWindow
-    icon: SystemService.btIcon
-    iconColour: SystemService.btColour
-    title: SystemService.btTitle
-    details: SystemService.btDetails
+    icon: BluetoothService.btIcon
+    iconColour: BluetoothService.btColour
+    title: BluetoothService.btTitle
+    details: BluetoothService.btDetails
   }
 }

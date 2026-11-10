@@ -6,7 +6,6 @@ Rectangle {
   id: root
 
   property bool horizontal: true
-  property int orientation: root.horizontal ? Qt.Horizontal : Qt.Vertical
   property int pillHeight: root.horizontal ? Config.pillHeightHorizontal : Config.pillHeightVertical
   property int padding: root.horizontal ? Config.pillPaddingHorizontal : 0
 
@@ -40,44 +39,34 @@ Rectangle {
 
   default property alias contentData: contentItem.data
 
-  // Intrinsic visual width of visible children (ignoring non-layout overlays like MouseArea)
-  readonly property real contentWidth: {
-    var maxW = 0
+  // Intrinsic visual extent of visible children (ignoring non-layout overlays
+  // like MouseArea). Rotated children swap their axes.
+  function _maxChildExtent(horizontal) {
+    var maxExtent = 0
     var children = contentItem.children
     for (var i = 0; i < children.length; i++) {
       var child = children[i]
-      if (child.visible !== false && child !== _clickArea) {
-        var isRotated = (child.rotation === 90 || child.rotation === 270)
-        var iw = isRotated ? child.implicitHeight : child.implicitWidth
-        if (iw > maxW) maxW = iw
-      }
+      if (child.visible === false || child === _clickArea) continue
+      var isRotated = (child.rotation === 90 || child.rotation === 270)
+      var extent = horizontal
+        ? (isRotated ? child.implicitHeight : child.implicitWidth)
+        : (isRotated ? child.implicitWidth : child.implicitHeight)
+      if (extent > maxExtent) maxExtent = extent
     }
-    return maxW
+    return maxExtent
   }
 
-  // Intrinsic visual height of visible children (ignoring non-layout overlays like MouseArea)
-  readonly property real contentHeight: {
-    var maxH = 0
-    var children = contentItem.children
-    for (var i = 0; i < children.length; i++) {
-      var child = children[i]
-      if (child.visible !== false && child !== _clickArea) {
-        var isRotated = (child.rotation === 90 || child.rotation === 270)
-        var ih = isRotated ? child.implicitWidth : child.implicitHeight
-        if (ih > maxH) maxH = ih
-      }
-    }
-    return maxH
-  }
+  readonly property real contentWidth: root._maxChildExtent(true)
+  readonly property real contentHeight: root._maxChildExtent(false)
 
-  // Automatic implicit dimensions based on orientation
-  implicitWidth: root.orientation === Qt.Vertical
-    ? root.pillHeight
-    : Math.max(root.contentWidth + root.padding * 2, root.pillHeight)
-
-  implicitHeight: root.orientation === Qt.Vertical
-    ? Math.max(root.contentHeight + root.padding * 2, root.pillHeight)
+  // Automatic implicit dimensions for the horizontal or vertical layout
+  implicitWidth: root.horizontal
+    ? Math.max(root.contentWidth + root.padding * 2, root.pillHeight)
     : root.pillHeight
+
+  implicitHeight: root.horizontal
+    ? root.pillHeight
+    : Math.max(root.contentHeight + root.padding * 2, root.pillHeight)
 
   // Fills the whole pill so overlay MouseAreas/Handlers (including the padding)
   // are interactive; visual children centre themselves within it.

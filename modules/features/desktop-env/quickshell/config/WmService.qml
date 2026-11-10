@@ -34,11 +34,12 @@ Singleton {
   // Bumps whenever the backend's tag/workspace list changes so per-output
   // layout bindings re-evaluate (method calls alone are not reactive).
   readonly property var allTags: (activeSvc && activeSvc.allMonitorsTags !== undefined) ? activeSvc.allMonitorsTags : []
-  readonly property var workspacesDependency: (activeSvc && activeSvc.allMonitorsTags !== undefined)
-    ? activeSvc.allMonitorsTags
-    : ((activeSvc && activeSvc.allWorkspaces !== undefined)
-        ? activeSvc.allWorkspaces
-        : (activeSvc ? activeSvc.workspacesList : []))
+  readonly property var workspacesDependency: {
+    if (!activeSvc) return []
+    if (activeSvc.allMonitorsTags !== undefined) return activeSvc.allMonitorsTags
+    if (activeSvc.allWorkspaces !== undefined) return activeSvc.allWorkspaces
+    return activeSvc.workspacesList || []
+  }
 
   readonly property string currentTitle: activeSvc ? (activeSvc.currentTitle || "") : ""
 

@@ -22,12 +22,11 @@ Rectangle {
   readonly property bool hovered: mouseArea.containsMouse
 
   signal clicked(var mouse)
-  signal secondaryClicked(var mouse)
 
   implicitWidth: root.buttonSize
   implicitHeight: root.buttonSize
-  width: implicitWidth
-  height: implicitHeight
+  width: root.buttonSize
+  height: root.buttonSize
   radius: Config.itemRadiusMd
   antialiasing: true
 
@@ -58,11 +57,7 @@ Rectangle {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
     onClicked: function(mouse) {
-      if (mouse.button === Qt.RightButton) {
-        root.secondaryClicked(mouse)
-      } else {
-        root.clicked(mouse)
-      }
+      if (mouse.button === Qt.LeftButton) root.clicked(mouse)
     }
   }
 }

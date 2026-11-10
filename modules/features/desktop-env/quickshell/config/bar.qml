@@ -10,6 +10,8 @@ Scope {
 
   property bool barVisible: Config.barVisible
   readonly property bool isHorizontal: Config.barType !== "niri"
+  readonly property bool sideLeft: !root.isHorizontal && Config.barSide !== "right"
+  readonly property bool sideRight: !root.isHorizontal && Config.barSide === "right"
 
   Variants {
     model: Quickshell.screens
@@ -25,8 +27,8 @@ Scope {
       anchors {
         top: true
         bottom: !root.isHorizontal
-        left: root.isHorizontal || Config.barSide !== "right"
-        right: root.isHorizontal || Config.barSide === "right"
+        left: root.isHorizontal || root.sideLeft
+        right: root.isHorizontal || root.sideRight
       }
       implicitHeight: root.isHorizontal ? Config.barHeight : 0
       implicitWidth: root.isHorizontal ? 0 : Config.barWidth
@@ -51,8 +53,8 @@ Scope {
       Rectangle {
         anchors.top: root.isHorizontal ? undefined : parent.top
         anchors.bottom: parent.bottom
-        anchors.left: (!root.isHorizontal && Config.barSide !== "right") ? undefined : parent.left
-        anchors.right: (!root.isHorizontal && Config.barSide === "right") ? undefined : parent.right
+        anchors.left: (root.isHorizontal || root.sideRight) ? parent.left : undefined
+        anchors.right: (root.isHorizontal || root.sideLeft) ? parent.right : undefined
         height: root.isHorizontal ? 1 : 0
         width: root.isHorizontal ? 0 : 1
         color: Colours.border

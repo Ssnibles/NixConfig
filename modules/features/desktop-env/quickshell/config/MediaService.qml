@@ -253,7 +253,7 @@ Singleton {
   // Centralised Debounced Seeking
   Timer {
     id: seekDebounceTimer
-    interval: Config.mediaSeekDebounceMs || 200
+    interval: Config.mediaSeekDebounceMs
     repeat: false
     property real targetProgress: 0
     onTriggered: {

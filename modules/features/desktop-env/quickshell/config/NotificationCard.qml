@@ -10,6 +10,9 @@ Card {
   required property var model
   required property int index
   property bool isHistory: false
+  // Toasts pop in once on creation; history cards skip the animation.
+  property bool animateEntry: false
+  property real entryScale: 1.0
 
   readonly property int uid: model.uid !== undefined ? model.uid : -1
   readonly property bool isMedia: Boolean(model.isMedia)
@@ -38,8 +41,8 @@ Card {
     if (!root.isHistory && root.uid >= 0) NotificationService.setHovered(root.uid, false)
   }
 
-  readonly property int targetIconSize: isMedia ? (Config.notifMediaIconSize || 48) : (Config.notifIconSize || 40)
-  readonly property int targetIconRadius: Config.notifIconRadius || Config.itemRadiusMd
+  readonly property int targetIconSize: isMedia ? Config.notifMediaIconSize : Config.notifIconSize
+  readonly property int targetIconRadius: Config.notifIconRadius
 
   width: parent ? parent.width : Config.notifWidth
   height: Math.max(contentCol.implicitHeight, targetIconSize) + Config.notifCardMargins * 2
@@ -52,6 +55,30 @@ Card {
   scale: hoverArea.containsMouse ? (hoverArea.pressed ? 0.98 : 1.01) : 1.0
 
   Behavior on scale { NumberAnimation { duration: Config.animFastMs } }
+
+  // Kept separate from `scale` so the entry animation cannot fight the hover
+  // binding. A Transition that animated `scale` directly left cards stuck at a
+  // partial size until the next hover reasserted the binding.
+  transform: Scale {
+    origin.x: root.width / 2
+    origin.y: root.height / 2
+    xScale: root.entryScale
+    yScale: root.entryScale
+  }
+
+  Component.onCompleted: {
+    if (root.animateEntry) entryAnimation.start()
+  }
+
+  NumberAnimation {
+    id: entryAnimation
+    target: root
+    property: "entryScale"
+    from: 0.8
+    to: 1.0
+    duration: 250
+    easing.type: Easing.OutBack
+  }
 
   MouseArea {
     id: hoverArea
@@ -162,7 +189,7 @@ Card {
       color: Colours.fg
       font.pixelSize: 13
       font.family: Config.sansFont
-      maximumLineCount: root.isMedia ? 1 : (Config.notifMaxLines || 5)
+      maximumLineCount: root.isMedia ? 1 : Config.notifMaxLines
       elide: Text.ElideRight
       wrapMode: root.isMedia ? Text.NoWrap : Text.Wrap
       visible: text !== ""

@@ -16,7 +16,7 @@ Pill {
   hoverHighlight: root.interactive
   clickable: root.interactive
   acceptedButtons: Qt.LeftButton | Qt.RightButton
-  onClicked: SystemService.openNetworkManager()
+  onClicked: NetworkService.openNetworkManager()
 
   Row {
     id: labelRow
@@ -26,8 +26,8 @@ Pill {
     transformOrigin: Item.Center
 
     Text {
-      text: SystemService.netIcon
-      color: SystemService.netColour
+      text: NetworkService.netIcon
+      color: NetworkService.netColour
       font.family: root.uiFont
       font.pixelSize: Config.fontSizeSm
       anchors.verticalCenter: parent.verticalCenter
@@ -35,7 +35,7 @@ Pill {
 
     Text {
       visible: root.horizontal
-      text: root.horizontal ? SystemService.netText : ""
+      text: root.horizontal ? NetworkService.netText : ""
       color: Colours.fg
       font.family: Config.sansFont
       font.pixelSize: Config.fontSizeSm
@@ -50,9 +50,9 @@ Pill {
     id: netTooltip
     target: root
     sharedWindow: root.sharedWindow
-    icon: SystemService.netIcon
-    iconColour: SystemService.netColour
-    title: SystemService.netTitle
-    details: SystemService.netDetails
+    icon: NetworkService.netIcon
+    iconColour: NetworkService.netColour
+    title: NetworkService.netTitle
+    details: NetworkService.netDetails
   }
 }

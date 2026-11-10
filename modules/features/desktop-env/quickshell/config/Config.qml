@@ -2,6 +2,7 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
+import "Utils.js" as Utils
 
 // Global layout knobs for the quickshell config. Everything here is consumed
 // by the bars, the popup layer and the notification overlay. Per-widget
@@ -35,12 +36,7 @@ Singleton {
     property bool commandCentreVisible: false
     property var targetScreen: null
     property var lastActiveScreen: null
-    property string commandCentreSide: {
-        var envSide = (Quickshell.env("QS_COMMAND_CENTRE_SIDE") || "").toLowerCase();
-        if (envSide === "left" || envSide === "right")
-            return envSide;
-        return "left"; // "left" | "right"
-    }
+    property string commandCentreSide: Utils.envChoice(Quickshell.env("QS_COMMAND_CENTRE_SIDE"), ["left", "right"], "left")
     readonly property int commandCentreWidth: 500
     readonly property int commandCentreRadius: 16
     readonly property int commandCentreCardRadius: 12
@@ -63,7 +59,7 @@ Singleton {
 
     // Window Manager Detection
     readonly property string wm: {
-        var envWm = (Quickshell.env("QS_BAR") || "").toLowerCase();
+        var envWm = Utils.envChoice(Quickshell.env("QS_BAR"), ["mangowc", "hyprland", "niri"], "");
         if (envWm !== "")
             return envWm;
 
@@ -94,10 +90,7 @@ Singleton {
 
     // Vertical side bar (bar.qml in Niri mode)
     readonly property int barWidth: 42
-    property string barSide: {
-        var envSide = (Quickshell.env("QS_BAR_SIDE") || "").toLowerCase();
-        return (envSide === "left" || envSide === "right") ? envSide : "left";
-    }
+    property string barSide: Utils.envChoice(Quickshell.env("QS_BAR_SIDE"), ["left", "right"], "left")
     readonly property int barMarginTop: 8
     readonly property int barMarginBottom: 8
     readonly property int barMarginLeft: 4
@@ -116,9 +109,10 @@ Singleton {
     readonly property int barHorizontalMargin: 12
     readonly property int barLeftSpacing: 12
     readonly property int barRightSpacing: 10
-    readonly property int mangowcMinWorkspaces: 5
+    readonly property int minWorkspaces: 5
 
-    // Audio, Microphone, Brightness & OSD (SystemService.qml, VolumeWidget.qml, OsdOverlay.qml)
+    // Audio, Microphone, Brightness & OSD (AudioService.qml, BrightnessService.qml,
+    // SystemService.qml, VolumeWidget.qml, OsdOverlay.qml)
     readonly property real volStep: 0.05
     readonly property real volMax: 1.5
     readonly property real micStep: 0.05
@@ -135,7 +129,6 @@ Singleton {
     readonly property int osdRadius: -1 // -1 = full pill capsule (osdHeight / 2)
     readonly property int osdMarginX: 24
     readonly property int osdMarginY: 64
-    readonly property int osdMarginBottom: osdMarginY
 
     // Window Title (WindowTitleWidget.qml)
     readonly property int windowTitleMaxWidthHorizontal: 350
@@ -290,13 +283,9 @@ Singleton {
     readonly property real lockBlurPercentage: 0.5
     // Status pill cluster corner position:
     //   "top-right" (default), "top-left", "bottom-right", "bottom-left", or "split" / "corners"
-    property string lockStatusPosition: {
-        var envPos = (Quickshell.env("QS_LOCK_STATUS_POS") || "").toLowerCase().trim();
-        if (envPos === "top-left" || envPos === "top-right" || envPos === "bottom-left" || envPos === "bottom-right" || envPos === "split" || envPos === "corners") {
-            return envPos;
-        }
-        return "top-right";
-    }
+    property string lockStatusPosition: Utils.envChoice(Quickshell.env("QS_LOCK_STATUS_POS"),
+        ["top-left", "top-right", "bottom-left", "bottom-right", "split", "corners"],
+        "top-right")
     readonly property int lockStatusMargin: 24
     readonly property int lockStatusSpacing: 8
 

@@ -1,6 +1,15 @@
 .pragma library
 
 
+// Pick an allowed value from a raw environment string, or the fallback.
+function envChoice(value, allowed, fallback) {
+  var normalised = String(value || "").toLowerCase().trim()
+  for (var i = 0; i < allowed.length; i++) {
+    if (normalised === allowed[i]) return normalised
+  }
+  return fallback
+}
+
 function findFirst(list, predicate) {
   for (var i = 0; i < list.length; i++) {
     if (predicate(list[i])) return list[i]
@@ -526,41 +535,18 @@ function findBatteryDevice(upowerDevices, displayDevice) {
   return (displayDevice && displayDevice.ready) ? displayDevice : null
 }
 
-function _screenList(screens) {
-  var list = (screens && screens.screens) ? screens.screens : screens
-  if (!list && typeof Quickshell !== "undefined") {
-    list = Quickshell.screens
-  }
-  return list || null
-}
-
-function _screenCount(list) {
-  if (!list) return 0
-  return list.length !== undefined ? list.length : (list.count !== undefined ? list.count : 0)
-}
-
-function _screenItem(list, i) {
-  return list[i] || (list.get ? list.get(i) : null)
-}
-
-function screenByName(arg1, arg2) {
-  var name = typeof arg1 === "string" ? arg1 : (typeof arg2 === "string" ? arg2 : null)
-  var rawScreens = (arg1 && typeof arg1 !== "string") ? arg1 : ((arg2 && typeof arg2 !== "string") ? arg2 : null)
-  var list = _screenList(rawScreens)
-  if (!name || !list) return null
-  var len = _screenCount(list)
-  for (var i = 0; i < len; i++) {
-    var s = _screenItem(list, i)
-    if (s && s.name === name) return s
+function screenByName(name, screens) {
+  if (!name || !screens) return null
+  for (var i = 0; i < screens.length; i++) {
+    if (screens[i] && screens[i].name === name) return screens[i]
   }
   return null
 }
 
 function screenAt(x, y, screens) {
-  var list = _screenList(screens)
-  var len = _screenCount(list)
-  for (var i = 0; i < len; i++) {
-    var s = _screenItem(list, i)
+  if (!screens) return null
+  for (var i = 0; i < screens.length; i++) {
+    var s = screens[i]
     if (s && x >= s.x && x < s.x + s.width && y >= s.y && y < s.y + s.height) {
       return s
     }
@@ -569,12 +555,9 @@ function screenAt(x, y, screens) {
 }
 
 function resolveActiveScreen(targetScreen, lastActiveScreen, screens) {
-  var target = targetScreen || (typeof Config !== "undefined" ? Config.targetScreen : null)
-  if (target) return target
-  var last = lastActiveScreen || (typeof Config !== "undefined" ? Config.lastActiveScreen : null)
-  if (last) return last
-  var list = _screenList(screens)
-  return _screenCount(list) > 0 ? _screenItem(list, 0) : null
+  if (targetScreen) return targetScreen
+  if (lastActiveScreen) return lastActiveScreen
+  return (screens && screens.length > 0) ? screens[0] : null
 }
 
 function parseOverlayPosition(pos, fallback) {
@@ -595,13 +578,25 @@ function parseOverlayPosition(pos, fallback) {
 
 function resolveOverlayScreens(allScreensMode, isActive, frozenScreen, lastActiveScreen, screens) {
   if (!isActive) return []
-  var list = _screenList(screens) || []
+  var list = screens || []
   if (allScreensMode) return list
   var s = frozenScreen || lastActiveScreen || (list.length > 0 ? list[0] : null)
   if (s && list.length > 0 && list.indexOf(s) === -1) {
     s = list[0]
   }
   return s ? [s] : []
+}
+
+// Screen-edge margins for a floating overlay, offset past any visible bar.
+function overlayMargins(pos, marginX, marginY, cfg) {
+  cfg = cfg || {}
+  var barWidth = cfg.barWidth || 0
+  return {
+    top: pos.onTop ? ((cfg.hasTopBar ? cfg.barHeight : 0) + marginY) : 0,
+    bottom: pos.onBottom ? marginY : 0,
+    left: pos.onLeft ? ((cfg.hasLeftBar ? barWidth : 0) + marginX) : 0,
+    right: pos.onRight ? ((cfg.hasRightBar ? barWidth : 0) + marginX) : 0
+  }
 }
 
 function getOrdinalDate(date) {

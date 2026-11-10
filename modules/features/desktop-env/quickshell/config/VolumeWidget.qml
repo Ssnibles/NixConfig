@@ -8,10 +8,10 @@ Pill {
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
 
-  readonly property real volPct: SystemService.volume
-  readonly property bool volMuted: SystemService.muted
-  readonly property string volIcon: SystemService.volumeIcon
-  readonly property int volPercent: SystemService.volumePercent
+  readonly property real volPct: AudioService.volume
+  readonly property bool volMuted: AudioService.muted
+  readonly property string volIcon: AudioService.volumeIcon
+  readonly property int volPercent: AudioService.volumePercent
 
   hoverHighlight: true
   clickable: true
@@ -20,14 +20,14 @@ Pill {
 
   onClicked: function(mouse) {
     if (mouse.button === Qt.RightButton) {
-      SystemService.openMixer()
+      AudioService.openMixer()
     } else {
-      SystemService.toggleMute()
+      AudioService.toggleMute()
     }
   }
 
   onWheel: function(wheel) {
-    SystemService.stepVolume(wheel.angleDelta.y)
+    AudioService.stepVolume(wheel.angleDelta.y)
     wheel.accepted = true
   }
 
@@ -80,7 +80,7 @@ Pill {
         cursorShape: Qt.PointingHandCursor
 
         function updateVolume(mouseY) {
-          SystemService.setVolume((parent.height - mouseY) / parent.height)
+          AudioService.setVolume((parent.height - mouseY) / parent.height)
         }
 
         onPressed: function(mouse) {
@@ -92,7 +92,7 @@ Pill {
           }
         }
         onWheel: function(wheel) {
-          SystemService.stepVolume(wheel.angleDelta.y)
+          AudioService.stepVolume(wheel.angleDelta.y)
           wheel.accepted = true
         }
       }

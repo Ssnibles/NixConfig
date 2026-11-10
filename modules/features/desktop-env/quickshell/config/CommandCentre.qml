@@ -19,9 +19,6 @@ Scope {
     return barSpace + Config.commandCentreMargin
   }
 
-  // Gates both the output picker content and the width it needs.
-  readonly property bool showSinkPicker: Config.ccShowSinkSwitcher && SystemService.audioSinks.length > 0
-
   function openOnActiveScreen(): void {
     if (Config.commandCentreVisible) return
     WmService.resolveTargetScreen(function() {
@@ -60,69 +57,10 @@ Scope {
         if (!Config.targetScreen) {
           Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         }
-        SystemService.refreshBrightness()
+        BrightnessService.refreshBrightness()
       } else if (ccScope.active) {
         ccScope.closing = true
       }
-    }
-  }
-
-  // Reusable slider row used for Volume, Microphone, and Brightness controls
-  component ControlSliderRow: RowLayout {
-    id: rowRoot
-    property string icon: ""
-    // Red tint for muted/unavailable states; drives all the derived colours.
-    property bool alert: false
-    property color accent: Colours.accent
-    property color iconColour: rowRoot.alert ? Colours.red : Colours.fg
-    property color iconBorderColour: rowRoot.alert ? Colours.red : Colours.border
-    property color sliderFillColour: rowRoot.alert ? Colours.red : rowRoot.accent
-    property color percentColour: rowRoot.alert ? Colours.red : Colours.fg
-    property bool iconClickable: false
-    signal iconClicked()
-    property real sliderValue: 0
-    signal sliderMoved(real value)
-    property string percentText: ""
-
-    width: parent ? parent.width : 0
-    spacing: 10
-
-    IconButton {
-      buttonSize: 32
-      icon: rowRoot.icon
-      baseColour: Colours.bgSubtle
-      hoverColour: Colours.bgRaised
-      borderColour: rowRoot.iconBorderColour
-      hoverBorderColour: rowRoot.iconBorderColour
-      iconColour: rowRoot.iconColour
-      hoverIconColour: rowRoot.iconColour
-      enabled: rowRoot.iconClickable
-      onClicked: rowRoot.iconClicked()
-    }
-
-    SliderControl {
-      id: slider
-      Layout.fillWidth: true
-      Layout.alignment: Qt.AlignVCenter
-      value: rowRoot.sliderValue
-      fillColour: rowRoot.sliderFillColour
-      snapPercent: 5
-      onMoved: function(v) { rowRoot.sliderMoved(v) }
-    }
-
-    // Fixed, right aligned column sized to 38px so the slider keeps
-    // identical length regardless of 1, 2, or 3 digits.
-    Text {
-      id: percentLabel
-      text: rowRoot.percentText
-      color: rowRoot.percentColour
-      font.family: Config.monoFont
-      font.pixelSize: 14
-      Layout.minimumWidth: 38
-      Layout.preferredWidth: 38
-      Layout.maximumWidth: 38
-      horizontalAlignment: Text.AlignRight
-      Layout.alignment: Qt.AlignVCenter
     }
   }
 
@@ -342,11 +280,8 @@ Scope {
 
             // SYSTEM CONTROLS CARD (OUTPUT VOLUME, SINK PICKER, MICROPHONE & BRIGHTNESS)
             Card {
-              id: systemControlsCard
               Layout.fillWidth: true
               implicitHeight: sliderCol.implicitHeight + 24
-
-              property bool sinkPickerOpen: false
 
               ColumnLayout {
                 id: sliderCol
@@ -358,198 +293,56 @@ Scope {
 
                 // Output Volume Row
                 ControlSliderRow {
-                  icon: SystemService.volumeIcon
-                  alert: SystemService.muted
+                  icon: AudioService.volumeIcon
+                  alert: AudioService.muted
                   iconClickable: true
-                  onIconClicked: SystemService.toggleMute()
-                  sliderValue: SystemService.volume
+                  onIconClicked: AudioService.toggleMute()
+                  sliderValue: AudioService.volume
                   onSliderMoved: function(v) {
-                    SystemService.setVolumeDebounced(v)
+                    AudioService.setVolumeDebounced(v)
                   }
-                  percentText: SystemService.volumePercent + "%"
+                  percentText: AudioService.volumePercent + "%"
                 }
 
-                // Audio Output Sink Selector Pill
-                Pill {
-                  visible: ccScope.showSinkPicker
-                  Layout.fillWidth: true
-                  pillHeight: 26
-                  radius: Config.itemRadiusSm
-                  baseColour: Colours.bgSubtle
-                  hoverColour: Colours.bgRaised
-                  hoverHighlight: true
-                  border.color: systemControlsCard.sinkPickerOpen ? Colours.accent : Colours.border
-                  clickable: true
-                  onClicked: systemControlsCard.sinkPickerOpen = !systemControlsCard.sinkPickerOpen
-
-                  RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
-                    spacing: 8
-
-                    Text {
-                      text: "󰓃"
-                      color: systemControlsCard.sinkPickerOpen ? Colours.accent : Colours.fgDim
-                      font.family: Config.monoFont
-                      font.pixelSize: Config.iconSizeSm
-                      Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    Text {
-                      Layout.fillWidth: true
-                      text: SystemService.audioSink ? SystemService.sinkDisplayName(SystemService.audioSink) : "Default Output"
-                      color: Colours.fg
-                      font.family: Config.sansFont
-                      font.pixelSize: Config.fontSizeSm
-                      elide: Text.ElideRight
-                      Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    Text {
-                      text: systemControlsCard.sinkPickerOpen ? "󰅃" : "󰅀"
-                      color: systemControlsCard.sinkPickerOpen ? Colours.accent : Colours.fgDim
-                      font.family: Config.monoFont
-                      font.pixelSize: Config.iconSizeSm
-                      Layout.alignment: Qt.AlignVCenter
-                    }
-                  }
-                }
-
-                // Expandable Audio Output Sink List
-                ColumnLayout {
-                  visible: ccScope.showSinkPicker && systemControlsCard.sinkPickerOpen
-                  Layout.fillWidth: true
-                  spacing: 4
-
-                  Repeater {
-                    model: SystemService.audioSinks
-
-                    delegate: Pill {
-                      id: outputPill
-                      required property var modelData
-                      readonly property bool isCurrent: SystemService.audioSink !== null && modelData.id === SystemService.audioSink.id
-
-                      Layout.fillWidth: true
-                      pillHeight: 28
-                      radius: Config.itemRadiusSm
-                      baseColour: outputPill.isCurrent ? Colours.bgSubtle : "transparent"
-                      hoverColour: Colours.bgSubtle
-                      hoverHighlight: true
-                      border.color: outputPill.isCurrent ? Colours.accent : "transparent"
-                      clickable: true
-                      onClicked: {
-                        SystemService.selectAudioSink(outputPill.modelData)
-                        systemControlsCard.sinkPickerOpen = false
-                      }
-
-                      RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 10
-                        anchors.rightMargin: 10
-                        spacing: 8
-
-                        Text {
-                          text: outputPill.isCurrent ? "󰄬" : "󰓃"
-                          color: outputPill.isCurrent ? Colours.accent : Colours.fgDim
-                          font.family: Config.monoFont
-                          font.pixelSize: Config.iconSizeSm
-                          Layout.alignment: Qt.AlignVCenter
-                        }
-
-                        Text {
-                          Layout.fillWidth: true
-                          text: SystemService.sinkDisplayName(outputPill.modelData)
-                          color: outputPill.isCurrent ? Colours.fg : Colours.fgMid
-                          font.family: Config.sansFont
-                          font.pixelSize: Config.fontSizeSm
-                          font.bold: outputPill.isCurrent
-                          elide: Text.ElideRight
-                          Layout.alignment: Qt.AlignVCenter
-                        }
-                      }
-                    }
-                  }
-
-                  Pill {
-                    id: outputMixerPill
-                    Layout.fillWidth: true
-                    pillHeight: 24
-                    radius: Config.itemRadiusSm
-                    baseColour: "transparent"
-                    hoverColour: Colours.bgSubtle
-                    hoverHighlight: true
-                    border.color: "transparent"
-                    clickable: true
-                    onClicked: {
-                      SystemService.openMixer()
-                      Config.commandCentreVisible = false
-                    }
-
-                    Row {
-                      anchors.centerIn: parent
-                      spacing: 6
-
-                      Text {
-                        text: "󰒓"
-                        color: outputMixerPill.hovered ? Colours.accent : Colours.fgDim
-                        font.family: Config.monoFont
-                        font.pixelSize: Config.iconSizeSm
-                        anchors.verticalCenter: parent.verticalCenter
-                      }
-
-                      Text {
-                        text: "Open Audio Mixer"
-                        color: outputMixerPill.hovered ? Colours.fg : Colours.fgMid
-                        font.family: Config.sansFont
-                        font.pixelSize: Config.fontSizeXs
-                        anchors.verticalCenter: parent.verticalCenter
-                      }
-                    }
-                  }
-                }
+                AudioSinkPicker { }
 
                 // Divider if microphone is available
-                Rectangle {
-                  visible: Config.ccShowMicSlider && SystemService.hasMic
+                Divider {
+                  visible: Config.ccShowMicSlider && AudioService.hasMic
                   Layout.fillWidth: true
-                  implicitHeight: 1
-                  color: Colours.border
                 }
 
                 // Microphone Row
                 ControlSliderRow {
-                  visible: Config.ccShowMicSlider && SystemService.hasMic
-                  icon: SystemService.micIcon
-                  alert: SystemService.micMuted
+                  visible: Config.ccShowMicSlider && AudioService.hasMic
+                  icon: AudioService.micIcon
+                  alert: AudioService.micMuted
                   iconClickable: true
-                  onIconClicked: SystemService.toggleMicMute()
-                  sliderValue: SystemService.micVolume
+                  onIconClicked: AudioService.toggleMicMute()
+                  sliderValue: AudioService.micVolume
                   onSliderMoved: function(v) {
-                    SystemService.setMicVolumeDebounced(v)
+                    AudioService.setMicVolumeDebounced(v)
                   }
-                  percentText: SystemService.micVolumePercent + "%"
+                  percentText: AudioService.micVolumePercent + "%"
                 }
 
                 // Divider if brightness is available
-                Rectangle {
-                  visible: Config.ccShowBrightnessSlider && SystemService.brightnessAvailable
+                Divider {
+                  visible: Config.ccShowBrightnessSlider && BrightnessService.brightnessAvailable
                   Layout.fillWidth: true
-                  implicitHeight: 1
-                  color: Colours.border
                 }
 
                 // Brightness Row
                 ControlSliderRow {
-                  visible: Config.ccShowBrightnessSlider && SystemService.brightnessAvailable
+                  visible: Config.ccShowBrightnessSlider && BrightnessService.brightnessAvailable
                   icon: "󰃠"
                   iconColour: Colours.yellow
                   accent: Colours.yellow
-                  sliderValue: SystemService.brightness
+                  sliderValue: BrightnessService.brightness
                   onSliderMoved: function(v) {
-                    SystemService.setBrightness(v)
+                    BrightnessService.setBrightness(v)
                   }
-                  percentText: SystemService.brightnessPercent + "%"
+                  percentText: BrightnessService.brightnessPercent + "%"
                 }
               }
             }
@@ -560,201 +353,9 @@ Scope {
               showWhenIdle: Config.alwaysShowMediaCard
             }
 
-            // NOTIFICATION HISTORY CARD
-            Card {
-              id: notifCard
+            NotificationHistoryCard {
               Layout.fillWidth: true
               Layout.fillHeight: true
-
-              ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 12
-                spacing: 10
-
-                // Header Row
-                RowLayout {
-                  id: notifHeaderRow
-                  Layout.fillWidth: true
-                  spacing: 8
-
-                  Row {
-                    spacing: 6
-                    Layout.alignment: Qt.AlignVCenter
-
-                    Text {
-                      text: NotificationService.dnd ? "󰂛" : "󰂚"
-                      color: NotificationService.dnd ? Colours.red : Colours.accent
-                      font.family: Config.monoFont
-                      font.pixelSize: 17
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Text {
-                      text: "Notifications"
-                      color: Colours.fg
-                      font.family: Config.sansFont
-                      font.pixelSize: Config.fontSizeLg
-                      font.bold: true
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    // Badge count pill
-                    Pill {
-                      visible: NotificationService.historyModel.count > 0
-                      pillHeight: 18
-                      padding: 5
-                      pillColour: Colours.bgSubtle
-                      anchors.verticalCenter: parent.verticalCenter
-
-                      Text {
-                        id: badgeText
-                        anchors.centerIn: parent
-                        text: NotificationService.historyModel.count
-                        color: Colours.fgDim
-                        font.family: Config.sansFont
-                        font.pixelSize: Config.fontSizeXs
-                      }
-                    }
-                  }
-
-                  Item { Layout.fillWidth: true }
-
-                  // Controls: Mute toggle & Clear button
-                  Row {
-                    spacing: 6
-                    Layout.alignment: Qt.AlignVCenter
-
-                    // Mute / DND Toggle Button
-                    Pill {
-                      id: mutePill
-                      pillHeight: 26
-                      padding: 6
-                      baseColour: NotificationService.dnd ? Colours.red : "transparent"
-                      hoverColour: NotificationService.dnd ? Colours.red : Colours.bgSubtle
-                      hoverHighlight: true
-                      border.color: NotificationService.dnd ? Colours.red : Colours.border
-                      clickable: true
-                      onClicked: NotificationService.toggleDnd()
-
-                      Row {
-                        id: muteRow
-                        anchors.centerIn: parent
-                        spacing: 4
-
-                        Text {
-                          text: NotificationService.dnd ? "󰂛" : "󰂚"
-                          color: NotificationService.dnd ? Colours.bg : (mutePill.hovered ? Colours.red : Colours.fgDim)
-                          font.family: Config.monoFont
-                          font.pixelSize: Config.iconSizeSm
-                          anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        Text {
-                          text: NotificationService.dnd ? "Muted" : "Mute"
-                          color: NotificationService.dnd ? Colours.bg : (mutePill.hovered ? Colours.fg : Colours.fgMid)
-                          font.family: Config.sansFont
-                          font.pixelSize: Config.fontSizeSm
-                          anchors.verticalCenter: parent.verticalCenter
-                        }
-                      }
-                    }
-
-                    // Clear Button
-                    Pill {
-                      id: clearPill
-                      visible: NotificationService.historyModel.count > 0
-                      pillHeight: 26
-                      padding: 6
-                      baseColour: "transparent"
-                      hoverColour: Colours.bgSubtle
-                      hoverHighlight: true
-                      clickable: true
-                      onClicked: NotificationService.clearHistory()
-
-                      Row {
-                        id: clearRow
-                        anchors.centerIn: parent
-                        spacing: 4
-
-                        Text {
-                          text: "󰎟"
-                          color: clearPill.hovered ? Colours.red : Colours.fgDim
-                          font.family: Config.monoFont
-                          font.pixelSize: Config.iconSizeSm
-                          anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        Text {
-                          text: "Clear"
-                          color: clearPill.hovered ? Colours.fg : Colours.fgMid
-                          font.family: Config.sansFont
-                          font.pixelSize: Config.fontSizeSm
-                          anchors.verticalCenter: parent.verticalCenter
-                        }
-                      }
-                    }
-                  }
-                }
-
-                // Divider line
-                Rectangle {
-                  Layout.fillWidth: true
-                  implicitHeight: 1
-                  color: Colours.border
-                }
-
-                // Empty State view
-                Item {
-                  visible: NotificationService.historyModel.count === 0
-                  Layout.fillWidth: true
-                  Layout.fillHeight: true
-
-                  Row {
-                    anchors.centerIn: parent
-                    spacing: 8
-
-                    Text {
-                      text: "󰂜"
-                      color: Colours.fgDim
-                      font.family: Config.monoFont
-                      font.pixelSize: 22
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Text {
-                      text: "No notifications"
-                      color: Colours.fgDim
-                      font.family: Config.sansFont
-                      font.pixelSize: 14
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-                  }
-                }
-
-                // Notification History ListView Container
-                Item {
-                  visible: NotificationService.historyModel.count > 0
-                  Layout.fillWidth: true
-                  Layout.fillHeight: true
-                  clip: true
-
-                  ListView {
-                    id: notifHistList
-                    anchors.fill: parent
-                    anchors.leftMargin: 6
-                    anchors.rightMargin: 6
-                    anchors.topMargin: 2
-                    anchors.bottomMargin: 2
-                    spacing: 6
-                    model: NotificationService.historyModel
-
-                    delegate: NotificationCard {
-                      width: notifHistList.width
-                      isHistory: true
-                    }
-                  }
-                }
-              }
             }
 
             // SYSTEM POWER/CONTROLS

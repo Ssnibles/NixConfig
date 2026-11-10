@@ -44,6 +44,7 @@ Scope {
       exclusionMode: ExclusionMode.Ignore
 
       readonly property var pos: Utils.parseOverlayPosition(root.position, "top-right")
+      readonly property var insets: Utils.overlayMargins(panel.pos, Config.notifMarginX, Config.notifMarginY, Config)
 
       anchors {
         top: panel.pos.onTop
@@ -53,10 +54,10 @@ Scope {
       }
 
       margins {
-        top: panel.pos.onTop ? (Config.hasTopBar ? (Config.barHeight + Config.notifMarginY) : Config.notifMarginY) : 0
-        bottom: panel.pos.onBottom ? Config.notifMarginY : 0
-        left: panel.pos.onLeft ? (Config.hasLeftBar ? (Config.barWidth + Config.notifMarginX) : Config.notifMarginX) : 0
-        right: panel.pos.onRight ? (Config.hasRightBar ? (Config.barWidth + Config.notifMarginX) : Config.notifMarginX) : 0
+        top: panel.insets.top
+        bottom: panel.insets.bottom
+        left: panel.insets.left
+        right: panel.insets.right
       }
 
       implicitWidth: Config.notifWidth + Config.notifCardMargins * 2
@@ -79,7 +80,6 @@ Scope {
 
         add: Transition {
           NumberAnimation { property: "opacity"; from: 0; duration: 250; easing.type: Easing.OutCubic }
-          NumberAnimation { property: "scale"; from: 0.8; to: 1.0; duration: 250; easing.type: Easing.OutBack }
         }
 
         move: Transition {
@@ -88,7 +88,7 @@ Scope {
 
         Repeater {
           model: NotificationService.activeModel
-          delegate: NotificationCard {}
+          delegate: NotificationCard { animateEntry: true }
         }
       }
     }

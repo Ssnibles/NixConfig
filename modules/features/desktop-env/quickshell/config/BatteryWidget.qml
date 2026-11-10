@@ -11,7 +11,7 @@ Pill {
   // purely informational).
   property bool interactive: true
 
-  readonly property bool batPresent: SystemService.batPresent
+  readonly property bool batPresent: BatteryService.batPresent
 
   visible: root.batPresent
   horizontal: false
@@ -22,10 +22,10 @@ Pill {
     id: batTooltip
     target: root
     sharedWindow: root.sharedWindow
-    icon: SystemService.batIcon
-    iconColour: SystemService.batColour
-    title: SystemService.batTitle
-    details: SystemService.batDetails
+    icon: BatteryService.batIcon
+    iconColour: BatteryService.batColour
+    title: BatteryService.batTitle
+    details: BatteryService.batDetails
   }
 
   Row {
@@ -33,8 +33,8 @@ Pill {
     spacing: 4
 
     Text {
-      text: SystemService.batIcon
-      color: SystemService.batColour
+      text: BatteryService.batIcon
+      color: BatteryService.batColour
       font.family: root.uiFont
       font.pixelSize: root.horizontal ? 14 : Config.iconSizeLg
       anchors.verticalCenter: parent.verticalCenter
@@ -42,8 +42,8 @@ Pill {
 
     Text {
       visible: root.horizontal
-      text: root.horizontal ? (SystemService.batPct + "%") : ""
-      color: SystemService.batColour
+      text: root.horizontal ? (BatteryService.batPct + "%") : ""
+      color: BatteryService.batColour
       font.family: Config.sansFont
       font.pixelSize: Config.fontSizeSm
       font.bold: true

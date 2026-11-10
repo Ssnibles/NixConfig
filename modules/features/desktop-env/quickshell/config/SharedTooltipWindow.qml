@@ -199,11 +199,9 @@ PanelWindow {
             }
           }
 
-          Rectangle {
+          Divider {
             visible: card._src ? card._src.details.length > 0 : false
             width: parent.width
-            height: 1
-            color: Colours.border
           }
 
           Repeater {

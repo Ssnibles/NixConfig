@@ -98,10 +98,8 @@ Pill {
             }
           }
 
-          Rectangle {
+          Divider {
             width: parent.width
-            height: 1
-            color: Colours.border
           }
 
           // Options List

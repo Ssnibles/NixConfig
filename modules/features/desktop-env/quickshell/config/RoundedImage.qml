@@ -10,11 +10,8 @@ Item {
 
   property alias source: img.source
   property alias sourceSize: img.sourceSize
-  property alias fillMode: img.fillMode
-  property alias cache: img.cache
   property real radius: 8
   readonly property bool ready: img.source !== "" && img.status === Image.Ready
-  readonly property int status: img.status
 
   // Emitted when the image fails to load, so callers can advance to a fallback
   // candidate or reveal a placeholder.

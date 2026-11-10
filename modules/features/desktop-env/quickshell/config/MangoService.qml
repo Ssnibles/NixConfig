@@ -132,8 +132,10 @@ QtObject {
     var symUpper = sym.toUpperCase()
     var symLower = sym.toLowerCase()
 
-    if (symUpper === "M" || symUpper === "[M]" || /^\[\d+\]$/.test(sym) || symLower === "monocle") {
-      return availableLayouts[2] // Monocle
+    // Monocle arrives as "M", "[M]", "[1]", or "monocle"; normalise before
+    // the symbol lookup so the table stays the only source of truth.
+    if (symUpper === "[M]" || /^\[\d+\]$/.test(sym) || symLower === "monocle") {
+      symUpper = "M"
     }
 
     for (var i = 0; i < availableLayouts.length; i++) {
@@ -224,7 +226,7 @@ QtObject {
         maxIdx = Math.max(maxIdx, tags[i].index)
       }
     }
-    var minCount = (typeof Config !== "undefined" && Config.mangowcMinWorkspaces) ? Config.mangowcMinWorkspaces : 5
+    var minCount = (typeof Config !== "undefined" && Config.minWorkspaces) ? Config.minWorkspaces : 5
     var count = Math.max(minCount, maxIdx)
     var res = []
     for (var j = 0; j < count; j++) {

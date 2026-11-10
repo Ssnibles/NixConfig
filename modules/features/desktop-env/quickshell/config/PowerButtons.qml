@@ -19,11 +19,11 @@ RowLayout {
   readonly property var buttonModel: {
     var m = []
     if (root.showLock) {
-      m.push({ icon: "󰌾", label: "Lock", cmd: Config.cmdLock, hoverCol: Colours.accent })
+      m.push({ icon: "󰌾", label: "Lock", cmd: Config.cmdLock, hoverColour: Colours.accent })
     }
-    m.push({ icon: "󰤄", label: "Sleep", cmd: Config.cmdSleep, hoverCol: Colours.accent })
-    m.push({ icon: "󰜉", label: "Reboot", cmd: Config.cmdReboot, hoverCol: Colours.orange })
-    m.push({ icon: "󰐥", label: "Power", cmd: Config.cmdPoweroff, hoverCol: Colours.red })
+    m.push({ icon: "󰤄", label: "Sleep", cmd: Config.cmdSleep, hoverColour: Colours.accent })
+    m.push({ icon: "󰜉", label: "Reboot", cmd: Config.cmdReboot, hoverColour: Colours.orange })
+    m.push({ icon: "󰐥", label: "Power", cmd: Config.cmdPoweroff, hoverColour: Colours.red })
     return m
   }
 
@@ -38,7 +38,7 @@ RowLayout {
       height: 48
       radius: root.buttonRadius
       color: hoverArea.containsMouse ? Colours.bgSubtle : Colours.bgRaised
-      border.color: hoverArea.containsMouse ? modelData.hoverCol : Colours.border
+      border.color: hoverArea.containsMouse ? modelData.hoverColour : Colours.border
       border.width: 1
       Behavior on scale { NumberAnimation { duration: 100 } }
 
@@ -61,7 +61,7 @@ RowLayout {
 
         Text {
           text: buttonDelegate.modelData.icon
-          color: hoverArea.containsMouse ? buttonDelegate.modelData.hoverCol : Colours.fg
+          color: hoverArea.containsMouse ? buttonDelegate.modelData.hoverColour : Colours.fg
           font.family: Config.monoFont
           font.pixelSize: 18
           anchors.verticalCenter: parent.verticalCenter
