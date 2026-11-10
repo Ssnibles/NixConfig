@@ -8,12 +8,17 @@ where useful, a `references/` folder of examples.
 The `description:` is the trigger. Write it so the skill loads for the right task
 and stays out of the way otherwise.
 
+Base conventions are not in this list. They are injected as a system rule by
+`features.pi-agent.baseConventions`, from `../rules/base-conventions.md`, so a
+session cannot start without them. Everything below is loaded on demand, which
+means a skill can silently fail to load. Keep things that must always apply in
+the rules file instead.
+
 ## The suite
 
 | Skill | Loads when | Depends on |
 |---|---|---|
-| [`base-conventions`](base-conventions/SKILL.md) | Every task, before anything else | — |
-| [`programming-conventions`](programming-conventions/SKILL.md) | Any code, configuration, or refactoring work | `base-conventions` |
+| [`programming-conventions`](programming-conventions/SKILL.md) | Any code, configuration, or refactoring work | none |
 | [`typst-snippets`](typst-snippets/SKILL.md) | Writing or editing any `.typ` file | — |
 | [`lecture-notes`](lecture-notes/SKILL.md) | Turning slides, recordings or readings into study notes | `typst-snippets` |
 | [`test-notes`](test-notes/SKILL.md) | Working through a past test, exam or practice paper | `typst-snippets` |
@@ -22,13 +27,17 @@ and stays out of the way otherwise.
 | [`revision-sheets`](revision-sheets/SKILL.md) | Making a cram sheet or active-recall question bank | `typst-snippets` |
 | [`ebook-library`](ebook-library/SKILL.md) | Curating a Calibre library or Kobo reader | — |
 
-`base-conventions` applies to everything: British English, plain words, and
-short comments. `programming-conventions` adds the rules for code work and
-tells pi to load `base-conventions` too. `typst-snippets` is the foundation for
+`programming-conventions` adds the rules for code work. `typst-snippets` is the foundation for
 the notes skills: it defines the shared theme, the helper functions
 (`#callout`, `#card`, `#qa`, `#uml-class`, and so on), the palette, and the
 appearance rules. The other skills define what a document should contain and
 all tell pi to load `typst-snippets` as well.
+
+`ebook-library` stands apart from the note-writing skills. It covers a Calibre
+library and a Kobo reader: the two databases, the SQL traps in each, the rule
+that tags describe a book's content while collections are the sections a
+bookshop would shelve it in, and how to bring a series' cover art back into one
+design.
 
 ## Shared conventions
 

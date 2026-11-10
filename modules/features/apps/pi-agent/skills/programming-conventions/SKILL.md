@@ -1,11 +1,12 @@
 ---
 name: programming-conventions
-description: Conventions for any programming task, including writing, editing, refactoring, reviewing, debugging, or configuring code. Load this for all code work, together with the base-conventions skill.
+description: Conventions for any programming task, including writing, editing, refactoring, reviewing, debugging, or configuring code. Load this for all code work.
 ---
 
 # Programming conventions
 
-Load `base-conventions` as well. It defines British English and the general writing rules.
+The base conventions are already in force as a system rule: British English,
+plain words, short comments. Do not restate them.
 
 ## Before changing code
 

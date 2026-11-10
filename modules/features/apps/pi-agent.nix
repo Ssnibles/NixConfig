@@ -115,8 +115,7 @@
       '';
 
       bundledSkills =
-        lib.optional cfg.baseConventions (mkSkill "base-conventions" ./pi-agent/skills/base-conventions)
-        ++ lib.optional cfg.programmingConventions (
+        lib.optional cfg.programmingConventions (
           mkSkill "programming-conventions" ./pi-agent/skills/programming-conventions
         )
         ++ lib.optional cfg.typstSnippets typstSnippetsSkill
@@ -128,6 +127,26 @@
         )
         ++ lib.optional cfg.revisionSheets (mkSkill "revision-sheets" ./pi-agent/skills/revision-sheets)
         ++ lib.optional cfg.ebookLibrary (mkSkill "ebook-library" ./pi-agent/skills/ebook-library);
+
+      # Base conventions used to be a skill, which meant a session could start
+      # without ever loading them. Rules are injected into the system prompt, so
+      # they always apply. The two are concatenated rather than merged so a
+      # caller adding rules does not silently drop the base ones.
+      baseRules = ./pi-agent/rules/base-conventions.md;
+
+      effectiveRules =
+        if !cfg.baseConventions then
+          cfg.rules
+        else if cfg.rules == null then
+          baseRules
+        else
+          # toFile adds the concatenated rules to the store during evaluation.
+          # A derivation would be rejected: the option takes text or a path.
+          builtins.toFile "pi-rules.md" (
+            "${builtins.readFile baseRules}\n\n${
+              if builtins.isPath cfg.rules then builtins.readFile cfg.rules else cfg.rules
+            }"
+          );
 
       defaultSettings = {
         inherit (cfg) defaultProvider defaultModel;
@@ -252,7 +271,10 @@
             lib.types.either lib.types.lines (lib.types.addCheck lib.types.path builtins.isPath)
           );
           default = null;
-          description = "System prompt instructions or path to markdown file appended to pi.";
+          description = ''
+            Extra system prompt instructions, or a path to a markdown file.
+            Appended after the base conventions, which are added automatically.
+          '';
         };
 
         skills = lib.mkOption {
@@ -265,8 +287,9 @@
           type = lib.types.bool;
           default = true;
           description = ''
-            Bundle the base-conventions skill. It sets British English and
-            short, plain comments for every task.
+            Inject the base conventions as a system rule. They set British
+            English and short, plain comments for every task. As a rule they
+            cannot be skipped, which a skill could be.
           '';
         };
 
@@ -355,7 +378,7 @@
           package = lib.mkDefault effectivePackage;
           jail.enable = lib.mkIf cfg.jail.enable (lib.mkDefault true);
           settings = lib.mkDefault (defaultSettings // cfg.settings);
-          rules = lib.mkIf (cfg.rules != null) (lib.mkDefault cfg.rules);
+          rules = lib.mkIf (effectiveRules != null) (lib.mkDefault effectiveRules);
           skills = lib.mkIf (cfg.skills != [ ] || bundledSkills != [ ]) (
             lib.mkDefault (bundledSkills ++ cfg.skills)
           );

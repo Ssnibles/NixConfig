@@ -1,11 +1,7 @@
----
-name: base-conventions
-description: Core writing and commenting conventions for every task, regardless of topic. Load this first, even when no other skill applies. It sets British English, plain prose, and the rule that comments must be short, useful, and free of jargon.
----
-
 # Base conventions
 
-Load this skill first for any task. It applies to code, comments, documentation, commit messages, and chat replies.
+These apply to every task: code, comments, documentation, commit messages, and
+chat replies.
 
 ## Language
 
@@ -33,7 +29,8 @@ Use British English everywhere. Common replacements:
 | catalogue | catalog |
 | grey | gray |
 
-Keep the spelling of code identifiers, command names, file paths, and third party APIs exactly as they are. Only prose changes.
+Keep the spelling of code identifiers, command names, file paths, and third
+party APIs exactly as they are. Only prose changes.
 
 ## Writing
 
