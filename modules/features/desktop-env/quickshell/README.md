@@ -2,7 +2,7 @@
 
 This directory contains the [Quickshell](https://quickshell.outfoxxed.me/) configuration for the unified status bar (`bar.qml`), the **Command Centre** dashboard, the Wayland **Lock Screen**, the **Notification system**, and shared UI primitives (pills, tooltips, sliders).
 
-All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by Nix activation scripts. **QML edits apply immediately on the next quickshell restart** — no Nix rebuild needed for standard QML modifications. Only `Colours.qml` is generated directly by Nix from system theme tokens and requires a rebuild to update.
+All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by `nixos.liveLinks`. **QML edits apply immediately on the next quickshell restart** — no Nix rebuild needed for standard QML modifications. Only `Colours.qml` is generated directly by Nix from system theme tokens and requires a rebuild to update.
 
 ---
 
@@ -29,7 +29,7 @@ All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by N
 | --- | --- |
 | **System Packages** | `quickshell` (unstable) is installed into the environment. |
 | **`Colours.qml`** | Generated from `config.theme.colours` into `~/.config/quickshell/Colours.qml` via Hjem. |
-| **Config Symlinks** | Activation script (`quickshell-config`) creates `~/.config/quickshell` and symlinks every file in `config/*`. |
+| **Config Symlinks** | `nixos.liveLinks` (`quickshell-config`) links every file in `config/*` into `~/.config/quickshell`. |
 | **Permissions** | Symlinks and target directories are owned by the active user. |
 
 ---
@@ -79,7 +79,7 @@ Scope {
 | `volBarHeight` | `64` | Volume bar widget height |
 | `wifiMaxTextLength` | `90` | Maximum network SSID display width |
 | `barHeight` | `34` | MangoWC top bar height (px) |
-| `mangowcMinWorkspaces` | `5` | Minimum workspace tag slots in MangoWC |
+| `minWorkspaces` | `5` | Minimum workspace slots (MangoWC and Hyprland) |
 
 ### 3.3 Command Centre (`CommandCentre.qml`)
 | Property | Default | Purpose |
@@ -173,7 +173,7 @@ Scope {
 
 #### `bar.qml`
 - **Role**: Unified horizontal top bar (MangoWC, Hyprland) and vertical side bar (Niri).
-- **Features**: Powered by singletons (`WmService`, `ClockService`, `SystemService`, `MediaService`) to render workspace dots, layout switcher, active window titles, system status indicators, clock, and `SharedTooltipWindow`.
+- **Features**: Powered by singletons (`WmService`, `ClockService`, `AudioService`, `NetworkService`, `BatteryService`, `MediaService`) to render workspace dots, layout switcher, active window titles, system status indicators, clock, and `SharedTooltipWindow`.
 
 ---
 
@@ -183,9 +183,40 @@ Scope {
 - **Role**: Unified `pragma Singleton` bridging active compositor backends (`MangoService`, `HyprlandService`, `NiriService`) based on `Config.wm`.
 - **Exposes**: `currentTitle`, `workspacesDependency`, `getWorkspaces(outputName)`, `focusWorkspace(id)`, `getLayoutSymbol(outputName)`, `getLayoutInfo(symbol)`, `setLayout(symbol)`, `nextLayout()`, and active/cursor monitor detection (`resolveTargetScreen(callback)`, `cancelScreenQuery()`, `queryingScreen`).
 
+#### `AudioService.qml`
+- **Role**: `pragma Singleton` for PipeWire output sinks and the default microphone source.
+- **Exposes**: `audioSink`, `audioSinks`, `selectAudioSink(node)`, `sinkDisplayName(node)`, `volume`, `muted`, `volumePercent`, `volumeIcon`, `toggleMute()`, `setVolume(val)`, `setVolumeDebounced(val)`, `stepVolume(dir)`, `openMixer()`, `hasMic`, `micVolume`, `micMuted`, `micVolumePercent`, `micIcon`, `toggleMicMute()`, `setMicVolume(val)`, `setMicVolumeDebounced(val)`, `stepMicVolume(dir)`.
+
+#### `BrightnessService.qml`
+- **Role**: `brightnessctl` and sysfs backlight control. Emits `osdRequested()` when the level changes.
+- **Exposes**: `brightness`, `brightnessAvailable`, `brightnessPercent`, `refreshBrightness(notifyOsd)`, `setBrightness(val)`, `stepBrightness(dir)`.
+
+#### `NetworkService.qml`
+- **Role**: Wired and Wi-Fi state from `Quickshell.Networking`.
+- **Exposes**: `netIcon`, `netText`, `netColour`, `netTitle`, `netDetails`, `openNetworkManager()`.
+
+#### `BatteryService.qml`
+- **Role**: Battery telemetry from UPower.
+- **Exposes**: `batPresent`, `batPct`, `batCharging`, `batPlugged`, `batIcon`, `batColour`, `batTitle`, `batDetails`.
+
+#### `BluetoothService.qml`
+- **Role**: Adapter and connected-device state from `Quickshell.Bluetooth`.
+- **Exposes**: `btIcon`, `btColour`, `btStatusText`, `btTitle`, `btDetails`, `toggleBluetooth()`, `openBluetoothManager()`.
+
+#### `TrayService.qml`
+- **Role**: System tray items plus the per-session hidden/unhidden lists shared across monitors.
+- **Exposes**: `trayAllItems`, `trayVisibleItems`, `trayHiddenCount`, `trayHasContent`, `trayItemKey(item)`, `isTrayItemHidden(item)`, `toggleTrayItemHidden(item)`.
+
 #### `SystemService.qml`
-- **Role**: Central `pragma Singleton` for PipeWire output sinks, microphone input source, `brightnessctl` + sysfs screen backlight control, OSD state, and `"system"` IPC actions.
-- **Exposes**: `audioSink`, `audioSinks`, `selectAudioSink(node)`, `sinkDisplayName(node)`, `volume`, `muted`, `volumePercent`, `volumeIcon`, `toggleMute()`, `setVolume(val)`, `setVolumeDebounced(val)`, `stepVolume(dir)`, `openMixer()`, `hasMic`, `micVolume`, `micMuted`, `micVolumePercent`, `micIcon`, `toggleMicMute()`, `setMicVolume(val)`, `setMicVolumeDebounced(val)`, `brightness`, `brightnessAvailable`, `brightnessPercent`, `refreshBrightness()`, `setBrightness(val)`, `stepBrightness(dir)`, and OSD state (`osdVisible`, `osdKind`, `osdIcon`, `osdLabel`, `osdValue`, `osdMuted`, `showOsd(...)`).
+- **Role**: OSD state and the `"system"` / `"tray"` IPC targets. It observes the hardware services rather than owning their state.
+- **Exposes**: `osdVisible`, `osdKind`, `osdIcon`, `osdLabel`, `osdValue`, `osdMuted`, `showOsd(kind)`, plus the `volumeUp`, `volumeDown`, `toggleMute`, `micUp`, `micDown`, `toggleMicMute`, `brightnessUp`, and `brightnessDown` IPC actions.
+
+#### `NotificationIcons.qml`
+- **Role**: Resolves notification icons, avatars, and fallback glyphs, and caches ephemeral `/tmp/` images.
+- **Exposes**: `cacheDir`, `extractRawImage(notification)`, `resolvePrimary(uid, rawUrl)`, `resolveFallback(appIcon, desktopEntry, appName)`, `resolveGlyph(...)`, and the `imageCopied(uid, url)` signal.
+
+#### `TrayMenu.qml`
+- **Role**: Tray context menu rendered inside the shared tooltip layer. Owns the DBusMenu entry pills and the hide/unhide actions.
 
 #### `ClockService.qml`
 - **Role**: Central minute-aligned clock `pragma Singleton` ingested by `ClockWidget`, `CommandCentre`, and `LockScreen`.
@@ -199,12 +230,12 @@ Scope {
 - **Strategy**: Uses Quickshell's native `ToplevelManager` when available; otherwise queries and scores the compositor's IPC (`mmsg` / `niri` / `hyprctl`) directly in QML (replaces the old inline Node fallback). Exposes `focus(patterns)` and `focusSource(source)`.
 
 #### `NotificationService.qml`
-- **Role**: Central notification daemon, MPRIS track-toast emitter, icon/avatar resolver, and state manager.
-- **Features**: Subscribes to `Quickshell.Services.Notifications`, retains live `Notification` objects while in active or history models, copies ephemeral `/tmp/` avatars to `~/.cache/quickshell/notif-images/`, resolves app icons and glyphs once per item, manages auto-dismiss timers and hover pausing, and handles action invocation and sender window focusing.
+- **Role**: Central notification daemon, MPRIS track-toast emitter, and state manager.
+- **Features**: Subscribes to `Quickshell.Services.Notifications`, retains live `Notification` objects while in active or history models, manages auto-dismiss timers and hover pausing, and handles action invocation and sender window focusing. Icon, avatar, and glyph resolution lives in `NotificationIcons.qml`.
 
 #### `Utils.js`
 - **Role**: Shared JavaScript utility library (`.pragma library`).
-- **Features**: `findFirst`, `findBatteryDevice`, `findActivePlayer`, `resolveMprisPlayer`, `cyclePlayer`, `pad2`, `formatTime`, `cleanTrackTitle`, `prettifyAppName`, `formatActiveTitle`, and icon helpers (`volumeIcon`, `micIcon`, `batteryIcon`).
+- **Features**: `findFirst`, `findBatteryDevice`, `findActivePlayer`, `resolveMprisPlayer`, `cyclePlayer`, `pad2`, `formatTime`, `cleanTrackTitle`, `prettifyAppName`, `formatActiveTitle`, `envChoice`, `overlayMargins`, and icon helpers (`volumeIcon`, `micIcon`, `batteryIcon`).
 
 ---
 
@@ -214,7 +245,7 @@ Scope {
 - **Role**: Slide-out quick settings dashboard and system metrics panel.
 - **IPC Target**: `"command-centre"` (functions: `toggle()`, `open()`, `close()`).
 - **Multi-Monitor Cursor Tracking**: Delegates active-screen detection to `WmService.resolveTargetScreen(...)` and slides out on that specific monitor while rendering a transparent dismiss overlay across all other screens.
-- **Features**: Header clock & date (via `ClockService`), status pills (Wi-Fi, Ethernet, Battery, Bluetooth), system sliders (`SliderControl` bound to `SystemService` for PipeWire output volume, expandable audio sink switcher, microphone volume/mute, and `brightnessctl` screen brightness), full MPRIS media player card (`MediaCard`), plus notification history list (`NotificationService`).
+- **Features**: Header clock & date (via `ClockService`), status pills (Wi-Fi, Ethernet, Battery, Bluetooth), system sliders (`ControlSliderRow` bound to `AudioService` and `BrightnessService`), the collapsible `AudioSinkPicker`, full MPRIS media player card (`MediaCard`), and the `NotificationHistoryCard` list (`NotificationService`).
 
 #### `OsdOverlay.qml`
 - **Role**: Floating bottom-centre On-Screen Display pill driven by `SystemService`.
@@ -223,7 +254,7 @@ Scope {
 #### `LockScreen.qml`
 - **Role**: Wayland session screen locker built on `WlSessionLock` and `WlSessionLockSurface`.
 - **IPC Target**: `"lockscreen"` (functions: `lock()`, `unlock()`, `toggle()`).
-- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt with user avatar, real-time accent highlight on keystrokes, rotating authentication spinner, password peek/reveal eye toggle, Caps Lock warning & error shake animation, secondary screen display lock graphics with live typing indicator & MPRIS `MediaCard`, customisable status pill cluster docked to any corner (default `"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`, or `"split"` / `"corners"` via `Config.lockStatusPosition` or `QS_LOCK_STATUS_POS`), background wallpaper with customisable GPU blur (`MultiEffect`) and dimming, and system power actions (Sleep/Suspend, Reboot, Power Off).
+- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt (`LockAuthCard`) with user avatar, real-time accent highlight on keystrokes, rotating authentication spinner, password peek/reveal eye toggle, Caps Lock warning & error shake animation, secondary screen display lock graphics (`LockSecondaryScreen`) with live typing indicator & MPRIS `MediaCard`, customisable status pill cluster (`LockStatusCluster`) docked to any corner (default `"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`, or `"split"` / `"corners"` via `Config.lockStatusPosition` or `QS_LOCK_STATUS_POS`), background wallpaper with customisable GPU blur (`MultiEffect`) and dimming, and system power actions (Sleep/Suspend, Reboot, Power Off).
 
 #### `NotificationOverlay.qml` & `NotificationCard.qml`
 - **Role**: Screen overlay and card delegate rendering active notification toasts and history items.
@@ -235,7 +266,31 @@ Scope {
 
 #### `Pill.qml`
 - **Role**: Standardised rounded pill container for bar widgets and inline action pills.
-- **Properties**: `horizontal`, `padding`, `pillHeight`, `baseColour`, `hoverColour`, `hoverHighlight`, `pillColour`, `orientation`, `clickable`, `acceptedButtons`, `hovered`, `radius`; signals `clicked(var mouse)`, `wheel(var wheel)`. Includes built-in hover/border colour transitions, auto-sizing, and optional pointer click/scroll handling.
+- **Properties**: `horizontal`, `padding`, `pillHeight`, `baseColour`, `hoverColour`, `hoverHighlight`, `pillColour`, `clickable`, `acceptedButtons`, `hovered`, `radius`; signals `clicked(var mouse)`, `wheel(var wheel)`. Includes built-in hover/border colour transitions, auto-sizing, and optional pointer click/scroll handling.
+
+#### `Divider.qml`
+- **Role**: 1px horizontal rule used to separate sections.
+
+#### `HostnamePill.qml` and `VolumePill.qml`
+- **Role**: Lock screen status badges shared by the clustered and split layouts.
+
+#### `ControlSliderRow.qml`
+- **Role**: Icon, slider, and percentage row used by the Command Centre controls.
+- **Properties**: `icon`, `alert`, `accent`, `iconClickable`, `sliderValue`, `percentText`; signals `iconClicked()`, `sliderMoved(real value)`.
+
+#### `AudioSinkPicker.qml`
+- **Role**: Collapsible PipeWire output picker with the sink list and audio mixer shortcut.
+- **Properties**: `expanded`.
+
+#### `NotificationHistoryCard.qml`
+- **Role**: Notification history list, mute toggle, and clear button used by the Command Centre.
+
+#### `LockAuthCard.qml`
+- **Role**: Interactive authentication card used on the primary lock screen display.
+- **Properties**: `session`, `shakeOffset`, `capsLockOn`, `revealPassword`; functions `submitEnteredPassword()`, `cancelInput()`, `updateCapsLock(modifiers)`; signal `backgroundFocusRequested()`.
+
+#### `LockStatusCluster.qml` and `LockSecondaryScreen.qml`
+- **Role**: Lock screen status pills and the read-only content shown on non-primary displays.
 
 #### `Card.qml`
 - **Role**: Shared elevated/surface card container used across Command Centre sections, popovers, `MediaCard`, `NotificationCard`, `OsdOverlay`, and `LockScreen`.
@@ -271,16 +326,16 @@ Scope {
 
 #### `RoundedImage.qml`
 - **Role**: Async image with rounded-corner masking.
-- **Properties**: `source`, `sourceSize`, `fillMode`, `radius`; exposes `ready`, `status`, and a `sourceError()` signal for fallback chains.
+- **Properties**: `source`, `sourceSize`, `radius`; exposes `ready` and a `sourceError()` signal for fallback chains.
 
 #### Standard Bar Widgets
 - **`ClockWidget.qml`**: Time/date stack ingested from `ClockService` with click-to-popup calendar details.
 - **`WindowTitleWidget.qml`**: Active window title ingested from `WmService`.
 - **`WorkspacesWidget.qml`**: Interactive workspace indicators connected to `WmService`.
 - **`LayoutWidget.qml`**: Tiling layout selector connected to `WmService` (auto-shown on MangoWC).
-- **`SystemTrayWidget.qml`**: StatusNotifierItem (SNI) system tray pill supporting left-click activate, right-click menu, scroll, and hover tooltips. Automatically hides when no tray items are registered.
+- **`SystemTrayWidget.qml`**: StatusNotifierItem (SNI) system tray pill supporting left-click activate, right-click menu (rendered by `TrayMenu.qml`), scroll, and hover tooltips. Automatically hides when no tray items are registered.
 - **`MediaWidget.qml`**: MPRIS playback bar button ingested from `MediaService`.
-- **`VolumeWidget.qml`**: PipeWire volume control widget ingested from `SystemService`.
+- **`VolumeWidget.qml`**: PipeWire volume control widget ingested from `AudioService`.
 - **`NetworkWidget.qml`**: Network connection monitor displaying Wi-Fi SSID and signal strength. Right-click launches `nmtui`. Set `interactive: false` to render it as a read-only pill (used on the lock screen).
 - **`BluetoothWidget.qml`**: Bluetooth adapter status and device indicator. Right-click launches `blueman-manager`.
 - **`BatteryWidget.qml`**: Laptop battery charge state and status indicator powered by UPower. Auto-hides on desktop systems without batteries. Set `interactive: false` to render it as a read-only pill (used on the lock screen).
@@ -382,7 +437,7 @@ CpuWidget {
 ```
 
 ### Step 4: Test
-Because activation scripts symlink the whole `config/` directory into `~/.config/quickshell/`, newly created QML files are picked up automatically after a `sudo nixos-rebuild switch` — no manual `ln -s` step is needed. (The symlinks are re-created on activation, so files deleted from the repo are also pruned.)
+Because `nixos.liveLinks` symlinks the whole `config/` directory into `~/.config/quickshell/`, newly created QML files are picked up automatically after a `sudo nixos-rebuild switch` — no manual `ln -s` step is needed. (The symlinks are re-created on activation, so files deleted from the repo are also pruned.)
 
 - Run `sudo nixos-rebuild switch` to refresh the live links.
 - Restart Quickshell to load the new widget!

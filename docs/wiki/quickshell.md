@@ -37,7 +37,14 @@ modules/features/desktop-env/quickshell/
     ├── MangoService.qml          # MangoWC IPC backend (mmsg)
     ├── HyprlandService.qml       # Hyprland IPC backend (hyprctl)
     ├── NiriService.qml           # Niri event-stream backend
-    ├── SystemService.qml         # Central PipeWire audio (sinks + mic), backlight & OSD singleton
+    ├── AudioService.qml          # PipeWire output sinks and microphone singleton
+    ├── BrightnessService.qml     # brightnessctl backlight control singleton
+    ├── NetworkService.qml        # Wired / Wi-Fi connection singleton
+    ├── BatteryService.qml        # UPower battery singleton
+    ├── BluetoothService.qml      # Bluetooth adapter and devices singleton
+    ├── TrayService.qml           # System tray items and hidden-app lists
+    ├── SystemService.qml         # OSD state and the `system` IPC target
+    ├── NotificationIcons.qml     # Notification icon, avatar & glyph resolver
     ├── ClockService.qml          # Shared minute-aligned clock & date singleton
     ├── MediaService.qml          # MPRIS media player backend & multi-player switcher
     ├── WindowFocuser.qml         # Native-first window activation (no Node fallback)
@@ -54,10 +61,21 @@ modules/features/desktop-env/quickshell/
     ├── LayoutWidget.qml          # Active window manager layout widget
     ├── NetworkWidget.qml         # Wi-Fi SSID and signal strength
     ├── SystemTrayWidget.qml      # StatusNotifierItem system tray icons
+    ├── TrayMenu.qml              # Tray context menu (rendered in the popup layer)
     ├── VolumeWidget.qml          # PipeWire volume level & mute status
     ├── WindowTitleWidget.qml     # Focused application window title
     ├── WorkspacesWidget.qml      # Visual workspace and tag indicators
     │
+    ├── AudioSinkPicker.qml       # Collapsible output-sink picker
+    ├── ControlSliderRow.qml      # Icon + slider + percentage row
+    ├── NotificationHistoryCard.qml # Command Centre notification history
+    ├── LockAuthCard.qml          # Lock screen authentication card
+    ├── LockStatusCluster.qml     # Lock screen status pills
+    ├── LockSecondaryScreen.qml   # Read-only secondary lock display
+    ├── HostnamePill.qml          # Lock screen hostname badge
+    ├── VolumePill.qml            # Lock screen volume badge
+    ├── Divider.qml               # 1px section rule
+
     ├── Card.qml                  # Shared surface/card container primitive
     ├── IconButton.qml            # Shared interactive icon button primitive
     ├── Pill.qml                  # Rounded pill container primitive
@@ -92,7 +110,7 @@ Quickshell does not hardcode compositor dependencies into individual UI widgets.
 - In Hyprland, it communicates via `HyprlandService.qml` (`hyprctl`).
 - In Niri, it parses the JSON stream from `NiriService.qml` (`niri msg --json event-stream`).
 
-`WmService`, `NiriService`, and `SystemService` process CLI output using `StdioCollector` hooked to `onStreamFinished` rather than `onDataChanged`, ensuring complete JSON streams and hardware states are collected before parsing.
+`WmService`, `NiriService`, and the hardware services process CLI output using `StdioCollector` hooked to `onStreamFinished` rather than `onDataChanged`, ensuring complete JSON streams and hardware states are collected before parsing.
 
 This enables swapping between Wayland compositors while keeping the exact same status bar, notification centre, lock screen, and styling.
 
@@ -120,7 +138,7 @@ This enables swapping between Wayland compositors while keeping the exact same s
 ## Notification Daemon & Overlay
 
 Quickshell includes a built-in Freedesktop notification daemon replacement:
-- **`NotificationService.qml`**: Listens for DBus notifications (`org.freedesktop.Notifications`) and MPRIS track transitions, resolves app icons/avatars/glyphs once per notification, retains live `Notification` objects, and manages active toast and history models.
+- **`NotificationService.qml`**: Listens for DBus notifications (`org.freedesktop.Notifications`) and MPRIS track transitions, retains live `Notification` objects, and manages active toast and history models. Icon, avatar, and glyph resolution lives in `NotificationIcons.qml`.
 - **`NotificationOverlay.qml`**: Renders smooth toast cards on the configured corner of the active monitor.
 - Integrates with system daemons like `journal-error-notify` (notifying on boot failures) and `shikane` (display profile changes).
 
