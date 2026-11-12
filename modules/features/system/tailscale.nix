@@ -12,11 +12,7 @@
       cfg = config.features.tailscale;
     in
     {
-      options.features.tailscale.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable the Tailscale mesh VPN client.";
-      };
+      options.features.tailscale.enable = lib.mkEnableOption "the Tailscale mesh VPN client";
 
       config = lib.mkIf cfg.enable {
         services.tailscale = {

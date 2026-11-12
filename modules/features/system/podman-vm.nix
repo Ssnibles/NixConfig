@@ -12,11 +12,7 @@
       cfg = config.features.podman-vm;
     in
     {
-      options.features.podman-vm.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable the Podman container and virtualisation stack with Distrobox.";
-      };
+      options.features.podman-vm.enable = lib.mkEnableOption "the Podman container and virtualisation stack with Distrobox";
 
       config = lib.mkIf cfg.enable {
         virtualisation = {

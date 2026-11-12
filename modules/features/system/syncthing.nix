@@ -9,21 +9,18 @@
     }:
     let
       cfg = config.features.syncthing;
+      home = config.users.users.${config.username}.home;
     in
     {
-      options.features.syncthing.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable Syncthing peer-to-peer folder synchronisation with the homeserver.";
-      };
+      options.features.syncthing.enable = lib.mkEnableOption "Syncthing peer-to-peer folder synchronisation with the homeserver";
 
       config = lib.mkIf cfg.enable {
         services.syncthing = {
           enable = true;
           user = config.username;
           group = "users";
-          dataDir = "/home/${config.username}/Sync";
-          configDir = "/home/${config.username}/.config/syncthing";
+          dataDir = "${home}/Sync";
+          configDir = "${home}/.config/syncthing";
           guiAddress = "127.0.0.1:8384";
           openDefaultPorts = true;
 
@@ -46,7 +43,7 @@
             folders = {
               "Documents" = {
                 id = "pfqwn-dke5x";
-                path = "/home/${config.username}/Documents";
+                path = "${home}/Documents";
                 devices = [ "homeserver" ];
               };
             };
@@ -66,7 +63,7 @@
           };
         };
 
-        systemd.services.syncthing.serviceConfig.WorkingDirectory = "/home/${config.username}";
+        systemd.services.syncthing.serviceConfig.WorkingDirectory = home;
 
         # Start at graphical.target so early boot is not delayed.
         systemd.services.syncthing.wantedBy = lib.mkForce [ "graphical.target" ];
