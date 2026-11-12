@@ -23,10 +23,12 @@ Item {
     anchors.fill: parent
     visible: false
     layer.enabled: img.visible && root.radius > 0
+    layer.smooth: true
     Rectangle {
       anchors.fill: parent
       radius: root.radius
       color: "black"
+      antialiasing: true
     }
   }
 
@@ -39,9 +41,17 @@ Item {
     visible: root.ready
     onStatusChanged: if (status === Image.Error) root.sourceError()
     layer.enabled: visible && root.radius > 0
+    layer.smooth: true
     layer.effect: MultiEffect {
       maskEnabled: true
       maskSource: maskItem
+      // The default thresholds squash the mask's antialiased edge to a hard
+      // step, which leaves staircased corners. These values keep the full
+      // alpha ramp, so the rounded edge stays smooth.
+      maskThresholdMin: 0.5
+      maskSpreadAtMin: 1.0
+      maskThresholdMax: 1.0
+      maskSpreadAtMax: 0.0
     }
   }
 }
