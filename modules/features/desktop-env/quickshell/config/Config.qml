@@ -2,17 +2,20 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
-import "Utils.js" as Utils
 
-// Global layout knobs for the quickshell config. Everything here is consumed
-// by the bars, the popup layer and the notification overlay. Per-widget
-// details (sizes that only affect one widget) stay hard-coded in each
-// widget's own file.
+// Settings for the shell. Every value here is a literal you can edit.
+//
+// Layout that depends on the session (compositor, $HOME, environment
+// overrides) lives in services/Session.qml, and transient state that resets on
+// restart lives in services/UiState.qml. Sections follow the order: theme
+// tokens, bar, command centre, launcher, media, notifications, lock screen,
+// audio and OSD, tray, external commands.
 Singleton {
-    // Fonts & Typography Scale
-    readonly property string monoFont: Colours.monoFont || "JetBrainsMono Nerd Font"
-    readonly property string sansFont: Colours.sansFont || "SF Pro Text"
-    readonly property string serifFont: Colours.serifFont || "Instrument Serif"
+    // Fonts and type scale. Nix generates the real values into Colours.qml;
+    // these are the fallbacks Session uses when a generated value is missing.
+    readonly property string monoFont: "JetBrainsMono Nerd Font"
+    readonly property string sansFont: "SF Pro Text"
+    readonly property string serifFont: "Instrument Serif"
 
     readonly property int fontSizeXs: 11
     readonly property int fontSizeSm: 12
@@ -22,7 +25,7 @@ Singleton {
     readonly property int iconSizeMd: 16
     readonly property int iconSizeLg: 18
 
-    // Shared Pill, Surface & Animation Tokens
+    // Shared pill, surface and animation tokens
     readonly property int pillHeightHorizontal: 24
     readonly property int pillHeightVertical: 30
     readonly property int pillPaddingHorizontal: 8
@@ -32,96 +35,21 @@ Singleton {
     readonly property int animNormalMs: 120
     readonly property int animSmoothMs: 150
 
-    // Command Centre State & Geometry
-    property bool commandCentreVisible: false
-    property var targetScreen: null
-    property var lastActiveScreen: null
-    property string commandCentreSide: Utils.envChoice(Quickshell.env("QS_COMMAND_CENTRE_SIDE"), ["left", "right"], "left")
-    readonly property int commandCentreWidth: 500
-    readonly property int commandCentreRadius: 16
-    readonly property int commandCentreCardRadius: 12
-    readonly property int commandCentreMargin: 12
-    readonly property int commandCentreSlideOffset: 60
-    readonly property int commandCentreAnimDuration: 250
-    readonly property int commandCentreCloseDuration: 180
-    readonly property string commandCentreClockFormat: "HH:mm"
-    readonly property string commandCentreDateFormat: "dddd, MMMM d"
-    readonly property bool ccShowSinkSwitcher: true
-    // Place the output chips above the volume slider instead of below it.
-    readonly property bool ccSinkSwitcherAboveVolume: false
-    readonly property bool ccShowMicSlider: true
-    readonly property bool ccShowBrightnessSlider: true
-    // Mixer shortcut at the start of the output row. Empty label renders the
-    // gear on its own.
-    readonly property bool ccShowAudioMixer: true
-    readonly property string ccAudioMixerLabel: ""
-
-    // Launcher State & Geometry
-    property bool launcherVisible: false
-    readonly property int launcherWidth: 760
-    readonly property int launcherHeight: 500
-    readonly property int launcherMaxResults: 50
-
-    // Status Bars
-    property bool barVisible: true
-    readonly property string barType: wm === "niri" ? "niri" : "bar"
-    readonly property bool hasTopBar: barVisible && barType !== "niri"
-    readonly property bool hasLeftBar: barVisible && barType === "niri" && barSide !== "right"
-    readonly property bool hasRightBar: barVisible && barType === "niri" && barSide === "right"
-
-    // Window Manager Detection
-    readonly property string wm: {
-        var envWm = Utils.envChoice(Quickshell.env("QS_BAR"), ["mangowc", "hyprland", "niri"], "");
-        if (envWm !== "")
-            return envWm;
-
-        var xdg = (Quickshell.env("XDG_CURRENT_DESKTOP") || Quickshell.env("XDG_SESSION_DESKTOP") || "").toLowerCase();
-        if (xdg.indexOf("hyprland") !== -1)
-            return "hyprland";
-        if (xdg.indexOf("niri") !== -1)
-            return "niri";
-        if (xdg.indexOf("mango") !== -1)
-            return "mangowc";
-
-        return "mangowc";
-    }
-
-    // Media (MediaService.qml, MediaCard.qml, MediaWidget.qml)
-    // Whether the command centre's media card always stays visible, showing
-    // "Nothing is playing" when no media is active.
-    readonly property bool alwaysShowMediaCard: true
-    readonly property bool mediaShowPlayerBadge: true
-    readonly property bool mediaAllowPlayerSwitch: true
-    readonly property int mediaPopupWidth: 320
-    readonly property bool animateMediaIcon: false
-    readonly property int mediaRotationDuration: 4000
-    readonly property int mediaSeekDebounceMs: 200
-
-    // Clock
-    readonly property string timeFormat: "HH:mm"
-
-    // Vertical side bar (bar.qml in Niri mode)
+    // Status bars
+    readonly property int barHeight: 34
     readonly property int barWidth: 42
-    property string barSide: Utils.envChoice(Quickshell.env("QS_BAR_SIDE"), ["left", "right"], "left")
+    // Default edge for the Niri side bar; $QS_BAR_SIDE overrides it.
+    readonly property string barSide: "left"
+    readonly property int barHorizontalMargin: 12
+    readonly property int barLeftSpacing: 12
+    readonly property int barRightSpacing: 10
     readonly property int barMarginTop: 8
     readonly property int barMarginBottom: 8
     readonly property int barMarginLeft: 4
     readonly property int barMarginRight: 4
     readonly property int barSpacing: 8
-    readonly property int volBarHeight: 64
-    readonly property int wifiMaxTextLength: 90
-
-    // Workspaces (WorkspacesWidget.qml)
-    readonly property int workspaceDotSize: 12
-    readonly property int workspaceDotSizeFocused: 34
-    readonly property int workspaceDotSpacing: 6
-
-    // Top Bar (bar.qml)
-    readonly property int barHeight: 34
-    readonly property int barHorizontalMargin: 12
-    readonly property int barLeftSpacing: 12
-    readonly property int barRightSpacing: 10
     readonly property int minWorkspaces: 5
+
     // Which widgets the bar shows. Order is fixed in bar/bar.qml; the shared
     // widgets keep working normally in the Command Centre and lock screen.
     readonly property bool barShowClock: true
@@ -135,76 +63,78 @@ Singleton {
     readonly property bool barShowNetwork: true
     readonly property bool barShowBattery: true
 
-    // Audio, Microphone, Brightness & OSD (AudioService.qml, BrightnessService.qml,
-    // SystemService.qml, VolumeWidget.qml, OsdOverlay.qml)
-    readonly property real volStep: 0.05
-    readonly property real volMax: 1.5
-    readonly property real micStep: 0.05
-    readonly property real brightnessStep: 0.05
-    readonly property bool osdEnabled: true
-    // OSD position on screen:
-    //   "bottom" (or "bottom-centre"), "top" (or "top-centre"), "centre",
-    //   "top-left", "top-right", "bottom-left", "bottom-right"
-    property string osdPosition: "bottom-centre"
-    readonly property bool osdAllScreens: false
-    readonly property int osdTimeoutMs: 1800
-    readonly property int osdWidth: 260
-    readonly property int osdHeight: 46
-    readonly property int osdRadius: -1 // -1 = full pill capsule (osdHeight / 2)
-    readonly property int osdMarginX: 24
-    readonly property int osdMarginY: 64
-
-    // Window Title (WindowTitleWidget.qml)
+    // Bar widgets that carry their own geometry
+    readonly property int volBarHeight: 64
+    readonly property int wifiMaxTextLength: 90
     readonly property int windowTitleMaxWidthHorizontal: 350
     readonly property int windowTitleMaxWidthVertical: 120
+    readonly property int workspaceDotSize: 12
+    readonly property int workspaceDotSizeFocused: 34
+    readonly property int workspaceDotSpacing: 6
 
-    // System Tray (SystemTrayWidget.qml)
-    property bool trayEnabled: true
-    // Case-insensitive list of tray app IDs, titles, or substrings to hide by
-    // default (e.g. ["nm-applet", "blueman", "steam"]).
-    readonly property var trayHiddenApps: ["nm-applet", "vicinae"]
-    // Whether to show the expand/collapse arrow button (󰅁/󰅂) when hidden tray
-    // items exist. When false, hidden items are completely omitted without an
-    // expand arrow, and if no visible items remain, the entire tray pill hides.
-    property bool trayShowExpandButton: true
-    // Whether the hidden tray items section is currently expanded.
-    property bool trayExpanded: false
-    // Shared session-hidden / session-unhidden tray app IDs (synced across monitors).
-    property var runtimeHiddenTrayApps: []
-    property var runtimeUnhiddenTrayApps: []
-    // Left-click behaviour on tray icons:
-    //   "focus"    = activate + focus application window across workspaces
-    //   "activate" = native StatusNotifierItem activate() only
-    //   "menu"     = open the context menu on left-click too
-    readonly property string trayLeftClickAction: "focus"
-    readonly property int trayIconSize: 15
-    readonly property int trayButtonSize: 20
-    readonly property int traySpacing: 4
-    readonly property int trayMenuWidth: 240
-    readonly property bool trayShowAppIdInMenu: true
-    readonly property bool trayAllowSessionHide: true
+    // Command centre
+    readonly property int commandCentreWidth: 500
+    readonly property int commandCentreRadius: 16
+    readonly property int commandCentreCardRadius: 12
+    readonly property int commandCentreMargin: 12
+    readonly property int commandCentreSlideOffset: 60
+    readonly property int commandCentreAnimDuration: 250
+    readonly property int commandCentreCloseDuration: 180
+    readonly property string commandCentreClockFormat: "HH:mm"
+    readonly property string commandCentreDateFormat: "dddd, MMMM d"
+    // Default edge; $QS_COMMAND_CENTRE_SIDE overrides it.
+    readonly property string commandCentreSide: "left"
+    readonly property bool ccShowSinkSwitcher: true
+    // Place the output chips above the volume slider instead of below it.
+    readonly property bool ccSinkSwitcherAboveVolume: false
+    readonly property bool ccShowMicSlider: true
+    readonly property bool ccShowBrightnessSlider: true
+    // Mixer shortcut at the start of the output row. Empty label renders the
+    // gear on its own.
+    readonly property bool ccShowAudioMixer: true
+    readonly property string ccAudioMixerLabel: ""
 
-    // Popup / tooltip
-    readonly property int popupGap: 46 // distance from the bar to a popup
+    // Launcher
+    readonly property int launcherWidth: 760
+    readonly property int launcherHeight: 500
+    readonly property int launcherMaxResults: 50
+
+    // Media
+    // Whether the command centre's media card always stays visible, showing
+    // "Nothing is playing" when no media is active.
+    readonly property bool alwaysShowMediaCard: true
+    readonly property bool mediaShowPlayerBadge: true
+    readonly property bool mediaAllowPlayerSwitch: true
+    readonly property int mediaPopupWidth: 320
+    readonly property bool animateMediaIcon: false
+    readonly property int mediaRotationDuration: 4000
+    readonly property int mediaSeekDebounceMs: 200
+
+    // Clock
+    readonly property string timeFormat: "HH:mm"
+
+    // Popup and tooltip layer
+    readonly property int popupGap: 46
     readonly property int popupMaxWidth: 280
     readonly property int popupRadius: 12
     readonly property int popupContentMargins: 12
     readonly property int popupContentSpacing: 6
-    readonly property int popupShowDelay: 150 // ms before a tooltip appears
+    readonly property int popupShowDelay: 150
     readonly property int popupFadeMs: 120
-    readonly property int popupGraceMs: 700 // generous window so cursor can cross the gap without flicker
+    // Generous window so the cursor can cross the gap without flicker.
+    readonly property int popupGraceMs: 700
 
     // Notifications
-    // Notification position on screen:
-    //   "top-left", "top-centre" (or "top"), "top-right",
-    //   "centre-left", "centre", "centre-right",
-    //   "bottom-left", "bottom-centre" (or "bottom"), "bottom-right"
-    property string notifPosition: "top-right"
+    // Position on screen: "top-left", "top-centre" (or "top"), "top-right",
+    // "centre-left", "centre", "centre-right", "bottom-left",
+    // "bottom-centre" (or "bottom"), "bottom-right".
+    readonly property string notifPosition: "top-right"
     readonly property int notifMarginX: 12
     readonly property int notifMarginY: 12
     readonly property int notifTimeoutMs: 5000
     readonly property int notifTimeoutLowMs: 3000
-    readonly property int notifTimeoutCriticalMs: 0 // 0 = persistent, do not auto-dismiss
+    // 0 = persistent, do not auto-dismiss.
+    readonly property int notifTimeoutCriticalMs: 0
     readonly property int notifMaxVisible: 5
     readonly property int notifMaxHistory: 30
     readonly property int notifWidth: 320
@@ -219,13 +149,14 @@ Singleton {
     readonly property bool notifDismissOnAction: true
     readonly property bool notifShowMediaToasts: true
     readonly property bool notifAllScreens: false
-    readonly property string notifLeftClickAction: "dismiss" // "dismiss" or "focus"
+    // "dismiss" or "focus".
+    readonly property string notifLeftClickAction: "dismiss"
     readonly property string notifDefaultFallbackLogo: "preferences-desktop-notification"
     readonly property string notifDefaultFallbackGlyph: "󰂚"
 
-    // App name or desktop entry to preferred system icon override.
-    // Apps whose icon name matches their appName or .desktop entry are resolved
-    // automatically by NotificationService via Quickshell.iconPath / DesktopEntries.
+    // App name or desktop entry to preferred system icon override. Apps whose
+    // icon name matches their appName or .desktop entry are resolved
+    // automatically by NotificationIcons via Quickshell.iconPath / DesktopEntries.
     readonly property var notifAppIcons: ({
             "discord": "vesktop",
             "webcord": "vesktop",
@@ -242,7 +173,7 @@ Singleton {
             "nix": "nix-snowflake"
         })
 
-    // Fallback Nerd Font glyphs when no icon or image is available
+    // Fallback Nerd Font glyphs when no icon or image is available.
     readonly property var notifAppGlyphs: ({
             "discord": "󰙯",
             "vesktop": "󰙯",
@@ -291,13 +222,15 @@ Singleton {
             "system": "󰍹"
         })
 
-    // Known browser / media player apps for media detection
+    // Known browser and media player apps for media detection.
     readonly property var notifMediaApps: ["spotify", "amberol", "zen", "helium", "qutebrowser", "firefox", "chrome", "chromium", "brave", "vivaldi", "librewolf", "vlc", "mpv"]
 
-    // Lock Screen
-    readonly property string lockAvatarPath: Quickshell.shellDir + "/assets/avatar.png"
+    // Lock screen
+    // Empty means the bundled avatar; empty wallpaper means
+    // $HOME/Pictures/wallpaper. Both are resolved in Session.qml.
+    readonly property string lockAvatarPath: ""
+    readonly property string lockWallpaperPath: ""
     readonly property string lockFallbackIcon: "󰀉"
-    readonly property string lockWallpaperPath: "file://" + (Quickshell.env("HOME") || ("/home/" + (Quickshell.env("USER") || "user"))) + "/Pictures/wallpaper"
     readonly property string lockClockFormat: "HH:mm"
     readonly property string lockDateFormat: "dddd, MMMM d"
     readonly property int lockCardWidth: 440
@@ -305,15 +238,48 @@ Singleton {
     readonly property int lockInputRadius: 12
     readonly property real lockBackgroundDimming: 0.8
     readonly property real lockBlurPercentage: 0.5
-    // Status pill cluster corner position:
-    //   "top-right" (default), "top-left", "bottom-right", "bottom-left", or "split" / "corners"
-    property string lockStatusPosition: Utils.envChoice(Quickshell.env("QS_LOCK_STATUS_POS"),
-        ["top-left", "top-right", "bottom-left", "bottom-right", "split", "corners"],
-        "top-right")
+    // Status pill cluster: "top-right" (default), "top-left", "bottom-right",
+    // "bottom-left", or "split" / "corners". $QS_LOCK_STATUS_POS overrides it.
+    readonly property string lockStatusPosition: "top-right"
     readonly property int lockStatusMargin: 24
     readonly property int lockStatusSpacing: 8
 
-    // External App & System Commands
+    // Audio, microphone, brightness and OSD
+    readonly property real volStep: 0.05
+    readonly property real volMax: 1.5
+    readonly property real micStep: 0.05
+    readonly property real brightnessStep: 0.05
+    readonly property bool osdEnabled: true
+    // Position on screen: "bottom" (or "bottom-centre"), "top" (or
+    // "top-centre"), "centre", "top-left", "top-right", "bottom-left",
+    // "bottom-right".
+    readonly property string osdPosition: "bottom-centre"
+    readonly property bool osdAllScreens: false
+    readonly property int osdTimeoutMs: 1800
+    readonly property int osdWidth: 260
+    readonly property int osdHeight: 46
+    // -1 = full pill capsule (osdHeight / 2).
+    readonly property int osdRadius: -1
+    readonly property int osdMarginX: 24
+    readonly property int osdMarginY: 64
+
+    // System tray
+    // Case-insensitive list of tray app IDs, titles, or substrings to hide by
+    // default (e.g. ["nm-applet", "blueman", "steam"]).
+    readonly property var trayHiddenApps: ["nm-applet", "vicinae"]
+    // Left-click behaviour on tray icons:
+    //   "focus"    = activate and focus the application window
+    //   "activate" = native StatusNotifierItem activate() only
+    //   "menu"     = open the context menu on left-click too
+    readonly property string trayLeftClickAction: "focus"
+    readonly property int trayIconSize: 15
+    readonly property int trayButtonSize: 20
+    readonly property int traySpacing: 4
+    readonly property int trayMenuWidth: 240
+    readonly property bool trayShowAppIdInMenu: true
+    readonly property bool trayAllowSessionHide: true
+
+    // External apps and system commands
     readonly property var cmdMixer: ["pavucontrol"]
     readonly property var cmdNetworkManager: ["kitty", "--single-instance", "-e", "nmtui"]
     readonly property var cmdBluetoothManager: ["blueman-manager"]
