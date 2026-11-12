@@ -12,7 +12,7 @@ Pill {
 
   readonly property int maxTextWidth: 200
 
-  visible: MediaService.hasMedia
+  visible: MediaService.hasMedia && root.shown
   hoverHighlight: true
   clickable: true
   acceptedButtons: Qt.LeftButton | Qt.RightButton

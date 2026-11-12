@@ -11,6 +11,9 @@ Item {
     return WmService.getWorkspaces(root.screen ? root.screen.name : "")
   }
   property bool horizontal: false
+  property bool shown: true
+
+  visible: root.shown
 
   property int dotSize: Config.workspaceDotSize
   property int dotSizeFocused: Config.workspaceDotSizeFocused

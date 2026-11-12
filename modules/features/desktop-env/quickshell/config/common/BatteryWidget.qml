@@ -8,7 +8,7 @@ StatusPill {
 
   readonly property bool batPresent: BatteryService.batPresent
 
-  visible: root.batPresent
+  visible: root.batPresent && root.shown
   horizontal: false
   icon: BatteryService.batIcon
   iconColour: BatteryService.batColour

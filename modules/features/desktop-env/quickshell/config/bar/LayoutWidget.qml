@@ -11,7 +11,7 @@ Pill {
 
   // Visible when window manager provides layouts (mangowc)
   readonly property bool active: Session.wm === "mangowc"
-  visible: active
+  visible: root.active && root.shown
 
   readonly property string currentLayoutSymbol: {
     // Depend on the raw tag list so per-output layout changes re-evaluate.

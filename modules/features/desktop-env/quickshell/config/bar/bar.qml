@@ -74,12 +74,14 @@ Scope {
           anchors.verticalCenter: root.isHorizontal ? parent.verticalCenter : undefined
 
           ClockWidget {
+            shown: Config.barShowClock
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 
           CommandCentreButton {
+            shown: Config.barShowCommandCentre
             horizontal: root.isHorizontal
             screen: barPanel.modelData
             sharedWindow: sharedTipWindow
@@ -87,6 +89,7 @@ Scope {
           }
 
           LayoutWidget {
+            shown: Config.barShowLayout
             horizontal: root.isHorizontal
             screen: barPanel.modelData
             sharedWindow: sharedTipWindow
@@ -94,12 +97,14 @@ Scope {
           }
 
           WindowTitleWidget {
+            shown: Config.barShowWindowTitle
             horizontal: root.isHorizontal
             Layout.alignment: Qt.AlignCenter
           }
         }
 
         WorkspacesWidget {
+          shown: Config.barShowWorkspaces
           anchors.centerIn: parent
           horizontal: root.isHorizontal
           screen: barPanel.modelData
@@ -116,30 +121,35 @@ Scope {
           anchors.verticalCenter: root.isHorizontal ? parent.verticalCenter : undefined
 
           SystemTrayWidget {
+            shown: Config.barShowTray
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 
           MediaWidget {
+            shown: Config.barShowMedia
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 
           VolumeWidget {
+            shown: Config.barShowVolume
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 
           NetworkWidget {
+            shown: Config.barShowNetwork
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 
           BatteryWidget {
+            shown: Config.barShowBattery
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter

@@ -17,12 +17,16 @@ Rectangle {
 
   // Optional built-in pointer interaction for pill buttons
   property bool clickable: false
+  // Visibility gate: lets the bar hide a widget without overriding the
+  // widget's own visibility rules for its other users.
+  property bool shown: true
   property int acceptedButtons: Qt.LeftButton
   signal clicked(var mouse)
   signal wheel(var wheel)
 
   readonly property bool hovered: _hoverHandler.hovered
 
+  visible: root.shown
   color: root.pillColour
   // Default radius is half of the smaller dimension (caps on ends)
   radius: Math.min(width, height) / 2

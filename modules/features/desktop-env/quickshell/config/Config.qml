@@ -116,6 +116,18 @@ Singleton {
     readonly property int barLeftSpacing: 12
     readonly property int barRightSpacing: 10
     readonly property int minWorkspaces: 5
+    // Which widgets the bar shows. Order is fixed in bar/bar.qml; the shared
+    // widgets keep working normally in the Command Centre and lock screen.
+    readonly property bool barShowClock: true
+    readonly property bool barShowCommandCentre: true
+    readonly property bool barShowLayout: true
+    readonly property bool barShowWindowTitle: true
+    readonly property bool barShowWorkspaces: true
+    readonly property bool barShowTray: true
+    readonly property bool barShowMedia: true
+    readonly property bool barShowVolume: true
+    readonly property bool barShowNetwork: true
+    readonly property bool barShowBattery: true
 
     // Audio, Microphone, Brightness & OSD (AudioService.qml, BrightnessService.qml,
     // SystemService.qml, VolumeWidget.qml, OsdOverlay.qml)

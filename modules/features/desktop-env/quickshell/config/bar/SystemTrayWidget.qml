@@ -14,7 +14,7 @@ Pill {
 
   property PanelWindow sharedWindow: null
 
-  visible: TrayService.trayHasContent
+  visible: TrayService.trayHasContent && root.shown
   padding: 5
   implicitWidth: root.horizontal ? (trayLayout.implicitWidth + root.padding * 2) : 34
   implicitHeight: root.horizontal ? Config.pillHeightHorizontal : (trayLayout.implicitHeight + 10)

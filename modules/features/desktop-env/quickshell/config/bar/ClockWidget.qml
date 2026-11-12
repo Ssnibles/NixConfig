@@ -13,6 +13,9 @@ Item {
     : Qt.formatTime(ClockService.now, root.timeFormat)
   property PanelWindow sharedWindow: null
   property bool horizontal: false
+  property bool shown: true
+
+  visible: root.shown
 
   implicitWidth: root.horizontal ? timeText.implicitWidth : timeColumn.implicitWidth
   implicitHeight: root.horizontal ? timeText.implicitHeight : timeColumn.implicitHeight

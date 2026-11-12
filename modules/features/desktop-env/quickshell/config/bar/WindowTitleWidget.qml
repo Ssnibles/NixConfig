@@ -13,6 +13,7 @@ Item {
   property bool horizontal: false
   property int maxText: horizontal ? Config.windowTitleMaxWidthHorizontal : Config.windowTitleMaxWidthVertical
   property bool italic: true
+  property bool shown: true
   property int horizontalPadding: Config.pillPaddingHorizontal + 2
 
   readonly property real textExtent: Math.min(titleLabel.implicitWidth, root.maxText)
@@ -21,7 +22,7 @@ Item {
   implicitHeight: horizontal ? Config.pillHeightHorizontal : root.textExtent
   width: implicitWidth
   height: implicitHeight
-  visible: titleText !== ""
+  visible: root.titleText !== "" && root.shown
   clip: true
 
   Behavior on width {
