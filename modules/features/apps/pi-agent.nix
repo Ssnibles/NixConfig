@@ -114,19 +114,18 @@
         bash ${./pi-agent/skills/check-skills.sh} $out --expect typst-snippets
       '';
 
-      bundledSkills =
-        lib.optional cfg.programmingConventions (
-          mkSkill "programming-conventions" ./pi-agent/skills/programming-conventions
-        )
-        ++ lib.optional cfg.typstSnippets typstSnippetsSkill
-        ++ lib.optional cfg.lectureNotes (mkSkill "lecture-notes" ./pi-agent/skills/lecture-notes)
-        ++ lib.optional cfg.testNotes (mkSkill "test-notes" ./pi-agent/skills/test-notes)
-        ++ lib.optional cfg.labNotes (mkSkill "lab-notes" ./pi-agent/skills/lab-notes)
-        ++ lib.optional cfg.assignmentReport (
-          mkSkill "assignment-report" ./pi-agent/skills/assignment-report
-        )
-        ++ lib.optional cfg.revisionSheets (mkSkill "revision-sheets" ./pi-agent/skills/revision-sheets)
-        ++ lib.optional cfg.ebookLibrary (mkSkill "ebook-library" ./pi-agent/skills/ebook-library);
+      skillBuilders = {
+        programming-conventions = mkSkill "programming-conventions" ./pi-agent/skills/programming-conventions;
+        typst-snippets = typstSnippetsSkill;
+        lecture-notes = mkSkill "lecture-notes" ./pi-agent/skills/lecture-notes;
+        test-notes = mkSkill "test-notes" ./pi-agent/skills/test-notes;
+        lab-notes = mkSkill "lab-notes" ./pi-agent/skills/lab-notes;
+        assignment-report = mkSkill "assignment-report" ./pi-agent/skills/assignment-report;
+        revision-sheets = mkSkill "revision-sheets" ./pi-agent/skills/revision-sheets;
+        ebook-library = mkSkill "ebook-library" ./pi-agent/skills/ebook-library;
+      };
+
+      bundledSkills = map (name: skillBuilders.${name}) cfg.bundledSkills;
 
       # Base conventions used to be a skill, which meant a session could start
       # without ever loading them. Rules are injected into the system prompt, so
@@ -293,82 +292,10 @@
           '';
         };
 
-        programmingConventions = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Bundle the programming-conventions skill. It sets the rules for
-            any code, configuration, or refactoring work.
-          '';
-        };
-
-        typstSnippets = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Bundle the typst-snippets skill. It teaches pi the Typst
-            conventions from the Neovim snippet library.
-          '';
-        };
-
-        lectureNotes = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Bundle the lecture-notes skill, which turns lecture slides or
-            recordings into high-yield study notes instead of re-typed copies
-            of the slides.
-          '';
-        };
-
-        testNotes = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Bundle the test-notes skill, which turns past tests, exams and
-            practice papers into worked study guides that answer every question
-            with the correct answer and the reasoning.
-          '';
-        };
-
-        labNotes = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Bundle the lab-notes skill, which turns lab sessions, practicals
-            and exercises into notes that explain the method, results and why
-            they turned out that way.
-          '';
-        };
-
-        assignmentReport = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Bundle the assignment-report skill, which turns briefs and
-            specifications into structured write-ups that address every
-            requirement and mark-scheme item.
-          '';
-        };
-
-        revisionSheets = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Bundle the revision-sheets skill, which compresses a course or
-            topic into dense one-page revision sheets and active-recall
-            question banks.
-          '';
-        };
-
-        ebookLibrary = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Bundle the ebook-library skill, which curates a Calibre library
-            and a Kobo reader: tags, collections, series, authors, identifiers
-            and formats.
-          '';
+        bundledSkills = lib.mkOption {
+          type = lib.types.listOf (lib.types.enum (builtins.attrNames skillBuilders));
+          default = builtins.attrNames skillBuilders;
+          description = "Skills bundled from the repository and passed to pi via --skill.";
         };
       };
 
@@ -376,7 +303,7 @@
         programs.pi.coding-agent = {
           enable = true;
           package = lib.mkDefault effectivePackage;
-          jail.enable = lib.mkIf cfg.jail.enable (lib.mkDefault true);
+          jail.enable = cfg.jail.enable;
           settings = lib.mkDefault (defaultSettings // cfg.settings);
           rules = lib.mkIf (effectiveRules != null) (lib.mkDefault effectiveRules);
           skills = lib.mkIf (cfg.skills != [ ] || bundledSkills != [ ]) (
