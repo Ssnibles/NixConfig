@@ -391,7 +391,7 @@ Scope {
 
                 contentItem: Rectangle {
                   implicitWidth: 6
-                  radius: 3
+                  radius: width / 2
                   color: Colours.fgDim
                 }
               }
@@ -401,16 +401,16 @@ Scope {
                 required property var modelData
                 required property int index
 
-                width: (row.modelData.kind === "calc" && root.results.length === 1) ? list.width : list.width - 24
+                width: list.width
                 height: row.modelData.kind === "calc" ? (root.results.length === 1 ? list.height : 92) : 44
-                radius: 8
+                radius: Config.itemRadiusMd
                 color: (index === root.selected && !(row.modelData.kind === "calc" && root.results.length === 1)) ? Colours.bgSubtle : "transparent"
 
                 RowLayout {
                   anchors.fill: parent
-                  anchors.leftMargin: 8
-                  anchors.rightMargin: 8
-                  spacing: 10
+                  anchors.leftMargin: Config.spaceMd
+                  anchors.rightMargin: Config.spaceMd
+                  spacing: Config.spaceMd
                   visible: row.modelData.kind !== "calc"
 
                   Image {
@@ -509,7 +509,7 @@ Scope {
 
                 contentItem: Rectangle {
                   implicitWidth: 6
-                  radius: 3
+                  radius: width / 2
                   color: Colours.fgDim
                 }
               }
@@ -519,16 +519,16 @@ Scope {
                 required property var modelData
                 required property int index
 
-                width: actionList.width - 24
+                width: actionList.width
                 height: 44
-                radius: 8
+                radius: Config.itemRadiusMd
                 color: index === root.actionSelected ? Colours.bgSubtle : "transparent"
 
                 RowLayout {
                   anchors.fill: parent
-                  anchors.leftMargin: 10
-                  anchors.rightMargin: 10
-                  spacing: 10
+                  anchors.leftMargin: Config.spaceMd
+                  anchors.rightMargin: Config.spaceMd
+                  spacing: Config.spaceMd
 
                   Text {
                     Layout.preferredWidth: 16
