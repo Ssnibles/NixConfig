@@ -168,9 +168,20 @@ Card {
       Layout.fillHeight: true
       clip: true
 
+      // A hovered card scales up around its centre, so it grows past its
+      // resting bounds on every side. Inset the list by half that growth on
+      // the width and a small fixed amount on the height, so the enlarged card
+      // stays inside the clip region instead of having its edges sliced off.
+      readonly property int hoverInsetX: Math.ceil(width * (Config.notifHoverScale - 1) / 2) + Config.borderWidth
+      readonly property int hoverInsetY: Config.space2xs + Config.borderWidth
+
       ListView {
         id: notifHistList
         anchors.fill: parent
+        anchors.leftMargin: parent.hoverInsetX
+        anchors.rightMargin: parent.hoverInsetX
+        anchors.topMargin: parent.hoverInsetY
+        anchors.bottomMargin: parent.hoverInsetY
         spacing: Config.notifSpacing
         model: NotificationService.historyModel
 
