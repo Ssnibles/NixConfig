@@ -124,49 +124,53 @@ Card {
       }
     }
 
-    Row {
-      spacing: 4
+    Column {
+      spacing: Config.spaceXs
 
-      Repeater {
-        model: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+      Row {
+        spacing: Config.spaceXs
 
-        delegate: Text {
-          required property var modelData
-          width: 24
-          horizontalAlignment: Text.AlignHCenter
-          text: modelData
-          font.family: root.uiFont
-          font.pixelSize: 11
-          font.bold: true
-          color: Colours.accent
-        }
-      }
-    }
+        Repeater {
+          model: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 
-    Grid {
-      columns: 7
-      rowSpacing: 4
-      columnSpacing: 4
-
-      Repeater {
-        model: calCol.monthModel
-
-        delegate: Rectangle {
-          id: dayCell
-          required property var modelData
-          width: 24
-          height: 24
-          radius: 4
-          color: dayCell.modelData.isCurrent ? Colours.accent : "transparent"
-
-          Text {
-            anchors.centerIn: parent
-            visible: dayCell.modelData.day > 0
-            text: dayCell.modelData.day > 0 ? dayCell.modelData.day.toString() : ""
+          delegate: Text {
+            required property var modelData
+            width: 24
+            horizontalAlignment: Text.AlignHCenter
+            text: modelData
             font.family: root.uiFont
             font.pixelSize: 11
-            font.bold: dayCell.modelData.isCurrent
-            color: dayCell.modelData.isCurrent ? Colours.bg : Colours.fg
+            font.bold: true
+            color: Colours.accent
+          }
+        }
+      }
+
+      Grid {
+        columns: 7
+        rowSpacing: Config.spaceXs
+        columnSpacing: Config.spaceXs
+
+        Repeater {
+          model: calCol.monthModel
+
+          delegate: Rectangle {
+            id: dayCell
+            required property var modelData
+            width: 24
+            height: 24
+            radius: Config.itemRadiusXs
+            color: dayCell.modelData.isCurrent ? Colours.accent : "transparent"
+
+            Text {
+              anchors.centerIn: parent
+              visible: dayCell.modelData.day > 0
+              text: dayCell.modelData.day > 0 ? dayCell.modelData.day.toString() : ""
+              font.family: root.uiFont
+              font.pixelSize: 11
+              font.bold: dayCell.modelData.isCurrent
+              color: dayCell.modelData.isCurrent ? Colours.bg : Colours.fg
+            }
           }
         }
       }

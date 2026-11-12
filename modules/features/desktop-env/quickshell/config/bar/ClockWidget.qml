@@ -63,7 +63,8 @@ Item {
     icon: "\u{F017}"
     iconColour: Colours.accent
     title: ClockService.ordinalDateStr
-    contentWidth: 216
+    // Matches the 192px calendar grid plus the shared popup padding.
+    contentWidth: Config.popupContentMargins * 2 + 192
     contentComponent: Component {
       CalendarPopup { uiFont: root.uiFont }
     }
