@@ -30,20 +30,16 @@
         # @vicinae.title Clipboard History
         # @vicinae.mode silent
         set -euo pipefail
-        selection=$(${pkgs.cliphist}/bin/cliphist list | ${pkgs.unstable.vicinae}/bin/vicinae dmenu -p "Clipboard history")
+        selection=$(${pkgs.cliphist}/bin/cliphist list | ${pkgs.vicinae}/bin/vicinae dmenu -p "Clipboard history")
         [ -n "$selection" ] || exit 0
         printf '%s\n' "$selection" | ${pkgs.cliphist}/bin/cliphist decode | ${pkgs.wl-clipboard}/bin/wl-copy
       '';
     in
     {
-      options.features.vicinae.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable the Vicinae application launcher daemon with themed styling and clipboard history.";
-      };
+      options.features.vicinae.enable = lib.mkEnableOption "the Vicinae application launcher daemon with themed styling and clipboard history";
 
       config = lib.mkIf cfg.enable {
-        environment.systemPackages = with pkgs.unstable; [ vicinae ];
+        environment.systemPackages = with pkgs; [ vicinae ];
 
         hjem.users."${config.username}" = {
           enable = true;
@@ -140,7 +136,7 @@
             ExecStartPre = [
               "${pkgs.coreutils}/bin/mkdir -p %h/.local/share/vicinae/snippets"
             ];
-            ExecStart = "${pkgs.unstable.vicinae}/bin/vicinae server";
+            ExecStart = "${pkgs.vicinae}/bin/vicinae server";
             Restart = "on-failure";
             RestartSec = 2;
           };

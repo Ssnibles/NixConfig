@@ -3,7 +3,6 @@
 {
   nixos.modules.shared =
     {
-      pkgs,
       lib,
       config,
       ...
@@ -86,9 +85,7 @@
       # globs. Browser types stay out of this set.
       editorDesktopEntry = "${cfg.editor}.desktop";
 
-      textMimeTypes = builtins.filter (
-        type: lib.hasPrefix "text/" type && !(builtins.elem type webMimeTypes)
-      ) (lib.splitString "\n" (builtins.readFile "${pkgs.shared-mime-info}/share/mime/types"));
+      textMimeTypes = import ./_text-mime-types.nix;
 
       editorAssociations = lib.genAttrs (
         textMimeTypes
@@ -165,18 +162,15 @@
 
       config = lib.mkIf cfg.enable {
         features.default-apps.browser = lib.mkDefault (
-          if (config.features.helium.enable or false) && (config.features.helium.defaultBrowser or false) then
-            "helium"
-          else if
-            (config.features.firefox.enable or false) && (config.features.firefox.defaultBrowser or false)
-          then
-            "firefox"
-          else if (config.features.helium.enable or false) then
-            "helium"
-          else if (config.features.firefox.enable or false) then
-            "firefox"
-          else
-            "none"
+          let
+            browsers = [
+              "helium"
+              "firefox"
+            ];
+            enabled = name: config.features.${name}.enable;
+            preferred = name: enabled name && config.features.${name}.defaultBrowser;
+          in
+          lib.findFirst preferred (lib.findFirst enabled "none" browsers) browsers
         );
         # Session variables.
         environment.sessionVariables = lib.mkMerge [

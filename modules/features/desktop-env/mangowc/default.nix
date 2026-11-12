@@ -11,6 +11,7 @@
     }:
     let
       cfg = config.features.mangowc;
+      home = config.users.users.${config.username}.home;
       inherit (config.theme.colours)
         accent
         border
@@ -56,7 +57,7 @@
             local bin="$1"
             rm "$out/bin/$bin"
             makeWrapper ${mango-local-base}/bin/$bin "$out/bin/$bin" \
-              --run 'if [ -x /home/${config.username}/mango/result/bin/'"$bin"' ]; then exec /home/${config.username}/mango/result/bin/'"$bin"' "$@"; fi
+              --run 'if [ -x ${home}/mango/result/bin/'"$bin"' ]; then exec ${home}/mango/result/bin/'"$bin"' "$@"; fi
                      mkdir -p "''${XDG_CACHE_HOME:-$HOME/.cache}"
                      echo "[mango-dev] $(date +%Y-%m-%d_%H:%M:%S) local build missing, using packaged '"$bin"'" >> "''${XDG_CACHE_HOME:-$HOME/.cache}/mango-dev.log"'
           }
@@ -96,6 +97,15 @@
           providedSessions = [ "mango-local" ];
         };
 
+      # Prefer Vicinae when it is enabled, otherwise fall back to the
+      # lightweight Wayland dmenu from fuzzel. The chosen command is inserted
+      # into the script so the other package is not pulled into the closure.
+      chooser =
+        if config.features.vicinae.enable then
+          "printf '%s\\n' \"$input\" | ${pkgs.vicinae}/bin/vicinae dmenu -f data -n 'Share screen' -p 'Pick a screen or window'"
+        else
+          "printf '%s\\n' \"$input\" | ${pkgs.fuzzel}/bin/fuzzel --dmenu --prompt='Share screen'";
+
       # Vesktop opens three portal sessions for one share. Cache the choice for
       # a short time so the picker only appears once, unless the source list
       # changes.
@@ -111,7 +121,7 @@
           fi
         fi
 
-        choice=$(printf '%s\n' "$input" | ${pkgs.unstable.vicinae}/bin/vicinae dmenu -f data -n 'Share screen' -p 'Pick a screen or window')
+        choice=$(${chooser})
         if [ -n "$choice" ]; then
           printf '%s\n' "$choice" > "$cache"
           printf '%s\n' "$choice"
@@ -123,11 +133,7 @@
         inputs.mangowc.nixosModules.mango
       ];
 
-      options.features.mangowc.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable MangoWC Wayland compositor feature.";
-      };
+      options.features.mangowc.enable = lib.mkEnableOption "the MangoWC Wayland compositor";
 
       options.features.mangowc.local = lib.mkOption {
         type = lib.types.bool;

@@ -6,39 +6,25 @@
       pkgs,
       lib,
       config,
+      mkWaylandService,
       ...
     }:
     let
       cfg = config.features.shikane;
     in
     {
-      options.features.shikane.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable the Shikane dynamic display profile daemon.";
-      };
+      options.features.shikane.enable = lib.mkEnableOption "the Shikane dynamic display profile daemon";
 
       config = lib.mkIf cfg.enable {
         environment.systemPackages = with pkgs; [
           shikane
         ];
 
-        systemd.user.services.shikane = {
+        systemd.user.services.shikane = mkWaylandService {
           description = "Shikane dynamic display configuration daemon";
-          wantedBy = [ "wayland-session.target" ];
-          partOf = [ "wayland-session.target" ];
-          after = [ "wayland-session.target" ];
-          startLimitBurst = 0;
-          startLimitIntervalSec = 0;
-          path = [
-            config.system.path
-            pkgs.libnotify
-          ];
-          serviceConfig = {
-            ExecStart = "${pkgs.shikane}/bin/shikane --timeout 1000";
-            Restart = "always";
-            RestartSec = 2;
-          };
+          execStart = "${pkgs.shikane}/bin/shikane --timeout 1000";
+          path = [ pkgs.libnotify ];
+          restart = "always";
         };
 
         hjem.users."${config.username}" = {

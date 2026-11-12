@@ -12,11 +12,7 @@
       cfg = config.features.niri;
     in
     {
-      options.features.niri.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable Niri Wayland compositor feature.";
-      };
+      options.features.niri.enable = lib.mkEnableOption "the Niri Wayland compositor";
 
       config = lib.mkIf cfg.enable {
         wallpaper-destinations = [ "Pictures/wallpaper" ];

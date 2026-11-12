@@ -27,11 +27,7 @@
         ;
     in
     {
-      options.features.hyprland.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable Hyprland Wayland compositor feature.";
-      };
+      options.features.hyprland.enable = lib.mkEnableOption "the Hyprland Wayland compositor";
 
       config = lib.mkIf cfg.enable {
         wallpaper-destinations = [ "Pictures/wallpaper" ];
