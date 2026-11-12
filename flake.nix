@@ -37,6 +37,10 @@
     millennium = {
       url = "github:SteamClientHomebrew/Millennium?dir=packages/nix";
       inputs.nixpkgs.follows = "nixpkgs";
+      # Upstream pins millennium-src to an older release that predates the
+      # MILLENNIUM_LINUX_X64 option, so the 64-bit build tries to compile the
+      # 32-bit sources with -m32 and fails. Track the flake's own commit.
+      inputs.millennium-src.url = "github:SteamClientHomebrew/Millennium";
     };
 
     mangowc = {
