@@ -1,7 +1,13 @@
 # Example devenv.nix Modular Configuration
 # Use this file as a template when setting up a new project with devenv!
 # Documentation & options reference: https://devenv.sh/reference/options/
-{ pkgs, lib, config, inputs, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  inputs,
+  ...
+}:
 
 {
   # Environment Variables
@@ -28,7 +34,13 @@
   languages.rust = {
     enable = true;
     channel = "stable"; # "stable", "nightly", or custom overlay
-    components = [ "rustc" "cargo" "clippy" "rustfmt" "rust-analyzer" ];
+    components = [
+      "rustc"
+      "cargo"
+      "clippy"
+      "rustfmt"
+      "rust-analyzer"
+    ];
   };
 
   # TypeScript / Node.js

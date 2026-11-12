@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Update Interactive Architecture Diagram in README.md
-# Scans modules/ and updates the Mermaid diagram between:
-#   <!-- DIAGRAM:START --> and <!-- DIAGRAM:END -->
+# Update the generated README blocks.
+# The Mermaid diagram is built from modules/, and the repository tree is built
+# from the filesystem. Both live between HTML comment markers.
 #
 # Usage:
 #   ./assets/update_diagram.sh [--check]
@@ -14,6 +14,50 @@ CHECK_ONLY=false
 if [[ "${1:-}" == "--check" ]]; then
   CHECK_ONLY=true
 fi
+
+# Print an indented tree. Hidden entries and build outputs are skipped.
+tree_listing() {
+  local base="$1" prefix="$2" depth="$3"
+  ((depth > 0)) || return 0
+
+  local entries=() entry
+  while IFS= read -r entry; do
+    entries+=("$entry")
+  done < <(
+    find "$base" -mindepth 1 -maxdepth 1 \
+      -not -name '.*' -not -name 'result' -not -name 'nohup.out' \
+      -printf '%f\n' | LC_ALL=C sort
+  )
+
+  local i=0 total=${#entries[@]} connector child_prefix
+  for entry in "${entries[@]}"; do
+    i=$((i + 1))
+    connector="├── "
+    if ((i == total)); then connector="└── "; fi
+
+    if [[ -d "$base/$entry" ]]; then
+      printf '%s%s%s/\n' "$prefix" "$connector" "$entry"
+      if ((i == total)); then
+        child_prefix="$prefix    "
+      else
+        child_prefix="$prefix│   "
+      fi
+      tree_listing "$base/$entry" "$child_prefix" $((depth - 1))
+    else
+      printf '%s%s%s\n' "$prefix" "$connector" "$entry"
+    fi
+  done
+}
+
+TREE_BODY=$(tree_listing "$REPO_ROOT" "" 4)
+export TREE_CONTENT=$(cat <<EOF
+<!-- TREE:START -->
+\`\`\`
+$TREE_BODY
+\`\`\`
+<!-- TREE:END -->
+EOF
+)
 
 # Detect features
 FEATURES=()
@@ -38,14 +82,14 @@ export DIAGRAM_CONTENT=$(cat <<EOF
 \`\`\`mermaid
 flowchart TD
     subgraph Flake["flake.nix (Flake-Parts Entry Point)"]
-        Inputs["Inputs: nixpkgs (26.05), unstable, flake-parts, import-tree, hjem, nix-flatpak, nvf, mangowc, pi-agent..."]
+        Inputs["Inputs: nixpkgs (unstable default), stable, flake-parts, import-tree, hjem, nix-flatpak, nvf, mangowc, pi-agent..."]
     end
 
     Tree["inputs.import-tree ./modules<br/>(Filesystem Auto-Discovery)"]
     Flake --> Tree
 
     subgraph Modules["Dendritic Modules Structure"]
-        Core["modules/core/<br/>module-groups, options, parts, devshell, templates"]
+        Core["modules/core/<br/>helpers, live-links, options, parts, devshell, templates"]
         Features["modules/features/<br/>${FEATURES_STR}"]
         Packages["modules/packages/<br/>${PACKAGES_STR}"]
     end
@@ -88,13 +132,15 @@ if [[ "$CHECK_ONLY" == true ]]; then
   perl -0777 -e '
     my $readme = do { local $/; <> };
     my $diag = $ENV{"DIAGRAM_CONTENT"};
+    my $tree = $ENV{"TREE_CONTENT"};
     my $copy = $readme;
     $copy =~ s/<!-- DIAGRAM:START -->.*?<!-- DIAGRAM:END -->/$diag/s;
+    $copy =~ s/<!-- TREE:START -->.*?<!-- TREE:END -->/$tree/s;
     if ($readme eq $copy) {
-      print "Architecture diagram is up to date.\n";
+      print "README generated blocks are up to date.\n";
       exit 0;
     } else {
-      print "Architecture diagram is out of date. Run ./assets/update_diagram.sh to update.\n";
+      print "README generated blocks are out of date. Run ./assets/update_diagram.sh to update.\n";
       exit 1;
     }
   ' "$README"
@@ -104,8 +150,10 @@ fi
 perl -0777 -i -e '
   my $readme = do { local $/; <> };
   my $diag = $ENV{"DIAGRAM_CONTENT"};
+  my $tree = $ENV{"TREE_CONTENT"};
   $readme =~ s/<!-- DIAGRAM:START -->.*?<!-- DIAGRAM:END -->/$diag/s;
+  $readme =~ s/<!-- TREE:START -->.*?<!-- TREE:END -->/$tree/s;
   print $readme;
 ' "$README"
 
-echo "Successfully updated interactive architecture diagram in README.md"
+echo "Updated the architecture diagram and repository tree in README.md"

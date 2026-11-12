@@ -185,5 +185,5 @@ ollama list
 
 Included in `modules/features/apps/development.nix`:
 
-- **Antigravity CLI** (`pkgs.unstable.antigravity-cli`): Advanced coding assistant CLI supporting code editing, subagents, and automated pair programming workflows.
-- **OpenCode** (`pkgs.unstable.opencode`): Lightweight terminal AI assistant for code analysis and refactoring.
+- **Antigravity CLI** (`pkgs.antigravity-cli`): Advanced coding assistant CLI supporting code editing, subagents, and automated pair programming workflows.
+- **OpenCode** (`pkgs.opencode`): Lightweight terminal AI assistant for code analysis and refactoring.
