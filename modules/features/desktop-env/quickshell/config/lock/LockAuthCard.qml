@@ -36,8 +36,8 @@ Card {
     root.capsLockOn = (modifiers & Qt.CapsLockModifier) !== 0
   }
 
-  // 20px top margin plus 16px of breathing room below the last row.
-  implicitHeight: authCol.implicitHeight + 36
+  // Extra top padding gives the avatar room to breathe.
+  implicitHeight: authCol.implicitHeight + Config.spaceXl + Config.spaceLg
   borderColour: root.errorMessage !== "" ? Colours.red : Colours.border
 
   transform: Translate {
@@ -49,15 +49,17 @@ Card {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    anchors.margins: 20
-    spacing: 16
+    anchors.leftMargin: Config.spaceLg
+    anchors.rightMargin: Config.spaceLg
+    anchors.topMargin: Config.spaceXl
+    spacing: Config.spaceLg
 
     readonly property bool isInputActive: passInput.activeFocus || root.enteredPassword.length > 0
 
-    // Avatar & Username Header
+    // Avatar and identity header.
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
-      spacing: 8
+      spacing: Config.spaceMd
 
       // Avatar Box (supports custom image with fallback icon)
       Rectangle {
@@ -67,7 +69,7 @@ Card {
         radius: Config.commandCentreCardRadius
         color: Colours.bgSubtle
         border.color: Colours.border
-        border.width: 1
+        border.width: Config.borderWidth
 
         // Fallback Icon
         Text {
@@ -116,7 +118,7 @@ Card {
       radius: Config.lockInputRadius
       color: Colours.bgSubtle
       border.color: authCol.isInputActive ? Colours.accent : Colours.border
-      border.width: authCol.isInputActive ? 2 : 1
+      border.width: authCol.isInputActive ? Config.borderWidthFocus : Config.borderWidth
 
       Behavior on border.color { ColorAnimation { duration: Config.animSmoothMs } }
 
@@ -129,9 +131,9 @@ Card {
 
       RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 16
-        anchors.rightMargin: 8
-        spacing: 10
+        anchors.leftMargin: Config.spaceLg
+        anchors.rightMargin: Config.spaceLg
+        spacing: Config.spaceMd
 
         // Lock / Auth Icon with spinner animation when authenticating
         Text {
@@ -252,11 +254,11 @@ Card {
       Layout.alignment: Qt.AlignHCenter
       pillColour: Colours.bgSubtle
       border.color: Colours.yellow
-      padding: 8
+      padding: Config.spaceMd
 
       Row {
         anchors.centerIn: parent
-        spacing: 6
+        spacing: Config.spaceSm
 
         Text {
           text: "󰌎"

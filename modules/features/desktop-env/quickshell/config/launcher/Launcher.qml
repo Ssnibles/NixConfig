@@ -286,22 +286,22 @@ Scope {
 
         ColumnLayout {
           anchors.fill: parent
-          anchors.margins: 12
-          spacing: 8
+          anchors.margins: Config.spaceLg
+          spacing: Config.spaceLg
 
           Rectangle {
             Layout.fillWidth: true
             implicitHeight: 40
-            radius: 10
+            radius: Config.itemRadiusMd
             color: Colours.bgSubtle
-            border.width: 1
+            border.width: Config.borderWidth
             border.color: Colours.border
 
             TextInput {
               id: input
               anchors.fill: parent
-              anchors.leftMargin: 12
-              anchors.rightMargin: 12
+              anchors.leftMargin: Config.spaceLg
+              anchors.rightMargin: Config.spaceLg
               verticalAlignment: TextInput.AlignVCenter
               color: Colours.fg
               selectionColor: Colours.accent
@@ -351,7 +351,7 @@ Scope {
             Text {
               anchors.verticalCenter: parent.verticalCenter
               anchors.left: parent.left
-              anchors.leftMargin: 12
+              anchors.leftMargin: Config.spaceLg
               visible: input.text === ""
               text: "Search apps or calculate"
               color: Colours.fgDim
@@ -367,7 +367,7 @@ Scope {
             color: Colours.fgMid
             font.family: Session.sansFont
             font.pixelSize: 12
-            leftPadding: 4
+            leftPadding: Config.spaceXs
           }
 
           Item {
@@ -437,7 +437,7 @@ Scope {
 
                   ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 0
+                    spacing: Config.space2xs
 
                     Text {
                       Layout.fillWidth: true
@@ -463,7 +463,7 @@ Scope {
                 Column {
                   visible: row.modelData.kind === "calc"
                   anchors.centerIn: parent
-                  spacing: 2
+                  spacing: Config.space2xs
 
                   Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -541,7 +541,7 @@ Scope {
 
                   ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 0
+                    spacing: Config.space2xs
 
                     Text {
                       Layout.fillWidth: true

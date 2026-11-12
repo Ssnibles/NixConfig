@@ -28,7 +28,7 @@ Pill {
 
   // Side bars rotate the icon and label as a unit.
   property real rowRotation: 0
-  property int rowSpacing: 4
+  property int rowSpacing: Config.spaceSm
 
   property bool tooltipEnabled: true
   property string tooltipTitle: ""

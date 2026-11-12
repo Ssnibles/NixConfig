@@ -18,7 +18,7 @@ Card {
   readonly property bool hasPlayer: MediaService.hasPlayer
 
   visible: root.showWhenIdle || root.hasPlayer
-  implicitHeight: contentCol.implicitHeight + 24
+  implicitHeight: contentCol.implicitHeight + Config.spaceLg * 2
 
   // Keep the position tick alive while the cursor is over the card (covers the
   // bar popover, where the widget's own hover has already ended).
@@ -43,21 +43,21 @@ Card {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    anchors.margins: 12
-    spacing: 8
+    anchors.margins: Config.spaceLg
+    spacing: Config.spaceMd
 
     RowLayout {
       width: parent.width
-      spacing: 12
+      spacing: Config.spaceMd
 
       // Album cover art
       Rectangle {
         width: 54
         height: 54
-        radius: 8
+        radius: Config.itemRadiusMd
         color: Colours.bgSubtle
         border.color: Colours.border
-        border.width: 1
+        border.width: Config.borderWidth
         Layout.alignment: Qt.AlignVCenter
 
         Text {
@@ -74,7 +74,7 @@ Card {
           id: coverArt
           anchors.fill: parent
           sourceSize: Qt.size(108, 108)
-          radius: 8
+          radius: Config.itemRadiusMd
           source: root.hasPlayer ? MediaService.trackArtUrl : ""
         }
 
@@ -106,7 +106,7 @@ Card {
           anchors.left: parent.left
           anchors.right: parent.right
           anchors.verticalCenter: parent.verticalCenter
-          spacing: 2
+          spacing: Config.space2xs
 
           Text {
             width: parent.width
@@ -133,8 +133,8 @@ Card {
             readonly property bool canSwitch: root.interactive && Config.mediaAllowPlayerSwitch && MediaService.playerCount > 1
             visible: Config.mediaShowPlayerBadge && root.hasPlayer && MediaService.playerName !== ""
             pillHeight: 17
-            padding: 6
-            radius: 5
+            padding: Config.spaceSm
+            radius: Config.itemRadiusSm
             baseColour: Colours.bgSubtle
             hoverColour: Colours.bgRaised
             hoverHighlight: playerSwitchPill.canSwitch
@@ -148,7 +148,7 @@ Card {
 
             Row {
               anchors.centerIn: parent
-              spacing: 4
+              spacing: Config.spaceSm
 
               Text {
                 text: MediaService.playerGlyph

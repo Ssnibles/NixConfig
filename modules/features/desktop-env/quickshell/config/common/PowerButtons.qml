@@ -12,10 +12,10 @@ RowLayout {
 
   // The lock screen omits the Lock action (it is already locked).
   property bool showLock: true
-  property real buttonRadius: 10
+  property real buttonRadius: Config.itemRadiusMd
   signal activated()
 
-  spacing: 10
+  spacing: Config.spaceMd
 
   readonly property var buttonModel: {
     var m = []
@@ -40,7 +40,7 @@ RowLayout {
       radius: root.buttonRadius
       color: hoverArea.containsMouse ? Colours.bgSubtle : Colours.bgRaised
       border.color: hoverArea.containsMouse ? buttonDelegate.modelData.hoverColour : Colours.border
-      border.width: 1
+      border.width: Config.borderWidth
       scale: hoverArea.containsMouse ? 0.94 : 1.0
 
       Behavior on scale { NumberAnimation { duration: Config.animFastMs } }
@@ -60,7 +60,7 @@ RowLayout {
 
       Row {
         anchors.centerIn: parent
-        spacing: 6
+        spacing: Config.spaceSm
 
         Text {
           text: buttonDelegate.modelData.icon

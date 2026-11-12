@@ -79,8 +79,8 @@ Scope {
         right: panel.insets.right
       }
 
-      implicitWidth: Config.osdWidth + 16
-      implicitHeight: Config.osdHeight + 16
+      implicitWidth: Config.osdWidth + Config.spaceLg * 2
+      implicitHeight: Config.osdHeight + Config.spaceLg * 2
       color: "transparent"
       visible: root.active
 
@@ -120,9 +120,9 @@ Scope {
         RowLayout {
           id: osdRow
           anchors.fill: parent
-          anchors.leftMargin: 16
-          anchors.rightMargin: 16
-          spacing: 12
+          anchors.leftMargin: Config.spaceLg
+          anchors.rightMargin: Config.spaceLg
+          spacing: Config.spaceMd
 
           // Width of the fixed label column, measured below.
           readonly property real labelColumnWidth: Math.ceil(labelSizer.implicitWidth)
@@ -140,9 +140,9 @@ Scope {
             Layout.fillWidth: true
             Layout.preferredHeight: 8
             Layout.alignment: Qt.AlignVCenter
-            radius: 4
+            radius: Config.itemRadiusXs
             color: Colours.bgSubtle
-            border.width: 1
+            border.width: Config.borderWidth
             border.color: Colours.border
 
             Rectangle {
@@ -150,7 +150,7 @@ Scope {
               anchors.top: parent.top
               anchors.bottom: parent.bottom
               width: Math.round(parent.width * Math.max(0, Math.min(1.0, SystemService.osdValue)))
-              radius: 4
+              radius: Config.itemRadiusXs
               color: panel.activeAccent
               Behavior on width { NumberAnimation { duration: Config.animNormalMs; easing.type: Easing.OutCubic } }
               Behavior on color { ColorAnimation { duration: Config.animFastMs } }

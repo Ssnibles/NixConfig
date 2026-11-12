@@ -7,7 +7,7 @@ import ".."
 // Used in CommandCentre media card and MediaWidget popover.
 RowLayout {
   id: root
-  spacing: 6
+  spacing: Config.spaceSm
 
   property bool canPrevious: false
   property bool canNext: false

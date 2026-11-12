@@ -130,10 +130,10 @@ PanelWindow {
 
   margins {
     top: root.barSide === "top"
-      ? (Config.barHeight + 6)
-      : Math.round(Math.max(6, Math.min(tipLoader.targetCentreY - root.cardH / 2, root.screenH - root.cardH - 6)))
+      ? (Config.barHeight + Config.spaceSm)
+      : Math.round(Math.max(Config.spaceSm, Math.min(tipLoader.targetCentreY - root.cardH / 2, root.screenH - root.cardH - Config.spaceSm)))
     left: root.barSide === "top"
-      ? Math.round(Math.max(12, Math.min(tipLoader.targetCentreX - root.cardW / 2, root.screenW - root.cardW - 12)))
+      ? Math.round(Math.max(Config.spaceLg, Math.min(tipLoader.targetCentreX - root.cardW / 2, root.screenW - root.cardW - Config.spaceLg)))
       : (root.barSide === "left" ? root.edgeDistance : 0)
     right: root.barSide === "right" ? root.edgeDistance : 0
   }

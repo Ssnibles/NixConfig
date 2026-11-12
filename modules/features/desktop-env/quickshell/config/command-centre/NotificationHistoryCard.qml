@@ -7,15 +7,15 @@ import ".."
 Card {
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: 12
-    spacing: 10
+    anchors.margins: Config.spaceLg
+    spacing: Config.spaceMd
 
     RowLayout {
       Layout.fillWidth: true
-      spacing: 8
+      spacing: Config.spaceMd
 
       Row {
-        spacing: 6
+        spacing: Config.spaceSm
         Layout.alignment: Qt.AlignVCenter
 
         Text {
@@ -39,7 +39,7 @@ Card {
         Pill {
           visible: NotificationService.historyModel.count > 0
           pillHeight: 18
-          padding: 5
+          padding: Config.spaceSm
           pillColour: Colours.bgSubtle
           anchors.verticalCenter: parent.verticalCenter
 
@@ -57,14 +57,14 @@ Card {
 
       // Controls: Mute toggle & Clear button
       Row {
-        spacing: 6
+        spacing: Config.spaceSm
         Layout.alignment: Qt.AlignVCenter
 
         // Mute / DND Toggle Button
         Pill {
           id: mutePill
           pillHeight: 26
-          padding: 6
+          padding: Config.spaceSm
           baseColour: NotificationService.dnd ? Colours.red : "transparent"
           hoverColour: NotificationService.dnd ? Colours.red : Colours.bgSubtle
           hoverHighlight: true
@@ -74,7 +74,7 @@ Card {
 
           Row {
             anchors.centerIn: parent
-            spacing: 4
+            spacing: Config.spaceSm
 
             Text {
               text: NotificationService.dnd ? "󰂛" : "󰂚"
@@ -99,7 +99,7 @@ Card {
           id: clearPill
           visible: NotificationService.historyModel.count > 0
           pillHeight: 26
-          padding: 6
+          padding: Config.spaceSm
           baseColour: "transparent"
           hoverColour: Colours.bgSubtle
           hoverHighlight: true
@@ -108,7 +108,7 @@ Card {
 
           Row {
             anchors.centerIn: parent
-            spacing: 4
+            spacing: Config.spaceSm
 
             Text {
               text: "󰎟"
@@ -142,7 +142,7 @@ Card {
 
       Row {
         anchors.centerIn: parent
-        spacing: 8
+        spacing: Config.spaceMd
 
         Text {
           text: "󰂜"
@@ -171,11 +171,7 @@ Card {
       ListView {
         id: notifHistList
         anchors.fill: parent
-        anchors.leftMargin: 6
-        anchors.rightMargin: 6
-        anchors.topMargin: 2
-        anchors.bottomMargin: 2
-        spacing: 6
+        spacing: Config.notifSpacing
         model: NotificationService.historyModel
 
         delegate: NotificationCard {

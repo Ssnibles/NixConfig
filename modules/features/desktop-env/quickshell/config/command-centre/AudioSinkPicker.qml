@@ -15,7 +15,7 @@ Flow {
 
   visible: Config.ccShowSinkSwitcher && AudioService.audioSinks.length > 0
   Layout.fillWidth: true
-  spacing: 6
+  spacing: Config.spaceSm
 
   // Leads the row so the tool never reads as another output.
   Pill {
@@ -23,7 +23,7 @@ Flow {
 
     visible: Config.ccShowAudioMixer
     pillHeight: 26
-    padding: 6
+    padding: Config.spaceSm
     baseColour: "transparent"
     hoverColour: Colours.bgSubtle
     hoverHighlight: true
@@ -37,7 +37,7 @@ Flow {
 
     Row {
       anchors.centerIn: parent
-      spacing: 5
+      spacing: Config.spaceSm
 
       Text {
         text: "󰒓"
@@ -79,7 +79,7 @@ Flow {
 
       Row {
         anchors.centerIn: parent
-        spacing: 5
+        spacing: Config.spaceSm
 
         Text {
           text: sinkChip.isCurrent ? "󰄬" : "󰓃"

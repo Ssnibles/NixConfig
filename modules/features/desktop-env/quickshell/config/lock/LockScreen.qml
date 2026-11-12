@@ -301,13 +301,13 @@ Scope {
             visible: surface.isPrimaryScreen
 
             anchors.centerIn: parent
-            width: Math.min(parent.width - 40, Config.lockCardWidth)
-            spacing: 24
+            width: Math.min(parent.width - Config.space2xl, Config.lockCardWidth)
+            spacing: Config.spaceXl
 
             // Clock and date
             Column {
               Layout.alignment: Qt.AlignHCenter
-              spacing: 4
+              spacing: Config.spaceXs
 
               Text {
                 anchors.horizontalCenter: parent.horizontalCenter

@@ -19,7 +19,7 @@ Card {
   ColumnLayout {
     id: calCol
     anchors.centerIn: parent
-    spacing: 8
+    spacing: Config.spaceMd
 
     readonly property int realYear: ClockService.year
     readonly property int realMonth: ClockService.month
@@ -80,7 +80,7 @@ Card {
     RowLayout {
       Layout.preferredWidth: 192
       Layout.preferredHeight: 24
-      spacing: 2
+      spacing: Config.spaceSm
 
       Text {
         Layout.fillWidth: true
@@ -94,7 +94,7 @@ Card {
 
       IconButton {
         buttonSize: 22
-        radius: 4
+        radius: Config.itemRadiusXs
         icon: "󰅁"
         iconSize: 14
         uiFont: root.uiFont
@@ -104,7 +104,7 @@ Card {
 
       IconButton {
         buttonSize: 22
-        radius: 4
+        radius: Config.itemRadiusXs
         icon: "󰃭"
         iconSize: Config.iconSizeSm
         uiFont: root.uiFont
@@ -115,7 +115,7 @@ Card {
 
       IconButton {
         buttonSize: 22
-        radius: 4
+        radius: Config.itemRadiusXs
         icon: "󰅂"
         iconSize: 14
         uiFont: root.uiFont

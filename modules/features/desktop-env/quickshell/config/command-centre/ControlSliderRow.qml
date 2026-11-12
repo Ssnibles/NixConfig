@@ -21,7 +21,7 @@ RowLayout {
   signal sliderMoved(real value)
   property string percentText: ""
 
-  spacing: 10
+  spacing: Config.spaceMd
 
   IconButton {
     buttonSize: 32

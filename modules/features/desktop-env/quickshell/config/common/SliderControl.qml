@@ -50,9 +50,9 @@ Item {
       anchors.verticalCenter: parent.verticalCenter
       width: parent.width
       height: root._trackHeight
-      radius: 4
+      radius: Config.itemRadiusXs
       color: Colours.bgSubtle
-      border.width: 1
+      border.width: Config.borderWidth
       border.color: mouse.containsMouse ? root.fillColour : "transparent"
       Behavior on border.color { ColorAnimation { duration: Config.animNormalMs } }
     }
@@ -64,7 +64,7 @@ Item {
       anchors.bottom: parent.verticalCenter
       anchors.bottomMargin: -root._trackHeight / 2
       width: parent.width * Math.max(0, Math.min(1, root._visualValue))
-      radius: 4
+      radius: Config.itemRadiusXs
       color: root.fillColour
       Behavior on color { ColorAnimation { duration: Config.animSmoothMs } }
     }

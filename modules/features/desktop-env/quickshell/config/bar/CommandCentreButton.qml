@@ -9,7 +9,7 @@ Pill {
   property var screen: null
   property PanelWindow sharedWindow: null
 
-  padding: 4
+  padding: Config.spaceXs
   clickable: true
   pillColour: (root.hovered || UiState.commandCentreVisible) ? Colours.bgSubtle : Colours.bgRaised
 

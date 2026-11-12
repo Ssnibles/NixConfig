@@ -23,7 +23,7 @@ Card {
     spacing: Config.popupContentSpacing
 
     Row {
-      spacing: 8
+      spacing: Config.spaceSm
 
       Text {
         text: root.tooltip ? root.tooltip.icon : ""

@@ -16,7 +16,7 @@ Pill {
   hoverHighlight: true
   clickable: true
   acceptedButtons: Qt.LeftButton | Qt.RightButton
-  padding: root.horizontal ? Config.pillPaddingHorizontal : 4
+  padding: root.horizontal ? Config.pillPaddingHorizontal : Config.spaceXs
 
   onClicked: function(mouse) {
     if (!MediaService.hasPlayer) return
@@ -87,7 +87,7 @@ Pill {
   // Side bar: spinner above the stacked elapsed / total time.
   Column {
     visible: !root.horizontal
-    spacing: 6
+    spacing: Config.spaceSm
     anchors.centerIn: parent
 
     SpinningIcon {
@@ -99,7 +99,7 @@ Pill {
 
     Column {
       anchors.horizontalCenter: parent.horizontalCenter
-      spacing: 1
+      spacing: Config.space2xs
 
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
@@ -126,7 +126,7 @@ Pill {
   Row {
     visible: root.horizontal
     anchors.centerIn: parent
-    spacing: 6
+    spacing: Config.spaceSm
 
     SpinningIcon {
       iconSize: 14

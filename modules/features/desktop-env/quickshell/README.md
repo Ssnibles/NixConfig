@@ -95,7 +95,31 @@ Three singletons split settings from facts about the machine:
 
 Anything derived (`Session.barType`, `Session.hasTopBar`, `Session.lockWallpaperPath`) lives in `Session`, so `Config` stays a flat list of values you can scan and change.
 
-### 3.1 Fonts
+### 3.1 Spacing, borders and fonts
+
+All padding and gaps use a shared scale. From `spaceXs` up each step multiplies
+by the golden ratio (1.618) and rounds to even pixels; `space2xs` is the half
+step for micro gaps. Nested spacing therefore keeps the same visual rhythm.
+
+| Token | Value | Typical use |
+| --- | --- | --- |
+| `space2xs` | `2` | Related text lines and optical nudges |
+| `spaceXs` | `4` | Micro insets and compact control padding |
+| `spaceSm` | `6` | Icon-to-label gaps, compact chips and button clusters |
+| `spaceMd` | `10` | Row gaps, list padding and standard pill padding |
+| `spaceLg` | `16` | Card padding, section gaps and overlay margins |
+| `spaceXl` | `26` | Hero padding, lock blocks and screen edges |
+| `space2xl` | `42` | Wide screen margins and popup offsets |
+| `space3xl` | `68` | Large vertical offsets such as the OSD |
+
+| Token | Value | Typical use |
+| --- | --- | --- |
+| `borderWidth` | `1` | Standard outline on cards, pills and controls |
+| `borderWidthFocus` | `2` | Focused input outline |
+| `itemRadiusXs` | `4` | Day cells, sliders, tray buttons |
+| `itemRadiusSm` | `6` | Small pills and menu rows |
+| `itemRadiusMd` | `10` | Cards, popups, inputs and cover art |
+
 | Property | Default | Purpose |
 | --- | --- | --- |
 | `monoFont` | `"JetBrainsMono Nerd Font"` | Icons, numbers, monospaced text |
@@ -109,8 +133,8 @@ These three are fallbacks: Nix writes the real families into `Colours.qml`, and 
 | --- | --- | --- |
 | `barWidth` | `42` | Niri bar width (px) |
 | `barSide` | `"left"` | Default Niri bar screen edge (`"left"` \| `"right"`); `QS_BAR_SIDE` overrides it in `Session` |
-| `barMarginTop/Bottom/Left/Right` | `8 / 8 / 4 / 4` | Outer padding around Niri bar |
-| `barSpacing` | `8` | Vertical gap between widget groups |
+| `barMarginTop/Bottom/Left/Right` | `10 / 10 / 4 / 4` | Outer padding around Niri bar |
+| `barSpacing` | `10` | Vertical gap between widget groups |
 | `volBarHeight` | `64` | Volume bar widget height |
 | `wifiMaxTextLength` | `90` | Maximum network SSID display width |
 | `barHeight` | `34` | MangoWC top bar height (px) |
@@ -136,7 +160,7 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | --- | --- | --- |
 | `commandCentreWidth` | `500` | Width of slide-out panel (px) |
 | `commandCentreRadius` | `16` | Panel corner rounding radius |
-| `commandCentreCardRadius` | `12` | Inner section card corner radius |
+| `commandCentreCardRadius` | `10` | Inner section card corner radius |
 | `commandCentreClockFormat` | `"HH:mm"` | Header clock format |
 | `commandCentreDateFormat` | `"dddd, MMMM d"` | Header date format |
 | `alwaysShowMediaCard` | `true` | Show media player card even when idle |
@@ -157,21 +181,21 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `lockWallpaperPath` | `""` | Wallpaper image; empty uses `$HOME/Pictures/wallpaper` |
 | `lockClockFormat` | `"HH:mm"` | Time display format |
 | `lockDateFormat` | `"dddd, MMMM d"` | Date display format |
-| `commandCentreCardRadius` | `12` | Authentication card corner radius (shared with the Command Centre) |
-| `lockInputRadius` | `12` | Password input box radius |
+| `commandCentreCardRadius` | `10` | Authentication card corner radius (shared with the Command Centre) |
+| `lockInputRadius` | `10` | Password input box radius |
 | `lockBackgroundDimming` | `0.8` | Dark background overlay opacity (0.0–1.0) |
 | `lockBlurPercentage` | `0.5` | Wallpaper GPU blur amount (0.0–1.0) |
 | `lockStatusPosition` | `"top-right"` | Badge corner, or `"split"` / `"corners"`; `QS_LOCK_STATUS_POS` overrides it in `Session` |
-| `lockStatusMargin` | `24` | Badge distance from the screen edge |
-| `lockStatusSpacing` | `8` | Gap between clustered badges |
+| `lockStatusMargin` | `26` | Badge distance from the screen edge |
+| `lockStatusSpacing` | `10` | Gap between clustered badges |
 
 ### 3.5 Popups & Tooltips (`SharedTooltipWindow.qml`)
 | Property | Default | Purpose |
 | --- | --- | --- |
-| `popupGap` | `46` | Distance from bar to popup card |
+| `popupGap` | `42` | Distance from bar to popup card |
 | `popupMaxWidth` | `280` | Default card width |
-| `popupRadius` | `12` | Popup card corner radius |
-| `popupContentMargins` | `12` | Padding inside popups |
+| `popupRadius` | `10` | Popup card corner radius |
+| `popupContentMargins` | `16` | Padding inside popups |
 | `popupContentSpacing` | `6` | Gap between tooltip detail lines |
 | `popupShowDelay` | `150` | Hover delay before showing popup (ms) |
 | `popupFadeMs` | `120` | Fade transition duration (ms) |
@@ -181,20 +205,20 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | Property | Default | Purpose |
 | --- | --- | --- |
 | `notifPosition` | `"top-right"` | Placement on screen (`"top-left"`, `"top-right"`, `"bottom-left"`, etc.) |
-| `notifMarginX` | `12` | Horizontal offset margin from screen edge (px) |
-| `notifMarginY` | `12` | Vertical offset margin from screen edge (px) |
+| `notifMarginX` | `16` | Horizontal offset margin from screen edge (px) |
+| `notifMarginY` | `16` | Vertical offset margin from screen edge (px) |
 | `notifTimeoutMs` | `5000` | Default display duration per popup (ms) |
 | `notifTimeoutLowMs` | `3000` | Duration for low-urgency notifications (ms) |
 | `notifTimeoutCriticalMs` | `0` | Duration for critical notifications (`0` = persistent) |
 | `notifMaxVisible` | `5` | Maximum active popup count on screen |
 | `notifMaxHistory` | `30` | Maximum history items retained in `NotificationService` |
 | `notifWidth` | `320` | Notification card width (px) |
-| `notifRadius` | `12` | Notification card corner radius |
-| `notifCardMargins` | `12` | Internal card padding (px) |
-| `notifSpacing` | `8` | Spacing between stacked cards (px) |
+| `notifRadius` | `10` | Notification card corner radius |
+| `notifCardMargins` | `16` | Internal card padding (px) |
+| `notifSpacing` | `10` | Spacing between stacked cards (px) |
 | `notifIconSize` | `40` | Icon/avatar dimension for standard notifications (px) |
 | `notifMediaIconSize` | `48` | Icon/avatar dimension for media notifications (px) |
-| `notifIconRadius` | `8` | Corner radius for notification icon/avatar preview |
+| `notifIconRadius` | `10` | Corner radius for notification icon/avatar preview |
 | `notifMaxLines` | `5` | Maximum lines of notification body text before eliding |
 | `notifShowActions` | `true` | Display interactive action buttons on cards |
 | `notifDismissOnAction` | `true` | Automatically dismiss card when an action is invoked |
@@ -499,10 +523,10 @@ Pill {
 
   pillColour: mouseArea.containsMouse ? Colours.bgRaised : Colours.bgSubtle
   border.color: Colours.border
-  border.width: 1
+  border.width: Config.borderWidth
 
   Row {
-    spacing: 6
+    spacing: Config.spaceSm
     anchors.centerIn: parent
 
     Text {

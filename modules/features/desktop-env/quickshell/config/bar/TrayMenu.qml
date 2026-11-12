@@ -38,9 +38,9 @@ Card {
 
     RowLayout {
       anchors.fill: parent
-      anchors.leftMargin: 8
-      anchors.rightMargin: 8
-      spacing: 8
+      anchors.leftMargin: Config.spaceMd
+      anchors.rightMargin: Config.spaceMd
+      spacing: Config.spaceSm
 
       Text {
         visible: actRoot.icon !== ""
@@ -86,9 +86,9 @@ Card {
 
     RowLayout {
       anchors.fill: parent
-      anchors.leftMargin: 8
-      anchors.rightMargin: 8
-      spacing: 8
+      anchors.leftMargin: Config.spaceMd
+      anchors.rightMargin: Config.spaceMd
+      spacing: Config.spaceSm
 
       Text {
         visible: entryRoot.entry ? (entryRoot.entry.buttonType !== QsMenuButtonType.None) : false
@@ -150,12 +150,12 @@ Card {
     anchors.right: parent.right
     anchors.top: parent.top
     anchors.margins: Config.popupContentMargins
-    spacing: 6
+    spacing: Config.popupContentSpacing
 
     // Header: Icon + App Name + optional description & SNI ID
     RowLayout {
       width: parent.width
-      spacing: 8
+      spacing: Config.spaceSm
 
       IconImage {
         Layout.preferredWidth: 18
@@ -167,7 +167,7 @@ Card {
 
       Column {
         Layout.fillWidth: true
-        spacing: 1
+        spacing: Config.space2xs
 
         Text {
           width: parent.width
@@ -232,7 +232,7 @@ Card {
         id: entryCol
         required property var modelData
         width: menuCol.width
-        spacing: 4
+        spacing: Config.spaceXs
 
         property bool submenuOpen: false
 
@@ -264,8 +264,8 @@ Card {
         Column {
           visible: entryCol.submenuOpen && subMenuOpener.children && subMenuOpener.children.values.length > 0
           width: parent.width
-          leftPadding: 12
-          spacing: 3
+          leftPadding: Config.spaceLg
+          spacing: Config.spaceXs
 
           Repeater {
             model: (subMenuOpener.children && subMenuOpener.children.values) ? subMenuOpener.children.values : []
@@ -273,7 +273,7 @@ Card {
             delegate: MenuEntryPill {
               id: subEntryPill
               required property var modelData
-              width: entryCol.width - 12
+              width: entryCol.width - Config.spaceLg
               pillHeight: 24
               entry: subEntryPill.modelData
               onClicked: {

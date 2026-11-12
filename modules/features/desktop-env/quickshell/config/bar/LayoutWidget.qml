@@ -28,7 +28,7 @@ Pill {
 
   Row {
     anchors.centerIn: parent
-    spacing: 6
+    spacing: Config.spaceSm
 
     Text {
       text: root.layoutInfo.icon

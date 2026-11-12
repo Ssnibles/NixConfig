@@ -14,11 +14,11 @@ Item {
   property int maxText: horizontal ? Config.windowTitleMaxWidthHorizontal : Config.windowTitleMaxWidthVertical
   property bool italic: true
   property bool shown: true
-  property int horizontalPadding: Config.pillPaddingHorizontal + 2
+  property int horizontalPadding: Config.pillPaddingHorizontal + Config.space2xs
 
   readonly property real textExtent: Math.min(titleLabel.implicitWidth, root.maxText)
 
-  implicitWidth: horizontal ? (root.textExtent + root.horizontalPadding * 2) : 26
+  implicitWidth: horizontal ? (root.textExtent + root.horizontalPadding * 2) : (Config.pillHeightHorizontal + Config.space2xs)
   implicitHeight: horizontal ? Config.pillHeightHorizontal : root.textExtent
   width: implicitWidth
   height: implicitHeight
@@ -36,7 +36,7 @@ Item {
     anchors.fill: parent
     radius: height / 2
     color: Colours.bgRaised
-    border.width: 1
+    border.width: Config.borderWidth
     border.color: Colours.border
     antialiasing: true
   }
@@ -66,6 +66,6 @@ Item {
     ]
 
     width: root.horizontal ? root.textExtent : titleLabel.implicitWidth
-    height: root.horizontal ? parent.height : 26
+    height: root.horizontal ? parent.height : (Config.pillHeightHorizontal + Config.space2xs)
   }
 }

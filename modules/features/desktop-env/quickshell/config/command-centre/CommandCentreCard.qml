@@ -18,20 +18,20 @@ Card {
 
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: 16
-    spacing: 14
+    anchors.margins: Config.spaceLg
+    spacing: Config.spaceLg
 
     // Header: clock and status pills
     RowLayout {
       Layout.fillWidth: true
-      spacing: 12
+      spacing: Config.spaceLg
 
       Column {
         Layout.alignment: Qt.AlignTop
-        spacing: 2
+        spacing: Config.space2xs
 
         RowLayout {
-          spacing: 6
+          spacing: Config.spaceSm
 
           Text {
             text: ClockService.ccTimeStr
@@ -64,7 +64,7 @@ Card {
       Item { Layout.fillWidth: true }
 
       Row {
-        spacing: 6
+        spacing: Config.spaceSm
         Layout.alignment: Qt.AlignTop
 
         NetworkWidget {
@@ -87,15 +87,15 @@ Card {
     // System controls: output volume, sink picker, microphone and brightness
     Card {
       Layout.fillWidth: true
-      implicitHeight: sliderCol.implicitHeight + 24
+      implicitHeight: sliderCol.implicitHeight + Config.spaceLg * 2
 
       ColumnLayout {
         id: sliderCol
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 12
-        spacing: 10
+        anchors.margins: Config.spaceLg
+        spacing: Config.spaceMd
 
         // Output chips sit above or below the volume slider, whichever the
         // config asks for. Both Loaders share one definition; only one is ever

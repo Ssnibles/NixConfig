@@ -13,7 +13,7 @@ Rectangle {
 
   color: root.cardColour
   radius: root.cardRadius
-  border.width: 1
+  border.width: Config.borderWidth
   border.color: root.borderColour
   antialiasing: true
 

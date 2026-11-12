@@ -8,7 +8,7 @@ import ".."
 // Used in CommandCentre, MediaWidget popover, and LockScreen.
 RowLayout {
   id: root
-  spacing: 8
+  spacing: Config.spaceMd
 
   property real position: 0   // current position in seconds
   property real length: 0     // total length in seconds

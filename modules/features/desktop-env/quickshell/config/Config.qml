@@ -25,12 +25,33 @@ Singleton {
     readonly property int iconSizeMd: 16
     readonly property int iconSizeLg: 18
 
+    // Spacing scale. From spaceXs up each step multiplies by 1.618 and rounds
+    // to even pixels; space2xs is the half step for micro gaps. Use space2xs for
+    // related text lines, spaceXs for micro insets, spaceSm for icon-label gaps
+    // and compact chips, spaceMd for rows and list padding, spaceLg for card
+    // padding and section gaps, and spaceXl upward for hero spacing and screen
+    // edges.
+    readonly property int space2xs: 2
+    readonly property int spaceXs: 4
+    readonly property int spaceSm: 6
+    readonly property int spaceMd: 10
+    readonly property int spaceLg: 16
+    readonly property int spaceXl: 26
+    readonly property int space2xl: 42
+    readonly property int space3xl: 68
+
+    // Border widths and corner radii. Radii reuse the spacing steps so nested
+    // surfaces and controls keep the same proportions.
+    readonly property int borderWidth: 1
+    readonly property int borderWidthFocus: 2
+    readonly property int itemRadiusXs: 4
+    readonly property int itemRadiusSm: 6
+    readonly property int itemRadiusMd: 10
+
     // Shared pill, surface and animation tokens
     readonly property int pillHeightHorizontal: 24
     readonly property int pillHeightVertical: 30
-    readonly property int pillPaddingHorizontal: 8
-    readonly property int itemRadiusSm: 6
-    readonly property int itemRadiusMd: 8
+    readonly property int pillPaddingHorizontal: 10
     readonly property int animFastMs: 100
     readonly property int animNormalMs: 120
     readonly property int animSmoothMs: 150
@@ -40,14 +61,14 @@ Singleton {
     readonly property int barWidth: 42
     // Default edge for the Niri side bar; $QS_BAR_SIDE overrides it.
     readonly property string barSide: "left"
-    readonly property int barHorizontalMargin: 12
-    readonly property int barLeftSpacing: 12
+    readonly property int barHorizontalMargin: 16
+    readonly property int barLeftSpacing: 10
     readonly property int barRightSpacing: 10
-    readonly property int barMarginTop: 8
-    readonly property int barMarginBottom: 8
+    readonly property int barMarginTop: 10
+    readonly property int barMarginBottom: 10
     readonly property int barMarginLeft: 4
     readonly property int barMarginRight: 4
-    readonly property int barSpacing: 8
+    readonly property int barSpacing: 10
     readonly property int minWorkspaces: 5
 
     // Which widgets the bar shows. Order is fixed in bar/bar.qml; the shared
@@ -75,8 +96,8 @@ Singleton {
     // Command centre
     readonly property int commandCentreWidth: 500
     readonly property int commandCentreRadius: 16
-    readonly property int commandCentreCardRadius: 12
-    readonly property int commandCentreMargin: 12
+    readonly property int commandCentreCardRadius: 10
+    readonly property int commandCentreMargin: 16
     readonly property int commandCentreSlideOffset: 60
     readonly property int commandCentreAnimDuration: 250
     readonly property int commandCentreCloseDuration: 180
@@ -114,10 +135,10 @@ Singleton {
     readonly property string timeFormat: "HH:mm"
 
     // Popup and tooltip layer
-    readonly property int popupGap: 46
+    readonly property int popupGap: 42
     readonly property int popupMaxWidth: 280
-    readonly property int popupRadius: 12
-    readonly property int popupContentMargins: 12
+    readonly property int popupRadius: 10
+    readonly property int popupContentMargins: 16
     readonly property int popupContentSpacing: 6
     readonly property int popupShowDelay: 150
     readonly property int popupFadeMs: 120
@@ -129,8 +150,8 @@ Singleton {
     // "centre-left", "centre", "centre-right", "bottom-left",
     // "bottom-centre" (or "bottom"), "bottom-right".
     readonly property string notifPosition: "top-right"
-    readonly property int notifMarginX: 12
-    readonly property int notifMarginY: 12
+    readonly property int notifMarginX: 16
+    readonly property int notifMarginY: 16
     readonly property int notifTimeoutMs: 5000
     readonly property int notifTimeoutLowMs: 3000
     // 0 = persistent, do not auto-dismiss.
@@ -138,12 +159,12 @@ Singleton {
     readonly property int notifMaxVisible: 5
     readonly property int notifMaxHistory: 30
     readonly property int notifWidth: 320
-    readonly property int notifRadius: 12
-    readonly property int notifCardMargins: 12
-    readonly property int notifSpacing: 8
+    readonly property int notifRadius: 10
+    readonly property int notifCardMargins: 16
+    readonly property int notifSpacing: 10
     readonly property int notifIconSize: 40
     readonly property int notifMediaIconSize: 48
-    readonly property int notifIconRadius: 8
+    readonly property int notifIconRadius: 10
     readonly property int notifMaxLines: 5
     readonly property bool notifShowActions: true
     readonly property bool notifDismissOnAction: true
@@ -235,14 +256,14 @@ Singleton {
     readonly property string lockDateFormat: "dddd, MMMM d"
     readonly property int lockCardWidth: 440
     readonly property int lockAvatarSize: 64
-    readonly property int lockInputRadius: 12
+    readonly property int lockInputRadius: 10
     readonly property real lockBackgroundDimming: 0.8
     readonly property real lockBlurPercentage: 0.5
     // Status pill cluster: "top-right" (default), "top-left", "bottom-right",
     // "bottom-left", or "split" / "corners". $QS_LOCK_STATUS_POS overrides it.
     readonly property string lockStatusPosition: "top-right"
-    readonly property int lockStatusMargin: 24
-    readonly property int lockStatusSpacing: 8
+    readonly property int lockStatusMargin: 26
+    readonly property int lockStatusSpacing: 10
 
     // Audio, microphone, brightness and OSD
     readonly property real volStep: 0.05
@@ -260,8 +281,8 @@ Singleton {
     readonly property int osdHeight: 46
     // -1 = full pill capsule (osdHeight / 2).
     readonly property int osdRadius: -1
-    readonly property int osdMarginX: 24
-    readonly property int osdMarginY: 64
+    readonly property int osdMarginX: 26
+    readonly property int osdMarginY: 68
 
     // System tray
     // Case-insensitive list of tray app IDs, titles, or substrings to hide by

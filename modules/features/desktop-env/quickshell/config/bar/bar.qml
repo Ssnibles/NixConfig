@@ -51,8 +51,8 @@ Scope {
         anchors.bottom: parent.bottom
         anchors.left: (root.isHorizontal || root.sideRight) ? parent.left : undefined
         anchors.right: (root.isHorizontal || root.sideLeft) ? parent.right : undefined
-        height: root.isHorizontal ? 1 : 0
-        width: root.isHorizontal ? 0 : 1
+        height: root.isHorizontal ? Config.borderWidth : 0
+        width: root.isHorizontal ? 0 : Config.borderWidth
         color: Colours.border
       }
 

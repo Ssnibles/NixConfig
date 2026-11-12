@@ -15,9 +15,9 @@ Pill {
   property PanelWindow sharedWindow: null
 
   visible: TrayService.trayHasContent && root.shown
-  padding: 5
+  padding: Config.spaceSm
   implicitWidth: root.horizontal ? (trayLayout.implicitWidth + root.padding * 2) : 34
-  implicitHeight: root.horizontal ? Config.pillHeightHorizontal : (trayLayout.implicitHeight + 10)
+  implicitHeight: root.horizontal ? Config.pillHeightHorizontal : (trayLayout.implicitHeight + root.padding * 2)
 
   GridLayout {
     id: trayLayout
@@ -33,7 +33,7 @@ Pill {
       Layout.preferredHeight: Config.trayButtonSize
       width: 18
       height: Config.trayButtonSize
-      radius: 4
+      radius: Config.itemRadiusXs
       color: toggleMouse.containsMouse || UiState.trayExpanded ? Colours.bgRaised : "transparent"
       Behavior on color { ColorAnimation { duration: Config.animFastMs } }
 
@@ -78,7 +78,7 @@ Pill {
         Layout.preferredHeight: Config.trayButtonSize
         width: Config.trayButtonSize
         height: Config.trayButtonSize
-        radius: 4
+        radius: Config.itemRadiusXs
         opacity: trayDelegate.isHiddenItem ? 0.55 : 1.0
         color: (trayTip.hovered || trayDelegate.menuActive)
           ? Colours.bgRaised

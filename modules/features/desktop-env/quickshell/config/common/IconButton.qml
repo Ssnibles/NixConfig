@@ -34,7 +34,7 @@ Rectangle {
   color: (root.enabled && root.hovered) ? root.hoverColour : root.baseColour
   // A transparent border and a zero-width border look identical, so derive the
   // width from the alpha instead of comparing colour values.
-  border.width: (root.borderColour.a > 0 || root.hoverBorderColour.a > 0) ? 1 : 0
+  border.width: (root.borderColour.a > 0 || root.hoverBorderColour.a > 0) ? Config.borderWidth : 0
   border.color: (root.enabled && root.hovered) ? root.hoverBorderColour : root.borderColour
   scale: (root.enabled && root.hovered) ? root.hoverScale : 1.0
 

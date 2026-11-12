@@ -25,7 +25,7 @@ Item {
     id: timeColumn
     visible: !root.horizontal
     anchors.centerIn: parent
-    spacing: -2
+    spacing: -Config.space2xs
 
     Text {
       anchors.horizontalCenter: parent.horizontalCenter

@@ -15,7 +15,7 @@ Pill {
   hoverHighlight: true
   clickable: true
   acceptedButtons: Qt.LeftButton | Qt.RightButton
-  padding: root.horizontal ? Config.pillPaddingHorizontal : 4
+  padding: root.horizontal ? Config.pillPaddingHorizontal : Config.spaceXs
 
   onClicked: function(mouse) {
     if (mouse.button === Qt.RightButton) {
@@ -43,7 +43,7 @@ Pill {
   Column {
     visible: !root.horizontal
     anchors.centerIn: parent
-    spacing: 4
+    spacing: Config.spaceSm
 
     Item {
       width: 12
@@ -52,9 +52,9 @@ Pill {
 
       Rectangle {
         anchors.fill: parent
-        radius: 4
+        radius: Config.itemRadiusXs
         color: Colours.bgSubtle
-        border.width: 1
+        border.width: Config.borderWidth
         border.color: trackMouse.containsMouse ? root.levelColour : "transparent"
 
         Rectangle {
@@ -62,7 +62,7 @@ Pill {
           anchors.left: parent.left
           anchors.right: parent.right
           height: parent.height * Math.min(1.0, AudioService.volume)
-          radius: 4
+          radius: Config.itemRadiusXs
           color: root.levelColour
           Behavior on height { NumberAnimation { duration: Config.animSmoothMs; easing.type: Easing.OutQuad } }
           Behavior on color { ColorAnimation { duration: Config.animSmoothMs } }
@@ -111,7 +111,7 @@ Pill {
   Row {
     visible: root.horizontal
     anchors.centerIn: parent
-    spacing: 6
+    spacing: Config.spaceSm
 
     Text {
       text: AudioService.volumeIcon

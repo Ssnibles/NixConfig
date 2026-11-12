@@ -111,7 +111,7 @@ Card {
       radius: root.targetIconRadius
       color: Colours.bgSubtle
       border.color: Colours.border
-      border.width: 1
+      border.width: Config.borderWidth
 
       Text {
         anchors.centerIn: parent
@@ -151,20 +151,20 @@ Card {
   Column {
     id: contentCol
     anchors.left: iconContainer.right
-    anchors.leftMargin: 10
+    anchors.leftMargin: Config.spaceMd
     anchors.right: parent.right
     anchors.rightMargin: Config.notifCardMargins
     anchors.top: parent.top
     anchors.topMargin: Config.notifCardMargins
-    spacing: 3
+    spacing: Config.spaceXs
 
     // Header Row: Title + Timestamp
     Row {
       width: parent.width
-      spacing: 6
+      spacing: Config.spaceSm
 
       Text {
-        width: timeLabel.visible ? (parent.width - timeLabel.implicitWidth - 6) : parent.width
+        width: timeLabel.visible ? (parent.width - timeLabel.implicitWidth - Config.spaceSm) : parent.width
         text: root.model.title || ""
         color: root.isMedia ? Colours.teal : (root.urgency === 2 ? Colours.red : Colours.accent)
         font.bold: true
@@ -209,7 +209,7 @@ Card {
 
     // Action Buttons Row
     Row {
-      spacing: 6
+      spacing: Config.spaceSm
       visible: root.actions.length > 0
 
       Repeater {
@@ -219,7 +219,7 @@ Card {
           required property var modelData
           pillHeight: Config.pillHeightHorizontal
           radius: Config.itemRadiusSm
-          padding: 8
+          padding: Config.spaceMd
           baseColour: Colours.bgSubtle
           hoverColour: Colours.bgRaised
           hoverHighlight: true

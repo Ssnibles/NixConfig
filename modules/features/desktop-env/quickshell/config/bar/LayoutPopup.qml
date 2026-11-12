@@ -23,10 +23,10 @@ Card {
     anchors.right: parent.right
     anchors.top: parent.top
     anchors.margins: Config.popupContentMargins
-    spacing: 8
+    spacing: Config.popupContentSpacing
 
     Row {
-      spacing: 8
+      spacing: Config.spaceSm
 
       Text {
         text: "󰕰"
@@ -76,13 +76,13 @@ Card {
 
         Item {
           anchors.fill: parent
-          anchors.leftMargin: 8
-          anchors.rightMargin: 8
+          anchors.leftMargin: Config.spaceMd
+          anchors.rightMargin: Config.spaceMd
 
           Row {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 8
+            spacing: Config.spaceSm
 
             Text {
               text: layoutOption.modelData.icon

@@ -32,7 +32,7 @@ Rectangle {
   radius: Math.min(width, height) / 2
   antialiasing: true
   clip: true
-  border.width: 1
+  border.width: Config.borderWidth
   border.color: Colours.border
 
   Behavior on color { ColorAnimation { duration: Config.animNormalMs } }

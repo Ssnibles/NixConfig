@@ -11,7 +11,7 @@ Item {
 
   property alias source: img.source
   property alias sourceSize: img.sourceSize
-  property real radius: 8
+  property real radius: Config.itemRadiusMd
   readonly property bool ready: img.source !== "" && img.status === Image.Ready
 
   // Emitted when the image fails to load, so callers can advance to a fallback
