@@ -168,7 +168,7 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `ccSinkSwitcherAboveVolume` | `false` | Put the chips above the volume slider instead of below |
 | `ccShowAudioMixer` | `true` | Show the mixer shortcut that leads the output row |
 | `ccAudioMixerLabel` | `""` | Label beside the mixer gear; empty renders the gear alone |
-| `ccShowMicSlider` | `true` | Show the microphone slider |
+| `ccMicSliderMode` | `"smart"` | Microphone slider visibility: `"smart"` while a capture stream is active, `"always"`, or `"hidden"` |
 | `ccShowBrightnessSlider` | `true` | Show the brightness slider |
 | `mediaRotationDuration` | `4000` | Album art rotation duration (ms) |
 | `mediaSeekDebounceMs` | `200` | Seeking debounce delay (ms) |
@@ -306,7 +306,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### `AudioService.qml`
 - **Role**: `pragma Singleton` for PipeWire output sinks and the default microphone source.
-- **Exposes**: `audioSink`, `audioSinks`, `selectAudioSink(node)`, `sinkDisplayName(node)`, `sinkLabel(node)`, `volume`, `muted`, `volumePercent`, `volumeIcon`, `toggleMute()`, `setVolume(val)`, `setVolumeDebounced(val)`, `stepVolume(dir)`, `openMixer()`, `hasMic`, `micVolume`, `micMuted`, `micVolumePercent`, `micIcon`, `toggleMicMute()`, `setMicVolume(val)`, `setMicVolumeDebounced(val)`, `stepMicVolume(dir)`.
+- **Exposes**: `audioSink`, `audioSinks`, `selectAudioSink(node)`, `sinkDisplayName(node)`, `sinkLabel(node)`, `volume`, `muted`, `volumePercent`, `volumeIcon`, `toggleMute()`, `setVolume(val)`, `setVolumeDebounced(val)`, `stepVolume(dir)`, `openMixer()`, `hasMic`, `micVolume`, `micMuted`, `micVolumePercent`, `micIcon`, `micInUse`, `toggleMicMute()`, `setMicVolume(val)`, `setMicVolumeDebounced(val)`, `stepMicVolume(dir)`.
 
 #### `BrightnessService.qml`
 - **Role**: `brightnessctl` and sysfs backlight control. Emits `osdRequested()` when the level changes.

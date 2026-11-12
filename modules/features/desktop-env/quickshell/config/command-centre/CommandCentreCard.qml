@@ -6,9 +6,15 @@ import ".."
 // Command Centre panel content: clock header, status pills, system sliders,
 // media player, notification history, and power actions.
 Card {
+  id: root
+
   anchors.fill: parent
   cardColour: Colours.bg
   cardRadius: Config.commandCentreRadius
+
+  readonly property bool showMicSlider: Config.ccMicSliderMode !== "hidden"
+    && AudioService.hasMic
+    && (Config.ccMicSliderMode === "always" || AudioService.micInUse)
 
   // Swallow clicks inside the card so they cannot reach the dismiss backdrop.
   MouseArea {
@@ -128,13 +134,13 @@ Card {
         }
 
         Divider {
-          visible: Config.ccShowMicSlider && AudioService.hasMic
+          visible: root.showMicSlider
           Layout.fillWidth: true
         }
 
         ControlSliderRow {
           Layout.fillWidth: true
-          visible: Config.ccShowMicSlider && AudioService.hasMic
+          visible: root.showMicSlider
           icon: AudioService.micIcon
           alert: AudioService.micMuted
           iconClickable: true

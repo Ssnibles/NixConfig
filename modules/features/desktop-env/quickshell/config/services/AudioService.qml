@@ -106,6 +106,21 @@ Singleton {
   readonly property int micVolumePercent: Math.round(root.micVolume * 100)
   readonly property string micIcon: Utils.micIcon(root.micVolume, root.micMuted)
 
+  // True while an audio capture stream exists. A client that keeps the stream
+  // open counts as trying to use the mic, even when it is idle.
+  readonly property bool micInUse: {
+    if (!root.hasMic || !Pipewire.ready || !Pipewire.nodes) return false
+    var list = Pipewire.nodes.values || []
+    for (var i = 0; i < list.length; i++) {
+      var node = list[i]
+      if (!node || !node.isStream) continue
+      if ((node.type & PwNodeType.Audio) !== 0 && (node.type & PwNodeType.Source) !== 0) {
+        return true
+      }
+    }
+    return false
+  }
+
   function toggleMicMute() {
     if (root.audioSourceInfo) {
       root.audioSourceInfo.muted = !root.micMuted

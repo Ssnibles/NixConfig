@@ -108,7 +108,9 @@ Singleton {
     readonly property bool ccShowSinkSwitcher: true
     // Place the output chips above the volume slider instead of below it.
     readonly property bool ccSinkSwitcherAboveVolume: false
-    readonly property bool ccShowMicSlider: true
+    // Microphone slider visibility: "smart" (only while a capture stream is
+    // active), "always", or "hidden".
+    readonly property string ccMicSliderMode: "smart"
     readonly property bool ccShowBrightnessSlider: true
     // Mixer shortcut at the start of the output row. Empty label renders the
     // gear on its own.
