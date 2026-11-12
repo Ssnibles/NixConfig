@@ -2,14 +2,21 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     let
+      noiseEre = lib.escapeShellArg (lib.concatStringsSep "|" config.nixos.journalNoisePatterns);
+
       checkBootJournalErrors = pkgs.writeShellScriptBin "check-boot-journal-errors" ''
                 # Give the notification service time to start.
                 sleep 3
 
                 # Ignore known harmless messages.
-                RAW_ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | ${pkgs.gnugrep}/bin/grep -v -E "Ignoring duplicate name|gkr-pam: unable to locate daemon control file|bluetoothd.*Failed to set|i2c_hid_acpi.*incomplete report|graphical-session.target|wayland-session.target|systemd-coredump.*vicinae" || true)
+                RAW_ERRORS=$(${pkgs.systemd}/bin/journalctl -b -p 0..3 --no-pager -q | ${pkgs.gnugrep}/bin/grep -v -E ${noiseEre} || true)
                 ERROR_COUNT=$(echo "$RAW_ERRORS" | ${pkgs.gnugrep}/bin/grep -v '^$' | ${pkgs.coreutils}/bin/wc -l)
 
                 if [ "$ERROR_COUNT" -gt 0 ]; then
