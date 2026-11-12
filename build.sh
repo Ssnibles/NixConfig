@@ -121,6 +121,12 @@ fi
 # Tool detection
 cd "$REPO_ROOT"
 
+# Use local checkouts for development when they exist, without forcing every
+# other machine to have them.
+OVERRIDES=()
+[[ -d "$HOME/mango/.git" ]] && OVERRIDES+=(--override-input mangowc-local "git+file://$HOME/mango")
+[[ -d "$HOME/ytplay/.git" ]] && OVERRIDES+=(--override-input ytplay "git+file://$HOME/ytplay")
+
 # Version control: prefer jj, otherwise require a git work tree.
 USE_JJ=false
 if command -v jj >/dev/null 2>&1 && jj -R "$REPO_ROOT" root >/dev/null 2>&1; then
@@ -206,11 +212,12 @@ if [[ "$DO_BUILD" == true ]]; then
   if [[ "$USE_NH" == true ]]; then
     nh_args=(os "$ACTION" "$REPO_ROOT" --hostname "$HOST")
     [[ "$DO_UPDATE" == true ]] && nh_args+=(--update)
+    (( ${#OVERRIDES[@]} )) && nh_args+=(-- "${OVERRIDES[@]}")
     info "nh ${nh_args[*]}"
     nh "${nh_args[@]}"
   else
     info "sudo nixos-rebuild $ACTION --flake $REPO_ROOT#$HOST"
-    sudo nixos-rebuild "$ACTION" --flake "$REPO_ROOT#$HOST"
+    sudo nixos-rebuild "$ACTION" --flake "$REPO_ROOT#$HOST" "${OVERRIDES[@]}"
   fi
   ok "build complete"
 else

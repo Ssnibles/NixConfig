@@ -36,7 +36,7 @@ jobs:
       # Pure-JS unit tests for the Quickshell helper library. These need no Nix
       # or Qt and run on the runner's preinstalled Node.
       - name: Run Quickshell JS unit tests
-        run: node --test modules/features/desktop-env/quickshell/tests/utils.test.js
+        run: node --test modules/features/desktop-env/quickshell/tests/*.test.js
 
       # The README embeds a Mermaid architecture diagram generated from the
       # modules/ tree; fail if it has drifted.
@@ -45,20 +45,20 @@ jobs:
           ./assets/update_diagram.sh --check
           echo "✓ Architecture diagram is up to date"
 
-      # The flake consumes two local `path:` inputs for development:
-      #   mangowc-local -> /home/josh/mango  (fork of mangowm/mango)
-      #   ytplay        -> /home/josh/ytplay
-      # They don't exist on CI runners, so override them with the public forks
-      # of the same projects. This evaluates the real host configurations and
-      # is the gating check for the workflow.
+      # nixfmt and deadnix are exposed as flake checks. Generated files such as
+      # _hardware-generated.nix are excluded.
+      - name: Check formatting and dead code
+        run: |
+          nix flake check
+          echo "✓ Formatting and dead code checks pass"
+
+      # Evaluate both host configurations. This is the gating check for the
+      # workflow. The flake inputs default to public repositories, so the
+      # runner needs no local checkout overrides.
       - name: Evaluate desktop and laptop
         run: |
-          overrides=(
-            --override-input mangowc-local github:Ssnibles/mango
-            --override-input ytplay github:Ssnibles/ytplay
-          )
-          nix eval --raw ".#nixosConfigurations.desktop.config.system.build.toplevel.drvPath" "${overrides[@]}"
-          nix eval --raw ".#nixosConfigurations.laptop.config.system.build.toplevel.drvPath" "${overrides[@]}"
+          nix eval --raw ".#nixosConfigurations.desktop.config.system.build.toplevel.drvPath"
+          nix eval --raw ".#nixosConfigurations.laptop.config.system.build.toplevel.drvPath"
           echo "✓ Both host configurations evaluate"
 
   # Job 2: Build the full system closures. This is advisory because building an
@@ -80,9 +80,5 @@ jobs:
 
       - name: Build desktop and laptop
         run: |
-          overrides=(
-            --override-input mangowc-local github:Ssnibles/mango
-            --override-input ytplay github:Ssnibles/ytplay
-          )
-          nix build ".#nixosConfigurations.desktop.config.system.build.toplevel" "${overrides[@]}"
-          nix build ".#nixosConfigurations.laptop.config.system.build.toplevel" "${overrides[@]}"
+          nix build ".#nixosConfigurations.desktop.config.system.build.toplevel"
+          nix build ".#nixosConfigurations.laptop.config.system.build.toplevel"

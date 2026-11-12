@@ -5,13 +5,20 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
   };
 
-  outputs = { self, nixpkgs, ... }:
+  outputs =
+    { nixpkgs, ... }:
     let
-      systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
       forEachSystem = nixpkgs.lib.genAttrs systems;
     in
     {
-      devShells = forEachSystem (system:
+      devShells = forEachSystem (
+        system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
 
@@ -75,7 +82,7 @@
             FQBN=''${1:-esp32:esp32:esp32}
             echo "⚙️ Generating compilation database (compile_commands.json) for $FQBN..."
             ${pkgs.arduino-cli}/bin/arduino-cli compile --config-file "$DEVENV_ROOT/arduino-cli.yaml" --fqbn "$FQBN" --only-compilation-database "$DEVENV_ROOT/src/src.ino"
-            
+
             BUILD_PATH="$DEVENV_ROOT/src/build"
             if [ -f "$BUILD_PATH/compile_commands.json" ]; then
               cp "$BUILD_PATH/compile_commands.json" "$DEVENV_ROOT/compile_commands.json"
@@ -96,7 +103,7 @@
               python3Packages.pyserial
               picocom
               clang-tools
-              
+
               espInit
               espBoards
               espCompile

@@ -49,19 +49,17 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Local development checkouts. Use the git fetcher (not `path:`) so the
-    # lock is content-addressed by revision: `path:` inputs hash the whole
-    # tree including .git/.jj, so any jj/git operation changed the NAR hash and
-    # broke evaluation. Commit changes in these repos to have them picked up
-    # (the runtime mango-dev wrapper still prefers ~/mango/result for uncommitted
-    # mango iteration).
+    # Local development checkouts. The default is the public fork so a fresh
+    # clone evaluates anywhere; build.sh adds --override-input when the local
+    # checkout exists. The runtime mango-dev wrapper also prefers
+    # ~/mango/result, so uncommitted mango iteration still works.
     mangowc-local = {
-      url = "git+file:///home/josh/mango";
+      url = "github:Ssnibles/mango";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     ytplay = {
-      url = "git+file:///home/josh/ytplay";
+      url = "github:Ssnibles/ytplay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -80,16 +78,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # pomodoro.url = "github:Ssnibles/pomodoro";
-    # pomodoro.inputs.nixpkgs.follows = "nixpkgs";
-    # For local development without pushing every change, swap in:
-    # pomodoro.url = "path:/home/josh/pomodoro";
-    # pomodoro.inputs.nixpkgs.follows = "nixpkgs";
-
     devenv = {
       url = "github:cachix/devenv";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Required by devenv's generated container shell output, which
+    # `nix flake check` evaluates.
+    nix2container = {
+      url = "github:nlewo/nix2container";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
 
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
