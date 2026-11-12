@@ -34,7 +34,7 @@
 
       # Startpage location. The page files are live links, and colours.css is
       # written by Hjem into the same directory.
-      startpageDir = "/home/${config.username}/.config/helium/startpage";
+      startpageDir = "${config.users.users.${config.username}.home}/.config/helium/startpage";
       startpageUrl = "file://${startpageDir}/index.html";
 
       # Chromium has no userChrome.css. A theme extension applies the palette

@@ -3,6 +3,9 @@
 {
   nixos.modules.desktop =
     { pkgs, config, ... }:
+    let
+      home = config.users.users.${config.username}.home;
+    in
     {
       programs.steam = {
         enable = true;
@@ -25,7 +28,7 @@
       ];
 
       environment.sessionVariables = {
-        STEAM_EXTRA_COMPAT_TOOLS_PATH = "/home/${config.username}/.steam/root/compatibilitytools.d";
+        STEAM_EXTRA_COMPAT_TOOLS_PATH = "${home}/.steam/root/compatibilitytools.d";
       };
     };
 }

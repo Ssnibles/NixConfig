@@ -546,7 +546,9 @@
             DisableFirefoxStudies = true;
             DisablePocket = true;
             Homepage = {
-              URL = "file:///home/${config.username}/.mozilla/firefox/${cfg.profileName}/startpage/index.html";
+              URL = "file://${
+                config.users.users.${config.username}.home
+              }/.mozilla/firefox/${cfg.profileName}/startpage/index.html";
               Locked = true;
               StartPage = "previous-session";
             };
