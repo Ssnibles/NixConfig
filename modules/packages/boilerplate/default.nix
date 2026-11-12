@@ -1,32 +1,15 @@
-{ ... }:
+{ self, ... }:
 {
   perSystem =
-    { pkgs, lib, ... }:
+    { pkgs, ... }:
     {
-      packages.boilerplate = pkgs.stdenvNoCC.mkDerivation {
-        pname = "boilerplate";
-        version = "0.1.0";
-
+      packages.boilerplate = self.lib.mkSingleScript pkgs {
+        name = "boilerplate";
+        file = "boilerplate.py";
         src = ./.;
-
-        dontConfigure = true;
-        dontBuild = true;
-
-        installPhase = ''
-          runHook preInstall
-
-          substituteInPlace boilerplate.py \
-            --replace-fail '#!/usr/bin/env python3' '#!${pkgs.python3}/bin/python3'
-          install -Dm755 boilerplate.py "$out/bin/boilerplate"
-
-          runHook postInstall
-        '';
-
-        meta = {
-          description = "Generate boilerplate Nix modules";
-          license = lib.licenses.mit;
-          mainProgram = "boilerplate";
-        };
+        description = "Generate boilerplate Nix modules";
+        program = "python3";
+        interpreter = pkgs.python3;
       };
     };
 }
