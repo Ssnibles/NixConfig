@@ -26,10 +26,11 @@ qs_bar = "mangowc"
 cursor_theme = "Bibata-Modern-Ice"
 cursor_size = "24"
 
-# Step sizes for resize, volume and brightness.
+# Step sizes for resize, volume, brightness and media seeking.
 resize_step = "50"
 volume_step = "5%"
 brightness_step = "5%"
+media_step = "5"
 
 # Gaps.
 gap_inner = "10"

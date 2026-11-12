@@ -37,11 +37,15 @@ PlaybackControls 1.0 common/PlaybackControls.qml
 PowerButtons 1.0 common/PowerButtons.qml
 RoundedImage 1.0 common/RoundedImage.qml
 SliderControl 1.0 common/SliderControl.qml
+StatusPill 1.0 common/StatusPill.qml
 Tooltip 1.0 common/Tooltip.qml
+TooltipCard 1.0 common/TooltipCard.qml
 
 # bar
+CalendarPopup 1.0 bar/CalendarPopup.qml
 ClockWidget 1.0 bar/ClockWidget.qml
 CommandCentreButton 1.0 bar/CommandCentreButton.qml
+LayoutPopup 1.0 bar/LayoutPopup.qml
 LayoutWidget 1.0 bar/LayoutWidget.qml
 MediaWidget 1.0 bar/MediaWidget.qml
 SharedTooltipWindow 1.0 bar/SharedTooltipWindow.qml
@@ -57,6 +61,7 @@ Launcher 1.0 launcher/Launcher.qml
 # command-centre
 AudioSinkPicker 1.0 command-centre/AudioSinkPicker.qml
 CommandCentre 1.0 command-centre/CommandCentre.qml
+CommandCentreCard 1.0 command-centre/CommandCentreCard.qml
 ControlSliderRow 1.0 command-centre/ControlSliderRow.qml
 NotificationHistoryCard 1.0 command-centre/NotificationHistoryCard.qml
 

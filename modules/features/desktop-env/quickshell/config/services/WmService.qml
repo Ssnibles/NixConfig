@@ -13,12 +13,10 @@ import ".."
 Singleton {
   id: root
 
-  readonly property string wm: Config.wm
-
   Loader {
     id: backendLoader
     source: {
-      switch (root.wm) {
+      switch (Config.wm) {
         case "mangowc":  return "MangoService.qml"
         case "hyprland": return "HyprlandService.qml"
         case "niri":     return "NiriService.qml"
@@ -53,7 +51,7 @@ Singleton {
 
   function getLayoutSymbol(outputName) {
     if (!activeSvc) return ""
-    if (root.wm === "mangowc" && activeSvc.layoutForOutput) {
+    if (Config.wm === "mangowc" && activeSvc.layoutForOutput) {
       return activeSvc.layoutForOutput(outputName)
     }
     return activeSvc.currentLayoutSymbol || ""
@@ -91,9 +89,7 @@ Singleton {
     }
   }
 
-  // =========================================================================
-  // Active / Cursor Screen Detection
-  // =========================================================================
+  // Active and cursor screen detection
   property var _screenQueryCallback: null
   readonly property bool queryingScreen: root._screenQueryCallback !== null
 
@@ -127,11 +123,11 @@ Singleton {
     }
 
     var cmd = null
-    if (root.wm === "mangowc") {
+    if (Config.wm === "mangowc") {
       cmd = ["mmsg", "get", "cursorpos"]
-    } else if (root.wm === "hyprland") {
+    } else if (Config.wm === "hyprland") {
       cmd = ["hyprctl", "cursorpos"]
-    } else if (root.wm === "niri") {
+    } else if (Config.wm === "niri") {
       cmd = ["niri", "msg", "--json", "focused-output"]
     }
 
@@ -173,14 +169,14 @@ Singleton {
 
         var foundScreen = null
         try {
-          if (root.wm === "mangowc") {
+          if (Config.wm === "mangowc") {
             var data = JSON.parse(txt)
             if (data && data.monitor) {
               foundScreen = Utils.screenByName(data.monitor, Quickshell.screens)
             } else if (data && data.x !== undefined && data.y !== undefined) {
               foundScreen = Utils.screenAt(data.x, data.y, Quickshell.screens)
             }
-          } else if (root.wm === "hyprland") {
+          } else if (Config.wm === "hyprland") {
             var parts = txt.split(",")
             if (parts.length >= 2) {
               var hx = parseInt(parts[0].trim())
@@ -189,7 +185,7 @@ Singleton {
                 foundScreen = Utils.screenAt(hx, hy, Quickshell.screens)
               }
             }
-          } else if (root.wm === "niri") {
+          } else if (Config.wm === "niri") {
             var niriData = JSON.parse(txt)
             if (niriData && niriData.name) {
               foundScreen = Utils.screenByName(niriData.name, Quickshell.screens)

@@ -4,9 +4,6 @@ import Quickshell.Io
 import QtQuick
 
 Scope {
-  id: root
-
-  // Expose bar toggle via IPC
   IpcHandler {
     target: "bar"
 
@@ -24,7 +21,6 @@ Scope {
   }
 
   Loader {
-    id: barLoader
     source: "bar/bar.qml"
   }
 

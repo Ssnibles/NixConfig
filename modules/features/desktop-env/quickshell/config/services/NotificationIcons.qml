@@ -91,7 +91,7 @@ Singleton {
       }
     }
 
-    // 3. Reverse-DNS segments (e.g. com.spotify.Client -> spotify) or hyphenated name
+    // 3. Reverse-DNS segments (e.g. com.spotify.Client to spotify) or hyphenated name
     if (clean.indexOf(".") !== -1) {
       var parts = clean.split(".")
       var skip = ["com", "org", "io", "net", "app", "desktop", "client", "bin", "ui"]

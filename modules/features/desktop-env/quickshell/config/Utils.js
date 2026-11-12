@@ -351,7 +351,7 @@ function goToSource(source) {
     var sLower = s.toLowerCase()
     if (targets.indexOf(sLower) === -1) targets.push(sLower)
 
-    // Add known cross-app aliases (e.g. Discord SNI tray -> Vesktop window)
+    // Add known cross-app aliases (e.g. a Discord SNI tray item to Vesktop)
     if (aliases[sLower]) {
       for (var al = 0; al < aliases[sLower].length; al++) {
         var aliasName = aliases[sLower][al]

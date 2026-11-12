@@ -3,7 +3,6 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
 import QtQuick
-import QtQuick.Layouts
 import "../Utils.js" as Utils
 import ".."
 
@@ -58,7 +57,7 @@ Scope {
         if (!Config.targetScreen) {
           Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
         }
-        BrightnessService.refreshBrightness()
+        BrightnessService.refreshBrightness(false)
       } else if (ccScope.active) {
         ccScope.closing = true
       }
@@ -66,7 +65,6 @@ Scope {
   }
 
   Variants {
-    id: root
     model: ccScope.active ? Quickshell.screens : []
 
     delegate: PanelWindow {
@@ -172,9 +170,10 @@ Scope {
 
       // Main Card container (lazily loaded only on the target screen to avoid duplicating across displays)
       Loader {
-        id: cardLoader
         active: panel.isTargetScreen
         sourceComponent: mainCardComponent
+        opacity: panel.panelOpacity
+        transform: Translate { x: panel.panelSlide }
         width: Config.commandCentreWidth
         anchors.top: parent.top
         anchors.bottom: parent.bottom
@@ -189,183 +188,7 @@ Scope {
       Component {
         id: mainCardComponent
 
-        Card {
-          id: mainCard
-          anchors.fill: parent
-          cardColour: Colours.bg
-          cardRadius: Config.commandCentreRadius
-
-          // Prevent clicks inside mainCard from propagating to outsideDismiss
-          MouseArea {
-            anchors.fill: parent
-            onClicked: function(mouse) { mouse.accepted = true }
-          }
-
-          transform: Translate {
-            x: panel.panelSlide
-          }
-          opacity: panel.panelOpacity
-
-          ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 16
-            spacing: 14
-
-            // HEADER: CLOCK & STATUS PILLS
-            RowLayout {
-              Layout.fillWidth: true
-              spacing: 12
-
-              // Clock & Date (Left)
-              Column {
-                Layout.alignment: Qt.AlignTop
-                spacing: 2
-
-                RowLayout {
-                  spacing: 6
-
-                  Text {
-                    id: headerTime
-                    text: ClockService.ccTimeStr
-                    color: Colours.fg
-                    font.family: Config.serifFont
-                    font.letterSpacing: 2
-                    font.pixelSize: 36
-                    font.italic: true
-                    Layout.alignment: Qt.AlignBaseline
-                  }
-
-                  // Small 12-hour companion to the 24-hour clock
-                  Text {
-                    id: headerTime12
-                    text: ClockService.ccTime12Str
-                    color: Colours.fgDim
-                    font.family: Config.sansFont
-                    font.pixelSize: Config.fontSizeMd
-                    Layout.alignment: Qt.AlignBaseline
-                  }
-                }
-
-                Text {
-                  id: headerDate
-                  text: ClockService.ccDateStr
-                  color: Colours.fgDim
-                  font.family: Config.sansFont
-                  font.pixelSize: 14
-                }
-              }
-
-              Item { Layout.fillWidth: true }
-
-              // Wi-Fi / Wired / Battery / Bluetooth Status Pills
-              Row {
-                spacing: 6
-                Layout.alignment: Qt.AlignTop
-
-                NetworkWidget {
-                  horizontal: true
-                  anchors.verticalCenter: parent.verticalCenter
-                }
-
-                BatteryWidget {
-                  horizontal: true
-                  anchors.verticalCenter: parent.verticalCenter
-                }
-
-                BluetoothWidget {
-                  showLabel: true
-                  anchors.verticalCenter: parent.verticalCenter
-                }
-              }
-            }
-
-            // SYSTEM CONTROLS CARD (OUTPUT VOLUME, SINK PICKER, MICROPHONE & BRIGHTNESS)
-            Card {
-              Layout.fillWidth: true
-              implicitHeight: sliderCol.implicitHeight + 24
-
-              ColumnLayout {
-                id: sliderCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 12
-                spacing: 10
-
-                // Output Volume Row
-                ControlSliderRow {
-                  icon: AudioService.volumeIcon
-                  alert: AudioService.muted
-                  iconClickable: true
-                  onIconClicked: AudioService.toggleMute()
-                  sliderValue: AudioService.volume
-                  onSliderMoved: function(v) {
-                    AudioService.setVolumeDebounced(v)
-                  }
-                  percentText: AudioService.volumePercent + "%"
-                }
-
-                AudioSinkPicker { }
-
-                // Divider if microphone is available
-                Divider {
-                  visible: Config.ccShowMicSlider && AudioService.hasMic
-                  Layout.fillWidth: true
-                }
-
-                // Microphone Row
-                ControlSliderRow {
-                  visible: Config.ccShowMicSlider && AudioService.hasMic
-                  icon: AudioService.micIcon
-                  alert: AudioService.micMuted
-                  iconClickable: true
-                  onIconClicked: AudioService.toggleMicMute()
-                  sliderValue: AudioService.micVolume
-                  onSliderMoved: function(v) {
-                    AudioService.setMicVolumeDebounced(v)
-                  }
-                  percentText: AudioService.micVolumePercent + "%"
-                }
-
-                // Divider if brightness is available
-                Divider {
-                  visible: Config.ccShowBrightnessSlider && BrightnessService.brightnessAvailable
-                  Layout.fillWidth: true
-                }
-
-                // Brightness Row
-                ControlSliderRow {
-                  visible: Config.ccShowBrightnessSlider && BrightnessService.brightnessAvailable
-                  icon: "󰃠"
-                  iconColour: Colours.yellow
-                  accent: Colours.yellow
-                  sliderValue: BrightnessService.brightness
-                  onSliderMoved: function(v) {
-                    BrightnessService.setBrightness(v)
-                  }
-                  percentText: BrightnessService.brightnessPercent + "%"
-                }
-              }
-            }
-
-            // MEDIA PLAYER CARD
-            MediaCard {
-              Layout.fillWidth: true
-              showWhenIdle: Config.alwaysShowMediaCard
-            }
-
-            NotificationHistoryCard {
-              Layout.fillWidth: true
-              Layout.fillHeight: true
-            }
-
-            // SYSTEM POWER/CONTROLS
-            PowerButtons {
-              Layout.fillWidth: true
-              onActivated: Config.commandCentreVisible = false
-            }
-          }
-        }
+        CommandCentreCard { }
       }
     }
   }

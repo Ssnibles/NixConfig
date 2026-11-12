@@ -36,9 +36,9 @@ Item {
 
   property real pillStart: 0
   property real pillEnd: 0
-  property bool initialAnimDone: false
+  property bool _initialAnimDone: false
 
-  // Sequential 2-Phase Liquid Morph Animation (Stretch -> Contract & Bounce)
+  // Two-phase morph: stretch the leading edge, then snap it shut with a bounce.
   SequentialAnimation {
     id: morphAnim
 
@@ -99,10 +99,10 @@ Item {
     var targetS = k * step
     var targetE = targetS + root.dotSizeFocused
 
-    if (!initialAnimDone) {
+    if (!_initialAnimDone) {
       pillStart = targetS
       pillEnd = targetE
-      initialAnimDone = true
+      _initialAnimDone = true
       return
     }
 
@@ -138,12 +138,10 @@ Item {
   height: implicitHeight
 
   Item {
-    id: container
     anchors.fill: parent
 
     // Sliding Morphing Focused Pill
     Rectangle {
-      id: activePill
       color: root.dotColourFocused
       radius: Math.min(width, height) / 2
       antialiasing: true
@@ -157,7 +155,6 @@ Item {
 
     // Workspace Slots (Background Dots)
     Repeater {
-      id: gridRepeater
       // Model on the count so delegates survive updates that keep the same number
       // of workspaces; each delegate binds its element out of the array instead
       // of the Repeater tearing down and rebuilding every dot on each change.

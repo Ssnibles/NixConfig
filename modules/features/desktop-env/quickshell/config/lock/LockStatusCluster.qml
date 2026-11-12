@@ -3,7 +3,8 @@ import QtQuick
 import "../Utils.js" as Utils
 import ".."
 
-// Lock screen status pills, either clustered in one corner or split across all four.
+// Lock screen status badges, either clustered in one corner or split across all
+// four corners of the screen.
 Item {
   id: root
 
@@ -11,7 +12,6 @@ Item {
   readonly property var pos: Utils.parseOverlayPosition(Config.lockStatusPosition, "top-right")
 
   Row {
-    id: statusCluster
     visible: !root.isStatusSplit
     spacing: Config.lockStatusSpacing
     z: 10
@@ -22,28 +22,22 @@ Item {
     anchors.right: root.pos.onLeft ? undefined : root.right
     anchors.margins: Config.lockStatusMargin
 
-    // Hostname Pill
     HostnamePill { }
 
-    // Network Widget Pill
     NetworkWidget {
       horizontal: true
       interactive: false
     }
 
-    // Battery Widget Pill
     BatteryWidget {
-      id: lockClusterBattery
-      visible: lockClusterBattery.batPresent
       horizontal: true
       interactive: false
     }
 
-    // Volume & Mute Status Pill
     VolumePill { }
   }
 
-  // Top Left Hostname / System Status (when Config.lockStatusPosition is "split" or "corners")
+  // Split layout: one badge per corner.
   HostnamePill {
     visible: root.isStatusSplit
     anchors.left: root.left
@@ -52,7 +46,6 @@ Item {
     z: 10
   }
 
-  // Top Right Volume & Mute Status (when Config.lockStatusPosition is "split" or "corners")
   VolumePill {
     visible: root.isStatusSplit
     anchors.right: root.right
@@ -61,7 +54,6 @@ Item {
     z: 10
   }
 
-  // Bottom Left Wi-Fi / Network Status (when Config.lockStatusPosition is "split" or "corners")
   NetworkWidget {
     visible: root.isStatusSplit
     horizontal: true
@@ -72,7 +64,6 @@ Item {
     z: 10
   }
 
-  // Bottom Right Battery Status (when Config.lockStatusPosition is "split" or "corners")
   BatteryWidget {
     id: lockSplitBattery
     visible: root.isStatusSplit && lockSplitBattery.batPresent

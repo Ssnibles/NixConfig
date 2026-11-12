@@ -39,17 +39,19 @@ RowLayout {
       height: 48
       radius: root.buttonRadius
       color: hoverArea.containsMouse ? Colours.bgSubtle : Colours.bgRaised
-      border.color: hoverArea.containsMouse ? modelData.hoverColour : Colours.border
+      border.color: hoverArea.containsMouse ? buttonDelegate.modelData.hoverColour : Colours.border
       border.width: 1
-      Behavior on scale { NumberAnimation { duration: 100 } }
+      scale: hoverArea.containsMouse ? 0.94 : 1.0
+
+      Behavior on scale { NumberAnimation { duration: Config.animFastMs } }
+      Behavior on color { ColorAnimation { duration: Config.animFastMs } }
+      Behavior on border.color { ColorAnimation { duration: Config.animFastMs } }
 
       MouseArea {
         id: hoverArea
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onEntered: parent.scale = 0.94
-        onExited: parent.scale = 1.0
         onClicked: {
           Quickshell.execDetached(buttonDelegate.modelData.cmd)
           root.activated()

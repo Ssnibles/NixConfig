@@ -64,7 +64,6 @@ Card {
     }
   }
 
-
   // Shared menu entry pill used for both top-level and submenu DBusMenu items
   component MenuEntryPill: Pill {
     id: entryRoot
@@ -128,7 +127,7 @@ Card {
     }
   }
 
-  readonly property var activeTip: menuRoot.sharedWindow ? menuRoot.sharedWindow.cachedActive : null
+  readonly property var activeTip: menuRoot.sharedWindow ? menuRoot.sharedWindow.shownTip : null
   readonly property var activeDelegate: menuRoot.activeTip ? menuRoot.activeTip.target : null
   readonly property var activeItem: menuRoot.activeDelegate ? menuRoot.activeDelegate.modelData : null
   readonly property string appTitle: menuRoot.activeDelegate ? menuRoot.activeDelegate.appTitle : "Application"
@@ -296,7 +295,6 @@ Card {
 
     // Hide / Unhide in Tray Action
     ActionPill {
-      id: hideItemPill
       visible: Config.trayAllowSessionHide
       width: parent.width
       icon: menuRoot.isHiddenItem ? "󰈈" : "󰈉"
@@ -311,7 +309,6 @@ Card {
 
     // Toggle showing the expand arrow for hidden tray items
     ActionPill {
-      id: toggleExpandBtnPill
       visible: Config.trayAllowSessionHide && (TrayService.trayHiddenCount > 0 || !Config.trayShowExpandButton)
       width: parent.width
       icon: Config.trayShowExpandButton ? "󰅁" : "󰅂"

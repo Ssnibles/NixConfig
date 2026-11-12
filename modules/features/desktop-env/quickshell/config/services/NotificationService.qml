@@ -51,7 +51,7 @@ Singleton {
     function onImageCopied(uid, url) { service._setItemProperty(uid, "primaryIcon", url) }
   }
 
-  // --- Notification Lifecycle & Model Helpers ---
+  // Lifecycle and model helpers
 
   function _trackNotification(uid, notification) {
     if (!notification) return
@@ -179,7 +179,7 @@ Singleton {
     }
   }
 
-  // --- MPRIS "Now Playing" Toasts ---
+  // MPRIS "Now Playing" toasts
 
   Timer {
     interval: 1500
@@ -290,7 +290,7 @@ Singleton {
     }
   }
 
-  // --- Freedesktop Notification Daemon ---
+  // Freedesktop notification daemon
 
   function _isMediaDesktopNotification(notification, rawImg) {
     var appLower = ((notification.appName || "") + " " + (notification.desktopEntry || "")).toLowerCase()
@@ -308,7 +308,6 @@ Singleton {
   }
 
   NotificationServer {
-    id: notificationServer
     bodySupported: true
     bodyMarkupSupported: true
     bodyHyperlinksSupported: true
@@ -354,7 +353,7 @@ Singleton {
     }
   }
 
-  // --- Hover, Expiry & Dismissal ---
+  // Hover, expiry and dismissal
 
   function setHovered(uid, hovered) {
     if (uid === undefined || uid === null || uid < 0) return
@@ -424,7 +423,7 @@ Singleton {
     service.dnd = !service.dnd
   }
 
-  // --- Actions & Window Focus ---
+  // Actions and window focus
 
   function actionsFor(uid) {
     var notif = service._notificationsByUid[uid]

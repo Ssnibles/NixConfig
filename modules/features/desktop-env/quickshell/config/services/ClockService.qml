@@ -38,10 +38,10 @@ Singleton {
 
   Timer {
     id: minuteTimer
-    running: true
     repeat: false
     onTriggered: root.updateTime()
   }
 
+  // updateTime restarts the timer, so it needs no initial `running` binding.
   Component.onCompleted: root.updateTime()
 }

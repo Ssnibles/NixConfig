@@ -26,11 +26,13 @@ modules/features/desktop-env/quickshell/
     ├── common/                   # Shared primitives and reusable widgets
     │   ├── Card.qml
     │   ├── Pill.qml
+    │   ├── StatusPill.qml
     │   ├── Divider.qml
     │   ├── IconButton.qml
     │   ├── RoundedImage.qml
     │   ├── SliderControl.qml
     │   ├── Tooltip.qml
+    │   ├── TooltipCard.qml
     │   ├── MediaCard.qml
     │   ├── MediaProgressRow.qml
     │   ├── PlaybackControls.qml
@@ -59,7 +61,9 @@ modules/features/desktop-env/quickshell/
     ├── bar/                      # Status bar and bar-only widgets
     │   ├── bar.qml
     │   ├── ClockWidget.qml
+    │   ├── CalendarPopup.qml
     │   ├── LayoutWidget.qml
+    │   ├── LayoutPopup.qml
     │   ├── MediaWidget.qml
     │   ├── SystemTrayWidget.qml
     │   ├── TrayMenu.qml
@@ -76,6 +80,7 @@ modules/features/desktop-env/quickshell/
     │   └── desktop-entries.sh
     ├── command-centre/           # Command Centre and its cards
     │   ├── CommandCentre.qml
+    │   ├── CommandCentreCard.qml
     │   ├── AudioSinkPicker.qml
     │   ├── ControlSliderRow.qml
     │   └── NotificationHistoryCard.qml

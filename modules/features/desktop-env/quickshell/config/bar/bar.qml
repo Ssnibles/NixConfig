@@ -9,7 +9,6 @@ import ".."
 Scope {
   id: root
 
-  property bool barVisible: Config.barVisible
   readonly property bool isHorizontal: Config.barType !== "niri"
   readonly property bool sideLeft: !root.isHorizontal && Config.barSide !== "right"
   readonly property bool sideRight: !root.isHorizontal && Config.barSide === "right"
@@ -21,7 +20,7 @@ Scope {
       id: barPanel
       required property var modelData
       screen: barPanel.modelData
-      visible: root.barVisible
+      visible: Config.barVisible
       focusable: false
       aboveWindows: true
 
@@ -36,18 +35,14 @@ Scope {
       exclusionMode: ExclusionMode.Auto
       color: Colours.bg
 
-      mask: Region { item: barPanel.contentItem }
-
-      // Background MouseArea to absorb all hover and pointer events,
-      // preventing focus-follows-mouse and clickthrough to windows underneath
+      // Absorbs every hover and pointer event so the bar never click-throughs
+      // to the windows underneath.
       MouseArea {
         anchors.fill: parent
         hoverEnabled: true
         acceptedButtons: Qt.AllButtons
         onClicked: function(mouse) { mouse.accepted = true }
-        onEntered: {
-          Config.lastActiveScreen = barPanel.modelData
-        }
+        onEntered: Config.lastActiveScreen = barPanel.modelData
       }
 
       // Thin inner border line separating the bar from workspace windows
@@ -61,19 +56,15 @@ Scope {
         color: Colours.border
       }
 
-      // Bar Content Container
       Item {
-        id: barContent
         anchors.fill: parent
         anchors.topMargin: root.isHorizontal ? 0 : Config.barMarginTop
         anchors.bottomMargin: root.isHorizontal ? 0 : Config.barMarginBottom
         anchors.leftMargin: root.isHorizontal ? Config.barHorizontalMargin : Config.barMarginLeft
         anchors.rightMargin: root.isHorizontal ? Config.barHorizontalMargin : Config.barMarginRight
 
-        // Start Section (Left on top bar, Top on side bar):
-        // Clock, Command Centre Button, Layout Switcher, Active Window Title
+        // Start section: left on the top bar, top on the side bar.
         GridLayout {
-          id: startSection
           flow: root.isHorizontal ? GridLayout.LeftToRight : GridLayout.TopToBottom
           rowSpacing: Config.barSpacing
           columnSpacing: Config.barLeftSpacing
@@ -83,14 +74,12 @@ Scope {
           anchors.verticalCenter: root.isHorizontal ? parent.verticalCenter : undefined
 
           ClockWidget {
-            id: clockWidget
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 
           CommandCentreButton {
-            id: commandCentreButton
             horizontal: root.isHorizontal
             screen: barPanel.modelData
             sharedWindow: sharedTipWindow
@@ -98,7 +87,6 @@ Scope {
           }
 
           LayoutWidget {
-            id: layoutWidget
             horizontal: root.isHorizontal
             screen: barPanel.modelData
             sharedWindow: sharedTipWindow
@@ -106,24 +94,19 @@ Scope {
           }
 
           WindowTitleWidget {
-            id: windowTitleWidget
             horizontal: root.isHorizontal
             Layout.alignment: Qt.AlignCenter
           }
         }
 
-        // Centre Section: Unified Workspaces Widget
         WorkspacesWidget {
-          id: workspacesWidget
           anchors.centerIn: parent
           horizontal: root.isHorizontal
           screen: barPanel.modelData
         }
 
-        // End Section (Right on top bar, Bottom on side bar):
-        // System Tray, Media, Volume, Network, Battery Widgets
+        // End section: right on the top bar, bottom on the side bar.
         GridLayout {
-          id: endSection
           flow: root.isHorizontal ? GridLayout.LeftToRight : GridLayout.TopToBottom
           rowSpacing: Config.barSpacing
           columnSpacing: Config.barRightSpacing
@@ -133,35 +116,30 @@ Scope {
           anchors.verticalCenter: root.isHorizontal ? parent.verticalCenter : undefined
 
           SystemTrayWidget {
-            id: systemTrayWidget
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 
           MediaWidget {
-            id: mediaWidget
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 
           VolumeWidget {
-            id: volumeWidget
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 
           NetworkWidget {
-            id: networkWidget
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
           }
 
           BatteryWidget {
-            id: batteryWidget
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow
             Layout.alignment: Qt.AlignCenter
@@ -169,7 +147,6 @@ Scope {
         }
       }
 
-      // Shared Tooltip Window Layer
       SharedTooltipWindow {
         id: sharedTipWindow
         screenTarget: barPanel.modelData

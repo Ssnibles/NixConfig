@@ -27,27 +27,19 @@
 "$mod+p" = "setlayout,scroller"
 "$mod+Tab" = "switch_layout"
 
-# Vim & Arrow Style Window Resizing
+# Vim & Arrow Style Window Resizing (arrows are used for media seeking)
 "$mod+Ctrl+h" = "resizewin,-$resize_step,+0"
 "$mod+Ctrl+l" = "resizewin,+$resize_step,+0"
 "$mod+Ctrl+k" = "resizewin,+0,-$resize_step"
 "$mod+Ctrl+j" = "resizewin,+0,+$resize_step"
-"$mod+Ctrl+Left" = "resizewin,-$resize_step,+0"
-"$mod+Ctrl+Right" = "resizewin,+$resize_step,+0"
-"$mod+Ctrl+Up" = "resizewin,+0,-$resize_step"
-"$mod+Ctrl+Down" = "resizewin,+0,+$resize_step"
 "$mod+equal" = "resizewin,+$resize_step,+$resize_step"
 "$mod+minus" = "resizewin,-$resize_step,-$resize_step"
 
-# Directional Focus (Vim & Arrow keys)
+# Directional Focus (Vim keys; arrows are used for media and volume)
 "$mod+h" = "focusdir,left"
 "$mod+l" = "focusdir,right"
 "$mod+k" = "focusdir,up"
 "$mod+j" = "focusdir,down"
-"$mod+Left" = "focusdir,left"
-"$mod+Right" = "focusdir,right"
-"$mod+Up" = "focusdir,up"
-"$mod+Down" = "focusdir,down"
 
 # Move Windows (Vim & Arrow keys)
 "$mod+Shift+h" = "exchange_client,left"
@@ -129,6 +121,12 @@
 "XF86AudioNext" = "spawn,playerctl next"
 "XF86AudioPrev" = "spawn,playerctl previous"
 "XF86AudioStop" = "spawn,playerctl stop"
+"$mod+Left" = "spawn,playerctl previous"
+"$mod+Right" = "spawn,playerctl next"
+"$mod+Ctrl+Left" = "spawn,playerctl position $media_step-"
+"$mod+Ctrl+Right" = "spawn,playerctl position $media_step+"
+"$mod+Up" = "spawn,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ $volume_step+"
+"$mod+Down" = "spawn,wpctl set-volume @DEFAULT_AUDIO_SINK@ $volume_step-"
 
 # Brightness Control
 "XF86MonBrightnessUp" = "spawn,brightnessctl set +$brightness_step"
@@ -142,6 +140,9 @@
 "$mod+z" = "toggle_scratchpad"
 # Silently send window to special tag without switching
 "$mod+Ctrl+w" = "tag_special_silent"
+
+# Trackpad
+"$mod+Alt+t" = "toggle_trackpad_enable"
 
 # Trackpad gestures
 [gesturebind.default]

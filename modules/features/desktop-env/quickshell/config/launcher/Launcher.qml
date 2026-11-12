@@ -246,7 +246,6 @@ Scope {
     model: Config.launcherVisible && Config.targetScreen ? [ Config.targetScreen ] : []
 
     delegate: PanelWindow {
-      id: panel
       required property var modelData
       screen: modelData
 
@@ -267,7 +266,6 @@ Scope {
       }
 
       Card {
-        id: card
         width: Config.launcherWidth
         height: Config.launcherHeight
         anchors.centerIn: parent
@@ -280,7 +278,6 @@ Scope {
         }
 
         ColumnLayout {
-          id: content
           anchors.fill: parent
           anchors.margins: 12
           spacing: 8

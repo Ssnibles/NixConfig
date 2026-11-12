@@ -208,7 +208,7 @@ Scope {
 
 #### `AudioService.qml`
 - **Role**: `pragma Singleton` for PipeWire output sinks and the default microphone source.
-- **Exposes**: `audioSink`, `audioSinks`, `selectAudioSink(node)`, `sinkDisplayName(node)`, `volume`, `muted`, `volumePercent`, `volumeIcon`, `toggleMute()`, `setVolume(val)`, `setVolumeDebounced(val)`, `stepVolume(dir)`, `openMixer()`, `hasMic`, `micVolume`, `micMuted`, `micVolumePercent`, `micIcon`, `toggleMicMute()`, `setMicVolume(val)`, `setMicVolumeDebounced(val)`, `stepMicVolume(dir)`.
+- **Exposes**: `audioSink`, `audioSinks`, `selectAudioSink(node)`, `sinkDisplayName(node)`, `sinkLabel(node)`, `volume`, `muted`, `volumePercent`, `volumeIcon`, `toggleMute()`, `setVolume(val)`, `setVolumeDebounced(val)`, `stepVolume(dir)`, `openMixer()`, `hasMic`, `micVolume`, `micMuted`, `micVolumePercent`, `micIcon`, `toggleMicMute()`, `setMicVolume(val)`, `setMicVolumeDebounced(val)`, `stepMicVolume(dir)`.
 
 #### `BrightnessService.qml`
 - **Role**: `brightnessctl` and sysfs backlight control. Emits `osdRequested()` when the level changes.
@@ -268,7 +268,7 @@ Scope {
 - **Role**: Slide-out quick settings dashboard and system metrics panel.
 - **IPC Target**: `"command-centre"` (functions: `toggle()`, `open()`, `close()`).
 - **Multi-Monitor Cursor Tracking**: Delegates active-screen detection to `WmService.resolveTargetScreen(...)` and slides out on that specific monitor while rendering a transparent dismiss overlay across all other screens.
-- **Features**: Header clock & date (via `ClockService`), status pills (Wi-Fi, Ethernet, Battery, Bluetooth), system sliders (`ControlSliderRow` bound to `AudioService` and `BrightnessService`), the collapsible `AudioSinkPicker`, full MPRIS media player card (`MediaCard`), and the `NotificationHistoryCard` list (`NotificationService`).
+- **Structure**: `CommandCentre.qml` owns the per-screen overlay windows, the slide and fade animation, and the IPC surface. The panel contents live in `CommandCentreCard.qml`: header clock and date (`ClockService`), status pills (Wi-Fi, Ethernet, Battery, Bluetooth), system sliders (`ControlSliderRow` bound to `AudioService` and `BrightnessService`), the `AudioSinkPicker` output chips, the full MPRIS `MediaCard`, the `NotificationHistoryCard` list (`NotificationService`), and `PowerButtons`.
 
 #### `OsdOverlay.qml`
 - **Role**: Floating bottom-centre On-Screen Display pill driven by `SystemService`.
@@ -303,16 +303,21 @@ Scope {
 #### `Divider.qml`
 - **Role**: 1px horizontal rule used to separate sections.
 
+#### `StatusPill.qml`
+- **Role**: Icon plus optional label inside a `Pill`, with an optional tooltip. Backs the battery, Bluetooth, and network widgets and the lock screen hostname and volume badges, so they share one layout and one tooltip implementation.
+- **Properties**: `icon`, `iconColour`, `iconSize`, `iconFont`, `label`, `showLabel` (defaults to `horizontal`), `labelColour`, `labelSize`, `labelFont`, `labelBold`, `labelMaxWidth`, `rowRotation`, `rowSpacing`, `interactive`, `sharedWindow`, `tooltipEnabled`, `tooltipTitle`, `tooltipDetails`. Set `interactive: false` for read-only badges and `rowRotation: 270` for the vertical side bar.
+
 #### `HostnamePill.qml` and `VolumePill.qml`
-- **Role**: Lock screen status badges shared by the clustered and split layouts.
+- **Role**: Read-only lock screen badges built on `StatusPill`, shared by the clustered and split layouts.
 
 #### `ControlSliderRow.qml`
 - **Role**: Icon, slider, and percentage row used by the Command Centre controls.
 - **Properties**: `icon`, `alert`, `accent`, `iconClickable`, `sliderValue`, `percentText`; signals `iconClicked()`, `sliderMoved(real value)`.
 
 #### `AudioSinkPicker.qml`
-- **Role**: Collapsible PipeWire output picker with the sink list and audio mixer shortcut.
-- **Properties**: `expanded`.
+- **Role**: PipeWire output switcher: one chip per sink with the current output marked, plus a mixer shortcut. Chips switch on the first click and wrap onto another line when there are many outputs, so expanding the picker never reflows the rest of the panel.
+- **Properties**: `labelMaxWidth` (default `150`); gives up its space to elision rather than pushing the row wider.
+- **Labels**: use `AudioService.sinkLabel(node)`, which prefers PipeWire's `node.nick` (`DAWN PRO2`) over the longer `node.description` (`DAWN PRO2 Analog Stereo`).
 
 #### `NotificationHistoryCard.qml`
 - **Role**: Notification history list, mute toggle, and clear button used by the Command Centre.
@@ -361,16 +366,16 @@ Scope {
 - **Properties**: `source`, `sourceSize`, `radius`; exposes `ready` and a `sourceError()` signal for fallback chains.
 
 #### Standard Bar Widgets
-- **`ClockWidget.qml`**: Time/date stack ingested from `ClockService` with click-to-popup calendar details.
+- **`ClockWidget.qml`**: Time/date stack ingested from `ClockService` with click-to-popup calendar (`CalendarPopup.qml`).
 - **`WindowTitleWidget.qml`**: Active window title ingested from `WmService`.
 - **`WorkspacesWidget.qml`**: Interactive workspace indicators connected to `WmService`.
-- **`LayoutWidget.qml`**: Tiling layout selector connected to `WmService` (auto-shown on MangoWC).
+- **`LayoutWidget.qml`**: Tiling layout selector connected to `WmService` (auto-shown on MangoWC). The option list lives in `LayoutPopup.qml`.
 - **`SystemTrayWidget.qml`**: StatusNotifierItem (SNI) system tray pill supporting left-click activate, right-click menu (rendered by `TrayMenu.qml`), scroll, and hover tooltips. Automatically hides when no tray items are registered.
 - **`MediaWidget.qml`**: MPRIS playback bar button ingested from `MediaService`.
 - **`VolumeWidget.qml`**: PipeWire volume control widget ingested from `AudioService`.
-- **`NetworkWidget.qml`**: Network connection monitor displaying Wi-Fi SSID and signal strength. Right-click launches `nmtui`. Set `interactive: false` to render it as a read-only pill (used on the lock screen).
+- **`NetworkWidget.qml`**: Network connection monitor displaying Wi-Fi SSID and signal strength. Right-click launches `nmtui`. Set `interactive: false` to render it as a read-only `StatusPill` (used on the lock screen).
 - **`BluetoothWidget.qml`**: Bluetooth adapter status and device indicator. Right-click launches `blueman-manager`.
-- **`BatteryWidget.qml`**: Laptop battery charge state and status indicator powered by UPower. Auto-hides on desktop systems without batteries. Set `interactive: false` to render it as a read-only pill (used on the lock screen).
+- **`BatteryWidget.qml`**: Laptop battery charge state and status indicator powered by UPower. Auto-hides on desktop systems without batteries. Set `interactive: false` to render it as a read-only `StatusPill` (used on the lock screen).
 
 ---
 
@@ -389,9 +394,13 @@ Tooltip {
 }
 ```
 - **Custom Popups**: Pass a custom `Component` to `contentComponent` to render arbitrary QML inside the popup layer instead of the default card.
+- **Shared window state**: `SharedTooltipWindow` exposes `activeTip` (the tooltip under the cursor), `shownTip` (the card still on screen while it fades out), `recentlyActive`, `isOpen`, and `openNow()` / `closeNow()` for widgets that drive a popup directly, such as the tray menu.
 
 ### `SharedTooltipWindow.qml`
 A single layer window per display hugging `Config.barSide`. Handles popup positioning, clamping to screen boundaries, smooth fade transitions, and instant-swapping between adjacent widgets.
+
+### `TooltipCard.qml`
+The default tooltip card (icon and title header, divider, one line per detail) rendered by `SharedTooltipWindow` when a tooltip has no custom content.
 
 ---
 
@@ -497,6 +506,17 @@ To reload Quickshell after editing existing QML files:
 pkill quickshell; quickshell &
 ```
 
+Quickshell normally reloads by itself when a file it has compiled changes. Two
+caveats, both easy to trip over:
+
+- Only a content change triggers the reload. `touch` alone does not.
+- Only compiled files are watched. A component that has never been shown, such
+  as a popup you have not opened yet, is not watched, so a new or heavily
+  edited file can appear to be ignored.
+
+When in doubt, save an unrelated file such as `shell.qml` (even adding and
+removing a newline) to force a full reload, or restart the process.
+
 ---
 
 ## 9. Tooling & Tests
@@ -511,4 +531,4 @@ pkill quickshell; quickshell &
 
 - **Vendored expr-eval**: `config/launcher/expr-eval.js` is expr-eval 2.0.2 with two local changes: the UMD wrapper is replaced with top-level exports so QML can import it, and `ParserState.next` separates an assignment from its return expression because Qt V4 evaluates the original form incorrectly. The MIT licence is in `expr-eval.LICENSE`.
 
-- **Static analysis**: every QML file declares `pragma ComponentBehavior: Bound`, and delegates declare their model context as `required property ...`. With the manifest above, `qmllint` is clean apart from a handful of Quickshell/`Qt` type-resolution false positives (`PanelWindow`, `margins {}`, `Qt.CapsLockModifier`).
+- **Static analysis**: every QML file declares `pragma ComponentBehavior: Bound`, and delegates declare their model context as `required property ...`. Nested children inside a delegate reach the delegate's own properties through its `id` (for example `dayCell.modelData`), which keeps `qmllint` free of unqualified-access warnings. With the manifest above, `qmllint` is clean apart from a handful of Quickshell/`Qt` type-resolution false positives (`PanelWindow`, `margins {}`, `Qt.CapsLockModifier`, and the `values` property of `UntypedObjectModel`).

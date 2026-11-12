@@ -21,7 +21,6 @@ RowLayout {
   signal sliderMoved(real value)
   property string percentText: ""
 
-  width: parent ? parent.width : 0
   spacing: 10
 
   IconButton {
@@ -33,12 +32,13 @@ RowLayout {
     hoverBorderColour: rowRoot.iconBorderColour
     iconColour: rowRoot.iconColour
     hoverIconColour: rowRoot.iconColour
+    // Without an icon action the icon is read-only, not disabled-looking.
+    disabledIconColour: rowRoot.iconColour
     enabled: rowRoot.iconClickable
     onClicked: rowRoot.iconClicked()
   }
 
   SliderControl {
-    id: slider
     Layout.fillWidth: true
     Layout.alignment: Qt.AlignVCenter
     value: rowRoot.sliderValue
@@ -50,7 +50,6 @@ RowLayout {
   // Fixed, right aligned column sized to 38px so the slider keeps identical
   // length regardless of 1, 2, or 3 digits.
   Text {
-    id: percentLabel
     text: rowRoot.percentText
     color: rowRoot.percentColour
     font.family: Config.monoFont

@@ -3,153 +3,99 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// Collapsible PipeWire output picker used by the Command Centre.
-ColumnLayout {
+// Command Centre output switcher: one chip per PipeWire sink with the current
+// output marked, plus a mixer shortcut. Chips switch with a single click and
+// wrap onto another line when there are many outputs, so the section never
+// reflows the way the old collapsible list did.
+Flow {
   id: root
 
-  property bool expanded: false
+  // Long sink names elide here rather than stretching the chip.
+  property int labelMaxWidth: 150
 
-  readonly property bool available: Config.ccShowSinkSwitcher && AudioService.audioSinks.length > 0
-
-  visible: root.available
+  visible: Config.ccShowSinkSwitcher && AudioService.audioSinks.length > 0
   Layout.fillWidth: true
-  spacing: 4
+  spacing: 6
 
-  // Audio Output Sink Selector Pill
-  Pill {
-    Layout.fillWidth: true
-    pillHeight: 26
-    radius: Config.itemRadiusSm
-    baseColour: Colours.bgSubtle
-    hoverColour: Colours.bgRaised
-    hoverHighlight: true
-    border.color: root.expanded ? Colours.accent : Colours.border
-    clickable: true
-    onClicked: root.expanded = !root.expanded
+  Repeater {
+    model: AudioService.audioSinks
 
-    RowLayout {
-      anchors.fill: parent
-      anchors.leftMargin: 10
-      anchors.rightMargin: 10
-      spacing: 8
+    delegate: Pill {
+      id: sinkChip
+      required property var modelData
 
-      Text {
-        text: "󰓃"
-        color: root.expanded ? Colours.accent : Colours.fgDim
-        font.family: Config.monoFont
-        font.pixelSize: Config.iconSizeSm
-        Layout.alignment: Qt.AlignVCenter
-      }
+      readonly property bool isCurrent: AudioService.audioSink !== null && modelData.id === AudioService.audioSink.id
 
-      Text {
-        Layout.fillWidth: true
-        text: AudioService.audioSink ? AudioService.sinkDisplayName(AudioService.audioSink) : "Default Output"
-        color: Colours.fg
-        font.family: Config.sansFont
-        font.pixelSize: Config.fontSizeSm
-        elide: Text.ElideRight
-        Layout.alignment: Qt.AlignVCenter
-      }
-
-      Text {
-        text: root.expanded ? "󰅃" : "󰅀"
-        color: root.expanded ? Colours.accent : Colours.fgDim
-        font.family: Config.monoFont
-        font.pixelSize: Config.iconSizeSm
-        Layout.alignment: Qt.AlignVCenter
-      }
-    }
-  }
-
-  // Expandable Audio Output Sink List
-  ColumnLayout {
-    visible: root.expanded
-    Layout.fillWidth: true
-    spacing: 4
-
-    Repeater {
-      model: AudioService.audioSinks
-
-      delegate: Pill {
-        id: outputPill
-        required property var modelData
-        readonly property bool isCurrent: AudioService.audioSink !== null && modelData.id === AudioService.audioSink.id
-
-        Layout.fillWidth: true
-        pillHeight: 28
-        radius: Config.itemRadiusSm
-        baseColour: outputPill.isCurrent ? Colours.bgSubtle : "transparent"
-        hoverColour: Colours.bgSubtle
-        hoverHighlight: true
-        border.color: outputPill.isCurrent ? Colours.accent : "transparent"
-        clickable: true
-        onClicked: {
-          AudioService.selectAudioSink(outputPill.modelData)
-          root.expanded = false
-        }
-
-        RowLayout {
-          anchors.fill: parent
-          anchors.leftMargin: 10
-          anchors.rightMargin: 10
-          spacing: 8
-
-          Text {
-            text: outputPill.isCurrent ? "󰄬" : "󰓃"
-            color: outputPill.isCurrent ? Colours.accent : Colours.fgDim
-            font.family: Config.monoFont
-            font.pixelSize: Config.iconSizeSm
-            Layout.alignment: Qt.AlignVCenter
-          }
-
-          Text {
-            Layout.fillWidth: true
-            text: AudioService.sinkDisplayName(outputPill.modelData)
-            color: outputPill.isCurrent ? Colours.fg : Colours.fgMid
-            font.family: Config.sansFont
-            font.pixelSize: Config.fontSizeSm
-            font.bold: outputPill.isCurrent
-            elide: Text.ElideRight
-            Layout.alignment: Qt.AlignVCenter
-          }
-        }
-      }
-    }
-
-    Pill {
-      id: outputMixerPill
-      Layout.fillWidth: true
-      pillHeight: 24
-      radius: Config.itemRadiusSm
-      baseColour: "transparent"
+      pillHeight: 26
+      baseColour: sinkChip.isCurrent ? Colours.bgSubtle : "transparent"
       hoverColour: Colours.bgSubtle
-      hoverHighlight: true
-      border.color: "transparent"
-      clickable: true
-      onClicked: {
-        AudioService.openMixer()
-        Config.commandCentreVisible = false
-      }
+      // The current output is a status indicator, so it does not react to the
+      // pointer and cannot be re-selected.
+      hoverHighlight: !sinkChip.isCurrent
+      border.color: (sinkChip.isCurrent || sinkChip.hovered) ? Colours.accent : Colours.border
+      clickable: !sinkChip.isCurrent
+      onClicked: AudioService.selectAudioSink(sinkChip.modelData)
 
       Row {
         anchors.centerIn: parent
-        spacing: 6
+        spacing: 5
 
         Text {
-          text: "󰒓"
-          color: outputMixerPill.hovered ? Colours.accent : Colours.fgDim
+          text: sinkChip.isCurrent ? "󰄬" : "󰓃"
+          color: sinkChip.isCurrent ? Colours.accent : Colours.fgDim
           font.family: Config.monoFont
           font.pixelSize: Config.iconSizeSm
           anchors.verticalCenter: parent.verticalCenter
         }
 
         Text {
-          text: "Open Audio Mixer"
-          color: outputMixerPill.hovered ? Colours.fg : Colours.fgMid
+          text: AudioService.sinkLabel(sinkChip.modelData)
+          color: sinkChip.isCurrent ? Colours.fg : Colours.fgMid
           font.family: Config.sansFont
-          font.pixelSize: Config.fontSizeXs
+          font.pixelSize: Config.fontSizeSm
+          font.bold: sinkChip.isCurrent
+          elide: Text.ElideRight
+          maximumLineCount: 1
+          width: Math.min(implicitWidth, root.labelMaxWidth)
           anchors.verticalCenter: parent.verticalCenter
         }
+      }
+    }
+  }
+
+  Pill {
+    id: mixerChip
+
+    pillHeight: 26
+    baseColour: "transparent"
+    hoverColour: Colours.bgSubtle
+    hoverHighlight: true
+    border.color: mixerChip.hovered ? Colours.accent : Colours.border
+    clickable: true
+    onClicked: {
+      // The panel would cover the mixer window.
+      Config.commandCentreVisible = false
+      AudioService.openMixer()
+    }
+
+    Row {
+      anchors.centerIn: parent
+      spacing: 5
+
+      Text {
+        text: "󰒓"
+        color: mixerChip.hovered ? Colours.accent : Colours.fgDim
+        font.family: Config.monoFont
+        font.pixelSize: Config.iconSizeSm
+        anchors.verticalCenter: parent.verticalCenter
+      }
+
+      Text {
+        text: "Mixer"
+        color: mixerChip.hovered ? Colours.fg : Colours.fgMid
+        font.family: Config.sansFont
+        font.pixelSize: Config.fontSizeSm
+        anchors.verticalCenter: parent.verticalCenter
       }
     }
   }

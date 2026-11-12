@@ -3,6 +3,9 @@ import QtQuick
 import Quickshell
 import ".."
 
+// One layer window per display that renders the tooltip card. It owns the
+// fade-out grace window, screen-edge clamping, and instant swapping between
+// adjacent widgets.
 PanelWindow {
   id: root
 
@@ -17,40 +20,27 @@ PanelWindow {
   property int edgeOffset: -1
   readonly property int edgeDistance: root.edgeOffset >= 0 ? root.edgeOffset : Config.popupGap
 
-  property var _active: null
+  // Tooltip under the cursor, and the one still on screen while it fades out.
+  property var activeTip: null
+  property var shownTip: null
   property bool recentlyActive: false
-  property var cachedActive: null
-  // True while a tooltip (or its custom content) is on screen.
-  readonly property bool isOpen: root.cachedActive !== null
   property real cardOpacity: 0
 
+  readonly property bool isOpen: root.shownTip !== null
   readonly property bool hovered: tipLoader.item !== null && cardHover.hovered
 
-  on_ActiveChanged: {
-    if (_active !== null) {
+  onActiveTipChanged: {
+    if (activeTip !== null) {
       graceFadeTimer.stop()
       recentTimer.stop()
       fadeTimer.stop()
-      cachedActive = _active
+      shownTip = activeTip
       recentlyActive = true
       cardOpacity = 1
-    } else {
-      if (!root.hovered) {
-        recentTimer.restart()
-        fadeTimer.stop()
-        graceFadeTimer.restart()
-      }
-    }
-  }
-
-  Timer {
-    id: graceFadeTimer
-    interval: Config.popupGraceMs
-    onTriggered: {
-      if (root._active === null && !root.hovered) {
-        root.cardOpacity = 0
-        fadeTimer.restart()
-      }
+    } else if (!root.hovered) {
+      recentTimer.restart()
+      fadeTimer.stop()
+      graceFadeTimer.restart()
     }
   }
 
@@ -59,9 +49,29 @@ PanelWindow {
       graceFadeTimer.stop()
       fadeTimer.stop()
       cardOpacity = 1
-    } else {
-      if (root._active === null) {
-        graceFadeTimer.restart()
+    } else if (root.activeTip === null) {
+      graceFadeTimer.restart()
+    }
+  }
+
+  readonly property int screenW: screenTarget ? screenTarget.width : 1920
+  readonly property int screenH: screenTarget ? screenTarget.height : 1080
+  readonly property int cardW: root.shownTip
+    ? (root.shownTip.contentWidth > 0 ? root.shownTip.contentWidth : root.shownTip.maxWidth)
+    : 1
+  readonly property int cardH: (tipLoader.item && tipLoader.item.height > 0)
+    ? Math.ceil(tipLoader.item.height)
+    : 1
+
+  // The grace window lets the cursor cross the gap to the card without the
+  // tooltip flickering closed; the fade timer then releases the card.
+  Timer {
+    id: graceFadeTimer
+    interval: Config.popupGraceMs
+    onTriggered: {
+      if (root.activeTip === null && !root.hovered) {
+        root.cardOpacity = 0
+        fadeTimer.restart()
       }
     }
   }
@@ -76,7 +86,7 @@ PanelWindow {
     id: fadeTimer
     interval: Config.popupFadeMs
     onTriggered: {
-      root.cachedActive = null
+      root.shownTip = null
       Qt.callLater(gc)
     }
   }
@@ -95,8 +105,8 @@ PanelWindow {
     graceFadeTimer.stop()
     recentTimer.stop()
     fadeTimer.stop()
-    root._active = tooltip
-    root.cachedActive = tooltip
+    root.activeTip = tooltip
+    root.shownTip = tooltip
     root.recentlyActive = true
     root.cardOpacity = 1
   }
@@ -104,21 +114,12 @@ PanelWindow {
   function closeNow() {
     graceFadeTimer.stop()
     fadeTimer.stop()
-    root._active = null
+    root.activeTip = null
     root.cardOpacity = 0
-    root.cachedActive = null
+    root.shownTip = null
     root.recentlyActive = false
     Qt.callLater(gc)
   }
-
-  readonly property int screenW: screenTarget ? screenTarget.width : 1920
-  readonly property int screenH: screenTarget ? screenTarget.height : 1080
-  readonly property int cardW: root.cachedActive
-    ? (root.cachedActive.contentWidth > 0 ? root.cachedActive.contentWidth : root.cachedActive.maxWidth)
-    : 1
-  readonly property int cardH: (tipLoader.item && tipLoader.item.height > 0)
-    ? Math.ceil(tipLoader.item.height)
-    : 1
 
   anchors {
     top: true
@@ -126,6 +127,7 @@ PanelWindow {
     left: root.barSide !== "right"
     right: root.barSide === "right"
   }
+
   margins {
     top: root.barSide === "top"
       ? (Config.barHeight + 6)
@@ -135,6 +137,7 @@ PanelWindow {
       : (root.barSide === "left" ? root.edgeDistance : 0)
     right: root.barSide === "right" ? root.edgeDistance : 0
   }
+
   implicitWidth: root.cardW
   implicitHeight: root.cardH
 
@@ -143,11 +146,7 @@ PanelWindow {
     width: root.cardW
     opacity: root.cardOpacity
 
-    HoverHandler {
-      id: cardHover
-    }
-
-    readonly property var src: root.cachedActive
+    readonly property var src: root.shownTip
 
     readonly property real targetCentreY: {
       if (!src || !src.target) return 0
@@ -163,59 +162,14 @@ PanelWindow {
 
     sourceComponent: src ? (src.contentComponent ? src.contentComponent : defaultCard) : null
 
+    HoverHandler {
+      id: cardHover
+    }
+
     Component {
       id: defaultCard
-      Card {
-        id: card
-        width: parent ? parent.width : 0
-        height: content.implicitHeight + Config.popupContentMargins * 2
-        cardRadius: Config.popupRadius
-        cardColour: Colours.bg
-
-        property var _src: root.cachedActive
-
-        Column {
-          id: content
-          anchors.left: parent.left
-          anchors.right: parent.right
-          anchors.top: parent.top
-          anchors.margins: Config.popupContentMargins
-          spacing: Config.popupContentSpacing
-
-          Row {
-            spacing: 8
-            Text {
-              text: card._src ? card._src.icon : ""
-              color: card._src ? card._src.iconColour : Colours.fg
-              font.family: Config.monoFont
-              font.pixelSize: 19
-              anchors.verticalCenter: parent.verticalCenter
-            }
-            Text {
-              text: card._src ? card._src.title : ""
-              color: Colours.fg
-              font.family: Config.sansFont
-              font.pixelSize: Config.fontSizeLg
-              anchors.verticalCenter: parent.verticalCenter
-            }
-          }
-
-          Divider {
-            visible: card._src ? card._src.details.length > 0 : false
-            width: parent.width
-          }
-
-          Repeater {
-            model: card._src ? card._src.details : []
-            delegate: Text {
-              required property var modelData
-              text: modelData
-              color: Colours.fgMid
-              font.family: Config.sansFont
-              font.pixelSize: Config.fontSizeMd
-            }
-          }
-        }
+      TooltipCard {
+        tooltip: root.shownTip
       }
     }
   }

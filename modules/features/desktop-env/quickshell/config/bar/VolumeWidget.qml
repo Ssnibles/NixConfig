@@ -9,10 +9,8 @@ Pill {
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
 
-  readonly property real volPct: AudioService.volume
-  readonly property bool volMuted: AudioService.muted
-  readonly property string volIcon: AudioService.volumeIcon
-  readonly property int volPercent: AudioService.volumePercent
+  // Mute is signalled by colour, so the numeric level stays readable.
+  readonly property color levelColour: AudioService.muted ? Colours.red : Colours.accent
 
   hoverHighlight: true
   clickable: true
@@ -33,24 +31,21 @@ Pill {
   }
 
   Tooltip {
-    id: volTooltip
     target: root
     sharedWindow: root.sharedWindow
-    icon: root.volIcon
-    iconColour: root.volMuted ? Colours.red : Colours.accent
-    title: root.volMuted ? "Muted" : ("Volume " + root.volPercent + "%")
+    icon: AudioService.volumeIcon
+    iconColour: root.levelColour
+    title: AudioService.muted ? "Muted" : ("Volume " + AudioService.volumePercent + "%")
     details: ["Left click · Mute", "Right click · Mixer", "Scroll · Adjust"]
   }
 
-  // Vertical layout for sidebar
+  // Side bar: vertical level track above the icon and percentage.
   Column {
-    id: volLayout
     visible: !root.horizontal
     anchors.centerIn: parent
     spacing: 4
 
     Item {
-      id: volTrackContainer
       width: 12
       height: Config.volBarHeight
       anchors.horizontalCenter: parent.horizontalCenter
@@ -59,18 +54,18 @@ Pill {
         anchors.fill: parent
         radius: 4
         color: Colours.bgSubtle
-        border.color: trackMouse.containsMouse ? (root.volMuted ? Colours.red : Colours.accent) : "transparent"
         border.width: 1
+        border.color: trackMouse.containsMouse ? root.levelColour : "transparent"
 
         Rectangle {
           anchors.bottom: parent.bottom
           anchors.left: parent.left
           anchors.right: parent.right
-          height: parent.height * Math.min(1.0, root.volPct)
+          height: parent.height * Math.min(1.0, AudioService.volume)
           radius: 4
-          color: root.volMuted ? Colours.red : Colours.accent
-          Behavior on height { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
-          Behavior on color { ColorAnimation { duration: 150 } }
+          color: root.levelColour
+          Behavior on height { NumberAnimation { duration: Config.animSmoothMs; easing.type: Easing.OutQuad } }
+          Behavior on color { ColorAnimation { duration: Config.animSmoothMs } }
         }
       }
 
@@ -84,13 +79,9 @@ Pill {
           AudioService.setVolume((parent.height - mouseY) / parent.height)
         }
 
-        onPressed: function(mouse) {
-          updateVolume(mouse.y)
-        }
+        onPressed: function(mouse) { updateVolume(mouse.y) }
         onPositionChanged: function(mouse) {
-          if (pressed) {
-            updateVolume(mouse.y)
-          }
+          if (pressed) updateVolume(mouse.y)
         }
         onWheel: function(wheel) {
           AudioService.stepVolume(wheel.angleDelta.y)
@@ -101,42 +92,39 @@ Pill {
 
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
-      text: root.volIcon
-      color: root.volMuted ? Colours.red : Colours.fg
+      text: AudioService.volumeIcon
+      color: AudioService.muted ? Colours.red : Colours.fg
       font.family: root.uiFont
       font.pixelSize: 15
     }
 
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
-      text: root.volPercent + "%"
-      color: root.volMuted ? Colours.red : Colours.fgMid
+      text: AudioService.volumePercent + "%"
+      color: AudioService.muted ? Colours.red : Colours.fgMid
       font.family: root.uiFont
       font.pixelSize: 11
     }
   }
 
-  // Horizontal layout for topbar
+  // Top bar: icon beside the percentage.
   Row {
-    id: horizontalRow
     visible: root.horizontal
     anchors.centerIn: parent
     spacing: 6
 
     Text {
-      text: root.volIcon
-      color: root.volMuted ? Colours.red : Colours.accent
+      text: AudioService.volumeIcon
+      color: root.levelColour
       font.family: root.uiFont
       font.pixelSize: 14
       anchors.verticalCenter: parent.verticalCenter
     }
 
     Text {
-      // Numeric even when muted - the red tint marks mute, no wording. Plain
-      // implicit width here: unlike the card and the OSD, this is a bar pill
-      // that should hug its content rather than hold a fixed label column.
-      text: root.volPercent + "%"
-      color: root.volMuted ? Colours.red : Colours.fg
+      // The bar pill hugs its content rather than reserving a label column.
+      text: AudioService.volumePercent + "%"
+      color: AudioService.muted ? Colours.red : Colours.fg
       font.family: root.uiFont
       font.pixelSize: 12
       font.bold: true

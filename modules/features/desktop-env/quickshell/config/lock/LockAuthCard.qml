@@ -36,7 +36,7 @@ Card {
     root.capsLockOn = (modifiers & Qt.CapsLockModifier) !== 0
   }
 
-  Layout.fillWidth: true
+  // 20px top margin plus 16px of breathing room below the last row.
   implicitHeight: authCol.implicitHeight + 36
   borderColour: root.errorMessage !== "" ? Colours.red : Colours.border
 
@@ -111,7 +111,6 @@ Card {
 
     // Password Input Pill Box Container
     Rectangle {
-      id: inputCard
       Layout.fillWidth: true
       height: 48
       radius: Config.lockInputRadius
@@ -145,7 +144,6 @@ Card {
           transformOrigin: Item.Center
 
           NumberAnimation {
-            id: spinAnim
             target: authIcon
             property: "rotation"
             from: 0
@@ -217,7 +215,6 @@ Card {
 
         // Reveal Password Toggle Button
         IconButton {
-          id: revealBtn
           Layout.alignment: Qt.AlignVCenter
           buttonSize: 32
           visible: root.enteredPassword.length > 0
@@ -233,7 +230,6 @@ Card {
 
         // Submit Button Pill
         IconButton {
-          id: submitBtn
           Layout.alignment: Qt.AlignVCenter
           buttonSize: 32
           icon: "󰁔"

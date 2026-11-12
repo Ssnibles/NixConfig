@@ -8,7 +8,7 @@ import ".."
 
 // System tray widget (StatusNotifierItem / SNI) supporting both horizontal
 // top bars and vertical sidebars. Ingests centralised tray state from
-// SystemService so multi-monitor bars share a single event-driven model.
+// TrayService so multi-monitor bars share a single event-driven model.
 Pill {
   id: root
 
@@ -72,7 +72,7 @@ Pill {
             || Utils.prettifyAppName(trayDelegate.modelData.id)
             || "Application"
         }
-        readonly property bool menuActive: root.sharedWindow !== null && root.sharedWindow.cachedActive === trayTip
+        readonly property bool menuActive: root.sharedWindow !== null && root.sharedWindow.shownTip === trayTip
 
         Layout.preferredWidth: Config.trayButtonSize
         Layout.preferredHeight: Config.trayButtonSize
@@ -127,7 +127,6 @@ Pill {
         }
 
         MouseArea {
-          id: itemMouse
           anchors.fill: parent
           cursorShape: Qt.PointingHandCursor
           acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton

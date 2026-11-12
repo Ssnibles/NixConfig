@@ -10,12 +10,9 @@ Pill {
   property PanelWindow sharedWindow: null
   property string uiFont: Config.monoFont
 
-  // Centralised MPRIS State from MediaService
-  readonly property bool isPlaying: MediaService.isPlaying
-  readonly property string mediaText: MediaService.mediaText
-  readonly property bool hasMedia: MediaService.hasMedia
+  readonly property int maxTextWidth: 200
 
-  visible: root.hasMedia
+  visible: MediaService.hasMedia
   hoverHighlight: true
   clickable: true
   acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -41,12 +38,11 @@ Pill {
   }
 
   Tooltip {
-    id: mediaTooltip
     target: root
     sharedWindow: root.sharedWindow
     contentWidth: Config.mediaPopupWidth
     contentComponent: mediaPopoverComponent
-    onHoveredChanged: MediaService.setConsumer("barMedia-" + String(root), mediaTooltip.hovered)
+    onHoveredChanged: MediaService.setConsumer("barMedia-" + String(root), hovered)
   }
   Component.onDestruction: MediaService.setConsumer("barMedia-" + String(root), false)
 
@@ -54,7 +50,6 @@ Pill {
     id: mediaPopoverComponent
 
     MediaCard {
-      id: popoverCard
       width: parent ? parent.width : Config.mediaPopupWidth
       cardColour: Colours.bg
       cardRadius: Config.popupRadius
@@ -73,8 +68,8 @@ Pill {
 
     Text {
       anchors.centerIn: parent
-      text: root.isPlaying ? "󰎈" : "󰎆"
-      color: root.isPlaying ? Colours.accent : Colours.fgDim
+      text: MediaService.isPlaying ? "󰎈" : "󰎆"
+      color: MediaService.isPlaying ? Colours.accent : Colours.fgDim
       font.pixelSize: spinner.fontPx
       font.bold: true
       font.family: root.uiFont
@@ -85,13 +80,12 @@ Pill {
       from: 0
       to: 360
       duration: Config.mediaRotationDuration
-      running: spinner.active && Config.animateMediaIcon && root.visible && root.isPlaying
+      running: spinner.active && Config.animateMediaIcon && root.visible && MediaService.isPlaying
     }
   }
 
-  // UI Layout (Vertical for Sidebar)
+  // Side bar: spinner above the stacked elapsed / total time.
   Column {
-    id: mediaLayout
     visible: !root.horizontal
     spacing: 6
     anchors.centerIn: parent
@@ -103,16 +97,13 @@ Pill {
       anchors.horizontalCenter: parent.horizontalCenter
     }
 
-    // Position indicator (elapsed / total stacked vertically)
     Column {
-      id: positionCol
       anchors.horizontalCenter: parent.horizontalCenter
       spacing: 1
 
       Text {
-        id: elapsedLabel
         anchors.horizontalCenter: parent.horizontalCenter
-        text: !root.horizontal ? Utils.formatTime(Math.round(MediaService.estimatedPosition)) : ""
+        text: Utils.formatTime(Math.round(MediaService.estimatedPosition))
         color: Colours.fgMid
         font.family: root.uiFont
         font.pixelSize: 11
@@ -120,10 +111,9 @@ Pill {
       }
 
       Text {
-        id: totalLabel
-        visible: !root.horizontal && MediaService.hasPlayer && MediaService.lastLength > 0
+        visible: MediaService.hasPlayer && MediaService.lastLength > 0
         anchors.horizontalCenter: parent.horizontalCenter
-        text: !root.horizontal ? Utils.formatTime(Math.round(MediaService.lastLength)) : ""
+        text: Utils.formatTime(Math.round(MediaService.lastLength))
         color: Colours.fgDim
         font.family: root.uiFont
         font.pixelSize: 11
@@ -132,9 +122,8 @@ Pill {
     }
   }
 
-  // UI Layout (Horizontal for Topbar)
+  // Top bar: spinner beside the track label.
   Row {
-    id: horizontalMediaRow
     visible: root.horizontal
     anchors.centerIn: parent
     spacing: 6
@@ -147,13 +136,13 @@ Pill {
     }
 
     Text {
-      text: root.horizontal ? root.mediaText : ""
+      text: MediaService.mediaText
       color: Colours.fg
       font.family: Config.sansFont
       font.pixelSize: 12
       elide: Text.ElideRight
       maximumLineCount: 1
-      width: Math.min(implicitWidth, 200)
+      width: Math.min(implicitWidth, root.maxTextWidth)
       anchors.verticalCenter: parent.verticalCenter
     }
   }

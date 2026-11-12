@@ -3,7 +3,7 @@ import QtQuick
 import ".."
 
 // Single notification card rendered by NotificationOverlay (live toasts) and
-// CommandCentre (notification history). Consumes normalized items produced by
+// CommandCentre (notification history). Consumes normalised items produced by
 // NotificationService directly via `model`.
 Card {
   id: root
@@ -228,7 +228,6 @@ Card {
           onClicked: NotificationService.invokeAction(root.uid, actionBtn.modelData, root.isHistory)
 
           Text {
-            id: actionText
             anchors.centerIn: parent
             text: actionBtn.modelData.text || actionBtn.modelData.identifier
             font.pixelSize: Config.fontSizeXs

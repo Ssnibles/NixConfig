@@ -52,6 +52,14 @@ Singleton {
     return node.description || node.nickname || node.name || ("Output " + node.id)
   }
 
+  // Short label for places where the full description is too long. PipeWire's
+  // nickname drops the trailing "Analog Stereo": "DAWN PRO2" rather than
+  // "DAWN PRO2 Analog Stereo".
+  function sinkLabel(node) {
+    if (!node) return "Audio Output"
+    return node.nickname || root.sinkDisplayName(node)
+  }
+
   function selectAudioSink(node) {
     if (node) {
       Pipewire.preferredDefaultAudioSink = node

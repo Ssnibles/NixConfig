@@ -2,6 +2,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import ".."
 
+// Hover trigger for the shared tooltip layer. Nest one inside a widget and pass
+// its `sharedWindow`; override `contentComponent` to render a custom card.
 Item {
   id: root
 
@@ -17,32 +19,47 @@ Item {
   property var sharedWindow: null
 
   readonly property bool hovered: _hoverHandler.hovered
-  readonly property bool tipVisible: root.hovered && _ready
+  readonly property bool tipVisible: root.hovered && root._ready
+
+  property bool _ready: false
 
   anchors.fill: parent
 
   HoverHandler { id: _hoverHandler }
 
+  Timer {
+    id: _delayTimer
+    interval: root.showDelay
+    onTriggered: root._ready = true
+  }
+
   onHoveredChanged: {
     // Without a window to render into there is nothing to show.
     if (root.hovered && root.sharedWindow) {
+      // Swapping between adjacent widgets skips the delay.
       if (root.sharedWindow.recentlyActive) {
-        _ready = true
+        root._ready = true
       } else {
         _delayTimer.restart()
       }
     } else {
       _delayTimer.stop()
-      _ready = false
+      root._ready = false
     }
   }
 
   onTipVisibleChanged: {
-    if (!sharedWindow) return
-    if (tipVisible) {
-      sharedWindow._active = root
-    } else if (sharedWindow._active === root) {
-      sharedWindow._active = null
+    if (!root.sharedWindow) return
+    if (root.tipVisible) {
+      root.sharedWindow.activeTip = root
+    } else if (root.sharedWindow.activeTip === root) {
+      root.sharedWindow.activeTip = null
+    }
+  }
+
+  Component.onDestruction: {
+    if (root.sharedWindow && root.sharedWindow.activeTip === root) {
+      root.sharedWindow.activeTip = null
     }
   }
 
@@ -60,13 +77,5 @@ Item {
     if (root.sharedWindow) {
       root.sharedWindow.closeNow()
     }
-  }
-
-  property bool _ready: false
-
-  Timer {
-    id: _delayTimer
-    interval: root.showDelay
-    onTriggered: root._ready = true
   }
 }

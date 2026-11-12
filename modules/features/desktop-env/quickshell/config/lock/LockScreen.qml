@@ -17,7 +17,7 @@ Scope {
   property int shakeTrigger: 0
   property string pendingPassword: ""
   property string enteredPassword: ""
-  // Guards against a tight start→fail→start loop if PAM keeps erroring without
+  // Guards against a tight start, fail, start loop if PAM keeps erroring without
   // user input. Reset on every user-initiated submit and on a successful unlock.
   property int _authRestarts: 0
   readonly property int _maxAuthRestarts: 5
@@ -154,7 +154,6 @@ Scope {
     id: lockComponent
 
     WlSessionLock {
-      id: lockRoot
       locked: true
       onLockStateChanged: {
         if (!locked) {
@@ -264,7 +263,6 @@ Scope {
 
           // Wallpaper background layer (configurable via Config.lockWallpaperPath)
           Image {
-            id: lockBgImage
             anchors.fill: parent
             source: Config.lockWallpaperPath
             asynchronous: true
@@ -306,13 +304,12 @@ Scope {
             width: Math.min(parent.width - 40, Config.lockCardWidth)
             spacing: 24
 
-            // TIME & DATE HEADER
+            // Clock and date
             Column {
               Layout.alignment: Qt.AlignHCenter
               spacing: 4
 
               Text {
-                id: clockText
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: surface.currentTimeStr
                 color: Colours.fg
@@ -347,7 +344,7 @@ Scope {
               onBackgroundFocusRequested: mainBg.forceActiveFocus()
             }
 
-            // BOTTOM SYSTEM POWER CONTROLS
+            // Power actions
             PowerButtons {
               Layout.fillWidth: true
               showLock: false

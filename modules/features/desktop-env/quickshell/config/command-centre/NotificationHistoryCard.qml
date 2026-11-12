@@ -10,9 +10,7 @@ Card {
     anchors.margins: 12
     spacing: 10
 
-    // Header Row
     RowLayout {
-      id: notifHeaderRow
       Layout.fillWidth: true
       spacing: 8
 
@@ -46,7 +44,6 @@ Card {
           anchors.verticalCenter: parent.verticalCenter
 
           Text {
-            id: badgeText
             anchors.centerIn: parent
             text: NotificationService.historyModel.count
             color: Colours.fgDim
@@ -76,7 +73,6 @@ Card {
           onClicked: NotificationService.toggleDnd()
 
           Row {
-            id: muteRow
             anchors.centerIn: parent
             spacing: 4
 
@@ -111,7 +107,6 @@ Card {
           onClicked: NotificationService.clearHistory()
 
           Row {
-            id: clearRow
             anchors.centerIn: parent
             spacing: 4
 
@@ -167,7 +162,6 @@ Card {
       }
     }
 
-    // Notification History ListView Container
     Item {
       visible: NotificationService.historyModel.count > 0
       Layout.fillWidth: true

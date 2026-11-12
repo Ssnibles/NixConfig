@@ -205,7 +205,7 @@ Singleton {
     readonly property string notifDefaultFallbackLogo: "preferences-desktop-notification"
     readonly property string notifDefaultFallbackGlyph: "󰂚"
 
-    // App Name / Desktop Entry -> Preferred System Icon override.
+    // App name or desktop entry to preferred system icon override.
     // Apps whose icon name matches their appName or .desktop entry are resolved
     // automatically by NotificationService via Quickshell.iconPath / DesktopEntries.
     readonly property var notifAppIcons: ({

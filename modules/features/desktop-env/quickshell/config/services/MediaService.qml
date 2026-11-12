@@ -220,7 +220,6 @@ Singleton {
   // Position tick: only runs while a surface is showing the time/seek bar and
   // playback is actually advancing. Each tick re-reads the player property.
   Timer {
-    id: tickTimer
     interval: root.tickInterval
     running: root.isConsumerActive && root.isPlaying
     repeat: true
@@ -270,7 +269,7 @@ Singleton {
         var currentPos = root.estimatedPosition
         root.player.seek(targetPos - currentPos)
       }
-      // Setting position triggers a positionChanged -> sample() reading the
+      // Setting position triggers a positionChanged, which samples the
       // target; keep showing it until the player confirms (or the settle timer
       // releases us) so a stale report can't rewind the bar.
       root._seekSettling = true

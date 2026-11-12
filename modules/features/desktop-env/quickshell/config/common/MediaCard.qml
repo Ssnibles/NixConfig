@@ -23,7 +23,6 @@ Card {
   // Keep the position tick alive while the cursor is over the card (covers the
   // bar popover, where the widget's own hover has already ended).
   HoverHandler {
-    id: cardHover
     onHoveredChanged: MediaService.setConsumer("mediaCard-" + String(root), hovered)
   }
   Component.onDestruction: MediaService.setConsumer("mediaCard-" + String(root), false)

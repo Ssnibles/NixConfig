@@ -45,7 +45,6 @@ Singleton {
   }
 
   FileView {
-    id: backlightWatcher
     path: root.backlightDevice !== "" ? ("/sys/class/backlight/" + root.backlightDevice + "/brightness") : ""
     watchChanges: root.backlightDevice !== ""
     onFileChanged: {

@@ -30,6 +30,8 @@ mouse_natural_scrolling = 0
 drag_corner = 4
 
 # Touchpad
+# Start state for the mod+Alt+t toggle. A config reload resets it to this.
+disable_trackpad = 0
 trackpad_natural_scrolling = 1
 trackpad_disable_while_typing = 1
 trackpad_click_method = 2
