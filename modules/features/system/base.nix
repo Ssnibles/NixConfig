@@ -12,6 +12,11 @@
     let
       # Packages allowed despite deprecation or security warnings.
       permittedInsecure = [ ];
+
+      nixpkgsConfig = {
+        allowUnfree = true;
+        permittedInsecurePackages = permittedInsecure;
+      };
     in
     {
       imports = [
@@ -20,32 +25,20 @@
 
       config = {
         nixpkgs = {
-          config = {
-            allowUnfree = true;
-            allowUnfreePredicate = _: true;
-            permittedInsecurePackages = permittedInsecure;
-          };
+          config = nixpkgsConfig;
           overlays = [
             inputs.millennium.overlays.default
             (_: prev: {
-              # Extra channel for packages that need a newer or older release.
-              # Also the system default while nixpkgs follows unstable.
+              # Extra channels for packages that need a newer or older release.
+              # The system default is nixpkgs itself; see flake.nix.
               unstable = import inputs.nixpkgs-unstable {
                 inherit (prev.stdenv.hostPlatform) system;
-                config = {
-                  allowUnfree = true;
-                  allowUnfreePredicate = _: true;
-                  permittedInsecurePackages = permittedInsecure;
-                };
+                config = nixpkgsConfig;
               };
               # Use pkgs.stable.<pkg> if a package breaks on unstable.
               stable = import inputs.nixpkgs-stable {
                 inherit (prev.stdenv.hostPlatform) system;
-                config = {
-                  allowUnfree = true;
-                  allowUnfreePredicate = _: true;
-                  permittedInsecurePackages = permittedInsecure;
-                };
+                config = nixpkgsConfig;
               };
             })
             # nixpkgs builds sesh with Go 1.27, but its mock generation uses
@@ -99,7 +92,6 @@
             text = ''
               {
                 allowUnfree = true;
-                allowUnfreePredicate = _: true;
                 permittedInsecurePackages = [
                   ${lib.concatMapStringsSep "\n    " (pkg: ''"${pkg}"'') permittedInsecure}
                 ];
@@ -199,17 +191,13 @@
         };
 
         hardware.enableRedistributableFirmware = true;
-        services.printing.enable = false;
 
         programs.nh = {
           enable = true;
-          flake = "/home/${config.username}/NixConfig";
+          flake = config.nixos.configRepo;
           clean.enable = true;
           clean.extraArgs = "--keep-since 30d --keep 3";
         };
-
-        nix.optimise.automatic = true;
-        nix.optimise.dates = [ "weekly" ];
 
         # Let prebuilt binaries that are not packaged in Nix run. This covers
         # Android Studio tools, editor debug adapters, game mods, and uv or

@@ -33,19 +33,12 @@
         package = config.boot.kernelPackages.nvidiaPackages.latest;
       };
 
-      hardware.graphics = {
-        enable = true;
-        enable32Bit = true;
-        extraPackages = with pkgs; [
-          nvidia-vaapi-driver
-        ];
-      };
+      hardware.graphics.extraPackages = with pkgs; [
+        nvidia-vaapi-driver
+      ];
 
       # Wayland and VA-API environment for NVIDIA.
       environment.sessionVariables = {
-        # Run Chromium and Electron applications on Wayland.
-        NIXOS_OZONE_WL = "1";
-        ELECTRON_OZONE_PLATFORM_HINT = "auto";
         # Use the NVIDIA drivers for GLX and video decoding.
         __GLX_VENDOR_LIBRARY_NAME = "nvidia";
         LIBVA_DRIVER_NAME = "nvidia";
