@@ -12,7 +12,8 @@
       cfg = config.features.hermes;
 
       model = "qwen2.5:7b";
-      ollamaHost = "100.124.73.101"; # Homeserver Tailscale address.
+      # MagicDNS name is more robust than a fixed Tailscale address.
+      ollamaHost = cfg.ollamaHost;
       ollamaPort = 11434;
 
       hermesLauncher = pkgs.writeShellScriptBin "hermes" ''
@@ -39,10 +40,14 @@
       '';
     in
     {
-      options.features.hermes.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable the Hermes AI agent with local homeserver Ollama integration.";
+      options.features.hermes = {
+        enable = lib.mkEnableOption "the Hermes AI agent with local homeserver Ollama integration";
+
+        ollamaHost = lib.mkOption {
+          type = lib.types.str;
+          default = "homeserver";
+          description = "Hostname or address of the homeserver running Ollama.";
+        };
       };
 
       config = lib.mkIf cfg.enable {
@@ -53,9 +58,8 @@
           pkgs.uv
         ];
 
-        # Run inference on the homeserver to save laptop battery.
-        services.ollama.enable = false;
-
+        # Run inference on the homeserver to save laptop battery. No local
+        # Ollama service is started; the client talks to the homeserver.
         environment.sessionVariables = {
           HERMES_API_TIMEOUT = "1800";
           OPENAI_BASE_URL = "http://${ollamaHost}:${toString ollamaPort}/v1";
