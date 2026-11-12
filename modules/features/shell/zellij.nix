@@ -12,8 +12,9 @@
     }:
     let
       c = config.theme.colours;
+      home = config.users.users.${config.username}.home;
       zellijBin = "${pkgs.zellij}/bin/zellij";
-      fishBin = "${pkgs.unstable.fish}/bin/fish";
+      fishBin = "${pkgs.fish}/bin/fish";
 
       # Plugin permissions are keyed by absolute path, so the config and the
       # permission file below use the same store paths.
@@ -400,7 +401,7 @@
             bg_subtle "#${c.bgSubtle}"
             yellow    "#${c.yellow}"
             teal      "#${c.teal}"
-            home        "/home/${config.username}"
+            home        "${home}"
             zellij_bin  "${zellijBin}"
             yazi_bin    "${pkgs.yazi}/bin/yazi"
             yazi_x      "7%"

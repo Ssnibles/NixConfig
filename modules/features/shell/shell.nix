@@ -11,7 +11,7 @@
       c = config.theme.colours;
     in
     {
-      users.users."${config.username}".shell = pkgs.unstable.fish;
+      users.users."${config.username}".shell = pkgs.fish;
 
       environment.systemPackages = with pkgs; [
         any-nix-shell
@@ -168,7 +168,18 @@
                 if test -d "$repo"
                     cd "$repo"
                     jj git fetch
-                    nh os switch
+                    set -l overrides
+                    if test -d "$HOME/mango/.git"
+                        set -a overrides --override-input mangowc-local "git+file://$HOME/mango"
+                    end
+                    if test -d "$HOME/ytplay/.git"
+                        set -a overrides --override-input ytplay "git+file://$HOME/ytplay"
+                    end
+                    if test (count $overrides) -gt 0
+                        nh os switch -- $overrides
+                    else
+                        nh os switch
+                    end
                 else
                     echo "NixConfig not found at $repo" >&2
                     return 1
@@ -220,7 +231,7 @@
 
       programs.fish = {
         enable = true;
-        package = pkgs.unstable.fish;
+        package = pkgs.fish;
         generateCompletions = false;
 
         shellAbbrs = {
@@ -260,7 +271,7 @@
 
       programs.starship = {
         enable = true;
-        package = pkgs.unstable.starship;
+        package = pkgs.starship;
         settings = {
           add_newline = false;
 

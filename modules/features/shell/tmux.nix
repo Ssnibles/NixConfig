@@ -210,7 +210,7 @@
             bind-key ` send-prefix
 
             # Use Fish as the default shell.
-            set -g default-shell "${pkgs.unstable.fish}/bin/fish"
+            set -g default-shell "${pkgs.fish}/bin/fish"
 
             # Keep tools available to tmux, tmux-fzf, and sesh.
             set-environment -g PATH "/etc/profiles/per-user/${config.username}/bin:/run/current-system/sw/bin:${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.tmux}/bin:${pkgs.sesh}/bin:${pkgs.zoxide}/bin:${pkgs.coreutils}/bin:${pkgs.gnused}/bin:${pkgs.gawk}/bin:${pkgs.findutils}/bin:${pkgs.git}/bin:${pkgs.procps}/bin:${pkgs.wl-clipboard}/bin:${pkgs.jujutsu}/bin:${pkgs.jjui}/bin:$PATH"
@@ -508,7 +508,7 @@
             clobber = true;
             text = ''
               [default_session]
-              startup_command = "${pkgs.unstable.fish}/bin/fish"
+              startup_command = "${pkgs.fish}/bin/fish"
             '';
           };
         };
