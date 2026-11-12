@@ -43,7 +43,7 @@ Pill {
           ? (Config.trayExpanded ? "󰅂" : "󰅁")
           : (Config.trayExpanded ? "󰅃" : "󰅀")
         color: Config.trayExpanded ? Colours.accent : Colours.fgDim
-        font.family: Config.monoFont
+        font.family: Session.monoFont
         font.pixelSize: 12
       }
 

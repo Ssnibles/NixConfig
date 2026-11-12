@@ -12,7 +12,7 @@ RowLayout {
   property bool canPrevious: false
   property bool canNext: false
   property bool isPlaying: false
-  property string uiFont: Config.monoFont
+  property string uiFont: Session.monoFont
 
   signal previousClicked()
   signal playPauseClicked()

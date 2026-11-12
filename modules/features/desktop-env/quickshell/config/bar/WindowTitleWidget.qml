@@ -6,7 +6,7 @@ Item {
   id: root
 
   property string titleText: WmService.currentTitle
-  property string uiFont: Config.monoFont
+  property string uiFont: Session.monoFont
   property color textColour: Colours.fgMid
   property int fontSize: Config.fontSizeMd
   property real targetRotation: horizontal ? 0 : 270

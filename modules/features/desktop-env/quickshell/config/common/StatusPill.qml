@@ -15,14 +15,14 @@ Pill {
   property string icon: ""
   property color iconColour: Colours.fg
   property int iconSize: Config.iconSizeSm
-  property string iconFont: Config.monoFont
+  property string iconFont: Session.monoFont
 
   property string label: ""
   // The label is only meaningful in the horizontal layout.
   property bool showLabel: root.horizontal
   property color labelColour: Colours.fg
   property int labelSize: Config.fontSizeSm
-  property string labelFont: Config.sansFont
+  property string labelFont: Session.sansFont
   property bool labelBold: false
   property real labelMaxWidth: 0
 

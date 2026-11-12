@@ -130,7 +130,7 @@ Scope {
           Text {
             text: SystemService.osdIcon
             color: panel.activeAccent
-            font.family: Config.monoFont
+            font.family: Session.monoFont
             font.pixelSize: Config.iconSizeLg
             Layout.alignment: Qt.AlignVCenter
             Behavior on color { ColorAnimation { duration: Config.animFastMs } }
@@ -164,7 +164,7 @@ Scope {
             id: osdLabelText
             text: SystemService.osdLabel
             color: SystemService.osdMuted ? Colours.red : Colours.fg
-            font.family: Config.monoFont
+            font.family: Session.monoFont
             font.pixelSize: Config.fontSizeMd
             font.bold: true
             Layout.minimumWidth: osdRow.labelColumnWidth

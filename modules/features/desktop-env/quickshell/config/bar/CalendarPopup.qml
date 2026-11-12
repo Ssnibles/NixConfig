@@ -7,7 +7,7 @@ import ".."
 Card {
   id: root
 
-  property string uiFont: Config.monoFont
+  property string uiFont: Session.monoFont
 
   cardColour: Colours.bg
   cardRadius: Config.popupRadius

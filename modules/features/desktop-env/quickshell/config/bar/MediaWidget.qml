@@ -8,7 +8,7 @@ Pill {
   id: root
 
   property PanelWindow sharedWindow: null
-  property string uiFont: Config.monoFont
+  property string uiFont: Session.monoFont
 
   readonly property int maxTextWidth: 200
 
@@ -138,7 +138,7 @@ Pill {
     Text {
       text: MediaService.mediaText
       color: Colours.fg
-      font.family: Config.sansFont
+      font.family: Session.sansFont
       font.pixelSize: 12
       elide: Text.ElideRight
       maximumLineCount: 1

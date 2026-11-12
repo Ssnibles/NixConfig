@@ -43,7 +43,7 @@ Flow {
         Text {
           text: sinkChip.isCurrent ? "󰄬" : "󰓃"
           color: sinkChip.isCurrent ? Colours.accent : Colours.fgDim
-          font.family: Config.monoFont
+          font.family: Session.monoFont
           font.pixelSize: Config.iconSizeSm
           anchors.verticalCenter: parent.verticalCenter
         }
@@ -51,7 +51,7 @@ Flow {
         Text {
           text: AudioService.sinkLabel(sinkChip.modelData)
           color: sinkChip.isCurrent ? Colours.fg : Colours.fgMid
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: Config.fontSizeSm
           font.bold: sinkChip.isCurrent
           elide: Text.ElideRight
@@ -85,7 +85,7 @@ Flow {
       Text {
         text: "󰒓"
         color: mixerChip.hovered ? Colours.accent : Colours.fgDim
-        font.family: Config.monoFont
+        font.family: Session.monoFont
         font.pixelSize: Config.iconSizeSm
         anchors.verticalCenter: parent.verticalCenter
       }
@@ -93,7 +93,7 @@ Flow {
       Text {
         text: "Mixer"
         color: mixerChip.hovered ? Colours.fg : Colours.fgMid
-        font.family: Config.sansFont
+        font.family: Session.sansFont
         font.pixelSize: Config.fontSizeSm
         anchors.verticalCenter: parent.verticalCenter
       }

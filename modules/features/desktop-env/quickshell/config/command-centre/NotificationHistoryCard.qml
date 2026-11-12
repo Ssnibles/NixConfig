@@ -21,7 +21,7 @@ Card {
         Text {
           text: NotificationService.dnd ? "󰂛" : "󰂚"
           color: NotificationService.dnd ? Colours.red : Colours.accent
-          font.family: Config.monoFont
+          font.family: Session.monoFont
           font.pixelSize: 17
           anchors.verticalCenter: parent.verticalCenter
         }
@@ -29,7 +29,7 @@ Card {
         Text {
           text: "Notifications"
           color: Colours.fg
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: Config.fontSizeLg
           font.bold: true
           anchors.verticalCenter: parent.verticalCenter
@@ -47,7 +47,7 @@ Card {
             anchors.centerIn: parent
             text: NotificationService.historyModel.count
             color: Colours.fgDim
-            font.family: Config.sansFont
+            font.family: Session.sansFont
             font.pixelSize: Config.fontSizeXs
           }
         }
@@ -79,7 +79,7 @@ Card {
             Text {
               text: NotificationService.dnd ? "󰂛" : "󰂚"
               color: NotificationService.dnd ? Colours.bg : (mutePill.hovered ? Colours.red : Colours.fgDim)
-              font.family: Config.monoFont
+              font.family: Session.monoFont
               font.pixelSize: Config.iconSizeSm
               anchors.verticalCenter: parent.verticalCenter
             }
@@ -87,7 +87,7 @@ Card {
             Text {
               text: NotificationService.dnd ? "Muted" : "Mute"
               color: NotificationService.dnd ? Colours.bg : (mutePill.hovered ? Colours.fg : Colours.fgMid)
-              font.family: Config.sansFont
+              font.family: Session.sansFont
               font.pixelSize: Config.fontSizeSm
               anchors.verticalCenter: parent.verticalCenter
             }
@@ -113,7 +113,7 @@ Card {
             Text {
               text: "󰎟"
               color: clearPill.hovered ? Colours.red : Colours.fgDim
-              font.family: Config.monoFont
+              font.family: Session.monoFont
               font.pixelSize: Config.iconSizeSm
               anchors.verticalCenter: parent.verticalCenter
             }
@@ -121,7 +121,7 @@ Card {
             Text {
               text: "Clear"
               color: clearPill.hovered ? Colours.fg : Colours.fgMid
-              font.family: Config.sansFont
+              font.family: Session.sansFont
               font.pixelSize: Config.fontSizeSm
               anchors.verticalCenter: parent.verticalCenter
             }
@@ -147,7 +147,7 @@ Card {
         Text {
           text: "󰂜"
           color: Colours.fgDim
-          font.family: Config.monoFont
+          font.family: Session.monoFont
           font.pixelSize: 22
           anchors.verticalCenter: parent.verticalCenter
         }
@@ -155,7 +155,7 @@ Card {
         Text {
           text: "No notifications"
           color: Colours.fgDim
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: 14
           anchors.verticalCenter: parent.verticalCenter
         }

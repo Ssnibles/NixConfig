@@ -28,7 +28,7 @@ Card {
       Text {
         text: root.tooltip ? root.tooltip.icon : ""
         color: root.tooltip ? root.tooltip.iconColour : Colours.fg
-        font.family: Config.monoFont
+        font.family: Session.monoFont
         font.pixelSize: 19
         anchors.verticalCenter: parent.verticalCenter
       }
@@ -36,7 +36,7 @@ Card {
       Text {
         text: root.tooltip ? root.tooltip.title : ""
         color: Colours.fg
-        font.family: Config.sansFont
+        font.family: Session.sansFont
         font.pixelSize: Config.fontSizeLg
         anchors.verticalCenter: parent.verticalCenter
       }
@@ -54,7 +54,7 @@ Card {
         required property var modelData
         text: modelData
         color: Colours.fgMid
-        font.family: Config.sansFont
+        font.family: Session.sansFont
         font.pixelSize: Config.fontSizeMd
       }
     }

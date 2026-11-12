@@ -36,7 +36,7 @@ Card {
           Text {
             text: ClockService.ccTimeStr
             color: Colours.fg
-            font.family: Config.serifFont
+            font.family: Session.serifFont
             font.letterSpacing: 2
             font.pixelSize: 36
             font.italic: true
@@ -47,7 +47,7 @@ Card {
           Text {
             text: ClockService.ccTime12Str
             color: Colours.fgDim
-            font.family: Config.sansFont
+            font.family: Session.sansFont
             font.pixelSize: Config.fontSizeMd
             Layout.alignment: Qt.AlignBaseline
           }
@@ -56,7 +56,7 @@ Card {
         Text {
           text: ClockService.ccDateStr
           color: Colours.fgDim
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: 14
         }
       }

@@ -52,7 +52,7 @@ RowLayout {
   Text {
     text: rowRoot.percentText
     color: rowRoot.percentColour
-    font.family: Config.monoFont
+    font.family: Session.monoFont
     font.pixelSize: 14
     Layout.minimumWidth: 38
     Layout.preferredWidth: 38

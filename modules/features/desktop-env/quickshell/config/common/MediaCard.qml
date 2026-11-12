@@ -64,7 +64,7 @@ Card {
           visible: !coverArt.ready
           text: "󰎇"
           color: Colours.fgDim
-          font.family: Config.monoFont
+          font.family: Session.monoFont
           font.pixelSize: 22
           font.bold: true
           anchors.centerIn: parent
@@ -114,7 +114,7 @@ Card {
             color: root.hasPlayer ? Colours.fg : Colours.fgDim
             font.bold: true
             font.pixelSize: 15
-            font.family: Config.sansFont
+            font.family: Session.sansFont
             elide: Text.ElideRight
           }
 
@@ -123,7 +123,7 @@ Card {
             text: root.hasPlayer ? (MediaService.trackArtist || "Unknown Artist") : "No artist"
             color: Colours.fgMid
             font.pixelSize: 13
-            font.family: Config.sansFont
+            font.family: Session.sansFont
             elide: Text.ElideRight
           }
 
@@ -153,7 +153,7 @@ Card {
               Text {
                 text: MediaService.playerGlyph
                 color: playerSwitchPill.hovered && playerSwitchPill.canSwitch ? Colours.accent : Colours.fgDim
-                font.family: Config.monoFont
+                font.family: Session.monoFont
                 font.pixelSize: 10
                 anchors.verticalCenter: parent.verticalCenter
               }
@@ -163,7 +163,7 @@ Card {
                   ? (MediaService.playerName + " · " + (MediaService.playerIndex + 1) + "/" + MediaService.playerCount + " 󰁔")
                   : MediaService.playerName
                 color: playerSwitchPill.hovered && playerSwitchPill.canSwitch ? Colours.fg : Colours.fgDim
-                font.family: Config.sansFont
+                font.family: Session.sansFont
                 font.pixelSize: Config.fontSizeXs
                 anchors.verticalCenter: parent.verticalCenter
               }

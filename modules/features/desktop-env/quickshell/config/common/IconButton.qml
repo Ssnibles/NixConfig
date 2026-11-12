@@ -7,7 +7,7 @@ Rectangle {
   id: root
 
   property string icon: ""
-  property string uiFont: Config.monoFont
+  property string uiFont: Session.monoFont
   property int iconSize: Config.iconSizeMd
   property int buttonSize: 28
 

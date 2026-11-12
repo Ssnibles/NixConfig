@@ -119,7 +119,7 @@ Card {
         color: root.isMedia ? Colours.fgDim : (root.urgency === 2 ? Colours.red : Colours.accent)
         font.pixelSize: (root.glyph.length === 1) ? 18 : 20
         font.bold: root.glyph.length === 1
-        font.family: (root.glyph.length === 1) ? Config.sansFont : Config.monoFont
+        font.family: (root.glyph.length === 1) ? Session.sansFont : Session.monoFont
         visible: !iconImage.ready
       }
 
@@ -169,7 +169,7 @@ Card {
         color: root.isMedia ? Colours.teal : (root.urgency === 2 ? Colours.red : Colours.accent)
         font.bold: true
         font.pixelSize: root.isMedia ? 12 : 13
-        font.family: Config.sansFont
+        font.family: Session.sansFont
         elide: Text.ElideRight
       }
 
@@ -178,7 +178,7 @@ Card {
         text: root.model.timeStr || ""
         color: Colours.fgDim
         font.pixelSize: 11
-        font.family: Config.sansFont
+        font.family: Session.sansFont
         visible: text !== ""
       }
     }
@@ -189,7 +189,7 @@ Card {
       text: root.model.body || ""
       color: Colours.fg
       font.pixelSize: 13
-      font.family: Config.sansFont
+      font.family: Session.sansFont
       maximumLineCount: root.isMedia ? 1 : Config.notifMaxLines
       elide: Text.ElideRight
       wrapMode: root.isMedia ? Text.NoWrap : Text.Wrap
@@ -202,7 +202,7 @@ Card {
       text: root.model.subtext || ""
       color: Colours.fgMid
       font.pixelSize: 12
-      font.family: Config.sansFont
+      font.family: Session.sansFont
       elide: Text.ElideRight
       visible: text !== ""
     }
@@ -232,7 +232,7 @@ Card {
             text: actionBtn.modelData.text || actionBtn.modelData.identifier
             font.pixelSize: Config.fontSizeXs
             font.bold: true
-            font.family: Config.sansFont
+            font.family: Session.sansFont
             color: actionBtn.hovered ? Colours.accent : Colours.fgMid
           }
         }

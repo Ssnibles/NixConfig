@@ -7,7 +7,7 @@ Pill {
   id: root
 
   property PanelWindow sharedWindow: null
-  property string uiFont: Config.monoFont
+  property string uiFont: Session.monoFont
 
   // Mute is signalled by colour, so the numeric level stays readable.
   readonly property color levelColour: AudioService.muted ? Colours.red : Colours.accent

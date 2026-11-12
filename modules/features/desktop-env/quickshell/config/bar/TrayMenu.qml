@@ -46,7 +46,7 @@ Card {
         visible: actRoot.icon !== ""
         text: actRoot.icon
         color: actRoot.hovered ? actRoot.activeIconColour : actRoot.idleIconColour
-        font.family: Config.monoFont
+        font.family: Session.monoFont
         font.pixelSize: Config.iconSizeSm
         Layout.alignment: Qt.AlignVCenter
       }
@@ -55,7 +55,7 @@ Card {
         Layout.fillWidth: true
         text: actRoot.label
         color: actRoot.hovered ? Colours.fg : actRoot.idleIconColour
-        font.family: Config.sansFont
+        font.family: Session.sansFont
         font.pixelSize: actRoot.textSize
         font.bold: actRoot.isBold
         elide: Text.ElideRight
@@ -101,7 +101,7 @@ Card {
           return checked ? "󰄲" : "󰄱"
         }
         color: entryRoot.entry && entryRoot.entry.checkState === Qt.Checked ? Colours.accent : Colours.fgDim
-        font.family: Config.monoFont
+        font.family: Session.monoFont
         font.pixelSize: Config.iconSizeSm
         Layout.alignment: Qt.AlignVCenter
       }
@@ -110,7 +110,7 @@ Card {
         Layout.fillWidth: true
         text: entryRoot.label
         color: entryRoot.hovered ? Colours.fg : Colours.fgMid
-        font.family: Config.sansFont
+        font.family: Session.sansFont
         font.pixelSize: Config.fontSizeSm
         elide: Text.ElideRight
         Layout.alignment: Qt.AlignVCenter
@@ -120,7 +120,7 @@ Card {
         visible: entryRoot.hasSubmenu
         text: entryRoot.submenuExpanded ? "󰅃" : "󰅂"
         color: Colours.fgDim
-        font.family: Config.monoFont
+        font.family: Session.monoFont
         font.pixelSize: 12
         Layout.alignment: Qt.AlignVCenter
       }
@@ -173,7 +173,7 @@ Card {
           width: parent.width
           text: menuRoot.appTitle
           color: Colours.fg
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: Config.fontSizeMd
           font.bold: true
           elide: Text.ElideRight
@@ -184,7 +184,7 @@ Card {
           width: parent.width
           text: menuRoot.activeItem ? menuRoot.activeItem.tooltipDescription : ""
           color: Colours.fgMid
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: Config.fontSizeXs
           elide: Text.ElideRight
         }
@@ -194,7 +194,7 @@ Card {
           width: parent.width
           text: menuRoot.itemId
           color: Colours.fgDim
-          font.family: Config.monoFont
+          font.family: Session.monoFont
           font.pixelSize: 10
           elide: Text.ElideRight
         }

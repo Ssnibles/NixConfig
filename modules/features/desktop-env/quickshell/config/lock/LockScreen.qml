@@ -313,7 +313,7 @@ Scope {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: surface.currentTimeStr
                 color: Colours.fg
-                font.family: Config.serifFont
+                font.family: Session.serifFont
                 font.pixelSize: 72
                 font.italic: true
                 font.letterSpacing: 2
@@ -323,7 +323,7 @@ Scope {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: surface.currentDateStr
                 color: Colours.fgDim
-                font.family: Config.sansFont
+                font.family: Session.sansFont
                 font.pixelSize: 16
               }
             }

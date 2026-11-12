@@ -25,7 +25,7 @@ RowLayout {
     id: positionText
     text: Utils.formatTime(Math.round(root.position))
     color: Colours.fgDim
-    font.family: Config.sansFont
+    font.family: Session.sansFont
     font.pixelSize: 12
     Layout.minimumWidth: root.timeLabelWidth
     Layout.preferredWidth: root.timeLabelWidth
@@ -46,7 +46,7 @@ RowLayout {
     visible: !root.live
     text: Utils.formatTime(Math.round(root.length))
     color: Colours.fgDim
-    font.family: Config.sansFont
+    font.family: Session.sansFont
     font.pixelSize: 12
     Layout.minimumWidth: root.timeLabelWidth
     Layout.preferredWidth: root.timeLabelWidth
@@ -57,7 +57,7 @@ RowLayout {
     visible: root.live
     text: "● LIVE"
     color: Colours.red
-    font.family: Config.sansFont
+    font.family: Session.sansFont
     font.pixelSize: 11
     font.bold: true
     Layout.fillWidth: true

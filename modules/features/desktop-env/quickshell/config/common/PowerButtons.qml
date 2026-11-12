@@ -65,7 +65,7 @@ RowLayout {
         Text {
           text: buttonDelegate.modelData.icon
           color: hoverArea.containsMouse ? buttonDelegate.modelData.hoverColour : Colours.fg
-          font.family: Config.monoFont
+          font.family: Session.monoFont
           font.pixelSize: 18
           anchors.verticalCenter: parent.verticalCenter
         }
@@ -73,7 +73,7 @@ RowLayout {
         Text {
           text: buttonDelegate.modelData.label
           color: hoverArea.containsMouse ? Colours.fg : Colours.fgMid
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: 13
           anchors.verticalCenter: parent.verticalCenter
         }

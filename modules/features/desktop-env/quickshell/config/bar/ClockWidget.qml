@@ -6,7 +6,7 @@ import ".."
 Item {
   id: root
 
-  property string uiFont: Config.monoFont
+  property string uiFont: Session.monoFont
   property string timeFormat: Config.timeFormat
   readonly property string timeStr: root.timeFormat === Config.timeFormat
     ? ClockService.timeStr

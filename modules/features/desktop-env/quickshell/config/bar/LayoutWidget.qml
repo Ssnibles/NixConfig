@@ -33,7 +33,7 @@ Pill {
     Text {
       text: root.layoutInfo.icon
       color: Colours.accent
-      font.family: Config.monoFont
+      font.family: Session.monoFont
       font.pixelSize: Config.iconSizeSm
       anchors.verticalCenter: parent.verticalCenter
     }
@@ -41,7 +41,7 @@ Pill {
     Text {
       text: root.layoutInfo.name
       color: Colours.fg
-      font.family: Config.sansFont
+      font.family: Session.sansFont
       font.pixelSize: Config.fontSizeSm
       font.weight: Font.Medium
       anchors.verticalCenter: parent.verticalCenter

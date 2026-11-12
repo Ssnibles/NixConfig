@@ -28,7 +28,7 @@ Pill {
   Text {
     text: "󰘳" // Dashboard/Control Centre icon
     color: (root.hovered || Config.commandCentreVisible) ? Colours.accent : Colours.fg
-    font.family: Config.monoFont
+    font.family: Session.monoFont
     font.pixelSize: Config.iconSizeMd
     anchors.centerIn: parent
   }

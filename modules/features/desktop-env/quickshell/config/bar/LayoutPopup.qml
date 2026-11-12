@@ -31,7 +31,7 @@ Card {
       Text {
         text: "󰕰"
         color: Colours.accent
-        font.family: Config.monoFont
+        font.family: Session.monoFont
         font.pixelSize: Config.fontSizeLg
         anchors.verticalCenter: parent.verticalCenter
       }
@@ -40,14 +40,14 @@ Card {
         Text {
           text: "Layout Selection"
           color: Colours.fg
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: Config.fontSizeMd
           font.weight: Font.Bold
         }
         Text {
           text: "MangoWC Window Tiling Mode"
           color: Colours.fgDim
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: 10
         }
       }
@@ -87,7 +87,7 @@ Card {
             Text {
               text: layoutOption.modelData.icon
               color: layoutOption.isCurrent ? Colours.bg : Colours.accent
-              font.family: Config.monoFont
+              font.family: Session.monoFont
               font.pixelSize: Config.iconSizeSm
               anchors.verticalCenter: parent.verticalCenter
             }
@@ -95,7 +95,7 @@ Card {
             Text {
               text: layoutOption.modelData.name
               color: layoutOption.isCurrent ? Colours.bg : Colours.fg
-              font.family: Config.sansFont
+              font.family: Session.sansFont
               font.pixelSize: Config.fontSizeSm
               font.weight: layoutOption.isCurrent ? Font.Bold : Font.Normal
               anchors.verticalCenter: parent.verticalCenter
@@ -106,7 +106,7 @@ Card {
             text: layoutOption.modelData.key ? ("Super+" + layoutOption.modelData.key) : ""
             visible: layoutOption.modelData.key !== ""
             color: layoutOption.isCurrent ? Colours.bgSubtle : Colours.fgDim
-            font.family: Config.monoFont
+            font.family: Session.monoFont
             font.pixelSize: 10
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter

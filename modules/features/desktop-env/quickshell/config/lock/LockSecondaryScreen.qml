@@ -19,7 +19,7 @@ Column {
     anchors.horizontalCenter: parent.horizontalCenter
     text: ClockService.lockTimeStr
     color: Colours.fg
-    font.family: Config.serifFont
+    font.family: Session.serifFont
     font.pixelSize: 72
     font.italic: true
     font.letterSpacing: 1
@@ -29,7 +29,7 @@ Column {
     anchors.horizontalCenter: parent.horizontalCenter
     text: ClockService.lockDateStr
     color: Colours.fgDim
-    font.family: Config.sansFont
+    font.family: Session.sansFont
     font.pixelSize: 18
   }
 
@@ -46,7 +46,7 @@ Column {
       Text {
         text: root.authenticating ? "󱎟" : (root.errorMessage !== "" ? "󰅙" : "󰌾")
         color: root.errorMessage !== "" ? Colours.red : Colours.accent
-        font.family: Config.monoFont
+        font.family: Session.monoFont
         font.pixelSize: 16
         anchors.verticalCenter: parent.verticalCenter
       }
@@ -60,7 +60,7 @@ Column {
                   ? ("Typing (" + root.enteredLength + " characters)...")
                   : "System Locked"))
         color: root.errorMessage !== "" ? Colours.red : (root.enteredLength > 0 ? Colours.fg : Colours.fgDim)
-        font.family: Config.sansFont
+        font.family: Session.sansFont
         font.pixelSize: 15
         anchors.verticalCenter: parent.verticalCenter
       }

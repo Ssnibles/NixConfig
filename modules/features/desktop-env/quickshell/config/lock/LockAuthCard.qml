@@ -74,7 +74,7 @@ Card {
           anchors.centerIn: parent
           text: Config.lockFallbackIcon
           color: Colours.accent
-          font.family: Config.monoFont
+          font.family: Session.monoFont
           font.pixelSize: 32
           visible: !avatarImage.ready
         }
@@ -94,7 +94,7 @@ Card {
         Layout.alignment: Qt.AlignHCenter
         text: Quickshell.env("USER") || "User"
         color: Colours.fg
-        font.family: Config.sansFont
+        font.family: Session.sansFont
         font.pixelSize: 20
         font.bold: true
       }
@@ -104,7 +104,7 @@ Card {
         Layout.alignment: Qt.AlignHCenter
         text: root.errorMessage !== "" ? root.errorMessage : (root.authenticating ? "Authenticating..." : "System Locked")
         color: root.errorMessage !== "" ? Colours.red : (root.authenticating ? Colours.accent : Colours.fgDim)
-        font.family: Config.sansFont
+        font.family: Session.sansFont
         font.pixelSize: 14
       }
     }
@@ -138,7 +138,7 @@ Card {
           id: authIcon
           text: root.authenticating ? "󱎟" : "󰌾"
           color: authCol.isInputActive ? Colours.accent : Colours.fgDim
-          font.family: Config.monoFont
+          font.family: Session.monoFont
           font.pixelSize: Config.iconSizeLg
           Layout.alignment: Qt.AlignVCenter
           transformOrigin: Item.Center
@@ -168,7 +168,7 @@ Card {
           Layout.alignment: Qt.AlignVCenter
           echoMode: root.revealPassword ? TextInput.Normal : TextInput.Password
           color: Colours.fg
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: 16
           clip: true
           focus: false
@@ -205,7 +205,7 @@ Card {
             anchors.left: parent.left
             text: "Enter password..."
             color: Colours.fgDim
-            font.family: Config.sansFont
+            font.family: Session.sansFont
             font.pixelSize: 16
             visible: root.enteredPassword.length === 0 && !passInput.activeFocus
           }
@@ -261,7 +261,7 @@ Card {
         Text {
           text: "󰌎"
           color: Colours.yellow
-          font.family: Config.monoFont
+          font.family: Session.monoFont
           font.pixelSize: 14
           anchors.verticalCenter: parent.verticalCenter
         }
@@ -269,7 +269,7 @@ Card {
         Text {
           text: "Caps Lock is active"
           color: Colours.yellow
-          font.family: Config.sansFont
+          font.family: Session.sansFont
           font.pixelSize: 13
           anchors.verticalCenter: parent.verticalCenter
         }

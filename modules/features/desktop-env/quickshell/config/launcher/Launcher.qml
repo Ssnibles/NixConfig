@@ -299,7 +299,7 @@ Scope {
               color: Colours.fg
               selectionColor: Colours.accent
               selectedTextColor: Colours.bg
-              font.family: Config.sansFont
+              font.family: Session.sansFont
               font.pixelSize: 16
               focus: true
               readOnly: root.actionMenuVisible
@@ -348,7 +348,7 @@ Scope {
               visible: input.text === ""
               text: "Search apps or calculate"
               color: Colours.fgDim
-              font.family: Config.sansFont
+              font.family: Session.sansFont
               font.pixelSize: 16
             }
           }
@@ -358,7 +358,7 @@ Scope {
             visible: root.actionMenuVisible
             text: root.actionItem ? (root.actionItem.kind === "calc" ? "Calculator actions" : "Actions for " + root.actionItem.name) : "Actions"
             color: Colours.fgMid
-            font.family: Config.sansFont
+            font.family: Session.sansFont
             font.pixelSize: 12
             leftPadding: 4
           }
@@ -424,7 +424,7 @@ Scope {
                     horizontalAlignment: Text.AlignHCenter
                     text: row.modelData.kind === "calc" ? "=" : "•"
                     color: Colours.accent
-                    font.family: Config.monoFont
+                    font.family: Session.monoFont
                     font.pixelSize: 16
                   }
 
@@ -436,7 +436,7 @@ Scope {
                       Layout.fillWidth: true
                       text: row.modelData.name
                       color: Colours.fg
-                      font.family: Config.sansFont
+                      font.family: Session.sansFont
                       font.pixelSize: 14
                       elide: Text.ElideRight
                     }
@@ -446,7 +446,7 @@ Scope {
                       visible: text !== ""
                       text: row.modelData.comment
                       color: Colours.fgDim
-                      font.family: Config.sansFont
+                      font.family: Session.sansFont
                       font.pixelSize: 11
                       elide: Text.ElideRight
                     }
@@ -462,7 +462,7 @@ Scope {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: row.modelData.name
                     color: Colours.fg
-                    font.family: Config.sansFont
+                    font.family: Session.sansFont
                     font.pixelSize: root.results.length === 1 ? 44 : 32
                     font.weight: Font.DemiBold
                   }
@@ -471,7 +471,7 @@ Scope {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: row.modelData.comment
                     color: Colours.fgDim
-                    font.family: Config.sansFont
+                    font.family: Session.sansFont
                     font.pixelSize: 11
                   }
                 }
@@ -528,7 +528,7 @@ Scope {
                     horizontalAlignment: Text.AlignHCenter
                     text: "•"
                     color: Colours.accent
-                    font.family: Config.monoFont
+                    font.family: Session.monoFont
                     font.pixelSize: 14
                   }
 
@@ -540,7 +540,7 @@ Scope {
                       Layout.fillWidth: true
                       text: actionRow.modelData.name
                       color: Colours.fg
-                      font.family: Config.sansFont
+                      font.family: Session.sansFont
                       font.pixelSize: 14
                       elide: Text.ElideRight
                     }
@@ -550,7 +550,7 @@ Scope {
                       visible: text !== ""
                       text: actionRow.modelData.detail || ""
                       color: Colours.fgDim
-                      font.family: Config.sansFont
+                      font.family: Session.sansFont
                       font.pixelSize: 11
                       elide: Text.ElideRight
                     }
@@ -571,7 +571,7 @@ Scope {
               visible: !root.actionMenuVisible && root.results.length === 0
               text: "No matches"
               color: Colours.fgDim
-              font.family: Config.sansFont
+              font.family: Session.sansFont
               font.pixelSize: 12
               horizontalAlignment: Text.AlignHCenter
             }
