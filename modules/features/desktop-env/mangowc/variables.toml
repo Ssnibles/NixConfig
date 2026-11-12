@@ -1,0 +1,45 @@
+# Reusable values for the other Mango config files. Mango expands $name and
+# ${name} in option values and bind key combinations, so change a value here
+# and every use follows.
+[var]
+
+# Main modifier used by every binding.
+mod = "SUPER"
+
+# Programs and shell commands.
+term = "kitty --single-instance"
+file_manager = "kitty --single-instance -e yazi"
+launcher = "vicinae toggle"
+clipboard = "vicinae cmd launch clipboard:history"
+command_centre = "quickshell ipc call command-centre toggle"
+launcher_shell = "quickshell ipc call launcher toggle"
+lockscreen = "quickshell ipc call lockscreen lock"
+status_bar = "quickshell ipc call bar toggle"
+screenshot = "~/.config/mango/screenshot.sh"
+notifier = "nm-applet --indicator"
+wallpaper = "~/Pictures/wallpaper"
+
+# Session settings.
+qs_bar = "mangowc"
+
+# Cursor.
+cursor_theme = "Bibata-Modern-Ice"
+cursor_size = "24"
+
+# Step sizes for resize, volume and brightness.
+resize_step = "50"
+volume_step = "5%"
+brightness_step = "5%"
+
+# Gaps.
+gap_inner = "10"
+gap_outer = "10"
+special_gap_outer = "48"
+overview_gap_outer = "48"
+
+# Layouts.
+default_layout = "dwindle"
+layout_cycle = "dwindle,tile,monocle,scroller,grid,deck"
+
+# Trackpad.
+gesture_fingers = "3"

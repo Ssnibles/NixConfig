@@ -1,0 +1,156 @@
+# Application Launchers
+[bind.default]
+"$mod+Return" = "spawn,$term"
+"$mod+Space" = "spawn,$launcher"
+"$mod+d" = "spawn,$command_centre"
+"$mod+Shift+Space" = "spawn,$launcher_shell"
+"$mod+Alt+L" = "spawn,$lockscreen"
+"$mod+e" = "spawn,$file_manager"
+
+# Window Management
+"$mod+q" = "killclient"
+"$mod+f" = "togglefullscreen"
+"$mod+Shift+f" = "togglefullscreen"
+"$mod+v" = "togglefloating"
+"$mod+o" = "togglejump"
+"$mod+w" = "toggle_special_tag"
+"$mod+Shift+w" = "tag_special_tag"
+"$mod+g" = "spawn,$status_bar"
+
+"$mod+Shift+v" = "spawn,$clipboard"
+"$mod+Shift+r" = "reload_config"
+
+# Layout Switching
+"$mod+r" = "setlayout,dwindle"
+"$mod+t" = "setlayout,tile"
+"$mod+m" = "setlayout,monocle"
+"$mod+p" = "setlayout,scroller"
+"$mod+Tab" = "switch_layout"
+
+# Vim & Arrow Style Window Resizing
+"$mod+Ctrl+h" = "resizewin,-$resize_step,+0"
+"$mod+Ctrl+l" = "resizewin,+$resize_step,+0"
+"$mod+Ctrl+k" = "resizewin,+0,-$resize_step"
+"$mod+Ctrl+j" = "resizewin,+0,+$resize_step"
+"$mod+Ctrl+Left" = "resizewin,-$resize_step,+0"
+"$mod+Ctrl+Right" = "resizewin,+$resize_step,+0"
+"$mod+Ctrl+Up" = "resizewin,+0,-$resize_step"
+"$mod+Ctrl+Down" = "resizewin,+0,+$resize_step"
+"$mod+equal" = "resizewin,+$resize_step,+$resize_step"
+"$mod+minus" = "resizewin,-$resize_step,-$resize_step"
+
+# Directional Focus (Vim & Arrow keys)
+"$mod+h" = "focusdir,left"
+"$mod+l" = "focusdir,right"
+"$mod+k" = "focusdir,up"
+"$mod+j" = "focusdir,down"
+"$mod+Left" = "focusdir,left"
+"$mod+Right" = "focusdir,right"
+"$mod+Up" = "focusdir,up"
+"$mod+Down" = "focusdir,down"
+
+# Move Windows (Vim & Arrow keys)
+"$mod+Shift+h" = "exchange_client,left"
+"$mod+Shift+l" = "exchange_client,right"
+"$mod+Shift+k" = "exchange_client,up"
+"$mod+Shift+j" = "exchange_client,down"
+"$mod+Shift+Left" = "exchange_client,left"
+"$mod+Shift+Right" = "exchange_client,right"
+"$mod+Shift+Up" = "exchange_client,up"
+"$mod+Shift+Down" = "exchange_client,down"
+
+# Monitor Focus (Vim & Arrow keys)
+"$mod+Alt+h" = "focusmon,left"
+# "$mod+Alt+l" = "focusmon,right"
+"$mod+Alt+k" = "focusmon,up"
+"$mod+Alt+j" = "focusmon,down"
+"$mod+Alt+Left" = "focusmon,left"
+"$mod+Alt+Right" = "focusmon,right"
+"$mod+Alt+Up" = "focusmon,up"
+"$mod+Alt+Down" = "focusmon,down"
+
+# Move Window to Monitor (Vim & Arrow keys)
+"$mod+Shift+Ctrl+h" = "tagmon,left"
+"$mod+Shift+Ctrl+l" = "tagmon,right"
+"$mod+Shift+Ctrl+k" = "tagmon,up"
+"$mod+Shift+Ctrl+j" = "tagmon,down"
+"$mod+Shift+Ctrl+Left" = "tagmon,left"
+"$mod+Shift+Ctrl+Right" = "tagmon,right"
+"$mod+Shift+Ctrl+Up" = "tagmon,up"
+"$mod+Shift+Ctrl+Down" = "tagmon,down"
+
+# Tags 1-9
+"$mod+1" = "view,1"
+"$mod+2" = "view,2"
+"$mod+3" = "view,3"
+"$mod+4" = "view,4"
+"$mod+5" = "view,5"
+"$mod+6" = "view,6"
+"$mod+7" = "view,7"
+"$mod+8" = "view,8"
+"$mod+9" = "view,9"
+"$mod+0" = "view,10"
+
+# Move to Tag 1-9
+"$mod+Shift+1" = "tag,1,0"
+"$mod+Shift+2" = "tag,2,0"
+"$mod+Shift+3" = "tag,3,0"
+"$mod+Shift+4" = "tag,4,0"
+"$mod+Shift+5" = "tag,5,0"
+"$mod+Shift+6" = "tag,6,0"
+"$mod+Shift+7" = "tag,7,0"
+"$mod+Shift+8" = "tag,8,0"
+"$mod+Shift+9" = "tag,9,0"
+"$mod+Shift+0" = "tag,10,0"
+
+"$mod+Ctrl+1" = "tagsilent,1,0"
+"$mod+Ctrl+2" = "tagsilent,2,0"
+"$mod+Ctrl+3" = "tagsilent,3,0"
+"$mod+Ctrl+4" = "tagsilent,4,0"
+"$mod+Ctrl+5" = "tagsilent,5,0"
+"$mod+Ctrl+6" = "tagsilent,6,0"
+"$mod+Ctrl+7" = "tagsilent,7,0"
+"$mod+Ctrl+8" = "tagsilent,8,0"
+"$mod+Ctrl+9" = "tagsilent,9,0"
+"$mod+Ctrl+0" = "tagsilent,10,0"
+
+# Screenshots
+"$mod+s" = "spawn_shell,$screenshot"
+"$mod+Shift+s" = "spawn_shell,$screenshot ocr"
+
+# Volume Control
+"XF86AudioRaiseVolume" = "spawn,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ $volume_step+"
+"XF86AudioLowerVolume" = "spawn,wpctl set-volume @DEFAULT_AUDIO_SINK@ $volume_step-"
+"XF86AudioMute" = "spawn,wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+"XF86AudioMicMute" = "spawn,wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
+
+# Media Playback
+"XF86AudioPlay" = "spawn,playerctl play-pause"
+"XF86AudioNext" = "spawn,playerctl next"
+"XF86AudioPrev" = "spawn,playerctl previous"
+"XF86AudioStop" = "spawn,playerctl stop"
+
+# Brightness Control
+"XF86MonBrightnessUp" = "spawn,brightnessctl set +$brightness_step"
+"XF86MonBrightnessDown" = "spawn,brightnessctl set -$brightness_step"
+
+# Minimise window to scratchpad
+"$mod+i" = "minimized"
+# Restore minimised window
+"$mod+Shift+i" = "restore_minimized"
+# Toggle scratchpad (standard floating)
+"$mod+z" = "toggle_scratchpad"
+# Silently send window to special tag without switching
+"$mod+Ctrl+w" = "tag_special_silent"
+
+# Trackpad gestures
+[gesturebind.default]
+"none+right+$gesture_fingers" = "viewtoleft"
+"none+left+$gesture_fingers" = "viewtoright"
+"none+up+$gesture_fingers" = "togglejump"
+"none+down+$gesture_fingers" = "toggle_special_tag"
+
+# Mouse control
+[mousebind.default]
+"$mod+btn_left" = "moveresize,curmove"
+"$mod+btn_right" = "moveresize,curresize"

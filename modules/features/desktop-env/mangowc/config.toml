@@ -1,0 +1,136 @@
+[global]
+# Sourced first so variables are available to every other option.
+source = ["./variables.toml", "./colours.toml", "./binds.toml"]
+
+# Window effects
+border_radius = 8
+
+# Gaps
+gap_inner_horizontal = "$gap_inner"
+gap_inner_vertical = "$gap_inner"
+gap_outer_horizontal = "$gap_outer"
+gap_outer_vertical = "$gap_outer"
+special_gap_outer_horizontal = "$special_gap_outer"
+special_gap_outer_vertical = "$special_gap_outer"
+overview_gap_outer = "$overview_gap_outer"
+
+# Animations
+animations = 1
+animation_duration_open = 400
+animation_duration_close = 300
+
+# Other appearance
+border_px = 2
+dim_enable = 0
+
+# Mouse
+cursor_theme = "$cursor_theme"
+cursor_size = "$cursor_size"
+mouse_natural_scrolling = 0
+drag_corner = 4
+
+# Touchpad
+trackpad_natural_scrolling = 1
+trackpad_disable_while_typing = 1
+trackpad_click_method = 2
+trackpad_scroll_factor = 0.6
+
+# Keyboard
+repeat_rate = 35
+repeat_delay = 200
+
+# Layout
+circle_layout = "$layout_cycle"
+dwindle_horizontal_split = 1
+float_full_to_top = 1
+
+# Autostart
+exec_once = [
+  "systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP QS_BAR && systemctl --user start wayland-session.target",
+  "QS_BAR=$qs_bar quickshell",
+  "swaybg -i $wallpaper -m fill",
+  "sh -c \"sleep 1; exec $notifier\"",
+]
+
+[env]
+"XDG_CURRENT_DESKTOP" = "mango"
+"QS_BAR" = "$qs_bar"
+"QT_QPA_PLATFORM" = "wayland"
+"ELECTRON_OZONE_PLATFORM_HINT" = "wayland"
+"XCURSOR_THEME" = "$cursor_theme"
+"XCURSOR_SIZE" = "$cursor_size"
+
+# Window rules
+[[rule.window_rule]]
+tags = 0
+app_id = "^(spotify)"
+
+[[rule.window_rule]]
+tags = 0
+app_id = "vesktop"
+
+[[rule.window_rule]]
+is_term = 1
+app_id = "^(foot|footclient|ghostty|com.mitchellh.ghostty|kitty)$"
+
+[[rule.window_rule]]
+no_swallow = 1
+app_id = "^(mpv|imv)$"
+
+[[rule.window_rule]]
+app_id = "mpv"
+is_floating = 1
+no_size_hint = 0
+
+# [[rule.window_rule]]
+# is_floating = 1
+# ignore_maximize = 1
+# no_blur = 1
+# width = 600
+# height = 600
+# title = "foot"
+
+# [[rule.window_rule]]
+# aspect_ratio = "auto"
+# app_id = ".*"
+
+# Tag layouts
+[[rule.tag_rule]]
+id = 1
+layout_name = "$default_layout"
+
+[[rule.tag_rule]]
+id = 2
+layout_name = "$default_layout"
+
+[[rule.tag_rule]]
+id = 3
+layout_name = "$default_layout"
+
+[[rule.tag_rule]]
+id = 4
+layout_name = "$default_layout"
+
+[[rule.tag_rule]]
+id = 5
+layout_name = "$default_layout"
+
+[[rule.tag_rule]]
+id = 6
+layout_name = "$default_layout"
+
+[[rule.tag_rule]]
+id = 7
+layout_name = "$default_layout"
+
+[[rule.tag_rule]]
+id = 8
+layout_name = "$default_layout"
+
+[[rule.tag_rule]]
+id = 9
+layout_name = "$default_layout"
+
+[[rule.tag_rule]]
+id = 0
+layout_name = "$default_layout"

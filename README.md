@@ -160,7 +160,7 @@ For in-depth details on mesh routing, battery preservation, and encrypted DNS, r
 
 For compositor keybindings, trackpad gestures, OCR screenshots, and multi-monitor setup, refer to the **[Wayland Compositors Guide](docs/wiki/compositors.md)**:
 
-- **MangoWC (Primary Lightweight Compositor)**: DWM-style tiling compositor with master/stack, dwindle, monocle, and scroller layouts, 3-finger trackpad gestures, tag-based workspaces, and local development wrapper `mango-dev`.
+- **MangoWC (Primary Lightweight Compositor)**: DWM-style tiling compositor with master/stack, dwindle, monocle, and scroller layouts, 3-finger trackpad gestures, tag-based workspaces, TOML config with shared variables, and local development wrapper `mango-dev`.
 - **Intelligent OCR Screenshot Script**: Built-in script ([`screenshot.sh`](modules/features/desktop-env/mangowc/screenshot.sh)) featuring zero-border window capture, cursor warping to avoid pointer artefacts, and instant optical character recognition (`tesseract`) copied directly to the clipboard via `SUPER + Shift + s`.
 - **Niri (Scrollable Infinite Strip)**: Infinite horizontal strip tiling compositor with Quickshell vertical sidebar integration.
 - **Hyprland (Dynamic Workstation Compositor)**: Dynamic tiling compositor configured through [`hyprland.lua`](modules/features/desktop-env/hyprland/hyprland.lua) with theme palette integration.

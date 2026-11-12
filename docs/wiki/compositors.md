@@ -22,10 +22,13 @@ MangoWC is a lightweight, DWM-inspired Wayland compositor built on wlroots. It i
 
 ### Configuration Architecture
 
-- **`config.conf`**: Core options (border width, inner/outer gaps, mouse focus, master window ratio). Symlinked to `~/.config/mango/config.conf`.
-- **`binds.conf`**: Complete keybinding definitions, trackpad gestures, and scratchpad management.
-- **`colours.conf`**: Generated declaratively by Hjem from `config.theme.colours` (`focus_color`, `border_color`).
+- **`config.toml`**: Core options (border width, inner/outer gaps, mouse focus, master window ratio). Symlinked to `~/.config/mango/config.toml`.
+- **`binds.toml`**: Complete keybinding definitions, trackpad gestures, and scratchpad management.
+- **`variables.toml`**: Reusable `[var]` values for the modifier key, programs, step sizes, gaps and layouts, expanded as `$name` in the other files.
+- **`colours.toml`**: Generated declaratively by Hjem from `config.theme.colours` (`focus_color`, `border_color`).
 - **`mango-dev` Wrapper**: When `features.mangowc.local = true` is set, the system wraps `mango` and `mmsg` to check `/home/josh/mango/result/bin/` first. This enables instant iteration on local compositor source code via `nix build` without requiring a full `nixos-rebuild`.
+
+Mango expands `$name` and `${name}` in option values and bind keys, so `variables.toml` is sourced first and the other files refer to entries such as `$mod`, `$term` and `$resize_step`.
 
 ### Keybindings & Workflows
 

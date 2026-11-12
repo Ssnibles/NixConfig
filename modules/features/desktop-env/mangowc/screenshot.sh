@@ -19,7 +19,9 @@ trap cleanup EXIT INT TERM HUP
 
 # Resolve accent colour
 ACCENT="6e94b2"
-mango_colours="$HOME/.config/mango/colours.conf"
+mango_colours="$HOME/.config/mango/colours.toml"
+# Keep reading the old file until the TOML config has been deployed.
+[ -f "$mango_colours" ] || mango_colours="$HOME/.config/mango/colours.conf"
 if [ -f "$mango_colours" ]; then
   col=$(sed -nE 's/^focus_color.*0x([0-9a-fA-F]{6}).*/\1/p' "$mango_colours" | head -n1)
   [ -n "$col" ] && ACCENT="$col"

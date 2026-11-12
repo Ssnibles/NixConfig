@@ -170,12 +170,16 @@
 
         nixos.liveLinks = {
           "mango-config" = {
-            source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/config.conf";
-            target = ".config/mango/config.conf";
+            source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/config.toml";
+            target = ".config/mango/config.toml";
           };
           "mango-binds" = {
-            source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/binds.conf";
-            target = ".config/mango/binds.conf";
+            source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/binds.toml";
+            target = ".config/mango/binds.toml";
+          };
+          "mango-variables" = {
+            source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/variables.toml";
+            target = ".config/mango/variables.toml";
           };
           "mango-screenshot" = {
             source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/screenshot.sh";
@@ -183,11 +187,22 @@
           };
         };
 
+        # Mango reads config.conf before config.toml, so old links left by the
+        # pre-TOML layout would hide the new file. Only remove symlinks; a real
+        # file is still the user's own config.
+        system.activationScripts.mango-toml-migration = ''
+          for old in config.conf binds.conf colours.conf; do
+            path="${home}/.config/mango/$old"
+            if [ -L "$path" ]; then rm -f "$path"; fi
+          done
+        '';
+
         hjem.users."${config.username}" = {
           enable = true;
           files = {
-            ".config/mango/colours.conf" = {
+            ".config/mango/colours.toml" = {
               text = ''
+                [global]
                 focus_color = 0x${accent}ff
                 border_color = 0x${border}ff
               '';
