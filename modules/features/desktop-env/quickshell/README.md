@@ -216,6 +216,7 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `notifRadius` | `10` | Notification card corner radius |
 | `notifCardMargins` | `16` | Internal card padding (px) |
 | `notifSpacing` | `10` | Spacing between stacked cards (px) |
+| `notifHoverScale` | `1.01` | Scale applied to a notification card on hover |
 | `notifIconSize` | `40` | Icon/avatar dimension for standard notifications (px) |
 | `notifMediaIconSize` | `48` | Icon/avatar dimension for media notifications (px) |
 | `notifIconRadius` | `10` | Corner radius for notification icon/avatar preview |

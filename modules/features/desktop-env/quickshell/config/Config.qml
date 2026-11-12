@@ -164,6 +164,8 @@ Singleton {
     readonly property int notifRadius: 10
     readonly property int notifCardMargins: 16
     readonly property int notifSpacing: 10
+    // Scale applied to a card on hover.
+    readonly property real notifHoverScale: 1.01
     readonly property int notifIconSize: 40
     readonly property int notifMediaIconSize: 48
     readonly property int notifIconRadius: 10

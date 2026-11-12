@@ -53,7 +53,7 @@ Card {
     ? (isMedia ? Colours.teal : (urgency === 2 ? Colours.red : Colours.accent))
     : (urgency === 2 ? Colours.red : Colours.border)
 
-  scale: hoverArea.containsMouse ? (hoverArea.pressed ? 0.98 : 1.01) : 1.0
+  scale: hoverArea.containsMouse ? (hoverArea.pressed ? 0.98 : Config.notifHoverScale) : 1.0
 
   Behavior on scale { NumberAnimation { duration: Config.animFastMs } }
 
