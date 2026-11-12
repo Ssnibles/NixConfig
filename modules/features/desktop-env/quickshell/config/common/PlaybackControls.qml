@@ -21,7 +21,7 @@ RowLayout {
   IconButton {
     Layout.alignment: Qt.AlignVCenter
     buttonSize: 28
-    radius: 14
+    radius: width / 2
     icon: "󰒮"
     uiFont: root.uiFont
     enabled: root.canPrevious
@@ -32,7 +32,7 @@ RowLayout {
   IconButton {
     Layout.alignment: Qt.AlignVCenter
     buttonSize: 32
-    radius: 16
+    radius: width / 2
     icon: root.isPlaying ? "󰏤" : "󰐊"
     iconSize: Config.iconSizeLg
     uiFont: root.uiFont
@@ -49,7 +49,7 @@ RowLayout {
   IconButton {
     Layout.alignment: Qt.AlignVCenter
     buttonSize: 28
-    radius: 14
+    radius: width / 2
     icon: "󰒭"
     uiFont: root.uiFont
     enabled: root.canNext

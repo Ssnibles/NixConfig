@@ -73,6 +73,7 @@ NotificationOverlay 1.0 notifications/NotificationOverlay.qml
 # lock
 HostnamePill 1.0 lock/HostnamePill.qml
 LockAuthCard 1.0 lock/LockAuthCard.qml
+LockMediaRow 1.0 lock/LockMediaRow.qml
 LockScreen 1.0 lock/LockScreen.qml
 LockSecondaryScreen 1.0 lock/LockSecondaryScreen.qml
 LockStatusCluster 1.0 lock/LockStatusCluster.qml

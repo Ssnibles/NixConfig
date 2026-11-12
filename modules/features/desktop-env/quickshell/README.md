@@ -375,7 +375,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 #### `LockScreen.qml`
 - **Role**: Wayland session screen locker built on `WlSessionLock` and `WlSessionLockSurface`.
 - **IPC Target**: `"lockscreen"` (functions: `lock()`, `unlock()`, `toggle()`).
-- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt (`LockAuthCard`) with user avatar, real-time accent highlight on keystrokes, rotating authentication spinner, password peek/reveal eye toggle, Caps Lock warning & error shake animation, secondary screen display lock graphics (`LockSecondaryScreen`) with live typing indicator & MPRIS `MediaCard`, customisable status pill cluster (`LockStatusCluster`) docked to any corner (default `"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`, or `"split"` / `"corners"` via `Config.lockStatusPosition` or `QS_LOCK_STATUS_POS`), background wallpaper with customisable GPU blur (`MultiEffect`) and dimming, and system power actions (Sleep/Suspend, Reboot, Power Off).
+- **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt (`LockAuthCard`) with user avatar, real-time accent highlight on keystrokes, rotating authentication spinner, password peek/reveal eye toggle, Caps Lock warning & error shake animation, a compact now-playing row (`LockMediaRow`) with previous, play/pause and next controls, placed below the password input, secondary screen display lock graphics (`LockSecondaryScreen`) with live typing indicator & the same compact now-playing row, customisable status pill cluster (`LockStatusCluster`) docked to any corner (default `"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`, or `"split"` / `"corners"` via `Config.lockStatusPosition` or `QS_LOCK_STATUS_POS`), background wallpaper with customisable GPU blur (`MultiEffect`) and dimming, and system power actions (Sleep/Suspend, Reboot, Power Off).
 
 #### `Launcher.qml`
 - **Role**: Layer-shell launcher and calculator. It opens on the active screen, filters desktop entries from `launcher/desktop-entries.sh`, and shows a calculator result for a valid expression.
@@ -423,11 +423,15 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **Role**: Notification history list, mute toggle, and clear button used by the Command Centre.
 
 #### `LockAuthCard.qml`
-- **Role**: Interactive authentication card used on the primary lock screen display.
+- **Role**: Interactive authentication card used on the primary lock screen display. It contains the compact now-playing row below a divider when media is active.
 - **Properties**: `session`, `shakeOffset`, `capsLockOn`, `revealPassword`; functions `submitEnteredPassword()`, `cancelInput()`, `updateCapsLock(modifiers)`; signal `backgroundFocusRequested()`.
 
+#### `LockMediaRow.qml`
+- **Role**: Compact now-playing row shared by the auth card and the secondary lock screen. Shows cover art, title, artist and previous, play/pause and next controls.
+- **Properties**: `hasMedia`.
+
 #### `LockStatusCluster.qml` and `LockSecondaryScreen.qml`
-- **Role**: Lock screen status pills and the read-only content shown on non-primary displays.
+- **Role**: Lock screen status pills in bar order (hostname, volume, network, battery), and the read-only content shown on non-primary displays.
 
 #### `Card.qml`
 - **Role**: Shared elevated/surface card container used across Command Centre sections, popovers, `MediaCard`, `NotificationCard`, `OsdOverlay`, and `LockScreen`.

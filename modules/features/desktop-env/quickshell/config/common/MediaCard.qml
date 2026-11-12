@@ -174,6 +174,7 @@ Card {
 
       // Playback controls
       PlaybackControls {
+        visible: root.interactive
         Layout.alignment: Qt.AlignVCenter
         canPrevious: MediaService.canGoPrevious
         canNext: MediaService.canGoNext

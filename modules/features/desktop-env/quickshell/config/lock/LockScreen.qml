@@ -328,14 +328,6 @@ Scope {
               }
             }
 
-            // MEDIA PLAYER CARD (matches the Command Centre media card)
-            MediaCard {
-              Layout.fillWidth: true
-              seekable: false
-              interactive: false
-              visible: MediaService.hasPlayer && (MediaService.isPlaying || MediaService.trackTitle !== "")
-            }
-
             LockAuthCard {
               id: authCard
               session: lockScope

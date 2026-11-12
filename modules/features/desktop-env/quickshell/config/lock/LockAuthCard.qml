@@ -265,5 +265,19 @@ Card {
         }
       }
     }
+
+    // Media is secondary to authentication, so it sits below a divider.
+    ColumnLayout {
+      Layout.fillWidth: true
+      spacing: Config.spaceLg
+      visible: lockMedia.hasMedia
+
+      Divider { Layout.fillWidth: true }
+
+      LockMediaRow {
+        id: lockMedia
+        Layout.fillWidth: true
+      }
+    }
   }
 }
