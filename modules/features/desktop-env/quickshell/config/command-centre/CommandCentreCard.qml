@@ -97,6 +97,16 @@ Card {
         anchors.margins: 12
         spacing: 10
 
+        // Output chips sit above or below the volume slider, whichever the
+        // config asks for. Both Loaders share one definition; only one is ever
+        // active, and an inactive Loader takes no space in the layout.
+        Loader {
+          Layout.fillWidth: true
+          visible: Config.ccSinkSwitcherAboveVolume
+          active: visible
+          sourceComponent: sinkPickerComponent
+        }
+
         ControlSliderRow {
           Layout.fillWidth: true
           icon: AudioService.volumeIcon
@@ -110,7 +120,12 @@ Card {
           percentText: AudioService.volumePercent + "%"
         }
 
-        AudioSinkPicker { }
+        Loader {
+          Layout.fillWidth: true
+          visible: !Config.ccSinkSwitcherAboveVolume
+          active: visible
+          sourceComponent: sinkPickerComponent
+        }
 
         Divider {
           visible: Config.ccShowMicSlider && AudioService.hasMic
@@ -148,6 +163,12 @@ Card {
           }
           percentText: BrightnessService.brightnessPercent + "%"
         }
+      }
+
+      Component {
+        id: sinkPickerComponent
+
+        AudioSinkPicker { }
       }
     }
 

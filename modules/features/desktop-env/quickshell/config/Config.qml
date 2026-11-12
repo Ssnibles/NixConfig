@@ -47,8 +47,14 @@ Singleton {
     readonly property string commandCentreClockFormat: "HH:mm"
     readonly property string commandCentreDateFormat: "dddd, MMMM d"
     readonly property bool ccShowSinkSwitcher: true
+    // Place the output chips above the volume slider instead of below it.
+    readonly property bool ccSinkSwitcherAboveVolume: false
     readonly property bool ccShowMicSlider: true
     readonly property bool ccShowBrightnessSlider: true
+    // Mixer shortcut at the start of the output row. Empty label renders the
+    // gear on its own.
+    readonly property bool ccShowAudioMixer: true
+    readonly property string ccAudioMixerLabel: ""
 
     // Launcher State & Geometry
     property bool launcherVisible: false

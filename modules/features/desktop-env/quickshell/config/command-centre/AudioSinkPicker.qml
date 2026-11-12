@@ -4,8 +4,8 @@ import QtQuick.Layouts
 import ".."
 
 // Command Centre output switcher: one chip per PipeWire sink with the current
-// output marked, plus a mixer shortcut. Chips switch with a single click and
-// wrap onto another line when there are many outputs, so the section never
+// output marked, led by the mixer shortcut. Chips switch with a single click
+// and wrap onto another line when there are many outputs, so the section never
 // reflows the way the old collapsible list did.
 Flow {
   id: root
@@ -16,6 +16,47 @@ Flow {
   visible: Config.ccShowSinkSwitcher && AudioService.audioSinks.length > 0
   Layout.fillWidth: true
   spacing: 6
+
+  // Leads the row so the tool never reads as another output.
+  Pill {
+    id: mixerChip
+
+    visible: Config.ccShowAudioMixer
+    pillHeight: 26
+    padding: 6
+    baseColour: "transparent"
+    hoverColour: Colours.bgSubtle
+    hoverHighlight: true
+    border.color: mixerChip.hovered ? Colours.accent : Colours.border
+    clickable: true
+    onClicked: {
+      // The panel would cover the mixer window.
+      UiState.commandCentreVisible = false
+      AudioService.openMixer()
+    }
+
+    Row {
+      anchors.centerIn: parent
+      spacing: 5
+
+      Text {
+        text: "󰒓"
+        color: mixerChip.hovered ? Colours.accent : Colours.fgDim
+        font.family: Session.monoFont
+        font.pixelSize: Config.iconSizeSm
+        anchors.verticalCenter: parent.verticalCenter
+      }
+
+      Text {
+        visible: Config.ccAudioMixerLabel !== ""
+        text: Config.ccAudioMixerLabel
+        color: mixerChip.hovered ? Colours.fg : Colours.fgMid
+        font.family: Session.sansFont
+        font.pixelSize: Config.fontSizeSm
+        anchors.verticalCenter: parent.verticalCenter
+      }
+    }
+  }
 
   Repeater {
     model: AudioService.audioSinks
@@ -59,43 +100,6 @@ Flow {
           width: Math.min(implicitWidth, root.labelMaxWidth)
           anchors.verticalCenter: parent.verticalCenter
         }
-      }
-    }
-  }
-
-  Pill {
-    id: mixerChip
-
-    pillHeight: 26
-    baseColour: "transparent"
-    hoverColour: Colours.bgSubtle
-    hoverHighlight: true
-    border.color: mixerChip.hovered ? Colours.accent : Colours.border
-    clickable: true
-    onClicked: {
-      // The panel would cover the mixer window.
-      UiState.commandCentreVisible = false
-      AudioService.openMixer()
-    }
-
-    Row {
-      anchors.centerIn: parent
-      spacing: 5
-
-      Text {
-        text: "󰒓"
-        color: mixerChip.hovered ? Colours.accent : Colours.fgDim
-        font.family: Session.monoFont
-        font.pixelSize: Config.iconSizeSm
-        anchors.verticalCenter: parent.verticalCenter
-      }
-
-      Text {
-        text: "Mixer"
-        color: mixerChip.hovered ? Colours.fg : Colours.fgMid
-        font.family: Session.sansFont
-        font.pixelSize: Config.fontSizeSm
-        anchors.verticalCenter: parent.verticalCenter
       }
     }
   }
