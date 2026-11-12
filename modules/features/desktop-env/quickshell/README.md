@@ -32,6 +32,8 @@ All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by `
 | **Config Symlinks** | `nixos.liveLinks` (`quickshell-config`) links every file in `config/*` into `~/.config/quickshell`. |
 | **Permissions** | Symlinks and target directories are owned by the active user. |
 
+Subdirectories are symlinked as directories, so a new file inside `bar/`, `common/`, `services/` and so on is live immediately. A new file at the top level of `config/` only appears in `~/.config/quickshell` after a `nixos-rebuild switch` (activation recreates the per-file links). Add new singletons under `services/` or another existing directory to avoid that rebuild.
+
 ### 1.1 Directory layout
 
 The QML source is grouped by component rather than kept flat:
@@ -39,12 +41,12 @@ The QML source is grouped by component rather than kept flat:
 ```text
 config/
 ├── shell.qml            # Root Scope: loads the bar, overlays and lock screen
-├── Config.qml           # Global configuration singleton
+├── Config.qml           # Settings singleton (literals only)
 ├── Colours.qml          # Nix-generated theme tokens
 ├── Utils.js             # Shared JavaScript helpers
 ├── qmldir               # Manifest for cross-directory types
 ├── common/              # Shared visual primitives and reusable widgets
-├── services/            # State singletons and compositor backends
+├── services/            # State singletons, Session environment, compositor backends
 ├── bar/                 # Status bar and bar-only widgets
 ├── launcher/            # Application launcher and calculator
 ├── command-centre/      # Command Centre and its cards
@@ -81,54 +83,87 @@ Scope {
 
 ---
 
-## 3. Configuration Reference (`Config.qml`)
+## 3. Configuration Reference
 
-`Config.qml` is a `pragma Singleton` holding all global layout dimensions, fonts, timings, and component options.
+Three singletons split settings from facts about the machine:
+
+| File | Holds | Edit it? |
+| --- | --- | --- |
+| `Config.qml` | Every layout dimension, font, timing and option. Literals only, no expressions or state. | Yes, this is the settings file |
+| `Session.qml` | Facts about the running session: compositor, `$HOME`, `$USER`, hostname, resolved paths, and the environment overrides (`QS_BAR`, `QS_BAR_SIDE`, `QS_COMMAND_CENTRE_SIDE`, `QS_LOCK_STATUS_POS`) | Rarely |
+| `UiState.qml` | Transient state that resets on restart: what is open, which screen owns it, tray toggles | No |
+
+Anything derived (`Session.barType`, `Session.hasTopBar`, `Session.lockWallpaperPath`) lives in `Session`, so `Config` stays a flat list of values you can scan and change.
 
 ### 3.1 Fonts
 | Property | Default | Purpose |
 | --- | --- | --- |
-| `monoFont` | `Colours.monoFont` \| `"JetBrainsMono Nerd Font"` | Icons, numbers, monospaced text |
+| `monoFont` | `"JetBrainsMono Nerd Font"` | Icons, numbers, monospaced text |
 | `sansFont` | `"SF Pro Text"` | UI text, notifications, titles |
-| `serifFont` | `Colours.serifFont` \| `"Instrument Serif"` | Clocks, headers |
+| `serifFont` | `"Instrument Serif"` | Clocks, headers |
+
+These three are fallbacks: Nix writes the real families into `Colours.qml`, and `Session.monoFont` / `sansFont` / `serifFont` prefer the generated value. Change the font in the Nix theme, not here.
 
 ### 3.2 Status Bars
 | Property | Default | Purpose |
 | --- | --- | --- |
 | `barWidth` | `42` | Niri bar width (px) |
-| `barSide` | `"left"` | Niri bar screen edge (`"left"` \| `"right"`). Overridable with the `QS_BAR_SIDE` env var. |
+| `barSide` | `"left"` | Default Niri bar screen edge (`"left"` \| `"right"`); `QS_BAR_SIDE` overrides it in `Session` |
 | `barMarginTop/Bottom/Left/Right` | `8 / 8 / 4 / 4` | Outer padding around Niri bar |
 | `barSpacing` | `8` | Vertical gap between widget groups |
 | `volBarHeight` | `64` | Volume bar widget height |
 | `wifiMaxTextLength` | `90` | Maximum network SSID display width |
 | `barHeight` | `34` | MangoWC top bar height (px) |
 | `minWorkspaces` | `5` | Minimum workspace slots (MangoWC and Hyprland) |
+| `barShowClock` | `true` | Show the clock |
+| `barShowCommandCentre` | `true` | Show the Command Centre button |
+| `barShowLayout` | `true` | Show the tiling layout pill (MangoWC only anyway) |
+| `barShowWindowTitle` | `true` | Show the active window title |
+| `barShowWorkspaces` | `true` | Show the workspace dots |
+| `barShowTray` | `true` | Show the system tray |
+| `barShowMedia` | `true` | Show the media button |
+| `barShowVolume` | `true` | Show the volume pill |
+| `barShowNetwork` | `true` | Show the network pill |
+| `barShowBattery` | `true` | Show the battery pill |
+
+The compositor (`Session.wm`) and everything derived from it (`barType`, `hasTopBar`, `hasLeftBar`, `hasRightBar`) live in `Session`. The `barShow*` flags reach the widgets through their `shown` property, so hiding a widget in the bar leaves the same widget working in the Command Centre and lock screen.
 
 ### 3.3 Command Centre (`CommandCentre.qml`)
+
+Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the bar button.
+
 | Property | Default | Purpose |
 | --- | --- | --- |
-| `commandCentreVisible` | `false` | Controls overlay visibility (toggleable via IPC) |
 | `commandCentreWidth` | `500` | Width of slide-out panel (px) |
 | `commandCentreRadius` | `16` | Panel corner rounding radius |
 | `commandCentreCardRadius` | `12` | Inner section card corner radius |
 | `commandCentreClockFormat` | `"HH:mm"` | Header clock format |
 | `commandCentreDateFormat` | `"dddd, MMMM d"` | Header date format |
 | `alwaysShowMediaCard` | `true` | Show media player card even when idle |
+| `ccShowSinkSwitcher` | `true` | Show the PipeWire output chips |
+| `ccSinkSwitcherAboveVolume` | `false` | Put the chips above the volume slider instead of below |
+| `ccShowAudioMixer` | `true` | Show the mixer shortcut that leads the output row |
+| `ccAudioMixerLabel` | `""` | Label beside the mixer gear; empty renders the gear alone |
+| `ccShowMicSlider` | `true` | Show the microphone slider |
+| `ccShowBrightnessSlider` | `true` | Show the brightness slider |
 | `mediaRotationDuration` | `4000` | Album art rotation duration (ms) |
 | `mediaSeekDebounceMs` | `200` | Seeking debounce delay (ms) |
 
 ### 3.4 Lock Screen (`LockScreen.qml`)
 | Property | Default | Purpose |
 | --- | --- | --- |
-| `lockAvatarPath` | `Quickshell.shellDir + "/assets/avatar.png"` | Path to user avatar image |
+| `lockAvatarPath` | `""` | Avatar image; empty uses the bundled `assets/avatar.png` |
 | `lockFallbackIcon` | `"󰀉"` | Fallback glyph when avatar image is absent |
-| `lockWallpaperPath` | `"file://" + $HOME + "/Pictures/wallpaper"` | Lock screen wallpaper image |
+| `lockWallpaperPath` | `""` | Wallpaper image; empty uses `$HOME/Pictures/wallpaper` |
 | `lockClockFormat` | `"HH:mm"` | Time display format |
 | `lockDateFormat` | `"dddd, MMMM d"` | Date display format |
-| `commandCentreCardRadius` | `12` | Authentication card corner radius (also used by the lock screen) |
-| `lockInputRadius` | `10` | Password input box radius |
+| `commandCentreCardRadius` | `12` | Authentication card corner radius (shared with the Command Centre) |
+| `lockInputRadius` | `12` | Password input box radius |
 | `lockBackgroundDimming` | `0.8` | Dark background overlay opacity (0.0–1.0) |
 | `lockBlurPercentage` | `0.5` | Wallpaper GPU blur amount (0.0–1.0) |
+| `lockStatusPosition` | `"top-right"` | Badge corner, or `"split"` / `"corners"`; `QS_LOCK_STATUS_POS` overrides it in `Session` |
+| `lockStatusMargin` | `24` | Badge distance from the screen edge |
+| `lockStatusSpacing` | `8` | Gap between clustered badges |
 
 ### 3.5 Popups & Tooltips (`SharedTooltipWindow.qml`)
 | Property | Default | Purpose |
@@ -137,6 +172,7 @@ Scope {
 | `popupMaxWidth` | `280` | Default card width |
 | `popupRadius` | `12` | Popup card corner radius |
 | `popupContentMargins` | `12` | Padding inside popups |
+| `popupContentSpacing` | `6` | Gap between tooltip detail lines |
 | `popupShowDelay` | `150` | Hover delay before showing popup (ms) |
 | `popupFadeMs` | `120` | Fade transition duration (ms) |
 | `popupGraceMs` | `700` | Grace window for instant-swapping between adjacent popups |
@@ -171,6 +207,44 @@ Scope {
 | `notifAppGlyphs` | `({ ... })` | App/category to Nerd Font glyph mapping |
 | `notifMediaApps` | `[ ... ]` | List of media player app identifiers |
 
+### 3.7 System Tray
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `trayHiddenApps` | `["nm-applet", "vicinae"]` | Case-insensitive app IDs, titles or substrings hidden by default |
+| `trayLeftClickAction` | `"focus"` | `"focus"` (activate and focus the window), `"activate"` (SNI activate only) or `"menu"` |
+| `trayIconSize` | `15` | Tray icon size (px) |
+| `trayButtonSize` | `20` | Tray button hit area (px) |
+| `traySpacing` | `4` | Gap between tray buttons |
+| `trayMenuWidth` | `240` | Width of the tray context menu |
+| `trayShowAppIdInMenu` | `true` | Show the SNI app ID in the menu header |
+| `trayAllowSessionHide` | `true` | Allow hide/unhide actions in the tray menu |
+| `UiState.trayEnabled` | `true` | Runtime on/off (IPC `tray toggle`) |
+| `UiState.trayShowExpandButton` | `true` | Show the expand arrow when items are hidden |
+| `UiState.trayExpanded` | `false` | Whether the hidden section is open |
+
+### 3.8 External Commands
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `cmdMixer` | `["pavucontrol"]` | Audio mixer |
+| `cmdNetworkManager` | `["kitty", "--single-instance", "-e", "nmtui"]` | Network tool |
+| `cmdBluetoothManager` | `["blueman-manager"]` | Bluetooth manager |
+| `cmdLock` | `["quickshell", "ipc", "call", "lockscreen", "lock"]` | Lock action |
+| `cmdSleep` / `cmdReboot` / `cmdPoweroff` | `["systemctl", ...]` | Power actions |
+| `cmdTerminal` | `["kitty", "-e"]` | Prefix used by the launcher's "run in terminal" and by `.desktop` terminal entries |
+| `cmdClipboard` | `["wl-copy"]` | Clipboard writer used by the calculator and copy actions |
+
+### 3.9 Runtime State (`UiState.qml`)
+Nothing here is configuration; it all resets when the shell restarts.
+
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `barVisible` | `true` | Bar shown (IPC `bar toggle`) |
+| `commandCentreVisible` | `false` | Command Centre open |
+| `launcherVisible` | `false` | Launcher open |
+| `targetScreen` | `null` | Screen the next overlay opens on |
+| `lastActiveScreen` | `null` | Last screen the pointer entered |
+| `runtimeHiddenTrayApps` / `runtimeUnhiddenTrayApps` | `[]` | Session-only tray hide overrides, shared across monitors |
+
 
 ---
 
@@ -203,7 +277,7 @@ Scope {
 ### 5.2 Services & Infrastructure
 
 #### `WmService.qml`
-- **Role**: Unified `pragma Singleton` bridging active compositor backends (`MangoService`, `HyprlandService`, `NiriService`) based on `Config.wm`.
+- **Role**: Unified `pragma Singleton` bridging active compositor backends (`MangoService`, `HyprlandService`, `NiriService`) based on `Session.wm`.
 - **Exposes**: `currentTitle`, `workspacesDependency`, `getWorkspaces(outputName)`, `focusWorkspace(id)`, `getLayoutSymbol(outputName)`, `getLayoutInfo(symbol)`, `setLayout(symbol)`, `nextLayout()`, and active/cursor monitor detection (`resolveTargetScreen(callback)`, `cancelScreenQuery()`, `queryingScreen`).
 
 #### `AudioService.qml`
@@ -298,7 +372,7 @@ Scope {
 
 #### `Pill.qml`
 - **Role**: Standardised rounded pill container for bar widgets and inline action pills.
-- **Properties**: `horizontal`, `padding`, `pillHeight`, `baseColour`, `hoverColour`, `hoverHighlight`, `pillColour`, `clickable`, `acceptedButtons`, `hovered`, `radius`; signals `clicked(var mouse)`, `wheel(var wheel)`. Includes built-in hover/border colour transitions, auto-sizing, and optional pointer click/scroll handling.
+- **Properties**: `horizontal`, `padding`, `pillHeight`, `baseColour`, `hoverColour`, `hoverHighlight`, `pillColour`, `clickable`, `acceptedButtons`, `shown`, `hovered`, `radius`; signals `clicked(var mouse)`, `wheel(var wheel)`. Includes built-in hover/border colour transitions, auto-sizing, and optional pointer click/scroll handling. `shown` is the visibility gate the bar uses to hide a widget without overriding the widget's own visibility rules.
 
 #### `Divider.qml`
 - **Role**: 1px horizontal rule used to separate sections.
@@ -315,7 +389,9 @@ Scope {
 - **Properties**: `icon`, `alert`, `accent`, `iconClickable`, `sliderValue`, `percentText`; signals `iconClicked()`, `sliderMoved(real value)`.
 
 #### `AudioSinkPicker.qml`
-- **Role**: PipeWire output switcher: one chip per sink with the current output marked, plus a mixer shortcut. Chips switch on the first click and wrap onto another line when there are many outputs, so expanding the picker never reflows the rest of the panel.
+- **Role**: PipeWire output switcher: a chip per sink with the current output marked, led by the mixer shortcut. Chips switch on the first click and wrap onto another line when there are many outputs, so expanding the picker never reflows the rest of the panel.
+- **Placement**: `CommandCentreCard.qml` loads it above or below the volume slider from `Config.ccSinkSwitcherAboveVolume`, using one shared component definition so both positions stay identical.
+- **Mixer**: leads the row so it never reads as another output. Icon-only by default; set `Config.ccAudioMixerLabel` to add a label, or `Config.ccShowAudioMixer` to drop the shortcut. Clicking it closes the panel before opening the mixer, since the panel would cover it.
 - **Properties**: `labelMaxWidth` (default `150`); gives up its space to elision rather than pushing the row wider.
 - **Labels**: use `AudioService.sinkLabel(node)`, which prefers PipeWire's `node.nick` (`DAWN PRO2`) over the longer `node.description` (`DAWN PRO2 Analog Stereo`).
 
@@ -343,7 +419,7 @@ Scope {
 
 #### `CommandCentreButton.qml`
 - **Role**: Quick dashboard trigger button component for status bars.
-- **Properties**: `horizontal`, `screen`. Toggles `Config.commandCentreVisible`, automatically setting the target screen to the parent bar's monitor.
+- **Properties**: `horizontal`, `screen`, `shown`. Toggles `UiState.commandCentreVisible`, automatically setting the target screen to the parent bar's monitor.
 
 #### `MediaCard.qml`
 - **Role**: Shared MPRIS media card used by the Command Centre, the bar media popover and the lock screen.

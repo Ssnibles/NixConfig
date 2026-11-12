@@ -18,7 +18,7 @@ modules/features/desktop-env/quickshell/
 │   └── utils.test.js             # Node.js unit test suite for Utils.js
 └── config/                       # Live QML source code (symlinked to ~/.config/quickshell/)
     ├── shell.qml                 # Root application entry point (Scope)
-    ├── Config.qml                # Singleton storing UI layout dimensions & fonts
+    ├── Config.qml                # Singleton of layout dimensions, fonts and options
     ├── Colours.qml               # Nix-generated theme colour tokens
     ├── Utils.js                  # Shared JavaScript helper functions
     ├── qmldir                    # Manifest for cross-directory types
@@ -42,6 +42,8 @@ modules/features/desktop-env/quickshell/
     │   ├── BluetoothWidget.qml
     │   └── NotificationCard.qml
     ├── services/                 # State singletons and compositor backends
+    │   ├── Session.qml           # Compositor, user, host and resolved paths
+    │   ├── UiState.qml           # Transient state: what is open, tray toggles
     │   ├── WmService.qml
     │   ├── MangoService.qml
     │   ├── HyprlandService.qml
@@ -103,11 +105,25 @@ Each subdirectory imports `..`, and `config/qmldir` lists shared types by path s
 
 ## Theme & Configuration Singletons
 
-### `Config.qml` (Layout Dimensions & Fonts)
-Holds global layout dimensions, fonts, timings, and component parameters:
-- **Fonts**: `monoFont` ("JetBrainsMono Nerd Font"), `sansFont` ("SF Pro Text"), `serifFont` ("Instrument Serif").
-- **Bar Dimensions**: `barWidth` (42px vertical bar), `barHeight` (34px top bar).
-- **Command Centre**: `commandCentreWidth` (500px), `commandCentreRadius` (16px).
+Settings are split three ways so `Config.qml` stays a flat list of literals:
+
+### `Config.qml` (Settings)
+Everything you might want to change: layout dimensions, fonts, timings and options.
+- **Fonts**: `monoFont`, `sansFont`, `serifFont` (from `Colours`, with fallbacks).
+- **Bar**: `barWidth` (42px), `barHeight` (34px), margins, spacing and the `barShow*` widget flags.
+- **Command Centre**: `commandCentreWidth` (500px), `commandCentreRadius` (16px), `ccShow*` flags.
+- **Audio and OSD**: step sizes, `osdPosition`, sizes and timeouts.
+- **External commands**: `cmdMixer`, `cmdTerminal`, `cmdClipboard`, power actions.
+
+### `Session.qml` (Environment)
+Facts about the running session and everything derived from them, so no expressions live in `Config`:
+- `wm` (`$QS_BAR`, then `XDG_CURRENT_DESKTOP`), `user`, `home`, `hostname`.
+- `barType`, `hasTopBar`, `hasLeftBar`, `hasRightBar`, and `barGeometry` for overlay margins.
+- Resolved `barSide`, `commandCentreSide` and `lockStatusPosition` (each with a `QS_*` override).
+- Resolved `lockAvatarPath` and `lockWallpaperPath`, where an empty `Config` value means the default.
+
+### `UiState.qml` (Transient State)
+Resets when the shell restarts: `barVisible`, `commandCentreVisible`, `launcherVisible`, `targetScreen`, `lastActiveScreen`, and the tray on/off, expand and session-hide lists.
 
 ### `Colours.qml` (Nix-Generated Colour Tokens)
 Generated automatically by Nix based on `config.theme.colours`:
