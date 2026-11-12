@@ -132,6 +132,7 @@ binds {
     Mod+Space hotkey-overlay-title="Toggle vicinae" { spawn "vicinae" "toggle"; }
     Mod+V hotkey-overlay-title="Clipboard History" { spawn "vicinae" "cmd" "launch" "clipboard:history"; }
     Mod+D hotkey-overlay-title="Toggle Command Centre" { spawn "quickshell" "ipc" "call" "command-centre" "toggle"; }
+    Mod+Shift+Space hotkey-overlay-title="Toggle Launcher" { spawn "quickshell" "ipc" "call" "launcher" "toggle"; }
     Mod+Alt+L hotkey-overlay-title="Lock Screen" { spawn "quickshell" "ipc" "call" "lockscreen" "lock"; }
     Mod+E hotkey-overlay-title="Open Yazi" { spawn "kitty" "--single-instance" "-e" "yazi"; }
 

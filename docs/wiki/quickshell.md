@@ -6,7 +6,7 @@ This document details the [Quickshell](https://quickshell.outfoxxed.me/) QML des
 
 ## Architecture Overview
 
-Quickshell powers the unified horizontal/vertical status bar (`bar.qml`), the **Command Centre** quick-settings dashboard, the Wayland **Lock Screen**, the desktop **Notification daemon and overlay**, and shared UI primitives.
+Quickshell powers the unified horizontal/vertical status bar (`bar.qml`), the **Command Centre** quick-settings dashboard, the **Launcher**, the Wayland **Lock Screen**, the desktop **Notification daemon and overlay**, and shared UI primitives.
 
 All QML source files live in `modules/features/desktop-env/quickshell/config/` and are symlinked directly to `~/.config/quickshell/` via `nixos.liveLinks` (`contents = true`), while generated theme files (`Colours.qml`) are managed declaratively by Hjem:
 
@@ -19,71 +19,80 @@ modules/features/desktop-env/quickshell/
 └── config/                       # Live QML source code (symlinked to ~/.config/quickshell/)
     ├── shell.qml                 # Root application entry point (Scope)
     ├── Config.qml                # Singleton storing UI layout dimensions & fonts
-    ├── Colours.qml                # Nix-generated theme colour tokens
+    ├── Colours.qml               # Nix-generated theme colour tokens
     ├── Utils.js                  # Shared JavaScript helper functions
-    ├── qmldir.lsp                # Optional staged manifest for editor/LSP tooling
+    ├── qmldir                    # Manifest for cross-directory types
     │
-    ├── bar.qml                   # Unified horizontal top bar (MangoWC, Hyprland) & vertical side bar (Niri)
-    ├── CommandCentre.qml         # Slide-out quick settings dashboard
-    ├── CommandCentreButton.qml   # Toggle button in status bar
-    ├── LockScreen.qml            # Wayland session locker (WlSessionLock + PAM)
-    │
-    ├── NotificationOverlay.qml   # Toast notification popup overlay
-    ├── NotificationService.qml   # Central notification daemon, icon resolver & state singleton
-    ├── NotificationCard.qml      # Visual notification card component
-    ├── OsdOverlay.qml            # Floating volume, mic, and brightness OSD pill
-    │
-    ├── WmService.qml             # Unified compositor & active-screen singleton
-    ├── MangoService.qml          # MangoWC IPC backend (mmsg)
-    ├── HyprlandService.qml       # Hyprland IPC backend (hyprctl)
-    ├── NiriService.qml           # Niri event-stream backend
-    ├── AudioService.qml          # PipeWire output sinks and microphone singleton
-    ├── BrightnessService.qml     # brightnessctl backlight control singleton
-    ├── NetworkService.qml        # Wired / Wi-Fi connection singleton
-    ├── BatteryService.qml        # UPower battery singleton
-    ├── BluetoothService.qml      # Bluetooth adapter and devices singleton
-    ├── TrayService.qml           # System tray items and hidden-app lists
-    ├── SystemService.qml         # OSD state and the `system` IPC target
-    ├── NotificationIcons.qml     # Notification icon, avatar & glyph resolver
-    ├── ClockService.qml          # Shared minute-aligned clock & date singleton
-    ├── MediaService.qml          # MPRIS media player backend & multi-player switcher
-    ├── WindowFocuser.qml         # Native-first window activation (no Node fallback)
-    │
-    ├── MediaCard.qml             # Shared media card (Command Centre / popover / lock)
-    ├── MediaWidget.qml           # Player controls & current song title (bar button)
-    ├── PlaybackControls.qml      # Shared prev / play-pause / next cluster
-    ├── MediaProgressRow.qml      # Elapsed + seek bar + total time row
-    ├── PowerButtons.qml          # Shared system power action row
-    │
-    ├── BatteryWidget.qml         # Battery telemetry & charging indicator
-    ├── BluetoothWidget.qml       # Connected devices status
-    ├── ClockWidget.qml           # Time and date widget (with calendar popover)
-    ├── LayoutWidget.qml          # Active window manager layout widget
-    ├── NetworkWidget.qml         # Wi-Fi SSID and signal strength
-    ├── SystemTrayWidget.qml      # StatusNotifierItem system tray icons
-    ├── TrayMenu.qml              # Tray context menu (rendered in the popup layer)
-    ├── VolumeWidget.qml          # PipeWire volume level & mute status
-    ├── WindowTitleWidget.qml     # Focused application window title
-    ├── WorkspacesWidget.qml      # Visual workspace and tag indicators
-    │
-    ├── AudioSinkPicker.qml       # Collapsible output-sink picker
-    ├── ControlSliderRow.qml      # Icon + slider + percentage row
-    ├── NotificationHistoryCard.qml # Command Centre notification history
-    ├── LockAuthCard.qml          # Lock screen authentication card
-    ├── LockStatusCluster.qml     # Lock screen status pills
-    ├── LockSecondaryScreen.qml   # Read-only secondary lock display
-    ├── HostnamePill.qml          # Lock screen hostname badge
-    ├── VolumePill.qml            # Lock screen volume badge
-    ├── Divider.qml               # 1px section rule
-
-    ├── Card.qml                  # Shared surface/card container primitive
-    ├── IconButton.qml            # Shared interactive icon button primitive
-    ├── Pill.qml                  # Rounded pill container primitive
-    ├── SliderControl.qml         # Reusable horizontal slider
-    ├── RoundedImage.qml          # Async rounded/masked image
-    ├── Tooltip.qml               # Hover popup trigger
-    └── SharedTooltipWindow.qml   # Per-display popup layer window
+    ├── common/                   # Shared primitives and reusable widgets
+    │   ├── Card.qml
+    │   ├── Pill.qml
+    │   ├── Divider.qml
+    │   ├── IconButton.qml
+    │   ├── RoundedImage.qml
+    │   ├── SliderControl.qml
+    │   ├── Tooltip.qml
+    │   ├── MediaCard.qml
+    │   ├── MediaProgressRow.qml
+    │   ├── PlaybackControls.qml
+    │   ├── PowerButtons.qml
+    │   ├── BatteryWidget.qml
+    │   ├── NetworkWidget.qml
+    │   ├── BluetoothWidget.qml
+    │   └── NotificationCard.qml
+    ├── services/                 # State singletons and compositor backends
+    │   ├── WmService.qml
+    │   ├── MangoService.qml
+    │   ├── HyprlandService.qml
+    │   ├── NiriService.qml
+    │   ├── AudioService.qml
+    │   ├── BrightnessService.qml
+    │   ├── NetworkService.qml
+    │   ├── BatteryService.qml
+    │   ├── BluetoothService.qml
+    │   ├── TrayService.qml
+    │   ├── SystemService.qml
+    │   ├── NotificationService.qml
+    │   ├── NotificationIcons.qml
+    │   ├── ClockService.qml
+    │   ├── MediaService.qml
+    │   └── WindowFocuser.qml
+    ├── bar/                      # Status bar and bar-only widgets
+    │   ├── bar.qml
+    │   ├── ClockWidget.qml
+    │   ├── LayoutWidget.qml
+    │   ├── MediaWidget.qml
+    │   ├── SystemTrayWidget.qml
+    │   ├── TrayMenu.qml
+    │   ├── VolumeWidget.qml
+    │   ├── WindowTitleWidget.qml
+    │   ├── WorkspacesWidget.qml
+    │   ├── CommandCentreButton.qml
+    │   └── SharedTooltipWindow.qml
+    ├── launcher/                 # Application launcher and calculator
+    │   ├── Launcher.qml
+    │   ├── Calc.js
+    │   ├── expr-eval.js
+    │   ├── expr-eval.LICENSE
+    │   └── desktop-entries.sh
+    ├── command-centre/           # Command Centre and its cards
+    │   ├── CommandCentre.qml
+    │   ├── AudioSinkPicker.qml
+    │   ├── ControlSliderRow.qml
+    │   └── NotificationHistoryCard.qml
+    ├── notifications/
+    │   └── NotificationOverlay.qml
+    ├── lock/                     # Lock screen components
+    │   ├── LockScreen.qml
+    │   ├── LockAuthCard.qml
+    │   ├── LockSecondaryScreen.qml
+    │   ├── LockStatusCluster.qml
+    │   ├── HostnamePill.qml
+    │   └── VolumePill.qml
+    └── osd/
+        └── OsdOverlay.qml
 ```
+
+Each subdirectory imports `..`, and `config/qmldir` lists shared types by path so a component in one directory can use a type from another. Add new cross-directory types to the manifest.
 
 ---
 
@@ -135,6 +144,21 @@ This enables swapping between Wayland compositors while keeping the exact same s
 
 ---
 
+## Launcher
+
+The Quickshell launcher (`config/launcher/Launcher.qml`) is a lightweight alternative to Vicinae. It is a starting point rather than a full replacement:
+- **Open**: `SUPER + Shift + Space` in MangoWC, Hyprland, and Niri, or `quickshell ipc call launcher toggle`.
+- **Window**: A fixed 760 x 500 card centred on the active screen, reusing `WmService.resolveTargetScreen(...)` and the `Card` primitive. The result list scrolls and keeps the selected row visible.
+- **Applications**: `launcher/desktop-entries.sh` parses `.desktop` files from `XDG_DATA_DIRS` and the Flatpak exports, skips `NoDisplay`/`Hidden` entries, strips field codes, and emits JSON lines with the application Actions, file path, and desktop ID. The QML side filters by name and comment and launches with `sh -c` (or `kitty -e` for terminal entries).
+- **Keyboard**: Up/Down or Ctrl+K/Ctrl+J move the selection. Ctrl+Enter opens the actions menu for the selected application or calculator result. Escape closes the menu first, then the launcher.
+- **Actions**: Per-app `[Desktop Action]` entries come first, then the presets Launch, Run in terminal, Copy command, Copy desktop file path, and Copy desktop ID. Calculator results offer Copy result and Copy expression.
+- **Calculator**: `launcher/Calc.js` wraps the vendored expr-eval library (`launcher/expr-eval.js`, MIT). It supports arithmetic, `^`, functions such as `sqrt`, `sin`, and `log`, and the constants `pi`, `e`, and `tau`. A valid expression appears as the first result; Enter copies it with `wl-copy`.
+- **Theme**: All colours come from `Colours.qml` and fonts from `Config.qml`, so it matches the rest of the shell.
+
+Vicinae remains installed and keeps its own keybinds while the built-in launcher is evaluated.
+
+---
+
 ## Notification Daemon & Overlay
 
 Quickshell includes a built-in Freedesktop notification daemon replacement:
@@ -144,13 +168,15 @@ Quickshell includes a built-in Freedesktop notification daemon replacement:
 
 ---
 
-## Unit Testing Framework (`tests/utils.test.js`)
+## Unit Testing
 
-Quickshell includes a zero-dependency Node.js unit test suite in `modules/features/desktop-env/quickshell/tests/utils.test.js`:
+Quickshell includes zero-dependency Node.js unit tests in `modules/features/desktop-env/quickshell/tests/`:
 
 ```bash
-node --test modules/features/desktop-env/quickshell/tests/utils.test.js
+node --test modules/features/desktop-env/quickshell/tests/*.test.js
 ```
+
+`utils.test.js` validates the core `Utils.js` helpers, and `calc.test.js` covers the launcher calculator.
 
 The test runner validates core JavaScript helpers in `Utils.js` inside an isolated Node `vm` context:
 - Two-digit padding (`pad2`) and audio track duration formatting (`formatTime`).

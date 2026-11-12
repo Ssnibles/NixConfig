@@ -1,0 +1,97 @@
+pragma ComponentBehavior: Bound
+import Quickshell
+import Quickshell.Wayland
+import QtQuick
+import "../Utils.js" as Utils
+import ".."
+
+Scope {
+  id: root
+
+  readonly property string position: Config.notifPosition
+
+  // Non-all-screens mode: freeze onto the active screen when a toast appears so
+  // notifications follow the user without jumping around while they are shown.
+  property var _screen: null
+  readonly property int activeCount: NotificationService.activeModel.count
+
+  onActiveCountChanged: {
+    if (activeCount > 0) {
+      if (!root._screen) {
+        root._screen = Config.lastActiveScreen || (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)
+      }
+    } else {
+      root._screen = null
+    }
+  }
+
+  readonly property var targetScreens: Utils.resolveOverlayScreens(
+    Config.notifAllScreens,
+    root.activeCount > 0,
+    root._screen,
+    Config.lastActiveScreen,
+    Quickshell.screens
+  )
+
+  Variants {
+    model: root.targetScreens
+
+    PanelWindow {
+      id: panel
+      required property var modelData
+      screen: modelData
+
+      WlrLayershell.layer: WlrLayer.Overlay
+      exclusionMode: ExclusionMode.Ignore
+
+      readonly property var pos: Utils.parseOverlayPosition(root.position, "top-right")
+      readonly property var insets: Utils.overlayMargins(panel.pos, Config.notifMarginX, Config.notifMarginY, Config)
+
+      anchors {
+        top: panel.pos.onTop
+        bottom: panel.pos.onBottom
+        left: panel.pos.onLeft
+        right: panel.pos.onRight
+      }
+
+      margins {
+        top: panel.insets.top
+        bottom: panel.insets.bottom
+        left: panel.insets.left
+        right: panel.insets.right
+      }
+
+      implicitWidth: Config.notifWidth + Config.notifCardMargins * 2
+      implicitHeight: notifColumn.implicitHeight + Config.notifCardMargins * 2
+      color: "transparent"
+      visible: root.activeCount > 0
+
+      mask: Region { item: notifColumn }
+
+      Column {
+        id: notifColumn
+        width: parent.width - Config.notifCardMargins * 2
+        spacing: Config.notifSpacing
+
+        anchors.margins: Config.notifCardMargins
+        anchors.top: panel.pos.onTop ? parent.top : undefined
+        anchors.bottom: panel.pos.onBottom ? parent.bottom : undefined
+        anchors.verticalCenter: panel.pos.isVertCentre ? parent.verticalCenter : undefined
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        add: Transition {
+          NumberAnimation { property: "opacity"; from: 0; duration: 250; easing.type: Easing.OutCubic }
+        }
+
+        move: Transition {
+          NumberAnimation { properties: "x,y"; duration: 250; easing.type: Easing.OutCubic }
+        }
+
+        Repeater {
+          model: NotificationService.activeModel
+          delegate: NotificationCard { animateEntry: true }
+        }
+      }
+    }
+  }
+}

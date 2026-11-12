@@ -25,7 +25,7 @@ Scope {
 
   Loader {
     id: barLoader
-    source: "bar.qml"
+    source: "bar/bar.qml"
   }
 
   NotificationOverlay { }
@@ -33,6 +33,8 @@ Scope {
   OsdOverlay { }
 
   CommandCentre { }
+
+  Launcher { }
 
   LockScreen { }
 }

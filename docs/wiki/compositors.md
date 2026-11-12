@@ -34,6 +34,7 @@ MangoWC is a lightweight, DWM-inspired Wayland compositor built on wlroots. It i
 - **`SUPER + Space`**: Toggle Vicinae application launcher (`vicinae toggle`)
 - **`SUPER + v`**: Open Vicinae clipboard history manager (`vicinae cmd launch clipboard:history`)
 - **`SUPER + d`**: Toggle Quickshell Command Centre dashboard
+- **`SUPER + Shift + Space`**: Toggle the Quickshell launcher
 - **`SUPER + Alt + L`**: Lock screen via Quickshell lockscreen
 - **`SUPER + e`**: Open Yazi file manager in Kitty
 - **`SUPER + g`**: Toggle Quickshell top status bar

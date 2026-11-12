@@ -32,6 +32,29 @@ All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by `
 | **Config Symlinks** | `nixos.liveLinks` (`quickshell-config`) links every file in `config/*` into `~/.config/quickshell`. |
 | **Permissions** | Symlinks and target directories are owned by the active user. |
 
+### 1.1 Directory layout
+
+The QML source is grouped by component rather than kept flat:
+
+```text
+config/
+├── shell.qml            # Root Scope: loads the bar, overlays and lock screen
+├── Config.qml           # Global configuration singleton
+├── Colours.qml          # Nix-generated theme tokens
+├── Utils.js             # Shared JavaScript helpers
+├── qmldir               # Manifest for cross-directory types
+├── common/              # Shared visual primitives and reusable widgets
+├── services/            # State singletons and compositor backends
+├── bar/                 # Status bar and bar-only widgets
+├── launcher/            # Application launcher and calculator
+├── command-centre/      # Command Centre and its cards
+├── notifications/       # Notification overlay
+├── lock/                # Lock screen components
+└── osd/                 # On-screen display overlay
+```
+
+Every subdirectory adds `import ".."` so it can use the root manifest. The manifest lists shared types by path, so a component in `bar/` can use `Card` from `common/` without a second import. Add a new cross-directory type to `config/qmldir` when you create it.
+
 ---
 
 ## 2. Entry Point & Architecture (`shell.qml`)
@@ -41,7 +64,7 @@ All QML code lives in `config/` and is symlinked to `~/.config/quickshell/` by `
 ```qml
 Scope {
   Loader {
-    source: "bar.qml"
+    source: "bar/bar.qml"
   }
   NotificationOverlay { }
   OsdOverlay { }
@@ -256,6 +279,15 @@ Scope {
 - **IPC Target**: `"lockscreen"` (functions: `lock()`, `unlock()`, `toggle()`).
 - **Features**: Lazy loading architecture, PAM authentication (`PamContext`), primary monitor interactive password prompt (`LockAuthCard`) with user avatar, real-time accent highlight on keystrokes, rotating authentication spinner, password peek/reveal eye toggle, Caps Lock warning & error shake animation, secondary screen display lock graphics (`LockSecondaryScreen`) with live typing indicator & MPRIS `MediaCard`, customisable status pill cluster (`LockStatusCluster`) docked to any corner (default `"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`, or `"split"` / `"corners"` via `Config.lockStatusPosition` or `QS_LOCK_STATUS_POS`), background wallpaper with customisable GPU blur (`MultiEffect`) and dimming, and system power actions (Sleep/Suspend, Reboot, Power Off).
 
+#### `Launcher.qml`
+- **Role**: Layer-shell launcher and calculator. It opens on the active screen, filters desktop entries from `launcher/desktop-entries.sh`, and shows a calculator result for a valid expression.
+- **IPC Target**: `"launcher"` (functions: `toggle()`, `open()`, `close()`).
+- **Window**: Fixed 760 x 500 card centred on the active screen. The result list scrolls with the wheel, trackpad, or keyboard, and the selected row stays in view.
+- **Keyboard**: Up/Down or Ctrl+K/Ctrl+J move the selection. Ctrl+Enter opens the actions menu for the selected application or calculator result. Escape closes the actions menu first, then the launcher.
+- **Default Keybind**: `SUPER + Shift + Space` in MangoWC, Hyprland, and Niri.
+- **Actions**: Per-app `[Desktop Action]` entries are read from the `.desktop` file, followed by presets: Launch, Run in terminal, Copy command, Copy desktop file path, and Copy desktop ID. Calculator results offer Copy result and Copy expression.
+- **Calculator**: `launcher/Calc.js` wraps the vendored [expr-eval](https://github.com/silentmatt/expr-eval) library (`launcher/expr-eval.js`, MIT). It supports arithmetic, `^`, functions such as `sqrt`, `sin`, and `log`, and the constants `pi`, `e`, and `tau`. Pressing Enter copies the result to the clipboard.
+
 #### `NotificationOverlay.qml` & `NotificationCard.qml`
 - **Role**: Screen overlay and card delegate rendering active notification toasts and history items.
 - **Features**: Stack layout driven by `NotificationService`, animated entry/exit, action buttons, avatar/icon previews with fallback glyphs, and click-to-dismiss or focus.
@@ -368,12 +400,13 @@ A single layer window per display hugging `Config.barSide`. Handles popup positi
 Follow these steps to create and register a new status bar widget or overlay component:
 
 ### Step 1: Create the Component File
-Create a new QML file in `modules/features/desktop-env/quickshell/config/`, e.g., `CpuWidget.qml`:
+Create a new QML file in the directory that matches its role, e.g. `config/bar/CpuWidget.qml` for a bar widget, `config/common/` for a shared primitive, or `config/services/` for a singleton. Add `import ".."` so shared types from the manifest are available:
 
 ```qml
 import Quickshell
 import QtQuick
-import "Utils.js" as Utils
+import ".."
+import "../Utils.js" as Utils
 
 Pill {
   id: root
@@ -426,7 +459,7 @@ readonly property int cpuPollIntervalMs: 2000
 ```
 
 ### Step 3: Insert into the Status Bar
-Open `bar.qml` and instantiate your component inside `startSection` or `endSection`:
+Open `bar/bar.qml` and instantiate your component inside `startSection` or `endSection`:
 
 ```qml
 CpuWidget {
@@ -468,16 +501,14 @@ pkill quickshell; quickshell &
 
 ## 9. Tooling & Tests
 
-- **Unit tests** (`tests/utils.test.js`): pure-JS tests for the helpers in `Utils.js` (title cleaning, app-name prettifying, time/volume/battery formatting, screen lookup). Run locally with:
+- **Unit tests** (`tests/*.test.js`): pure-JS tests for the helpers in `Utils.js` and the launcher calculator. Run locally with:
   ```bash
-  node --test modules/features/desktop-env/quickshell/tests/utils.test.js
+  node --test modules/features/desktop-env/quickshell/tests/*.test.js
   ```
   These also run in the `Validate Nix Flake` GitHub Actions workflow and need no Nix or Qt.
 
-- **Editor / LSP support**: `config/qmldir.lsp` is a *staged* module manifest so `qmllint`/`qmlls` can resolve the local singletons. It is deliberately not named `qmldir`, because Quickshell discovers `pragma Singleton` types on its own. To enable it:
-  ```bash
-  cp modules/features/desktop-env/quickshell/config/qmldir.lsp ~/.config/quickshell/qmldir
-  ```
-  Delete that copy to revert if your editor or shell misbehaves.
+- **Editor / LSP support**: `config/qmldir` is the real manifest for the config module. It lists every shared type and its path, so `qmllint` and `qmlls` can resolve components across directories. Quickshell also uses it at runtime; a new cross-directory type must be added there.
 
-- **Static analysis**: every QML file declares `pragma ComponentBehavior: Bound`, and delegates declare their model context as `required property ...`. With the `qmldir` above, `qmllint` is clean apart from a handful of Quickshell/`Qt` type-resolution false positives (`PanelWindow`, `margins {}`, `Qt.CapsLockModifier`).
+- **Vendored expr-eval**: `config/launcher/expr-eval.js` is expr-eval 2.0.2 with two local changes: the UMD wrapper is replaced with top-level exports so QML can import it, and `ParserState.next` separates an assignment from its return expression because Qt V4 evaluates the original form incorrectly. The MIT licence is in `expr-eval.LICENSE`.
+
+- **Static analysis**: every QML file declares `pragma ComponentBehavior: Bound`, and delegates declare their model context as `required property ...`. With the manifest above, `qmllint` is clean apart from a handful of Quickshell/`Qt` type-resolution false positives (`PanelWindow`, `margins {}`, `Qt.CapsLockModifier`).

@@ -184,6 +184,7 @@ local screenshotOcrCmd = "$HOME/.config/mango/screenshot.sh ocr"
 hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("kitty --single-instance"))
 hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd("vicinae toggle"))
 hl.bind(mod .. " + D", hl.dsp.exec_cmd("quickshell ipc call command-centre toggle"))
+hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("quickshell ipc call launcher toggle"))
 hl.bind(mod .. " + ALT + l", hl.dsp.exec_cmd("quickshell ipc call lockscreen lock"))
 hl.bind(mod .. " + E", hl.dsp.exec_cmd("kitty --single-instance -e yazi"))
 

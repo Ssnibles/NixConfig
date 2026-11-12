@@ -1,0 +1,75 @@
+# QML module manifest for the Quickshell config.
+# Root types are available to every subdirectory via `import ".."`.
+
+singleton Config 1.0 Config.qml
+singleton Colours 1.0 Colours.qml
+
+# services
+singleton AudioService 1.0 services/AudioService.qml
+singleton BatteryService 1.0 services/BatteryService.qml
+singleton BluetoothService 1.0 services/BluetoothService.qml
+singleton BrightnessService 1.0 services/BrightnessService.qml
+singleton ClockService 1.0 services/ClockService.qml
+HyprlandService 1.0 services/HyprlandService.qml
+MangoService 1.0 services/MangoService.qml
+singleton MediaService 1.0 services/MediaService.qml
+singleton NetworkService 1.0 services/NetworkService.qml
+NiriService 1.0 services/NiriService.qml
+singleton NotificationIcons 1.0 services/NotificationIcons.qml
+singleton NotificationService 1.0 services/NotificationService.qml
+singleton SystemService 1.0 services/SystemService.qml
+singleton TrayService 1.0 services/TrayService.qml
+singleton WindowFocuser 1.0 services/WindowFocuser.qml
+singleton WmService 1.0 services/WmService.qml
+
+# common
+BatteryWidget 1.0 common/BatteryWidget.qml
+BluetoothWidget 1.0 common/BluetoothWidget.qml
+Card 1.0 common/Card.qml
+Divider 1.0 common/Divider.qml
+IconButton 1.0 common/IconButton.qml
+MediaCard 1.0 common/MediaCard.qml
+MediaProgressRow 1.0 common/MediaProgressRow.qml
+NetworkWidget 1.0 common/NetworkWidget.qml
+NotificationCard 1.0 common/NotificationCard.qml
+Pill 1.0 common/Pill.qml
+PlaybackControls 1.0 common/PlaybackControls.qml
+PowerButtons 1.0 common/PowerButtons.qml
+RoundedImage 1.0 common/RoundedImage.qml
+SliderControl 1.0 common/SliderControl.qml
+Tooltip 1.0 common/Tooltip.qml
+
+# bar
+ClockWidget 1.0 bar/ClockWidget.qml
+CommandCentreButton 1.0 bar/CommandCentreButton.qml
+LayoutWidget 1.0 bar/LayoutWidget.qml
+MediaWidget 1.0 bar/MediaWidget.qml
+SharedTooltipWindow 1.0 bar/SharedTooltipWindow.qml
+SystemTrayWidget 1.0 bar/SystemTrayWidget.qml
+TrayMenu 1.0 bar/TrayMenu.qml
+VolumeWidget 1.0 bar/VolumeWidget.qml
+WindowTitleWidget 1.0 bar/WindowTitleWidget.qml
+WorkspacesWidget 1.0 bar/WorkspacesWidget.qml
+
+# launcher
+Launcher 1.0 launcher/Launcher.qml
+
+# command-centre
+AudioSinkPicker 1.0 command-centre/AudioSinkPicker.qml
+CommandCentre 1.0 command-centre/CommandCentre.qml
+ControlSliderRow 1.0 command-centre/ControlSliderRow.qml
+NotificationHistoryCard 1.0 command-centre/NotificationHistoryCard.qml
+
+# notifications
+NotificationOverlay 1.0 notifications/NotificationOverlay.qml
+
+# lock
+HostnamePill 1.0 lock/HostnamePill.qml
+LockAuthCard 1.0 lock/LockAuthCard.qml
+LockScreen 1.0 lock/LockScreen.qml
+LockSecondaryScreen 1.0 lock/LockSecondaryScreen.qml
+LockStatusCluster 1.0 lock/LockStatusCluster.qml
+VolumePill 1.0 lock/VolumePill.qml
+
+# osd
+OsdOverlay 1.0 osd/OsdOverlay.qml

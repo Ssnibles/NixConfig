@@ -50,6 +50,12 @@ Singleton {
     readonly property bool ccShowMicSlider: true
     readonly property bool ccShowBrightnessSlider: true
 
+    // Launcher State & Geometry
+    property bool launcherVisible: false
+    readonly property int launcherWidth: 760
+    readonly property int launcherHeight: 500
+    readonly property int launcherMaxResults: 50
+
     // Status Bars
     property bool barVisible: true
     readonly property string barType: wm === "niri" ? "niri" : "bar"

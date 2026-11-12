@@ -29,14 +29,10 @@
         ;
     in
     {
-      options.features.quickshell.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable the Quickshell UI engine (bars, command centre, lock screen, notifications).";
-      };
+      options.features.quickshell.enable = lib.mkEnableOption "the Quickshell UI engine (bars, command centre, lock screen, notifications)";
 
       config = lib.mkIf cfg.enable {
-        environment.systemPackages = with pkgs.unstable; [
+        environment.systemPackages = with pkgs; [
           quickshell
         ];
 

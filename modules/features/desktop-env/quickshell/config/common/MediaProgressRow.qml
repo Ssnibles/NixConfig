@@ -1,0 +1,76 @@
+pragma ComponentBehavior: Bound
+import QtQuick
+import QtQuick.Layouts
+import "../Utils.js" as Utils
+import ".."
+
+// Reusable elapsed-time + seekbar + total-time row.
+// Used in CommandCentre, MediaWidget popover, and LockScreen.
+RowLayout {
+  id: root
+  spacing: 8
+
+  property real position: 0   // current position in seconds
+  property real length: 0     // total length in seconds
+  property real progress: 0   // 0..1 fraction (computed externally by MediaService)
+  property bool seekable: true
+  property bool live: false   // live stream: no finite length, not seekable
+
+  signal seekRequested(real progress)
+
+  // Width of both fixed time columns, measured below.
+  readonly property real timeLabelWidth: Math.ceil(timeSizer.implicitWidth)
+
+  Text {
+    id: positionText
+    text: Utils.formatTime(Math.round(root.position))
+    color: Colours.fgDim
+    font.family: Config.sansFont
+    font.pixelSize: 12
+    Layout.minimumWidth: root.timeLabelWidth
+    Layout.preferredWidth: root.timeLabelWidth
+    Layout.maximumWidth: root.timeLabelWidth
+    horizontalAlignment: Text.AlignRight
+  }
+
+  SliderControl {
+    visible: !root.live
+    Layout.fillWidth: true
+    value: root.progress
+    fillColour: Colours.accent
+    enabled: root.seekable
+    onMoved: function(v) { root.seekRequested(v) }
+  }
+
+  Text {
+    visible: !root.live
+    text: Utils.formatTime(Math.round(root.length))
+    color: Colours.fgDim
+    font.family: Config.sansFont
+    font.pixelSize: 12
+    Layout.minimumWidth: root.timeLabelWidth
+    Layout.preferredWidth: root.timeLabelWidth
+    Layout.maximumWidth: root.timeLabelWidth
+  }
+
+  Text {
+    visible: root.live
+    text: "● LIVE"
+    color: Colours.red
+    font.family: Config.sansFont
+    font.pixelSize: 11
+    font.bold: true
+    Layout.fillWidth: true
+    horizontalAlignment: Text.AlignRight
+  }
+
+  // Hidden twin: measures the widest time ("000:00" covers up to 999:59) with
+  // the same font, so the seekbar keeps the same length as the minutes digits
+  // change. Layouts skip invisible items, so it costs no space.
+  Text {
+    id: timeSizer
+    visible: false
+    text: "000:00"
+    font: positionText.font
+  }
+}
