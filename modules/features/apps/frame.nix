@@ -8,22 +8,20 @@
       pkgs,
       lib,
       config,
+      mkDistroboxTool,
       ...
     }:
     let
       cfg = config.features.frame;
 
       container = "frame";
+      setupScript = "~/NixConfig/assets/setup_frame.sh";
 
       # Run the client in the container and pass through URLs.
-      frame = pkgs.writeShellScriptBin "frame" ''
-        if ! ${pkgs.distrobox}/bin/distrobox list 2>/dev/null | grep -q "| ${container} "; then
-          echo "frame: Distrobox container '${container}' was not found." >&2
-          echo "Run ~/NixConfig/assets/setup_frame.sh to create it." >&2
-          exit 1
-        fi
-        exec ${pkgs.distrobox}/bin/distrobox enter ${container} -- frame "$@"
-      '';
+      frame = mkDistroboxTool {
+        inherit container setupScript;
+        name = "frame";
+      };
 
       # Add the icon to the hicolor theme for the desktop entry.
       frame-icon = pkgs.runCommand "frame-icon" { } ''
@@ -51,11 +49,7 @@
       };
     in
     {
-      options.features.frame.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable the Frame remote desktop client launcher and desktop entry.";
-      };
+      options.features.frame.enable = lib.mkEnableOption "the Frame remote desktop client launcher and desktop entry";
 
       config = lib.mkIf cfg.enable {
         environment.systemPackages = [

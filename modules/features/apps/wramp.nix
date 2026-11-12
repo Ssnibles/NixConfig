@@ -6,14 +6,16 @@
       pkgs,
       lib,
       config,
+      mkDistroboxTool,
       ...
     }:
     let
       cfg = config.features.wramp;
 
       container = "wramp";
+      setupScript = "~/NixConfig/assets/setup_wramp.sh";
 
-      # Run each WRAMP tool inside the container.
+      # Run each WRAMP tool inside the container. wsim launches the simulator.
       wramp-tools = [
         "wasm"
         "wlink"
@@ -21,27 +23,8 @@
         "wcc"
         "remote"
         "trim"
+        "wsim"
       ];
-
-      check_container = ''
-        if ! ${pkgs.distrobox}/bin/distrobox list 2>/dev/null | grep -q "| ${container} "; then
-          echo "wramp: Distrobox container '${container}' was not found." >&2
-          echo "Run ~/NixConfig/assets/setup_wramp.sh to create it." >&2
-          exit 1
-        fi
-      '';
-
-      tool-wrapper =
-        tool:
-        pkgs.writeShellScriptBin tool ''
-          ${check_container}
-          exec ${pkgs.distrobox}/bin/distrobox enter ${container} -- ${tool} "$@"
-        '';
-
-      wsim-script = pkgs.writeShellScriptBin "wsim" ''
-        ${check_container}
-        exec ${pkgs.distrobox}/bin/distrobox enter ${container} -- wsim "$@"
-      '';
 
       wsim-desktop = pkgs.makeDesktopItem {
         name = "wsim";
@@ -54,18 +37,13 @@
       };
     in
     {
-      options.features.wramp.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable the WRAMP toolchain and wsim simulator Distrobox launchers.";
-      };
+      options.features.wramp.enable = lib.mkEnableOption "the WRAMP toolchain and wsim simulator Distrobox launchers";
 
       config = lib.mkIf cfg.enable {
         environment.systemPackages = [
-          wsim-script
           wsim-desktop
         ]
-        ++ map tool-wrapper wramp-tools;
+        ++ map (name: mkDistroboxTool { inherit container setupScript name; }) wramp-tools;
       };
     };
 }
