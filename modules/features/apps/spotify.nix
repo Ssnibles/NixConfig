@@ -30,7 +30,7 @@
           enable = true;
           wayland = lib.mkDefault true;
 
-          spotifyPackage = lib.mkDefault pkgs.unstable.spotify;
+          spotifyPackage = lib.mkDefault pkgs.spotify;
 
           # Theme built from the active palette. builtins.path copies it into
           # the store for the theme's pathInStore option.

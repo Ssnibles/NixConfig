@@ -2,22 +2,15 @@
 # Neovim is configured in apps/neovim.nix.
 {
   self,
-  inputs,
   ...
 }:
 {
   nixos.modules.shared =
     {
       pkgs,
-      lib,
       config,
       ...
     }:
-    let
-      pomodoroPkg = lib.optional (
-        inputs ? pomodoro
-      ) inputs.pomodoro.packages.${pkgs.stdenv.hostPlatform.system}.default;
-    in
     {
       config = {
         environment.systemPackages =
@@ -54,10 +47,9 @@
             sqlite
             self.packages.${pkgs.stdenv.hostPlatform.system}.plsfail
           ])
-          ++ pomodoroPkg
-          ++ (with pkgs.unstable; [
+          ++ (with pkgs; [
             antigravity-cli
-            opencode
+            # opencode
             android-studio
           ]);
 

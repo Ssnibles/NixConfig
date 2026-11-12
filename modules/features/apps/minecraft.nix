@@ -16,13 +16,7 @@
       bedrock = inputs.bedrock-on-linux.packages.${pkgs.stdenv.hostPlatform.system}.default;
     in
     {
-      options.features.minecraft = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable Minecraft Java (PrismLauncher) and Bedrock (BedrockOnLinux).";
-        };
-      };
+      options.features.minecraft.enable = lib.mkEnableOption "Minecraft Java (PrismLauncher) and Bedrock (BedrockOnLinux)";
 
       config = lib.mkIf cfg.enable {
         # Minecraft 26.3 ships SDL3 (libSDL3.so from lwjgl-sdl) and dlopens the
@@ -35,22 +29,21 @@
         nixpkgs.overlays = [
           (final: prev: {
             modrinth-app = prev.modrinth-app.overrideAttrs (old: {
-              runtimeDependencies =
-                "${old.runtimeDependencies}:${
-                  final.lib.makeLibraryPath [
-                    final.wayland
-                    final.libdecor
-                    final.libxkbcommon
-                    # The bundled Zulu JRE's libawt_xawt.so dlopens these; without
-                    # them java.awt.Toolkit/ImageIO fail and resource reload dies
-                    # with a black screen. SDL3's X11 backend wants the same set.
-                    final.libXi
-                    final.libXrender
-                    final.libXtst
-                    final.libXfixes
-                    final.libXScrnSaver
-                  ]
-                }";
+              runtimeDependencies = "${old.runtimeDependencies}:${
+                final.lib.makeLibraryPath [
+                  final.wayland
+                  final.libdecor
+                  final.libxkbcommon
+                  # The bundled Zulu JRE's libawt_xawt.so dlopens these; without
+                  # them java.awt.Toolkit/ImageIO fail and resource reload dies
+                  # with a black screen. SDL3's X11 backend wants the same set.
+                  final.libXi
+                  final.libXrender
+                  final.libXtst
+                  final.libXfixes
+                  final.libXScrnSaver
+                ]
+              }";
             });
           })
         ];

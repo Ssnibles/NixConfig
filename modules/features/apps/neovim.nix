@@ -18,9 +18,9 @@
           dir = "${extension}/share/vscode/extensions/${subdir}/server";
         in
         map (name: "${dir}/${name}") (
-          builtins.filter (
-            name: lib.hasSuffix ".jar" name && !(builtins.elem name excluded)
-          ) (builtins.attrNames (builtins.readDir dir))
+          builtins.filter (name: lib.hasSuffix ".jar" name && !(builtins.elem name excluded)) (
+            builtins.attrNames (builtins.readDir dir)
+          )
         );
 
       javaBundles =
@@ -63,9 +63,9 @@
 
             # qmlls wrapped with the QtQuick and Quickshell types.
             (writeShellScriptBin "qmlls" ''
-              exec "${pkgs.unstable.qt6.qtdeclarative}/bin/qmlls" \
-                -I "${pkgs.unstable.qt6.qtdeclarative}/lib/qt-6/qml" \
-                -I "${pkgs.unstable.quickshell}/lib/qt-6/qml" \
+              exec "${pkgs.qt6.qtdeclarative}/bin/qmlls" \
+                -I "${pkgs.qt6.qtdeclarative}/lib/qt-6/qml" \
+                -I "${pkgs.quickshell}/lib/qt-6/qml" \
                 "$@"
             '')
 

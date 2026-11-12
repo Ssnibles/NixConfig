@@ -5,7 +5,7 @@
     { pkgs, ... }:
     {
       config = {
-        environment.systemPackages = with pkgs.unstable; [
+        environment.systemPackages = with pkgs; [
           vesktop
           concord-tui
         ];

@@ -5,7 +5,6 @@
   nixos.modules.shared =
     {
       pkgs,
-      lib,
       config,
       ...
     }:
@@ -24,7 +23,7 @@
     in
     {
       config = {
-        environment.systemPackages = with pkgs.unstable; [
+        environment.systemPackages = with pkgs; [
           zathura
           imv
           (mpv.override {
@@ -52,7 +51,6 @@
         services.gvfs.enable = true;
 
         # Yazi stays available in the shell.
-        features.default-apps.fileManager = lib.mkDefault "thunar.desktop";
 
         hjem.users.${config.username} = {
           files = {
