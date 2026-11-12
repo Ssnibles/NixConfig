@@ -28,7 +28,15 @@
         # instance launches fine from Prism.
         nixpkgs.overlays = [
           (final: prev: {
-            modrinth-app = prev.modrinth-app.overrideAttrs (old: {
+            # The sqlx proc macro links against system sqlite3, which nixpkgs
+            # does not provide for the unwrapped build.
+            modrinth-app-unwrapped = prev.modrinth-app-unwrapped.overrideAttrs (old: {
+              buildInputs = (old.buildInputs or [ ]) ++ [ final.sqlite ];
+            });
+
+            modrinth-app = (prev.modrinth-app.override {
+              modrinth-app-unwrapped = final.modrinth-app-unwrapped;
+            }).overrideAttrs (old: {
               runtimeDependencies = "${old.runtimeDependencies}:${
                 final.lib.makeLibraryPath [
                   final.wayland
