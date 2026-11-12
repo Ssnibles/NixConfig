@@ -321,4 +321,7 @@ Singleton {
     readonly property var cmdSleep: ["systemctl", "suspend"]
     readonly property var cmdReboot: ["systemctl", "reboot"]
     readonly property var cmdPoweroff: ["systemctl", "poweroff"]
+    // Prefixes used by the launcher, so the terminal can be swapped.
+    readonly property var cmdTerminal: ["kitty", "-e"]
+    readonly property var cmdClipboard: ["wl-copy"]
 }

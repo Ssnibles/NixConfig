@@ -33,6 +33,17 @@ Scope {
     })
   }
 
+  // Terminal and clipboard commands come from Config so the launcher is not
+  // tied to kitty or wl-copy.
+  function runShell(command: string, terminal: bool): void {
+    var shell = ["sh", "-c", command]
+    Quickshell.execDetached(terminal ? Config.cmdTerminal.concat(shell) : shell)
+  }
+
+  function runCopy(text: string): void {
+    Quickshell.execDetached(Config.cmdClipboard.concat([text]))
+  }
+
   function close(): void {
     root.closeActions()
     UiState.launcherVisible = false
@@ -103,11 +114,8 @@ Scope {
     var action = root.actions[index]
     if (!action) return
 
-    if (action.copy) Quickshell.execDetached(["wl-copy", action.copy])
-    else if (action.exec) {
-      if (action.terminal) Quickshell.execDetached(["kitty", "-e", "sh", "-c", action.exec])
-      else Quickshell.execDetached(["sh", "-c", action.exec])
-    }
+    if (action.copy) runCopy(action.copy)
+    else if (action.exec) runShell(action.exec, action.terminal)
     root.close()
   }
 
@@ -186,10 +194,9 @@ Scope {
     if (!item) return
 
     if (item.kind === "calc") {
-      Quickshell.execDetached(["wl-copy", item.name])
+      runCopy(item.name)
     } else if (item.exec) {
-      if (item.terminal) Quickshell.execDetached(["kitty", "-e", "sh", "-c", item.exec])
-      else Quickshell.execDetached(["sh", "-c", item.exec])
+      runShell(item.exec, item.terminal)
     }
     root.close()
   }
