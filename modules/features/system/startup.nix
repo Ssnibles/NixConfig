@@ -2,7 +2,11 @@
 { ... }:
 {
   nixos.modules.shared =
-    { pkgs, config, ... }:
+    {
+      pkgs,
+      mkWaylandService,
+      ...
+    }:
     {
       environment.systemPackages = with pkgs; [
         wl-clip-persist
@@ -19,52 +23,19 @@
       systemd.user.sockets.speech-dispatcher.enable = false;
 
       # Keep the clipboard alive after the source application exits.
-      systemd.user.services.clipboard-persist = {
+      systemd.user.services.clipboard-persist = mkWaylandService {
         description = "Persist Wayland clipboard (regular and primary) after source application exits";
-        wantedBy = [ "wayland-session.target" ];
-        after = [ "wayland-session.target" ];
-        partOf = [ "wayland-session.target" ];
-        path = [ config.system.path ];
-        startLimitBurst = 0;
-        startLimitIntervalSec = 0;
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${pkgs.wl-clip-persist}/bin/wl-clip-persist --clipboard both";
-          Restart = "on-failure";
-          RestartSec = 2;
-        };
+        execStart = "${pkgs.wl-clip-persist}/bin/wl-clip-persist --clipboard both";
       };
 
-      systemd.user.services.cliphist-store-text = {
+      systemd.user.services.cliphist-store-text = mkWaylandService {
         description = "Index text clipboard history with cliphist";
-        wantedBy = [ "wayland-session.target" ];
-        after = [ "wayland-session.target" ];
-        partOf = [ "wayland-session.target" ];
-        path = [ config.system.path ];
-        startLimitBurst = 0;
-        startLimitIntervalSec = 0;
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${pkgs.wl-clipboard}/bin/wl-paste --type text --watch ${pkgs.cliphist}/bin/cliphist store";
-          Restart = "on-failure";
-          RestartSec = 2;
-        };
+        execStart = "${pkgs.wl-clipboard}/bin/wl-paste --type text --watch ${pkgs.cliphist}/bin/cliphist store";
       };
 
-      systemd.user.services.cliphist-store-image = {
+      systemd.user.services.cliphist-store-image = mkWaylandService {
         description = "Index image clipboard history with cliphist";
-        wantedBy = [ "wayland-session.target" ];
-        after = [ "wayland-session.target" ];
-        partOf = [ "wayland-session.target" ];
-        path = [ config.system.path ];
-        startLimitBurst = 0;
-        startLimitIntervalSec = 0;
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${pkgs.wl-clipboard}/bin/wl-paste --type image --watch ${pkgs.cliphist}/bin/cliphist store";
-          Restart = "on-failure";
-          RestartSec = 2;
-        };
+        execStart = "${pkgs.wl-clipboard}/bin/wl-paste --type image --watch ${pkgs.cliphist}/bin/cliphist store";
       };
     };
 }
