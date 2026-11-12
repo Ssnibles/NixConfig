@@ -17,8 +17,10 @@ singleton NetworkService 1.0 services/NetworkService.qml
 NiriService 1.0 services/NiriService.qml
 singleton NotificationIcons 1.0 services/NotificationIcons.qml
 singleton NotificationService 1.0 services/NotificationService.qml
+singleton Session 1.0 services/Session.qml
 singleton SystemService 1.0 services/SystemService.qml
 singleton TrayService 1.0 services/TrayService.qml
+singleton UiState 1.0 services/UiState.qml
 singleton WindowFocuser 1.0 services/WindowFocuser.qml
 singleton WmService 1.0 services/WmService.qml
 
