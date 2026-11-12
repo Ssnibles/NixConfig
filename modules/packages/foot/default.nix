@@ -13,6 +13,7 @@
     }:
     let
       cfg = config.features.foot;
+      home = config.users.users.${config.username}.home;
 
       inherit (config.theme.colours)
         bg
@@ -63,7 +64,7 @@
           files = {
             ".config/foot/foot.ini" = {
               text = ''
-                include=/home/${config.username}/.config/foot/colours.ini
+                include=${home}/.config/foot/colours.ini
                 font=Maple Mono NR NF:size=12
                 pad=10x10
 

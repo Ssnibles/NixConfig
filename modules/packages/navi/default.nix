@@ -13,7 +13,8 @@
     let
       inherit (pkgs) lib;
 
-      naviDir = "/home/${config.username}/.config/navi";
+      home = config.users.users.${config.username}.home;
+      naviDir = "${home}/.config/navi";
       cheatsDir = "${naviDir}/cheats";
 
       # Cheats are Nix data rendered to navi cheat files. Placeholders written
