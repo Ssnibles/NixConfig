@@ -91,23 +91,27 @@ Card {
         }
       }
 
-      // Username Text
-      Text {
+      // Username and status form a tighter pair under the avatar.
+      ColumnLayout {
         Layout.alignment: Qt.AlignHCenter
-        text: Session.user
-        color: Colours.fg
-        font.family: Session.sansFont
-        font.pixelSize: 20
-        font.bold: true
-      }
+        spacing: Config.space2xs
 
-      // Status / Error Subtitle
-      Text {
-        Layout.alignment: Qt.AlignHCenter
-        text: root.errorMessage !== "" ? root.errorMessage : (root.authenticating ? "Authenticating..." : "System Locked")
-        color: root.errorMessage !== "" ? Colours.red : (root.authenticating ? Colours.accent : Colours.fgDim)
-        font.family: Session.sansFont
-        font.pixelSize: 14
+        Text {
+          Layout.alignment: Qt.AlignHCenter
+          text: Session.user
+          color: Colours.fg
+          font.family: Session.sansFont
+          font.pixelSize: 20
+          font.bold: true
+        }
+
+        Text {
+          Layout.alignment: Qt.AlignHCenter
+          text: root.errorMessage !== "" ? root.errorMessage : (root.authenticating ? "Authenticating..." : "System Locked")
+          color: root.errorMessage !== "" ? Colours.red : (root.authenticating ? Colours.accent : Colours.fgDim)
+          font.family: Session.sansFont
+          font.pixelSize: Config.fontSizeMd
+        }
       }
     }
 
@@ -228,22 +232,6 @@ Card {
           onClicked: {
             root.revealPassword = !root.revealPassword
           }
-        }
-
-        // Submit Button Pill
-        IconButton {
-          Layout.alignment: Qt.AlignVCenter
-          buttonSize: 32
-          icon: "󰁔"
-          baseColour: root.enteredPassword.length > 0 ? Colours.accent : Colours.bgRaised
-          hoverColour: root.enteredPassword.length > 0 ? Colours.accent : Colours.bgSubtle
-          borderColour: root.enteredPassword.length > 0 ? Colours.accent : Colours.border
-          hoverBorderColour: root.enteredPassword.length > 0 ? Colours.accent : Colours.border
-          iconColour: root.enteredPassword.length > 0 ? Colours.bg : Colours.fgDim
-          hoverIconColour: root.enteredPassword.length > 0 ? Colours.bg : Colours.accent
-          hoverScale: 0.92
-          enabled: root.enteredPassword.length > 0 && !root.authenticating
-          onClicked: root.submitEnteredPassword()
         }
       }
     }
