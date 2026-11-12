@@ -1,7 +1,7 @@
 # Colour palettes.
 # Each scheme feeds config.theme.colours and is used by tmux, Firefox, Vicinae,
 # Quickshell, and the other themed modules.
-{ ... }:
+{ lib, ... }:
 {
   nixos.modules.shared =
     { config, ... }:
@@ -196,6 +196,13 @@
       };
     in
     {
-      config.theme.colours = schemes.${config.theme.active};
+      options.theme.schemes = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.attrsOf lib.types.str);
+        internal = true;
+        default = schemes;
+        description = "Colour palettes keyed by scheme name.";
+      };
+
+      config.theme.colours = config.theme.schemes.${config.theme.active};
     };
 }

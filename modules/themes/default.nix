@@ -1,30 +1,38 @@
 # Theme options.
-{ ... }:
+{ lib, ... }:
 {
   nixos.modules.shared =
-    { lib, ... }:
+    { config, ... }:
+    let
+      colourNames = [
+        "bg"
+        "bgRaised"
+        "bgSubtle"
+        "border"
+        "fg"
+        "fgMid"
+        "fgDim"
+        "accent"
+        "teal"
+        "purple"
+        "green"
+        "yellow"
+        "red"
+        "orange"
+      ];
+    in
     {
       options.theme = {
         active = lib.mkOption {
-          type = lib.types.enum [
-            "catppuccin-mocha"
-            "gruvbox-dark"
-            "default-dark"
-            "default-light"
-            "gruvbox-dark-hard"
-            "gruvbox-light-hard"
-            "rose-pine"
-            "rose-pine-moon"
-            "rose-pine-dawn"
-            "everforest-light"
-            "vague"
-          ];
+          type = lib.types.enum (builtins.attrNames config.theme.schemes);
           default = "vague";
           description = "Active colour palette scheme name defined in themes/palette.nix.";
         };
 
         colours = lib.mkOption {
-          type = lib.types.attrsOf lib.types.str;
+          type = lib.types.submodule {
+            options = lib.genAttrs colourNames (_: lib.mkOption { type = lib.types.str; });
+          };
           description = "HEX colour attributes injected globally for UI styling.";
         };
 
