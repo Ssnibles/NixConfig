@@ -306,6 +306,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### `AudioService.qml`
 - **Role**: `pragma Singleton` for PipeWire output sinks and the default microphone source.
+- **Selection**: `selectAudioSink(node)` sets the `default.auto-eq` latch before changing the default output, because `auto-eq.lua` would otherwise override the choice with the matched equaliser sink.
 - **Exposes**: `audioSink`, `audioSinks`, `selectAudioSink(node)`, `sinkDisplayName(node)`, `sinkLabel(node)`, `volume`, `muted`, `volumePercent`, `volumeIcon`, `toggleMute()`, `setVolume(val)`, `setVolumeDebounced(val)`, `stepVolume(dir)`, `openMixer()`, `hasMic`, `micVolume`, `micMuted`, `micVolumePercent`, `micIcon`, `micInUse`, `toggleMicMute()`, `setMicVolume(val)`, `setMicVolumeDebounced(val)`, `stepMicVolume(dir)`.
 
 #### `BrightnessService.qml`

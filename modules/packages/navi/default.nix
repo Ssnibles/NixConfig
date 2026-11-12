@@ -598,6 +598,37 @@
           text = renderCheats value;
         }
       ) allSnippets;
+
+      # fzf preview for the cheatsheet picker: the full command at the top,
+      # the description on the last line of the pane.
+      previewScript = pkgs.writeShellScript "navi-preview" ''
+        export PATH=${lib.makeBinPath [ pkgs.coreutils ]}:$PATH
+
+        comment=$1
+        snippet=$2
+        cols=''${FZF_PREVIEW_COLUMNS:-80}
+        rows=''${FZF_PREVIEW_LINES:-20}
+
+        snippet=$(printf '%s' "$snippet" | tr '\025' ' ')
+        comment=$(printf '%s' "$comment" | tr '\025' ' ')
+
+        body=$(printf '%s\n' "$snippet" | fold -s -w "$cols")
+        footer=$(printf '%s\n' "$comment" | fold -s -w "$cols")
+
+        body_lines=$(printf '%s\n' "$body" | wc -l)
+        footer_lines=$(printf '%s\n' "$footer" | wc -l)
+        pad=$((rows - body_lines - footer_lines))
+        if [ "$pad" -lt 0 ]; then
+          pad=0
+        fi
+
+        printf '%s\n' "$body"
+        while [ "$pad" -gt 0 ]; do
+          printf '\n'
+          pad=$((pad - 1))
+        done
+        printf '\033[2m%s\033[0m\n' "$footer"
+      '';
     in
     {
       environment.systemPackages = [ pkgs.navi ];
@@ -609,10 +640,23 @@
               cheats:
                 paths:
                   - ${cheatsDir}
+              # Navi orders its columns as tags, comment, command. Give the
+              # command most of the width so it stays readable with the
+              # preview open.
+              style:
+                tag:
+                  width_percentage: 20
+                  min_width: 12
+                snippet:
+                  width_percentage: 45
+                  min_width: 30
               finder:
                 command: fzf
-                # Widen the preview and wrap long commands. Ctrl-/ toggles it.
-                overrides: --preview-window 'right:55%:wrap' --bind 'ctrl-/:toggle-preview'
+                # Show the command first, then its tags. The description sits
+                # at the bottom of the preview pane. fzf still searches every
+                # column, so tags and descriptions keep filtering the list.
+                # Ctrl-/ toggles the preview.
+                overrides: --with-nth '3,1' --preview '${previewScript} {5} {6}' --preview-window 'right:55%' --bind 'ctrl-/:toggle-preview'
             '';
           };
         }

@@ -247,7 +247,7 @@ For hardware acceleration parameters, Modernz theming, SyncTeX setup, and audio 
 
 - **MPV Video Player**: Hardware-accelerated video player ([`media.nix`](modules/features/apps/media.nix)) using Vulkan `gpu-next` pipeline, zero-copy decode (`vd-lavc-dr=yes`), VP9 YouTube streaming preferences, Vim-style seeking (`h/j/k/l`), and bundled scripts (themed Modernz OSC, idle-reaped Thumbfast thumbnailer, Quality Menu, Smartskip, MPRIS).
 - **Zathura PDF Reader**: Keyboard-driven document viewer with automatic dark mode recolouring matching system theme colours and SyncTeX reverse jumping (`Ctrl + Click` opens Neovim at source line).
-- **PipeWire Low-Latency Audio**: Pro-audio ready PipeWire sound server ([`pipewire.nix`](modules/features/system/pipewire.nix)) with WirePlumber, ALSA, PulseAudio, and JACK support.
+- **PipeWire Low-Latency Audio**: Pro-audio ready PipeWire sound server ([`pipewire.nix`](modules/features/system/pipewire.nix)) with WirePlumber, ALSA, PulseAudio, and JACK support, plus AutoEq equaliser sinks that follow the Aria 2 and HD 450BT automatically (`pipewire-eq on|off|status`).
 - **YouTube Playback CLI (`ytplay`)**: Dedicated CLI utility for playing YouTube videos or music directly into MPV.
 - **Nuvio Desktop**: Stremio-addon media player (`com.nuvio.media.desktop`) delivered as a sandboxed Flatpak bundle tracked from GitHub releases — see the [Flatpak Guide](docs/wiki/flatpak.md).
 - **Image Viewing & Spotify**: `imv` image viewer, desktop Spotify enhanced with Spicetify, `spotatui` Spotify terminal UI, and the native **Spotifast** Flatpak client.

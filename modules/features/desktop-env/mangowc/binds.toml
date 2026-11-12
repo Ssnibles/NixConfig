@@ -128,9 +128,10 @@
 "$mod+Up" = "spawn,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ $volume_step+"
 "$mod+Down" = "spawn,wpctl set-volume @DEFAULT_AUDIO_SINK@ $volume_step-"
 
-# Brightness Control
+# Brightness Control. brightnessctl takes a decrement as a suffix (5%-), not
+# a prefix (-5%), which it would read as an option.
 "XF86MonBrightnessUp" = "spawn,brightnessctl set +$brightness_step"
-"XF86MonBrightnessDown" = "spawn,brightnessctl set -$brightness_step"
+"XF86MonBrightnessDown" = "spawn,brightnessctl set $brightness_step-"
 
 # Minimise window to scratchpad
 "$mod+i" = "minimized"

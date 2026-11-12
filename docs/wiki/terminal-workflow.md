@@ -179,7 +179,7 @@ Navi is a command-line cheatsheet picker (an actively maintained Rust alternativ
 
 Pressing `Ctrl + P` in any interactive Fish session opens navi's FZF picker. Selecting a cheat inserts the command directly into the active prompt line for editing or immediate execution. Navi then prompts for each `<variable>`; variables that had a default in the old pet library are pre-filled through a `$ name: ...` suggestion line.
 
-The picker includes a live preview pane (navi's built-in `navi preview`) showing the cheat's comment, tags, and full command template. `finder.overrides` in `config.yaml` widens it to `right:55%:wrap` and binds `Ctrl-/` to toggle it.
+The picker rows lead with the command, followed by its tags, so the thing you are choosing is the first thing you see. fzf still searches every column, so typing a tag or a word from the description filters the list. The right-hand preview wraps the full command to the pane width and puts the description on the bottom line. A small generated preview script does the wrapping, and `style` plus `finder.overrides` in `config.yaml` size the columns and bind `Ctrl-/` to toggle the preview.
 
 ### Tmux Popup (`Prefix + Ctrl-g`)
 

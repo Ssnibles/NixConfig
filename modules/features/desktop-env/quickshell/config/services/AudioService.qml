@@ -60,10 +60,13 @@ Singleton {
     return node.nickname || root.sinkDisplayName(node)
   }
 
+  // The auto-eq WirePlumber script overrides the stored default unless its
+  // latch is set, so a manual choice has to set it first. `pipewire-eq on`
+  // clears the latch and returns to automatic selection.
   function selectAudioSink(node) {
-    if (node) {
-      Pipewire.preferredDefaultAudioSink = node
-    }
+    if (!node) return
+    Quickshell.execDetached(["pw-metadata", "-n", "default", "0", "default.auto-eq", "manual"])
+    Pipewire.preferredDefaultAudioSink = node
   }
 
   function toggleMute() {

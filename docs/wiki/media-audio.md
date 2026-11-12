@@ -14,6 +14,7 @@ The media stack is optimised for hardware acceleration, low latency, and aesthet
 | **PDF & Documents** | **Zathura** | Dynamic dark mode recolouring, Neovim SyncTeX reverse search | `modules/features/apps/media.nix` |
 | **Image Viewer** | **imv** | Fast Wayland image viewer with shrink scaling | `modules/features/apps/media.nix` |
 | **Audio Server** | **PipeWire** | Low-latency audio with WirePlumber, ALSA, PulseAudio, and JACK support | `modules/features/system/pipewire.nix` |
+| **Equaliser** | **PipeWire `param_eq`** | AutoEq curves per device, parsed natively with no extra packages | `modules/features/system/pipewire.nix` |
 | **Streaming CLI** | **ytplay** | Terminal command for direct YouTube playback in MPV | `modules/features/system/base.nix` |
 | **Spotify** | **Spicetify & spotatui** | Themed desktop Spotify client and terminal TUI | `modules/features/apps/spotify.nix` & `media.nix` |
 | **Spotifast** | **Flatpak bundle** | Native Rust Spotify client (`rocks.spotifast.Spotifast`) installed from a GitHub-release `.flatpak` bundle tracked at the latest release | `modules/features/system/flatpak/` |
@@ -129,6 +130,59 @@ Configured in `modules/features/system/pipewire.nix`:
   - `alsa.enable = true` with 32-bit ALSA support for legacy games.
   - `pulse.enable = true` providing full PulseAudio emulation for Discord/Vesktop and browser media.
   - `jack.enable = true` enabling pro-audio low-latency routing without running a separate JACK daemon.
+
+---
+
+## Per-Device Equaliser (`param_eq`)
+
+`modules/features/system/pipewire.nix` defines two filter-chain sinks that run AutoEq parametric curves through PipeWire's built-in `param_eq` filter. Nothing else is installed: `param_eq` parses the AutoEq text format directly, preamp included.
+
+- **`eq_aria2`** ("Aria 2 EQ") for the Moondrop Aria 2 on the Moondrop Dawn Pro DAC.
+- **`eq_hd450bt`** ("HD 450BT EQ") for the Sennheiser HD 450BT over Bluetooth.
+
+Each chain's playback node is passive, so WirePlumber links it to whichever device is the current default output. A WirePlumber Lua script (`auto-eq.lua`) then makes the matching sink the default whenever devices appear, disappear or change, so the curve follows the output without any polling.
+
+The scripts match the output device, not the headphone name: the Aria 2 profile matches the Dawn Pro DAC and the HD 450BT profile matches the Bluetooth device. Plugging in the DAC or turning the headset on selects the right curve; unplugging either returns to the plain device with no equaliser.
+
+| Command | Effect |
+| :--- | :--- |
+| `pipewire-eq status` | Print the default sink and whether auto is on |
+| `pipewire-eq off` | Bypass the equaliser, back to the device it was feeding |
+| `pipewire-eq on` | Resume automatic selection |
+| `pipewire-eq aria2` | Force the Aria 2 curve and stop auto |
+| `pipewire-eq hd450bt` | Force the HD 450BT curve and stop auto |
+
+Auto is the default state. The manual profile commands and `off` set a latch in the WirePlumber `default` metadata under `default.auto-eq`, which `pipewire-eq on` clears. The latch is runtime state, so a reboot returns to automatic selection. Both sinks also appear in the bar's output switcher and in `pavucontrol` under their descriptions.
+
+Picking an output in the command centre's switcher sets the same latch, so the automatic match does not undo the choice. Choosing the plain device there bypasses the equaliser; run `pipewire-eq on` to go back to automatic selection.
+
+### Volume
+
+The equaliser adds a second volume stage: the sink in front of the device and the device itself, and PipeWire multiplies the two. Left alone, a DAC at 15% behind a sink at 70% plays at roughly 10%, which is what makes it sound far too quiet.
+
+`pipewire-eq` avoids that by carrying the level across when it switches sinks and leaving the device it feeds at 100%. The bar slider therefore stays a single control, and the percentage behaves like it did before the equaliser existed: 25% on the Aria 2 sink is about the same loudness as 25% straight to the DAC. Bluetooth devices keep their own volume, since that belongs to the headset.
+
+If a device ends up quiet because its own volume was lowered while the equaliser was bypassed, `pipewire-eq on` folds that level back into the sink and returns the device to unity.
+
+Because nothing polls, there is no background CPU cost. The Lua hooks only run on device and metadata events. A chain handling audio runs a chain of biquads, well under 1% of one core, and a chain with no audio costs nothing measurable.
+
+### Measurement Sources
+
+| Headphone | Measurement | Curve |
+| :--- | :--- | :--- |
+| Moondrop Aria 2 | Harpo | [results/Harpo/in-ear/Moondrop Aria 2](https://github.com/jaakkopasanen/AutoEq/tree/master/results/Harpo/in-ear/Moondrop%20Aria%202) |
+| Sennheiser HD 450BT | oratory1990 | [results/oratory1990/over-ear/Sennheiser HD 450BT](https://github.com/jaakkopasanen/AutoEq/tree/master/results/oratory1990/over-ear/Sennheiser%20HD%20450BT) |
+
+AutoEq also publishes Jaytiss and Super Review measurements for the Aria 2, so the curve can be swapped without changing anything else in the chain.
+
+### Swapping a Curve
+
+1. Open the AutoEq results directory for the model.
+2. Copy the contents of the `... ParametricEQ.txt` file.
+3. Replace the matching `pkgs.writeText` body in `modules/features/system/pipewire.nix`.
+4. Run `nixos-rebuild switch`, then run `pipewire-eq on` if a manual profile is active.
+
+The filter list is read when the chain is created, so a rebuild is required. Bands, gain and Q all come straight from the file.
 
 ---
 
