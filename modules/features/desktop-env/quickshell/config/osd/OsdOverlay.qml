@@ -63,7 +63,7 @@ Scope {
       focusable: false
 
       readonly property var pos: Utils.parseOverlayPosition(Config.osdPosition, "bottom")
-      readonly property var insets: Utils.overlayMargins(panel.pos, Config.osdMarginX, Config.osdMarginY, Config)
+      readonly property var insets: Utils.overlayMargins(panel.pos, Config.osdMarginX, Config.osdMarginY, Session.barGeometry)
 
       anchors {
         top: panel.pos.onTop

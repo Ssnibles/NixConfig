@@ -9,9 +9,9 @@ import ".."
 Scope {
   id: root
 
-  readonly property bool isHorizontal: Config.barType !== "niri"
-  readonly property bool sideLeft: !root.isHorizontal && Config.barSide !== "right"
-  readonly property bool sideRight: !root.isHorizontal && Config.barSide === "right"
+  readonly property bool isHorizontal: Session.barType !== "niri"
+  readonly property bool sideLeft: !root.isHorizontal && Session.barSide !== "right"
+  readonly property bool sideRight: !root.isHorizontal && Session.barSide === "right"
 
   Variants {
     model: Quickshell.screens
@@ -150,7 +150,7 @@ Scope {
       SharedTooltipWindow {
         id: sharedTipWindow
         screenTarget: barPanel.modelData
-        barSide: root.isHorizontal ? "top" : Config.barSide
+        barSide: root.isHorizontal ? "top" : Session.barSide
       }
     }
   }

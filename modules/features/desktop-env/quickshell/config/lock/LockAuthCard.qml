@@ -79,11 +79,11 @@ Card {
           visible: !avatarImage.ready
         }
 
-        // Avatar Image (loaded from Config.lockAvatarPath)
+        // Avatar Image (loaded from Session.lockAvatarPath)
         RoundedImage {
           id: avatarImage
           anchors.fill: parent
-          source: Config.lockAvatarPath
+          source: Session.lockAvatarPath
           sourceSize: Qt.size(192, 192)
           radius: Config.commandCentreCardRadius
         }
@@ -92,7 +92,7 @@ Card {
       // Username Text
       Text {
         Layout.alignment: Qt.AlignHCenter
-        text: Quickshell.env("USER") || "User"
+        text: Session.user
         color: Colours.fg
         font.family: Session.sansFont
         font.pixelSize: 20

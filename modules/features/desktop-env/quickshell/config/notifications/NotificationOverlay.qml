@@ -45,7 +45,7 @@ Scope {
       exclusionMode: ExclusionMode.Ignore
 
       readonly property var pos: Utils.parseOverlayPosition(root.position, "top-right")
-      readonly property var insets: Utils.overlayMargins(panel.pos, Config.notifMarginX, Config.notifMarginY, Config)
+      readonly property var insets: Utils.overlayMargins(panel.pos, Config.notifMarginX, Config.notifMarginY, Session.barGeometry)
 
       anchors {
         top: panel.pos.onTop

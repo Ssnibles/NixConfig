@@ -16,7 +16,7 @@ Singleton {
   Loader {
     id: backendLoader
     source: {
-      switch (Config.wm) {
+      switch (Session.wm) {
         case "mangowc":  return "MangoService.qml"
         case "hyprland": return "HyprlandService.qml"
         case "niri":     return "NiriService.qml"
@@ -51,7 +51,7 @@ Singleton {
 
   function getLayoutSymbol(outputName) {
     if (!activeSvc) return ""
-    if (Config.wm === "mangowc" && activeSvc.layoutForOutput) {
+    if (Session.wm === "mangowc" && activeSvc.layoutForOutput) {
       return activeSvc.layoutForOutput(outputName)
     }
     return activeSvc.currentLayoutSymbol || ""
@@ -123,11 +123,11 @@ Singleton {
     }
 
     var cmd = null
-    if (Config.wm === "mangowc") {
+    if (Session.wm === "mangowc") {
       cmd = ["mmsg", "get", "cursorpos"]
-    } else if (Config.wm === "hyprland") {
+    } else if (Session.wm === "hyprland") {
       cmd = ["hyprctl", "cursorpos"]
-    } else if (Config.wm === "niri") {
+    } else if (Session.wm === "niri") {
       cmd = ["niri", "msg", "--json", "focused-output"]
     }
 
@@ -169,14 +169,14 @@ Singleton {
 
         var foundScreen = null
         try {
-          if (Config.wm === "mangowc") {
+          if (Session.wm === "mangowc") {
             var data = JSON.parse(txt)
             if (data && data.monitor) {
               foundScreen = Utils.screenByName(data.monitor, Quickshell.screens)
             } else if (data && data.x !== undefined && data.y !== undefined) {
               foundScreen = Utils.screenAt(data.x, data.y, Quickshell.screens)
             }
-          } else if (Config.wm === "hyprland") {
+          } else if (Session.wm === "hyprland") {
             var parts = txt.split(",")
             if (parts.length >= 2) {
               var hx = parseInt(parts[0].trim())
@@ -185,7 +185,7 @@ Singleton {
                 foundScreen = Utils.screenAt(hx, hy, Quickshell.screens)
               }
             }
-          } else if (Config.wm === "niri") {
+          } else if (Session.wm === "niri") {
             var niriData = JSON.parse(txt)
             if (niriData && niriData.name) {
               foundScreen = Utils.screenByName(niriData.name, Quickshell.screens)

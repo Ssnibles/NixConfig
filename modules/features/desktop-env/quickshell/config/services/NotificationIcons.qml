@@ -18,9 +18,8 @@ Singleton {
   signal imageCopied(int uid, string url)
 
   Component.onCompleted: {
-    var home = Quickshell.env("HOME") || ("/home/" + (Quickshell.env("USER") || "user"))
     var xdgCache = Quickshell.env("XDG_CACHE_HOME")
-    root.cacheDir = (xdgCache || (home + "/.cache")) + "/quickshell/notif-images"
+    root.cacheDir = (xdgCache || (Session.home + "/.cache")) + "/quickshell/notif-images"
     Quickshell.execDetached(["mkdir", "-p", root.cacheDir])
     Quickshell.execDetached(["sh", "-c", 'find "$1" -type f -mtime +7 -delete', "sh", root.cacheDir])
   }

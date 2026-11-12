@@ -8,8 +8,8 @@ import ".."
 Item {
   id: root
 
-  readonly property bool isStatusSplit: Config.lockStatusPosition === "split" || Config.lockStatusPosition === "corners"
-  readonly property var pos: Utils.parseOverlayPosition(Config.lockStatusPosition, "top-right")
+  readonly property bool isStatusSplit: Session.lockStatusPosition === "split" || Session.lockStatusPosition === "corners"
+  readonly property var pos: Utils.parseOverlayPosition(Session.lockStatusPosition, "top-right")
 
   Row {
     visible: !root.isStatusSplit

@@ -57,7 +57,7 @@ Singleton {
 
   function _focusViaIpc(patterns) {
     root._pendingPatterns = patterns
-    var wm = Config.wm
+    var wm = Session.wm
     if (wm === "niri") listProc.exec(["niri", "msg", "--json", "windows"])
     else if (wm === "hyprland") listProc.exec(["hyprctl", "clients", "-j"])
     else listProc.exec(["mmsg", "get", "all-clients"])
@@ -68,7 +68,7 @@ Singleton {
     root._pendingPatterns = []
     if (!patterns || patterns.length === 0 || !text) return
 
-    var wm = Config.wm
+    var wm = Session.wm
     var list = []
     try {
       var data = JSON.parse(text)

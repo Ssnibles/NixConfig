@@ -69,7 +69,7 @@ Scope {
   PamContext {
     id: pam
     config: "login"
-    user: Quickshell.env("USER") || ""
+    user: Session.user
 
     onResponseRequiredChanged: {
       if (responseRequired && lockScope.pendingPassword.length > 0) {
@@ -261,10 +261,10 @@ Scope {
             }
           }
 
-          // Wallpaper background layer (configurable via Config.lockWallpaperPath)
+          // Wallpaper background layer (configurable via Session.lockWallpaperPath)
           Image {
             anchors.fill: parent
-            source: Config.lockWallpaperPath
+            source: Session.lockWallpaperPath
             asynchronous: true
             cache: false
             fillMode: Image.PreserveAspectCrop

@@ -10,7 +10,7 @@ StatusPill {
   baseColour: Colours.bgRaised
   icon: "󰌾"
   iconColour: Colours.accent
-  label: Quickshell.env("HOSTNAME") || Quickshell.env("HOST") || "NixOS"
+  label: Session.hostname
   labelColour: Colours.fgMid
   labelBold: true
   tooltipEnabled: false

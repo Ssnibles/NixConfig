@@ -15,7 +15,7 @@ Scope {
   // Distance from the screen edge to the near edge of the card: the side bar
   // (when there is one) plus the command centre margin.
   readonly property int cardMargin: {
-    var barSpace = (Config.commandCentreSide === "right" ? Config.hasRightBar : Config.hasLeftBar) ? Config.barWidth : 0
+    var barSpace = (Session.commandCentreSide === "right" ? Session.hasRightBar : Session.hasLeftBar) ? Config.barWidth : 0
     return barSpace + Config.commandCentreMargin
   }
 
@@ -93,7 +93,7 @@ Scope {
         if (!target) return false
         return panel.modelData === target || (panel.modelData && target && panel.modelData.name === target.name)
       }
-      readonly property bool isLeft: Config.commandCentreSide === "left"
+      readonly property bool isLeft: Session.commandCentreSide === "left"
       readonly property real slideDistance: isLeft ? -Config.commandCentreSlideOffset : Config.commandCentreSlideOffset
       property real panelOpacity: 0
       property real panelSlide: slideDistance
@@ -179,7 +179,7 @@ Scope {
         anchors.bottom: parent.bottom
         anchors.left: panel.isLeft ? parent.left : undefined
         anchors.right: panel.isLeft ? undefined : parent.right
-        anchors.topMargin: Config.hasTopBar ? (Config.barHeight + Config.commandCentreMargin) : Config.commandCentreMargin
+        anchors.topMargin: Session.hasTopBar ? (Config.barHeight + Config.commandCentreMargin) : Config.commandCentreMargin
         anchors.bottomMargin: Config.commandCentreMargin
         anchors.leftMargin: panel.isLeft ? ccScope.cardMargin : 0
         anchors.rightMargin: panel.isLeft ? 0 : ccScope.cardMargin

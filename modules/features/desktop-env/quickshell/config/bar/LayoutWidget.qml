@@ -10,7 +10,7 @@ Pill {
   property PanelWindow sharedWindow: null
 
   // Visible when window manager provides layouts (mangowc)
-  readonly property bool active: Config.wm === "mangowc"
+  readonly property bool active: Session.wm === "mangowc"
   visible: active
 
   readonly property string currentLayoutSymbol: {

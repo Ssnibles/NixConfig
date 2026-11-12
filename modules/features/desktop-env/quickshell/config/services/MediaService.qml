@@ -100,7 +100,7 @@ Singleton {
 
   readonly property bool isConsumerActive: (
     root.isSeekbarConsumerActive ||
-    (Config.barType === "niri" && Config.barVisible)
+    (Session.barType === "niri" && Config.barVisible)
   )
 
   // Position & Progress Sampling
