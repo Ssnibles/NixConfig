@@ -16,6 +16,16 @@
       ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
       nixos.hostRole = "desktop";
+      # Keep the hostname equal to the flake attribute. build.sh and
+      # `nh os switch` look the configuration up by hostname.
+      networking.hostName = "desktop";
+
+      # The desktop is a fixed, single-user workstation, so CPU mitigations
+      # and the watchdog are traded for performance here only.
+      boot.kernelParams = [
+        "mitigations=off"
+        "nowatchdog"
+      ];
 
       # Desktop USB Bluetooth modules.
       boot.kernelModules = [ "btusb" ];
@@ -43,7 +53,7 @@
       # Spread interrupts across cores for gaming throughput.
       services.irqbalance.enable = true;
 
-      environment.systemPackages = with pkgs.unstable; [
+      environment.systemPackages = with pkgs; [
         musicpod
         nicotine-plus
         pkgs.stable.calibre

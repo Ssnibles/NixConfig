@@ -24,16 +24,14 @@
 
       hardware.keyboard.qmk.enable = true;
 
-      boot.kernelPackages = pkgs.unstable.linuxPackages_latest;
+      boot.kernelPackages = pkgs.linuxPackages_latest;
 
       boot.initrd.compressor = "zstd";
       boot.initrd.compressorArgs = [ "-1" ];
 
       boot.consoleLogLevel = 0;
       boot.kernelParams = [
-        "mitigations=off"
         "8250.nr_uarts=0"
-        "nowatchdog"
         "quiet"
         "loglevel=3"
         "rd.systemd.show_status=false"
@@ -83,8 +81,6 @@
          KEYBOARD_KEY_70029=capslock
       '';
 
-      networking.hostName = "nixos";
-
       fileSystems."/" = {
         options = [ "noatime" ];
       };
@@ -117,8 +113,12 @@
       # NixOS lists each D-Bus service twice, which makes dbus-broker log a
       # duplicate name warning about 50 times per login. Filter it on the system
       # bus with LogFilterPatterns and on the user bus by cleaning stderr.
-      systemd.services.dbus.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
-      systemd.services.dbus-broker.serviceConfig.LogFilterPatterns = [ "~Ignoring.*" ];
+      systemd.services.dbus.serviceConfig.LogFilterPatterns = map (
+        p: "~${p}"
+      ) config.nixos.journalNoisePatterns;
+      systemd.services.dbus-broker.serviceConfig.LogFilterPatterns = map (
+        p: "~${p}"
+      ) config.nixos.journalNoisePatterns;
       systemd.user.services.dbus-broker.serviceConfig.ExecStart =
         lib.mkIf (config.services.dbus.implementation == "broker")
           (
@@ -126,11 +126,11 @@
               # An empty first element replaces the packaged ExecStart instead
               # of adding a second launcher.
               ""
-              "${pkgs.bash}/bin/bash -c 'exec ${config.services.dbus.brokerPackage}/bin/dbus-broker-launch --scope user 2> >(${pkgs.gnugrep}/bin/grep --line-buffered -v \"Ignoring duplicate name\" >&2)'"
+              "${pkgs.bash}/bin/bash -c 'exec ${config.services.dbus.brokerPackage}/bin/dbus-broker-launch --scope user 2> >(${pkgs.gnugrep}/bin/grep --line-buffered -v -E \"${lib.concatStringsSep "|" config.nixos.journalNoisePatterns}\" >&2)'"
             ]
           );
-      systemd.services.display-manager.serviceConfig.LogFilterPatterns = [
-        "~gkr-pam: unable to locate daemon control file"
-      ];
+      systemd.services.display-manager.serviceConfig.LogFilterPatterns = map (
+        p: "~${p}"
+      ) config.nixos.journalNoisePatterns;
     };
 }

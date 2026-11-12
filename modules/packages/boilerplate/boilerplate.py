@@ -83,20 +83,6 @@ def git_root() -> Path | None:
 def host_templates(name: str) -> dict[Path, str]:
     quoted_name = nix_string(name)
     return {
-        Path("default.nix"): textwrap.dedent(
-            f"""\
-            {{ inputs, config, ... }}:
-            {{
-              flake.nixosConfigurations.{name} = inputs.nixpkgs.lib.nixosSystem {{
-                specialArgs = {{ inherit inputs; }};
-                modules = [
-                  config.nixos.modules.shared
-                  config.nixos.modules.{name}
-                ];
-              }};
-            }}
-            """
-        ),
         Path("configuration.nix"): textwrap.dedent(
             f"""\
             {{ ... }}:
@@ -110,6 +96,10 @@ def host_templates(name: str) -> dict[Path, str]:
                   ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
                   networking.hostName = {quoted_name};
+
+                  # The role matches the host directory, so per-host behaviour
+                  # keeps working for a newly scaffolded host.
+                  nixos.hostRole = {quoted_name};
 
                   environment.systemPackages = with pkgs; [
                   ];
@@ -446,34 +436,6 @@ def planned_files(
     return {filename: content}
 
 
-def update_module_groups(root: Path, host_name: str) -> bool:
-    groups_path = root / "modules/core/module-groups.nix"
-    if not groups_path.exists():
-        return False
-
-    content = groups_path.read_text(encoding="utf-8")
-    if f"{host_name} =" in content:
-        return False
-
-    snippet = textwrap.dedent(
-        f"""\
-            {host_name} = lib.mkOption {{
-              type = lib.types.deferredModule;
-              default = {{ }};
-              description = "{host_name} host specific configuration.";
-            }};
-        """
-    )
-
-    idx = content.rfind("  };")
-    if idx != -1:
-        new_content = content[:idx] + snippet + content[idx:]
-        groups_path.write_text(new_content, encoding="utf-8")
-        return True
-
-    return False
-
-
 def write_file(path: Path, content: str) -> None:
     if path.exists():
         raise FileExistsError(f"Refusing to overwrite existing path: {path}")
@@ -525,18 +487,6 @@ def parse_args() -> argparse.Namespace:
         "--target",
         default="shared",
         help="Target module group (default: shared, desktop, laptop)",
-    )
-    parser.add_argument(
-        "--update-groups",
-        action="store_true",
-        default=True,
-        help="Automatically register host in modules/core/module-groups.nix when creating a host (default: enabled)",
-    )
-    parser.add_argument(
-        "--no-update-groups",
-        action="store_false",
-        dest="update_groups",
-        help="Do not automatically update modules/core/module-groups.nix when creating a host",
     )
     parser.add_argument(
         "-l",
@@ -613,13 +563,6 @@ def main() -> int:
         print(fmt(str(err), Colours.YELLOW), file=sys.stderr)
         return 1
 
-    updated_groups = False
-    if args.kind == "host":
-        if args.update_groups:
-            updated_groups = update_module_groups(root, args.name)
-            if updated_groups and not args.no_git_stage:
-                stage([root / "modules/core/module-groups.nix"], root)
-
     if not args.no_git_stage:
         stage(targets, root)
 
@@ -627,13 +570,12 @@ def main() -> int:
     for target in targets:
         print(f"  {target.relative_to(root)}")
 
-    if updated_groups:
-        print(fmt("  modules/core/module-groups.nix (updated host options)", Colours.CYAN))
-
-    if args.kind == "host" and not updated_groups:
+    if args.kind == "host":
         print()
         print(fmt("Next Steps:", Colours.BOLD))
-        print(f"  Remember to declare option `options.nixos.modules.{args.name}` in modules/core/module-groups.nix")
+        print(
+            "  The host is picked up automatically from modules/hosts/<name>/configuration.nix"
+        )
 
     return 0
 

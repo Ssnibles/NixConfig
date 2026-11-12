@@ -100,14 +100,12 @@ SSH_KEY_GITHUB=""
 COPY_SSH_KEY=""
 LOG_FILE="/tmp/nixos-install.log"
 PROMPT_USER=true
-PROMPT_HOSTNAME=true
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     --host)                HOST="$2";                              shift 2 ;;
     --disk)                DISK="$2";                              shift 2 ;;
     --user)                USERNAME="$2"; PROMPT_USER=false;       shift 2 ;;
-    --hostname)            HOSTNAME="$2"; PROMPT_HOSTNAME=false;   shift 2 ;;
     --no-reboot)           NO_REBOOT=true;                         shift   ;;
     --skip-format)         SKIP_FORMAT=true;                       shift   ;;
     --update)              UPDATE=true;                            shift   ;;
@@ -126,10 +124,9 @@ Usage: sudo bash install.sh [options]
   curl and still prompt for missing values.
 
 Options:
-  --host <desktop|laptop>      Host configuration to install (prompt if omitted)
+  --host <name>                Host configuration to install (prompt if omitted)
   --disk /dev/sdX              Target disk (will be wiped unless --skip-format; prompt if omitted)
   --user <username>            Username to create (default: $DEFAULT_USERNAME)
-  --hostname <hostname>        Hostname (default: the host name)
   --no-reboot                  Don't reboot after installation
   --skip-format                Skip disk wipe/format; use existing partitions
   --update                     Run nix flake update after cloning
@@ -143,7 +140,7 @@ Options:
 Examples:
   sudo bash install.sh
   curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | sudo bash -s -- --host desktop --disk /dev/nvme0n1
-  curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | sudo bash -s -- --host laptop --disk /dev/sda --user alice --hostname t480
+  curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | sudo bash -s -- --host laptop --disk /dev/sda --user alice
   curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh | sudo bash -s -- --host desktop --skip-format --no-reboot
 EOF
       exit 0 ;;
@@ -152,21 +149,9 @@ EOF
 done
 
 # Interactive prompts for missing values
-if [[ -z "$HOST" ]]; then
-  echo "  Available host configurations:"
-  echo "    desktop"
-  echo "    laptop"
-  ask HOST "  Select host (desktop/laptop)"
-  echo
-fi
-case "$HOST" in
-  desktop|laptop) ;;
-  *) die "Unknown host '$HOST'. Available: desktop, laptop" ;;
-esac
-
-[[ "$PROMPT_USER" == true ]]     && ask USERNAME "  Enter username" "$USERNAME"
-[[ -z "$HOSTNAME" ]]             && HOSTNAME="$HOST"
-[[ "$PROMPT_HOSTNAME" == true ]] && ask HOSTNAME "  Enter hostname" "$HOSTNAME"
+[[ "$PROMPT_USER" == true ]] && ask USERNAME "  Enter username" "$USERNAME"
+[[ "$USERNAME" =~ ^[a-z_][a-z0-9_-]*$ ]] || \
+  die "Invalid username '$USERNAME'. Use lowercase letters, digits, underscore, or hyphen, starting with a letter or underscore."
 
 # Logging
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
@@ -186,7 +171,7 @@ cleanup() {
 trap cleanup EXIT
 
 # Preflight
-echo -e "\n${BOLD}---  NixOS Bootstrap Installer - $HOST  ---${NC}"
+echo -e "\n${BOLD}---  NixOS Bootstrap Installer  ---${NC}"
 [[ -d /nix/store ]] || die "This doesn't look like a NixOS live environment."
 [[ "$DRY_RUN" == true ]] && warn "DRY-RUN -- no disk changes will be made."
 
@@ -197,7 +182,6 @@ if [[ "$SKIP_FORMAT" == false && "$DRY_RUN" == false ]]; then
 fi
 
 info "Username: $USERNAME"
-info "Hostname: $HOSTNAME"
 info "Log file: $LOG_FILE"
 
 # 1 · NETWORK
@@ -343,6 +327,23 @@ fi
 
 # 6 · GENERATE HARDWARE CONFIG & INSTALLER OVERRIDES
 step "Hardware config and installer options"
+
+# The host is chosen here, after the clone, so the prompt can list the actual
+# host directories.
+if [[ -z "$HOST" ]]; then
+  echo "  Available host configurations:"
+  if [[ -d "$HOME_TARGET/modules/hosts" ]]; then
+    find "$HOME_TARGET/modules/hosts" -mindepth 1 -maxdepth 1 -type d -printf '    %f\n' | sort
+  fi
+  ask HOST "  Select host"
+fi
+[[ "$HOST" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || die "Invalid host name '$HOST'."
+if [[ "$DRY_RUN" == false && ! -f "$HOME_TARGET/modules/hosts/$HOST/configuration.nix" ]]; then
+  die "Unknown host '$HOST'. Available: $(find "$HOME_TARGET/modules/hosts" -mindepth 1 -maxdepth 1 -type d -printf '%f ' 2>/dev/null || true)"
+fi
+HOSTNAME="$HOST"
+info "Host: $HOSTNAME"
+
 if [[ "$DRY_RUN" == true ]]; then
   info "Dry-run: would generate hardware config and installer options for host '$HOST'"
 else
@@ -355,12 +356,11 @@ else
     || die "nixos-generate-config failed."
   success "Wrote $HW_FILE"
 
-  info "Writing installer options (username, hostname)..."
+  info "Writing installer options (username)..."
   cat > "$INSTALLER_FILE" <<EOF
 { lib, ... }:
 {
   username = lib.mkForce "$USERNAME";
-  networking.hostName = lib.mkForce "$HOSTNAME";
 }
 EOF
   success "Wrote $INSTALLER_FILE"

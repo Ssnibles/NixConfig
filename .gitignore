@@ -6,7 +6,6 @@ secrets/
 result
 nohup.out
 *.bin
-_installer-options.nix
 Session.vim*
 mono_crash.*.json
 modules/features/apps/firefox/startpage/colours.css

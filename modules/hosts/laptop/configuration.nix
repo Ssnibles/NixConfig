@@ -1,5 +1,5 @@
 # Laptop host settings.
-# Power profiles, touchpad and Wi-Fi workarounds, firmware pin, and DFU rules.
+# Power profiles, Wi-Fi workarounds, firmware pin, and DFU rules.
 { ... }:
 {
   nixos.modules.laptop =
@@ -15,6 +15,9 @@
       ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
 
       nixos.hostRole = "laptop";
+      # Keep the hostname equal to the flake attribute. build.sh and
+      # `nh os switch` look the configuration up by hostname.
+      networking.hostName = "laptop";
 
       # mkForce is needed because _hardware-generated.nix also sets options.
       # List options are joined, so the old fmask and dmask values conflicted.
@@ -28,13 +31,6 @@
           "noexec"
         ];
       };
-
-      # The NVMe driver is available, and root is not encrypted, so no extra
-      # initrd modules are needed.
-      boot.initrd.kernelModules = [ ];
-
-      # ath11k_pci is loaded by udev.
-      boot.kernelModules = [ ];
 
       # nowatchdog does not stop hardware watchdogs. sp5100_tco loads and then
       # logs watchdog errors on every reboot, so block it.
@@ -104,7 +100,7 @@
         };
       };
 
-      environment.systemPackages = with pkgs.unstable; [
+      environment.systemPackages = with pkgs; [
         openocd
       ];
 
