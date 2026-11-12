@@ -41,7 +41,7 @@ Singleton {
   readonly property real osdValue: Math.max(0, Math.min(1.0, root._osdLevel))
 
   function showOsd(kind) {
-    if (!Config.osdEnabled || Config.commandCentreVisible) return
+    if (!Config.osdEnabled || UiState.commandCentreVisible) return
     root.osdKind = kind || "volume"
     root.osdVisible = true
     osdHideTimer.restart()
@@ -55,9 +55,9 @@ Singleton {
   }
 
   Connections {
-    target: Config
+    target: UiState
     function onCommandCentreVisibleChanged() {
-      if (Config.commandCentreVisible) {
+      if (UiState.commandCentreVisible) {
         root.osdVisible = false
         osdHideTimer.stop()
       }
@@ -163,15 +163,15 @@ Singleton {
     target: "tray"
 
     function toggle(): void {
-      Config.trayEnabled = !Config.trayEnabled
+      UiState.trayEnabled = !UiState.trayEnabled
     }
 
     function toggleExpanded(): void {
-      Config.trayExpanded = !Config.trayExpanded
+      UiState.trayExpanded = !UiState.trayExpanded
     }
 
     function toggleExpandButton(): void {
-      Config.trayShowExpandButton = !Config.trayShowExpandButton
+      UiState.trayShowExpandButton = !UiState.trayShowExpandButton
     }
   }
 

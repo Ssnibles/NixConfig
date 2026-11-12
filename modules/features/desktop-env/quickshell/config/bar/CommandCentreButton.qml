@@ -11,23 +11,23 @@ Pill {
 
   padding: 4
   clickable: true
-  pillColour: (root.hovered || Config.commandCentreVisible) ? Colours.bgSubtle : Colours.bgRaised
+  pillColour: (root.hovered || UiState.commandCentreVisible) ? Colours.bgSubtle : Colours.bgRaised
 
   onClicked: {
-    if (Config.commandCentreVisible) {
-      Config.commandCentreVisible = false
+    if (UiState.commandCentreVisible) {
+      UiState.commandCentreVisible = false
     } else {
       if (root.screen) {
-        Config.targetScreen = root.screen
-        Config.lastActiveScreen = root.screen
+        UiState.targetScreen = root.screen
+        UiState.lastActiveScreen = root.screen
       }
-      Config.commandCentreVisible = true
+      UiState.commandCentreVisible = true
     }
   }
 
   Text {
     text: "󰘳" // Dashboard/Control Centre icon
-    color: (root.hovered || Config.commandCentreVisible) ? Colours.accent : Colours.fg
+    color: (root.hovered || UiState.commandCentreVisible) ? Colours.accent : Colours.fg
     font.family: Session.monoFont
     font.pixelSize: Config.iconSizeMd
     anchors.centerIn: parent
@@ -39,6 +39,6 @@ Pill {
     icon: "󰘳"
     iconColour: Colours.accent
     title: "Command Centre"
-    details: [Config.commandCentreVisible ? "Left click · Close" : "Left click · Open"]
+    details: [UiState.commandCentreVisible ? "Left click · Close" : "Left click · Open"]
   }
 }

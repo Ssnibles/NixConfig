@@ -31,7 +31,7 @@ QtObject {
 
     if (Hyprland.focusedMonitor && Hyprland.focusedMonitor.name) {
       var sc = Utils.screenByName(Hyprland.focusedMonitor.name, Quickshell.screens)
-      if (sc) Config.lastActiveScreen = sc
+      if (sc) UiState.lastActiveScreen = sc
     }
 
     var highestId = focusedId

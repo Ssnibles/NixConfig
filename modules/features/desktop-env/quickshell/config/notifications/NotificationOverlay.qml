@@ -18,7 +18,7 @@ Scope {
   onActiveCountChanged: {
     if (activeCount > 0) {
       if (!root._screen) {
-        root._screen = Config.lastActiveScreen || (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)
+        root._screen = UiState.lastActiveScreen || (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)
       }
     } else {
       root._screen = null
@@ -29,7 +29,7 @@ Scope {
     Config.notifAllScreens,
     root.activeCount > 0,
     root._screen,
-    Config.lastActiveScreen,
+    UiState.lastActiveScreen,
     Quickshell.screens
   )
 

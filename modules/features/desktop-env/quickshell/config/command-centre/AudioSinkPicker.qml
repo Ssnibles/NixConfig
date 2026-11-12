@@ -74,7 +74,7 @@ Flow {
     clickable: true
     onClicked: {
       // The panel would cover the mixer window.
-      Config.commandCentreVisible = false
+      UiState.commandCentreVisible = false
       AudioService.openMixer()
     }
 

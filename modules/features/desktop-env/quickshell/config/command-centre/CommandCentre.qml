@@ -10,7 +10,7 @@ Scope {
   id: ccScope
 
   property bool closing: false
-  property bool active: Config.commandCentreVisible || ccScope.closing
+  property bool active: UiState.commandCentreVisible || ccScope.closing
 
   // Distance from the screen edge to the near edge of the card: the side bar
   // (when there is one) plus the command centre margin.
@@ -20,42 +20,42 @@ Scope {
   }
 
   function openOnActiveScreen(): void {
-    if (Config.commandCentreVisible) return
+    if (UiState.commandCentreVisible) return
     WmService.resolveTargetScreen(function() {
-      Config.commandCentreVisible = true
+      UiState.commandCentreVisible = true
     })
   }
 
   IpcHandler {
     target: "command-centre"
     function toggle(): void {
-      if (Config.commandCentreVisible || WmService.queryingScreen) {
+      if (UiState.commandCentreVisible || WmService.queryingScreen) {
         WmService.cancelScreenQuery()
-        Config.commandCentreVisible = false
+        UiState.commandCentreVisible = false
       } else {
         ccScope.openOnActiveScreen()
       }
     }
 
     function open(): void {
-      if (!Config.commandCentreVisible && !WmService.queryingScreen) {
+      if (!UiState.commandCentreVisible && !WmService.queryingScreen) {
         ccScope.openOnActiveScreen()
       }
     }
 
     function close(): void {
       WmService.cancelScreenQuery()
-      Config.commandCentreVisible = false
+      UiState.commandCentreVisible = false
     }
   }
 
   Connections {
-    target: Config
+    target: UiState
     function onCommandCentreVisibleChanged() {
-      if (Config.commandCentreVisible) {
+      if (UiState.commandCentreVisible) {
         ccScope.closing = false
-        if (!Config.targetScreen) {
-          Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
+        if (!UiState.targetScreen) {
+          UiState.targetScreen = Utils.resolveActiveScreen(UiState.targetScreen, UiState.lastActiveScreen, Quickshell.screens)
         }
         BrightnessService.refreshBrightness(false)
       } else if (ccScope.active) {
@@ -89,7 +89,7 @@ Scope {
 
       // State for transition animation
       property bool isTargetScreen: {
-        var target = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
+        var target = Utils.resolveActiveScreen(UiState.targetScreen, UiState.lastActiveScreen, Quickshell.screens)
         if (!target) return false
         return panel.modelData === target || (panel.modelData && target && panel.modelData.name === target.name)
       }
@@ -113,7 +113,7 @@ Scope {
           if (ccScope.closing) {
             fadeInAnim.stop()
             fadeOutAnim.start()
-          } else if (Config.commandCentreVisible) {
+          } else if (UiState.commandCentreVisible) {
             fadeOutAnim.stop()
             panel.panelSlide = panel.slideDistance
             fadeInAnim.start()
@@ -140,7 +140,7 @@ Scope {
         onFinished: {
           if (ccScope.closing) {
             ccScope.closing = false
-            Config.targetScreen = null
+            UiState.targetScreen = null
             Qt.callLater(gc)
           }
         }
@@ -155,16 +155,16 @@ Scope {
         hoverEnabled: panel.isTargetScreen
         focus: panel.isTargetScreen
         onEntered: {
-          Config.lastActiveScreen = panel.modelData
+          UiState.lastActiveScreen = panel.modelData
         }
         Keys.onPressed: function(event) {
           if (event.key === Qt.Key_Escape) {
-            Config.commandCentreVisible = false
+            UiState.commandCentreVisible = false
             event.accepted = true
           }
         }
         onClicked: {
-          Config.commandCentreVisible = false
+          UiState.commandCentreVisible = false
         }
       }
 

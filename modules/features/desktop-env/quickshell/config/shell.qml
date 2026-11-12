@@ -8,15 +8,15 @@ Scope {
     target: "bar"
 
     function toggle(): void {
-      Config.barVisible = !Config.barVisible
+      UiState.barVisible = !UiState.barVisible
     }
 
     function show(): void {
-      Config.barVisible = true
+      UiState.barVisible = true
     }
 
     function hide(): void {
-      Config.barVisible = false
+      UiState.barVisible = false
     }
   }
 

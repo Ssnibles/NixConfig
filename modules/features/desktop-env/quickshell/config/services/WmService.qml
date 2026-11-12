@@ -99,14 +99,14 @@ Singleton {
     screenQueryTimer.stop()
 
     if (foundScreen) {
-      Config.targetScreen = foundScreen
-      Config.lastActiveScreen = foundScreen
-    } else if (!Config.targetScreen) {
-      Config.targetScreen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
+      UiState.targetScreen = foundScreen
+      UiState.lastActiveScreen = foundScreen
+    } else if (!UiState.targetScreen) {
+      UiState.targetScreen = Utils.resolveActiveScreen(UiState.targetScreen, UiState.lastActiveScreen, Quickshell.screens)
     }
 
     if (typeof cb === "function") {
-      cb(Config.targetScreen)
+      cb(UiState.targetScreen)
     }
   }
 

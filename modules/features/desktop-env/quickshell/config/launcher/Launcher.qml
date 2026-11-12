@@ -24,22 +24,22 @@ Scope {
 
   function open(): void {
     WmService.resolveTargetScreen(function(screen) {
-      Config.targetScreen = screen || Quickshell.screens[0]
+      UiState.targetScreen = screen || Quickshell.screens[0]
       root.closeActions()
       root.query = ""
       root.selected = 0
       root.refresh()
-      Config.launcherVisible = true
+      UiState.launcherVisible = true
     })
   }
 
   function close(): void {
     root.closeActions()
-    Config.launcherVisible = false
+    UiState.launcherVisible = false
   }
 
   function toggle(): void {
-    if (Config.launcherVisible) root.close()
+    if (UiState.launcherVisible) root.close()
     else root.open()
   }
 
@@ -243,7 +243,7 @@ Scope {
   Component.onCompleted: root.refresh()
 
   Variants {
-    model: Config.launcherVisible && Config.targetScreen ? [ Config.targetScreen ] : []
+    model: UiState.launcherVisible && UiState.targetScreen ? [ UiState.targetScreen ] : []
 
     delegate: PanelWindow {
       required property var modelData

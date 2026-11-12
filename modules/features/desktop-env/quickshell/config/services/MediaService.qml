@@ -93,14 +93,14 @@ Singleton {
   }
 
   readonly property bool isSeekbarConsumerActive: (
-    Config.commandCentreVisible ||
+    UiState.commandCentreVisible ||
     root.lockActive ||
     root.activeConsumers > 0
   )
 
   readonly property bool isConsumerActive: (
     root.isSeekbarConsumerActive ||
-    (Session.barType === "niri" && Config.barVisible)
+    (Session.barType === "niri" && UiState.barVisible)
   )
 
   // Position & Progress Sampling

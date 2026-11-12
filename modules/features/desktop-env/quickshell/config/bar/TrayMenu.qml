@@ -309,14 +309,14 @@ Card {
 
     // Toggle showing the expand arrow for hidden tray items
     ActionPill {
-      visible: Config.trayAllowSessionHide && (TrayService.trayHiddenCount > 0 || !Config.trayShowExpandButton)
+      visible: Config.trayAllowSessionHide && (TrayService.trayHiddenCount > 0 || !UiState.trayShowExpandButton)
       width: parent.width
-      icon: Config.trayShowExpandButton ? "󰅁" : "󰅂"
-      label: Config.trayShowExpandButton ? "Hide Expand Arrow" : "Show Expand Arrow"
+      icon: UiState.trayShowExpandButton ? "󰅁" : "󰅂"
+      label: UiState.trayShowExpandButton ? "Hide Expand Arrow" : "Show Expand Arrow"
       idleIconColour: Colours.fgDim
       textSize: Config.fontSizeXs
       onClicked: {
-        Config.trayShowExpandButton = !Config.trayShowExpandButton
+        UiState.trayShowExpandButton = !UiState.trayShowExpandButton
         if (menuRoot.activeTip) menuRoot.activeTip.closeNow()
       }
     }

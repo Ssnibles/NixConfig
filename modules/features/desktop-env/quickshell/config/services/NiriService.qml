@@ -82,7 +82,7 @@ QtObject {
       if (!outputName) return
       if (activated.focused) {
         var sc = Utils.screenByName(outputName, Quickshell.screens)
-        if (sc) Config.lastActiveScreen = sc
+        if (sc) UiState.lastActiveScreen = sc
       }
       var updated = []
       for (var j = 0; j < root.allWorkspaces.length; j++) {

@@ -20,7 +20,7 @@ Scope {
       id: barPanel
       required property var modelData
       screen: barPanel.modelData
-      visible: Config.barVisible
+      visible: UiState.barVisible
       focusable: false
       aboveWindows: true
 
@@ -42,7 +42,7 @@ Scope {
         hoverEnabled: true
         acceptedButtons: Qt.AllButtons
         onClicked: function(mouse) { mouse.accepted = true }
-        onEntered: Config.lastActiveScreen = barPanel.modelData
+        onEntered: UiState.lastActiveScreen = barPanel.modelData
       }
 
       // Thin inner border line separating the bar from workspace windows

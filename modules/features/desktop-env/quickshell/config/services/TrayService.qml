@@ -12,7 +12,7 @@ import ".."
 Singleton {
   id: root
 
-  readonly property var trayAllItems: (Config.trayEnabled && SystemTray.items && SystemTray.items.values)
+  readonly property var trayAllItems: (UiState.trayEnabled && SystemTray.items && SystemTray.items.values)
     ? SystemTray.items.values
     : []
 
@@ -24,8 +24,8 @@ Singleton {
   function isTrayItemHidden(item) {
     if (!item) return false
     var key = root.trayItemKey(item)
-    var sessionHidden = Config.runtimeHiddenTrayApps || []
-    var sessionUnhidden = Config.runtimeUnhiddenTrayApps || []
+    var sessionHidden = UiState.runtimeHiddenTrayApps || []
+    var sessionUnhidden = UiState.runtimeUnhiddenTrayApps || []
     if (key && sessionHidden.indexOf(key) !== -1) return true
     if (key && sessionUnhidden.indexOf(key) !== -1) return false
     return Utils.isTrayItemHidden(item, Config.trayHiddenApps)
@@ -36,8 +36,8 @@ Singleton {
     var key = root.trayItemKey(item)
     if (!key) return
     var currentlyHidden = root.isTrayItemHidden(item)
-    var nextHidden = (Config.runtimeHiddenTrayApps || []).slice()
-    var nextUnhidden = (Config.runtimeUnhiddenTrayApps || []).slice()
+    var nextHidden = (UiState.runtimeHiddenTrayApps || []).slice()
+    var nextUnhidden = (UiState.runtimeUnhiddenTrayApps || []).slice()
     var hIdx = nextHidden.indexOf(key)
     var uIdx = nextUnhidden.indexOf(key)
 
@@ -51,9 +51,9 @@ Singleton {
       if (hIdx === -1) nextHidden.push(key)
     }
 
-    Config.runtimeHiddenTrayApps = nextHidden
-    Config.runtimeUnhiddenTrayApps = nextUnhidden
-    if (root.trayHiddenCount === 0) Config.trayExpanded = false
+    UiState.runtimeHiddenTrayApps = nextHidden
+    UiState.runtimeUnhiddenTrayApps = nextUnhidden
+    if (root.trayHiddenCount === 0) UiState.trayExpanded = false
   }
 
   readonly property int trayHiddenCount: {
@@ -64,7 +64,7 @@ Singleton {
     return count
   }
 
-  readonly property bool trayShowHiddenItems: Config.trayShowExpandButton && Config.trayExpanded
+  readonly property bool trayShowHiddenItems: UiState.trayShowExpandButton && UiState.trayExpanded
 
   readonly property var trayVisibleItems: {
     var out = []
@@ -78,6 +78,6 @@ Singleton {
     return out
   }
 
-  readonly property bool trayHasContent: Config.trayEnabled
-    && (root.trayVisibleItems.length > 0 || (Config.trayShowExpandButton && root.trayHiddenCount > 0))
+  readonly property bool trayHasContent: UiState.trayEnabled
+    && (root.trayVisibleItems.length > 0 || (UiState.trayShowExpandButton && root.trayHiddenCount > 0))
 }

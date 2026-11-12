@@ -165,7 +165,7 @@ Card {
     // Power actions
     PowerButtons {
       Layout.fillWidth: true
-      onActivated: Config.commandCentreVisible = false
+      onActivated: UiState.commandCentreVisible = false
     }
   }
 }

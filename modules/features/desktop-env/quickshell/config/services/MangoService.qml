@@ -28,7 +28,7 @@ QtObject {
           if (data.all_tags) {
             root.allMonitorsTags = data.all_tags
 
-            var activeMonName = Config.lastActiveScreen ? Config.lastActiveScreen.name : ""
+            var activeMonName = UiState.lastActiveScreen ? UiState.lastActiveScreen.name : ""
             var foundSym = ""
             for (var m = 0; m < data.all_tags.length; m++) {
               var mon = data.all_tags[m]
@@ -85,7 +85,7 @@ QtObject {
           }
           if (data && data.monitor) {
             var sc = Utils.screenByName(data.monitor, Quickshell.screens)
-            if (sc) Config.lastActiveScreen = sc
+            if (sc) UiState.lastActiveScreen = sc
           }
         } catch (e) {
           root.currentTitle = ""

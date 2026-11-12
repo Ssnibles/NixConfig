@@ -26,23 +26,23 @@ Pill {
     rowSpacing: Config.traySpacing
     columnSpacing: Config.traySpacing
 
-    // Expand/collapse button for hidden tray icons (only shown when Config.trayShowExpandButton is true)
+    // Expand/collapse button for hidden tray icons (only shown when UiState.trayShowExpandButton is true)
     Rectangle {
-      visible: Config.trayShowExpandButton && TrayService.trayHiddenCount > 0
+      visible: UiState.trayShowExpandButton && TrayService.trayHiddenCount > 0
       Layout.preferredWidth: 18
       Layout.preferredHeight: Config.trayButtonSize
       width: 18
       height: Config.trayButtonSize
       radius: 4
-      color: toggleMouse.containsMouse || Config.trayExpanded ? Colours.bgRaised : "transparent"
+      color: toggleMouse.containsMouse || UiState.trayExpanded ? Colours.bgRaised : "transparent"
       Behavior on color { ColorAnimation { duration: Config.animFastMs } }
 
       Text {
         anchors.centerIn: parent
         text: root.horizontal
-          ? (Config.trayExpanded ? "󰅂" : "󰅁")
-          : (Config.trayExpanded ? "󰅃" : "󰅀")
-        color: Config.trayExpanded ? Colours.accent : Colours.fgDim
+          ? (UiState.trayExpanded ? "󰅂" : "󰅁")
+          : (UiState.trayExpanded ? "󰅃" : "󰅀")
+        color: UiState.trayExpanded ? Colours.accent : Colours.fgDim
         font.family: Session.monoFont
         font.pixelSize: 12
       }
@@ -52,7 +52,7 @@ Pill {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: Config.trayExpanded = !Config.trayExpanded
+        onClicked: UiState.trayExpanded = !UiState.trayExpanded
       }
     }
 

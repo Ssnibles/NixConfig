@@ -22,7 +22,7 @@ Scope {
         closeTimer.stop()
         root.closing = false
         if (!root._screen) {
-          root._screen = Utils.resolveActiveScreen(Config.targetScreen, Config.lastActiveScreen, Quickshell.screens)
+          root._screen = Utils.resolveActiveScreen(UiState.targetScreen, UiState.lastActiveScreen, Quickshell.screens)
         }
       } else if (root.active) {
         root.closing = true
@@ -45,7 +45,7 @@ Scope {
     Config.osdAllScreens,
     root.active,
     root._screen,
-    Config.lastActiveScreen,
+    UiState.lastActiveScreen,
     Quickshell.screens
   )
 
