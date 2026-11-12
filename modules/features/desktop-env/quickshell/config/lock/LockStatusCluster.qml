@@ -12,6 +12,7 @@ Item {
   readonly property var pos: Utils.parseOverlayPosition(Session.lockStatusPosition, "top-right")
 
   Row {
+    // Match the bar's status order, with the lock-only hostname first.
     visible: !root.isStatusSplit
     spacing: Config.lockStatusSpacing
     z: 10
@@ -24,17 +25,18 @@ Item {
 
     HostnamePill { }
 
+    VolumePill { }
+
     NetworkWidget {
       horizontal: true
       interactive: false
+      labelColour: Colours.fgMid
     }
 
     BatteryWidget {
       horizontal: true
       interactive: false
     }
-
-    VolumePill { }
   }
 
   // Split layout: one badge per corner.
@@ -58,6 +60,7 @@ Item {
     visible: root.isStatusSplit
     horizontal: true
     interactive: false
+    labelColour: Colours.fgMid
     anchors.left: root.left
     anchors.bottom: root.bottom
     anchors.margins: Config.lockStatusMargin
