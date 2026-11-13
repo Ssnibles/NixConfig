@@ -77,11 +77,13 @@ User environments and dotfiles are managed declaratively using **[hjem](https://
 
 ## System Architecture
 
-The configuration is organised into deferred module groups defined in [`modules/hosts/default.nix`](modules/hosts/default.nix):
+The configuration is organised around one deferred module group defined in [`modules/hosts/default.nix`](modules/hosts/default.nix):
 
-- **`config.nixos.modules.shared`**: Common base configuration, kernel optimisations, systemd services, shell environment, and desktop applications applied to all hosts.
-- **`config.nixos.modules.desktop`**: Workstation-specific hardware configuration (NVIDIA proprietary drivers, ASUS WMI rfkill unblocking, gaming stack, and workstation compositors).
-- **`config.nixos.modules.laptop`**: Laptop-specific hardware configuration (AMD graphics, TLP battery optimisation profiles, and Wi-Fi power settings).
+- **`config.nixos.modules.shared`**: every module writes here. It holds the base configuration, kernel tuning, systemd services, shell environment, desktop applications, and the feature options that machines switch on.
+
+Each directory in `modules/hosts/` is one host, and the directory name becomes the flake attribute and the hostname. A host directory holds only the settings that differ from the shared defaults. Feature options such as `features.nvidia.enable`, `features.gaming.enable`, and `features.minecraft.enable` live in the shared group and default to off, so a host turns on the hardware it actually has.
+
+Files starting with an underscore in a host directory (`_hardware-generated.nix`, `_installer-options.nix`) are written by [`install.sh`](install.sh) and picked up automatically. `install.sh` also creates `configuration.nix` for a host that has none, so a machine that has never been seen before installs with the shared defaults.
 
 <!-- DIAGRAM:START -->
 ```mermaid
@@ -103,10 +105,8 @@ flowchart TD
     Tree --> Features
     Tree --> Packages
 
-    subgraph Composition["Deferred Module Groups"]
-        Shared["nixos.modules.shared<br/>(Base OS, Shell, Audio, Networking, Maintenance)"]
-        DesktopGroup["nixos.modules.desktop<br/>(NVIDIA, Workstation Daemons, Hyprland, MangoWC)"]
-        LaptopGroup["nixos.modules.laptop<br/>(AMD Radeon, TLP Battery Profiles, MangoWC)"]
+    subgraph Composition["Deferred Module Group"]
+        Shared["nixos.modules.shared<br/>(Base OS, Shell, Audio, Networking, Desktop Apps)"]
     end
 
     Core --> Composition
@@ -114,24 +114,22 @@ flowchart TD
     Packages --> Composition
 
     subgraph Hosts["Target Machine Configurations"]
-        DesktopHost["nixosConfigurations.desktop<br/>Workstation & Gaming Host"]
-        LaptopHost["nixosConfigurations.laptop<br/>Ultraportable Productivity Host"]
+        Host0["nixosConfigurations.desktop<br/>modules/hosts/desktop/"]
+        Host1["nixosConfigurations.laptop<br/>modules/hosts/laptop/"]
     end
 
-    Shared --> DesktopHost
-    DesktopGroup --> DesktopHost
-    Shared --> LaptopHost
-    LaptopGroup --> LaptopHost
+    Shared --> Host0
+    Shared --> Host1
 
     click Core href "modules/core" "Open core modules"
     click Features href "modules/features" "Open features modules"
     click Packages href "modules/packages" "Open custom packages"
-    click DesktopHost href "modules/hosts/desktop" "Open desktop host configuration"
-    click LaptopHost href "modules/hosts/laptop" "Open laptop host configuration"
+    click Host0 href "modules/hosts/desktop" "Open the desktop host configuration"
+    click Host1 href "modules/hosts/laptop" "Open the laptop host configuration"
 ```
 <!-- DIAGRAM:END -->
 
-Every module declares its settings inside `nixos.modules.shared`, `nixos.modules.desktop`, or `nixos.modules.laptop`, eliminating cross-file imports and cyclic dependencies.
+Every module declares its settings inside `nixos.modules.shared`, eliminating cross-file imports and cyclic dependencies.
 
 ---
 
@@ -545,7 +543,7 @@ curl -fsSL https://raw.githubusercontent.com/Ssnibles/NixConfig/HEAD/install.sh 
 
 | Flag | Argument | Description |
 | :--- | :--- | :--- |
-| `--host` | `<host>` | Flake host configuration (a directory under `modules/hosts`, normally `desktop` or `laptop`) |
+| `--host` | `<host>` | Host to install. Any name works; a new one is created under `modules/hosts` with the shared defaults |
 | `--disk` | `<path>` | Installation target drive (e.g., `/dev/nvme0n1`, `/dev/sda`) |
 | `--user` | `<name>` | Primary username to configure (defaults to `josh`) |
 | `--copy-ssh-key` | `<path>` | Local public key file to install into `~/.ssh/authorized_keys` |
@@ -584,27 +582,38 @@ git clone https://github.com/Ssnibles/NixConfig.git /mnt/home/josh/NixConfig
 mkdir -p /mnt/etc
 ln -sfn ../home/josh/NixConfig /mnt/etc/nixos
 
-# 5. Generate hardware configuration
-mkdir -p /mnt/etc/nixos/__gen_tmp
-nixos-generate-config --root /mnt --dir /mnt/etc/nixos/__gen_tmp
-mv /mnt/etc/nixos/__gen_tmp/hardware-configuration.nix \
-   /mnt/etc/nixos/modules/hosts/desktop/_hardware-generated.nix
-rm -rf /mnt/etc/nixos/__gen_tmp
+# 5. Pick a host name. A new name works too: the shared defaults apply until
+#    you add machine specific settings to modules/hosts/<host>/configuration.nix.
+HOST=desktop
+HOST_DIR=/mnt/etc/nixos/modules/hosts/$HOST
+mkdir -p "$HOST_DIR"
 
-# 6. Configure host options
-cat > /mnt/etc/nixos/modules/hosts/desktop/_installer-options.nix <<'EOF'
+# 6. Generate the hardware config and the installer options. Both are picked up
+#    automatically, and the hostname comes from the directory name.
+nixos-generate-config --root /mnt --show-hardware-config > "$HOST_DIR/_hardware-generated.nix"
+cat > "$HOST_DIR/_installer-options.nix" <<'EOF'
 { lib, ... }:
 {
   username = lib.mkForce "josh";
-  networking.hostName = lib.mkForce "desktop";
 }
 EOF
 
-# 7. Install NixOS and set password
-nixos-install --flake /mnt/etc/nixos#desktop
+# 7. Add a host configuration if this host has none
+[[ -f "$HOST_DIR/configuration.nix" ]] || cat > "$HOST_DIR/configuration.nix" <<'EOF'
+{ ... }:
+{
+  nixos.hostRole = "generic";
+}
+EOF
+
+# 8. Stage the generated files so the flake sees them
+git -C /mnt/home/josh/NixConfig add "modules/hosts/$HOST"
+
+# 9. Install NixOS and set password
+nixos-install --flake "/mnt/etc/nixos#$HOST"
 nixos-enter --root /mnt -- passwd josh
 
-# 8. Reboot into new system
+# 10. Reboot into new system
 reboot
 ```
 

@@ -1,76 +1,71 @@
 # Desktop host settings.
 # Bluetooth workaround for the ASUS motherboard, wireless peripherals, firewall
-# ports, and Wi-Fi roaming.
-{ ... }:
+# ports, and Wi-Fi roaming. Hardware comes from _hardware-generated.nix.
 {
-  nixos.modules.desktop =
-    {
-      pkgs,
-      lib,
-      ...
-    }:
-    {
-      imports = [
-        ./_hardware-generated.nix
-      ]
-      ++ lib.optional (builtins.pathExists ./_installer-options.nix) ./_installer-options.nix;
+  pkgs,
+  lib,
+  ...
+}:
+{
+  nixos.hostRole = "desktop";
 
-      nixos.hostRole = "desktop";
-      # Keep the hostname equal to the flake attribute. build.sh and
-      # `nh os switch` look the configuration up by hostname.
-      networking.hostName = "desktop";
+  features = {
+    hyprland.enable = true;
+    minecraft.enable = true;
+    gaming.enable = true;
+    nvidia.enable = true;
+  };
 
-      # The desktop is a fixed, single-user workstation, so CPU mitigations
-      # and the watchdog are traded for performance here only.
-      boot.kernelParams = [
-        "mitigations=off"
-        "nowatchdog"
-      ];
+  # The desktop is a fixed, single-user workstation, so CPU mitigations
+  # and the watchdog are traded for performance here only.
+  boot.kernelParams = [
+    "mitigations=off"
+    "nowatchdog"
+  ];
 
-      # Desktop USB Bluetooth modules.
-      boot.kernelModules = [ "btusb" ];
+  # Desktop USB Bluetooth modules.
+  boot.kernelModules = [ "btusb" ];
 
-      # asus_wmi blocks the adapter at boot, so unblock it before Bluetooth.
-      systemd.services.unblock-bluetooth = {
-        description = "Unblock Bluetooth rfkill for ASUS WMI";
-        after = [ "sysinit.target" ];
-        before = [ "bluetooth.service" ];
-        wantedBy = [ "multi-user.target" ];
-        serviceConfig = {
-          Type = "oneshot";
-          TimeoutStartSec = 5;
-        };
-        script = "${pkgs.util-linux}/bin/rfkill unblock bluetooth";
-      };
-
-      hardware.bluetooth.powerOnBoot = true;
-
-      # Low latency and steady frame pacing for games.
-      powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
-
-      hardware.logitech.wireless.enable = true;
-
-      # Spread interrupts across cores for gaming throughput.
-      services.irqbalance.enable = true;
-
-      environment.systemPackages = with pkgs; [
-        musicpod
-        nicotine-plus
-        pkgs.stable.calibre
-        sigil
-      ];
-
-      # Local discovery and streaming.
-      networking.firewall.allowedTCPPorts = [
-        5353
-        9090
-      ];
-      networking.firewall.allowedUDPPorts = [ 5353 ];
-
-      # The only access point in range is below iwd's roaming threshold, so
-      # roam scans find nothing and only add latency. This desktop does not move.
-      networking.wireless.iwd.settings.Scan.DisableRoamingScan = true;
-
-      system.stateVersion = "26.05";
+  # asus_wmi blocks the adapter at boot, so unblock it before Bluetooth.
+  systemd.services.unblock-bluetooth = {
+    description = "Unblock Bluetooth rfkill for ASUS WMI";
+    after = [ "sysinit.target" ];
+    before = [ "bluetooth.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutStartSec = 5;
     };
+    script = "${pkgs.util-linux}/bin/rfkill unblock bluetooth";
+  };
+
+  hardware.bluetooth.powerOnBoot = true;
+
+  # Low latency and steady frame pacing for games.
+  powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
+
+  hardware.logitech.wireless.enable = true;
+
+  # Spread interrupts across cores for gaming throughput.
+  services.irqbalance.enable = true;
+
+  environment.systemPackages = with pkgs; [
+    musicpod
+    nicotine-plus
+    pkgs.stable.calibre
+    sigil
+  ];
+
+  # Local discovery and streaming.
+  networking.firewall.allowedTCPPorts = [
+    5353
+    9090
+  ];
+  networking.firewall.allowedUDPPorts = [ 5353 ];
+
+  # The only access point in range is below iwd's roaming threshold, so
+  # roam scans find nothing and only add latency. This desktop does not move.
+  networking.wireless.iwd.settings.Scan.DisableRoamingScan = true;
+
+  system.stateVersion = "26.05";
 }

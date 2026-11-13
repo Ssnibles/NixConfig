@@ -1,8 +1,8 @@
-# Minecraft on the desktop.
+# Minecraft. Hosts that want it enable features.minecraft.
 # Java Edition uses PrismLauncher. Bedrock Edition uses BedrockOnLinux.
 { inputs, ... }:
 {
-  nixos.modules.desktop =
+  nixos.modules.shared =
     {
       pkgs,
       lib,
@@ -34,25 +34,27 @@
               buildInputs = (old.buildInputs or [ ]) ++ [ final.sqlite ];
             });
 
-            modrinth-app = (prev.modrinth-app.override {
-              modrinth-app-unwrapped = final.modrinth-app-unwrapped;
-            }).overrideAttrs (old: {
-              runtimeDependencies = "${old.runtimeDependencies}:${
-                final.lib.makeLibraryPath [
-                  final.wayland
-                  final.libdecor
-                  final.libxkbcommon
-                  # The bundled Zulu JRE's libawt_xawt.so dlopens these; without
-                  # them java.awt.Toolkit/ImageIO fail and resource reload dies
-                  # with a black screen. SDL3's X11 backend wants the same set.
-                  final.libXi
-                  final.libXrender
-                  final.libXtst
-                  final.libXfixes
-                  final.libXScrnSaver
-                ]
-              }";
-            });
+            modrinth-app =
+              (prev.modrinth-app.override {
+                modrinth-app-unwrapped = final.modrinth-app-unwrapped;
+              }).overrideAttrs
+                (old: {
+                  runtimeDependencies = "${old.runtimeDependencies}:${
+                    final.lib.makeLibraryPath [
+                      final.wayland
+                      final.libdecor
+                      final.libxkbcommon
+                      # The bundled Zulu JRE's libawt_xawt.so dlopens these; without
+                      # them java.awt.Toolkit/ImageIO fail and resource reload dies
+                      # with a black screen. SDL3's X11 backend wants the same set.
+                      final.libXi
+                      final.libXrender
+                      final.libXtst
+                      final.libXfixes
+                      final.libXScrnSaver
+                    ]
+                  }";
+                });
           })
         ];
 

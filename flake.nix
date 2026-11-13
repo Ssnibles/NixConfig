@@ -118,7 +118,12 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.devenv.flakeModule
-        (inputs.import-tree ./modules)
+        # Host directories hold plain NixOS modules that modules/hosts/default.nix
+        # wires up per machine. Importing them here as well would evaluate them
+        # as flake-parts modules, where options such as `boot` do not exist.
+        (inputs.import-tree (
+          i: i.filterNot (path: builtins.match "/hosts/[^/]+/.*" path != null)
+        ) ./modules)
       ];
     };
 }

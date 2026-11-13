@@ -76,6 +76,24 @@ done
 FEATURES_STR=$(printf "%s, " "${FEATURES[@]}" | sed 's/, $//')
 PACKAGES_STR=$(printf "%s, " "${PACKAGES[@]}" | sed 's/, $//')
 
+# Detect hosts
+HOSTS=()
+for h in "$REPO_ROOT/modules/hosts"/*/; do
+  [[ -d "$h" ]] || continue
+  HOSTS+=("$(basename "$h")")
+done
+
+HOST_NODES=""
+HOST_EDGES=""
+HOST_CLICKS=""
+i=0
+for h in "${HOSTS[@]}"; do
+  HOST_NODES+="        Host$i[\"nixosConfigurations.$h<br/>modules/hosts/$h/\"]"$'\n'
+  HOST_EDGES+="    Shared --> Host$i"$'\n'
+  HOST_CLICKS+="    click Host$i href \"modules/hosts/$h\" \"Open the $h host configuration\""$'\n'
+  i=$((i + 1))
+done
+
 # Build new Mermaid diagram
 export DIAGRAM_CONTENT=$(cat <<EOF
 <!-- DIAGRAM:START -->
@@ -98,10 +116,8 @@ flowchart TD
     Tree --> Features
     Tree --> Packages
 
-    subgraph Composition["Deferred Module Groups"]
-        Shared["nixos.modules.shared<br/>(Base OS, Shell, Audio, Networking, Maintenance)"]
-        DesktopGroup["nixos.modules.desktop<br/>(NVIDIA, Workstation Daemons, Hyprland, MangoWC)"]
-        LaptopGroup["nixos.modules.laptop<br/>(AMD Radeon, TLP Battery Profiles, MangoWC)"]
+    subgraph Composition["Deferred Module Group"]
+        Shared["nixos.modules.shared<br/>(Base OS, Shell, Audio, Networking, Desktop Apps)"]
     end
 
     Core --> Composition
@@ -109,21 +125,13 @@ flowchart TD
     Packages --> Composition
 
     subgraph Hosts["Target Machine Configurations"]
-        DesktopHost["nixosConfigurations.desktop<br/>Workstation & Gaming Host"]
-        LaptopHost["nixosConfigurations.laptop<br/>Ultraportable Productivity Host"]
-    end
+${HOST_NODES}    end
 
-    Shared --> DesktopHost
-    DesktopGroup --> DesktopHost
-    Shared --> LaptopHost
-    LaptopGroup --> LaptopHost
-
+${HOST_EDGES}
     click Core href "modules/core" "Open core modules"
     click Features href "modules/features" "Open features modules"
     click Packages href "modules/packages" "Open custom packages"
-    click DesktopHost href "modules/hosts/desktop" "Open desktop host configuration"
-    click LaptopHost href "modules/hosts/laptop" "Open laptop host configuration"
-\`\`\`
+${HOST_CLICKS}\`\`\`
 <!-- DIAGRAM:END -->
 EOF
 )

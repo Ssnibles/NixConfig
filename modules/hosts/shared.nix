@@ -1,4 +1,4 @@
-# Shared host settings.
+# Settings shared by every host.
 # Bootloader, graphics, login manager, keyboard remaps, swap, and systemd tuning.
 { ... }:
 {

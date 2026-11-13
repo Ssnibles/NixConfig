@@ -31,11 +31,11 @@
         };
       };
 
-      # The host name doubles as the hardware role, so adding a host does not
-      # need an option edit. Shared modules compare against it by name.
+      # Hosts set this themselves. The neutral default means a host that has
+      # not been classified yet gets no role-specific behaviour.
       options.nixos.hostRole = lib.mkOption {
         type = lib.types.str;
-        default = "desktop";
+        default = "generic";
         description = "Host role, used by shared modules that need host-specific behaviour.";
       };
 
@@ -59,7 +59,7 @@
       # Shared defaults for all hosts. Per host overrides are at the bottom.
       config = lib.mapAttrsRecursive (_: lib.mkDefault) {
         features = {
-          # Per host: the desktop uses Hyprland, the laptop uses local Mango.
+          # Compositor choice differs per host, so these are only defaults.
           hyprland.enable = false;
           mangowc.enable = true;
           niri.enable = false;
@@ -89,7 +89,6 @@
           frame.enable = true;
           hermes.enable = false;
           wramp.enable = false;
-          # Minecraft is a desktop only module, enabled in the desktop block.
           pi-agent = {
             enable = true;
             interactiveChoice = true;
@@ -107,16 +106,4 @@
         };
       };
     };
-
-  # Overrides that differ between hosts. Hardware details stay in
-  # modules/hosts/<host>/.
-  nixos.modules.desktop = {
-    features.hyprland.enable = true;
-    features.minecraft.enable = true;
-  };
-
-  nixos.modules.laptop = {
-    features.mangowc.local = true;
-    features.wramp.enable = true;
-  };
 }
