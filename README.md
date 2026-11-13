@@ -198,6 +198,7 @@ For single-instance terminal performance, Tmux session management, Yazi openers,
 - **Yazi File Manager**: Async terminal file manager configured with custom image and text openers, hidden file toggles, preview maximisation, and Neovim directory opening.
 - **Navi Cheatsheet Manager**: Interactive cheatsheet fuzzy search bound to `Ctrl + P` in Fish (`navi-pick`) with an fzf preview pane showing the command and tags. Also available in a floating tmux popup via `Prefix + Ctrl-g`, which pastes the chosen cheat unexecuted into the invoking pane (works over SSH). The library is declared in Nix (`modules/packages/navi/default.nix`) and rendered to per-topic `.cheat` files under `~/.config/navi/cheats/`, covering NixOS, Git/GitHub, Jujutsu, Tmux, files, system, MangoWC, and on-demand tools.
 - **Fish Shell 4+ & Cached FZF Traversal**: Fast Fish shell with a custom caching engine (`__fzf_cache_fd`) caching `fd` traversal in `$XDG_RUNTIME_DIR/fzf_fd_cache` for 5 minutes with atomic file replacement.
+- **Modern Coreutils**: Interactive aliases map the familiar names onto Rust rewrites: `ls`/`tree` to eza, `cat` to bat, `grep` to ripgrep, `find` to fd, `du` to dust, `df` to duf, `ps` to procs, `diff` to difftastic, `xxd` to hexyl, `man` to tldr (with a real man page fallback), and `ping` to gping. `sd`, `ouch`, and `viddy` are installed under their own names. Scripts are untouched because the aliases only exist in interactive shells.
 - **Starship Prompt**: Transient prompt (`>>`) with indicators for Git status, Nix shell, Node.js, Rust, Python, battery levels, and command execution duration.
 
 ### Declarative Neovim & Development
@@ -485,7 +486,7 @@ Comprehensive documentation, architecture references, and step-by-step workflow 
 | :--- | :--- | :--- |
 | **Wayland Compositors** | [compositors.md](docs/wiki/compositors.md) | Configuration guide for MangoWC (layouts, binds, OCR screenshot helper), Niri, Hyprland, Shikane display daemon, and Vicinae launcher |
 | **Quickshell UI** | [quickshell.md](docs/wiki/quickshell.md) | Quickshell QML framework architecture, status bar widgets, multi-compositor routing, Command Centre, Lock Screen, and notification daemon |
-| **Terminal Workflow** | [terminal-workflow.md](docs/wiki/terminal-workflow.md) | Kitty single-instance server mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Navi fuzzy cheats (`Ctrl+P`), and Fish shell |
+| **Terminal Workflow** | [terminal-workflow.md](docs/wiki/terminal-workflow.md) | Kitty single-instance server mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Navi fuzzy cheats (`Ctrl+P`), modern coreutils aliases, and Fish shell |
 | **Declarative Neovim** | [neovim.md](docs/wiki/neovim.md) | NVF Neovim setup, modular Lua plugins in `nvim-src/`, language servers (`qmlls`, `zls`), Blink.cmp, formatters, and `:GenerateCompileFlags` |
 | **AI Development Tools** | [ai-tools.md](docs/wiki/ai-tools.md) | Pi coding agent harness (`pi.nix`) with safety extensions and Bubblewrap jail, Hermes AI agent with homeserver Ollama inference offloading |
 | **Jujutsu Version Control** | [jujutsu.md](docs/wiki/jujutsu.md) | Quick reference for the Jujutsu VCS: Git vs jj mental models, daily workflow, bookmarks, pushing/pulling, conflict resolution, and shell aliases |

@@ -68,7 +68,7 @@
                     bat --style=numbers --color=always --line-range :500 --wrap=auto {}
                   end
                 else if test -d {}
-                  ls -la {} 2>/dev/null
+                  eza --long --all --git --group-directories-first --color=always {}
                 else
                   echo {} | bat --language=bash --style=plain --color=always --wrap=auto --terminal-width=\"\$FZF_PREVIEW_COLUMNS\"
                 end
@@ -128,7 +128,7 @@
                     end
                 end
 
-                cat "$cache_file"
+                command cat "$cache_file"
             end
           '';
         };
@@ -200,33 +200,84 @@
             end
           '';
         };
+
+        ".config/fish/functions/man.fish" = {
+          text = ''
+            function man --description "Show a tldr page, falling back to the real man page"
+                tldr -q $argv 2>/dev/null
+                or command man $argv
+            end
+          '';
+        };
+
+        ".config/fish/functions/ping.fish" = {
+          text = ''
+            function ping --description "Graph pings with gping, keeping ping's own flags"
+                # gping reads -c as a colour and has no timeout or interval
+                # flags, so hand those invocations to the real ping.
+                if string match -qr -- '^-(c|W|w|i|I|s|t|n|q)' $argv
+                    command ping $argv
+                else
+                    gping $argv
+                end
+            end
+          '';
+        };
       };
 
-      environment.shellAliases = {
-        ll = "ls -l";
-        la = "ls -la";
-        lt = "ls -ltr";
-        j = "jj";
-        jl = "jj log";
-        jd = "jj diff";
-        js = "jj status";
-        jc = "jj commit";
-        jn = "jj new";
-        je = "jj edit";
-        jb = "jj bookmark";
-        jp = "jj git push";
-        jf = "jj git fetch";
-        jup = "jj new 'trunk()'";
-        jpull = "jj git fetch && jj new 'trunk()'";
-        n = "nvim";
-        cat = "bat";
-        t = "tmux";
-        imv = "imv-dir";
-        build-nixconf = "$HOME/NixConfig/build.sh";
-      };
+      environment.shellAliases =
+        let
+          eza = "eza --group-directories-first";
+          ezaLong = "${eza} --long --git --time-style=long-iso";
+        in
+        {
+          # eza stands in for ls. Deliberately separate aliases so extra flags
+          # can be added without making the short listing noisy.
+          ls = eza;
+          l = "${ezaLong} --all";
+          ll = ezaLong;
+          la = "${ezaLong} --all";
+          lt = "${ezaLong} --sort=modified --reverse";
+          tree = "eza --tree --group-directories-first";
 
+          # bat stands in for cat. Plain style and no pager keep cat semantics.
+          cat = "bat --style=plain --paging=never";
+
+          # Flags differ from the originals in places, so `command <tool>` is
+          # the escape hatch when a real GNU utility is needed.
+          grep = "rg";
+          find = "fd";
+          du = "dust";
+          df = "duf";
+          ps = "procs";
+          diff = "difft";
+          xxd = "hexyl";
+
+          j = "jj";
+          jl = "jj log";
+          jd = "jj diff";
+          js = "jj status";
+          jc = "jj commit";
+          jn = "jj new";
+          je = "jj edit";
+          jb = "jj bookmark";
+          jp = "jj git push";
+          jf = "jj git fetch";
+          jup = "jj new 'trunk()'";
+          jpull = "jj git fetch && jj new 'trunk()'";
+          n = "nvim";
+          t = "tmux";
+          imv = "imv-dir";
+          build-nixconf = "$HOME/NixConfig/build.sh";
+        };
+
+      # man and ping are fish functions rather than aliases: both need to fall
+      # back to the real utility instead of breaking common invocations.
       environment.sessionVariables = {
         MANPAGER = "sh -c 'col -bx | bat -l man -p'";
+        # The ansi theme follows the terminal palette, so bat matches the theme.
+        BAT_THEME = "ansi";
+        EZA_ICONS_AUTO = "1";
       };
 
       programs.fish = {

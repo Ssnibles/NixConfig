@@ -16,7 +16,38 @@ The terminal environment is engineered for low latency, memory efficiency, and f
 | **Multiplexer (Alt)** | **Zellij** | Custom Rust WASI status bar (`zjbar`) & command palette (`zjcmd`), stable permissions cache | `modules/features/shell/zellij.nix` |
 | **File Manager** | **Yazi** | Async Rust file manager, image previews, Neovim directory opening | `modules/features/apps/development.nix` |
 | **Cheatsheets** | **Navi** | Fuzzy command cheatsheet insertion bound to `Ctrl+P` | `modules/packages/navi/default.nix` |
+| **Coreutils** | **eza, bat, ripgrep, fd** | `ls`, `cat`, `grep`, and `find` mapped to Rust tools; GNU originals stay reachable | `modules/features/shell/shell.nix` |
 | **Shell** | **Fish 4+** | 5-minute cached FZF search (`__fzf_cache_fd`), Starship prompt | `modules/features/shell/shell.nix` |
+
+---
+
+## Modern coreutils replacements
+
+`modules/features/shell/cli.nix` installs the tools and `modules/features/shell/shell.nix` maps the familiar names onto them. Only interactive fish sessions are affected, so scripts and remote sessions keep the GNU utilities, and `command <tool>` at the prompt always reaches the original.
+
+| Replaces | Tool | Notes |
+| :--- | :--- | :--- |
+| `ls`, `tree` | **eza** | Directories first. Long views add Git status and ISO dates. `l`, `ll`, `la`, and `lt` are separate aliases so extra flags stay out of the short listing. |
+| `cat` | **bat** | `cat` runs `bat --style=plain --paging=never` so it still concatenates. Bare `bat` keeps line numbers and headers. |
+| `find` | **fd** | Recursive and `.gitignore` aware by default. |
+| `grep` | **ripgrep** | Recursive by default and skips ignored files. |
+| `du` | **dust** | Sorted bar chart of directory sizes. |
+| `df` | **duf** | Grouped, coloured mount table. |
+| `ps` | **procs** | Process table with readable CPU and memory columns. |
+| `diff` | **difftastic** | Structural, syntax-aware diff, invoked as `difft`. |
+| `xxd` | **hexyl** | Coloured hex viewer. |
+| `man` | **tealdeer** | `man <tool>` shows the tldr page and falls back to the real man page when there is none. |
+| `ping` | **gping** | Live latency graph. `-c`, `-W`, `-i` and friends fall back to the real ping. |
+| `sed` | **sd** | Find and replace with different syntax, so it is installed but not aliased. |
+| `watch` | **viddy** | Coloured snapshots with history, installed but not aliased. |
+| `tar`, `zip`, `unzip` | **ouch** | Installed but not aliased; use `ouch compress` and `ouch decompress`. |
+
+Alias flags do not always match GNU. `grep -r`, `find -name`, `ps aux`, and `du -sh` are GNU spellings; use `rg <pattern>`, `fd <pattern>`, `procs`, and `dust` instead, or prefix with `command` to reach the original.
+
+Two environment variables keep the output in line with the rest of the system:
+
+- `BAT_THEME=ansi` makes bat follow the terminal palette, so syntax highlighting tracks whichever theme is active.
+- `EZA_ICONS_AUTO=1` shows icons only when the terminal reports support, keeping piped output and dumb terminals clean.
 
 ---
 
@@ -243,7 +274,7 @@ NixConfig implements a custom caching function `__fzf_cache_fd`:
 `zoxide` provides two fish commands via `programs.zoxide.enableFishIntegration`:
 
 - **`z <query>`**: Direct frecency jump (no UI).
-- **`zi`**: Interactive picker — `zoxide query --interactive` pipes zoxide's ranked directory history into `fzf`, then `cd`s to the selection. Because it drives `fzf` directly, it inherits the themed `FZF_DEFAULT_OPTS` (rounded border, `ls -la` preview for directories). Pass a query to pre-filter, e.g. `zi nix`.
+- **`zi`**: Interactive picker — `zoxide query --interactive` pipes zoxide's ranked directory history into `fzf`, then `cd`s to the selection. Because it drives `fzf` directly, it inherits the themed `FZF_DEFAULT_OPTS` (rounded border, eza long-view preview for directories). Pass a query to pre-filter, e.g. `zi nix`.
 - **`Alt + Z`**: Keybinding that runs `zi` from the command line without typing it (bound in both default and insert modes), mirroring the existing `Ctrl + P` cheatsheet picker.
 
 ### Custom Functions & Aliases
@@ -251,6 +282,8 @@ NixConfig implements a custom caching function `__fzf_cache_fd`:
 - **`nixconf`**: Changes directory to `~/NixConfig` and prints recent Jujutsu commits (`jj log --limit 5`).
 - **`nixup`**: Pulls upstream Git commits and runs `nh os switch`.
 - **`mkcd <dir>`**: Creates directory and enters it in one command.
+- **`man <tool>`**: Shows the tldr page, falling back to the real man page when tldr has nothing for it.
+- **`ping <host>`**: Graphs latency with gping. Invocations using ping's own flags (`-c`, `-W`, `-i`, `-n`, and similar) are handed to the real ping instead.
 - **`y`**: Abbreviation for `yazi`.
 - **`nixclean`**: Abbreviation for `sudo nix-collect-garbage --delete-older-than 30d`.
 - **`j` / `jl` / `jd` / `js` / `jc` / `jn` / `jp` / `jf`**: Full suite of Jujutsu VCS shortcuts (see [Jujutsu Guide](jujutsu.md)).

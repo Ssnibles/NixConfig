@@ -14,11 +14,19 @@
       ];
 
       config = {
+        # Rust rewrites of the coreutils sit next to the tools they replace:
+        # eza for ls, bat for cat, fd for find, rg for grep, dust for du,
+        # duf for df, procs for ps, and hexyl for xxd.
         environment.systemPackages = with pkgs; [
           bat
           btop
           chafa # Terminal image viewer with Sixel support.
+          choose # cut and awk field picking.
+          difftastic # Structural diff, also installed as difft.
+          duf
+          dust
           microfetch
+          eza
           fd
           file
           fzf
@@ -26,10 +34,17 @@
           gh
           gh-dash
           gnupg
+          gping
+          hexyl
           libnotify
           libsecret
+          ouch # One command for tar, zip, and the rest.
+          procs
           ripgrep
+          sd
+          tealdeer # tldr pages, used as a man front end.
           usbutils
+          viddy # watch with history and diffs.
           wget
           zip
           unzip
@@ -64,6 +79,16 @@
 
               [includeIf "gitdir/i:~/AndroidStudioProjects/"]
                 path = ~/.config/git/config-uni
+            '';
+          };
+
+          # tealdeer has no pages cached on a fresh system, so fetch them on
+          # first use instead of failing with "Page cache not found".
+          ".config/tealdeer/config.toml" = {
+            clobber = true;
+            text = ''
+              [updates]
+              auto_update = true
             '';
           };
 
