@@ -119,15 +119,15 @@ Singleton {
     readonly property int commandCentreBentoWidth: 1332
     readonly property int commandCentreBentoHeight: 880
     // Widths of the notification column and the weather/calendar column.
-    readonly property int commandCentreBentoNotificationWidth: 360
+    readonly property int commandCentreBentoNotificationWidth: 432
     readonly property int commandCentreBentoSideWidth: 360
     // Artwork edge in the bento now-playing panel, stacked above the details.
     readonly property int commandCentreBentoMediaArtSize: 200
     // Opacity of the backdrop behind the bento panel.
     readonly property real commandCentreBentoScrim: 0.55
     // Draw one raised surface behind the bento board so the cards read as a
-    // single panel. Set false to let the cards float over the dimmed desktop.
-    readonly property bool commandCentreBentoSurface: true
+    // single panel. Off, the cards float over the dimmed desktop.
+    readonly property bool commandCentreBentoSurface: false
     // Weather is fetched on demand when the command centre opens, then cached
     // for this many minutes. There is no background polling.
     readonly property int weatherCacheMinutes: 10

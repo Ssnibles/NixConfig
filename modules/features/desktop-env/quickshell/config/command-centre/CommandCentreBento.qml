@@ -68,38 +68,16 @@ Item {
           Layout.fillWidth: true
           spacing: Config.spaceLg
 
-          Column {
+          // The bar clock and the calendar already carry the time and date, so
+          // this clock only anchors the column.
+          Text {
+            text: ClockService.ccTimeStr
+            color: Colours.fg
+            font.family: Session.serifFont
+            font.letterSpacing: Config.displayLetterSpacing
+            font.pixelSize: Config.fontSize3xl
+            font.italic: true
             Layout.alignment: Qt.AlignTop
-            spacing: Config.space2xs
-
-            RowLayout {
-              spacing: Config.spaceSm
-
-              Text {
-                text: ClockService.ccTimeStr
-                color: Colours.fg
-                font.family: Session.serifFont
-                font.letterSpacing: Config.displayLetterSpacing
-                font.pixelSize: Config.fontSize3xl
-                font.italic: true
-                Layout.alignment: Qt.AlignBaseline
-              }
-
-              Text {
-                text: ClockService.ccTime12Str
-                color: Colours.fgDim
-                font.family: Session.sansFont
-                font.pixelSize: Config.fontSizeMd
-                Layout.alignment: Qt.AlignBaseline
-              }
-            }
-
-            Text {
-              text: ClockService.ccDateStr
-              color: Colours.fgMid
-              font.family: Session.sansFont
-              font.pixelSize: Config.fontSizeLg
-            }
           }
 
           Item { Layout.fillWidth: true }
