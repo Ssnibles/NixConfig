@@ -1,28 +1,34 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
 import ".."
 
-Pill {
+// Volume badge shared by the bar and the lock screen status cluster. Mute is
+// signalled by the red border, icon and label, so the percentage stays
+// readable in both states.
+StatusPill {
   id: root
 
-  property PanelWindow sharedWindow: null
-  property string uiFont: Session.monoFont
-
-  // Mute is signalled by colour, so the numeric level stays readable.
-  readonly property color levelColour: AudioService.muted ? Colours.red : Colours.accent
-
-  hoverHighlight: true
-  clickable: true
-  acceptedButtons: Qt.LeftButton | Qt.RightButton
+  // Vertical bars show a level track in place of the single-row badge.
+  showContent: root.horizontal
   padding: root.horizontal ? Config.pillPaddingHorizontal : Config.spaceXs
 
+  readonly property color levelColour: AudioService.muted ? Colours.red : Colours.accent
+
+  acceptedButtons: Qt.LeftButton | Qt.RightButton
+  border.color: AudioService.muted ? Colours.red : Colours.border
+  icon: AudioService.volumeIcon
+  iconColour: root.levelColour
+  iconSize: root.horizontal ? Config.iconSizeSm : Config.iconSizeLg
+  label: AudioService.volumePercent + "%"
+  labelColour: AudioService.muted ? Colours.red : Colours.fg
+  labelBold: true
+  tooltipEnabled: root.interactive
+  tooltipTitle: AudioService.muted ? "Muted" : ("Volume " + AudioService.volumePercent + "%")
+  tooltipDetails: root.interactive ? ["Left click · Mute", "Right click · Mixer", "Scroll · Adjust"] : []
+
   onClicked: function(mouse) {
-    if (mouse.button === Qt.RightButton) {
-      AudioService.openMixer()
-    } else {
-      AudioService.toggleMute()
-    }
+    if (mouse.button === Qt.RightButton) AudioService.openMixer()
+    else AudioService.toggleMute()
   }
 
   onWheel: function(wheel) {
@@ -30,16 +36,7 @@ Pill {
     wheel.accepted = true
   }
 
-  Tooltip {
-    target: root
-    sharedWindow: root.sharedWindow
-    icon: AudioService.volumeIcon
-    iconColour: root.levelColour
-    title: AudioService.muted ? "Muted" : ("Volume " + AudioService.volumePercent + "%")
-    details: ["Left click · Mute", "Right click · Mixer", "Scroll · Adjust"]
-  }
-
-  // Side bar: vertical level track above the icon and percentage.
+  // Side bar: level track above the icon and percentage.
   Column {
     visible: !root.horizontal
     anchors.centerIn: parent
@@ -94,7 +91,7 @@ Pill {
       anchors.horizontalCenter: parent.horizontalCenter
       text: AudioService.volumeIcon
       color: AudioService.muted ? Colours.red : Colours.fg
-      font.family: root.uiFont
+      font.family: Session.monoFont
       font.pixelSize: Config.fontSizeLg
     }
 
@@ -102,33 +99,8 @@ Pill {
       anchors.horizontalCenter: parent.horizontalCenter
       text: AudioService.volumePercent + "%"
       color: AudioService.muted ? Colours.red : Colours.fgMid
-      font.family: root.uiFont
+      font.family: Session.monoFont
       font.pixelSize: Config.fontSizeXs
-    }
-  }
-
-  // Top bar: icon beside the percentage.
-  Row {
-    visible: root.horizontal
-    anchors.centerIn: parent
-    spacing: Config.spaceSm
-
-    Text {
-      text: AudioService.volumeIcon
-      color: root.levelColour
-      font.family: root.uiFont
-      font.pixelSize: Config.fontSizeMd
-      anchors.verticalCenter: parent.verticalCenter
-    }
-
-    Text {
-      // The bar pill hugs its content rather than reserving a label column.
-      text: AudioService.volumePercent + "%"
-      color: AudioService.muted ? Colours.red : Colours.fg
-      font.family: root.uiFont
-      font.pixelSize: Config.fontSizeSm
-      font.bold: true
-      anchors.verticalCenter: parent.verticalCenter
     }
   }
 }

@@ -25,7 +25,9 @@ Item {
 
     HostnamePill { }
 
-    VolumePill { }
+    VolumePill {
+      interactive: false
+    }
 
     NetworkWidget {
       horizontal: true
@@ -50,6 +52,7 @@ Item {
 
   VolumePill {
     visible: root.isStatusSplit
+    interactive: false
     anchors.right: root.right
     anchors.top: root.top
     anchors.margins: Config.lockStatusMargin

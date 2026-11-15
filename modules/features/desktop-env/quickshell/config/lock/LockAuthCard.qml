@@ -106,12 +106,11 @@ Card {
           font.bold: true
         }
 
-        Text {
+        LockStateRow {
           Layout.alignment: Qt.AlignHCenter
-          text: root.errorMessage !== "" ? root.errorMessage : (root.authenticating ? "Authenticating..." : "System Locked")
-          color: root.errorMessage !== "" ? Colours.red : (root.authenticating ? Colours.accent : Colours.fgDim)
-          font.family: Session.sansFont
-          font.pixelSize: Config.fontSizeMd
+          errorMessage: root.errorMessage
+          authenticating: root.authenticating
+          textSize: Config.fontSizeMd
         }
       }
     }

@@ -140,7 +140,7 @@ Scope {
             Layout.alignment: Qt.AlignCenter
           }
 
-          VolumeWidget {
+          VolumePill {
             shown: Config.barShowVolume
             horizontal: root.isHorizontal
             sharedWindow: sharedTipWindow

@@ -32,6 +32,8 @@ Card 1.0 common/Card.qml
 CoverArt 1.0 common/CoverArt.qml
 Divider 1.0 common/Divider.qml
 IconButton 1.0 common/IconButton.qml
+MenuFooterButton 1.0 common/MenuFooterButton.qml
+MenuHeader 1.0 common/MenuHeader.qml
 MediaCard 1.0 common/MediaCard.qml
 MediaProgressRow 1.0 common/MediaProgressRow.qml
 NetworkWidget 1.0 common/NetworkWidget.qml
@@ -45,6 +47,7 @@ StatusPill 1.0 common/StatusPill.qml
 ThinScrollBar 1.0 common/ThinScrollBar.qml
 Tooltip 1.0 common/Tooltip.qml
 TooltipCard 1.0 common/TooltipCard.qml
+VolumePill 1.0 common/VolumePill.qml
 
 # bar
 BluetoothMenu 1.0 bar/BluetoothMenu.qml
@@ -59,7 +62,6 @@ SharedTooltipWindow 1.0 bar/SharedTooltipWindow.qml
 StatusMenu 1.0 bar/StatusMenu.qml
 SystemTrayWidget 1.0 bar/SystemTrayWidget.qml
 TrayMenu 1.0 bar/TrayMenu.qml
-VolumeWidget 1.0 bar/VolumeWidget.qml
 WindowTitleWidget 1.0 bar/WindowTitleWidget.qml
 WorkspacesWidget 1.0 bar/WorkspacesWidget.qml
 
@@ -87,8 +89,8 @@ LockClock 1.0 lock/LockClock.qml
 LockMediaRow 1.0 lock/LockMediaRow.qml
 LockScreen 1.0 lock/LockScreen.qml
 LockSecondaryScreen 1.0 lock/LockSecondaryScreen.qml
+LockStateRow 1.0 lock/LockStateRow.qml
 LockStatusCluster 1.0 lock/LockStatusCluster.qml
-VolumePill 1.0 lock/VolumePill.qml
 
 # osd
 OsdOverlay 1.0 osd/OsdOverlay.qml

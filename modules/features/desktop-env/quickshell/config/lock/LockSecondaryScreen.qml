@@ -25,31 +25,12 @@ Column {
     border.color: root.errorMessage !== "" ? Colours.red : (root.enteredLength > 0 ? Colours.accent : Colours.border)
     padding: Config.spaceMd
 
-    Row {
+    LockStateRow {
       anchors.centerIn: parent
-      spacing: Config.spaceSm
-
-      Text {
-        text: root.authenticating ? "󱎟" : (root.errorMessage !== "" ? "󰅙" : "󰌾")
-        color: root.errorMessage !== "" ? Colours.red : Colours.accent
-        font.family: Session.monoFont
-        font.pixelSize: Config.iconSizeMd
-        anchors.verticalCenter: parent.verticalCenter
-      }
-
-      Text {
-        text: root.authenticating
-          ? "Authenticating..."
-          : (root.errorMessage !== ""
-              ? root.errorMessage
-              : (root.enteredLength > 0
-                  ? ("Typing (" + root.enteredLength + " characters)...")
-                  : "System Locked"))
-        color: root.errorMessage !== "" ? Colours.red : (root.enteredLength > 0 ? Colours.fg : Colours.fgDim)
-        font.family: Session.sansFont
-        font.pixelSize: Config.fontSizeLg
-        anchors.verticalCenter: parent.verticalCenter
-      }
+      showIcon: true
+      errorMessage: root.errorMessage
+      authenticating: root.authenticating
+      typedLength: root.enteredLength
     }
   }
 

@@ -52,38 +52,16 @@ ColumnLayout {
     UiState.closeStatusMenu()
   }
 
-  RowLayout {
-    Layout.fillWidth: true
-    spacing: Config.spaceSm
-
-    Text {
-      text: "󰤨"
-      color: Colours.accent
-      font.family: Session.monoFont
-      font.pixelSize: Config.iconSizeLg
-    }
-
-    Text {
-      Layout.fillWidth: true
-      text: "Network"
-      color: Colours.fg
-      font.family: Session.sansFont
-      font.pixelSize: Config.fontSizeLg
-      font.bold: true
-    }
+  MenuHeader {
+    icon: "󰤨"
+    iconColour: Colours.accent
+    title: "Network"
 
     IconButton {
       buttonSize: Config.spaceXl + Config.space2xs
       iconSize: Config.iconSizeSm
       icon: "󰑐"
       onClicked: NetworkService.scanWifi()
-    }
-
-    IconButton {
-      buttonSize: Config.spaceXl + Config.space2xs
-      iconSize: Config.iconSizeSm
-      icon: "󰅖"
-      onClicked: UiState.closeStatusMenu()
     }
   }
 
@@ -253,39 +231,11 @@ ColumnLayout {
     }
   }
 
-  Pill {
-    Layout.fillWidth: true
-    pillHeight: Config.spaceXl + Config.space2xs
-    padding: Config.spaceSm
-    baseColour: Colours.bgSubtle
-    hoverColour: Colours.bgRaised
-    hoverHighlight: true
-    border.color: Colours.border
-    clickable: true
+  MenuFooterButton {
+    label: "Open network manager"
     onClicked: {
       UiState.closeStatusMenu()
       NetworkService.openNetworkManager()
-    }
-
-    Row {
-      anchors.centerIn: parent
-      spacing: Config.spaceSm
-
-      Text {
-        text: "󰒓"
-        color: Colours.fgDim
-        font.family: Session.monoFont
-        font.pixelSize: Config.iconSizeSm
-        anchors.verticalCenter: parent.verticalCenter
-      }
-
-      Text {
-        text: "Open network manager"
-        color: Colours.fgMid
-        font.family: Session.sansFont
-        font.pixelSize: Config.fontSizeSm
-        anchors.verticalCenter: parent.verticalCenter
-      }
     }
   }
 }

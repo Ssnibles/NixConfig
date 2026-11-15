@@ -12,29 +12,14 @@ ColumnLayout {
   anchors.margins: Config.spaceLg
   spacing: Config.spaceMd
 
-  RowLayout {
-    Layout.fillWidth: true
-    spacing: Config.spaceSm
-
-    Text {
-      text: BluetoothService.btIcon
-      color: BluetoothService.btColour
-      font.family: Session.monoFont
-      font.pixelSize: Config.iconSizeLg
-    }
-
-    Text {
-      Layout.fillWidth: true
-      text: "Bluetooth"
-      color: Colours.fg
-      font.family: Session.sansFont
-      font.pixelSize: Config.fontSizeLg
-      font.bold: true
-    }
+  MenuHeader {
+    icon: BluetoothService.btIcon
+    iconColour: BluetoothService.btColour
+    title: "Bluetooth"
 
     Pill {
       pillHeight: Config.pillHeightHorizontal
-      padding: Config.spaceSm
+      padding: Config.pillPaddingHorizontal
       baseColour: BluetoothService.btPowered ? Colours.bgSubtle : "transparent"
       hoverColour: Colours.bgSubtle
       border.color: BluetoothService.btPowered ? Colours.accent : Colours.border
@@ -49,13 +34,6 @@ ColumnLayout {
         font.family: Session.sansFont
         font.pixelSize: Config.fontSizeSm
       }
-    }
-
-    IconButton {
-      buttonSize: Config.spaceXl + Config.space2xs
-      iconSize: Config.iconSizeSm
-      icon: "󰅖"
-      onClicked: UiState.closeStatusMenu()
     }
   }
 
@@ -142,39 +120,11 @@ ColumnLayout {
     }
   }
 
-  Pill {
-    Layout.fillWidth: true
-    pillHeight: Config.spaceXl + Config.space2xs
-    padding: Config.spaceSm
-    baseColour: Colours.bgSubtle
-    hoverColour: Colours.bgRaised
-    hoverHighlight: true
-    border.color: Colours.border
-    clickable: true
+  MenuFooterButton {
+    label: "Open Bluetooth manager"
     onClicked: {
       UiState.closeStatusMenu()
       BluetoothService.openBluetoothManager()
-    }
-
-    Row {
-      anchors.centerIn: parent
-      spacing: Config.spaceSm
-
-      Text {
-        text: "󰒓"
-        color: Colours.fgDim
-        font.family: Session.monoFont
-        font.pixelSize: Config.iconSizeSm
-        anchors.verticalCenter: parent.verticalCenter
-      }
-
-      Text {
-        text: "Open Bluetooth manager"
-        color: Colours.fgMid
-        font.family: Session.sansFont
-        font.pixelSize: Config.fontSizeSm
-        anchors.verticalCenter: parent.verticalCenter
-      }
     }
   }
 }

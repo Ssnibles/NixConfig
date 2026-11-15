@@ -16,6 +16,8 @@ Pill {
   property color iconColour: Colours.fg
   property int iconSize: Config.iconSizeSm
   property string iconFont: Session.monoFont
+  // Widgets that render their own content hide the built-in icon and label row.
+  property bool showContent: true
 
   property string label: ""
   // The label is only meaningful in the horizontal layout.
@@ -38,6 +40,7 @@ Pill {
   clickable: root.interactive
 
   Row {
+    visible: root.showContent
     anchors.centerIn: parent
     spacing: root.rowSpacing
     rotation: root.rowRotation
