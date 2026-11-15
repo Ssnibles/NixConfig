@@ -439,14 +439,14 @@ Scope {
               boundsBehavior: Flickable.StopAtBounds
               onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
 
-              ScrollBar.vertical: ThinScrollBar { }
+              ScrollBar.vertical: ThinScrollBar { id: resultsBar }
 
               delegate: Rectangle {
                 id: row
                 required property var modelData
                 required property int index
 
-                width: list.width
+                width: list.width - resultsBar.gutter
                 height: row.modelData.kind === "calc" ? (root.results.length === 1 ? list.height : Config.space3xl + Config.iconSizeXl) : Config.space2xl
                 radius: Config.itemRadiusMd
                 color: (index === root.selected && !(row.modelData.kind === "calc" && root.results.length === 1)) ? Colours.bgSubtle : "transparent"
@@ -548,14 +548,14 @@ Scope {
               boundsBehavior: Flickable.StopAtBounds
               onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
 
-              ScrollBar.vertical: ThinScrollBar { }
+              ScrollBar.vertical: ThinScrollBar { id: actionsBar }
 
               delegate: Rectangle {
                 id: actionRow
                 required property var modelData
                 required property int index
 
-                width: actionList.width
+                width: actionList.width - actionsBar.gutter
                 height: Config.space2xl
                 radius: Config.itemRadiusMd
                 color: index === root.actionSelected ? Colours.bgSubtle : "transparent"

@@ -71,13 +71,13 @@ ColumnLayout {
       spacing: Config.space2xs
       model: BluetoothService.btDevices
 
-      ScrollBar.vertical: ThinScrollBar { }
+      ScrollBar.vertical: ThinScrollBar { id: deviceBar }
 
       delegate: Rectangle {
         id: deviceRow
         required property var modelData
 
-        width: deviceList.width
+        width: deviceList.width - deviceBar.gutter
         height: Config.space2xl + Config.spaceSm
         radius: Config.itemRadiusSm
         color: rowMouse.containsMouse ? Colours.bgSubtle : "transparent"
@@ -85,7 +85,7 @@ ColumnLayout {
         RowLayout {
           anchors.fill: parent
           anchors.leftMargin: Config.spaceMd
-          anchors.rightMargin: Config.spaceMd
+          anchors.rightMargin: Config.spaceLg
           spacing: Config.spaceMd
 
           Text {

@@ -56,6 +56,9 @@ Singleton {
     readonly property int itemRadiusXs: 6
     readonly property int itemRadiusSm: 10
     readonly property int itemRadiusMd: 16
+    // Overlay scrollbar shared by every list. The thumb is a full pill, so its
+    // radius follows the width.
+    readonly property int scrollBarWidth: 10
 
     // Shared pill, surface and animation tokens
     readonly property int pillHeightHorizontal: 26

@@ -6,13 +6,25 @@ import ".."
 
 // Notification history list shown in the Command Centre.
 Card {
+  id: root
+
+  // The scrollbar overlays the list's right edge, so the list column runs into
+  // the card's right padding by this much. Rows that do not scroll add the
+  // same inset back, which keeps them on the usual card margin.
+  readonly property int scrollBarGutter: historyBar.gutter
+  readonly property int scrollBarInset: Math.min(root.scrollBarGutter, Config.spaceLg)
+
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: Config.spaceLg
+    anchors.topMargin: Config.spaceLg
+    anchors.leftMargin: Config.spaceLg
+    anchors.bottomMargin: Config.spaceLg
+    anchors.rightMargin: Config.spaceLg - root.scrollBarInset
     spacing: Config.spaceMd
 
     RowLayout {
       Layout.fillWidth: true
+      Layout.rightMargin: root.scrollBarInset
       spacing: Config.spaceMd
 
       Item { Layout.fillWidth: true }
@@ -97,6 +109,7 @@ Card {
       visible: NotificationService.historyModel.count === 0
       Layout.fillWidth: true
       Layout.fillHeight: true
+      Layout.rightMargin: root.scrollBarInset
 
       Row {
         anchors.centerIn: parent
@@ -143,7 +156,7 @@ Card {
         spacing: Config.notifSpacing
         model: NotificationService.historyModel
 
-        ScrollBar.vertical: ThinScrollBar { }
+        ScrollBar.vertical: ThinScrollBar { id: historyBar }
 
         // New cards are inserted at index 0. Follow them when the list is at
         // the top, but leave the reader's position alone when it is scrolled.
@@ -155,7 +168,7 @@ Card {
         }
 
         delegate: NotificationCard {
-          width: notifHistList.width
+          width: notifHistList.width - root.scrollBarGutter
           isHistory: true
         }
       }

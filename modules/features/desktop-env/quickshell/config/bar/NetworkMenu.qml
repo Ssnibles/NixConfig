@@ -99,13 +99,13 @@ ColumnLayout {
       spacing: Config.space2xs
       model: NetworkService.wifiNetworks
 
-      ScrollBar.vertical: ThinScrollBar { }
+      ScrollBar.vertical: ThinScrollBar { id: networkBar }
 
       delegate: Rectangle {
         id: networkRow
         required property var modelData
 
-        width: networkList.width
+        width: networkList.width - networkBar.gutter
         height: Config.space2xl + Config.spaceSm
         radius: Config.itemRadiusSm
         color: rowMouse.containsMouse ? Colours.bgSubtle : "transparent"
@@ -113,7 +113,7 @@ ColumnLayout {
         RowLayout {
           anchors.fill: parent
           anchors.leftMargin: Config.spaceMd
-          anchors.rightMargin: Config.spaceMd
+          anchors.rightMargin: Config.spaceLg
           spacing: Config.spaceMd
 
           Text {
