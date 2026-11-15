@@ -32,7 +32,9 @@ Singleton {
   readonly property string highText: root.hasData ? Math.round(root.high) + "°" : "--°"
   readonly property string lowText: root.hasData ? Math.round(root.low) + "°" : "--°"
   readonly property string feelsLikeText: root.hasData ? Math.round(root.feelsLike) + "°" : "--°"
-  readonly property string locationText: root.location !== "" ? root.location : "Location unavailable"
+  readonly property string locationText: root.location !== ""
+    ? root.location
+    : (Config.weatherLocation.trim() !== "" ? Config.weatherLocation : "Location unavailable")
 
   function refresh(force) {
     if (root.loading) return
@@ -41,7 +43,11 @@ Singleton {
     }
     root.loading = true
     root.error = ""
-    weatherProc.exec(["curl", "-fsS", "--max-time", "20", "https://wttr.in/?format=j1"])
+    // wttr.in resolves a place name or coordinates in the path. With no path it
+    // falls back to the address the request came from.
+    var place = Config.weatherLocation.trim()
+    var path = place === "" ? "" : encodeURIComponent(place)
+    weatherProc.exec(["curl", "-fsS", "--max-time", "20", "https://wttr.in/" + path + "?format=j1"])
   }
 
   // wttr.in uses the same WMO-style codes as Open-Meteo.

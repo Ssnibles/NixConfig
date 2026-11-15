@@ -128,6 +128,9 @@ Singleton {
     // Weather is fetched on demand when the command centre opens, then cached
     // for this many minutes. There is no background polling.
     readonly property int weatherCacheMinutes: 10
+    // Place name or coordinates for the weather card. Empty lets wttr.in pick
+    // the location from the request address.
+    readonly property string weatherLocation: "Tauranga"
     // Show the three-day forecast strip in the weather card.
     readonly property bool weatherShowForecast: true
     readonly property int commandCentreAnimDuration: 250
