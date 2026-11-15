@@ -26,12 +26,33 @@ Singleton {
   property alias activeModel: activeModel
   property alias historyModel: historyModel
 
+  // History outlives the shell, so it is mirrored to disk the same way the
+  // launcher stores its recents. Media toasts are skipped because the track
+  // they show is stale after a restart.
+  FileView {
+    id: historyFile
+    path: Quickshell.statePath("notification-history.json")
+    blockLoading: true
+    atomicWrites: true
+    onSaveFailed: function(error) {
+      console.warn("notifications: could not save history:", error)
+    }
+  }
+
+  Timer {
+    id: historySaveTimer
+    interval: 400
+    onTriggered: service._saveHistory()
+  }
+
   property int _nextUid: 1
   property var _hoverCounts: ({})
   property var _notificationsByUid: ({})
   property var _retainedNotifications: []
   property string _lastMediaTrack: ""
   property bool _startupFinished: false
+
+  Component.onCompleted: service._loadHistory()
 
   // Retain live C++ Notification objects while they remain in active or history
   // models so in-memory `image://qsimage/...` avatars and D-Bus actions stay
@@ -52,6 +73,64 @@ Singleton {
   }
 
   // Lifecycle and model helpers
+
+  function _loadHistory() {
+    var text = historyFile.text()
+    if (!text) return
+
+    var parsed
+    try {
+      parsed = JSON.parse(text)
+    } catch (e) {
+      console.warn("notifications: could not read history:", e)
+      return
+    }
+    if (!Array.isArray(parsed)) return
+
+    var highestUid = 0
+    for (var i = 0; i < parsed.length && historyModel.count < service.maxHistory; i++) {
+      var entry = parsed[i]
+      if (!entry || typeof entry !== "object" || entry.isMedia) continue
+      historyModel.append(entry)
+      if (typeof entry.uid === "number" && entry.uid > highestUid) highestUid = entry.uid
+    }
+    // Restored uids must not collide with the ones handed out from now on.
+    service._nextUid = Math.max(service._nextUid, highestUid + 1)
+  }
+
+  function _saveHistory() {
+    var items = []
+    for (var i = 0; i < historyModel.count; i++) {
+      var item = historyModel.get(i)
+      if (!item || item.isMedia) continue
+      items.push({
+        uid: item.uid,
+        title: item.title,
+        body: item.body,
+        subtext: item.subtext,
+        timeStr: item.timeStr,
+        urgency: item.urgency,
+        isMedia: false,
+        primaryIcon: item.primaryIcon,
+        fallbackIcon: item.fallbackIcon,
+        glyph: item.glyph,
+        // Actions belong to live D-Bus notifications and cannot be restored.
+        hasActions: false,
+        expireTimeout: item.expireTimeout,
+        appName: item.appName,
+        desktopEntry: item.desktopEntry,
+        appIcon: item.appIcon,
+        trackTitle: "",
+        trackArtist: "",
+        createdAt: item.createdAt
+      })
+    }
+    historyFile.setText(JSON.stringify(items))
+  }
+
+  function _scheduleHistorySave() {
+    historySaveTimer.restart()
+  }
 
   function _trackNotification(uid, notification) {
     if (!notification) return
@@ -104,6 +183,7 @@ Singleton {
         if (models[m].get(i).uid === uid) models[m].setProperty(i, prop, value)
       }
     }
+    _scheduleHistorySave()
   }
 
   function _removeFromModel(model, predicate) {
@@ -114,6 +194,7 @@ Singleton {
         model.remove(i)
       }
     }
+    if (model === historyModel) _scheduleHistorySave()
     service.scheduleDismiss()
     _gcNotifications()
   }
@@ -135,6 +216,7 @@ Singleton {
       activeModel.append(item)
       service.scheduleDismiss()
     }
+    _scheduleHistorySave()
     _gcNotifications()
   }
 
@@ -286,6 +368,7 @@ Singleton {
       while (historyModel.count > service.maxHistory) {
         historyModel.remove(historyModel.count - 1)
       }
+      _scheduleHistorySave()
     }
     _gcNotifications()
   }
@@ -415,6 +498,8 @@ Singleton {
     service._hoverCounts = ({})
     activeModel.clear()
     historyModel.clear()
+    historySaveTimer.stop()
+    service._saveHistory()
     service.scheduleDismiss()
     _gcNotifications()
   }
