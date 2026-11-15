@@ -9,7 +9,7 @@ Rectangle {
   property string icon: ""
   property string uiFont: Session.monoFont
   property int iconSize: Config.iconSizeMd
-  property int buttonSize: 28
+  property int buttonSize: Config.spaceXl + Config.space2xs
 
   property color baseColour: "transparent"
   property color hoverColour: Colours.bgSubtle
@@ -18,9 +18,10 @@ Rectangle {
   property color iconColour: Colours.fg
   property color hoverIconColour: Colours.accent
   property color disabledIconColour: Colours.fgDim
-  property real hoverScale: 1.0
+  property real hoverScale: 1.04
 
   readonly property bool hovered: mouseArea.containsMouse
+  readonly property bool pressed: mouseArea.pressed
 
   signal clicked(var mouse)
 
@@ -28,7 +29,7 @@ Rectangle {
   implicitHeight: root.buttonSize
   width: root.buttonSize
   height: root.buttonSize
-  radius: Config.itemRadiusMd
+  radius: Math.min(root.width, root.height) / 2
   antialiasing: true
 
   color: (root.enabled && root.hovered) ? root.hoverColour : root.baseColour
@@ -36,11 +37,11 @@ Rectangle {
   // width from the alpha instead of comparing colour values.
   border.width: (root.borderColour.a > 0 || root.hoverBorderColour.a > 0) ? Config.borderWidth : 0
   border.color: (root.enabled && root.hovered) ? root.hoverBorderColour : root.borderColour
-  scale: (root.enabled && root.hovered) ? root.hoverScale : 1.0
+  scale: !root.enabled ? 1.0 : (root.pressed ? 0.94 : (root.hovered ? root.hoverScale : 1.0))
 
   Behavior on color { ColorAnimation { duration: Config.animFastMs } }
   Behavior on border.color { ColorAnimation { duration: Config.animFastMs } }
-  Behavior on scale { NumberAnimation { duration: Config.animFastMs } }
+  Behavior on scale { NumberAnimation { duration: Config.animFastMs; easing.type: Easing.OutBack } }
 
   Text {
     anchors.centerIn: parent

@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
 import ".."
 
 StatusPill {
@@ -12,7 +11,7 @@ StatusPill {
   horizontal: false
   icon: BatteryService.batIcon
   iconColour: BatteryService.batColour
-  iconSize: root.horizontal ? 14 : Config.iconSizeLg
+  iconSize: root.horizontal ? Config.iconSizeSm : Config.iconSizeLg
   label: BatteryService.batPct + "%"
   labelColour: BatteryService.batColour
   labelBold: true

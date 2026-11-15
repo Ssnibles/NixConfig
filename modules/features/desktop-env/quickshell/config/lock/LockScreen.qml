@@ -166,17 +166,28 @@ Scope {
         color: Colours.bg
 
         property real shakeOffset: 0
+        // The surface colour stays opaque underneath, so the wallpaper and
+        // content fade in without exposing the desktop.
+        property real contentOpacity: 0
 
         // Check if this screen is the main interactive screen (first screen in list)
         property bool isPrimaryScreen: surface.screen === undefined || surface.screen === Quickshell.screens[0]
-
-        readonly property string currentTimeStr: ClockService.lockTimeStr
-        readonly property string currentDateStr: ClockService.lockDateStr
 
         Component.onCompleted: {
           if (surface.isPrimaryScreen) {
             mainBg.forceActiveFocus()
           }
+          fadeInAnimation.start()
+        }
+
+        NumberAnimation {
+          id: fadeInAnimation
+          target: surface
+          property: "contentOpacity"
+          from: 0
+          to: 1
+          duration: Config.lockContentFadeMs
+          easing.type: Easing.OutCubic
         }
 
         Connections {
@@ -205,6 +216,7 @@ Scope {
           id: mainBg
           anchors.fill: parent
           color: Colours.bg
+          opacity: surface.contentOpacity
           focus: true
 
           Keys.onPressed: function(event) {
@@ -305,27 +317,8 @@ Scope {
             spacing: Config.spaceXl
 
             // Clock and date
-            Column {
+            LockClock {
               Layout.alignment: Qt.AlignHCenter
-              spacing: Config.spaceXs
-
-              Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: surface.currentTimeStr
-                color: Colours.fg
-                font.family: Session.serifFont
-                font.pixelSize: 72
-                font.italic: true
-                font.letterSpacing: 2
-              }
-
-              Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: surface.currentDateStr
-                color: Colours.fgDim
-                font.family: Session.sansFont
-                font.pixelSize: 16
-              }
             }
 
             LockAuthCard {

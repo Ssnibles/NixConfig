@@ -32,7 +32,7 @@ Item {
       text: ClockService.hourStr
       color: Colours.accent
       font.family: root.uiFont
-      font.pixelSize: 16
+      font.pixelSize: Config.fontSizeLg
       font.bold: true
     }
 
@@ -41,7 +41,7 @@ Item {
       text: ClockService.minuteStr
       color: Colours.fg
       font.family: root.uiFont
-      font.pixelSize: 16
+      font.pixelSize: Config.fontSizeLg
       font.bold: true
     }
   }
@@ -53,7 +53,7 @@ Item {
     text: root.timeStr
     color: Colours.accent
     font.family: root.uiFont
-    font.pixelSize: 14
+    font.pixelSize: Config.fontSizeLg
     font.bold: true
   }
 
@@ -63,8 +63,8 @@ Item {
     icon: "\u{F017}"
     iconColour: Colours.accent
     title: ClockService.ordinalDateStr
-    // Matches the 192px calendar grid plus the shared popup padding.
-    contentWidth: Config.popupContentMargins * 2 + 192
+    // Matches the default calendar grid plus the shared popup padding.
+    contentWidth: Config.popupContentMargins * 2 + Config.iconSizeXl * 7 + Config.spaceXs * 6
     contentComponent: Component {
       CalendarPopup { uiFont: root.uiFont }
     }

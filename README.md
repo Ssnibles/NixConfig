@@ -171,7 +171,7 @@ For architecture diagrams, singletons, widgets, and IPC commands, refer to the *
 
 - **Modular QML Architecture**: Unified desktop shell framework written in QML, symlinked from `modules/features/desktop-env/quickshell/config/` to `~/.config/quickshell/` via `nixos.liveLinks` (`contents = true`).
 - **Multi-Compositor Routing**: Abstract `WmService.qml` routing events and workspace states across MangoWC, Hyprland, and Niri, using `StdioCollector.onStreamFinished` for complete JSON stream decoding.
-- **Command Centre Dashboard**: Slide-out quick settings dashboard (`SUPER + d`) with quick toggles, sliders, media controls, and hardware telemetry.
+- **Command Centre Dashboard**: Quick settings dashboard (`SUPER + d`) with quick toggles, sliders, media controls, and hardware telemetry, available as an edge panel or a centred bento widget board.
 - **Launcher and Calculator**: Layer-shell launcher on `SUPER + Shift + Space` with desktop-entry search and a small expression evaluator built on the vendored `expr-eval` library (`launcher/Calc.js`).
 - **Session Locker with Unified Focus**: Lock screen (`LockScreen.qml`) leveraging `ext-session-lock-v1` and PAM with unified root-scope password focus across multi-monitor setups and modifier key filtering.
 - **Notification Daemon & Toast Overlay**: Built-in Freedesktop notification daemon (`NotificationService.qml`) and toast overlay (`NotificationOverlay.qml`).

@@ -123,6 +123,10 @@ Singleton {
     }
   }
 
+  function takeScreenshot() {
+    Quickshell.execDetached(Config.cmdScreenshot)
+  }
+
   IpcHandler {
     target: "system"
 

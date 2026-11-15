@@ -21,6 +21,19 @@ Singleton {
   readonly property var wifiNet: Utils.findFirst(root.wifiDev && root.wifiDev.networks ? root.wifiDev.networks.values : [], function(n) { return n && n.connected })
   readonly property string wifiSsid: root.wifiNet ? (root.wifiNet.name || "") : ""
 
+  readonly property bool wifiAvailable: root.wifiDev !== null
+  readonly property var wifiNetworks: {
+    if (!root.wifiDev || !root.wifiDev.networks) return []
+    var values = root.wifiDev.networks.values || []
+    var list = []
+    for (var i = 0; i < values.length; i++) list.push(values[i])
+    list.sort(function(a, b) {
+      if (!!a.connected !== !!b.connected) return a.connected ? -1 : 1
+      return (b.signalStrength || 0) - (a.signalStrength || 0)
+    })
+    return list
+  }
+
   readonly property string netIcon: {
     if (root.isWired) return "󰈀"
     if (root.isWifi) return "󰤨"
@@ -46,8 +59,31 @@ Singleton {
     if (root.isWifi && root.wifiNet) {
       d.push("Signal · " + Math.round(root.wifiNet.signalStrength * 100) + "%")
     }
-    d.push("Click · nmtui")
+    d.push("Left click · Network menu")
+    d.push("Right click · nmtui")
     return d
+  }
+
+  function isSecured(network) {
+    return !!network && network.security !== WifiSecurityType.Open
+  }
+
+  function connectNetwork(network, psk) {
+    if (!network) return
+    if (psk !== undefined && psk !== "") network.connectWithPsk(psk)
+    else network.connect()
+  }
+
+  function disconnectNetwork(network) {
+    if (network) network.disconnect()
+  }
+
+  function scanWifi() {
+    if (!root.wifiDev) return
+    root.wifiDev.scannerEnabled = false
+    Qt.callLater(function() {
+      if (root.wifiDev) root.wifiDev.scannerEnabled = true
+    })
   }
 
   function openNetworkManager() {

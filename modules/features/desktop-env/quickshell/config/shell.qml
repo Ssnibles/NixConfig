@@ -30,6 +30,8 @@ Scope {
 
   CommandCentre { }
 
+  StatusMenu { }
+
   Launcher { }
 
   LockScreen { }

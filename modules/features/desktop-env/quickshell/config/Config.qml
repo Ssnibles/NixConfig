@@ -17,13 +17,22 @@ Singleton {
     readonly property string sansFont: "SF Pro Text"
     readonly property string serifFont: "Instrument Serif"
 
+    // Body sizes stay compact; the display steps follow the golden ratio
+    // (13 -> 21 -> 34 -> 55 -> 89) for headings, clocks and hero values.
     readonly property int fontSizeXs: 11
     readonly property int fontSizeSm: 12
     readonly property int fontSizeMd: 13
     readonly property int fontSizeLg: 15
+    readonly property int fontSizeXl: 21
+    readonly property int fontSize2xl: 34
+    readonly property int fontSize3xl: 55
+    readonly property int fontSize4xl: 89
     readonly property int iconSizeSm: 13
     readonly property int iconSizeMd: 16
     readonly property int iconSizeLg: 18
+    readonly property int iconSizeXl: 24
+    // Letter spacing on the serif display clocks.
+    readonly property int displayLetterSpacing: 2
 
     // Spacing scale. From spaceXs up each step multiplies by 1.618 and rounds
     // to even pixels; space2xs is the half step for micro gaps. Use space2xs for
@@ -44,12 +53,12 @@ Singleton {
     // surfaces and controls keep the same proportions.
     readonly property int borderWidth: 1
     readonly property int borderWidthFocus: 2
-    readonly property int itemRadiusXs: 4
-    readonly property int itemRadiusSm: 6
-    readonly property int itemRadiusMd: 10
+    readonly property int itemRadiusXs: 6
+    readonly property int itemRadiusSm: 10
+    readonly property int itemRadiusMd: 16
 
     // Shared pill, surface and animation tokens
-    readonly property int pillHeightHorizontal: 24
+    readonly property int pillHeightHorizontal: 26
     readonly property int pillHeightVertical: 30
     readonly property int pillPaddingHorizontal: 10
     readonly property int animFastMs: 100
@@ -57,7 +66,7 @@ Singleton {
     readonly property int animSmoothMs: 150
 
     // Status bars
-    readonly property int barHeight: 34
+    readonly property int barHeight: 35
     readonly property int barWidth: 42
     // Default edge for the Niri side bar; $QS_BAR_SIDE overrides it.
     readonly property string barSide: "left"
@@ -94,11 +103,33 @@ Singleton {
     readonly property int workspaceDotSpacing: 6
 
     // Command centre
+    // Layout: "sidebar" for the edge panel, "bento" for the centred
+    // full-screen widget board.
+    readonly property string commandCentreLayout: "bento"
     readonly property int commandCentreWidth: 500
-    readonly property int commandCentreRadius: 16
-    readonly property int commandCentreCardRadius: 10
+    readonly property int commandCentreRadius: 26
     readonly property int commandCentreMargin: 16
     readonly property int commandCentreSlideOffset: 60
+    // Bento panel size. Width is fixed and clamped to the screen. The board
+    // fills the height so the cards keep their breathing room; the screen is
+    // the only other clamp.
+    readonly property int commandCentreBentoWidth: 1332
+    readonly property int commandCentreBentoHeight: 880
+    // Widths of the notification column and the weather/calendar column.
+    readonly property int commandCentreBentoNotificationWidth: 360
+    readonly property int commandCentreBentoSideWidth: 360
+    // Artwork edge in the bento now-playing panel, stacked above the details.
+    readonly property int commandCentreBentoMediaArtSize: 200
+    // Opacity of the backdrop behind the bento panel.
+    readonly property real commandCentreBentoScrim: 0.55
+    // Draw one raised surface behind the bento board so the cards read as a
+    // single panel. Set false to let the cards float over the dimmed desktop.
+    readonly property bool commandCentreBentoSurface: true
+    // Weather is fetched on demand when the command centre opens, then cached
+    // for this many minutes. There is no background polling.
+    readonly property int weatherCacheMinutes: 10
+    // Show the three-day forecast strip in the weather card.
+    readonly property bool weatherShowForecast: true
     readonly property int commandCentreAnimDuration: 250
     readonly property int commandCentreCloseDuration: 180
     readonly property string commandCentreClockFormat: "HH:mm"
@@ -121,6 +152,7 @@ Singleton {
     readonly property int launcherWidth: 760
     readonly property int launcherHeight: 500
     readonly property int launcherMaxResults: 50
+    readonly property int launcherRecentCount: 20
 
     // Media
     // Whether the command centre's media card always stays visible, showing
@@ -129,6 +161,8 @@ Singleton {
     readonly property bool mediaShowPlayerBadge: true
     readonly property bool mediaAllowPlayerSwitch: true
     readonly property int mediaPopupWidth: 320
+    // Longest track label the bar media pill shows before eliding.
+    readonly property int mediaBarTextMaxWidth: 200
     readonly property bool animateMediaIcon: false
     readonly property int mediaRotationDuration: 4000
     readonly property int mediaSeekDebounceMs: 200
@@ -139,7 +173,7 @@ Singleton {
     // Popup and tooltip layer
     readonly property int popupGap: 42
     readonly property int popupMaxWidth: 280
-    readonly property int popupRadius: 10
+    readonly property int popupRadius: 16
     readonly property int popupContentMargins: 16
     readonly property int popupContentSpacing: 6
     readonly property int popupShowDelay: 150
@@ -161,18 +195,23 @@ Singleton {
     readonly property int notifMaxVisible: 5
     readonly property int notifMaxHistory: 30
     readonly property int notifWidth: 320
-    readonly property int notifRadius: 10
+    readonly property int notifRadius: 16
     readonly property int notifCardMargins: 16
     readonly property int notifSpacing: 10
+    // Entry and reorder animation for toasts.
+    readonly property int notifAnimMs: 250
     // Scale applied to a card on hover.
     readonly property real notifHoverScale: 1.01
     readonly property int notifIconSize: 40
     readonly property int notifMediaIconSize: 48
-    readonly property int notifIconRadius: 10
+    readonly property int notifIconRadius: 16
     readonly property int notifMaxLines: 5
     readonly property bool notifShowActions: true
     readonly property bool notifDismissOnAction: true
     readonly property bool notifShowMediaToasts: true
+    // Keep MPRIS track changes in the notification history. Off by default
+    // because the media card already shows now playing.
+    readonly property bool notifMediaHistory: false
     readonly property bool notifAllScreens: false
     // "dismiss" or "focus".
     readonly property string notifLeftClickAction: "dismiss"
@@ -260,9 +299,12 @@ Singleton {
     readonly property string lockDateFormat: "dddd, MMMM d"
     readonly property int lockCardWidth: 440
     readonly property int lockAvatarSize: 64
-    readonly property int lockInputRadius: 10
+    readonly property int lockInputRadius: 16
     readonly property real lockBackgroundDimming: 0.8
     readonly property real lockBlurPercentage: 0.5
+    // The lock surface keeps an opaque background, so this only fades the
+    // wallpaper and content in without exposing the desktop.
+    readonly property int lockContentFadeMs: 200
     // Status pill cluster: "top-right" (default), "top-left", "bottom-right",
     // "bottom-left", or "split" / "corners". $QS_LOCK_STATUS_POS overrides it.
     readonly property string lockStatusPosition: "top-right"
@@ -282,11 +324,17 @@ Singleton {
     readonly property bool osdAllScreens: false
     readonly property int osdTimeoutMs: 1800
     readonly property int osdWidth: 260
-    readonly property int osdHeight: 46
+    readonly property int osdHeight: 48
     // -1 = full pill capsule (osdHeight / 2).
     readonly property int osdRadius: -1
+    // Distance the pill travels as it fades in.
+    readonly property int osdSlideOffset: 10
     readonly property int osdMarginX: 26
     readonly property int osdMarginY: 68
+
+    // Network and Bluetooth status menus
+    readonly property int statusMenuWidth: 420
+    readonly property int statusMenuHeight: 440
 
     // System tray
     // Case-insensitive list of tray app IDs, titles, or substrings to hide by
@@ -300,6 +348,7 @@ Singleton {
     readonly property int trayIconSize: 15
     readonly property int trayButtonSize: 20
     readonly property int traySpacing: 4
+    readonly property int traySidePillWidth: 34
     readonly property int trayMenuWidth: 240
     readonly property bool trayShowAppIdInMenu: true
     readonly property bool trayAllowSessionHide: true
@@ -308,6 +357,7 @@ Singleton {
     readonly property var cmdMixer: ["pavucontrol"]
     readonly property var cmdNetworkManager: ["kitty", "--single-instance", "-e", "nmtui"]
     readonly property var cmdBluetoothManager: ["blueman-manager"]
+    readonly property var cmdScreenshot: ["sh", "-c", "$HOME/.config/mango/screenshot.sh"]
     readonly property var cmdLock: ["quickshell", "ipc", "call", "lockscreen", "lock"]
     readonly property var cmdSleep: ["systemctl", "suspend"]
     readonly property var cmdReboot: ["systemctl", "reboot"]

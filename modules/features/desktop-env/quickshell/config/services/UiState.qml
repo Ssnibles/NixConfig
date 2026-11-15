@@ -13,6 +13,18 @@ Singleton {
   property bool launcherVisible: false
   property var targetScreen: null
   property var lastActiveScreen: null
+  // Open status menu: "" | "network" | "bluetooth".
+  property string statusMenu: ""
+
+  function openStatusMenu(menu) {
+    if (menu === "") return
+    commandCentreVisible = false
+    statusMenu = menu
+  }
+
+  function closeStatusMenu() {
+    statusMenu = ""
+  }
 
   // System tray, toggled at runtime through IPC and the tray menu
   property bool trayEnabled: true

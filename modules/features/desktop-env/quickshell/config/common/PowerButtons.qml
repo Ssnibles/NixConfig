@@ -36,14 +36,14 @@ RowLayout {
       required property var modelData
       Layout.fillWidth: true
       Layout.preferredWidth: 1
-      height: 48
+      height: Config.space2xl + Config.spaceSm
       radius: root.buttonRadius
       color: hoverArea.containsMouse ? Colours.bgSubtle : Colours.bgRaised
       border.color: hoverArea.containsMouse ? buttonDelegate.modelData.hoverColour : Colours.border
       border.width: Config.borderWidth
-      scale: hoverArea.containsMouse ? 0.94 : 1.0
+      scale: hoverArea.pressed ? 0.96 : (hoverArea.containsMouse ? 1.03 : 1.0)
 
-      Behavior on scale { NumberAnimation { duration: Config.animFastMs } }
+      Behavior on scale { NumberAnimation { duration: Config.animFastMs; easing.type: Easing.OutBack } }
       Behavior on color { ColorAnimation { duration: Config.animFastMs } }
       Behavior on border.color { ColorAnimation { duration: Config.animFastMs } }
 
@@ -66,7 +66,7 @@ RowLayout {
           text: buttonDelegate.modelData.icon
           color: hoverArea.containsMouse ? buttonDelegate.modelData.hoverColour : Colours.fg
           font.family: Session.monoFont
-          font.pixelSize: 18
+          font.pixelSize: Config.iconSizeLg
           anchors.verticalCenter: parent.verticalCenter
         }
 
@@ -74,7 +74,7 @@ RowLayout {
           text: buttonDelegate.modelData.label
           color: hoverArea.containsMouse ? Colours.fg : Colours.fgMid
           font.family: Session.sansFont
-          font.pixelSize: 13
+          font.pixelSize: Config.fontSizeMd
           anchors.verticalCenter: parent.verticalCenter
         }
       }

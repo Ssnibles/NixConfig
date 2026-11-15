@@ -9,7 +9,7 @@ Rectangle {
 
   property color cardColour: Colours.bgRaised
   property color borderColour: Colours.border
-  property real cardRadius: Config.commandCentreCardRadius
+  property real cardRadius: Config.itemRadiusMd
 
   color: root.cardColour
   radius: root.cardRadius

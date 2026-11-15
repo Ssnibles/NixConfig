@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
+import "../Utils.js" as Utils
 import ".."
 
 // Month calendar shown in the bar clock popup, with month navigation.
@@ -8,6 +9,11 @@ Card {
   id: root
 
   property string uiFont: Session.monoFont
+  property int cellSize: Config.iconSizeXl
+  property int cellSpacing: Config.spaceXs
+  property int cellFontSize: Config.fontSizeXs
+  property int headerFontSize: Config.fontSizeMd
+  property int contentSpacing: Config.spaceMd
 
   cardColour: Colours.bg
   cardRadius: Config.popupRadius
@@ -19,7 +25,7 @@ Card {
   ColumnLayout {
     id: calCol
     anchors.centerIn: parent
-    spacing: Config.spaceMd
+    spacing: root.contentSpacing
 
     readonly property int realYear: ClockService.year
     readonly property int realMonth: ClockService.month
@@ -35,24 +41,10 @@ Card {
       "July", "August", "September", "October", "November", "December"
     ]
 
-    // Leading blanks plus one entry per day, so the grid starts on Monday.
-    readonly property var monthModel: {
-      var firstDayIndex = new Date(viewYear, viewMonth, 1).getDay()
-      var startOffset = (firstDayIndex === 0) ? 6 : firstDayIndex - 1
-      var totalDays = new Date(viewYear, viewMonth + 1, 0).getDate()
-
-      var cells = []
-      for (var i = 0; i < startOffset; i++) {
-        cells.push({ day: 0, isCurrent: false })
-      }
-      for (var d = 1; d <= totalDays; d++) {
-        cells.push({
-          day: d,
-          isCurrent: viewYear === realYear && viewMonth === realMonth && d === realDay
-        })
-      }
-      return cells
-    }
+    // A fixed six-row grid keeps the calendar the same height in every month.
+    // The leading and trailing cells show the neighbouring month's days dimmed,
+    // so a short month does not leave an empty row.
+    readonly property var monthModel: Utils.buildMonthGrid(viewYear, viewMonth, realYear, realMonth, realDay)
 
     function prevMonth() {
       if (viewMonth === 0) {
@@ -78,8 +70,8 @@ Card {
     }
 
     RowLayout {
-      Layout.preferredWidth: 192
-      Layout.preferredHeight: 24
+      Layout.preferredWidth: root.cellSize * 7 + root.cellSpacing * 6
+      Layout.preferredHeight: Config.iconSizeXl
       spacing: Config.spaceSm
 
       Text {
@@ -87,24 +79,22 @@ Card {
         text: calCol.monthNames[calCol.viewMonth] + " " + calCol.viewYear
         color: Colours.fg
         font.family: root.uiFont
-        font.pixelSize: Config.fontSizeMd
+        font.pixelSize: root.headerFontSize
         font.bold: true
         elide: Text.ElideRight
       }
 
       IconButton {
-        buttonSize: 22
-        radius: Config.itemRadiusXs
+        buttonSize: Config.iconSizeXl - Config.space2xs
         icon: "󰅁"
-        iconSize: 14
+        iconSize: Config.iconSizeSm
         uiFont: root.uiFont
         iconColour: Colours.fgMid
         onClicked: calCol.prevMonth()
       }
 
       IconButton {
-        buttonSize: 22
-        radius: Config.itemRadiusXs
+        buttonSize: Config.iconSizeXl - Config.space2xs
         icon: "󰃭"
         iconSize: Config.iconSizeSm
         uiFont: root.uiFont
@@ -114,10 +104,9 @@ Card {
       }
 
       IconButton {
-        buttonSize: 22
-        radius: Config.itemRadiusXs
+        buttonSize: Config.iconSizeXl - Config.space2xs
         icon: "󰅂"
-        iconSize: 14
+        iconSize: Config.iconSizeSm
         uiFont: root.uiFont
         iconColour: Colours.fgMid
         onClicked: calCol.nextMonth()
@@ -128,18 +117,18 @@ Card {
       spacing: Config.spaceXs
 
       Row {
-        spacing: Config.spaceXs
+        spacing: root.cellSpacing
 
         Repeater {
           model: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 
           delegate: Text {
             required property var modelData
-            width: 24
+            width: root.cellSize
             horizontalAlignment: Text.AlignHCenter
             text: modelData
             font.family: root.uiFont
-            font.pixelSize: 11
+            font.pixelSize: root.cellFontSize
             font.bold: true
             color: Colours.accent
           }
@@ -148,8 +137,8 @@ Card {
 
       Grid {
         columns: 7
-        rowSpacing: Config.spaceXs
-        columnSpacing: Config.spaceXs
+        rowSpacing: root.cellSpacing
+        columnSpacing: root.cellSpacing
 
         Repeater {
           model: calCol.monthModel
@@ -157,19 +146,20 @@ Card {
           delegate: Rectangle {
             id: dayCell
             required property var modelData
-            width: 24
-            height: 24
+            width: root.cellSize
+            height: root.cellSize
             radius: Config.itemRadiusXs
             color: dayCell.modelData.isCurrent ? Colours.accent : "transparent"
 
             Text {
               anchors.centerIn: parent
-              visible: dayCell.modelData.day > 0
-              text: dayCell.modelData.day > 0 ? dayCell.modelData.day.toString() : ""
+              text: dayCell.modelData.day.toString()
               font.family: root.uiFont
-              font.pixelSize: 11
+              font.pixelSize: root.cellFontSize
               font.bold: dayCell.modelData.isCurrent
-              color: dayCell.modelData.isCurrent ? Colours.bg : Colours.fg
+              color: dayCell.modelData.isCurrent
+                ? Colours.bg
+                : (dayCell.modelData.inMonth ? Colours.fg : Colours.fgDim)
             }
           }
         }

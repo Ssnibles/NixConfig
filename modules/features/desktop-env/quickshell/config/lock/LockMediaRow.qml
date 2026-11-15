@@ -20,32 +20,11 @@ Item {
     anchors.top: parent.top
     spacing: Config.spaceMd
 
-    Rectangle {
-      Layout.preferredWidth: 40
-      Layout.preferredHeight: 40
+    CoverArt {
       Layout.alignment: Qt.AlignVCenter
-      radius: Config.itemRadiusSm
-      color: Colours.bgSubtle
-      border.color: Colours.border
-      border.width: Config.borderWidth
-
-      Text {
-        visible: !coverArt.ready
-        text: "󰎇"
-        color: Colours.fgDim
-        font.family: Session.monoFont
-        font.pixelSize: 18
-        font.bold: true
-        anchors.centerIn: parent
-      }
-
-      RoundedImage {
-        id: coverArt
-        anchors.fill: parent
-        sourceSize: Qt.size(80, 80)
-        radius: Config.itemRadiusSm
-        source: MediaService.trackArtUrl
-      }
+      artSize: Config.space2xl
+      glyphSize: Config.iconSizeLg
+      source: MediaService.trackArtUrl
     }
 
     ColumnLayout {
@@ -58,7 +37,7 @@ Item {
         text: MediaService.trackTitle || "Unknown Track"
         color: Colours.fg
         font.family: Session.sansFont
-        font.pixelSize: Config.fontSizeSm
+        font.pixelSize: Config.fontSizeMd
         font.bold: true
         elide: Text.ElideRight
         maximumLineCount: 1
@@ -69,9 +48,28 @@ Item {
         text: MediaService.trackArtist || "Unknown Artist"
         color: Colours.fgMid
         font.family: Session.sansFont
-        font.pixelSize: Config.fontSizeXs
+        font.pixelSize: Config.fontSizeSm
         elide: Text.ElideRight
         maximumLineCount: 1
+      }
+
+      Item {
+        Layout.fillWidth: true
+        Layout.preferredHeight: Config.space2xs
+        visible: MediaService.lastLength > 0 && !MediaService.isLive
+
+        Rectangle {
+          anchors.fill: parent
+          radius: height / 2
+          color: Colours.bgSubtle
+        }
+
+        Rectangle {
+          width: parent.width * Math.max(0, Math.min(1, MediaService.progress))
+          height: parent.height
+          radius: height / 2
+          color: Colours.accent
+        }
       }
     }
 

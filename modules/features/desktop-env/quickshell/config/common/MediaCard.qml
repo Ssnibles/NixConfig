@@ -14,6 +14,13 @@ Card {
   property bool seekable: true
   // Click-to-focus / right-click-to-focus behaviour.
   property bool interactive: true
+  // Stack the artwork above the track details. The bento board has the height
+  // for a hero card; the bar and sidebar layouts keep the horizontal row.
+  property bool vertical: false
+  // Art and text sizes. The bento board enlarges them for its hero card.
+  property int artSize: Config.space3xl
+  property int titleSize: Config.fontSizeLg
+  property int detailSize: Config.fontSizeMd
 
   readonly property bool hasPlayer: MediaService.hasPlayer
 
@@ -38,150 +45,164 @@ Card {
     }
   }
 
+  component ArtTile: CoverArt {
+    artSize: root.artSize
+    source: root.hasPlayer ? MediaService.trackArtUrl : ""
+
+    MouseArea {
+      anchors.fill: parent
+      enabled: root.interactive
+      cursorShape: root.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
+      acceptedButtons: Qt.LeftButton | Qt.RightButton
+      onClicked: if (root.hasPlayer) MediaService.focusSource()
+    }
+  }
+
+  component TrackDetails: Item {
+    id: details
+
+    property bool centred: false
+
+    implicitHeight: trackCol.implicitHeight
+
+    MouseArea {
+      anchors.fill: parent
+      enabled: root.interactive
+      cursorShape: root.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
+      acceptedButtons: Qt.LeftButton | Qt.RightButton
+      onClicked: if (root.hasPlayer) MediaService.focusSource()
+    }
+
+    Column {
+      id: trackCol
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      spacing: Config.space2xs
+
+      Text {
+        width: parent.width
+        horizontalAlignment: details.centred ? Text.AlignHCenter : Text.AlignLeft
+        text: root.hasPlayer ? (MediaService.trackTitle || "Unknown Track") : "Nothing is playing"
+        color: root.hasPlayer ? Colours.fg : Colours.fgDim
+        font.bold: true
+        font.pixelSize: root.titleSize
+        font.family: Session.sansFont
+        elide: Text.ElideRight
+      }
+
+      Text {
+        width: parent.width
+        horizontalAlignment: details.centred ? Text.AlignHCenter : Text.AlignLeft
+        text: root.hasPlayer ? (MediaService.trackArtist || "Unknown Artist") : "No artist"
+        color: Colours.fgMid
+        font.pixelSize: root.detailSize
+        font.family: Session.sansFont
+        elide: Text.ElideRight
+      }
+
+      // Player source badge / multi-player switcher pill on its own row below artist
+      Pill {
+        id: playerSwitchPill
+        x: details.centred ? (parent.width - width) / 2 : 0
+        readonly property bool canSwitch: root.interactive && Config.mediaAllowPlayerSwitch && MediaService.playerCount > 1
+        visible: Config.mediaShowPlayerBadge && root.hasPlayer && MediaService.playerName !== ""
+        pillHeight: Config.spaceLg + Config.space2xs
+        padding: Config.spaceSm
+        radius: Config.itemRadiusSm
+        baseColour: Colours.bgSubtle
+        hoverColour: Colours.bgRaised
+        hoverHighlight: playerSwitchPill.canSwitch
+        clickable: playerSwitchPill.canSwitch
+        onClicked: MediaService.cyclePlayer(1)
+        onWheel: function(wheel) {
+          if (playerSwitchPill.canSwitch) {
+            MediaService.cyclePlayer(wheel.angleDelta.y > 0 ? -1 : 1)
+          }
+        }
+
+        Row {
+          anchors.centerIn: parent
+          spacing: Config.spaceSm
+
+          Text {
+            text: MediaService.playerGlyph
+            color: playerSwitchPill.hovered && playerSwitchPill.canSwitch ? Colours.accent : Colours.fgDim
+            font.family: Session.monoFont
+            font.pixelSize: Config.fontSizeXs
+            anchors.verticalCenter: parent.verticalCenter
+          }
+
+          Text {
+            text: (Config.mediaAllowPlayerSwitch && MediaService.playerCount > 1)
+              ? (MediaService.playerName + " · " + (MediaService.playerIndex + 1) + "/" + MediaService.playerCount + " 󰁔")
+              : MediaService.playerName
+            color: playerSwitchPill.hovered && playerSwitchPill.canSwitch ? Colours.fg : Colours.fgDim
+            font.family: Session.sansFont
+            font.pixelSize: Config.fontSizeXs
+            anchors.verticalCenter: parent.verticalCenter
+          }
+        }
+      }
+    }
+  }
+
+  component Controls: PlaybackControls {
+    canPrevious: MediaService.canGoPrevious
+    canNext: MediaService.canGoNext
+    isPlaying: MediaService.isPlaying
+    onPreviousClicked: MediaService.previous()
+    onPlayPauseClicked: MediaService.playPause()
+    onNextClicked: MediaService.next()
+  }
+
   Column {
     id: contentCol
     anchors.left: parent.left
     anchors.right: parent.right
-    anchors.top: parent.top
+    // Centred so a taller card keeps the content in the middle instead of
+    // leaving the space below it.
+    anchors.verticalCenter: parent.verticalCenter
     anchors.margins: Config.spaceLg
     spacing: Config.spaceMd
 
     RowLayout {
+      visible: !root.vertical
       width: parent.width
       spacing: Config.spaceMd
 
-      // Album cover art
-      Rectangle {
-        width: 54
-        height: 54
-        radius: Config.itemRadiusMd
-        color: Colours.bgSubtle
-        border.color: Colours.border
-        border.width: Config.borderWidth
+      ArtTile {
         Layout.alignment: Qt.AlignVCenter
-
-        Text {
-          visible: !coverArt.ready
-          text: "󰎇"
-          color: Colours.fgDim
-          font.family: Session.monoFont
-          font.pixelSize: 22
-          font.bold: true
-          anchors.centerIn: parent
-        }
-
-        RoundedImage {
-          id: coverArt
-          anchors.fill: parent
-          sourceSize: Qt.size(108, 108)
-          radius: Config.itemRadiusMd
-          source: root.hasPlayer ? MediaService.trackArtUrl : ""
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          enabled: root.interactive
-          cursorShape: root.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
-          acceptedButtons: Qt.LeftButton | Qt.RightButton
-          onClicked: if (root.hasPlayer) MediaService.focusSource()
-        }
       }
 
-      // Track details
-      Item {
+      TrackDetails {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignVCenter
-        implicitHeight: trackCol.implicitHeight
-
-        MouseArea {
-          anchors.fill: parent
-          enabled: root.interactive
-          cursorShape: root.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
-          acceptedButtons: Qt.LeftButton | Qt.RightButton
-          onClicked: if (root.hasPlayer) MediaService.focusSource()
-        }
-
-        Column {
-          id: trackCol
-          anchors.left: parent.left
-          anchors.right: parent.right
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: Config.space2xs
-
-          Text {
-            width: parent.width
-            text: root.hasPlayer ? (MediaService.trackTitle || "Unknown Track") : "Nothing is playing"
-            color: root.hasPlayer ? Colours.fg : Colours.fgDim
-            font.bold: true
-            font.pixelSize: 15
-            font.family: Session.sansFont
-            elide: Text.ElideRight
-          }
-
-          Text {
-            width: parent.width
-            text: root.hasPlayer ? (MediaService.trackArtist || "Unknown Artist") : "No artist"
-            color: Colours.fgMid
-            font.pixelSize: 13
-            font.family: Session.sansFont
-            elide: Text.ElideRight
-          }
-
-          // Player source badge / multi-player switcher pill on its own row below artist
-          Pill {
-            id: playerSwitchPill
-            readonly property bool canSwitch: root.interactive && Config.mediaAllowPlayerSwitch && MediaService.playerCount > 1
-            visible: Config.mediaShowPlayerBadge && root.hasPlayer && MediaService.playerName !== ""
-            pillHeight: 17
-            padding: Config.spaceSm
-            radius: Config.itemRadiusSm
-            baseColour: Colours.bgSubtle
-            hoverColour: Colours.bgRaised
-            hoverHighlight: playerSwitchPill.canSwitch
-            clickable: playerSwitchPill.canSwitch
-            onClicked: MediaService.cyclePlayer(1)
-            onWheel: function(wheel) {
-              if (playerSwitchPill.canSwitch) {
-                MediaService.cyclePlayer(wheel.angleDelta.y > 0 ? -1 : 1)
-              }
-            }
-
-            Row {
-              anchors.centerIn: parent
-              spacing: Config.spaceSm
-
-              Text {
-                text: MediaService.playerGlyph
-                color: playerSwitchPill.hovered && playerSwitchPill.canSwitch ? Colours.accent : Colours.fgDim
-                font.family: Session.monoFont
-                font.pixelSize: 10
-                anchors.verticalCenter: parent.verticalCenter
-              }
-
-              Text {
-                text: (Config.mediaAllowPlayerSwitch && MediaService.playerCount > 1)
-                  ? (MediaService.playerName + " · " + (MediaService.playerIndex + 1) + "/" + MediaService.playerCount + " 󰁔")
-                  : MediaService.playerName
-                color: playerSwitchPill.hovered && playerSwitchPill.canSwitch ? Colours.fg : Colours.fgDim
-                font.family: Session.sansFont
-                font.pixelSize: Config.fontSizeXs
-                anchors.verticalCenter: parent.verticalCenter
-              }
-            }
-          }
-        }
       }
 
-      // Playback controls
-      PlaybackControls {
+      Controls {
         visible: root.interactive
         Layout.alignment: Qt.AlignVCenter
-        canPrevious: MediaService.canGoPrevious
-        canNext: MediaService.canGoNext
-        isPlaying: MediaService.isPlaying
-        onPreviousClicked: MediaService.previous()
-        onPlayPauseClicked: MediaService.playPause()
-        onNextClicked: MediaService.next()
+      }
+    }
+
+    Column {
+      visible: root.vertical
+      width: parent.width
+      spacing: Config.spaceLg
+
+      ArtTile {
+        anchors.horizontalCenter: parent.horizontalCenter
+      }
+
+      TrackDetails {
+        width: parent.width
+        centred: true
+      }
+
+      Controls {
+        visible: root.interactive
+        anchors.horizontalCenter: parent.horizontalCenter
       }
     }
 

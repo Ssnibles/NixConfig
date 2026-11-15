@@ -276,18 +276,18 @@ Singleton {
 
     if (topHistorySame) {
       if (opts.notification) _trackNotification(item.uid, opts.notification)
-      historyModel.set(0, item)
+      if (Config.notifMediaHistory !== false) historyModel.set(0, item)
       _gcNotifications()
       return
     }
 
-    if (!isSameTrack || historyModel.count === 0) {
+    if (Config.notifMediaHistory !== false && (!isSameTrack || historyModel.count === 0)) {
       historyModel.insert(0, item)
       while (historyModel.count > service.maxHistory) {
         historyModel.remove(historyModel.count - 1)
       }
-      _gcNotifications()
     }
+    _gcNotifications()
   }
 
   // Freedesktop notification daemon

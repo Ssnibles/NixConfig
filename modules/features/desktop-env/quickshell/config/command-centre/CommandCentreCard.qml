@@ -3,18 +3,14 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// Command Centre panel content: clock header, status pills, system sliders,
-// media player, notification history, and power actions.
+// Command Centre panel content for the sidebar layout: clock header, status
+// pills, system sliders, media player, notification history, and power actions.
 Card {
   id: root
 
   anchors.fill: parent
   cardColour: Colours.bg
   cardRadius: Config.commandCentreRadius
-
-  readonly property bool showMicSlider: Config.ccMicSliderMode !== "hidden"
-    && AudioService.hasMic
-    && (Config.ccMicSliderMode === "always" || AudioService.micInUse)
 
   // Swallow clicks inside the card so they cannot reach the dismiss backdrop.
   MouseArea {
@@ -43,8 +39,8 @@ Card {
             text: ClockService.ccTimeStr
             color: Colours.fg
             font.family: Session.serifFont
-            font.letterSpacing: 2
-            font.pixelSize: 36
+            font.letterSpacing: Config.displayLetterSpacing
+            font.pixelSize: Config.fontSize2xl
             font.italic: true
             Layout.alignment: Qt.AlignBaseline
           }
@@ -63,118 +59,27 @@ Card {
           text: ClockService.ccDateStr
           color: Colours.fgDim
           font.family: Session.sansFont
-          font.pixelSize: 14
+          font.pixelSize: Config.fontSizeMd
         }
       }
 
       Item { Layout.fillWidth: true }
 
-      Row {
-        spacing: Config.spaceSm
+      StatusPills {
+        showBluetoothLabel: true
         Layout.alignment: Qt.AlignTop
-
-        NetworkWidget {
-          horizontal: true
-          anchors.verticalCenter: parent.verticalCenter
-        }
-
-        BatteryWidget {
-          horizontal: true
-          anchors.verticalCenter: parent.verticalCenter
-        }
-
-        BluetoothWidget {
-          showLabel: true
-          anchors.verticalCenter: parent.verticalCenter
-        }
       }
     }
 
     // System controls: output volume, sink picker, microphone and brightness
     Card {
       Layout.fillWidth: true
-      implicitHeight: sliderCol.implicitHeight + Config.spaceLg * 2
+      implicitHeight: sliders.implicitHeight + Config.spaceLg * 2
 
-      ColumnLayout {
-        id: sliderCol
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
+      CommandCentreSliders {
+        id: sliders
+        anchors.fill: parent
         anchors.margins: Config.spaceLg
-        spacing: Config.spaceMd
-
-        // Output chips sit above or below the volume slider, whichever the
-        // config asks for. Both Loaders share one definition; only one is ever
-        // active, and an inactive Loader takes no space in the layout.
-        Loader {
-          Layout.fillWidth: true
-          visible: Config.ccSinkSwitcherAboveVolume
-          active: visible
-          sourceComponent: sinkPickerComponent
-        }
-
-        ControlSliderRow {
-          Layout.fillWidth: true
-          icon: AudioService.volumeIcon
-          alert: AudioService.muted
-          iconClickable: true
-          onIconClicked: AudioService.toggleMute()
-          sliderValue: AudioService.volume
-          onSliderMoved: function(v) {
-            AudioService.setVolumeDebounced(v)
-          }
-          percentText: AudioService.volumePercent + "%"
-        }
-
-        Loader {
-          Layout.fillWidth: true
-          visible: !Config.ccSinkSwitcherAboveVolume
-          active: visible
-          sourceComponent: sinkPickerComponent
-        }
-
-        Divider {
-          visible: root.showMicSlider
-          Layout.fillWidth: true
-        }
-
-        ControlSliderRow {
-          Layout.fillWidth: true
-          visible: root.showMicSlider
-          icon: AudioService.micIcon
-          alert: AudioService.micMuted
-          iconClickable: true
-          onIconClicked: AudioService.toggleMicMute()
-          sliderValue: AudioService.micVolume
-          onSliderMoved: function(v) {
-            AudioService.setMicVolumeDebounced(v)
-          }
-          percentText: AudioService.micVolumePercent + "%"
-        }
-
-        Divider {
-          visible: Config.ccShowBrightnessSlider && BrightnessService.brightnessAvailable
-          Layout.fillWidth: true
-        }
-
-        ControlSliderRow {
-          Layout.fillWidth: true
-          visible: Config.ccShowBrightnessSlider && BrightnessService.brightnessAvailable
-          icon: "󰃠"
-          iconColour: Colours.yellow
-          accent: Colours.yellow
-          sliderValue: BrightnessService.brightness
-          onSliderMoved: function(v) {
-            BrightnessService.setBrightness(v)
-          }
-          percentText: BrightnessService.brightnessPercent + "%"
-        }
-      }
-
-      Component {
-        id: sinkPickerComponent
-
-        AudioSinkPicker { }
       }
     }
 

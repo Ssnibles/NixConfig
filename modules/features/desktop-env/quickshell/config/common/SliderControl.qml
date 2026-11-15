@@ -11,10 +11,10 @@ Item {
 
   signal moved(real value)
 
-  implicitHeight: 36
+  implicitHeight: Config.spaceXl + Config.spaceMd
   implicitWidth: 120
 
-  readonly property real _trackHeight: 12
+  readonly property real _trackHeight: Config.spaceLg
 
   // Internal drag state: _dragValue is live during drag, _pendingValue
   // holds the last dragged value until the bound 'value' property catches up.
@@ -44,13 +44,13 @@ Item {
   Item {
     anchors.verticalCenter: parent.verticalCenter
     width: parent.width
-    height: 32
+    height: Config.spaceXl + Config.spaceSm
 
     Rectangle {
       anchors.verticalCenter: parent.verticalCenter
       width: parent.width
       height: root._trackHeight
-      radius: Config.itemRadiusXs
+      radius: Config.itemRadiusMd
       color: Colours.bgSubtle
       border.width: Config.borderWidth
       border.color: mouse.containsMouse ? root.fillColour : "transparent"
@@ -64,7 +64,7 @@ Item {
       anchors.bottom: parent.verticalCenter
       anchors.bottomMargin: -root._trackHeight / 2
       width: parent.width * Math.max(0, Math.min(1, root._visualValue))
-      radius: Config.itemRadiusXs
+      radius: Config.itemRadiusMd
       color: root.fillColour
       Behavior on color { ColorAnimation { duration: Config.animSmoothMs } }
     }

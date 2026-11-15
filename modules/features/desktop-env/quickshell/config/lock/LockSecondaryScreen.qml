@@ -15,27 +15,8 @@ Column {
   anchors.centerIn: parent
   spacing: Config.spaceXl
 
-  Column {
+  LockClock {
     anchors.horizontalCenter: parent.horizontalCenter
-    spacing: Config.spaceXs
-
-    Text {
-      anchors.horizontalCenter: parent.horizontalCenter
-      text: ClockService.lockTimeStr
-      color: Colours.fg
-      font.family: Session.serifFont
-      font.pixelSize: 72
-      font.italic: true
-      font.letterSpacing: 2
-    }
-
-    Text {
-      anchors.horizontalCenter: parent.horizontalCenter
-      text: ClockService.lockDateStr
-      color: Colours.fgDim
-      font.family: Session.sansFont
-      font.pixelSize: 16
-    }
   }
 
   Pill {

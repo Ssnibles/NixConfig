@@ -21,6 +21,7 @@ singleton Session 1.0 services/Session.qml
 singleton SystemService 1.0 services/SystemService.qml
 singleton TrayService 1.0 services/TrayService.qml
 singleton UiState 1.0 services/UiState.qml
+singleton WeatherService 1.0 services/WeatherService.qml
 singleton WindowFocuser 1.0 services/WindowFocuser.qml
 singleton WmService 1.0 services/WmService.qml
 
@@ -28,6 +29,7 @@ singleton WmService 1.0 services/WmService.qml
 BatteryWidget 1.0 common/BatteryWidget.qml
 BluetoothWidget 1.0 common/BluetoothWidget.qml
 Card 1.0 common/Card.qml
+CoverArt 1.0 common/CoverArt.qml
 Divider 1.0 common/Divider.qml
 IconButton 1.0 common/IconButton.qml
 MediaCard 1.0 common/MediaCard.qml
@@ -40,17 +42,21 @@ PowerButtons 1.0 common/PowerButtons.qml
 RoundedImage 1.0 common/RoundedImage.qml
 SliderControl 1.0 common/SliderControl.qml
 StatusPill 1.0 common/StatusPill.qml
+ThinScrollBar 1.0 common/ThinScrollBar.qml
 Tooltip 1.0 common/Tooltip.qml
 TooltipCard 1.0 common/TooltipCard.qml
 
 # bar
+BluetoothMenu 1.0 bar/BluetoothMenu.qml
 CalendarPopup 1.0 bar/CalendarPopup.qml
 ClockWidget 1.0 bar/ClockWidget.qml
 CommandCentreButton 1.0 bar/CommandCentreButton.qml
 LayoutPopup 1.0 bar/LayoutPopup.qml
 LayoutWidget 1.0 bar/LayoutWidget.qml
 MediaWidget 1.0 bar/MediaWidget.qml
+NetworkMenu 1.0 bar/NetworkMenu.qml
 SharedTooltipWindow 1.0 bar/SharedTooltipWindow.qml
+StatusMenu 1.0 bar/StatusMenu.qml
 SystemTrayWidget 1.0 bar/SystemTrayWidget.qml
 TrayMenu 1.0 bar/TrayMenu.qml
 VolumeWidget 1.0 bar/VolumeWidget.qml
@@ -63,9 +69,13 @@ Launcher 1.0 launcher/Launcher.qml
 # command-centre
 AudioSinkPicker 1.0 command-centre/AudioSinkPicker.qml
 CommandCentre 1.0 command-centre/CommandCentre.qml
+CommandCentreBento 1.0 command-centre/CommandCentreBento.qml
 CommandCentreCard 1.0 command-centre/CommandCentreCard.qml
+CommandCentreSliders 1.0 command-centre/CommandCentreSliders.qml
 ControlSliderRow 1.0 command-centre/ControlSliderRow.qml
 NotificationHistoryCard 1.0 command-centre/NotificationHistoryCard.qml
+StatusPills 1.0 command-centre/StatusPills.qml
+WeatherCard 1.0 command-centre/WeatherCard.qml
 
 # notifications
 NotificationOverlay 1.0 notifications/NotificationOverlay.qml
@@ -73,6 +83,7 @@ NotificationOverlay 1.0 notifications/NotificationOverlay.qml
 # lock
 HostnamePill 1.0 lock/HostnamePill.qml
 LockAuthCard 1.0 lock/LockAuthCard.qml
+LockClock 1.0 lock/LockClock.qml
 LockMediaRow 1.0 lock/LockMediaRow.qml
 LockScreen 1.0 lock/LockScreen.qml
 LockSecondaryScreen 1.0 lock/LockSecondaryScreen.qml

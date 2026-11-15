@@ -25,6 +25,7 @@ Rectangle {
   signal wheel(var wheel)
 
   readonly property bool hovered: _hoverHandler.hovered
+  readonly property bool pressed: _clickArea.pressed
 
   visible: root.shown
   color: root.pillColour
@@ -34,9 +35,11 @@ Rectangle {
   clip: true
   border.width: Config.borderWidth
   border.color: Colours.border
+  scale: (root.clickable && root.pressed) ? 0.97 : 1.0
 
   Behavior on color { ColorAnimation { duration: Config.animNormalMs } }
   Behavior on border.color { ColorAnimation { duration: Config.animNormalMs } }
+  Behavior on scale { NumberAnimation { duration: Config.animFastMs; easing.type: Easing.OutCubic } }
 
   HoverHandler {
     id: _hoverHandler

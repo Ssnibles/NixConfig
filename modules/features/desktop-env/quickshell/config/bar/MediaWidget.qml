@@ -10,7 +10,7 @@ Pill {
   property PanelWindow sharedWindow: null
   property string uiFont: Session.monoFont
 
-  readonly property int maxTextWidth: 200
+  readonly property int maxTextWidth: Config.mediaBarTextMaxWidth
 
   visible: MediaService.hasMedia && root.shown
   hoverHighlight: true
@@ -59,8 +59,8 @@ Pill {
   // Compact spinning disc shared by the sidebar and top-bar layouts.
   component SpinningIcon: Item {
     id: spinner
-    property int iconSize: 16
-    property int fontPx: 15
+    property int iconSize: Config.iconSizeMd
+    property int fontPx: Config.fontSizeLg
     property bool active: false
 
     width: spinner.iconSize
@@ -91,8 +91,8 @@ Pill {
     anchors.centerIn: parent
 
     SpinningIcon {
-      iconSize: 16
-      fontPx: 15
+      iconSize: Config.iconSizeMd
+      fontPx: Config.fontSizeLg
       active: !root.horizontal
       anchors.horizontalCenter: parent.horizontalCenter
     }
@@ -106,7 +106,7 @@ Pill {
         text: Utils.formatTime(Math.round(MediaService.estimatedPosition))
         color: Colours.fgMid
         font.family: root.uiFont
-        font.pixelSize: 11
+        font.pixelSize: Config.fontSizeXs
         horizontalAlignment: Text.AlignHCenter
       }
 
@@ -116,7 +116,7 @@ Pill {
         text: Utils.formatTime(Math.round(MediaService.lastLength))
         color: Colours.fgDim
         font.family: root.uiFont
-        font.pixelSize: 11
+        font.pixelSize: Config.fontSizeXs
         horizontalAlignment: Text.AlignHCenter
       }
     }
@@ -129,8 +129,8 @@ Pill {
     spacing: Config.spaceSm
 
     SpinningIcon {
-      iconSize: 14
-      fontPx: 13
+      iconSize: Config.iconSizeSm
+      fontPx: Config.fontSizeMd
       active: root.horizontal
       anchors.verticalCenter: parent.verticalCenter
     }
@@ -139,7 +139,7 @@ Pill {
       text: MediaService.mediaText
       color: Colours.fg
       font.family: Session.sansFont
-      font.pixelSize: 12
+      font.pixelSize: Config.fontSizeSm
       elide: Text.ElideRight
       maximumLineCount: 1
       width: Math.min(implicitWidth, root.maxTextWidth)

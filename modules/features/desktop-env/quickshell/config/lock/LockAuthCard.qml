@@ -38,6 +38,7 @@ Card {
 
   // Extra top padding gives the avatar room to breathe.
   implicitHeight: authCol.implicitHeight + Config.spaceXl + Config.spaceLg
+  cardRadius: Config.commandCentreRadius
   borderColour: root.errorMessage !== "" ? Colours.red : Colours.border
 
   transform: Translate {
@@ -66,7 +67,7 @@ Card {
         Layout.alignment: Qt.AlignHCenter
         width: Config.lockAvatarSize
         height: Config.lockAvatarSize
-        radius: Config.commandCentreCardRadius
+        radius: Config.itemRadiusMd
         color: Colours.bgSubtle
         border.color: Colours.border
         border.width: Config.borderWidth
@@ -77,7 +78,7 @@ Card {
           text: Config.lockFallbackIcon
           color: Colours.accent
           font.family: Session.monoFont
-          font.pixelSize: 32
+          font.pixelSize: Config.fontSize2xl
           visible: !avatarImage.ready
         }
 
@@ -86,8 +87,8 @@ Card {
           id: avatarImage
           anchors.fill: parent
           source: Session.lockAvatarPath
-          sourceSize: Qt.size(192, 192)
-          radius: Config.commandCentreCardRadius
+          sourceSize: Qt.size(Config.lockAvatarSize * 3, Config.lockAvatarSize * 3)
+          radius: Config.itemRadiusMd
         }
       }
 
@@ -101,7 +102,7 @@ Card {
           text: Session.user
           color: Colours.fg
           font.family: Session.sansFont
-          font.pixelSize: 20
+          font.pixelSize: Config.fontSizeXl
           font.bold: true
         }
 
@@ -118,7 +119,7 @@ Card {
     // Password Input Pill Box Container
     Rectangle {
       Layout.fillWidth: true
-      height: 48
+      height: Config.space2xl + Config.spaceSm
       radius: Config.lockInputRadius
       color: Colours.bgSubtle
       border.color: authCol.isInputActive ? Colours.accent : Colours.border
@@ -175,7 +176,7 @@ Card {
           echoMode: root.revealPassword ? TextInput.Normal : TextInput.Password
           color: Colours.fg
           font.family: Session.sansFont
-          font.pixelSize: 16
+          font.pixelSize: Config.fontSizeLg
           clip: true
           focus: false
           enabled: !root.authenticating
@@ -212,7 +213,7 @@ Card {
             text: "Enter password..."
             color: Colours.fgDim
             font.family: Session.sansFont
-            font.pixelSize: 16
+            font.pixelSize: Config.fontSizeLg
             visible: root.enteredPassword.length === 0 && !passInput.activeFocus
           }
 
@@ -222,7 +223,7 @@ Card {
         // Reveal Password Toggle Button
         IconButton {
           Layout.alignment: Qt.AlignVCenter
-          buttonSize: 32
+          buttonSize: Config.spaceXl + Config.spaceSm
           visible: root.enteredPassword.length > 0
           icon: root.revealPassword ? "󰈉" : "󰈈"
           baseColour: "transparent"
@@ -252,7 +253,7 @@ Card {
           text: "󰌎"
           color: Colours.yellow
           font.family: Session.monoFont
-          font.pixelSize: 14
+          font.pixelSize: Config.iconSizeMd
           anchors.verticalCenter: parent.verticalCenter
         }
 
@@ -260,7 +261,7 @@ Card {
           text: "Caps Lock is active"
           color: Colours.yellow
           font.family: Session.sansFont
-          font.pixelSize: 13
+          font.pixelSize: Config.fontSizeMd
           anchors.verticalCenter: parent.verticalCenter
         }
       }

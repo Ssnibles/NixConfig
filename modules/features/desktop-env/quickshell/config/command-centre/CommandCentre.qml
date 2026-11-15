@@ -93,8 +93,17 @@ Scope {
         if (!target) return false
         return panel.modelData === target || (panel.modelData && target && panel.modelData.name === target.name)
       }
-      readonly property bool isLeft: Session.commandCentreSide === "left"
-      readonly property real slideDistance: isLeft ? -Config.commandCentreSlideOffset : Config.commandCentreSlideOffset
+      readonly property bool isBento: Config.commandCentreLayout === "bento"
+      readonly property bool isLeft: !isBento && Session.commandCentreSide === "left"
+      readonly property real slideDistance: isBento ? 0 : (isLeft ? -Config.commandCentreSlideOffset : Config.commandCentreSlideOffset)
+      readonly property int sidebarTopMargin: Session.hasTopBar ? (Config.barHeight + Config.commandCentreMargin) : Config.commandCentreMargin
+      readonly property int panelWidth: isBento ? Math.min(Config.commandCentreBentoWidth, panel.width - Config.commandCentreMargin * 2) : Config.commandCentreWidth
+      // The bento fills the configured height and its columns share it, so the
+      // cards keep their breathing room instead of shrinking to the tallest
+      // column. The screen and the configured size remain the upper bounds.
+      readonly property int panelHeight: isBento
+        ? Math.min(Config.commandCentreBentoHeight, panel.height - Config.commandCentreMargin * 2)
+        : panel.height - sidebarTopMargin - Config.commandCentreMargin
       property real panelOpacity: 0
       property real panelSlide: slideDistance
 
@@ -146,6 +155,14 @@ Scope {
         }
       }
 
+      // Dim the desktop so the centred panel reads as a full-screen overlay.
+      Rectangle {
+        anchors.fill: parent
+        visible: panel.isBento && panel.isTargetScreen
+        color: Colours.bg
+        opacity: Config.commandCentreBentoScrim * panel.panelOpacity
+      }
+
       // Full-screen backdrop mouse area to catch clicks outside the card
       MouseArea {
         id: outsideDismiss
@@ -170,25 +187,27 @@ Scope {
 
       // Main Card container (lazily loaded only on the target screen to avoid duplicating across displays)
       Loader {
+        id: cardLoader
         active: panel.isTargetScreen
-        sourceComponent: mainCardComponent
+        sourceComponent: panel.isBento ? bentoCardComponent : mainCardComponent
         opacity: panel.panelOpacity
         transform: Translate { x: panel.panelSlide }
-        width: Config.commandCentreWidth
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.left: panel.isLeft ? parent.left : undefined
-        anchors.right: panel.isLeft ? undefined : parent.right
-        anchors.topMargin: Session.hasTopBar ? (Config.barHeight + Config.commandCentreMargin) : Config.commandCentreMargin
-        anchors.bottomMargin: Config.commandCentreMargin
-        anchors.leftMargin: panel.isLeft ? ccScope.cardMargin : 0
-        anchors.rightMargin: panel.isLeft ? 0 : ccScope.cardMargin
+        width: panel.panelWidth
+        height: panel.panelHeight
+        x: panel.isBento ? (panel.width - panel.panelWidth) / 2 : (panel.isLeft ? ccScope.cardMargin : panel.width - panel.panelWidth - ccScope.cardMargin)
+        y: panel.isBento ? (panel.height - panel.panelHeight) / 2 : panel.sidebarTopMargin
       }
 
       Component {
         id: mainCardComponent
 
         CommandCentreCard { }
+      }
+
+      Component {
+        id: bentoCardComponent
+
+        CommandCentreBento { }
       }
     }
   }

@@ -46,7 +46,7 @@ Pill {
     spacing: Config.spaceSm
 
     Item {
-      width: 12
+      width: Config.spaceMd + Config.space2xs
       height: Config.volBarHeight
       anchors.horizontalCenter: parent.horizontalCenter
 
@@ -95,7 +95,7 @@ Pill {
       text: AudioService.volumeIcon
       color: AudioService.muted ? Colours.red : Colours.fg
       font.family: root.uiFont
-      font.pixelSize: 15
+      font.pixelSize: Config.fontSizeLg
     }
 
     Text {
@@ -103,7 +103,7 @@ Pill {
       text: AudioService.volumePercent + "%"
       color: AudioService.muted ? Colours.red : Colours.fgMid
       font.family: root.uiFont
-      font.pixelSize: 11
+      font.pixelSize: Config.fontSizeXs
     }
   }
 
@@ -117,7 +117,7 @@ Pill {
       text: AudioService.volumeIcon
       color: root.levelColour
       font.family: root.uiFont
-      font.pixelSize: 14
+      font.pixelSize: Config.fontSizeMd
       anchors.verticalCenter: parent.verticalCenter
     }
 
@@ -126,7 +126,7 @@ Pill {
       text: AudioService.volumePercent + "%"
       color: AudioService.muted ? Colours.red : Colours.fg
       font.family: root.uiFont
-      font.pixelSize: 12
+      font.pixelSize: Config.fontSizeSm
       font.bold: true
       anchors.verticalCenter: parent.verticalCenter
     }

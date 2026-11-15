@@ -51,7 +51,7 @@ Pill {
   Tooltip {
     target: root
     sharedWindow: root.sharedWindow
-    contentWidth: 210
+    contentWidth: Config.space2xl * 5
     contentComponent: Component {
       LayoutPopup { currentSymbol: root.currentLayoutSymbol }
     }

@@ -28,7 +28,7 @@ Card {
     property color idleIconColour: Colours.fgMid
     property bool isBold: false
     property int textSize: Config.fontSizeSm
-    pillHeight: 26
+    pillHeight: Config.pillHeightHorizontal
     radius: Config.itemRadiusSm
     baseColour: "transparent"
     hoverColour: Colours.bgSubtle
@@ -75,7 +75,7 @@ Card {
     readonly property bool hasSubmenu: !!(entryRoot.entry && entryRoot.entry.hasChildren)
 
     visible: entryRoot.entry !== null && !entryRoot.entry.isSeparator && entryRoot.label !== ""
-    pillHeight: 26
+    pillHeight: Config.pillHeightHorizontal
     radius: Config.itemRadiusSm
     baseColour: "transparent"
     hoverColour: Colours.bgSubtle
@@ -121,7 +121,7 @@ Card {
         text: entryRoot.submenuExpanded ? "󰅃" : "󰅂"
         color: Colours.fgDim
         font.family: Session.monoFont
-        font.pixelSize: 12
+        font.pixelSize: Config.fontSizeSm
         Layout.alignment: Qt.AlignVCenter
       }
     }
@@ -158,9 +158,9 @@ Card {
       spacing: Config.spaceSm
 
       IconImage {
-        Layout.preferredWidth: 18
-        Layout.preferredHeight: 18
-        implicitSize: 18
+        Layout.preferredWidth: Config.iconSizeLg
+        Layout.preferredHeight: Config.iconSizeLg
+        implicitSize: Config.iconSizeLg
         source: menuRoot.activeItem ? menuRoot.activeItem.icon : ""
         Layout.alignment: Qt.AlignVCenter
       }
@@ -195,7 +195,7 @@ Card {
           text: menuRoot.itemId
           color: Colours.fgDim
           font.family: Session.monoFont
-          font.pixelSize: 10
+          font.pixelSize: Config.fontSizeXs
           elide: Text.ElideRight
         }
       }
@@ -209,7 +209,7 @@ Card {
     ActionPill {
       id: focusAppPill
       width: parent.width
-      pillHeight: 28
+      pillHeight: Config.spaceXl + Config.space2xs
       baseColour: Colours.bgSubtle
       hoverColour: Colours.bgRaised
       border.color: focusAppPill.hovered ? Colours.accent : Colours.border
@@ -274,7 +274,7 @@ Card {
               id: subEntryPill
               required property var modelData
               width: entryCol.width - Config.spaceLg
-              pillHeight: 24
+              pillHeight: Config.pillHeightHorizontal
               entry: subEntryPill.modelData
               onClicked: {
                 if (subEntryPill.modelData && subEntryPill.modelData.enabled) {

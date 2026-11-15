@@ -24,7 +24,8 @@ RowLayout {
   spacing: Config.spaceMd
 
   IconButton {
-    buttonSize: 32
+    buttonSize: Config.spaceXl + Config.spaceSm
+    radius: Config.itemRadiusSm
     icon: rowRoot.icon
     baseColour: Colours.bgSubtle
     hoverColour: Colours.bgRaised
@@ -47,16 +48,16 @@ RowLayout {
     onMoved: function(v) { rowRoot.sliderMoved(v) }
   }
 
-  // Fixed, right aligned column sized to 38px so the slider keeps identical
-  // length regardless of 1, 2, or 3 digits.
+  // Fixed, right aligned column sized to one spacing step so the slider keeps
+  // identical length regardless of 1, 2, or 3 digits.
   Text {
     text: rowRoot.percentText
     color: rowRoot.percentColour
     font.family: Session.monoFont
-    font.pixelSize: 14
-    Layout.minimumWidth: 38
-    Layout.preferredWidth: 38
-    Layout.maximumWidth: 38
+    font.pixelSize: Config.fontSizeLg
+    Layout.minimumWidth: Config.space2xl
+    Layout.preferredWidth: Config.space2xl
+    Layout.maximumWidth: Config.space2xl
     horizontalAlignment: Text.AlignRight
     Layout.alignment: Qt.AlignVCenter
   }

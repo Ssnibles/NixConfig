@@ -78,7 +78,7 @@ Scope {
 - **Unified Status Bar (`bar.qml`)**: Automatically adapts between a horizontal top bar (MangoWC, Hyprland) and a vertical left/right side bar (Niri, or when `QS_BAR=niri`), powered by the `WmService` singleton.
 - **Notification Overlay**: Global notification stack present on the active display (or all displays).
 - **OSD Overlay (`OsdOverlay.qml`)**: Floating bottom-centre On-Screen Display pill for volume, microphone mute, and screen brightness changes.
-- **Command Centre**: Slide-out dashboard overlay controllable via IPC.
+- **Command Centre**: Edge panel or centred bento dashboard, controllable via IPC.
 - **Lock Screen**: Wayland session lock (`WlSessionLock`) with PAM authentication.
 
 ---
@@ -116,9 +116,24 @@ step for micro gaps. Nested spacing therefore keeps the same visual rhythm.
 | --- | --- | --- |
 | `borderWidth` | `1` | Standard outline on cards, pills and controls |
 | `borderWidthFocus` | `2` | Focused input outline |
-| `itemRadiusXs` | `4` | Day cells, sliders, tray buttons |
-| `itemRadiusSm` | `6` | Small pills and menu rows |
-| `itemRadiusMd` | `10` | Cards, popups, inputs and cover art |
+| `itemRadiusXs` | `6` | Day cells, sliders, tray buttons |
+| `itemRadiusSm` | `10` | Small pills and menu rows |
+| `itemRadiusMd` | `16` | Cards, popups, inputs and cover art |
+
+The display type steps follow the golden ratio from the body base: `13`, `21`,
+`34`, `55`, `89`. Small labels and timestamps stay compact at `11` and `12`.
+
+| Token | Value | Typical use |
+| --- | --- | --- |
+| `fontSizeXs` | `11` | Timestamps and micro labels |
+| `fontSizeSm` | `12` | Secondary text |
+| `fontSizeMd` | `13` | Body and notification titles |
+| `fontSizeLg` | `15` | Prominent body and controls |
+| `fontSizeXl` | `21` | Section headings |
+| `fontSize2xl` | `34` | Sidebar clock |
+| `fontSize3xl` | `55` | Bento clock and hero values |
+| `fontSize4xl` | `89` | Lock screen clock |
+| `displayLetterSpacing` | `2` | Letter spacing on the serif display clocks |
 
 | Property | Default | Purpose |
 | --- | --- | --- |
@@ -137,7 +152,7 @@ These three are fallbacks: Nix writes the real families into `Colours.qml`, and 
 | `barSpacing` | `10` | Vertical gap between widget groups |
 | `volBarHeight` | `64` | Volume bar widget height |
 | `wifiMaxTextLength` | `90` | Maximum network SSID display width |
-| `barHeight` | `34` | MangoWC top bar height (px) |
+| `barHeight` | `35` | MangoWC top bar height (px) |
 | `minWorkspaces` | `5` | Minimum workspace slots (MangoWC and Hyprland) |
 | `barShowClock` | `true` | Show the clock |
 | `barShowCommandCentre` | `true` | Show the Command Centre button |
@@ -152,15 +167,26 @@ These three are fallbacks: Nix writes the real families into `Colours.qml`, and 
 
 The compositor (`Session.wm`) and everything derived from it (`barType`, `hasTopBar`, `hasLeftBar`, `hasRightBar`) live in `Session`. The `barShow*` flags reach the widgets through their `shown` property, so hiding a widget in the bar leaves the same widget working in the Command Centre and lock screen.
 
+The network and Bluetooth pills open a centred status menu, sized by `statusMenuWidth` (420px) and `statusMenuHeight` (440px). The menu takes keyboard focus for the Wi-Fi password field; Escape or a click outside closes it.
+
 ### 3.3 Command Centre (`CommandCentre.qml`)
 
 Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the bar button.
 
 | Property | Default | Purpose |
 | --- | --- | --- |
+| `commandCentreLayout` | `"bento"` | Layout: `"bento"` centred widget board or `"sidebar"` edge panel |
 | `commandCentreWidth` | `500` | Width of slide-out panel (px) |
-| `commandCentreRadius` | `16` | Panel corner rounding radius |
-| `commandCentreCardRadius` | `10` | Inner section card corner radius |
+| `commandCentreRadius` | `26` | Panel corner rounding radius |
+| `commandCentreBentoWidth` | `1332` | Bento panel width, clamped to the screen |
+| `commandCentreBentoHeight` | `880` | Bento panel height; the board fills it, clamped to the screen |
+| `commandCentreBentoNotificationWidth` | `360` | Width of the notification column |
+| `commandCentreBentoSideWidth` | `360` | Width of the weather and calendar column |
+| `commandCentreBentoMediaArtSize` | `200` | Artwork edge in the bento now-playing panel |
+| `commandCentreBentoScrim` | `0.55` | Backdrop opacity behind the bento panel |
+| `commandCentreBentoSurface` | `true` | Draw one raised surface behind the bento board so the cards sit on a single panel |
+| `weatherCacheMinutes` | `10` | Weather cache lifetime after an on-demand fetch |
+| `weatherShowForecast` | `true` | Show the three-day forecast strip in the weather card |
 | `commandCentreClockFormat` | `"HH:mm"` | Header clock format |
 | `commandCentreDateFormat` | `"dddd, MMMM d"` | Header date format |
 | `alwaysShowMediaCard` | `true` | Show media player card even when idle |
@@ -172,6 +198,7 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `ccShowBrightnessSlider` | `true` | Show the brightness slider |
 | `mediaRotationDuration` | `4000` | Album art rotation duration (ms) |
 | `mediaSeekDebounceMs` | `200` | Seeking debounce delay (ms) |
+| `mediaBarTextMaxWidth` | `200` | Longest track label the bar media pill shows before eliding (px) |
 
 ### 3.4 Lock Screen (`LockScreen.qml`)
 | Property | Default | Purpose |
@@ -181,10 +208,11 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `lockWallpaperPath` | `""` | Wallpaper image; empty uses `$HOME/Pictures/wallpaper` |
 | `lockClockFormat` | `"HH:mm"` | Time display format |
 | `lockDateFormat` | `"dddd, MMMM d"` | Date display format |
-| `commandCentreCardRadius` | `10` | Authentication card corner radius (shared with the Command Centre) |
-| `lockInputRadius` | `10` | Password input box radius |
+| `commandCentreRadius` | `26` | Authentication card corner radius (shared with the Command Centre) |
+| `lockInputRadius` | `16` | Password input box radius |
 | `lockBackgroundDimming` | `0.8` | Dark background overlay opacity (0.0–1.0) |
 | `lockBlurPercentage` | `0.5` | Wallpaper GPU blur amount (0.0–1.0) |
+| `lockContentFadeMs` | `200` | Fade-in for the wallpaper and lock content (ms) |
 | `lockStatusPosition` | `"top-right"` | Badge corner, or `"split"` / `"corners"`; `QS_LOCK_STATUS_POS` overrides it in `Session` |
 | `lockStatusMargin` | `26` | Badge distance from the screen edge |
 | `lockStatusSpacing` | `10` | Gap between clustered badges |
@@ -194,7 +222,7 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | --- | --- | --- |
 | `popupGap` | `42` | Distance from bar to popup card |
 | `popupMaxWidth` | `280` | Default card width |
-| `popupRadius` | `10` | Popup card corner radius |
+| `popupRadius` | `16` | Popup card corner radius |
 | `popupContentMargins` | `16` | Padding inside popups |
 | `popupContentSpacing` | `6` | Gap between tooltip detail lines |
 | `popupShowDelay` | `150` | Hover delay before showing popup (ms) |
@@ -213,17 +241,19 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `notifMaxVisible` | `5` | Maximum active popup count on screen |
 | `notifMaxHistory` | `30` | Maximum history items retained in `NotificationService` |
 | `notifWidth` | `320` | Notification card width (px) |
-| `notifRadius` | `10` | Notification card corner radius |
+| `notifRadius` | `16` | Notification card corner radius |
 | `notifCardMargins` | `16` | Internal card padding (px) |
 | `notifSpacing` | `10` | Spacing between stacked cards (px) |
+| `notifAnimMs` | `250` | Toast entry and reorder animation (ms) |
 | `notifHoverScale` | `1.01` | Scale applied to a notification card on hover |
 | `notifIconSize` | `40` | Icon/avatar dimension for standard notifications (px) |
 | `notifMediaIconSize` | `48` | Icon/avatar dimension for media notifications (px) |
-| `notifIconRadius` | `10` | Corner radius for notification icon/avatar preview |
+| `notifIconRadius` | `16` | Corner radius for notification icon/avatar preview |
 | `notifMaxLines` | `5` | Maximum lines of notification body text before eliding |
 | `notifShowActions` | `true` | Display interactive action buttons on cards |
 | `notifDismissOnAction` | `true` | Automatically dismiss card when an action is invoked |
 | `notifShowMediaToasts` | `true` | Show popups for MPRIS media track transitions |
+| `notifMediaHistory` | `false` | Keep MPRIS track changes in the notification history |
 | `notifAllScreens` | `false` | Display notification overlay across all displays |
 | `notifLeftClickAction` | `"dismiss"` | Action on left-click (`"dismiss"` or `"focus"`) |
 | `notifDefaultFallbackLogo` | `"preferences-desktop-notification"` | System theme fallback icon if app has no icon |
@@ -240,6 +270,7 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `trayIconSize` | `15` | Tray icon size (px) |
 | `trayButtonSize` | `20` | Tray button hit area (px) |
 | `traySpacing` | `4` | Gap between tray buttons |
+| `traySidePillWidth` | `34` | Side bar tray pill width (px) |
 | `trayMenuWidth` | `240` | Width of the tray context menu |
 | `trayShowAppIdInMenu` | `true` | Show the SNI app ID in the menu header |
 | `trayAllowSessionHide` | `true` | Allow hide/unhide actions in the tray menu |
@@ -247,18 +278,35 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `UiState.trayShowExpandButton` | `true` | Show the expand arrow when items are hidden |
 | `UiState.trayExpanded` | `false` | Whether the hidden section is open |
 
-### 3.8 External Commands
+### 3.8 Audio, Brightness & OSD
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `volStep` | `0.05` | Output volume step per scroll or IPC call |
+| `volMax` | `1.5` | Volume ceiling (150%) |
+| `micStep` | `0.05` | Microphone volume step |
+| `brightnessStep` | `0.05` | Brightness step |
+| `osdEnabled` | `true` | Master switch for the OSD |
+| `osdPosition` | `"bottom-centre"` | OSD placement |
+| `osdAllScreens` | `false` | Show the OSD on every display |
+| `osdTimeoutMs` | `1800` | Display duration (ms) |
+| `osdWidth` / `osdHeight` | `260` / `48` | Pill size (px) |
+| `osdRadius` | `-1` | Corner radius; `-1` uses a full capsule |
+| `osdSlideOffset` | `10` | Entry slide distance (px) |
+| `osdMarginX` / `osdMarginY` | `26` / `68` | Gap from the screen edge (px) |
+
+### 3.9 External Commands
 | Property | Default | Purpose |
 | --- | --- | --- |
 | `cmdMixer` | `["pavucontrol"]` | Audio mixer |
 | `cmdNetworkManager` | `["kitty", "--single-instance", "-e", "nmtui"]` | Network tool |
 | `cmdBluetoothManager` | `["blueman-manager"]` | Bluetooth manager |
+| `cmdScreenshot` | `["sh", "-c", "$HOME/.config/mango/screenshot.sh"]` | Screenshot tool used by the Command Centre header button |
 | `cmdLock` | `["quickshell", "ipc", "call", "lockscreen", "lock"]` | Lock action |
 | `cmdSleep` / `cmdReboot` / `cmdPoweroff` | `["systemctl", ...]` | Power actions |
 | `cmdTerminal` | `["kitty", "-e"]` | Prefix used by the launcher's "run in terminal" and by `.desktop` terminal entries |
 | `cmdClipboard` | `["wl-copy"]` | Clipboard writer used by the calculator and copy actions |
 
-### 3.9 Runtime State (`UiState.qml`)
+### 3.10 Runtime State (`UiState.qml`)
 Nothing here is configuration; it all resets when the shell restarts.
 
 | Property | Default | Purpose |
@@ -266,6 +314,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 | `barVisible` | `true` | Bar shown (IPC `bar toggle`) |
 | `commandCentreVisible` | `false` | Command Centre open |
 | `launcherVisible` | `false` | Launcher open |
+| `statusMenu` | `""` | Open status menu: `"network"` or `"bluetooth"` |
 | `targetScreen` | `null` | Screen the next overlay opens on |
 | `lastActiveScreen` | `null` | Last screen the pointer entered |
 | `runtimeHiddenTrayApps` / `runtimeUnhiddenTrayApps` | `[]` | Session-only tray hide overrides, shared across monitors |
@@ -314,9 +363,14 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **Role**: `brightnessctl` and sysfs backlight control. Emits `osdRequested()` when the level changes.
 - **Exposes**: `brightness`, `brightnessAvailable`, `brightnessPercent`, `refreshBrightness(notifyOsd)`, `setBrightness(val)`, `stepBrightness(dir)`.
 
+#### `WeatherService.qml`
+- **Role**: On-demand weather data from `wttr.in`. No background timer: the command centre asks for a refresh when the weather card opens, and the refresh button forces a fetch.
+- **Caching**: results stay fresh for `Config.weatherCacheMinutes`; reopening the command centre inside that window does not hit the network.
+- **Exposes**: `loading`, `error`, `location`, `temperature`, `feelsLike`, `high`, `low`, `humidity`, `wind`, `code`, `description`, `lastUpdated`, `hasData`, `weatherIcon`, `temperatureText`, `highText`, `lowText`, `feelsLikeText`, `locationText`, `forecast`, `refresh(force)`, `iconFor(code)`.
+
 #### `NetworkService.qml`
 - **Role**: Wired and Wi-Fi state from `Quickshell.Networking`.
-- **Exposes**: `netIcon`, `netText`, `netColour`, `netTitle`, `netDetails`, `openNetworkManager()`.
+- **Exposes**: `netIcon`, `netText`, `netColour`, `netTitle`, `netDetails`, `wifiAvailable`, `wifiNetworks`, `isSecured()`, `connectNetwork()`, `disconnectNetwork()`, `scanWifi()`, `openNetworkManager()`.
 
 #### `BatteryService.qml`
 - **Role**: Battery telemetry from UPower.
@@ -324,7 +378,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### `BluetoothService.qml`
 - **Role**: Adapter and connected-device state from `Quickshell.Bluetooth`.
-- **Exposes**: `btIcon`, `btColour`, `btStatusText`, `btTitle`, `btDetails`, `toggleBluetooth()`, `openBluetoothManager()`.
+- **Exposes**: `btIcon`, `btColour`, `btStatusText`, `btTitle`, `btDetails`, `btDevices`, `setBtPowered()`, `toggleBtDevice()`, `deviceBattery()`, `openBluetoothManager()`.
 
 #### `TrayService.qml`
 - **Role**: System tray items plus the per-session hidden/unhidden lists shared across monitors.
@@ -332,7 +386,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### `SystemService.qml`
 - **Role**: OSD state and the `"system"` / `"tray"` IPC targets. It observes the hardware services rather than owning their state.
-- **Exposes**: `osdVisible`, `osdKind`, `osdIcon`, `osdLabel`, `osdValue`, `osdMuted`, `showOsd(kind)`, plus the `volumeUp`, `volumeDown`, `toggleMute`, `micUp`, `micDown`, `toggleMicMute`, `brightnessUp`, and `brightnessDown` IPC actions.
+- **Exposes**: `osdVisible`, `osdKind`, `osdIcon`, `osdLabel`, `osdValue`, `osdMuted`, `showOsd(kind)`, plus the `volumeUp`, `volumeDown`, `toggleMute`, `micUp`, `micDown`, `toggleMicMute`, `brightnessUp`, `brightnessDown` IPC actions, and `takeScreenshot()` for the Command Centre screenshot button.
 
 #### `NotificationIcons.qml`
 - **Role**: Resolves notification icons, avatars, and fallback glyphs, and caches ephemeral `/tmp/` images.
@@ -365,10 +419,18 @@ Nothing here is configuration; it all resets when the shell restarts.
 ### 5.3 Overlays & Standalone Screens
 
 #### `CommandCentre.qml`
-- **Role**: Slide-out quick settings dashboard and system metrics panel.
+- **Role**: Quick settings dashboard and system metrics panel.
 - **IPC Target**: `"command-centre"` (functions: `toggle()`, `open()`, `close()`).
-- **Multi-Monitor Cursor Tracking**: Delegates active-screen detection to `WmService.resolveTargetScreen(...)` and slides out on that specific monitor while rendering a transparent dismiss overlay across all other screens.
-- **Structure**: `CommandCentre.qml` owns the per-screen overlay windows, the slide and fade animation, and the IPC surface. The panel contents live in `CommandCentreCard.qml`: header clock and date (`ClockService`), status pills (Wi-Fi, Ethernet, Battery, Bluetooth), system sliders (`ControlSliderRow` bound to `AudioService` and `BrightnessService`), the `AudioSinkPicker` output chips, the full MPRIS `MediaCard`, the `NotificationHistoryCard` list (`NotificationService`), and `PowerButtons`.
+- **Multi-Monitor Cursor Tracking**: Delegates active-screen detection to `WmService.resolveTargetScreen(...)` and opens on that specific monitor while rendering a transparent dismiss overlay across all other screens.
+- **Structure**: `CommandCentre.qml` owns the per-screen overlay windows, the slide and fade animation, and the IPC surface. The panel contents live in `CommandCentreCard.qml` (sidebar) or `CommandCentreBento.qml` (centred widget board): the sidebar clock and date (`ClockService`), `StatusPills` (Wi-Fi, Ethernet, Battery, Bluetooth), the shared `CommandCentreSliders` (`ControlSliderRow` bound to `AudioService` and `BrightnessService` plus the `AudioSinkPicker` output chips), the full MPRIS `MediaCard`, the `NotificationHistoryCard` list (`NotificationService`), and `PowerButtons`.
+- **Layouts**: set `Config.commandCentreLayout` to `"sidebar"` for the edge panel or `"bento"` for a centred widget board. In the bento the left card holds the clock, status pills, system sliders, the now-playing panel and power controls. The middle column is the notification history. The right column stacks the weather card above the calendar. The bento board dims the desktop behind it and is clamped to the screen size.
+- **Now playing**: `MediaCard` draws a horizontal row by default for the bar popover and the sidebar panel. The bento sets `vertical: true` and a larger `artSize`, so the cover sits above the centred title, controls and seek bar in the tall left card.
+- **Keyboard**: Escape closes the panel. Power actions stay click-only to avoid accidental activation.
+- **Screenshot**: the header screenshot button closes the panel and runs the configured screenshot tool.
+- **Board surface**: `Config.commandCentreBentoSurface` (on by default) puts one raised surface behind the whole board with the cards inset on top. Set it to false to let the cards float directly over the dimmed desktop.
+- **Bento sizing**: the board fills `commandCentreBentoHeight`, clamped to the screen, and the three columns share that height. The two flexible blocks absorb the slack: the now-playing panel grows in the left card and the calendar grows in the right column, so no card ends with a gap. On a short screen the board falls back to the height its content needs.
+- **Duplication**: the board deliberately avoids second copies of the bar and notification controls. Network, Bluetooth and battery live in `StatusPills`; mute, microphone and Do Not Disturb sit in the sliders and the notification card; the audio mixer leads the sink picker.
+- **Shared sections**: `CommandCentreSliders.qml` and `StatusPills.qml` keep the two layouts identical, so a change to the volume, microphone or brightness controls only happens once.
 
 #### `OsdOverlay.qml`
 - **Role**: Floating bottom-centre On-Screen Display pill driven by `SystemService`.
@@ -386,6 +448,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **Keyboard**: Up/Down or Ctrl+K/Ctrl+J move the selection. Ctrl+Enter opens the actions menu for the selected application or calculator result. Escape closes the actions menu first, then the launcher.
 - **Default Keybind**: `SUPER + Shift + Space` in MangoWC, Hyprland, and Niri.
 - **Actions**: Per-app `[Desktop Action]` entries are read from the `.desktop` file, followed by presets: Launch, Run in terminal, Copy command, Copy desktop file path, and Copy desktop ID. Calculator results offer Copy result and Copy expression.
+- **Ordering**: match quality wins first, then recent use. The most recently launched apps are stored in `Quickshell.statePath("launcher-recents.json")` and capped by `Config.launcherRecentCount` (20), so an empty query starts with what you use most.
 - **Calculator**: `launcher/Calc.js` wraps the vendored [expr-eval](https://github.com/silentmatt/expr-eval) library (`launcher/expr-eval.js`, MIT). It supports arithmetic, `^`, functions such as `sqrt`, `sin`, and `log`, and the constants `pi`, `e`, and `tau`. Pressing Enter copies the result to the clipboard.
 
 #### `NotificationOverlay.qml` & `NotificationCard.qml`
@@ -414,9 +477,15 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **Role**: Icon, slider, and percentage row used by the Command Centre controls.
 - **Properties**: `icon`, `alert`, `accent`, `iconClickable`, `sliderValue`, `percentText`; signals `iconClicked()`, `sliderMoved(real value)`.
 
+#### `CommandCentreSliders.qml`
+- **Role**: Output volume, sink switcher, microphone and brightness block shared by the sidebar and bento layouts. Owns the `"smart"` microphone visibility rule and the brightness availability check.
+
+#### `StatusPills.qml`
+- **Role**: Network, battery and Bluetooth badge row shown in the Command Centre status row. The Bluetooth label is only shown in the wider sidebar layout.
+
 #### `AudioSinkPicker.qml`
 - **Role**: PipeWire output switcher: a chip per sink with the current output marked, led by the mixer shortcut. Chips switch on the first click and wrap onto another line when there are many outputs, so expanding the picker never reflows the rest of the panel.
-- **Placement**: `CommandCentreCard.qml` loads it above or below the volume slider from `Config.ccSinkSwitcherAboveVolume`, using one shared component definition so both positions stay identical.
+- **Placement**: `CommandCentreSliders.qml` loads it above or below the volume slider from `Config.ccSinkSwitcherAboveVolume`, using one shared component definition so both positions stay identical.
 - **Mixer**: leads the row so it never reads as another output. Icon-only by default; set `Config.ccAudioMixerLabel` to add a label, or `Config.ccShowAudioMixer` to drop the shortcut. Clicking it closes the panel before opening the mixer, since the panel would cover it.
 - **Properties**: `labelMaxWidth` (default `150`); gives up its space to elision rather than pushing the row wider.
 - **Labels**: use `AudioService.sinkLabel(node)`, which prefers PipeWire's `node.nick` (`DAWN PRO2`) over the longer `node.description` (`DAWN PRO2 Analog Stereo`).
@@ -424,12 +493,18 @@ Nothing here is configuration; it all resets when the shell restarts.
 #### `NotificationHistoryCard.qml`
 - **Role**: Notification history list, mute toggle, and clear button used by the Command Centre.
 
+#### `WeatherCard.qml`
+- **Role**: Weather card for the bento Command Centre. Uses `WeatherService`, fetches on open, caches for `Config.weatherCacheMinutes`, and offers a manual refresh button. An icon and temperature sit above the description and location, then a divider, then the three-day forecast strip when `Config.weatherShowForecast` is enabled, then a feels-like line. Its height balances the calendar card below it.
+
+#### `LockClock.qml`
+- **Role**: Lock screen time and date, shared by the primary and secondary displays so both clocks stay identical.
+
 #### `LockAuthCard.qml`
 - **Role**: Interactive authentication card used on the primary lock screen display. It contains the compact now-playing row below a divider when media is active.
 - **Properties**: `session`, `shakeOffset`, `capsLockOn`, `revealPassword`; functions `submitEnteredPassword()`, `cancelInput()`, `updateCapsLock(modifiers)`; signal `backgroundFocusRequested()`.
 
 #### `LockMediaRow.qml`
-- **Role**: Compact now-playing row shared by the auth card and the secondary lock screen. Shows cover art, title, artist and previous, play/pause and next controls.
+- **Role**: Compact now-playing row shared by the auth card and the secondary lock screen. Shows cover art, title, artist, a slim progress line, and previous, play/pause and next controls.
 - **Properties**: `hasMedia`.
 
 #### `LockStatusCluster.qml` and `LockSecondaryScreen.qml`
@@ -437,7 +512,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### `Card.qml`
 - **Role**: Shared elevated/surface card container used across Command Centre sections, popovers, `MediaCard`, `NotificationCard`, `OsdOverlay`, and `LockScreen`.
-- **Properties**: `cardColour` (defaults to `Colours.bgRaised`), `borderColour` (defaults to `Colours.border`), `cardRadius` (defaults to `Config.commandCentreCardRadius`), with smooth colour and border transitions.
+- **Properties**: `cardColour` (defaults to `Colours.bgRaised`), `borderColour` (defaults to `Colours.border`), `cardRadius` (defaults to `Config.itemRadiusMd`), with smooth colour and border transitions.
 
 #### `IconButton.qml`
 - **Role**: Shared interactive icon button with hover colour, border, and scale feedback.
@@ -446,6 +521,9 @@ Nothing here is configuration; it all resets when the shell restarts.
 #### `SliderControl.qml`
 - **Role**: Reusable interactive horizontal range slider.
 - **Properties**: `value` (0.0–1.0), `fillColour`, `snapPercent`, signal `moved(real value)`. Supports mouse drag and direct click positioning.
+
+#### `ThinScrollBar.qml`
+- **Role**: Thin overlay scrollbar used by the launcher lists and the notification history. Only appears when the content overflows and brightens on hover and drag.
 
 #### `CommandCentreButton.qml`
 - **Role**: Quick dashboard trigger button component for status bars.
@@ -471,16 +549,24 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **Role**: Async image with rounded-corner masking.
 - **Properties**: `source`, `sourceSize`, `radius`; exposes `ready` and a `sourceError()` signal for fallback chains.
 
+#### `CoverArt.qml`
+- **Role**: Rounded track artwork with a glyph fallback, shared by `MediaCard` and `LockMediaRow`.
+- **Properties**: `source`, `artSize`, `glyphSize`.
+
 #### Standard Bar Widgets
 - **`ClockWidget.qml`**: Time/date stack ingested from `ClockService` with click-to-popup calendar (`CalendarPopup.qml`).
+- **`CalendarPopup.qml`**: Month calendar with previous/next/current controls. Used by the clock popup and as a full-size card in the bento Command Centre; `cellSize`, `cellSpacing`, `cellFontSize`, `headerFontSize` and `contentSpacing` control the size. It always draws six week rows, filling the leading and trailing cells with the neighbouring month's days, so its height stays the same in every month.
 - **`WindowTitleWidget.qml`**: Active window title ingested from `WmService`.
 - **`WorkspacesWidget.qml`**: Interactive workspace indicators connected to `WmService`.
 - **`LayoutWidget.qml`**: Tiling layout selector connected to `WmService` (auto-shown on MangoWC). The option list lives in `LayoutPopup.qml`.
 - **`SystemTrayWidget.qml`**: StatusNotifierItem (SNI) system tray pill supporting left-click activate, right-click menu (rendered by `TrayMenu.qml`), scroll, and hover tooltips. Automatically hides when no tray items are registered.
 - **`MediaWidget.qml`**: MPRIS playback bar button ingested from `MediaService`.
 - **`VolumeWidget.qml`**: PipeWire volume control widget ingested from `AudioService`.
-- **`NetworkWidget.qml`**: Network connection monitor displaying Wi-Fi SSID and signal strength. Right-click launches `nmtui`. Set `interactive: false` to render it as a read-only `StatusPill` (used on the lock screen).
-- **`BluetoothWidget.qml`**: Bluetooth adapter status and device indicator. Right-click launches `blueman-manager`.
+- **`NetworkWidget.qml`**: Network connection monitor displaying Wi-Fi SSID and signal strength. Left-click opens the network menu; right-click launches `nmtui`. Set `interactive: false` to render it as a read-only `StatusPill` (used on the lock screen).
+- **`BluetoothWidget.qml`**: Bluetooth adapter status and device indicator. Left-click opens the Bluetooth menu; right-click launches `blueman-manager`.
+- **`StatusMenu.qml`**: Focusable centred overlay host for `NetworkMenu.qml` and `BluetoothMenu.qml`. Escape or a click outside closes it, and the card takes keyboard focus so the Wi-Fi password field works.
+- **`NetworkMenu.qml`**: Wi-Fi list showing signal strength, security and connected state. Known or open networks connect on click; a new secured network reveals a password field. The footer opens `nmtui` for anything else.
+- **`BluetoothMenu.qml`**: Paired device list with connect/disconnect, battery level and an adapter power toggle. The footer opens `blueman-manager` for pairing new devices.
 - **`BatteryWidget.qml`**: Laptop battery charge state and status indicator powered by UPower. Auto-hides on desktop systems without batteries. Set `interactive: false` to render it as a read-only `StatusPill` (used on the lock screen).
 
 ---

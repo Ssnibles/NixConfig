@@ -16,7 +16,7 @@ Pill {
 
   visible: TrayService.trayHasContent && root.shown
   padding: Config.spaceSm
-  implicitWidth: root.horizontal ? (trayLayout.implicitWidth + root.padding * 2) : 34
+  implicitWidth: root.horizontal ? (trayLayout.implicitWidth + root.padding * 2) : Config.traySidePillWidth
   implicitHeight: root.horizontal ? Config.pillHeightHorizontal : (trayLayout.implicitHeight + root.padding * 2)
 
   GridLayout {
@@ -29,9 +29,9 @@ Pill {
     // Expand/collapse button for hidden tray icons (only shown when UiState.trayShowExpandButton is true)
     Rectangle {
       visible: UiState.trayShowExpandButton && TrayService.trayHiddenCount > 0
-      Layout.preferredWidth: 18
+      Layout.preferredWidth: Config.iconSizeLg
       Layout.preferredHeight: Config.trayButtonSize
-      width: 18
+      width: Config.iconSizeLg
       height: Config.trayButtonSize
       radius: Config.itemRadiusXs
       color: toggleMouse.containsMouse || UiState.trayExpanded ? Colours.bgRaised : "transparent"
@@ -44,7 +44,7 @@ Pill {
           : (UiState.trayExpanded ? "󰅃" : "󰅀")
         color: UiState.trayExpanded ? Colours.accent : Colours.fgDim
         font.family: Session.monoFont
-        font.pixelSize: 12
+        font.pixelSize: Config.fontSizeSm
       }
 
       MouseArea {

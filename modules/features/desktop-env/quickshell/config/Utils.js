@@ -244,6 +244,16 @@ function micIcon(volPct, muted) {
   return "\u{F036C}"
 }
 
+// Wi-Fi strength glyph from a 0..1 signal fraction.
+function wifiSignalIcon(strength) {
+  var s = Math.max(0, Math.min(1, strength || 0))
+  if (s >= 0.75) return "\u{F0928}"
+  if (s >= 0.5) return "\u{F0922}"
+  if (s >= 0.25) return "\u{F091F}"
+  if (s > 0) return "\u{F092F}"
+  return "\u{F092E}"
+}
+
 var _batteryGlyphs = [
   "\u{F007A}", // <= 10%
   "\u{F007B}", // <= 20%
@@ -611,6 +621,27 @@ function getOrdinalDate(date) {
     }
   }
   return day + suffix + " " + Qt.formatDate(date, "of MMMM yyyy")
+}
+
+// Six-week Monday-first calendar grid. Leading and trailing cells carry the
+// neighbouring month's day numbers so every month has the same 42 cells.
+function buildMonthGrid(year, month, todayYear, todayMonth, todayDay) {
+  var firstDayIndex = new Date(year, month, 1).getDay()
+  var startOffset = (firstDayIndex === 0) ? 6 : firstDayIndex - 1
+  var totalDays = new Date(year, month + 1, 0).getDate()
+  var prevMonthDays = new Date(year, month, 0).getDate()
+
+  var cells = []
+  for (var i = 0; i < 42; i++) {
+    var dayOfMonth = i - startOffset + 1
+    var inMonth = dayOfMonth >= 1 && dayOfMonth <= totalDays
+    cells.push({
+      day: inMonth ? dayOfMonth : (dayOfMonth < 1 ? prevMonthDays + dayOfMonth : dayOfMonth - totalDays),
+      inMonth: inMonth,
+      isCurrent: inMonth && year === todayYear && month === todayMonth && dayOfMonth === todayDay
+    })
+  }
+  return cells
 }
 
 

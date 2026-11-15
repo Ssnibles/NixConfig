@@ -22,7 +22,7 @@ Flow {
     id: mixerChip
 
     visible: Config.ccShowAudioMixer
-    pillHeight: 26
+    pillHeight: Config.pillHeightHorizontal
     padding: Config.spaceSm
     baseColour: "transparent"
     hoverColour: Colours.bgSubtle
@@ -67,7 +67,7 @@ Flow {
 
       readonly property bool isCurrent: AudioService.audioSink !== null && modelData.id === AudioService.audioSink.id
 
-      pillHeight: 26
+      pillHeight: Config.pillHeightHorizontal
       baseColour: sinkChip.isCurrent ? Colours.bgSubtle : "transparent"
       hoverColour: Colours.bgSubtle
       // The current output is a status indicator, so it does not react to the

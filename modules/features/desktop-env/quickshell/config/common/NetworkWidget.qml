@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
 import ".."
 
 StatusPill {
@@ -10,14 +9,17 @@ StatusPill {
 
   horizontal: false
   acceptedButtons: Qt.LeftButton | Qt.RightButton
-  onClicked: NetworkService.openNetworkManager()
+  onClicked: function(mouse) {
+    if (mouse.button === Qt.RightButton) NetworkService.openNetworkManager()
+    else UiState.openStatusMenu("network")
+  }
 
   icon: NetworkService.netIcon
   iconColour: NetworkService.netColour
-  iconSize: Config.fontSizeSm
+  iconSize: root.horizontal ? Config.iconSizeSm : Config.iconSizeLg
   rowRotation: root.horizontal ? 0 : 270
   label: NetworkService.netText
   labelMaxWidth: root.maxTextWidth
   tooltipTitle: NetworkService.netTitle
-  tooltipDetails: NetworkService.netDetails
+  tooltipDetails: root.interactive ? NetworkService.netDetails : []
 }

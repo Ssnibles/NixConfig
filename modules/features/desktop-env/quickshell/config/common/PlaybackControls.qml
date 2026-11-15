@@ -20,18 +20,18 @@ RowLayout {
 
   IconButton {
     Layout.alignment: Qt.AlignVCenter
-    buttonSize: 28
+    buttonSize: Config.spaceXl + Config.space2xs
     radius: width / 2
     icon: "󰒮"
     uiFont: root.uiFont
     enabled: root.canPrevious
-    hoverScale: 0.90
+    hoverScale: 1.08
     onClicked: root.previousClicked()
   }
 
   IconButton {
     Layout.alignment: Qt.AlignVCenter
-    buttonSize: 32
+    buttonSize: Config.spaceXl + Config.spaceSm
     radius: width / 2
     icon: root.isPlaying ? "󰏤" : "󰐊"
     iconSize: Config.iconSizeLg
@@ -42,18 +42,18 @@ RowLayout {
     hoverBorderColour: Colours.accent
     iconColour: Colours.fg
     hoverIconColour: Colours.bg
-    hoverScale: 0.90
+    hoverScale: 1.08
     onClicked: root.playPauseClicked()
   }
 
   IconButton {
     Layout.alignment: Qt.AlignVCenter
-    buttonSize: 28
+    buttonSize: Config.spaceXl + Config.space2xs
     radius: width / 2
     icon: "󰒭"
     uiFont: root.uiFont
     enabled: root.canNext
-    hoverScale: 0.90
+    hoverScale: 1.08
     onClicked: root.nextClicked()
   }
 }

@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import ".."
 
@@ -14,48 +15,9 @@ Card {
       Layout.fillWidth: true
       spacing: Config.spaceMd
 
-      Row {
-        spacing: Config.spaceSm
-        Layout.alignment: Qt.AlignVCenter
-
-        Text {
-          text: NotificationService.dnd ? "󰂛" : "󰂚"
-          color: NotificationService.dnd ? Colours.red : Colours.accent
-          font.family: Session.monoFont
-          font.pixelSize: 17
-          anchors.verticalCenter: parent.verticalCenter
-        }
-
-        Text {
-          text: "Notifications"
-          color: Colours.fg
-          font.family: Session.sansFont
-          font.pixelSize: Config.fontSizeLg
-          font.bold: true
-          anchors.verticalCenter: parent.verticalCenter
-        }
-
-        // Badge count pill
-        Pill {
-          visible: NotificationService.historyModel.count > 0
-          pillHeight: 18
-          padding: Config.spaceSm
-          pillColour: Colours.bgSubtle
-          anchors.verticalCenter: parent.verticalCenter
-
-          Text {
-            anchors.centerIn: parent
-            text: NotificationService.historyModel.count
-            color: Colours.fgDim
-            font.family: Session.sansFont
-            font.pixelSize: Config.fontSizeXs
-          }
-        }
-      }
-
       Item { Layout.fillWidth: true }
 
-      // Controls: Mute toggle & Clear button
+      // Controls: Mute toggle and Clear button
       Row {
         spacing: Config.spaceSm
         Layout.alignment: Qt.AlignVCenter
@@ -63,7 +25,7 @@ Card {
         // Mute / DND Toggle Button
         Pill {
           id: mutePill
-          pillHeight: 26
+          pillHeight: Config.pillHeightHorizontal
           padding: Config.spaceSm
           baseColour: NotificationService.dnd ? Colours.red : "transparent"
           hoverColour: NotificationService.dnd ? Colours.red : Colours.bgSubtle
@@ -98,7 +60,7 @@ Card {
         Pill {
           id: clearPill
           visible: NotificationService.historyModel.count > 0
-          pillHeight: 26
+          pillHeight: Config.pillHeightHorizontal
           padding: Config.spaceSm
           baseColour: "transparent"
           hoverColour: Colours.bgSubtle
@@ -130,10 +92,6 @@ Card {
       }
     }
 
-    Divider {
-      Layout.fillWidth: true
-    }
-
     // Empty State view
     Item {
       visible: NotificationService.historyModel.count === 0
@@ -148,7 +106,7 @@ Card {
           text: "󰂜"
           color: Colours.fgDim
           font.family: Session.monoFont
-          font.pixelSize: 22
+          font.pixelSize: Config.iconSizeXl
           anchors.verticalCenter: parent.verticalCenter
         }
 
@@ -156,7 +114,7 @@ Card {
           text: "No notifications"
           color: Colours.fgDim
           font.family: Session.sansFont
-          font.pixelSize: 14
+          font.pixelSize: Config.fontSizeLg
           anchors.verticalCenter: parent.verticalCenter
         }
       }
@@ -184,6 +142,17 @@ Card {
         anchors.bottomMargin: parent.hoverInsetY
         spacing: Config.notifSpacing
         model: NotificationService.historyModel
+
+        ScrollBar.vertical: ThinScrollBar { }
+
+        // New cards are inserted at index 0. Follow them when the list is at
+        // the top, but leave the reader's position alone when it is scrolled.
+        Connections {
+          target: NotificationService.historyModel
+          function onCountChanged() {
+            if (notifHistList.atYBeginning) notifHistList.positionViewAtBeginning()
+          }
+        }
 
         delegate: NotificationCard {
           width: notifHistList.width

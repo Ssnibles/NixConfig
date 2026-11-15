@@ -80,11 +80,11 @@ Scope {
         anchors.horizontalCenter: parent.horizontalCenter
 
         add: Transition {
-          NumberAnimation { property: "opacity"; from: 0; duration: 250; easing.type: Easing.OutCubic }
+          NumberAnimation { property: "opacity"; from: 0; duration: Config.notifAnimMs; easing.type: Easing.OutCubic }
         }
 
         move: Transition {
-          NumberAnimation { properties: "x,y"; duration: 250; easing.type: Easing.OutCubic }
+          NumberAnimation { properties: "x,y"; duration: Config.notifAnimMs; easing.type: Easing.OutCubic }
         }
 
         Repeater {

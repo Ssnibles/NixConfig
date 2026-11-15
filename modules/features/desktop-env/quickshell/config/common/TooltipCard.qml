@@ -29,7 +29,7 @@ Card {
         text: root.tooltip ? root.tooltip.icon : ""
         color: root.tooltip ? root.tooltip.iconColour : Colours.fg
         font.family: Session.monoFont
-        font.pixelSize: 19
+        font.pixelSize: Config.iconSizeLg
         anchors.verticalCenter: parent.verticalCenter
       }
 

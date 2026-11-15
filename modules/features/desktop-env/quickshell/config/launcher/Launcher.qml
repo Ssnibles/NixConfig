@@ -14,6 +14,7 @@ Scope {
   id: root
 
   property var allApps: []
+  property var recents: []
   property var results: []
   property int selected: 0
   property string query: ""
@@ -27,7 +28,8 @@ Scope {
       UiState.targetScreen = screen || Quickshell.screens[0]
       root.closeActions()
       root.query = ""
-      root.selected = 0
+      // Re-sort with the latest recents even when the query was already empty.
+      root.updateResults()
       root.refresh()
       UiState.launcherVisible = true
     })
@@ -47,6 +49,37 @@ Scope {
   function close(): void {
     root.closeActions()
     UiState.launcherVisible = false
+  }
+
+  function appKey(item) {
+    if (!item || item.kind === "calc") return ""
+    return item.id || item.file || item.name || ""
+  }
+
+  function loadRecents() {
+    var text = recentsFile.text()
+    if (!text) {
+      root.recents = []
+      return
+    }
+    try {
+      var parsed = JSON.parse(text)
+      root.recents = Array.isArray(parsed)
+        ? parsed.filter(function(key) { return typeof key === "string" && key !== "" })
+        : []
+    } catch (e) {
+      console.warn("launcher: could not read recent apps:", e)
+      root.recents = []
+    }
+  }
+
+  function recordLaunch(item) {
+    var key = root.appKey(item)
+    if (key === "") return
+    var list = root.recents.filter(function(existing) { return existing !== key })
+    list.unshift(key)
+    root.recents = list.slice(0, Config.launcherRecentCount)
+    recentsFile.setText(JSON.stringify(root.recents))
   }
 
   function toggle(): void {
@@ -115,7 +148,10 @@ Scope {
     if (!action) return
 
     if (action.copy) runCopy(action.copy)
-    else if (action.exec) runShell(action.exec, action.terminal)
+    else if (action.exec) {
+      runShell(action.exec, action.terminal)
+      root.recordLaunch(root.actionItem)
+    }
     root.close()
   }
 
@@ -160,6 +196,7 @@ Scope {
       else if (name.indexOf(q) !== -1) score = 50 - name.length
       else if (haystack.indexOf(q) !== -1) score = 10
       if (score < 0) continue
+      var recentIndex = root.recents.indexOf(root.appKey(app))
       out.push({
         kind: "app",
         name: app.name,
@@ -170,7 +207,8 @@ Scope {
         actions: app.actions || [],
         file: app.file || "",
         id: app.id || "",
-        score: score
+        score: score,
+        recent: recentIndex >= 0 ? recentIndex : 9999
       })
     }
 
@@ -182,6 +220,7 @@ Scope {
     }
     appRows.sort(function(a, b) {
       if (a.score !== b.score) return b.score - a.score
+      if (a.recent !== b.recent) return a.recent - b.recent
       return a.name < b.name ? -1 : (a.name > b.name ? 1 : 0)
     })
 
@@ -197,6 +236,7 @@ Scope {
       runCopy(item.name)
     } else if (item.exec) {
       runShell(item.exec, item.terminal)
+      root.recordLaunch(item)
     }
     root.close()
   }
@@ -247,7 +287,21 @@ Scope {
     }
   }
 
-  Component.onCompleted: root.refresh()
+  FileView {
+    id: recentsFile
+    path: Quickshell.statePath("launcher-recents.json")
+    // Read once at start-up, then write the whole list on each launch.
+    blockLoading: true
+    atomicWrites: true
+    onSaveFailed: function(error) {
+      console.warn("launcher: could not save recent apps:", error)
+    }
+  }
+
+  Component.onCompleted: {
+    root.loadRecents()
+    root.refresh()
+  }
 
   Variants {
     model: UiState.launcherVisible && UiState.targetScreen ? [ UiState.targetScreen ] : []
@@ -276,7 +330,7 @@ Scope {
         width: Config.launcherWidth
         height: Config.launcherHeight
         anchors.centerIn: parent
-        cardRadius: Config.commandCentreCardRadius
+        cardRadius: Config.commandCentreRadius
 
         MouseArea {
           anchors.fill: parent
@@ -291,8 +345,8 @@ Scope {
 
           Rectangle {
             Layout.fillWidth: true
-            implicitHeight: 40
-            radius: Config.itemRadiusMd
+            implicitHeight: Config.space2xl
+            radius: height / 2
             color: Colours.bgSubtle
             border.width: Config.borderWidth
             border.color: Colours.border
@@ -307,7 +361,7 @@ Scope {
               selectionColor: Colours.accent
               selectedTextColor: Colours.bg
               font.family: Session.sansFont
-              font.pixelSize: 16
+              font.pixelSize: Config.fontSizeLg
               focus: true
               readOnly: root.actionMenuVisible
               onTextChanged: root.query = text
@@ -356,7 +410,7 @@ Scope {
               text: "Search apps or calculate"
               color: Colours.fgDim
               font.family: Session.sansFont
-              font.pixelSize: 16
+              font.pixelSize: Config.fontSizeLg
             }
           }
 
@@ -366,7 +420,7 @@ Scope {
             text: root.actionItem ? (root.actionItem.kind === "calc" ? "Calculator actions" : "Actions for " + root.actionItem.name) : "Actions"
             color: Colours.fgMid
             font.family: Session.sansFont
-            font.pixelSize: 12
+            font.pixelSize: Config.fontSizeSm
             leftPadding: Config.spaceXs
           }
 
@@ -385,16 +439,7 @@ Scope {
               boundsBehavior: Flickable.StopAtBounds
               onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
 
-              ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
-                width: 6
-
-                contentItem: Rectangle {
-                  implicitWidth: 6
-                  radius: width / 2
-                  color: Colours.fgDim
-                }
-              }
+              ScrollBar.vertical: ThinScrollBar { }
 
               delegate: Rectangle {
                 id: row
@@ -402,20 +447,20 @@ Scope {
                 required property int index
 
                 width: list.width
-                height: row.modelData.kind === "calc" ? (root.results.length === 1 ? list.height : 92) : 44
+                height: row.modelData.kind === "calc" ? (root.results.length === 1 ? list.height : Config.space3xl + Config.iconSizeXl) : Config.space2xl
                 radius: Config.itemRadiusMd
                 color: (index === root.selected && !(row.modelData.kind === "calc" && root.results.length === 1)) ? Colours.bgSubtle : "transparent"
 
                 RowLayout {
                   anchors.fill: parent
-                  anchors.leftMargin: Config.spaceMd
-                  anchors.rightMargin: Config.spaceMd
+                  anchors.leftMargin: Config.spaceLg
+                  anchors.rightMargin: Config.spaceLg
                   spacing: Config.spaceMd
                   visible: row.modelData.kind !== "calc"
 
                   Image {
-                    Layout.preferredWidth: 24
-                    Layout.preferredHeight: 24
+                    Layout.preferredWidth: Config.iconSizeXl
+                    Layout.preferredHeight: Config.iconSizeXl
                     source: {
                       if (!row.modelData.icon) return ""
                       if (row.modelData.icon.charAt(0) === "/") return "file://" + row.modelData.icon
@@ -427,12 +472,12 @@ Scope {
 
                   Text {
                     visible: !row.modelData.icon
-                    Layout.preferredWidth: 24
+                    Layout.preferredWidth: Config.iconSizeXl
                     horizontalAlignment: Text.AlignHCenter
                     text: row.modelData.kind === "calc" ? "=" : "•"
                     color: Colours.accent
                     font.family: Session.monoFont
-                    font.pixelSize: 16
+                    font.pixelSize: Config.iconSizeMd
                   }
 
                   ColumnLayout {
@@ -444,7 +489,7 @@ Scope {
                       text: row.modelData.name
                       color: Colours.fg
                       font.family: Session.sansFont
-                      font.pixelSize: 14
+                      font.pixelSize: Config.fontSizeLg
                       elide: Text.ElideRight
                     }
 
@@ -454,7 +499,7 @@ Scope {
                       text: row.modelData.comment
                       color: Colours.fgDim
                       font.family: Session.sansFont
-                      font.pixelSize: 11
+                      font.pixelSize: Config.fontSizeXs
                       elide: Text.ElideRight
                     }
                   }
@@ -470,7 +515,7 @@ Scope {
                     text: row.modelData.name
                     color: Colours.fg
                     font.family: Session.sansFont
-                    font.pixelSize: root.results.length === 1 ? 44 : 32
+                    font.pixelSize: root.results.length === 1 ? Config.fontSize3xl : Config.fontSize2xl
                     font.weight: Font.DemiBold
                   }
 
@@ -479,7 +524,7 @@ Scope {
                     text: row.modelData.comment
                     color: Colours.fgDim
                     font.family: Session.sansFont
-                    font.pixelSize: 11
+                    font.pixelSize: Config.fontSizeXs
                   }
                 }
 
@@ -503,16 +548,7 @@ Scope {
               boundsBehavior: Flickable.StopAtBounds
               onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
 
-              ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
-                width: 6
-
-                contentItem: Rectangle {
-                  implicitWidth: 6
-                  radius: width / 2
-                  color: Colours.fgDim
-                }
-              }
+              ScrollBar.vertical: ThinScrollBar { }
 
               delegate: Rectangle {
                 id: actionRow
@@ -520,23 +556,23 @@ Scope {
                 required property int index
 
                 width: actionList.width
-                height: 44
+                height: Config.space2xl
                 radius: Config.itemRadiusMd
                 color: index === root.actionSelected ? Colours.bgSubtle : "transparent"
 
                 RowLayout {
                   anchors.fill: parent
-                  anchors.leftMargin: Config.spaceMd
-                  anchors.rightMargin: Config.spaceMd
+                  anchors.leftMargin: Config.spaceLg
+                  anchors.rightMargin: Config.spaceLg
                   spacing: Config.spaceMd
 
                   Text {
-                    Layout.preferredWidth: 16
+                    Layout.preferredWidth: Config.spaceLg
                     horizontalAlignment: Text.AlignHCenter
                     text: "•"
                     color: Colours.accent
                     font.family: Session.monoFont
-                    font.pixelSize: 14
+                    font.pixelSize: Config.fontSizeMd
                   }
 
                   ColumnLayout {
@@ -548,7 +584,7 @@ Scope {
                       text: actionRow.modelData.name
                       color: Colours.fg
                       font.family: Session.sansFont
-                      font.pixelSize: 14
+                      font.pixelSize: Config.fontSizeLg
                       elide: Text.ElideRight
                     }
 
@@ -558,7 +594,7 @@ Scope {
                       text: actionRow.modelData.detail || ""
                       color: Colours.fgDim
                       font.family: Session.sansFont
-                      font.pixelSize: 11
+                      font.pixelSize: Config.fontSizeXs
                       elide: Text.ElideRight
                     }
                   }
@@ -579,7 +615,7 @@ Scope {
               text: "No matches"
               color: Colours.fgDim
               font.family: Session.sansFont
-              font.pixelSize: 12
+              font.pixelSize: Config.fontSizeSm
               horizontalAlignment: Text.AlignHCenter
             }
           }

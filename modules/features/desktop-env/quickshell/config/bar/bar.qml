@@ -58,10 +58,16 @@ Scope {
 
       Item {
         anchors.fill: parent
+        // Keep the 1px separator outside the content area so the pill padding
+        // stays visually even on the side that touches windows.
         anchors.topMargin: root.isHorizontal ? 0 : Config.barMarginTop
-        anchors.bottomMargin: root.isHorizontal ? 0 : Config.barMarginBottom
-        anchors.leftMargin: root.isHorizontal ? Config.barHorizontalMargin : Config.barMarginLeft
-        anchors.rightMargin: root.isHorizontal ? Config.barHorizontalMargin : Config.barMarginRight
+        anchors.bottomMargin: root.isHorizontal ? Config.borderWidth : Config.barMarginBottom
+        anchors.leftMargin: root.isHorizontal
+          ? Config.barHorizontalMargin
+          : Config.barMarginLeft + (root.sideRight ? Config.borderWidth : 0)
+        anchors.rightMargin: root.isHorizontal
+          ? Config.barHorizontalMargin
+          : Config.barMarginRight + (root.sideLeft ? Config.borderWidth : 0)
 
         // Start section: left on the top bar, top on the side bar.
         GridLayout {

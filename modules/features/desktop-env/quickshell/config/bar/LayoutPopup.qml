@@ -12,7 +12,7 @@ Card {
   // all resolve to the same entry.
   readonly property string currentName: WmService.getLayoutInfo(root.currentSymbol).symbol
 
-  width: 210
+  width: Config.space2xl * 5
   height: contentCol.implicitHeight + Config.popupContentMargins * 2
   cardRadius: Config.popupRadius
   cardColour: Colours.bg
@@ -48,7 +48,7 @@ Card {
           text: "MangoWC Window Tiling Mode"
           color: Colours.fgDim
           font.family: Session.sansFont
-          font.pixelSize: 10
+          font.pixelSize: Config.fontSizeXs
         }
       }
     }
@@ -66,7 +66,7 @@ Card {
         readonly property bool isCurrent: layoutOption.modelData.symbol === root.currentName
 
         width: contentCol.width
-        height: 28
+        height: Config.spaceXl + Config.space2xs
         radius: Config.itemRadiusSm
         color: layoutOption.isCurrent
           ? Colours.accent
@@ -107,7 +107,7 @@ Card {
             visible: layoutOption.modelData.key !== ""
             color: layoutOption.isCurrent ? Colours.bgSubtle : Colours.fgDim
             font.family: Session.monoFont
-            font.pixelSize: 10
+            font.pixelSize: Config.fontSizeXs
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
           }

@@ -92,7 +92,7 @@ Scope {
 
       readonly property bool revealing: panel.revealProgress > 0 && !root.closing
       readonly property real targetOpacity: revealing ? panel.revealProgress : 0.0
-      readonly property real slideDir: panel.pos.onTop ? -10 : 10
+      readonly property real slideDir: panel.pos.onTop ? -Config.osdSlideOffset : Config.osdSlideOffset
       readonly property real targetSlide: revealing ? panel.slideDir * (1 - panel.revealProgress) : panel.slideDir
 
       readonly property color activeAccent: {
@@ -138,7 +138,7 @@ Scope {
 
           Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 8
+            Layout.preferredHeight: Config.spaceMd
             Layout.alignment: Qt.AlignVCenter
             radius: Config.itemRadiusXs
             color: Colours.bgSubtle

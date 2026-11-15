@@ -26,7 +26,7 @@ RowLayout {
     text: Utils.formatTime(Math.round(root.position))
     color: Colours.fgDim
     font.family: Session.sansFont
-    font.pixelSize: 12
+    font.pixelSize: Config.fontSizeSm
     Layout.minimumWidth: root.timeLabelWidth
     Layout.preferredWidth: root.timeLabelWidth
     Layout.maximumWidth: root.timeLabelWidth
@@ -47,7 +47,7 @@ RowLayout {
     text: Utils.formatTime(Math.round(root.length))
     color: Colours.fgDim
     font.family: Session.sansFont
-    font.pixelSize: 12
+    font.pixelSize: Config.fontSizeSm
     Layout.minimumWidth: root.timeLabelWidth
     Layout.preferredWidth: root.timeLabelWidth
     Layout.maximumWidth: root.timeLabelWidth
@@ -58,7 +58,7 @@ RowLayout {
     text: "● LIVE"
     color: Colours.red
     font.family: Session.sansFont
-    font.pixelSize: 11
+    font.pixelSize: Config.fontSizeXs
     font.bold: true
     Layout.fillWidth: true
     horizontalAlignment: Text.AlignRight

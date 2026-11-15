@@ -29,6 +29,7 @@ const exported = [
   'formatActiveTitle',
   'volumeIcon',
   'micIcon',
+  'wifiSignalIcon',
   'batteryIcon',
   'findActivePlayer',
   'resolveMprisPlayer',
@@ -37,6 +38,7 @@ const exported = [
   'screenAt',
   'screenByName',
   'getOrdinalDate',
+  'buildMonthGrid',
   'goToSource',
   'cleanMenuText',
   'isTrayItemHidden',
@@ -335,4 +337,71 @@ test('overlayMargins offsets past any visible bar', () => {
   const bottomRight = U.parseOverlayPosition('bottom-right', 'top-right')
   assert.deepEqual({ ...U.overlayMargins(bottomRight, 10, 20, cfg) },
     { top: 0, bottom: 20, left: 0, right: 10 })
+})
+
+test('buildMonthGrid always fills six weeks and marks the current day', () => {
+  // November 2026 starts on a Sunday, so six October days lead the grid.
+  const cells = U.buildMonthGrid(2026, 10, 2026, 10, 15)
+  assert.equal(cells.length, 42)
+  assert.equal(cells[0].day, 26)
+  assert.equal(cells[0].inMonth, false)
+  assert.equal(cells[5].day, 31)
+  assert.equal(cells[5].inMonth, false)
+  assert.equal(cells[6].day, 1)
+  assert.equal(cells[6].inMonth, true)
+  assert.equal(cells[35].day, 30)
+  assert.equal(cells[35].inMonth, true)
+  assert.equal(cells[36].day, 1)
+  assert.equal(cells[36].inMonth, false)
+  assert.equal(cells[41].day, 6)
+  assert.equal(cells[41].inMonth, false)
+  assert.equal(cells.filter((cell) => cell.isCurrent).length, 1)
+  assert.equal(cells[20].day, 15)
+  assert.equal(cells[20].isCurrent, true)
+})
+
+test('buildMonthGrid fills short months with the next month', () => {
+  // September 2026 needs five rows, so the sixth is all October.
+  const cells = U.buildMonthGrid(2026, 8, 2026, 8, 1)
+  assert.equal(cells.length, 42)
+  assert.equal(cells[0].day, 31)
+  assert.equal(cells[0].inMonth, false)
+  assert.equal(cells[1].day, 1)
+  assert.equal(cells[1].inMonth, true)
+  assert.equal(cells[1].isCurrent, true)
+  assert.equal(cells[30].day, 30)
+  assert.equal(cells[30].inMonth, true)
+  assert.equal(cells[31].day, 1)
+  assert.equal(cells[31].inMonth, false)
+  assert.equal(cells[41].day, 11)
+  assert.equal(cells[41].inMonth, false)
+})
+
+test('buildMonthGrid pads a four-row February without changing the height', () => {
+  // February 2027 starts on a Monday and has 28 days.
+  const cells = U.buildMonthGrid(2027, 1, 2027, 1, 1)
+  assert.equal(cells.length, 42)
+  assert.equal(cells[0].day, 1)
+  assert.equal(cells[0].inMonth, true)
+  assert.equal(cells[27].day, 28)
+  assert.equal(cells[27].inMonth, true)
+  assert.equal(cells[28].day, 1)
+  assert.equal(cells[28].inMonth, false)
+  assert.equal(cells[41].day, 14)
+  assert.equal(cells[41].inMonth, false)
+})
+
+test('buildMonthGrid only highlights today in the viewed month', () => {
+  const otherMonth = U.buildMonthGrid(2026, 9, 2026, 10, 15)
+  assert.equal(otherMonth.filter((cell) => cell.isCurrent).length, 0)
+})
+
+test('wifiSignalIcon steps with signal strength', () => {
+  assert.equal(U.wifiSignalIcon(0), '\u{F092E}')
+  assert.equal(U.wifiSignalIcon(0.1), '\u{F092F}')
+  assert.equal(U.wifiSignalIcon(0.25), '\u{F091F}')
+  assert.equal(U.wifiSignalIcon(0.5), '\u{F0922}')
+  assert.equal(U.wifiSignalIcon(0.75), '\u{F0928}')
+  assert.equal(U.wifiSignalIcon(1), '\u{F0928}')
+  assert.equal(U.wifiSignalIcon(undefined), '\u{F092E}')
 })

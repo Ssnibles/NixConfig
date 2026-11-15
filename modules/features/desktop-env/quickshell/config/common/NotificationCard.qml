@@ -77,7 +77,7 @@ Card {
     property: "entryScale"
     from: 0.8
     to: 1.0
-    duration: 250
+    duration: Config.notifAnimMs
     easing.type: Easing.OutBack
   }
 
@@ -117,7 +117,7 @@ Card {
         anchors.centerIn: parent
         text: root.glyph
         color: root.isMedia ? Colours.fgDim : (root.urgency === 2 ? Colours.red : Colours.accent)
-        font.pixelSize: (root.glyph.length === 1) ? 18 : 20
+        font.pixelSize: (root.glyph.length === 1) ? Config.iconSizeLg : Config.iconSizeXl
         font.bold: root.glyph.length === 1
         font.family: (root.glyph.length === 1) ? Session.sansFont : Session.monoFont
         visible: !iconImage.ready
@@ -168,7 +168,7 @@ Card {
         text: root.model.title || ""
         color: root.isMedia ? Colours.teal : (root.urgency === 2 ? Colours.red : Colours.accent)
         font.bold: true
-        font.pixelSize: root.isMedia ? 12 : 13
+        font.pixelSize: Config.fontSizeMd
         font.family: Session.sansFont
         elide: Text.ElideRight
       }
@@ -177,7 +177,7 @@ Card {
         id: timeLabel
         text: root.model.timeStr || ""
         color: Colours.fgDim
-        font.pixelSize: 11
+        font.pixelSize: Config.fontSizeXs
         font.family: Session.sansFont
         visible: text !== ""
       }
@@ -188,7 +188,7 @@ Card {
       width: parent.width
       text: root.model.body || ""
       color: Colours.fg
-      font.pixelSize: 13
+      font.pixelSize: Config.fontSizeMd
       font.family: Session.sansFont
       maximumLineCount: root.isMedia ? 1 : Config.notifMaxLines
       elide: Text.ElideRight
@@ -201,7 +201,7 @@ Card {
       width: parent.width
       text: root.model.subtext || ""
       color: Colours.fgMid
-      font.pixelSize: 12
+      font.pixelSize: Config.fontSizeSm
       font.family: Session.sansFont
       elide: Text.ElideRight
       visible: text !== ""
