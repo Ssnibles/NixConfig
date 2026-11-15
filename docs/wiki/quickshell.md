@@ -29,6 +29,8 @@ modules/features/desktop-env/quickshell/
     │   ├── StatusPill.qml
     │   ├── Divider.qml
     │   ├── IconButton.qml
+    │   ├── MenuFooterButton.qml
+    │   ├── MenuHeader.qml
     │   ├── RoundedImage.qml
     │   ├── CoverArt.qml
     │   ├── SliderControl.qml
@@ -42,6 +44,7 @@ modules/features/desktop-env/quickshell/
     │   ├── BatteryWidget.qml
     │   ├── NetworkWidget.qml
     │   ├── BluetoothWidget.qml
+    │   ├── VolumePill.qml
     │   └── NotificationCard.qml
     ├── services/                 # State singletons and compositor backends
     │   ├── Session.qml           # Compositor, user, host and resolved paths
@@ -77,7 +80,6 @@ modules/features/desktop-env/quickshell/
     │   ├── StatusMenu.qml
     │   ├── SystemTrayWidget.qml
     │   ├── TrayMenu.qml
-    │   ├── VolumeWidget.qml
     │   ├── WindowTitleWidget.qml
     │   └── WorkspacesWidget.qml
     ├── launcher/                 # Application launcher and calculator
@@ -104,8 +106,9 @@ modules/features/desktop-env/quickshell/
     │   ├── LockClock.qml
     │   ├── LockSecondaryScreen.qml
     │   ├── LockStatusCluster.qml
+    │   ├── LockStateRow.qml
     │   ├── HostnamePill.qml
-    │   └── VolumePill.qml
+    │   └── LockMediaRow.qml
     └── osd/
         └── OsdOverlay.qml
 ```
@@ -121,7 +124,7 @@ Settings are split three ways so `Config.qml` stays a flat list of literals:
 ### `Config.qml` (Settings)
 Everything you might want to change: layout dimensions, fonts, timings and options.
 - **Fonts**: `monoFont`, `sansFont`, `serifFont` (from `Colours`, with fallbacks).
-- **Bar**: `barWidth` (42px), `barHeight` (35px), margins, spacing and the `barShow*` widget flags. The network and Bluetooth menus use `statusMenuWidth` (420px) and `statusMenuHeight` (440px).
+- **Bar**: `barWidth` (42px), `barHeight` (35px), margins, spacing and the `barShow*` widget flags. The network and Bluetooth menus use `statusMenuWidth` (460px) and `statusMenuHeight` (520px).
 - **Command Centre**: `commandCentreLayout` (`"sidebar"` or `"bento"`), `commandCentreWidth` (500px), `commandCentreRadius` (26px), the `commandCentreBento*` size options, and `ccShow*` flags. The bento layout is a three-column board: the left card with the clock, status pills, sliders, media player and power; the middle column with the notification history; and the right column with the weather and calendar. The board fills `commandCentreBentoHeight` (880px), clamped to the screen, and the columns share that height so the cards stay roomy. `commandCentreBentoSurface` draws one raised surface behind the cards.
 - **Weather**: `weatherCacheMinutes` (10) and `weatherShowForecast` (true). The weather card fetches from `wttr.in` when it opens or when refreshed manually, then caches for that many minutes; there is no background poll.
 - **Audio and OSD**: step sizes, `osdPosition`, sizes and timeouts.
@@ -197,7 +200,7 @@ Vicinae remains installed and keeps its own keybinds while the built-in launcher
 ## Notification Daemon & Overlay
 
 Quickshell includes a built-in Freedesktop notification daemon replacement:
-- **`NotificationService.qml`**: Listens for DBus notifications (`org.freedesktop.Notifications`) and MPRIS track transitions, retains live `Notification` objects, and manages active toast and history models. Icon, avatar, and glyph resolution lives in `NotificationIcons.qml`. MPRIS track changes are toasted but only kept in history when `Config.notifMediaHistory` is true.
+- **`NotificationService.qml`**: Listens for DBus notifications (`org.freedesktop.Notifications`) and MPRIS track transitions, retains live `Notification` objects, and manages active toast and history models. History is mirrored to `notification-history.json` in the Quickshell state directory, so it survives restarts and reloads; media toasts and actions are not saved. Icon, avatar, and glyph resolution lives in `NotificationIcons.qml`. MPRIS track changes are toasted but only kept in history when `Config.notifMediaHistory` is true.
 - **`NotificationOverlay.qml`**: Renders smooth toast cards on the configured corner of the active monitor.
 - Integrates with system daemons like `journal-error-notify` (notifying on boot failures) and `shikane` (display profile changes).
 
@@ -216,7 +219,7 @@ node --test modules/features/desktop-env/quickshell/tests/*.test.js
 The test runner validates core JavaScript helpers in `Utils.js` inside an isolated Node `vm` context:
 - Two-digit padding (`pad2`) and audio track duration formatting (`formatTime`).
 - Media metadata sanitation (stripping site suffixes and track counters).
-- Application ID normalization (`prettifyAppName`) and window title formatting (`formatActiveTitle`).
+- Application ID normalisation (`prettifyAppName`) and window title formatting (`formatActiveTitle`).
 - Battery icon state mapping (0% through 100%, plugged, charging, discharging).
 - `goToSource` window activation rules and multi-output target screen resolution (`resolveActiveScreen`).
 

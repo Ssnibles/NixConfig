@@ -119,6 +119,7 @@ step for micro gaps. Nested spacing therefore keeps the same visual rhythm.
 | `itemRadiusXs` | `6` | Day cells, sliders, tray buttons |
 | `itemRadiusSm` | `10` | Small pills and menu rows |
 | `itemRadiusMd` | `16` | Cards, popups, inputs and cover art |
+| `scrollBarWidth` | `10` | Overlay scrollbar width; the thumb is a full pill |
 
 The display type steps follow the golden ratio from the body base: `13`, `21`,
 `34`, `55`, `89`. Small labels and timestamps stay compact at `11` and `12`.
@@ -167,7 +168,7 @@ These three are fallbacks: Nix writes the real families into `Colours.qml`, and 
 
 The compositor (`Session.wm`) and everything derived from it (`barType`, `hasTopBar`, `hasLeftBar`, `hasRightBar`) live in `Session`. The `barShow*` flags reach the widgets through their `shown` property, so hiding a widget in the bar leaves the same widget working in the Command Centre and lock screen.
 
-The network and Bluetooth pills open a centred status menu, sized by `statusMenuWidth` (420px) and `statusMenuHeight` (440px). The menu takes keyboard focus for the Wi-Fi password field; Escape or a click outside closes it.
+The network and Bluetooth pills open a centred status menu, sized by `statusMenuWidth` (460px) and `statusMenuHeight` (520px). The menu takes keyboard focus for the Wi-Fi password field; Escape or a click outside closes it.
 
 ### 3.3 Command Centre (`CommandCentre.qml`)
 
@@ -180,12 +181,13 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `commandCentreRadius` | `26` | Panel corner rounding radius |
 | `commandCentreBentoWidth` | `1332` | Bento panel width, clamped to the screen |
 | `commandCentreBentoHeight` | `880` | Bento panel height; the board fills it, clamped to the screen |
-| `commandCentreBentoNotificationWidth` | `360` | Width of the notification column |
+| `commandCentreBentoNotificationWidth` | `432` | Width of the notification column |
 | `commandCentreBentoSideWidth` | `360` | Width of the weather and calendar column |
 | `commandCentreBentoMediaArtSize` | `200` | Artwork edge in the bento now-playing panel |
 | `commandCentreBentoScrim` | `0.55` | Backdrop opacity behind the bento panel |
-| `commandCentreBentoSurface` | `true` | Draw one raised surface behind the bento board so the cards sit on a single panel |
+| `commandCentreBentoSurface` | `false` | Draw one raised surface behind the bento board so the cards sit on a single panel |
 | `weatherCacheMinutes` | `10` | Weather cache lifetime after an on-demand fetch |
+| `weatherLocation` | `""` | Place name or coordinates for the weather card; empty uses the request address |
 | `weatherShowForecast` | `true` | Show the three-day forecast strip in the weather card |
 | `commandCentreClockFormat` | `"HH:mm"` | Header clock format |
 | `commandCentreDateFormat` | `"dddd, MMMM d"` | Header date format |
@@ -366,6 +368,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 #### `WeatherService.qml`
 - **Role**: On-demand weather data from `wttr.in`. No background timer: the command centre asks for a refresh when the weather card opens, and the refresh button forces a fetch.
 - **Caching**: results stay fresh for `Config.weatherCacheMinutes`; reopening the command centre inside that window does not hit the network.
+- **Location**: `Config.weatherLocation` is sent to `wttr.in` as the place to look up, for example `"Christchurch, New Zealand"`. Left empty, wttr.in picks the location from the request address. The card shows the area name wttr.in resolves.
 - **Exposes**: `loading`, `error`, `location`, `temperature`, `feelsLike`, `high`, `low`, `humidity`, `wind`, `code`, `description`, `lastUpdated`, `hasData`, `weatherIcon`, `temperatureText`, `highText`, `lowText`, `feelsLikeText`, `locationText`, `forecast`, `refresh(force)`, `iconFor(code)`.
 
 #### `NetworkService.qml`
@@ -409,6 +412,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 #### `NotificationService.qml`
 - **Role**: Central notification daemon, MPRIS track-toast emitter, and state manager.
 - **Features**: Subscribes to `Quickshell.Services.Notifications`, retains live `Notification` objects while in active or history models, manages auto-dismiss timers and hover pausing, and handles action invocation and sender window focusing. Icon, avatar, and glyph resolution lives in `NotificationIcons.qml`.
+- **Persistence**: history is mirrored to `notification-history.json` under the Quickshell state directory, so it survives restarts and config reloads. Media toasts and notification actions are not saved, because both belong to a live session. `Clear` empties the file too.
 
 #### `Utils.js`
 - **Role**: Shared JavaScript utility library (`.pragma library`).
@@ -426,8 +430,8 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **Layouts**: set `Config.commandCentreLayout` to `"sidebar"` for the edge panel or `"bento"` for a centred widget board. In the bento the left card holds the clock, status pills, system sliders, the now-playing panel and power controls. The middle column is the notification history. The right column stacks the weather card above the calendar. The bento board dims the desktop behind it and is clamped to the screen size.
 - **Now playing**: `MediaCard` draws a horizontal row by default for the bar popover and the sidebar panel. The bento sets `vertical: true` and a larger `artSize`, so the cover sits above the centred title, controls and seek bar in the tall left card.
 - **Keyboard**: Escape closes the panel. Power actions stay click-only to avoid accidental activation.
-- **Screenshot**: the header screenshot button closes the panel and runs the configured screenshot tool.
-- **Board surface**: `Config.commandCentreBentoSurface` (on by default) puts one raised surface behind the whole board with the cards inset on top. Set it to false to let the cards float directly over the dimmed desktop.
+- **Screenshot**: the header screenshot button closes the panel, waits for the fade-out, then runs the configured screenshot tool.
+- **Board surface**: `Config.commandCentreBentoSurface` (off by default) puts one raised surface behind the whole board with the cards inset on top. Set it to true to sit the cards on a single panel.
 - **Bento sizing**: the board fills `commandCentreBentoHeight`, clamped to the screen, and the three columns share that height. The two flexible blocks absorb the slack: the now-playing panel grows in the left card and the calendar grows in the right column, so no card ends with a gap. On a short screen the board falls back to the height its content needs.
 - **Duplication**: the board deliberately avoids second copies of the bar and notification controls. Network, Bluetooth and battery live in `StatusPills`; mute, microphone and Do Not Disturb sit in the sliders and the notification card; the audio mixer leads the sink picker.
 - **Shared sections**: `CommandCentreSliders.qml` and `StatusPills.qml` keep the two layouts identical, so a change to the volume, microphone or brightness controls only happens once.
@@ -467,11 +471,23 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **Role**: 1px horizontal rule used to separate sections.
 
 #### `StatusPill.qml`
-- **Role**: Icon plus optional label inside a `Pill`, with an optional tooltip. Backs the battery, Bluetooth, and network widgets and the lock screen hostname and volume badges, so they share one layout and one tooltip implementation.
-- **Properties**: `icon`, `iconColour`, `iconSize`, `iconFont`, `label`, `showLabel` (defaults to `horizontal`), `labelColour`, `labelSize`, `labelFont`, `labelBold`, `labelMaxWidth`, `rowRotation`, `rowSpacing`, `interactive`, `sharedWindow`, `tooltipEnabled`, `tooltipTitle`, `tooltipDetails`. Set `interactive: false` for read-only badges and `rowRotation: 270` for the vertical side bar.
+- **Role**: Icon plus optional label inside a `Pill`, with an optional tooltip. Backs the battery, Bluetooth, network and volume widgets and the lock screen badges, so they share one layout and one tooltip implementation.
+- **Properties**: `icon`, `iconColour`, `iconSize`, `iconFont`, `label`, `showLabel` (defaults to `horizontal`), `labelColour`, `labelSize`, `labelFont`, `labelBold`, `labelMaxWidth`, `rowRotation`, `rowSpacing`, `interactive`, `sharedWindow`, `showContent` (hides the built-in icon and label row for widgets that draw their own), `tooltipEnabled`, `tooltipTitle`, `tooltipDetails`. Set `interactive: false` for read-only badges and `rowRotation: 270` for the vertical side bar.
 
-#### `HostnamePill.qml` and `VolumePill.qml`
-- **Role**: Read-only lock screen badges built on `StatusPill`, shared by the clustered and split layouts.
+#### `VolumePill.qml`
+- **Role**: Volume badge shared by the bar and the lock screen status cluster. It always shows the percentage; a muted output turns the border, icon and label red and swaps the icon to the mute glyph.
+- **Interaction**: left click mutes, right click opens the mixer, and the wheel adjusts the level. Set `interactive: false` for the read-only lock screen badge.
+- **Orientation**: in the vertical side bar the badge shows a level track above the icon and percentage; on a horizontal bar it is a single row.
+
+#### `HostnamePill.qml`
+- **Role**: Read-only lock screen badge built on `StatusPill`, shared by the clustered and split layouts.
+
+#### `LockStateRow.qml`
+- **Role**: Lock state line shared by the primary and secondary lock layouts. An error wins, then the authenticating message, then the typed-character count, and the colour follows the same order.
+- **Properties**: `errorMessage`, `authenticating`, `typedLength`, `showIcon`, `textSize`.
+
+#### `MenuHeader.qml` and `MenuFooterButton.qml`
+- **Role**: Header (icon, title, optional controls and the close button) and the wide footer button used by the network and Bluetooth status menus. Children declared on `MenuHeader` land between the title and the close button.
 
 #### `ControlSliderRow.qml`
 - **Role**: Icon, slider, and percentage row used by the Command Centre controls.
@@ -523,7 +539,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **Properties**: `value` (0.0–1.0), `fillColour`, `snapPercent`, signal `moved(real value)`. Supports mouse drag and direct click positioning.
 
 #### `ThinScrollBar.qml`
-- **Role**: Thin overlay scrollbar used by the launcher lists and the notification history. Only appears when the content overflows and brightens on hover and drag.
+- **Role**: Rounded overlay scrollbar used by the launcher lists, the status menus and the notification history. Only appears when the content overflows and brightens on hover and drag. Width comes from `Config.scrollBarWidth`; the thumb is a full pill, so it rounds as it thickens. Lists subtract its `gutter` (bar width plus `Config.spaceXs`) from their rows, so selection highlights stop before the bar instead of running underneath it.
 
 #### `CommandCentreButton.qml`
 - **Role**: Quick dashboard trigger button component for status bars.
@@ -561,10 +577,9 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **`LayoutWidget.qml`**: Tiling layout selector connected to `WmService` (auto-shown on MangoWC). The option list lives in `LayoutPopup.qml`.
 - **`SystemTrayWidget.qml`**: StatusNotifierItem (SNI) system tray pill supporting left-click activate, right-click menu (rendered by `TrayMenu.qml`), scroll, and hover tooltips. Automatically hides when no tray items are registered.
 - **`MediaWidget.qml`**: MPRIS playback bar button ingested from `MediaService`.
-- **`VolumeWidget.qml`**: PipeWire volume control widget ingested from `AudioService`.
 - **`NetworkWidget.qml`**: Network connection monitor displaying Wi-Fi SSID and signal strength. Left-click opens the network menu; right-click launches `nmtui`. Set `interactive: false` to render it as a read-only `StatusPill` (used on the lock screen).
 - **`BluetoothWidget.qml`**: Bluetooth adapter status and device indicator. Left-click opens the Bluetooth menu; right-click launches `blueman-manager`.
-- **`StatusMenu.qml`**: Focusable centred overlay host for `NetworkMenu.qml` and `BluetoothMenu.qml`. Escape or a click outside closes it, and the card takes keyboard focus so the Wi-Fi password field works.
+- **`StatusMenu.qml`**: Focusable centred overlay host for `NetworkMenu.qml` and `BluetoothMenu.qml`. Escape or a click outside closes it, and the card takes keyboard focus so the Wi-Fi password field works. Both menus share `MenuHeader.qml` and `MenuFooterButton.qml`.
 - **`NetworkMenu.qml`**: Wi-Fi list showing signal strength, security and connected state. Known or open networks connect on click; a new secured network reveals a password field. The footer opens `nmtui` for anything else.
 - **`BluetoothMenu.qml`**: Paired device list with connect/disconnect, battery level and an adapter power toggle. The footer opens `blueman-manager` for pairing new devices.
 - **`BatteryWidget.qml`**: Laptop battery charge state and status indicator powered by UPower. Auto-hides on desktop systems without batteries. Set `interactive: false` to render it as a read-only `StatusPill` (used on the lock screen).
