@@ -23,6 +23,14 @@ Item {
     onClicked: function(mouse) { mouse.accepted = true }
   }
 
+  // Screenshot tools freeze the screen as soon as they start, so wait for the
+  // panel to finish fading out before taking the shot.
+  Timer {
+    id: screenshotTimer
+    interval: Config.commandCentreCloseDuration + Config.animFastMs
+    onTriggered: SystemService.takeScreenshot()
+  }
+
   // Optional solid board behind the cards. Sized from the grid so it always
   // matches the cards, including when the panel height is clamped.
   Card {
@@ -96,7 +104,7 @@ Item {
               iconColour: Colours.fgDim
               onClicked: {
                 UiState.commandCentreVisible = false
-                SystemService.takeScreenshot()
+                screenshotTimer.restart()
               }
             }
           }
