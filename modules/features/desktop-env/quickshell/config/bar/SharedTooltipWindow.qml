@@ -29,6 +29,18 @@ PanelWindow {
   readonly property bool isOpen: root.shownTip !== null
   readonly property bool hovered: tipLoader.item !== null && cardHover.hovered
 
+  // mapToItem does not notify when a layout moves the target, so the anchor
+  // bindings below visit every ancestor to re-run after the bar reflows.
+  function _anchorDependencies(item) {
+    var offset = 0
+    var node = item
+    while (node) {
+      offset += node.x + node.y
+      node = node.parent
+    }
+    return offset
+  }
+
   onActiveTipChanged: {
     if (activeTip !== null) {
       graceFadeTimer.stop()
@@ -150,12 +162,14 @@ PanelWindow {
 
     readonly property real targetCentreY: {
       if (!src || !src.target) return 0
+      root._anchorDependencies(src.target)
       var p = src.target.mapToItem(null, 0, src.target.height / 2)
       return p ? p.y : 0
     }
 
     readonly property real targetCentreX: {
       if (!src || !src.target) return 0
+      root._anchorDependencies(src.target)
       var p = src.target.mapToItem(null, src.target.width / 2, 0)
       return p ? p.x : 0
     }
