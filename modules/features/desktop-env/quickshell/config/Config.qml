@@ -63,7 +63,7 @@ Singleton {
     // Shared pill, surface and animation tokens
     readonly property int pillHeightHorizontal: 26
     readonly property int pillHeightVertical: 30
-    readonly property int pillPaddingHorizontal: 10
+    readonly property int pillPaddingHorizontal: 12
     readonly property int animFastMs: 100
     readonly property int animNormalMs: 120
     readonly property int animSmoothMs: 150
@@ -339,8 +339,8 @@ Singleton {
     readonly property int osdMarginY: 68
 
     // Network and Bluetooth status menus
-    readonly property int statusMenuWidth: 420
-    readonly property int statusMenuHeight: 440
+    readonly property int statusMenuWidth: 460
+    readonly property int statusMenuHeight: 520
 
     // System tray
     // Case-insensitive list of tray app IDs, titles, or substrings to hide by

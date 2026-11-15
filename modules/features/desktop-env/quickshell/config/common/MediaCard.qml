@@ -108,7 +108,7 @@ Card {
         readonly property bool canSwitch: root.interactive && Config.mediaAllowPlayerSwitch && MediaService.playerCount > 1
         visible: Config.mediaShowPlayerBadge && root.hasPlayer && MediaService.playerName !== ""
         pillHeight: Config.spaceLg + Config.space2xs
-        padding: Config.spaceSm
+        padding: Config.pillPaddingHorizontal
         radius: Config.itemRadiusSm
         baseColour: Colours.bgSubtle
         hoverColour: Colours.bgRaised

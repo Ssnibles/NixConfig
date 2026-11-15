@@ -10,7 +10,7 @@ ColumnLayout {
 
   anchors.fill: parent
   anchors.margins: Config.spaceLg
-  spacing: Config.spaceMd
+  spacing: Config.spaceLg
 
   MenuHeader {
     icon: BluetoothService.btIcon
@@ -46,7 +46,7 @@ ColumnLayout {
       anchors.fill: parent
       visible: count > 0 && BluetoothService.btPowered
       clip: true
-      spacing: Config.space2xs
+      spacing: Config.spaceSm
       model: BluetoothService.btDevices
 
       ScrollBar.vertical: ThinScrollBar { id: deviceBar }
@@ -56,13 +56,13 @@ ColumnLayout {
         required property var modelData
 
         width: deviceList.width - deviceBar.gutter
-        height: Config.space2xl + Config.spaceSm
+        height: Config.space2xl + Config.spaceMd
         radius: Config.itemRadiusSm
         color: rowMouse.containsMouse ? Colours.bgSubtle : "transparent"
 
         RowLayout {
           anchors.fill: parent
-          anchors.leftMargin: Config.spaceMd
+          anchors.leftMargin: Config.spaceLg
           anchors.rightMargin: Config.spaceLg
           spacing: Config.spaceMd
 

@@ -38,7 +38,7 @@ Card {
         Pill {
           id: mutePill
           pillHeight: Config.pillHeightHorizontal
-          padding: Config.spaceSm
+          padding: Config.pillPaddingHorizontal
           baseColour: NotificationService.dnd ? Colours.red : "transparent"
           hoverColour: NotificationService.dnd ? Colours.red : Colours.bgSubtle
           hoverHighlight: true
@@ -73,7 +73,7 @@ Card {
           id: clearPill
           visible: NotificationService.historyModel.count > 0
           pillHeight: Config.pillHeightHorizontal
-          padding: Config.spaceSm
+          padding: Config.pillPaddingHorizontal
           baseColour: "transparent"
           hoverColour: Colours.bgSubtle
           hoverHighlight: true

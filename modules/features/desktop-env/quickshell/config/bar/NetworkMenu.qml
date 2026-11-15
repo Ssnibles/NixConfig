@@ -14,7 +14,7 @@ ColumnLayout {
 
   anchors.fill: parent
   anchors.margins: Config.spaceLg
-  spacing: Config.spaceMd
+  spacing: Config.spaceLg
   focus: true
 
   Component.onCompleted: NetworkService.scanWifi()
@@ -74,7 +74,7 @@ ColumnLayout {
       anchors.fill: parent
       visible: count > 0
       clip: true
-      spacing: Config.space2xs
+      spacing: Config.spaceSm
       model: NetworkService.wifiNetworks
 
       ScrollBar.vertical: ThinScrollBar { id: networkBar }
@@ -84,13 +84,13 @@ ColumnLayout {
         required property var modelData
 
         width: networkList.width - networkBar.gutter
-        height: Config.space2xl + Config.spaceSm
+        height: Config.space2xl + Config.spaceMd
         radius: Config.itemRadiusSm
         color: rowMouse.containsMouse ? Colours.bgSubtle : "transparent"
 
         RowLayout {
           anchors.fill: parent
-          anchors.leftMargin: Config.spaceMd
+          anchors.leftMargin: Config.spaceLg
           anchors.rightMargin: Config.spaceLg
           spacing: Config.spaceMd
 

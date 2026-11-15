@@ -23,7 +23,7 @@ Flow {
 
     visible: Config.ccShowAudioMixer
     pillHeight: Config.pillHeightHorizontal
-    padding: Config.spaceSm
+    padding: Config.pillPaddingHorizontal
     baseColour: "transparent"
     hoverColour: Colours.bgSubtle
     hoverHighlight: true

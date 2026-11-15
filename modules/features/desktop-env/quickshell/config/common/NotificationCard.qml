@@ -219,7 +219,7 @@ Card {
           required property var modelData
           pillHeight: Config.pillHeightHorizontal
           radius: Config.itemRadiusSm
-          padding: Config.spaceMd
+          padding: Config.pillPaddingHorizontal
           baseColour: Colours.bgSubtle
           hoverColour: Colours.bgRaised
           hoverHighlight: true
