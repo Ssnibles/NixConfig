@@ -17,6 +17,10 @@
       enabled = cfg.enable || cfgAlias.enable;
       isDefaultBrowser = cfg.defaultBrowser || cfgAlias.defaultBrowser;
 
+      # NVIDIA needs a different VA-API path. The AMD host keeps the Mesa
+      # defaults, so every NVIDIA-only flag and the wrapper are gated here.
+      isNvidia = config.features.nvidia.enable;
+
       inherit (config.theme.colours)
         bg
         bgRaised
@@ -95,10 +99,16 @@
       # Chromium expects one comma separated feature flag.
       enabledFeatures = [
         "TouchpadOverscrollHistoryNavigation"
-        # VA-API video decode and encode, including NVIDIA.
+        # VA-API video decode and encode.
         "VaapiVideoDecoder"
         "VaapiVideoEncodeAccelerator"
         "OverlayScrollbar"
+      ]
+      ++ lib.optionals isNvidia [
+        # The GL decoder and the NVIDIA VA-API backend replace the generic
+        # VaapiVideoDecoder path on recent Chromium.
+        "AcceleratedVideoDecodeLinuxGL"
+        "VaapiOnNvidiaGPUs"
       ];
 
       disabledFeatures = [
@@ -113,6 +123,10 @@
         "PrivacySandboxSettings4"
         "InterestFeedContentSuggestions"
         "AutofillServerCommunication"
+      ]
+      ++ lib.optionals isNvidia [
+        # Zero-copy is unreliable with NVIDIA's VA-API driver.
+        "AcceleratedVideoDecodeLinuxZeroCopyGL"
       ];
 
       # Flags that match the Firefox settings above. The upstream wrapper adds
@@ -125,9 +139,20 @@
         # GPU acceleration.
         "--ignore-gpu-blocklist"
         "--enable-gpu-rasterization"
-        "--enable-zero-copy"
         "--enable-accelerated-video-decode"
-
+      ]
+      ++ lib.optionals isNvidia [
+        # NVIDIA decodes through ANGLE's GL backend. The explicit platform
+        # avoids falling back to XWayland when --use-gl=angle is set.
+        "--ozone-platform=wayland"
+        "--use-gl=angle"
+        "--use-angle=gl"
+        "--disable-zero-copy"
+      ]
+      ++ lib.optionals (!isNvidia) [
+        "--enable-zero-copy"
+      ]
+      ++ [
         # Disable cosmetic animations.
         "--force-prefers-reduced-motion"
 
@@ -147,6 +172,16 @@
       ];
 
       themeFlags = lib.optionals cfg.enableTheming [ "--load-extension=${themeExtension}" ];
+
+      # The upstream module builds this same wrapper from cfg.package and the
+      # flags below. Reproduce it so helium-nvidia runs the identical binary.
+      heliumWithFlags = cfg.package.override { flags = effectiveFlags; };
+
+      heliumNvidiaLauncher = pkgs.writeShellScriptBin "helium-nvidia" ''
+        export LIBVA_DRIVER_NAME="''${LIBVA_DRIVER_NAME:-nvidia}"
+        export NVD_BACKEND="''${NVD_BACKEND:-direct}"
+        exec ${lib.getExe heliumWithFlags} "$@"
+      '';
 
       effectiveFlags =
         defaultFlags
@@ -490,6 +525,10 @@
             flags = effectiveFlags;
             policies = effectivePolicies;
           };
+
+          # The NVIDIA VA-API driver needs NVD_BACKEND. Keep the flags in one
+          # place and let this wrapper only add the environment.
+          environment.systemPackages = lib.optionals isNvidia [ heliumNvidiaLauncher ];
 
           features.default-apps.browser = lib.mkIf isDefaultBrowser (lib.mkDefault "helium");
         })

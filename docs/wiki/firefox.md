@@ -57,6 +57,7 @@ In addition to Firefox Developer Edition, NixConfig packages the Chromium-based 
 - Packaged from `inputs.helium`.
 - Declarative Chrome Enterprise policies written to `/etc/chromium/policies/managed/helium-nixos.json`.
 - Wayland ozone acceleration injected by the upstream wrapper (`NIXOS_OZONE_WL`), plus GPU/VA-API feature flags and overlay scrollbars.
+- **NVIDIA acceleration**: on hosts with `features.nvidia.enable`, Helium uses ANGLE's GL backend (`--use-gl=angle --use-angle=gl`), `AcceleratedVideoDecodeLinuxGL` and `VaapiOnNvidiaGPUs`, and disables the zero-copy decoder path. A `helium-nvidia` wrapper sets `LIBVA_DRIVER_NAME=nvidia` and `NVD_BACKEND=direct` before launching the same binary. AMD hosts keep Mesa defaults (`VaapiVideoDecoder`, zero-copy), because the NVIDIA env vars and feature names break or do nothing there.
 - **Search**: default engine forced to SearXNG (`search.ssnibles.xyz`), search suggestions disabled.
 - **Privacy/security**: telemetry, studies, Safe Browsing remote checks, Privacy Sandbox, third-party cookies and background networking disabled; HTTPS-only forced; password manager/autofill off (Bitwarden).
 - **Startup**: restore last session, no default-browser prompt, permissions default-deny.

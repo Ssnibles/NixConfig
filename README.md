@@ -256,7 +256,7 @@ For hardware acceleration parameters, Modernz theming, SyncTeX setup, and audio 
 For stylesheet architecture, Sidebery selectors, and browser policies, refer to the **[Firefox & Sidebery Customisation Guide](docs/wiki/firefox.md)**:
 
 - **Firefox Developer Edition**: Browser configuration with FastFox optimisations, declarative `nixos.liveLinks` (`contents = true`) linking `userChrome.css`, `userContent.css`, and `startpage/` without git tree mutation, Sidebery vertical tab bar integration, and an embedded offline startpage WebExtension with Hjem-managed `colours.css`.
-- **Helium Browser**: Chromium-based Helium browser alternative ([`helium/default.nix`](modules/features/apps/helium/default.nix)) mirroring the Firefox theming and behaviour via enterprise policies, force-installed Web Store extensions, a themed startpage, and Wayland ozone acceleration.
+- **Helium Browser**: Chromium-based Helium browser alternative ([`helium/default.nix`](modules/features/apps/helium/default.nix)) mirroring the Firefox theming and behaviour via enterprise policies, force-installed Web Store extensions, a themed startpage, and Wayland ozone acceleration. NVIDIA hosts use an ANGLE GL/VA-API path and the `helium-nvidia` wrapper; AMD hosts keep the Mesa defaults.
 - **Centralised Default Applications**: Single source of truth ([`default-apps.nix`](modules/features/desktop-env/default-apps.nix)) managing systemwide MIME associations and default application preferences.
 
 ### Gaming Suite
