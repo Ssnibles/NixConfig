@@ -36,7 +36,9 @@ Item {
     id: img
     anchors.fill: parent
     asynchronous: true
-    cache: false
+    // Cover art repeats across the bar, popover, bento and lock screen, so the
+    // decoded pixmap is worth keeping. sourceSize keeps each entry small.
+    cache: true
     fillMode: Image.PreserveAspectCrop
     visible: root.ready
     onStatusChanged: if (status === Image.Error) root.sourceError()

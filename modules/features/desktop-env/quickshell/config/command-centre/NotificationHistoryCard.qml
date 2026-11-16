@@ -16,11 +16,11 @@ Card {
 
   ColumnLayout {
     anchors.fill: parent
-    anchors.topMargin: Config.spaceLg
-    anchors.leftMargin: Config.spaceLg
-    anchors.bottomMargin: Config.spaceLg
-    anchors.rightMargin: Config.spaceLg - root.scrollBarInset
-    spacing: Config.spaceMd
+    anchors.topMargin: Config.commandCentreCardPadding
+    anchors.leftMargin: Config.commandCentreCardPadding
+    anchors.bottomMargin: Config.commandCentreCardPadding
+    anchors.rightMargin: Config.commandCentreCardPadding - root.scrollBarInset
+    spacing: Config.commandCentreCardSpacing
 
     RowLayout {
       Layout.fillWidth: true

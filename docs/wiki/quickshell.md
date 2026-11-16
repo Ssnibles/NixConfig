@@ -64,6 +64,7 @@ modules/features/desktop-env/quickshell/
     │   ├── NotificationIcons.qml
     │   ├── ClockService.qml
     │   ├── MediaService.qml
+    │   ├── MediaColours.qml      # Cover-art palette, cached per artwork URL
     │   ├── WeatherService.qml
     │   └── WindowFocuser.qml
     ├── bar/                      # Status bar and bar-only widgets
@@ -97,6 +98,7 @@ modules/features/desktop-env/quickshell/
     │   ├── ControlSliderRow.qml
     │   ├── NotificationHistoryCard.qml
     │   ├── StatusPills.qml
+    │   ├── SystemStatsCard.qml
     │   └── WeatherCard.qml
     ├── notifications/
     │   └── NotificationOverlay.qml
@@ -125,7 +127,7 @@ Settings are split three ways so `Config.qml` stays a flat list of literals:
 Everything you might want to change: layout dimensions, fonts, timings and options.
 - **Fonts**: `monoFont`, `sansFont`, `serifFont` (from `Colours`, with fallbacks).
 - **Bar**: `barWidth` (42px), `barHeight` (35px), margins, spacing and the `barShow*` widget flags. The network and Bluetooth menus use `statusMenuWidth` (460px) and `statusMenuHeight` (520px).
-- **Command Centre**: `commandCentreLayout` (`"sidebar"` or `"bento"`), `commandCentreWidth` (500px), `commandCentreRadius` (26px), the `commandCentreBento*` size options, and `ccShow*` flags. The bento layout is a three-column board: the left card with the clock, status pills, sliders, media player and power; the middle column with the notification history; and the right column with the weather and calendar. The board fills `commandCentreBentoHeight` (880px), clamped to the screen, and the columns share that height so the cards stay roomy. `commandCentreBentoSurface` draws one raised surface behind the cards.
+- **Command Centre**: `commandCentreLayout` (`"sidebar"` or `"bento"`), `commandCentreWidth` (500px), `commandCentreRadius` (26px), the `commandCentreBento*` size options, and `ccShow*` flags. The bento layout is a three-column board: the left card with the clock, status pills, sliders, media player and power; the middle column with the notification history; and the right column with the weather, calendar and system load card. The board takes `commandCentreBentoWidthRatio` (0.7) and `commandCentreBentoHeightRatio` (0.75) of the screen, clamped inwards by the screen margins, and the columns share that height so the cards stay roomy. The notification and weather/calendar columns take `commandCentreBentoNotificationRatio` (0.325) and `commandCentreBentoSideRatio` (0.27) of the board width; the left card takes the rest. Every card uses `commandCentreCardPadding` (26px) for its interior and `commandCentreCardSpacing` (26px) between its blocks, so the board keeps one rhythm. `commandCentreBentoSurface` draws one raised surface behind the cards.
 - **Weather**: `weatherCacheMinutes` (10) and `weatherShowForecast` (true). The weather card fetches from `wttr.in` when it opens or when refreshed manually, then caches for that many minutes; there is no background poll.
 - **Audio and OSD**: step sizes, `osdPosition`, sizes and timeouts.
 - **External commands**: `cmdMixer`, `cmdTerminal`, `cmdClipboard`, power actions.

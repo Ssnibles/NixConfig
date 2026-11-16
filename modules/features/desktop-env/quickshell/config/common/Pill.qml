@@ -12,6 +12,7 @@ Rectangle {
 
   property color baseColour: Colours.bgRaised
   property color hoverColour: Colours.bgSubtle
+  property color borderColour: Colours.border
   property bool hoverHighlight: false
   property color pillColour: (root.hoverHighlight && root.hovered) ? root.hoverColour : root.baseColour
 
@@ -34,7 +35,7 @@ Rectangle {
   antialiasing: true
   clip: true
   border.width: Config.borderWidth
-  border.color: Colours.border
+  border.color: root.borderColour
   scale: (root.clickable && root.pressed) ? 0.97 : 1.0
 
   Behavior on color { ColorAnimation { duration: Config.animNormalMs } }

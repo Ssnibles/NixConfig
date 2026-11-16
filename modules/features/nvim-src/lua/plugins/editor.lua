@@ -253,14 +253,24 @@ if ok_ssh then
 	sshinator.setup({ external_terminal = true, terminal_emulator = "kitty" })
 end
 
-local ok_ind, indentinator = pcall(require, "indentinator")
-if ok_ind then
-	indentinator.setup({
-		enabled = true,
-		indent = { enabled = true, rainbow = { enabled = false } },
-		scope = { treesitter = true },
-	})
-end
+-- indentinator is kept in the config but left unconfigured while
+-- indent-blankline is trialled. Restore this block to switch back.
+-- local ok_ind, indentinator = pcall(require, "indentinator")
+-- if ok_ind then
+-- 	indentinator.setup({
+-- 		enabled = true,
+-- 		indent = { enabled = true, rainbow = { enabled = false } },
+-- 		scope = { treesitter = true },
+-- 	})
+-- end
+
+require("ibl").setup({
+	indent = { char = "│" },
+	scope = { enabled = true, show_start = false, show_end = false },
+	exclude = {
+		filetypes = { "help", "markdown", "markdown.mdx", "typst", "oil", "qf" },
+	},
+})
 
 local ok_zl, zline = pcall(require, "zline")
 if ok_zl then

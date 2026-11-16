@@ -13,6 +13,7 @@ singleton ClockService 1.0 services/ClockService.qml
 HyprlandService 1.0 services/HyprlandService.qml
 MangoService 1.0 services/MangoService.qml
 singleton MediaService 1.0 services/MediaService.qml
+singleton MediaColours 1.0 services/MediaColours.qml
 singleton NetworkService 1.0 services/NetworkService.qml
 NiriService 1.0 services/NiriService.qml
 singleton NotificationIcons 1.0 services/NotificationIcons.qml
@@ -77,6 +78,7 @@ CommandCentreSliders 1.0 command-centre/CommandCentreSliders.qml
 ControlSliderRow 1.0 command-centre/ControlSliderRow.qml
 NotificationHistoryCard 1.0 command-centre/NotificationHistoryCard.qml
 StatusPills 1.0 command-centre/StatusPills.qml
+SystemStatsCard 1.0 command-centre/SystemStatsCard.qml
 WeatherCard 1.0 command-centre/WeatherCard.qml
 
 # notifications

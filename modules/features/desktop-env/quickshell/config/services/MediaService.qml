@@ -59,6 +59,127 @@ Singleton {
     var u = Utils.cleanUrl(root.player ? (root.player.trackArtUrl || "") : "")
     return u.startsWith("/") ? ("file://" + u) : u
   }
+
+  // Local copy of the current artwork, as a file URL. Every surface that shows
+  // the cover and the colour palette read this one file, so a track's art is
+  // fetched once instead of once per consumer. artSource is what the cards
+  // display (falling back to the raw URL if the fetch fails); artFile is the
+  // local copy, and is what the palette reads.
+  property string artSource: ""
+  property string artFile: ""
+  property string _artSourceUrl: ""
+  property var _artFiles: ({})
+  property var _artQueue: []
+  property string _downloadingUrl: ""
+
+  readonly property string artCacheDir: Quickshell.cacheDir + "/media-art"
+
+  onTrackArtUrlChanged: root.refreshArtSource()
+  Component.onCompleted: root.refreshArtSource()
+
+  function refreshArtSource() {
+    var url = root.trackArtUrl
+    if (url === root._artSourceUrl) return
+    root._artSourceUrl = url
+    root.artSource = ""
+    root.artFile = ""
+
+    if (url === "") return
+    if (url.startsWith("file://")) {
+      root.artSource = url
+      root.artFile = url
+      return
+    }
+    if (!url.startsWith("http")) {
+      // Providers such as image://qsimage/ are loadable by Image directly.
+      root.artSource = url
+      return
+    }
+
+    var cached = root._artFiles[url]
+    if (cached && cached.ready) {
+      root.artSource = cached.path
+      root.artFile = cached.path
+      return
+    }
+    if (!cached) {
+      root._artFiles[url] = { path: "file://" + root.artCacheDir + "/" + root.hashUrl(url), ready: false }
+      root.pruneArtFiles()
+    }
+    if (root._artQueue.indexOf(url) === -1) root._artQueue.push(url)
+    root.startArtDownload()
+  }
+
+  // Downloads run one at a time so a track change mid-fetch cannot mix up which
+  // file belongs to which artwork.
+  function startArtDownload() {
+    if (root._downloadingUrl !== "" || root._artQueue.length === 0) return
+    var url = root._artQueue.shift()
+    var entry = root._artFiles[url]
+    if (!entry || entry.ready) {
+      root.startArtDownload()
+      return
+    }
+    root._downloadingUrl = url
+    artDownloadProc.exec([
+      "sh", "-c",
+      "mkdir -p \"$1\" && curl -fsSL --max-time 20 --max-filesize 4000000 -o \"$2\" \"$3\"",
+      "media-art", root.artCacheDir, entry.path.replace("file://", ""), url
+    ])
+  }
+
+  function dropArtFile(url) {
+    var entry = root._artFiles[url]
+    if (!entry) return
+    delete root._artFiles[url]
+    artCleanProc.exec(["rm", "-f", entry.path.replace("file://", "")])
+  }
+
+  function pruneArtFiles() {
+    var keys = Object.keys(root._artFiles)
+    if (keys.length <= 24) return
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i] === root._artSourceUrl || keys[i] === root._downloadingUrl) continue
+      root.dropArtFile(keys[i])
+      return
+    }
+  }
+
+  function hashUrl(url) {
+    var hash = 0
+    var hash2 = 7
+    for (var i = 0; i < url.length; i++) {
+      hash = (hash * 31 + url.charCodeAt(i)) | 0
+      hash2 = (hash2 * 17 + url.charCodeAt(i)) | 0
+    }
+    return Math.abs(hash).toString(16) + Math.abs(hash2).toString(16)
+  }
+
+  Process {
+    id: artDownloadProc
+
+    onExited: function(exitCode) {
+      var url = root._downloadingUrl
+      root._downloadingUrl = ""
+      var entry = root._artFiles[url]
+      if (entry) {
+        if (exitCode === 0) {
+          entry.ready = true
+          root.artFile = entry.path
+          if (url === root._artSourceUrl) root.artSource = entry.path
+        } else {
+          root.dropArtFile(url)
+          // Fall back to the raw URL so the cards still show the cover.
+          if (url === root._artSourceUrl) root.artSource = root.trackArtUrl
+        }
+      }
+      root.startArtDownload()
+    }
+  }
+
+  Process {
+    id: artCleanProc
+  }
   readonly property bool canSeek: !!(root.player && root.player.canSeek)
   readonly property bool canGoNext: !!(root.player && root.player.canGoNext)
   readonly property bool canGoPrevious: !!(root.player && root.player.canGoPrevious)
@@ -112,7 +233,19 @@ Singleton {
   // Live streams report no `mpris:length`; Quickshell surfaces that as
   // lengthSupported == false (and its `length` getter falls back to `position`).
   // Such a track must never be rendered as a seekable bar with a bogus total.
-  readonly property bool isLive: root.hasPlayer && !root.player.lengthSupported
+  // lengthSupported also drops out for a moment while a new track's metadata
+  // arrives, so a track only counts as live once it has stayed unsupported.
+  property bool _lengthUnsupported: false
+  readonly property bool isLive: root.hasPlayer && root._lengthUnsupported
+
+  function refreshLengthSupport() {
+    if (!root.player || root.player.lengthSupported) {
+      liveSettleTimer.stop()
+      root._lengthUnsupported = false
+    } else if (!liveSettleTimer.running) {
+      liveSettleTimer.restart()
+    }
+  }
 
   readonly property int tickInterval: root.isSeekbarConsumerActive ? 400 : 1000
 
@@ -188,6 +321,7 @@ Singleton {
     seekDebounceTimer.stop()
     seekSettleTimer.stop()
     trackSettleTimer.stop()
+    root.refreshLengthSupport()
     root.sample()
   }
 
@@ -202,7 +336,10 @@ Singleton {
     function onPositionChanged() { root.sample() }
     function onPositionSupportedChanged() { root.sample() }
     function onLengthChanged() { root.sample() }
-    function onLengthSupportedChanged() { root.sample() }
+    function onLengthSupportedChanged() {
+      root.refreshLengthSupport()
+      root.sample()
+    }
     function onTrackChanged() {
       // trackChanged fires before the new metadata/track id is applied, so
       // sampling here would resurrect the previous track's position. Clear it
@@ -213,6 +350,7 @@ Singleton {
       root.estimatedPosition = 0
       root.progress = 0
       trackSettleTimer.restart()
+      root.refreshLengthSupport()
     }
     function onIsPlayingChanged() { root.sample() }
   }
@@ -236,6 +374,15 @@ Singleton {
       root._trackSettling = false
       root.sample()
     }
+  }
+
+  // Releases the live decision only after a track has kept reporting no length,
+  // so a track change does not flash the seek bar out and back.
+  Timer {
+    id: liveSettleTimer
+    interval: 1200
+    repeat: false
+    onTriggered: root._lengthUnsupported = root.player ? !root.player.lengthSupported : false
   }
 
   // Fallback release for a seek that the player never confirms near the target

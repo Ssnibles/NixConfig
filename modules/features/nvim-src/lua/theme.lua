@@ -337,10 +337,9 @@ function M.setup()
 	hl("StlFT", { fg = c.comment })
 	hl("StlPos", { fg = blend(c.comment, c.bg, 0.6) })
 
-	-- Indentinator
-	hl("IndentinatorBar", { fg = indent })
-	hl("IndentinatorScopeBar", { fg = blend(c.blue, c.comment, 0.3) })
-	hl("IndentinatorScopeUnderline", { sp = blend(c.blue, c.comment, 0.45), underline = true })
+	-- Indent guides (indent-blankline)
+	hl("IblIndent", { fg = indent })
+	hl("IblScope", { fg = blend(c.blue, c.comment, 0.3) })
 
 	-- mini.base16 clears this, so set it last so plugins can detect the scheme.
 	vim.g.colors_name = "minischeme"

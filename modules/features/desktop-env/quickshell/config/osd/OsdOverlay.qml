@@ -149,10 +149,15 @@ Scope {
               anchors.left: parent.left
               anchors.top: parent.top
               anchors.bottom: parent.bottom
-              width: Math.round(parent.width * Math.max(0, Math.min(1.0, SystemService.osdValue)))
+              // Bound first, animated after: the bar appears at its position
+              // instead of growing from zero when the OSD opens.
+              property real shownValue: Math.max(0, Math.min(1.0, SystemService.osdValue))
+              Behavior on shownValue {
+                NumberAnimation { duration: Config.animNormalMs; easing.type: Easing.OutCubic }
+              }
+              width: Math.round(parent.width * shownValue)
               radius: Config.itemRadiusXs
               color: panel.activeAccent
-              Behavior on width { NumberAnimation { duration: Config.animNormalMs; easing.type: Easing.OutCubic } }
               Behavior on color { ColorAnimation { duration: Config.animFastMs } }
             }
           }

@@ -179,13 +179,15 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `commandCentreLayout` | `"bento"` | Layout: `"bento"` centred widget board or `"sidebar"` edge panel |
 | `commandCentreWidth` | `500` | Width of slide-out panel (px) |
 | `commandCentreRadius` | `26` | Panel corner rounding radius |
-| `commandCentreBentoWidth` | `1332` | Bento panel width, clamped to the screen |
-| `commandCentreBentoHeight` | `880` | Bento panel height; the board fills it, clamped to the screen |
-| `commandCentreBentoNotificationWidth` | `432` | Width of the notification column |
-| `commandCentreBentoSideWidth` | `360` | Width of the weather and calendar column |
-| `commandCentreBentoMediaArtSize` | `200` | Artwork edge in the bento now-playing panel |
+| `commandCentreBentoWidthRatio` | `0.7` | Bento panel width as a fraction of the screen width |
+| `commandCentreBentoHeightRatio` | `0.75` | Bento panel height as a fraction of the screen height; the board fills it |
+| `commandCentreBentoNotificationRatio` | `0.325` | Notification column width as a fraction of the board width |
+| `commandCentreBentoSideRatio` | `0.27` | Weather and calendar column width as a fraction of the board width |
 | `commandCentreBentoScrim` | `0.55` | Backdrop opacity behind the bento panel |
 | `commandCentreBentoSurface` | `false` | Draw one raised surface behind the bento board so the cards sit on a single panel |
+| `commandCentreCardPadding` | `26` | Interior padding shared by every command centre card |
+| `commandCentreCardSpacing` | `26` | Gap between the blocks inside each command centre card |
+| `systemStatsInterval` | `2000` | CPU and memory sample interval for the bento system card (ms) |
 | `weatherCacheMinutes` | `10` | Weather cache lifetime after an on-demand fetch |
 | `weatherLocation` | `""` | Place name or coordinates for the weather card; empty uses the request address |
 | `weatherShowForecast` | `true` | Show the three-day forecast strip in the weather card |
@@ -365,6 +367,18 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **Role**: `brightnessctl` and sysfs backlight control. Emits `osdRequested()` when the level changes.
 - **Exposes**: `brightness`, `brightnessAvailable`, `brightnessPercent`, `refreshBrightness(notifyOsd)`, `setBrightness(val)`, `stepBrightness(dir)`.
 
+#### `MediaColours.qml`
+- **Role**: `pragma Singleton` pulling a palette from the current cover art with Quickshell's `ColorQuantizer`, so the bento media card can tint its text, play button and seek bar from the artwork.
+- **How**: the quantiser runs on a 32px rescale of `MediaService.artFile` on Quickshell's thread pool, at depth 4 (16 colours). The dominant coloured entry becomes an accent at a fixed lightness, with tinted text and a dark on-accent colour. Text and detail colours carry a light tint of the cover hue, since the scrim always leaves a mid-to-dark background under them. Grey results are ignored so the theme accent stays.
+- **Shared art**: it reads the local file `MediaService` already cached for the cards (`artFile`), so the artwork is fetched once per track for the whole shell rather than once for display and again for the palette.
+- **Caching**: palettes are cached in memory per artwork URL (up to 24), so revisiting a track reuses the result. A track change keeps the previous palette on screen until the new one resolves, so the card never flashes back to the theme colours; when playback stops and there is no artwork left, the palette clears to the theme.
+- **Exposes**: `artUrl`, `artFile`, `palette` (`accent`, `onAccent`, `text`, `detail`, `track`, `trackStrong`, `pill`, `pillStrong`), `fallback`, `request()`, `store(url, colours)`. `track` and `trackStrong` are opaque tints of the cover hue for inactive tracks, pale over a light cover and dark over a dark one; `pill` and `pillStrong` stay dark for chip surfaces. Text and detail stay light with a low tint, since the scrim always darkens the artwork under them.
+
+#### Media artwork cache (`MediaService.artSource`)
+- **Role**: One local copy of the current cover per track, shared by every surface that displays it (bar popover, bento cover card, lock screen) and by `MediaColours`.
+- **How**: `http(s)` artwork is downloaded with `curl` into `Quickshell.cacheDir/media-art` as soon as the track changes, so opening a surface does not wait on the network. Local `file://` artwork is used in place, and provider URLs such as `image://qsimage/` are passed through. Downloads are queued one at a time so a mid-track change cannot mix up files, and a failed fetch falls back to the raw URL so the cards still show the cover.
+- **Caching**: up to 24 files are kept, keyed by URL hash, with the oldest dropped when the limit is passed.
+
 #### `WeatherService.qml`
 - **Role**: On-demand weather data from `wttr.in`. No background timer: the command centre asks for a refresh when the weather card opens, and the refresh button forces a fetch.
 - **Caching**: results stay fresh for `Config.weatherCacheMinutes`; reopening the command centre inside that window does not hit the network.
@@ -427,18 +441,18 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **IPC Target**: `"command-centre"` (functions: `toggle()`, `open()`, `close()`).
 - **Multi-Monitor Cursor Tracking**: Delegates active-screen detection to `WmService.resolveTargetScreen(...)` and opens on that specific monitor while rendering a transparent dismiss overlay across all other screens.
 - **Structure**: `CommandCentre.qml` owns the per-screen overlay windows, the slide and fade animation, and the IPC surface. The panel contents live in `CommandCentreCard.qml` (sidebar) or `CommandCentreBento.qml` (centred widget board): the sidebar clock and date (`ClockService`), `StatusPills` (Wi-Fi, Ethernet, Battery, Bluetooth), the shared `CommandCentreSliders` (`ControlSliderRow` bound to `AudioService` and `BrightnessService` plus the `AudioSinkPicker` output chips), the full MPRIS `MediaCard`, the `NotificationHistoryCard` list (`NotificationService`), and `PowerButtons`.
-- **Layouts**: set `Config.commandCentreLayout` to `"sidebar"` for the edge panel or `"bento"` for a centred widget board. In the bento the left card holds the clock, status pills, system sliders, the now-playing panel and power controls. The middle column is the notification history. The right column stacks the weather card above the calendar. The bento board dims the desktop behind it and is clamped to the screen size.
-- **Now playing**: `MediaCard` draws a horizontal row by default for the bar popover and the sidebar panel. The bento sets `vertical: true` and a larger `artSize`, so the cover sits above the centred title, controls and seek bar in the tall left card.
+- **Layouts**: set `Config.commandCentreLayout` to `"sidebar"` for the edge panel or `"bento"` for a centred widget board. In the bento the left card holds the clock, status pills, system sliders, the now-playing panel and power controls. The middle column is the notification history. The right column stacks the weather card above the calendar. The bento board dims the desktop behind it and is sized as a fraction of the screen.
+- **Now playing**: `MediaCard` draws a horizontal row by default for the bar popover and the sidebar panel. The bento sets `vertical: true` and `coverCard: true`, so the cover fills the whole card with a dimmed scrim behind the centred title, controls and seek bar.
 - **Keyboard**: Escape closes the panel. Power actions stay click-only to avoid accidental activation.
 - **Screenshot**: the header screenshot button closes the panel, waits for the fade-out, then runs the configured screenshot tool.
 - **Board surface**: `Config.commandCentreBentoSurface` (off by default) puts one raised surface behind the whole board with the cards inset on top. Set it to true to sit the cards on a single panel.
-- **Bento sizing**: the board fills `commandCentreBentoHeight`, clamped to the screen, and the three columns share that height. The two flexible blocks absorb the slack: the now-playing panel grows in the left card and the calendar grows in the right column, so no card ends with a gap. On a short screen the board falls back to the height its content needs.
+- **Bento sizing**: the board takes `commandCentreBentoWidthRatio` and `commandCentreBentoHeightRatio` of the screen, so it keeps the same proportions on a laptop and an external monitor. The screen margins clamp it inwards. The three columns share the height, and the notification and weather/calendar columns take their `commandCentreBento*Ratio` share of the board width; the left card gets the rest. The now-playing panel grows in the left card. The calendar cells take their size from the side column width, with side padding to match the weather card above, and are capped by the column height so the calendar and the system card below it fit on a short screen. The system card fills whatever height is left, so the column ends on the board's bottom edge. Every card uses `commandCentreCardPadding` and `commandCentreCardSpacing` for its interior, so the weather, notification, calendar, media and system cards share one rhythm. On a short screen the board falls back to the height its content needs.
 - **Duplication**: the board deliberately avoids second copies of the bar and notification controls. Network, Bluetooth and battery live in `StatusPills`; mute, microphone and Do Not Disturb sit in the sliders and the notification card; the audio mixer leads the sink picker.
 - **Shared sections**: `CommandCentreSliders.qml` and `StatusPills.qml` keep the two layouts identical, so a change to the volume, microphone or brightness controls only happens once.
 
 #### `OsdOverlay.qml`
 - **Role**: Floating bottom-centre On-Screen Display pill driven by `SystemService`.
-- **Features**: Automatically pops up on the active monitor when output volume, mute, microphone mute/volume, or screen brightness changes (suppressed while `CommandCentre` is open).
+- **Features**: Automatically pops up on the active monitor when output volume, mute, microphone mute/volume, or screen brightness changes (suppressed while `CommandCentre` is open). The value bar is bound first and animated after, so it appears at its level instead of growing from zero on every popup.
 
 #### `LockScreen.qml`
 - **Role**: Wayland session screen locker built on `WlSessionLock` and `WlSessionLockSurface`.
@@ -465,7 +479,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### `Pill.qml`
 - **Role**: Standardised rounded pill container for bar widgets and inline action pills.
-- **Properties**: `horizontal`, `padding`, `pillHeight`, `baseColour`, `hoverColour`, `hoverHighlight`, `pillColour`, `clickable`, `acceptedButtons`, `shown`, `hovered`, `radius`; signals `clicked(var mouse)`, `wheel(var wheel)`. Includes built-in hover/border colour transitions, auto-sizing, and optional pointer click/scroll handling. `shown` is the visibility gate the bar uses to hide a widget without overriding the widget's own visibility rules.
+- **Properties**: `horizontal`, `padding`, `pillHeight`, `baseColour`, `hoverColour`, `borderColour`, `hoverHighlight`, `pillColour`, `clickable`, `acceptedButtons`, `shown`, `hovered`, `radius`; signals `clicked(var mouse)`, `wheel(var wheel)`. Includes built-in hover/border colour transitions, auto-sizing, and optional pointer click/scroll handling. `shown` is the visibility gate the bar uses to hide a widget without overriding the widget's own visibility rules.
 
 #### `Divider.qml`
 - **Role**: 1px horizontal rule used to separate sections.
@@ -491,7 +505,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### `ControlSliderRow.qml`
 - **Role**: Icon, slider, and percentage row used by the Command Centre controls.
-- **Properties**: `icon`, `alert`, `accent`, `iconClickable`, `sliderValue`, `percentText`; signals `iconClicked()`, `sliderMoved(real value)`.
+- **Properties**: `icon`, `alert`, `accent`, `iconClickable`, `sliderValue`, `sliderStyle`, `percentText`; signals `iconClicked()`, `sliderMoved(real value)`.
 
 #### `CommandCentreSliders.qml`
 - **Role**: Output volume, sink switcher, microphone and brightness block shared by the sidebar and bento layouts. Owns the `"smart"` microphone visibility rule and the brightness availability check.
@@ -508,6 +522,11 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### `NotificationHistoryCard.qml`
 - **Role**: Notification history list, mute toggle, and clear button used by the Command Centre.
+
+#### `SystemStatsCard.qml`
+- **Role**: CPU and memory load card at the foot of the bento side column, below the calendar. Each reading is a label, a percentage and a read-only `SliderControl` in the `"ticks"` style, used as a small gauge.
+- **Sampling**: runs `cat /proc/stat` and `cat /proc/meminfo` every `Config.systemStatsInterval` ms while the card exists, which is only while the command centre is open. CPU is the busy share of the counters since the previous sample; memory is `MemTotal` minus `MemAvailable`.
+- **Sizing**: `Layout.fillHeight` in the side column, so it takes whatever height the weather and calendar leave and the column still ends on the board's bottom edge.
 
 #### `WeatherCard.qml`
 - **Role**: Weather card for the bento Command Centre. Uses `WeatherService`, fetches on open, caches for `Config.weatherCacheMinutes`, and offers a manual refresh button. An icon and temperature sit above the description and location, then a divider, then the three-day forecast strip when `Config.weatherShowForecast` is enabled, then a feels-like line. Its height balances the calendar card below it.
@@ -536,7 +555,8 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### `SliderControl.qml`
 - **Role**: Reusable interactive horizontal range slider.
-- **Properties**: `value` (0.0–1.0), `fillColour`, `snapPercent`, signal `moved(real value)`. Supports mouse drag and direct click positioning.
+- **Properties**: `value` (0.0–1.0), `fillColour`, `trackColour`, `snapPercent`, `style`, `trackAreaHeight`, `animated`, signal `moved(real value)`. Supports mouse drag and direct click positioning. `trackColour` colours the quiet part of the track, so a cover card can tint it. `trackAreaHeight` shrinks the band the track is drawn in, for compact gauges. Sliding parts are seeded from the value at creation, so a freshly opened panel shows them in place and only later changes animate. `animated` turns the moving track off: the wavy style lies flat and the shimmer stops.
+- **Styles**: `style` picks the track per instance: `"solid"` (default), `"gradient"` (accent lightening to the right), `"segmented"` (dashes), `"ticks"` (a thin upright tick per step, like a level meter), `"hairline"` (a 2px line), `"wavy"` (a Material expressive squiggle on a `Canvas`, travelling one wavelength per cycle and ending in a rounded handle) and `"shimmer"` (a light band sweeping across the filled part). The wavy and shimmer tracks are the only animated ones, and both stop when the slider is hidden. Set the style at each call site rather than globally, so a seek bar can wave while a volume slider stays solid.
 
 #### `ThinScrollBar.qml`
 - **Role**: Rounded overlay scrollbar used by the launcher lists, the status menus and the notification history. Only appears when the content overflows and brightens on hover and drag. Width comes from `Config.scrollBarWidth`; the thumb is a full pill, so it rounds as it thickens. Lists subtract its `gutter` (bar width plus `Config.spaceXs`) from their rows, so selection highlights stop before the bar instead of running underneath it.
@@ -547,23 +567,24 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### `MediaCard.qml`
 - **Role**: Shared MPRIS media card used by the Command Centre, the bar media popover and the lock screen.
-- **Properties**: `showWhenIdle`, `seekable`, `interactive`, `cardColour`, `cardRadius`. Renders album art (with fallback), track/artist text, interactive multi-player switcher pill (`MediaService.cyclePlayer`), `PlaybackControls` and `MediaProgressRow`.
+- **Properties**: `showWhenIdle`, `seekable`, `interactive`, `cardColour`, `cardRadius`, `contentPadding`, `coverCard`. Renders album art (with fallback), track/artist text, interactive multi-player switcher pill (`MediaService.cyclePlayer`), `PlaybackControls` and `MediaProgressRow`.
+- **Cover card**: with `coverCard` on, the artwork fills the card behind the content, masked to the card corners, with a vertical scrim so the text and controls stay readable. The content sits at the foot of the card with generous gaps, leaving the artwork the upper part, and the playback buttons scale up by half again. Title, artist, seek bar, time labels, skip-button hover and the player badge take their colours from `MediaColours`, and the badge moves to the top corner of the card; the play button is filled with the artwork accent and the inactive track and badge surface use an opaque tint of the cover hue. The seek bar stays visible whenever the card is, so a track change does not collapse the layout while the new length arrives. The bento uses it, since its media card is roughly square; the popover and sidebar keep the row layout.
 
 #### `PlaybackControls.qml`
 - **Role**: Reusable previous / play-pause / next button cluster.
-- **Properties**: `canPrevious`, `canNext`, `isPlaying`, `uiFont`; signals `previousClicked`, `playPauseClicked`, `nextClicked`.
+- **Properties**: `canPrevious`, `canNext`, `isPlaying`, `uiFont`, `buttonScale`, `accentColour`, `onAccentColour`, `sideIconColour`, `sideHoverColour`, `sideHoverIconColour`; signals `previousClicked`, `playPauseClicked`, `nextClicked`. `buttonScale` grows the whole cluster, used by the bento cover card. `accentColour` fills the play button and `onAccentColour` is its icon colour; a transparent accent keeps the neutral look. The play button keeps those colours on hover and only scales up. The skip buttons take `sideIconColour` and a tinted hover from the cover card, and their idle background is that tint at zero alpha so the fade in never passes through transparent black.
 
 #### `MediaProgressRow.qml`
 - **Role**: Reusable elapsed-time + seek bar + total-time row. Renders a `● LIVE` label instead of the seek bar when `live` is set (streams with no finite length).
-- **Properties**: `position`, `length`, `progress`, `seekable`, `live`; signal `seekRequested(real progress)`.
+- **Properties**: `position`, `length`, `progress`, `seekable`, `live`, `playing`, `sliderStyle`, `fillColour`, `trackColour`, `labelColour`; signal `seekRequested(real progress)`. `sliderStyle` defaults to `"wavy"`, so the seek bar reads as an audio wave; pass `"solid"` anywhere it should stay flat. `playing` drives the wave: paused media lays it flat and stops it. `fillColour`, `trackColour` and `labelColour` default to the theme colours; the cover card tints them from the artwork.
 
 #### `PowerButtons.qml`
 - **Role**: Shared system power-action row (Lock / Sleep / Reboot / Power).
 - **Properties**: `showLock`, `buttonRadius`; signal `activated()`.
 
 #### `RoundedImage.qml`
-- **Role**: Async image with rounded-corner masking.
-- **Properties**: `source`, `sourceSize`, `radius`; exposes `ready` and a `sourceError()` signal for fallback chains.
+- **Role**: Async image with rounded-corner masking, used for cover art.
+- **Properties**: `source`, `sourceSize`, `radius`; exposes `ready` and a `sourceError()` signal for fallback chains. Decoded pixmaps are cached and every caller sets `sourceSize`, so a cover is not kept at full resolution and repeats across the bar, popover, bento and lock screen reuse one decode.
 
 #### `CoverArt.qml`
 - **Role**: Rounded track artwork with a glyph fallback, shared by `MediaCard` and `LockMediaRow`.
@@ -571,7 +592,7 @@ Nothing here is configuration; it all resets when the shell restarts.
 
 #### Standard Bar Widgets
 - **`ClockWidget.qml`**: Time/date stack ingested from `ClockService` with click-to-popup calendar (`CalendarPopup.qml`).
-- **`CalendarPopup.qml`**: Month calendar with previous/next/current controls. Used by the clock popup and as a full-size card in the bento Command Centre; `cellSize`, `cellSpacing`, `cellFontSize`, `headerFontSize` and `contentSpacing` control the size. It always draws six week rows, filling the leading and trailing cells with the neighbouring month's days, so its height stays the same in every month.
+- **`CalendarPopup.qml`**: Month calendar with previous/next/current controls. Used by the clock popup and as a full-size card in the bento Command Centre; `cellSize`, `cellSpacing`, `cellFontSize`, `headerFontSize`, `contentSpacing` and `contentPadding` control the size, and the header controls follow `headerFontSize`. `fittedCellSize(availableWidth, availableHeight)` returns the largest square cell that fits a card of that size, which is how the bento shares its column with the weather and system cards. Today is marked with accent colour, bold and italic text rather than a filled cell. It always draws six week rows, filling the leading and trailing cells with the neighbouring month's days, so its height stays the same in every month.
 - **`WindowTitleWidget.qml`**: Active window title ingested from `WmService`.
 - **`WorkspacesWidget.qml`**: Interactive workspace indicators connected to `WmService`.
 - **`LayoutWidget.qml`**: Tiling layout selector connected to `WmService` (auto-shown on MangoWC). The option list lives in `LayoutPopup.qml`.

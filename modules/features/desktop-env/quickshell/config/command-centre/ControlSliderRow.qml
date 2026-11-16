@@ -18,6 +18,8 @@ RowLayout {
   property bool iconClickable: false
   signal iconClicked()
   property real sliderValue: 0
+  // Track style passed to the slider; solid unless a row asks otherwise.
+  property string sliderStyle: "solid"
   signal sliderMoved(real value)
   property string percentText: ""
 
@@ -44,6 +46,7 @@ RowLayout {
     Layout.alignment: Qt.AlignVCenter
     value: rowRoot.sliderValue
     fillColour: rowRoot.sliderFillColour
+    style: rowRoot.sliderStyle
     snapPercent: 5
     onMoved: function(v) { rowRoot.sliderMoved(v) }
   }

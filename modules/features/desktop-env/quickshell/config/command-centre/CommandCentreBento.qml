@@ -16,6 +16,20 @@ Item {
   // configured board size.
   implicitHeight: board.implicitHeight + root.boardPadding * 2
 
+  // Column widths follow the board width so the board keeps its proportions on
+  // any screen. The main column takes what is left after these and the gaps.
+  readonly property real notificationWidth: Math.round(board.width * Config.commandCentreBentoNotificationRatio)
+  readonly property real sideWidth: Math.round(board.width * Config.commandCentreBentoSideRatio)
+
+  // The right column stacks the weather card, the calendar and the system card.
+  // The calendar sizes its own cells to fit the space left between them.
+  readonly property int calendarCellSize: calendar.fittedCellSize(
+    root.sideWidth,
+    root.height - weatherCard.implicitHeight - Config.spaceXl * 2 - root.statsFloorHeight
+  )
+  // Height kept for the system card before the calendar takes its share.
+  readonly property int statsFloorHeight: Config.space3xl * 2
+
   // Swallow clicks in the gaps between cards so they cannot reach the dismiss
   // backdrop. The cards themselves sit above this and handle their own input.
   MouseArea {
@@ -60,17 +74,17 @@ Item {
       Layout.column: 0
       Layout.fillWidth: true
       Layout.fillHeight: true
-      // The fixed columns take their configured widths; the main column gets
-      // what is left after the board padding and the two gaps.
-      Layout.preferredWidth: Config.commandCentreBentoWidth - Config.commandCentreBentoNotificationWidth - Config.commandCentreBentoSideWidth - Config.spaceXl * 2 - root.boardPadding * 2
+      // The fixed ratio columns take their widths; the main column gets what is
+      // left after them and the two gaps.
+      Layout.preferredWidth: board.width - root.notificationWidth - root.sideWidth - Config.spaceXl * 2
       cardColour: Colours.bg
       cardRadius: Config.commandCentreRadius
 
       ColumnLayout {
         id: mainCol
         anchors.fill: parent
-        anchors.margins: Config.spaceLg
-        spacing: Config.spaceLg
+        anchors.margins: Config.commandCentreCardPadding
+        spacing: Config.commandCentreCardSpacing
 
         RowLayout {
           Layout.fillWidth: true
@@ -125,7 +139,8 @@ Item {
           Layout.fillHeight: true
           Layout.minimumHeight: implicitHeight
           vertical: true
-          artSize: Config.commandCentreBentoMediaArtSize
+          contentPadding: Config.commandCentreCardPadding
+          coverCard: true
           titleSize: Config.fontSizeXl
           detailSize: Config.fontSizeLg
           showWhenIdle: Config.alwaysShowMediaCard
@@ -145,8 +160,8 @@ Item {
     NotificationHistoryCard {
       Layout.row: 0
       Layout.column: 1
-      Layout.preferredWidth: Config.commandCentreBentoNotificationWidth
-      Layout.maximumWidth: Config.commandCentreBentoNotificationWidth
+      Layout.preferredWidth: root.notificationWidth
+      Layout.maximumWidth: root.notificationWidth
       Layout.fillHeight: true
       cardColour: Colours.bg
       cardRadius: Config.commandCentreRadius
@@ -155,27 +170,35 @@ Item {
     ColumnLayout {
       Layout.row: 0
       Layout.column: 2
-      Layout.preferredWidth: Config.commandCentreBentoSideWidth
-      Layout.maximumWidth: Config.commandCentreBentoSideWidth
+      Layout.preferredWidth: root.sideWidth
+      Layout.maximumWidth: root.sideWidth
       Layout.fillHeight: true
       spacing: Config.spaceXl
 
       WeatherCard {
+        id: weatherCard
         Layout.fillWidth: true
       }
 
-      // Fills the space left when the main column is taller than the weather
-      // card, so every column ends on the board's bottom edge.
+      // The calendar hugs its square grid; the system card below takes the
+      // height left over so every column ends on the board's bottom edge.
       CalendarPopup {
+        id: calendar
         Layout.fillWidth: true
-        Layout.fillHeight: true
         cardColour: Colours.bg
         cardRadius: Config.commandCentreRadius
-        cellSize: Config.space2xl
+        cellSize: root.calendarCellSize
         cellSpacing: Config.spaceXs
-        cellFontSize: Config.fontSizeMd
-        headerFontSize: Config.fontSizeLg
-        contentSpacing: Config.space2xl
+        contentPadding: Config.commandCentreCardPadding
+        // The digits take about a third of a cell, the month title a little more.
+        cellFontSize: Math.round(root.calendarCellSize * 0.32)
+        headerFontSize: Math.round(root.calendarCellSize * 0.36)
+        contentSpacing: Config.commandCentreCardSpacing
+      }
+
+      SystemStatsCard {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
       }
     }
   }

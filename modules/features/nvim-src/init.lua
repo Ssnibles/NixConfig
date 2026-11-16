@@ -25,7 +25,7 @@ vim.g.neovide_remember_window_size = true
 local dev_home = vim.env.HOME or "/home/josh"
 for _, name in ipairs({
 	"sshinator.nvim",
-	"indentinator.nvim",
+	-- "indentinator.nvim",
 	"zline.nvim",
 	"startinator.nvim",
 }) do

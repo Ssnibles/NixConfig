@@ -8,7 +8,7 @@ import ".."
 Card {
   id: root
 
-  implicitHeight: content.implicitHeight + Config.spaceXl * 2
+  implicitHeight: content.implicitHeight + Config.commandCentreCardPadding * 2
   cardColour: Colours.bg
   cardRadius: Config.commandCentreRadius
   readonly property bool showForecast: Config.weatherShowForecast
@@ -20,8 +20,8 @@ Card {
   ColumnLayout {
     id: content
     anchors.fill: parent
-    anchors.margins: Config.spaceXl
-    spacing: Config.space2xl
+    anchors.margins: Config.commandCentreCardPadding
+    spacing: Config.commandCentreCardSpacing
 
     ColumnLayout {
       Layout.fillWidth: true
@@ -134,8 +134,8 @@ Card {
     id: refreshButton
     anchors.top: parent.top
     anchors.right: parent.right
-    anchors.topMargin: Config.spaceXl
-    anchors.rightMargin: Config.spaceXl
+    anchors.topMargin: Config.commandCentreCardPadding
+    anchors.rightMargin: Config.commandCentreCardPadding
     buttonSize: Config.spaceXl + Config.space2xs
     iconSize: Config.iconSizeSm
     icon: "󰑐"

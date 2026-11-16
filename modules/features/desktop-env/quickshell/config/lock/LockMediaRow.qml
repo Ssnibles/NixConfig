@@ -24,7 +24,7 @@ Item {
       Layout.alignment: Qt.AlignVCenter
       artSize: Config.space2xl
       glyphSize: Config.iconSizeLg
-      source: MediaService.trackArtUrl
+      source: MediaService.artSource
     }
 
     ColumnLayout {

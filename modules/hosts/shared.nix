@@ -9,6 +9,19 @@
       config,
       ...
     }:
+    let
+      cfg = config.services.dbus;
+
+      # NixOS lists the same D-Bus service files in session.conf and in the
+      # system profile, and some packages are added twice. dbus-broker scans
+      # every listed directory, so the repeats produce duplicate name warnings.
+      dbusConf = pkgs.makeDBusConf.override {
+        inherit (cfg) apparmor;
+        dbus = cfg.dbusPackage;
+        suidHelper = "${config.security.wrapperDir}/dbus-daemon-launch-helper";
+        serviceDirectories = cfg.packages;
+      };
+    in
     {
       nixpkgs.hostPlatform = "x86_64-linux";
 
@@ -110,25 +123,61 @@
       systemd.services.dbus.restartTriggers = lib.mkForce [ ];
       systemd.user.services.dbus.restartTriggers = lib.mkForce [ ];
 
-      # NixOS lists each D-Bus service twice, which makes dbus-broker log a
-      # duplicate name warning about 50 times per login. Filter it on the system
-      # bus with LogFilterPatterns and on the user bus by cleaning stderr.
+      # User units ignore LogFilterPatterns, and dbus-broker writes straight
+      # to the journal socket, so a stderr filter cannot work either. Remove
+      # the duplicate service directories from the session config instead.
+      environment.etc."dbus-1".source = lib.mkForce (
+        pkgs.runCommand "dbus-1" { preferLocalBuild = true; } ''
+          export PATH=${lib.makeBinPath [ pkgs.coreutils pkgs.gnused pkgs.gawk ]}
+
+          cp -r ${dbusConf} $out
+          chmod -R u+w $out
+
+          session=$out/session.conf
+          services=${config.system.path}/share/dbus-1/services
+
+          # Put every directive on its own line so they can be filtered.
+          sed -e 's#</servicedir>#</servicedir>\n#g' \
+              -e 's#</includedir>#</includedir>\n#g' \
+              "$session" > "$session.split"
+
+          # Keep only the first copy of each directive.
+          awk '!seen[$0]++' "$session.split" > "$session.unique"
+
+          : > "$session.filtered"
+          while IFS= read -r line; do
+            case "$line" in
+              *'<servicedir>'*)
+                dir=$(printf '%s\n' "$line" | sed -n 's#.*<servicedir>\([^<]*\)</servicedir>.*#\1#p')
+                keep=0
+                for file in "$dir"/*.service; do
+                  [ -e "$file" ] || continue
+                  [ -e "$services/$(basename "$file")" ] || {
+                    keep=1
+                    break
+                  }
+                done
+                if [ "$keep" -eq 1 ]; then
+                  printf '%s\n' "$line" >> "$session.filtered"
+                fi
+                ;;
+              *)
+                printf '%s\n' "$line" >> "$session.filtered"
+                ;;
+            esac
+          done < "$session.unique"
+
+          mv "$session.filtered" "$session"
+          rm -f "$session.split" "$session.unique"
+        ''
+      );
+
       systemd.services.dbus.serviceConfig.LogFilterPatterns = map (
         p: "~${p}"
       ) config.nixos.journalNoisePatterns;
       systemd.services.dbus-broker.serviceConfig.LogFilterPatterns = map (
         p: "~${p}"
       ) config.nixos.journalNoisePatterns;
-      systemd.user.services.dbus-broker.serviceConfig.ExecStart =
-        lib.mkIf (config.services.dbus.implementation == "broker")
-          (
-            lib.mkForce [
-              # An empty first element replaces the packaged ExecStart instead
-              # of adding a second launcher.
-              ""
-              "${pkgs.bash}/bin/bash -c 'exec ${config.services.dbus.brokerPackage}/bin/dbus-broker-launch --scope user 2> >(${pkgs.gnugrep}/bin/grep --line-buffered -v -E \"${lib.concatStringsSep "|" config.nixos.journalNoisePatterns}\" >&2)'"
-            ]
-          );
       systemd.services.display-manager.serviceConfig.LogFilterPatterns = map (
         p: "~${p}"
       ) config.nixos.journalNoisePatterns;

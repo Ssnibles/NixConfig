@@ -97,12 +97,14 @@ Scope {
       readonly property bool isLeft: !isBento && Session.commandCentreSide === "left"
       readonly property real slideDistance: isBento ? 0 : (isLeft ? -Config.commandCentreSlideOffset : Config.commandCentreSlideOffset)
       readonly property int sidebarTopMargin: Session.hasTopBar ? (Config.barHeight + Config.commandCentreMargin) : Config.commandCentreMargin
-      readonly property int panelWidth: isBento ? Math.min(Config.commandCentreBentoWidth, panel.width - Config.commandCentreMargin * 2) : Config.commandCentreWidth
-      // The bento fills the configured height and its columns share it, so the
-      // cards keep their breathing room instead of shrinking to the tallest
-      // column. The screen and the configured size remain the upper bounds.
+      readonly property int panelWidth: isBento
+        ? Math.min(Math.round(panel.width * Config.commandCentreBentoWidthRatio), panel.width - Config.commandCentreMargin * 2)
+        : Config.commandCentreWidth
+      // The bento takes a fraction of the screen height and its columns share
+      // it, so the cards keep their breathing room instead of shrinking to the
+      // tallest column. The screen margins remain the upper bound.
       readonly property int panelHeight: isBento
-        ? Math.min(Config.commandCentreBentoHeight, panel.height - Config.commandCentreMargin * 2)
+        ? Math.min(Math.round(panel.height * Config.commandCentreBentoHeightRatio), panel.height - Config.commandCentreMargin * 2)
         : panel.height - sidebarTopMargin - Config.commandCentreMargin
       property real panelOpacity: 0
       property real panelSlide: slideDistance

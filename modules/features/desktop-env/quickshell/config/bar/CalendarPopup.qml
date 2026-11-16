@@ -14,11 +14,38 @@ Card {
   property int cellFontSize: Config.fontSizeXs
   property int headerFontSize: Config.fontSizeMd
   property int contentSpacing: Config.spaceMd
+  property int contentPadding: Config.popupContentMargins
+
+  // The header controls follow the header text so a larger calendar does not
+  // leave the month title beside small buttons.
+  readonly property int headerHeight: Math.max(Config.iconSizeXl, root.headerFontSize + Config.spaceSm)
+  readonly property int navButtonSize: Math.max(Config.iconSizeXl - Config.space2xs, root.headerFontSize + Config.spaceSm)
+  readonly property int navIconSize: Math.max(Config.iconSizeSm, Math.round(root.headerFontSize * 0.85))
+
+  // Month navigation button, sized from the header text.
+  component NavButton: IconButton {
+    buttonSize: root.navButtonSize
+    iconSize: root.navIconSize
+    uiFont: root.uiFont
+    iconColour: Colours.fgMid
+  }
+
+  // Largest square cell that fits a card of the given size, leaving room for the
+  // header, weekday row and padding. The header and weekday rows are at least an
+  // icon tall, and using that floor keeps the result independent of the fonts
+  // derived from the cell size.
+  function fittedCellSize(availableWidth, availableHeight) {
+    var byWidth = Math.floor((availableWidth - root.contentPadding * 2 - root.cellSpacing * 6) / 7)
+    var chrome = Config.iconSizeXl * 2 + root.contentSpacing + Config.spaceXs
+      + root.cellSpacing * 5 + root.contentPadding * 2
+    var byHeight = Math.floor((availableHeight - chrome) / 6)
+    return Math.max(Config.spaceLg * 2, Math.min(byWidth, byHeight))
+  }
 
   cardColour: Colours.bg
   cardRadius: Config.popupRadius
-  implicitWidth: calCol.implicitWidth + Config.popupContentMargins * 2
-  implicitHeight: calCol.implicitHeight + Config.popupContentMargins * 2
+  implicitWidth: calCol.implicitWidth + root.contentPadding * 2
+  implicitHeight: calCol.implicitHeight + root.contentPadding * 2
   width: implicitWidth
   height: implicitHeight
 
@@ -71,7 +98,7 @@ Card {
 
     RowLayout {
       Layout.preferredWidth: root.cellSize * 7 + root.cellSpacing * 6
-      Layout.preferredHeight: Config.iconSizeXl
+      Layout.preferredHeight: root.headerHeight
       spacing: Config.spaceSm
 
       Text {
@@ -84,31 +111,19 @@ Card {
         elide: Text.ElideRight
       }
 
-      IconButton {
-        buttonSize: Config.iconSizeXl - Config.space2xs
+      NavButton {
         icon: "󰅁"
-        iconSize: Config.iconSizeSm
-        uiFont: root.uiFont
-        iconColour: Colours.fgMid
         onClicked: calCol.prevMonth()
       }
 
-      IconButton {
-        buttonSize: Config.iconSizeXl - Config.space2xs
+      NavButton {
         icon: "󰃭"
-        iconSize: Config.iconSizeSm
-        uiFont: root.uiFont
         enabled: !calCol.isCurrentMonth
-        iconColour: Colours.fgMid
         onClicked: calCol.goToCurrent()
       }
 
-      IconButton {
-        buttonSize: Config.iconSizeXl - Config.space2xs
+      NavButton {
         icon: "󰅂"
-        iconSize: Config.iconSizeSm
-        uiFont: root.uiFont
-        iconColour: Colours.fgMid
         onClicked: calCol.nextMonth()
       }
     }
@@ -143,22 +158,23 @@ Card {
         Repeater {
           model: calCol.monthModel
 
-          delegate: Rectangle {
+          delegate: Item {
             id: dayCell
             required property var modelData
             width: root.cellSize
             height: root.cellSize
-            radius: Config.itemRadiusXs
-            color: dayCell.modelData.isCurrent ? Colours.accent : "transparent"
 
+            // Today is marked by its text alone, so it reads as part of the
+            // grid rather than as a filled box.
             Text {
               anchors.centerIn: parent
               text: dayCell.modelData.day.toString()
               font.family: root.uiFont
               font.pixelSize: root.cellFontSize
               font.bold: dayCell.modelData.isCurrent
+              font.italic: dayCell.modelData.isCurrent
               color: dayCell.modelData.isCurrent
-                ? Colours.bg
+                ? Colours.accent
                 : (dayCell.modelData.inMonth ? Colours.fg : Colours.fgDim)
             }
           }

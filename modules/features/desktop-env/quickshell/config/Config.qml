@@ -113,21 +113,26 @@ Singleton {
     readonly property int commandCentreRadius: 26
     readonly property int commandCentreMargin: 16
     readonly property int commandCentreSlideOffset: 60
-    // Bento panel size. Width is fixed and clamped to the screen. The board
-    // fills the height so the cards keep their breathing room; the screen is
-    // the only other clamp.
-    readonly property int commandCentreBentoWidth: 1332
-    readonly property int commandCentreBentoHeight: 880
-    // Widths of the notification column and the weather/calendar column.
-    readonly property int commandCentreBentoNotificationWidth: 432
-    readonly property int commandCentreBentoSideWidth: 360
-    // Artwork edge in the bento now-playing panel, stacked above the details.
-    readonly property int commandCentreBentoMediaArtSize: 200
+    // Bento panel size as a fraction of the screen, so the board keeps the same
+    // proportions on every display. The screen margins clamp it inwards, so a
+    // ratio near 1.0 still leaves a gap at the edges.
+    readonly property real commandCentreBentoWidthRatio: 0.7
+    readonly property real commandCentreBentoHeightRatio: 0.75
+    // Widths of the notification column and the weather/calendar column, as a
+    // fraction of the board width. The main column takes what is left.
+    readonly property real commandCentreBentoNotificationRatio: 0.325
+    readonly property real commandCentreBentoSideRatio: 0.27
     // Opacity of the backdrop behind the bento panel.
     readonly property real commandCentreBentoScrim: 0.55
     // Draw one raised surface behind the bento board so the cards read as a
     // single panel. Off, the cards float over the dimmed desktop.
     readonly property bool commandCentreBentoSurface: false
+    // Interior padding of the command centre cards and the gap between the
+    // blocks inside them. Every card uses these so the board keeps one rhythm.
+    readonly property int commandCentreCardPadding: spaceXl
+    readonly property int commandCentreCardSpacing: spaceXl
+    // How often the bento system card samples CPU and memory, in milliseconds.
+    readonly property int systemStatsInterval: 2000
     // Weather is fetched on demand when the command centre opens, then cached
     // for this many minutes. There is no background polling.
     readonly property int weatherCacheMinutes: 10

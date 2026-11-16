@@ -183,6 +183,8 @@
             grug-far-nvim
             inc-rename-nvim
 
+            indent-blankline-nvim
+
             markview-nvim
             dial-nvim
             goto-preview
