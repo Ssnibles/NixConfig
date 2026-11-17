@@ -89,7 +89,7 @@ Files starting with an underscore in a host directory (`_hardware-generated.nix`
 ```mermaid
 flowchart TD
     subgraph Flake["flake.nix (Flake-Parts Entry Point)"]
-        Inputs["Inputs: nixpkgs (unstable default), stable, flake-parts, import-tree, hjem, nix-flatpak, nvf, mangowc, pi-agent..."]
+        Inputs["Inputs: nixpkgs (unstable default), stable, flake-parts, import-tree, hjem, nix-flatpak, mangowc, pi-agent..."]
     end
 
     Tree["inputs.import-tree ./modules<br/>(Filesystem Auto-Discovery)"]
@@ -205,14 +205,14 @@ For single-instance terminal performance, Tmux session management, Yazi openers,
 
 For language server wrappers, completion, DAP, and `:GenerateCompileFlags`, refer to the **[Declarative Neovim Guide](docs/wiki/neovim.md)**:
 
-- **Declarative NVF Architecture**: Neovim managed via [nvf](https://github.com/NotAShelf/nvf), linked directly to a modular Lua source tree under [`modules/features/nvim-src/`](modules/features/nvim-src/) via `nixos.liveLinks`.
+- **Declarative Neovim Architecture**: Neovim built from the nightly overlay with `pkgs.wrapNeovimUnstable`, and a modular Lua source tree under [`modules/features/nvim-src/`](modules/features/nvim-src/) linked in via `nixos.liveLinks`. Nix owns the package, plugins and toolchain; Lua owns every setting, keymap and LSP config. No runtime plugin manager.
 - **Specialised LSP Wrappers**:
   - `qmlls`: Wrapped with QtQuick 6 and Quickshell include flags for real-time QML type checking.
   - `zls`: Wrapped with Wayland, wlroots, libxkbcommon, and libinput system headers for Wayland compositor development.
   - `vtsls`: Configured for TypeScript/JavaScript tooling.
 - **C/C++ Tooling & `:GenerateCompileFlags`**: Custom command generating project-local `compile_flags.txt` from active Nix shell flags (`CPATH`, `pkg-config`) for Clangd autocomplete.
 - **Rust Toolchain**: `rustc`, `cargo`, `rust-analyzer`, `rustfmt`, `clippy`, plus `bacon`, `cargo-nextest`, `cargo-edit`, `cargo-expand`, `cargo-outdated`, `cargo-audit`, `cargo-deny`, `sccache` and `sea-orm-cli` installed system-wide from [`development.nix`](modules/features/apps/development.nix). `sccache` only takes effect once `RUSTC_WRAPPER=sccache` is exported.
-- **Neovim Plugins**: Blink.cmp completion, Treesitter, FZF-Lua, Oil with clipboard image pasting (`OilPasteImage` / `<leader>p`), Gitsigns with diagnostic collision prevention, Grug-far find/replace, Flash jump motions, Rustaceanvim, Tiny Inline Diagnostics, and custom plugins (`sshinator`, `indentinator`, `zline`).
+- **Neovim Plugins**: Blink.cmp completion, Treesitter, FZF-Lua, Oil with clipboard image pasting (`OilPasteImage` / `<leader>p`), Gitsigns with diagnostic collision prevention, Grug-far find/replace, Flash jump motions, Rustaceanvim, Tiny Inline Diagnostics, and a built-in statusline replacing zline.
 - **SyncTeX Inverse Search**: Bidirectional sync between Zathura PDF reader and Neovim source lines powered by `neovim-remote` (`nvr`).
 - **Floating Jujutsu TUI (`<leader>gg`)**: Direct invocation of `jjui` inside a centred Neovim floating modal.
 
@@ -488,7 +488,7 @@ Comprehensive documentation, architecture references, and step-by-step workflow 
 | **Wayland Compositors** | [compositors.md](docs/wiki/compositors.md) | Configuration guide for MangoWC (layouts, binds, OCR screenshot helper), Niri, Hyprland, Shikane display daemon, and Vicinae launcher |
 | **Quickshell UI** | [quickshell.md](docs/wiki/quickshell.md) | Quickshell QML framework architecture, status bar widgets, multi-compositor routing, Command Centre, Lock Screen, and notification daemon |
 | **Terminal Workflow** | [terminal-workflow.md](docs/wiki/terminal-workflow.md) | Kitty single-instance server mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Navi fuzzy cheats (`Ctrl+P`), modern coreutils aliases, and Fish shell |
-| **Declarative Neovim** | [neovim.md](docs/wiki/neovim.md) | NVF Neovim setup, modular Lua plugins in `nvim-src/`, language servers (`qmlls`, `zls`), Blink.cmp, formatters, and `:GenerateCompileFlags` |
+| **Declarative Neovim** | [neovim.md](docs/wiki/neovim.md) | Nightly Neovim wrapped by Nix, modular Lua in `nvim-src/`, language servers (`qmlls`, `zls`), Blink.cmp, formatters, and `:GenerateCompileFlags` |
 | **AI Development Tools** | [ai-tools.md](docs/wiki/ai-tools.md) | Pi coding agent harness (`pi.nix`) with safety extensions and Bubblewrap jail, Hermes AI agent with homeserver Ollama inference offloading |
 | **Jujutsu Version Control** | [jujutsu.md](docs/wiki/jujutsu.md) | Quick reference for the Jujutsu VCS: Git vs jj mental models, daily workflow, bookmarks, pushing/pulling, conflict resolution, and shell aliases |
 | **Networking & Sync** | [networking-sync.md](docs/wiki/networking-sync.md) | Tailscale mesh VPN, battery-optimised peer-to-peer folder synchronisation with Syncthing, systemd-resolved DNS-over-TLS, and iwd Wi-Fi |

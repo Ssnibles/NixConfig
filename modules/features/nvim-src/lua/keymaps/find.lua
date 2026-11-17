@@ -1,7 +1,5 @@
 -- Find, open and replace.
-
 local map = vim.keymap.set
-
 -- Pickers (fzf-lua)
 map("n", "<C-p>", "<cmd>FzfLua files<CR>", { desc = "File picker" })
 map("n", "<leader>/", "<cmd>FzfLua live_grep<CR>", { desc = "Search project" })
@@ -19,14 +17,12 @@ map("n", "<leader>fh", "<cmd>FzfLua help_tags<CR>", { desc = "Help" })
 map("n", "<leader>fk", "<cmd>FzfLua keymaps<CR>", { desc = "Keymaps" })
 map("n", "<leader>f.", "<cmd>FzfLua resume<CR>", { desc = "Resume last picker" })
 map("n", "<leader>fR", "<cmd>GrugFar<CR>", { desc = "Find and replace (project)" })
-
 -- Git pickers
 map("n", "<leader>gl", "<cmd>FzfLua git_commits<CR>", { desc = "Git log" })
 map("n", "<leader>gS", "<cmd>FzfLua git_status<CR>", { desc = "Git status (picker)" })
 map("n", "<leader>gL", "<cmd>FzfLua git_bcommits<CR>", { desc = "Git log (current file)" })
 map("n", "<leader>gB", "<cmd>FzfLua git_branches<CR>", { desc = "Git branches" })
 map("n", "<leader>gF", "<cmd>FzfLua git_stash<CR>", { desc = "Git stash" })
-
 -- Buffer find and replace
 map("n", "<leader>fr", function()
 	require("edit.replace").word()
@@ -34,7 +30,6 @@ end, { desc = "Find and replace (buffer)" })
 map("x", "<leader>fr", function()
 	require("edit.replace").selection()
 end, { desc = "Find and replace selection (buffer)" })
-
 -- Files and version control panes
 map("n", "<leader>e", function()
 	require("nav.files").toggle()

@@ -1,145 +1,219 @@
-# Declarative Neovim & Lua Plugin Architecture
+# Declarative Neovim
 
-This guide details the Neovim editor environment in NixConfig. Neovim is constructed declaratively using the [nvf](https://github.com/NotAShelf/nvf) framework and extended through a modular Lua configuration tree in `modules/features/nvim-src/`.
+Neovim is built from the nightly overlay and configured by a Lua tree that is
+symlinked into the home directory. Nix owns packages; Lua owns behaviour.
 
----
+## Ownership
 
-## Architecture Overview
+| Layer | Owner | Rebuild needed |
+| :--- | :--- | :--- |
+| Package, plugins, treesitter grammars, LSPs, formatters, linters, debug adapters | `modules/features/apps/neovim.nix` | yes |
+| Options, keymaps, autocommands, LSP settings, theme | `modules/features/nvim-src/` | no |
 
-The Neovim installation decouples package management and system binary paths from editing logic:
+`nvim-src/` is linked to `~/.config/nvim` for the user and root, so editing Lua
+is live. There is no runtime plugin manager: everything is on the packpath at
+startup.
+
+## Wrapper
+
+`neovim.nix` wraps the nightly package with `pkgs.wrapNeovimUnstable`:
+
+- `wrapRc = false`, so `VIMINIT` is unset and `~/.config/nvim/init.lua` loads
+  like any normal install.
+- `plugins` are injected through the packpath. They are the same list that was
+  on the runtimepath before.
+- `wrapperArgs` puts every tool on `PATH` (ahead of the system) and exports
+  `NVIM_JAVA_BUNDLES` for nvim-jdtls.
+- `viAlias` and `vimAlias` create `vi` and `vim`, and `EDITOR` is set to `nvim`.
+
+## Layout
+
+All line counts include comments. Files marked "data" are carried over.
 
 ```
-NixOS Module (modules/features/apps/neovim.nix)
-├── Declarative package definition via nvf
-├── LSPs, formatters, linters, and DAPs pinned via Nixpkgs
-├── Tree-Sitter grammars compiled ahead of time
-└── Centralised nixos.liveLinks:
-    symlinks modules/features/nvim-src/ -> ~/.config/nvim and ~/.config/nvf,
-    plus the same links under /root so `sudo nvim` runs your config too
-```
-
-Because `nvim-src/` is symlinked directly from your Git workspace, you can edit Lua plugins, keymaps, and autocommands with instant reloading without requiring a full `nixos-rebuild`.
-
----
-
-## Codebase Layout (`modules/features/nvim-src/`)
-
-```
-modules/features/nvim-src/
-├── init.lua                            # Top-level Lua entry point
+modules/features/nvim-src/                4450 lines
+├── init.lua                               29   leader, loader, ui2, requires
+├── lsp/                                   one file per server, 17 total
+│   ├── clangd.lua                         43   Nix C flags via before_init
+│   ├── nixd.lua                           83   flake root and host detection
+│   └── <server>.lua                            declarative tables
+├── snippets/                              data: java 18, nix 91, typst 979
 └── lua/
-    ├── autocmds.lua                    # Auto-commands (highlight on yank, cursor recall, fold rules)
-    ├── keymaps.lua                     # Global keybindings (<leader> = Space)
-    ├── smart_enter.lua                 # Context-aware Enter key handling
-    ├── theme.lua                       # Dynamic colour overrides matching system palette
-    ├── util.lua                        # Shared helpers (helper-buffer predicate, C flags, LLDB DAP adapter)
-    │
+    ├── options.lua                        94   all vim.opt and Neovide globals
+    ├── filetypes.lua                      5
+    ├── commands.lua                       3    :Mes
+    ├── autocmds.lua                       155  one augroup per feature
+    ├── util.lua                           85   toggles, helper filetypes, capabilities, C flags
+    ├── external.lua                       48   optional binaries, the only place they are named
+    ├── terminal.lua                       86   reused shell buffer
+    ├── diagnostics.lua                    76   vim.diagnostic, inline text, fidget
+    ├── vcs.lua                            103  gitsigns, grug-far, jjui
+    ├── theme/
+    │   ├── init.lua                       82   palette, mini.base16, fold text
+    │   └── highlights.lua                 249  data
+    ├── ui/
+    │   ├── init.lua                       11
+    │   ├── statusline.lua                 127  built-in statusline
+    │   ├── flash.lua                      34
+    │   ├── splits.lua                     7
+    │   ├── dial.lua                       19
+    │   └── render.lua                     19   markview, indent guides, autotag
+    ├── edit/
+    │   ├── init.lua                       6
+    │   ├── treesitter.lua                 24   textobjects and context
+    │   ├── enter.lua                      115  list continuation
+    │   ├── mini.lua                       96   mini modules and mini.clue
+    │   └── replace.lua                    35   buffer find and replace
+    ├── completion/
+    │   ├── init.lua                       5
+    │   ├── snippets.lua                   24
+    │   ├── blink.lua                      119
+    │   ├── sources.lua                    58
+    │   └── copilot.lua                    15
     ├── lsp/
-    │   ├── init.lua                    # LSP client configuration & attachment keymaps
-    │   └── servers.lua                 # Server definitions (nixd, pyright, marksman, tinymist, etc.)
-    │
-    ├── plugins/
-    │   ├── completion.lua              # Blink.cmp, Luasnip, Copilot, friendly-snippets
-    │   ├── dap.lua                     # nvim-dap, nvim-dap-view, Python/Go/JS/LLDB adapters
-    │   ├── diagnostics.lua             # vim.diagnostic, tiny-inline-diagnostic-nvim, fidget
-    │   ├── editor.lua                  # Oil, Gitsigns, Grug-far, Flash, Markview, Dial, smart-splits, jjui
-    │   ├── format.lua                  # Conform.nvim formatting definitions
-    │   ├── fzf.lua                     # FZF-Lua fuzzy finders
-    │   ├── java.lua                    # nvim-jdtls, java-debug adapter, JUnit runner
-    │   ├── lang.lua                    # Rustaceanvim, Clangd extensions, Typst preview, GenerateCompileFlags
-    │   ├── lint.lua                    # nvim-lint static linters
-    │   ├── mini.lua                    # Mini.nvim (pairs, surround, ai, move, comment, hipatterns, clue)
-    │   ├── terminal.lua                # Reused shell buffer, toggled as split or float
-    │   └── treesitter.lua              # Treesitter context & text-objects
-    │
-    └── snippets/                       # Filetype snippets (Nix, Typst, Java)
+    │   ├── init.lua                       60   registration and :LspHealth
+    │   ├── attach.lua                     86   attach maps, inlay hints, codelens
+    │   └── ui.lua                         17   aerial and goto-preview
+    ├── tools/
+    │   ├── init.lua                       4
+    │   ├── format.lua                     76   conform and autoformat toggles
+    │   └── lint.lua                       84   nvim-lint
+    ├── keymaps/                           global maps only, grouped by domain
+    │   ├── init.lua                       9
+    │   ├── groups.lua                     17   leader labels for mini.clue
+    │   ├── editor.lua                     67
+    │   ├── motion.lua                     56
+    │   ├── windows.lua                    70
+    │   ├── code.lua                       76
+    │   ├── find.lua                       39
+    │   ├── debug.lua                      48
+    │   └── lang.lua                       24
+    ├── nav/
+    │   ├── init.lua                       5
+    │   ├── picker.lua                     63   fzf-lua and vim.ui.select
+    │   ├── files.lua                      73   oil and image paste
+    │   └── rename.lua                     70   :SmartRename
+    ├── debugger/
+    │   ├── init.lua                       12   dap-view
+    │   └── adapters.lua                   124  Python, Go, LLDB, JS
+    └── lang/
+        ├── init.lua                       6
+        ├── rust.lua                       38
+        ├── c.lua                          57
+        ├── typst.lua                      46
+        └── java.lua                       83
 ```
 
----
+`init.lua` sets the leader, enables the Lua loader and ui2, then requires the
+modules in this order: options, filetypes, commands, theme, ui, edit,
+completion, lsp, diagnostics, tools, nav, vcs, debugger, lang, terminal,
+autocmds, keymaps. Modules require their own dependencies where they are used,
+so the order is not load-bearing.
 
-## Specialised Language Server Wrappers
+## Live edit property
 
-Standard language servers often struggle with Nix store paths, Wayland system headers, or custom Qt modules. NixConfig wraps these language servers in `modules/features/apps/neovim.nix`:
+The Lua tree is symlinked, so options, keymaps, autocommands, theme, LSP server
+tables and snippets change on the next start with no rebuild. Adding or removing
+a plugin or tool needs a rebuild because it is a Nix change.
 
-### 1. `qmlls` (QtQuick & Quickshell Type Checking)
-To enable real-time autocompletion and diagnostic validation inside Quickshell QML files, `qmlls` is wrapped with include paths pointing to Qt 6 declarative modules and the Quickshell QML import library:
-```bash
-qmlls -I /nix/store/...-qtdeclarative/lib/qt-6/qml \
-      -I /nix/store/...-quickshell/lib/qt-6/qml "$@"
-```
+## Language servers
 
-### 2. `zls` (Zig Wayland Compositor Development)
-When developing Wayland compositors (like MangoWC) or C/Zig system utilities, `zls` is wrapped to automatically export `CPATH` and `PKG_CONFIG_PATH` referencing Wayland, wlroots, libxkbcommon, libinput, libdrm, and pixman header directories.
+Server definitions are plain tables in `lsp/<server>.lua`, which `vim.lsp.config`
+resolves by name. A server is enabled only when its executable exists, so an
+optional server that is not installed stays quiet. `:LspHealth` lists every
+managed server and whether it was found, plus the clients attached to the
+current buffer.
 
----
+`clangd.lua` injects the include flags from the current `nix develop` shell in
+`before_init`. `nixd.lua` detects the flake root and host at runtime.
 
-## Key Features & Custom Commands
+Specialised wrappers still live in Nix: `qmlls` gets the QtQuick and Quickshell
+import paths, and `zls` gets the Wayland, wlroots and pixman header paths.
 
-### 1. C/C++ LSP & `:GenerateCompileFlags`
-Defined in `lua/plugins/lang.lua`. When opening a C project without a CMake compilation database (e.g. Raylib, Wayland, or Arduino code), run:
-```vim
-:GenerateCompileFlags
-```
-This inspects the active development shell environment (`CPATH`, `NIX_CFLAGS_COMPILE`, and `pkg-config`), constructs a project-local `compile_flags.txt`, and reloads Clangd.
+## Keymaps
 
-### 2. Oil File Manager & Clipboard Image Pasting
-- **`<leader>e`**: Opens Oil in a floating modal centred on the screen.
-- **`<leader>p`** or **`:OilPasteImage`**: Automatically reads image data from the Wayland clipboard (`wl-paste -t image/png`) and prompts for a filename to save the image directly into the active Oil directory.
+All global maps live under `lua/keymaps/`, one file per domain, and every map
+has a `desc`. Buffer-local maps live with the feature that owns the buffer:
+LSP attach, gitsigns, aerial, clangd, java and typst. Leader groups are defined
+once in `keymaps/groups.lua` and used by mini.clue, so the menu and the maps
+cannot drift apart.
 
-### 3. Jujutsu VCS Integration (`<leader>gg`)
-Pressing **`<leader>gg`** spawns an embedded terminal floating window (85% width and height) running **`jjui`** in the repository root. Exiting `jjui` cleanly closes the floating window and refreshes modified buffers.
+The left-hand sides are unchanged from the previous configuration: 470 global
+left-hand sides per mode, compared with a dump taken before the rebuild.
 
-### 4. Non-Colliding Git Blame & Inline Diagnostics
-- Gitsigns displays inline Git blame at the end of the line (`current_line_blame`).
-- To prevent blame text from overlapping `tiny-inline-diagnostic-nvim` errors, an autocommand dynamically hides the Git blame on lines with active compiler warnings or errors.
+## Toggles
 
-### 5. Blink.cmp Completion Engine
-- Fast completion engine with fuzzy path and symbol search.
-- Pre-configured sources: LSP symbols, path completion, snippets, Copilot completions, and dictionary spell checking.
+| Key | Feature | State |
+| :--- | :--- | :--- |
+| `<leader>tw` | wrap | `wrap` |
+| `<leader>ts` | spell | `spell` |
+| `<leader>tn` | relative numbers | `relativenumber` plus `vim.w.relativenumber_enabled` for insert mode |
+| `<leader>td` | diagnostics | `vim.diagnostic.enable()` |
+| `<leader>tD` | inline diagnostics | tiny-inline-diagnostic |
+| `<leader>ti` | inlay hints | `vim.lsp.inlay_hint` |
+| `<leader>tc` | cursor word | `vim.b.minicursorword_disable` |
+| `<leader>tF` | autoformat (global) | module state in `tools/format.lua` |
+| `<leader>tA` | autoformat (filetype) | module state in `tools/format.lua` |
+| `<leader>tp` | Typst preview | buffer-local, Typst only |
 
-### 6. Fast Find & Replace
-- **`<leader>fr`**: Triggers a buffer-local find-and-replace prompt with the current word under cursor pre-filled.
-- **`<leader>fR`**: Opens **Grug-far** for project-wide interactive search and replace with live diffing.
+No `vim.g.disable_*` or `vim.g.*_enabled` flags are read across files.
 
-### 7. Rust Development (`Rustaceanvim`)
-- **`<leader>rr`**: Runnables picker
-- **`<leader>rt`**: Testables picker (runs tests in background)
-- **`<leader>rm`**: Expand macro at cursor
-- **`<leader>ro`**: Open docs for symbol
-- **`<leader>rs`**: Restart Rust-Analyzer server
+## Commands
 
-### 8. Debugging (`nvim-dap` + `nvim-dap-view`)
-All debugging sections share one window on the right, with the REPL, scopes, threads, watches, breakpoints and exceptions as switchable views (`g?` inside the window lists its keys). Variable values render as inline virtual text.
+`:Mes`, `:LspHealth`, `:GenerateCompileFlags`, `:Format` (`:Format!` saves),
+`:OilPasteImage`, `:SmartRename`. `:lsp restart` is built in.
 
-- **`<leader>mb` / `<leader>mB`**: Toggle / conditional breakpoint
-- **`<leader>mc`**, **`<leader>mi`**, **`<leader>mo`**, **`<leader>mO`**, **`<leader>mt`**: Continue, step into/over/out, terminate
-- **`<leader>mu`**: Toggle the debug window
-- **`<leader>mr`**: Jump to the REPL view
-- **`<leader>mw`**, **`<leader>mh`**: Watch the expression under the cursor, evaluate it in a hover
+## Language support
 
-Java is driven by `nvim-jdtls` (`plugins/java.lua`) rather than `vim.lsp.enable`, because debugging and JUnit runs need the adapter bundles. Nix extracts those jars from the `vscode-java-debug` and `vscode-java-test` extensions and passes them as `vim.g.java_debug_bundles`.
-
-- **`<leader>cjo`**: Organise imports
-- **`<leader>cjt`**, **`<leader>cjc`**: Run nearest test / test class
-- **`<leader>cju`**: Update project configuration
-
----
-
-## Language Support & Formatters
-
-Format-on-save is managed by `conform.nvim` across all major languages:
-
-| Language | Language Server (LSP) | Formatter | Linter / Diagnostics |
+| Language | Server | Formatter | Linter |
 | :--- | :--- | :--- | :--- |
-| **Rust** | `rust-analyzer` (via rustaceanvim) | `rustfmt` | `clippy` |
-| **Zig** | `zls` (Wayland header wrapped) | `zig fmt` | compiler diagnostics |
-| **C / C++** | `clangd` (with clangd_extensions) | `clang-format` | `cppcheck` |
-| **Nix** | `nixd` | `nixfmt` | `statix`, `deadnix` |
-| **Python** | `pyright` | `isort`, `black` | `pyright` |
-| **JavaScript / TypeScript** | `vtsls`, `eslint`, `emmet_ls` | `prettierd` | `eslint` |
-| **Lua** | `lua-language-server` | `stylua` | `lua-language-server` |
-| **Typst** | `tinymist`, `ltex_plus` | `typstyle` | `tinymist`, `ltex_plus` |
-| **QML / QtQuick** | `qmlls` (QtQuick wrapped) | none | `qmlls` |
-| **Java** | `jdtls` (via nvim-jdtls) | `google-java-format` | `jdtls` |
-| **Kotlin** | `kotlin-language-server` | `ktlint` | `ktlint` |
-| **Go** | `gopls` | `gopls` | `gopls` |
+| Rust | rust-analyzer (rustaceanvim) | rustfmt | clippy |
+| Zig | zls (Wayland wrapper) | zig fmt | zls |
+| C / C++ | clangd (clangd_extensions) | clang-format | cppcheck |
+| Nix | nixd | nixfmt | statix, deadnix |
+| Python | pyright | isort, black | pyright |
+| JavaScript / TypeScript | vtsls, eslint, emmet_ls | prettierd | eslint |
+| Lua | lua-language-server | stylua | lua-language-server |
+| Typst | tinymist, ltex_plus | typstyle | tinymist |
+| QML / QtQuick | qmlls (QtQuick wrapper) | none | qmlls |
+| Java | jdtls (nvim-jdtls) | google-java-format | jdtls |
+| Kotlin | kotlin-language-server | ktlint | ktlint |
+| Go | gopls | gopls | gopls |
+| Markdown | marksman, ltex_plus | prettierd | ltex_plus |
+
+## Migration from the NVF build
+
+What changed:
+
+- NVF is gone. `NVIM_APPNAME=nvf`, the `~/.config/nvf` links and the
+  `dofile(stdpath("config"))` escape hatch are removed. `~/.config/nvim` is now
+  the real config path.
+- zline, sshinator and startinator are no longer loaded from `$HOME`. The
+  statusline is built in, and the `vim._core.ui2.cmd` handler poke is gone.
+- The five state globals are gone: `relativenumber_enabled`,
+  `disable_autoformat`, `disable_autoformat_ft`, `minicursorword_disable` and
+  `java_debug_bundles`. Autoformat state lives in `tools/format.lua`, the Java
+  bundles arrive in `NVIM_JAVA_BUNDLES`.
+- `smart_enter.lua` is gone. Comment continuation is `formatoptions` `r`; list
+  continuation lives in `edit/enter.lua`.
+- `:Mes`, `:Format`, `:LspHealth`, `:GenerateCompileFlags`, `:OilPasteImage` and
+  `:SmartRename`, and every keybinding, still work.
+
+Needs a rebuild:
+
+- The package, plugin list and PATH are Nix changes. Run the normal rebuild
+  once.
+
+State directories moved:
+
+- Because `NVIM_APPNAME` is no longer `nvf`, `stdpath("data")`,
+  `stdpath("state")` and `stdpath("cache")` now point at `nvim` instead of
+  `nvf`. Oldfiles, shada, undo history and LSP caches start empty unless copied:
+
+  ```sh
+  cp -a ~/.local/share/nvf/. ~/.local/share/nvim/
+  cp -a ~/.local/state/nvf/. ~/.local/state/nvim/
+  cp -a ~/.cache/nvf/. ~/.cache/nvim/
+  ```
+
+- `~/.config/nvf` is no longer linked; the old link can be deleted.

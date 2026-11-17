@@ -1,9 +1,6 @@
 -- Linting (nvim-lint): Nix and C/C++ linters, run on read and save.
-
 local lint = require("lint")
-
 local M = {}
-
 lint.linters.deadnix_nvim = {
 	cmd = "deadnix",
 	stdin = false,
@@ -33,7 +30,6 @@ lint.linters.deadnix_nvim = {
 		return diagnostics
 	end,
 }
-
 lint.linters.statix_nvim = {
 	cmd = "statix",
 	stdin = false,
@@ -61,15 +57,12 @@ lint.linters.statix_nvim = {
 		return diagnostics
 	end,
 }
-
 local linters_by_ft = {
 	nix = { "deadnix_nvim", "statix_nvim" },
 	c = { "cppcheck" },
 	cpp = { "cppcheck" },
 }
-
 lint.linters_by_ft = linters_by_ft
-
 --- Run the linters for the current buffer, if it has any.
 function M.run()
 	if not linters_by_ft[vim.bo.filetype] then
@@ -80,15 +73,12 @@ function M.run()
 	end
 	lint.try_lint(nil, { ignore_errors = true })
 end
-
 function M.run_and_notify()
 	M.run()
 	vim.notify("Triggered linters for " .. vim.bo.filetype)
 end
-
 vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost" }, {
 	group = vim.api.nvim_create_augroup("UserLint", { clear = true }),
 	callback = M.run,
 })
-
 return M

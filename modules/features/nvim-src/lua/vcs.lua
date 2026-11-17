@@ -1,12 +1,8 @@
 -- Version control: gitsigns, grug-far and the jjui TUI.
-
 local external = require("external")
 local gitsigns = require("gitsigns")
-
 local M = {}
-
 -- Gitsigns ------------------------------------------------------------------
-
 gitsigns.setup({
 	signcolumn = true,
 	numhl = true,
@@ -47,7 +43,6 @@ gitsigns.setup({
 		map("<leader>gD", gitsigns.diffthis, "Diff this")
 	end,
 })
-
 -- Inline blame and inline diagnostics both render at end of line. Gitsigns has
 -- no option to hide blame per line, so its own extmark (namespace
 -- "gitsigns_blame", id 1) is removed when a diagnostic lands and the blame is
@@ -70,12 +65,9 @@ vim.api.nvim_create_autocmd("DiagnosticChanged", {
 		end
 	end,
 })
-
 -- Grug-far (project-wide find and replace)
 require("grug-far").setup()
-
 -- Jujutsu TUI ---------------------------------------------------------------
-
 --- Open jjui in a centred float.
 function M.jjui()
 	local jjui = external.jjui()
@@ -83,7 +75,6 @@ function M.jjui()
 		vim.notify("jjui is not installed.", vim.log.levels.WARN)
 		return
 	end
-
 	local width = math.floor(vim.o.columns * 0.85)
 	local height = math.floor(vim.o.lines * 0.85)
 	local buf = vim.api.nvim_create_buf(false, true)
@@ -109,5 +100,4 @@ function M.jjui()
 		end,
 	})
 end
-
 return M

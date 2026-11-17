@@ -1,12 +1,9 @@
 -- Diagnostics, toggles, LSP commands, formatting and linting.
-
 local map = vim.keymap.set
 local util = require("util")
-
 -- Diagnostics
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
-
 local function jump(count, severity)
 	vim.diagnostic.jump({
 		count = count,
@@ -28,7 +25,6 @@ end, { desc = "Next error" })
 map("n", "[e", function()
 	jump(-1, vim.diagnostic.severity.ERROR)
 end, { desc = "Previous error" })
-
 -- Toggles
 map("n", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "Toggle wrap" })
 map("n", "<leader>ts", "<cmd>set spell!<CR>", { desc = "Toggle spell" })
@@ -60,7 +56,6 @@ end, { desc = "Toggle autoformat (global)" })
 map("n", "<leader>tA", function()
 	require("tools.format").toggle_ft()
 end, { desc = "Toggle autoformat for filetype" })
-
 -- LSP (outside attached buffers)
 map("n", "<leader>lr", function()
 	if #vim.lsp.get_clients({ bufnr = 0 }) == 0 then
@@ -72,7 +67,6 @@ end, { desc = "Restart LSP" })
 map("n", "<leader>lf", "<cmd>FzfLua lsp_finder<CR>", { desc = "LSP finder" })
 map("n", "<leader>lh", "<cmd>LspHealth<CR>", { desc = "LSP health" })
 map("n", "<leader>lR", "<cmd>SmartRename<CR>", { desc = "Smart rename/replace" })
-
 -- Format and lint
 map({ "n", "v" }, "<leader>cf", function()
 	require("tools.format").format()

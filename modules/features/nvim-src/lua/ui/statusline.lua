@@ -1,16 +1,12 @@
--- Built-in statusline. Replaces zline, so the cmdline is drawn by ui2 and no
--- private vim._core.ui2 API is needed. `showcmdloc` is "statusline", so the
--- '%S' item has to stay or pending keys (d, f, ...) would be invisible.
-
+-- Built-in statusline. Replaces zline, so ui2 draws the cmdline and no private
+-- API is needed. 'showcmdloc' is "statusline", so '%S' has to stay.
 local M = {}
-
 local severities = {
 	{ vim.diagnostic.severity.ERROR, "E" },
 	{ vim.diagnostic.severity.WARN, "W" },
 	{ vim.diagnostic.severity.INFO, "I" },
 	{ vim.diagnostic.severity.HINT, "H" },
 }
-
 local modes = {
 	n = { "NORMAL", "StlModeN" },
 	i = { "INSERT", "StlModeI" },
@@ -23,19 +19,10 @@ local modes = {
 	S = { "S-LINE", "StlModeS" },
 	t = { "TERMINAL", "StlModeT" },
 }
-
-local buffer_labels = {
-	qf = "QUICKFIX",
-	help = "HELP",
-	man = "MAN",
-	checkhealth = "HEALTH",
-	oil = "OIL",
-}
-
+local labels = { qf = "QUICKFIX", help = "HELP", man = "MAN", checkhealth = "HEALTH", oil = "OIL" }
 local function escape(text)
 	return (text:gsub("%%", "%%%%"))
 end
-
 local function mode()
 	local current = vim.api.nvim_get_mode().mode
 	if current:sub(1, 2) == "nt" then
@@ -44,7 +31,6 @@ local function mode()
 	local entry = modes[current:sub(1, 1)] or modes.n
 	return entry[1], entry[2]
 end
-
 local function git()
 	local status = vim.b.gitsigns_status_dict
 	if not status then
@@ -62,7 +48,6 @@ local function git()
 	end
 	return table.concat(parts, " ")
 end
-
 local function diagnostics()
 	local counts = vim.diagnostic.count(0)
 	local parts = {}
@@ -74,7 +59,6 @@ local function diagnostics()
 	end
 	return table.concat(parts, " ")
 end
-
 local function clients()
 	local names = {}
 	for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
@@ -84,7 +68,6 @@ local function clients()
 	end
 	return table.concat(names, ",")
 end
-
 local function search()
 	if vim.v.hlsearch == 0 then
 		return ""
@@ -94,24 +77,21 @@ local function search()
 	if not current or not total or total == 0 then
 		return ""
 	end
-	local display = count.incomplete == 2 and (total .. "+") or tostring(total)
-	return ("%d/%s"):format(current, display)
+	return ("%d/%s"):format(current, count.incomplete == 2 and (total .. "+") or tostring(total))
 end
-
 local function debugging()
 	if package.loaded.dap and require("dap").session() then
 		return "DAP"
 	end
 	return ""
 end
-
 local function buffer_name()
 	local buftype, filetype = vim.bo.buftype, vim.bo.filetype
 	if buftype == "terminal" then
 		return "TERMINAL"
 	end
-	if buffer_labels[filetype] then
-		return buffer_labels[filetype]
+	if labels[filetype] then
+		return labels[filetype]
 	end
 	if filetype:find("^grug%-far") then
 		return "GRUG-FAR"
@@ -121,34 +101,27 @@ local function buffer_name()
 	end
 	return "%<%f%m%r"
 end
-
 local function text(parts, highlight, value)
 	if value and value ~= "" then
 		parts[#parts + 1] = ("%%#%s#%s%%*"):format(highlight, escape(value))
 	end
 end
-
 --- @return string
 function M.render()
 	local parts = {}
 	local name, highlight = mode()
 	parts[#parts + 1] = ("%%#%s# %s %%*"):format(highlight, name)
-
 	text(parts, "StlGit", git())
 	text(parts, "StlDiag", diagnostics())
 	parts[#parts + 1] = "%#StlFile#" .. buffer_name() .. "%*"
 	text(parts, "StlFT", vim.bo.filetype)
-
 	parts[#parts + 1] = "%="
 	text(parts, "StlLSP", clients())
 	text(parts, "StlDiag", search())
 	text(parts, "StlFT", vim.wo.spell and "SPELL" or "")
 	text(parts, "StlGit", debugging())
 	parts[#parts + 1] = "%#StlPos#%S %l:%c%*"
-
 	return table.concat(parts, " ")
 end
-
 vim.o.statusline = "%!v:lua.require('ui.statusline').render()"
-
 return M

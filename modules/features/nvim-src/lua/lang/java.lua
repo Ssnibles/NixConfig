@@ -1,10 +1,8 @@
 -- Java: nvim-jdtls drives eclipse.jdt.ls directly, because the java-debug
 -- adapter and the JUnit runner need `init_options.bundles`. Nix passes the jar
 -- paths in NVIM_JAVA_BUNDLES.
-
 local jdtls = require("jdtls")
 local util = require("util")
-
 local root_markers = {
 	".git",
 	"mvnw",
@@ -15,7 +13,6 @@ local root_markers = {
 	"settings.gradle",
 	"settings.gradle.kts",
 }
-
 local settings = {
 	java = {
 		signatureHelp = { enabled = true },
@@ -45,7 +42,6 @@ local settings = {
 		inlayHints = { parameterNames = { enabled = "all" } },
 	},
 }
-
 local function bundles()
 	local value = vim.env.NVIM_JAVA_BUNDLES
 	if not value or value == "" then
@@ -53,7 +49,6 @@ local function bundles()
 	end
 	return vim.split(value, ":", { plain = true })
 end
-
 -- The shared LSP keymaps come from lsp/attach.lua; jdtls registers the `java`
 -- DAP adapter itself.
 local function on_attach(_, bufnr)
@@ -65,7 +60,6 @@ local function on_attach(_, bufnr)
 	map("<leader>cjc", jdtls.test_class, "Run test class")
 	map("<leader>cju", jdtls.update_project_config, "Update project config")
 end
-
 local function start(bufnr)
 	local root = vim.fs.root(bufnr, root_markers)
 	if not root then
@@ -80,7 +74,6 @@ local function start(bufnr)
 		on_attach = on_attach,
 	})
 end
-
 vim.api.nvim_create_autocmd("FileType", {
 	group = vim.api.nvim_create_augroup("UserJava", { clear = true }),
 	pattern = "java",

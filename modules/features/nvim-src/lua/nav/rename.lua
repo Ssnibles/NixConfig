@@ -1,16 +1,12 @@
 -- SmartRename: one prompt offering the LSP rename, a literal project replace
 -- or a regex project replace, depending on what the cursor is on.
-
 local lsp = vim.lsp
-
 require("inc_rename").setup({})
-
 local function supports_lsp_rename(bufnr)
 	return vim.iter(lsp.get_clients({ bufnr = bufnr })):any(function(client)
 		return client:supports_method("textDocument/rename", bufnr)
 	end)
 end
-
 local function prompt_lsp_rename()
 	local name = vim.fn.expand("<cword>")
 	if name == "" then
@@ -23,11 +19,9 @@ local function prompt_lsp_rename()
 		end
 	end)
 end
-
 local function escape_rg(text)
 	return (text:gsub("([%(%)%.%+%-%*%?%[%]%^%$%{%}%|\\])", "\\%1"))
 end
-
 local function open_grug_far(prefills)
 	local instance = require("grug-far").open({ prefills = prefills })
 	if instance and type(instance.when_ready) == "function" and type(instance.goto_input) == "function" then
@@ -36,12 +30,10 @@ local function open_grug_far(prefills)
 		end)
 	end
 end
-
 vim.api.nvim_create_user_command("SmartRename", function()
 	local bufnr = vim.api.nvim_get_current_buf()
 	local word = vim.fn.expand("<cword>")
 	local choices = {}
-
 	if supports_lsp_rename(bufnr) then
 		choices[#choices + 1] = { label = "LSP symbol rename (recommended)", action = prompt_lsp_rename }
 	end
@@ -59,7 +51,6 @@ vim.api.nvim_create_user_command("SmartRename", function()
 			end,
 		}
 	end
-
 	if #choices == 0 then
 		vim.notify("No rename target: place cursor on a word", vim.log.levels.WARN)
 	elseif #choices == 1 then

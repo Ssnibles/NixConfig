@@ -1,8 +1,6 @@
 -- Windows, splits, buffers, tabs, the quickfix list and the terminal.
-
 local map = vim.keymap.set
 local splits = require("ui.splits")
-
 -- Window navigation and resizing
 map("n", "<C-h>", splits.move_cursor_left, { desc = "Move left" })
 map("n", "<C-j>", splits.move_cursor_down, { desc = "Move down" })
@@ -12,7 +10,6 @@ map("n", "<C-S-h>", splits.resize_left, { desc = "Resize left" })
 map("n", "<C-S-j>", splits.resize_down, { desc = "Resize down" })
 map("n", "<C-S-k>", splits.resize_up, { desc = "Resize up" })
 map("n", "<C-S-l>", splits.resize_right, { desc = "Resize right" })
-
 -- Splits
 map("n", "<leader>wv", "<C-w>v", { desc = "Split vertical" })
 map("n", "<leader>ws", "<C-w>s", { desc = "Split horizontal" })
@@ -32,7 +29,6 @@ map("n", "<leader>wh", "<C-w>H", { desc = "Move window left" })
 map("n", "<leader>wl", "<C-w>L", { desc = "Move window right" })
 map("n", "<leader>wj", "<C-w>J", { desc = "Move window down" })
 map("n", "<leader>wk", "<C-w>K", { desc = "Move window up" })
-
 -- Buffers
 map("n", "<leader>bd", function()
 	require("mini.bufremove").delete(0, false)
@@ -48,13 +44,11 @@ end, { desc = "Close other buffers" })
 map("n", "<leader>`", "<cmd>b#<CR>", { desc = "Alternate buffer" })
 map("n", "<C-Tab>", "<cmd>bnext<CR>", { desc = "Next buffer" })
 map("n", "<C-S-Tab>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
-
 -- Tabs
 map("n", "]t", "<cmd>tabnext<CR>", { desc = "Next tab" })
 map("n", "[t", "<cmd>tabprevious<CR>", { desc = "Previous tab" })
 map("n", "<leader>Tn", "<cmd>tabnew<CR>", { desc = "New tab" })
 map("n", "<leader>Tc", "<cmd>tabclose<CR>", { desc = "Close tab" })
-
 -- Quickfix and location list. [q/]q and [l/]l are built-in and honour a count.
 map("n", "<leader>qo", "<cmd>copen<CR>", { desc = "Open quickfix" })
 map("n", "<leader>qc", "<cmd>cclose<CR>", { desc = "Close quickfix" })
@@ -63,7 +57,6 @@ map("n", "<leader>qf", function()
 end, { desc = "Toggle quickfix list" })
 map("n", "<leader>ql", "<cmd>lopen<CR>", { desc = "Open location list" })
 map("n", "<leader>qL", "<cmd>lclose<CR>", { desc = "Close location list" })
-
 -- Terminal
 for _, entry in ipairs({
 	{ "<leader>tt", "bottom", "Toggle terminal (bottom)" },

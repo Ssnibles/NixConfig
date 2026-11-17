@@ -1,10 +1,8 @@
 -- Motions: flash, treesitter textobjects, and dial increments.
-
 local map = vim.keymap.set
 local flash_ui = require("ui.flash")
 local treesitter = require("edit.treesitter")
 local dial_map = require("ui.dial")
-
 -- Flash
 map({ "n", "x", "o" }, "<leader><leader>", function()
 	if flash_ui.is_main_editor() then
@@ -16,7 +14,6 @@ map({ "n", "x", "o" }, "S", function()
 		flash_ui.flash.treesitter()
 	end
 end, { desc = "Flash treesitter" })
-
 -- Treesitter textobjects
 local textobjects = {
 	["af"] = { query = "@function.outer", desc = "Around function" },
@@ -31,7 +28,6 @@ for key, spec in pairs(textobjects) do
 		treesitter.select.select_textobject(spec.query)
 	end, { silent = true, desc = spec.desc })
 end
-
 -- Function and class movement
 local movements = {
 	{ "]f", "goto_next_start", "@function.outer", "Next function" },
@@ -44,7 +40,6 @@ for _, movement in ipairs(movements) do
 		treesitter.move[movement[2]](movement[3])
 	end, { silent = true, desc = movement[4] })
 end
-
 -- Dial
 local function dial(mode, lhs, direction, dial_mode, desc)
 	map(mode, lhs, function()

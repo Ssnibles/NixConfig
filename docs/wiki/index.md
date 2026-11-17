@@ -16,7 +16,7 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 
 ### Developer Toolchains & Editors
 - **[Declarative Neovim & Lua Plugins](neovim.md)**  
-  Declarative Neovim built with `nvf` and customised via modular Lua plugins in `modules/features/nvim-src/`. Covers language servers (`qmlls` and `zls` wrappers), Blink.cmp, Conform formatters, Gitsigns, Oil image pasting, and floating `jjui` integration.
+  Declarative Neovim built from the nightly overlay and customised via modular Lua files in `modules/features/nvim-src/`. Covers language servers (`qmlls` and `zls` wrappers), Blink.cmp, Conform formatters, Gitsigns, Oil image pasting, and floating `jjui` integration.
 - **[Jujutsu (jj) Cheat Sheet](jujutsu.md)**  
   Complete reference for the Git-compatible Jujutsu VCS: Git vs jj mental models, daily workflows, bookmarks, remote push/pull flows, history rewriting, conflict resolution, and shell aliases.
 

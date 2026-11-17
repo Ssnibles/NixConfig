@@ -1,5 +1,4 @@
 -- Leader group labels shared by mini.clue and the keymap files.
-
 return {
 	{ keys = "<Leader>a", desc = "+copilot" },
 	{ keys = "<Leader>b", desc = "+buffers" },

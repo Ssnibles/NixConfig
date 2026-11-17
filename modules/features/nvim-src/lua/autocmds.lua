@@ -1,14 +1,12 @@
--- Base editor autocommands. One augroup per feature so a re-source replaces a
+-- Base editor autocommands. One augroup per feature, so re-sourcing replaces a
 -- handler instead of stacking another one.
 
 local autocmd = vim.api.nvim_create_autocmd
-
 local function group(name)
 	return vim.api.nvim_create_augroup(name, { clear = true })
 end
 
--- Filetype policy -----------------------------------------------------------
-
+-- Filetype policy
 -- Filetypes closed with 'q' or <Esc>.
 local close_with_q = { help = true, man = true, qf = true, checkhealth = true, oil = true, ["grug-far"] = true }
 -- Filetypes that skip trailing whitespace trimming.
@@ -34,22 +32,19 @@ autocmd("FileType", {
 	callback = function(ev)
 		local buf = ev.buf
 		local ft = vim.bo[buf].filetype
-
 		-- Not every filetype has a parser installed.
 		if not vim.b[buf].large_file then
 			pcall(vim.treesitter.start, buf)
 		end
-
 		-- Keep 'r' so <CR> continues comments, drop 'o' so `o` does not insert
-		-- one, and drop 'c' so textwidth does not wrap. Assign the string
-		-- rather than using :remove(): on 0.13 the ftplugin sets the option
-		-- after this callback and the remove operation does not see it.
+		-- one, drop 'c' so textwidth does not wrap. Assign the string because
+		-- the ftplugin sets the option after this callback on 0.13 and
+		-- :remove() does not see it.
 		local fo = vim.bo[buf].formatoptions:gsub("[co]", "")
 		if not fo:find("r") then
 			fo = fo .. "r"
 		end
 		vim.bo[buf].formatoptions = fo
-
 		if fold_indent[ft] then
 			vim.wo.foldmethod = "indent"
 		end
@@ -70,8 +65,7 @@ autocmd("FileType", {
 	end,
 })
 
--- Whitespace ----------------------------------------------------------------
-
+-- Whitespace
 autocmd("BufWritePre", {
 	group = group("UserWhitespace"),
 	callback = function()
@@ -93,8 +87,7 @@ autocmd({ "TextYankPost", "TextPutPost" }, {
 	end,
 })
 
--- Windows and buffers -------------------------------------------------------
-
+-- Windows and buffers
 autocmd("FocusGained", { group = group("UserFocus"), command = "checktime" })
 autocmd("VimResized", { group = group("UserResize"), command = "wincmd =" })
 
@@ -113,7 +106,7 @@ autocmd("BufReadPost", {
 })
 
 -- Absolute line numbers while typing, relative the rest of the time. The
--- window variable records the user's intent so <leader>tn survives the event.
+-- window variable records intent so <leader>tn survives the event.
 autocmd({ "InsertEnter", "InsertLeave" }, {
 	group = group("UserNumberToggle"),
 	callback = function(ev)
@@ -133,10 +126,8 @@ autocmd({ "WinEnter", "WinLeave" }, {
 	end,
 })
 
--- Large files ---------------------------------------------------------------
-
+-- Large files
 local LARGE_FILE_MB = 5
-
 autocmd("BufReadPre", {
 	group = group("UserLargeFile"),
 	callback = function(ev)
@@ -150,7 +141,6 @@ autocmd("BufReadPre", {
 		end
 	end,
 })
-
 autocmd("BufReadPost", {
 	group = group("UserLargeFile"),
 	callback = function(ev)

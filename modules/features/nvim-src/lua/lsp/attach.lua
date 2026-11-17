@@ -1,8 +1,6 @@
 -- Keymaps and buffer features for attached LSP clients.
-
 local lsp = vim.lsp
 local goto_preview = require("goto-preview")
-
 -- Switching between a source file and its header or spec.
 local switch_targets = {
 	c = { "h", "hpp" },
@@ -13,13 +11,11 @@ local switch_targets = {
 	ts = { "spec.ts", "test.ts" },
 	js = { "spec.js", "test.js" },
 }
-
 local function switch_source_header()
 	if vim.fn.exists(":ClangdSwitchSourceHeader") == 2 then
 		vim.cmd("ClangdSwitchSourceHeader")
 		return
 	end
-
 	local file = vim.api.nvim_buf_get_name(0)
 	if file == "" then
 		return
@@ -34,19 +30,16 @@ local function switch_source_header()
 	end
 	pcall(vim.cmd, "b#")
 end
-
 local function show_hover_doc()
 	lsp.buf.hover({
 		max_width = math.floor(vim.o.columns * 0.6),
 		max_height = math.floor(vim.o.lines * 0.4),
 	})
 end
-
 local function attach_keymaps(bufnr)
 	local function map(keys, rhs, desc)
 		vim.keymap.set("n", keys, rhs, { buffer = bufnr, desc = desc })
 	end
-
 	-- Navigation
 	map("gd", lsp.buf.definition, "Go to definition")
 	map("gD", lsp.buf.declaration, "Go to declaration")
@@ -56,7 +49,6 @@ local function attach_keymaps(bufnr)
 	end, "Find references")
 	map("K", show_hover_doc, "Hover documentation")
 	map("L", lsp.buf.signature_help, "Signature help")
-
 	-- Peek
 	map("gpd", goto_preview.goto_preview_definition, "Peek definition")
 	map("gpD", goto_preview.goto_preview_declaration, "Peek declaration")
@@ -64,7 +56,6 @@ local function attach_keymaps(bufnr)
 	map("gpr", goto_preview.goto_preview_references, "Peek references")
 	map("gpt", goto_preview.goto_preview_type_definition, "Peek type definition")
 	map("<leader>cp", goto_preview.close_all_win, "Close previews")
-
 	-- Refactoring
 	vim.keymap.set("n", "<leader>rn", function()
 		return ":IncRename " .. vim.fn.expand("<cword>")
@@ -73,17 +64,14 @@ local function attach_keymaps(bufnr)
 	map("<leader>cl", function()
 		pcall(lsp.codelens.run)
 	end, "CodeLens action")
-
 	-- Code outline and header switching
 	map("<leader>co", "<cmd>AerialToggle!<CR>", "Code Outline")
 	map("<leader>ch", switch_source_header, "Switch Source/Header")
 end
-
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("UserLspAttach", { clear = true }),
 	callback = function(ev)
 		attach_keymaps(ev.buf)
-
 		local client = lsp.get_client_by_id(ev.data.client_id)
 		if not client then
 			return

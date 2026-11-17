@@ -3,7 +3,6 @@
 -- 'r' flag, not a reimplementation.
 
 local M = {}
-
 local list_filetypes = {
 	markdown = true,
 	["markdown.mdx"] = true,
@@ -15,7 +14,6 @@ local list_filetypes = {
 	txt = true,
 	gitcommit = true,
 }
-
 local comment_prefixes = { "//", "/*", "*", "#", ";", "!", "%%", "--" }
 
 --- @param line string
@@ -31,7 +29,6 @@ local function list_item(line, ft)
 			next_marker = marker .. " [ ] ",
 		}
 	end
-
 	-- Numbered: "1. ", "10) ".
 	indent, marker, sep, space, rest = line:match("^([ \t]*)(%d+)([.)])(%s*)(.*)$")
 	if indent then
@@ -41,7 +38,6 @@ local function list_item(line, ft)
 			next_marker = tostring(tonumber(marker) + 1) .. sep .. " ",
 		}
 	end
-
 	-- Typst auto-numbered list.
 	if ft == "typst" then
 		indent, space, rest = line:match("^([ \t]*)%+(%s*)(.*)$")
@@ -49,7 +45,6 @@ local function list_item(line, ft)
 			return { empty = space == "" or rest == "", marker_end = #indent + 1 + #space, next_marker = "+ " }
 		end
 	end
-
 	-- Bullets. In Typst only "-" is a bullet; "*" is bold.
 	local pattern = ft == "typst" and "^([ \t]*)(%-)(%s*)(.*)$" or "^([ \t]*)([-*+])(%s*)(.*)$"
 	indent, marker, space, rest = line:match(pattern)
@@ -58,7 +53,11 @@ local function list_item(line, ft)
 		if line:match("^%s*[-*_]%s*[-*_]%s*[-*_][%s*-_]*$") then
 			return nil
 		end
-		return { empty = space == "" or rest == "", marker_end = #indent + #marker + #space, next_marker = marker .. " " }
+		return {
+			empty = space == "" or rest == "",
+			marker_end = #indent + #marker + #space,
+			next_marker = marker .. " ",
+		}
 	end
 end
 
@@ -81,12 +80,10 @@ function M.cr()
 	local ft = vim.bo.filetype
 	local line = vim.api.nvim_get_current_line()
 	local col = vim.api.nvim_win_get_cursor(0)[2]
-
 	local pair_cr = require("mini.pairs").cr()
 	if pair_cr ~= "\r" and pair_cr ~= "<CR>" then
 		return pair_cr
 	end
-
 	if list_filetypes[ft] then
 		local item = list_item(line, ft)
 		if item then
@@ -98,7 +95,6 @@ function M.cr()
 			end
 		end
 	end
-
 	return keys("<CR>")
 end
 
@@ -107,7 +103,6 @@ end
 function M.plain_cr()
 	local line = vim.api.nvim_get_current_line()
 	local col = vim.api.nvim_win_get_cursor(0)[2]
-
 	if col >= #line then
 		return keys("<C-o>o")
 	end

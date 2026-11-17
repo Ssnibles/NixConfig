@@ -1,16 +1,12 @@
 -- Debugger keys. nvim-dap and nvim-dap-view are configured in debug/init.lua;
 -- the keys are here with the rest of the global maps.
-
 local map = vim.keymap.set
-
 local function dap()
 	return require("dap")
 end
-
 local function view()
 	return require("dap-view")
 end
-
 map("n", "<leader>mb", function()
 	dap().toggle_breakpoint()
 end, { desc = "Toggle breakpoint" })

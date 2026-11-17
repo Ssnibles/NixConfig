@@ -1,7 +1,6 @@
 -- Entry point. Nix installs every plugin and tool; this tree only configures
 -- them. The tree is symlinked into ~/.config/nvim, so edits need no rebuild.
 vim.loader.enable()
-
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 

@@ -1,18 +1,14 @@
 -- Highlight groups for the palette in theme/init.lua. Pure data: each entry is
 -- a group name and its attributes.
-
 local M = {}
-
 local function hl(name, opts)
 	vim.api.nvim_set_hl(0, name, opts)
 end
-
 --- @param c table Palette from theme/init.lua
 --- @param blend fun(fg: string, bg: string, alpha: number): string
 function M.set(c, blend)
 	local separator = blend(c.fg, c.bg, 0.12)
 	local indent = blend(c.comment, c.bg, 0.35)
-
 	-- Flat editor-bg groups
 	for _, g in ipairs({
 		"NormalNC",
@@ -34,7 +30,6 @@ function M.set(c, blend)
 	}) do
 		hl(g, { link = "Normal" })
 	end
-
 	-- Float groups (same bg as editor, flat look)
 	hl("NormalFloat", { link = "Normal" })
 	for _, g in ipairs({
@@ -50,14 +45,12 @@ function M.set(c, blend)
 	}) do
 		hl(g, { link = "NormalFloat" })
 	end
-
 	-- Cursor
 	hl("CursorLine", { bg = c.bgSubtle })
 	hl("CursorLineNr", { fg = blend(c.blue, c.fg, 0.7), bold = true })
 	hl("CursorColumn", { bg = c.bgSubtle })
 	hl("CursorLineSign", { link = "SignColumn" })
 	hl("CursorLineFold", { link = "FoldColumn" })
-
 	-- Selection and search
 	hl("Visual", { bg = c.selection })
 	hl("VisualNOS", { link = "Visual" })
@@ -66,18 +59,15 @@ function M.set(c, blend)
 	hl("CurSearch", { link = "IncSearch" })
 	hl("Substitute", { bg = blend(c.green, c.bg, 0.15) })
 	hl("MatchParen", { fg = c.blue, bold = true, bg = c.selection })
-
 	-- Non-text
 	hl("NonText", { fg = blend(c.comment, c.bg, 0.3) })
 	hl("Whitespace", { fg = blend(c.comment, c.bg, 0.15) })
 	hl("Conceal", { fg = c.comment })
 	hl("EndOfBuffer", { fg = c.bg })
-
 	-- Line numbers
 	hl("LineNr", { fg = c.comment, bg = c.bg })
 	hl("LineNrAbove", { fg = c.comment })
 	hl("LineNrBelow", { fg = c.comment })
-
 	-- Separators, borders and titles
 	hl("WinSeparator", { fg = separator })
 	hl("GlobalBorder", { fg = c.border })
@@ -102,7 +92,6 @@ function M.set(c, blend)
 		hl(g, { link = "FloatTitle" })
 	end
 	hl("FloatFooter", { fg = c.comment })
-
 	-- FzfLua
 	hl("FzfLuaScrollFloatEmpty", { fg = c.comment })
 	hl("FzfLuaScrollFloatFull", { fg = c.blue })
@@ -111,12 +100,10 @@ function M.set(c, blend)
 	hl("FzfLuaPath", { fg = c.comment })
 	hl("FzfLuaDirPart", { fg = c.blue })
 	hl("FzfLuaFilePart", { fg = c.fg })
-
 	-- Mini.clue
 	hl("MiniClueDescGroup", { fg = c.comment })
 	hl("MiniClueNextKey", { fg = c.blue, bold = true })
 	hl("MiniClueNextKeyWithPostkeys", { fg = c.blue, bold = true })
-
 	-- Blink.cmp
 	hl("BlinkCmpMenuSelection", { fg = c.fg, bg = c.selection, bold = true })
 	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
@@ -127,7 +114,6 @@ function M.set(c, blend)
 	hl("BlinkCmpGhostText", { fg = c.comment })
 	hl("BlinkCmpSignatureHelpActiveParameter", { fg = c.blue, bold = true })
 	hl("BlinkCmpScrollBarGutter", { fg = c.bgSubtle })
-
 	local kind_colours = {
 		Field = c.purple,
 		Variable = c.fg,
@@ -157,7 +143,6 @@ function M.set(c, blend)
 	for kind, colour in pairs(kind_colours) do
 		hl("BlinkCmpKind" .. kind, { fg = colour })
 	end
-
 	-- Pmenu
 	hl("PmenuSel", { fg = c.fg, bg = c.selection, bold = true })
 	hl("PmenuKind", { fg = c.comment })
@@ -165,7 +150,6 @@ function M.set(c, blend)
 	hl("PmenuMatch", { fg = c.blue, bold = true })
 	hl("PmenuMatchSel", { fg = c.blue, bold = true })
 	hl("PmenuExtra", { fg = c.comment })
-
 	-- Diagnostics
 	hl("DiagnosticUnderlineError", { undercurl = true, sp = c.red })
 	hl("DiagnosticUnderlineWarn", { undercurl = true, sp = c.yellow })
@@ -186,7 +170,6 @@ function M.set(c, blend)
 	hl("DiagnosticFloatingWarn", { fg = c.yellow })
 	hl("DiagnosticFloatingHint", { fg = c.cyan })
 	hl("DiagnosticFloatingInfo", { fg = c.blue })
-
 	-- LSP
 	hl("LspInlayHint", { fg = c.comment, bg = blend(c.fg, c.bg, 0.05), italic = true })
 	hl("LspReferenceText", { bg = c.selection })
@@ -195,7 +178,6 @@ function M.set(c, blend)
 	hl("LspCodeLens", { fg = c.comment })
 	hl("LspCodeLensSeparator", { fg = c.comment })
 	hl("LspSignatureActiveParameter", { fg = c.blue, bold = true })
-
 	-- Semantic tokens
 	hl("@lsp.type.class", { fg = c.orange })
 	hl("@lsp.type.function", { fg = c.blue })
@@ -206,7 +188,6 @@ function M.set(c, blend)
 	hl("@lsp.type.enumMember", { fg = c.yellow })
 	hl("@lsp.type.keyword", { fg = c.purple })
 	hl("@lsp.type.comment", { fg = c.comment, italic = true })
-
 	-- Diff and git
 	hl("DiffAdd", { bg = blend(c.green, c.bg, 0.12) })
 	hl("DiffDelete", { bg = blend(c.red, c.bg, 0.12) })
@@ -219,29 +200,24 @@ function M.set(c, blend)
 	hl("GitSignsChange", { fg = c.yellow })
 	hl("GitSignsDelete", { fg = c.red })
 	hl("GitSignsCurrentLineBlame", { fg = c.comment, italic = true })
-
 	-- UI elements
 	hl("TabLineSel", { bg = c.bg, fg = c.fg, bold = true })
 	hl("QuickFixLine", { bg = c.selection, bold = true })
 	hl("ColorColumn", { bg = c.bgSubtle })
 	hl("CmdlineCursor", { fg = c.bg, bg = c.blue })
-
 	-- Spelling
 	hl("SpellBad", { undercurl = true, sp = c.red })
 	hl("SpellCap", { undercurl = true, sp = c.yellow })
 	hl("SpellRare", { undercurl = true, sp = c.cyan })
 	hl("SpellLocal", { undercurl = true, sp = c.blue })
-
 	-- Folding
 	hl("Folded", { fg = blend(c.blue, c.comment, 0.4), bg = blend(c.blue, c.bg, 0.07) })
 	hl("FoldColumn", { fg = c.comment, bg = c.bg })
 	hl("TreesitterContextSeparator", { fg = separator })
-
 	-- Copilot
 	hl("CopilotSuggestion", { fg = c.purple, italic = true })
 	hl("CopilotPanelLabel", { fg = c.blue, bold = true })
 	hl("CopilotPanelSelected", { fg = c.blue, bg = c.selection, bold = true })
-
 	-- Mini modules
 	hl("MiniHipatternsFixme", { fg = c.bg, bg = c.red, bold = true })
 	hl("MiniHipatternsTodo", { fg = c.bg, bg = c.orange, bold = true })
@@ -249,11 +225,9 @@ function M.set(c, blend)
 	hl("MiniHipatternsHack", { fg = c.bg, bg = c.purple, bold = true })
 	hl("MiniCursorword", { bg = c.selection })
 	hl("MiniCursorwordCurrent", { bg = c.selection })
-
 	-- Oil
 	hl("OilDir", { fg = c.blue, bold = true })
 	hl("OilDirIcon", { fg = c.blue })
-
 	-- Statusline
 	hl("StlModeN", { fg = c.bg, bg = c.blue, bold = true })
 	hl("StlModeI", { fg = c.bg, bg = c.green, bold = true })
@@ -268,10 +242,8 @@ function M.set(c, blend)
 	hl("StlLSP", { fg = blend(c.comment, c.bg, 0.7) })
 	hl("StlFT", { fg = c.comment })
 	hl("StlPos", { fg = blend(c.comment, c.bg, 0.6) })
-
 	-- Indent guides (indent-blankline)
 	hl("IblIndent", { fg = indent })
 	hl("IblScope", { fg = blend(c.blue, c.comment, 0.3) })
 end
-
 return M

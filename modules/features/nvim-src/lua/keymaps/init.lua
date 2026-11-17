@@ -1,6 +1,5 @@
 -- Global keymaps, grouped by domain. Buffer-local maps live with the feature
 -- that owns the buffer.
-
 require("keymaps.editor")
 require("keymaps.motion")
 require("keymaps.windows")
