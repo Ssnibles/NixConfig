@@ -1,479 +1,517 @@
-/* Vague — a minimal, modern Spicetify theme
-   A hand-written theme that mirrors the rest of the NixConfig desktop: the
-   active "vague" warm-grey palette, SF Pro typography, gently rounded floating
-   panels and a restrained accent highlight.
+/* Ziro, vendored from https://github.com/schnensch0/ziro at 46428d4b.
+   Upstream's user.css only imports ziro.css from a remote URL, so the
+   stylesheet is copied here to avoid a network fetch at startup.
 
-   Every colour below comes from the `customColorScheme` in spotify.nix, which
-   Spicetify exposes as `--spice-<key>` / `--spice-rgb-<key>` custom
-   properties. That keeps this stylesheet palette-agnostic: change
-   `theme.active` and the whole player follows.
+   The theme is unchanged apart from the local variables below and the colour
+   source: every colour comes from the --spice-* properties that Spicetify
+   writes from customColorScheme in spotify.nix, which is built from
+   config.theme.colours. Change theme.active and the player follows. */
 
-   Selectors target Spotify's Encore design tokens and the stable
-   `.main-*` / `.Root__*` class names, so the theme keeps working across
-   Spotify releases without depending on hashed CSS class names. */
 
-/* Design tokens */
 :root {
-  --radius-lg: 16px;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-xs: 6px;
-  --radius-pill: 999px;
-
-  --font-sans: "SF Pro Text", "SF Pro Display", "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "Maple Mono NR NF", "Maple Mono NR", ui-monospace, monospace;
-
-  --panel-gap: 8px;
-  --hairline: 1px solid var(--spice-border-inactive);
-  --transition: 140ms ease;
-
-  /* Encore's overlay shadow token, flattened. */
-  --encore-overlay-drop-shadow: 0 0 #0000;
+    --br-1: 10px;
+    --br-2: 8px;
+    --scrollbar: unset;
 }
 
-/* Flat surfaces — no shadows or glows anywhere
-   The rest of the desktop is flat, so strip every box shadow, text shadow and
-   drop shadow — including the ones Spotify ships in its own stylesheets. */
-*,
-*::before,
-*::after {
-  box-shadow: none !important;
-  text-shadow: none !important;
+/* background */
+.main-home-homeHeader,
+.main-entityHeader-backgroundColor,
+.main-actionBarBackground-background {
+  display: none;
 }
-
-/* Spotify uses `filter: drop-shadow()` (rather than `box-shadow`) for the
-   card play button, its cover art and the context-menu arrow; cancel those
-   too without touching functional filters like `blur()`/`brightness()`. */
-.main-card-PlayButtonContainer,
-.main-card-PlayButtonContainer > *,
-.main-contextMenu-tippy {
-  filter: none !important;
-}
-
-/* Encore token remap
-   Redirect Spotify's own design tokens at the desktop palette so native
-   components (cards, menus, buttons, text, inputs) inherit it automatically. */
-:root,
-.encore-base-set,
-.encore-dark-theme,
-.encore-dark-theme .encore-base-set {
-  --background-base: var(--spice-main);
-  --background-highlight: var(--spice-highlight);
-  --background-press: var(--spice-main);
-  --background-elevated-base: var(--spice-card);
-  --background-elevated-highlight: var(--spice-selected-row);
-  --background-elevated-press: var(--spice-selected-row);
-  --background-tinted-base: var(--spice-card);
-  --background-tinted-highlight: var(--spice-selected-row);
-  --background-tinted-press: var(--spice-selected-row);
-
-  --text-base: var(--spice-text);
-  --text-subdued: var(--spice-subtext);
-  --text-bright-accent: var(--spice-button-active);
-  --text-negative: var(--spice-notification-error);
-
-  --essential-base: var(--spice-text);
-  --essential-subdued: var(--spice-subtext);
-  --essential-bright-accent: var(--spice-button-active);
-  --essential-negative: var(--spice-notification-error);
-
-  --decorative-base: var(--spice-text);
-  --decorative-subdued: var(--spice-selected-row);
-}
-
-/* Accent surfaces (play buttons, toggles, selected pills). */
-.encore-bright-accent-set {
-  --background-base: var(--spice-button);
-  --background-highlight: var(--spice-button-active);
-  --background-press: var(--spice-button-active);
-  --text-base: var(--spice-main);
-}
-
-/* Typography */
-*,
-*::before,
-*::after {
-  font-family: var(--font-sans) !important;
-}
-
-/* Monospaced, tabular timers read cleaner and match the terminal/status bar. */
-.playback-bar__progress-time,
-.playback-bar__progress-time-elapsed,
-.main-playbackBarRemainingTime-container,
-.main-trackList-durationColumn {
-  font-family: var(--font-mono) !important;
-  font-feature-settings: "tnum" 1;
-}
-
-/* Panel shell — colour only
-   Spotify's Encore layout already floats the panels: `.Root__top-container`
-   uses `gap`/`padding` of `--panel-gap` (8px) and rounds `.Root__nav-bar` /
-   `.Root__main-view` at 8px, while `.Root__now-playing-bar` uses
-   `padding: 8px; margin: -8px` to stay full-bleed. Do not override any of that
-   geometry — only recolour the surfaces, otherwise the playbar gains stray
-   padding/overflow. */
-.Root {
+.main-topBar-overlay {
   background-color: var(--spice-main);
 }
-
-.Root__top-container {
-  background-color: var(--spice-main) !important;
-}
-
-.Root__nav-bar,
-.Root__right-sidebar {
-  background-color: var(--spice-sidebar) !important;
-}
-
-.Root__main-view {
-  background-color: var(--spice-main) !important;
-}
-
-.Root__now-playing-bar {
-  background-color: var(--spice-player) !important;
-}
-
-.main-nowPlayingBar-nowPlayingBar {
-  background-color: transparent !important;
-}
-
-/* Top bar */
 .main-topBar-background {
-  background-color: var(--spice-main) !important;
-  background-image: none !important;
+  opacity: 1 !important;
 }
-
-.main-topBar-overlay,
-.Root__globalNav {
-  background-color: transparent !important;
+* {
+  box-shadow: none !important;
 }
-
-.main-topBar-container,
-.main-topBar-topbarContent {
-  -webkit-app-region: drag;
+/* dividers */
+.Y_WW1akjiQKXSzCBalCD {
+  display: none;
 }
-
-.main-topBar-topbarContentWrapper a,
-.main-topBar-topbarContentWrapper button,
-.main-topBar-historyButtons button,
-.main-globalNav-navLink,
-.x-searchInput-searchInputInput {
-  -webkit-app-region: no-drag;
+/* navbar */
+.main-rootlist-rootlistDividerContainer {
+  display: none;
 }
-
-.main-topBar-historyButtons button {
-  border-radius: var(--radius-pill) !important;
+.main-navBar-navBarLinkActive,
+.main-collectionLinkButton-selected,
+.main-rootlist-rootlistItemLinkActive {
+  color: var(--spice-shadow) !important;
+  background: var(--spice-selected-row) !important;
 }
-
-.main-topBar-historyButtons button:hover {
-  background-color: var(--spice-selected-row) !important;
-}
-
-/* Pill-shaped search field. */
-.x-searchInput-searchInputInput,
-.main-topBar-searchBar input,
-.main-globalNav-searchBar input {
-  border: var(--hairline) !important;
-  border-radius: var(--radius-pill) !important;
-  background-color: var(--spice-card) !important;
-  transition: border-color var(--transition), background-color var(--transition);
-}
-
-.x-searchInput-searchInputInput:hover,
-.x-searchInput-searchInputInput:focus,
-.main-topBar-searchBar input:focus {
-  border-color: var(--spice-border-active) !important;
-  background-color: var(--spice-selected-row) !important;
-}
-
-/* Left sidebar / library */
-.main-yourLibraryX-entryPoints {
-  border-radius: var(--radius-sm);
-}
-
-.main-yourLibraryX-navItem,
-.main-yourLibraryX-listItem {
-  border-radius: var(--radius-sm);
-}
-
-.main-yourLibraryX-navLink,
-.main-yourLibraryX-listRow {
-  border-radius: var(--radius-sm) !important;
-  transition: background-color var(--transition), color var(--transition);
-}
-
-.main-yourLibraryX-navLink:hover,
-.main-yourLibraryX-listRow:hover {
-  background-color: var(--spice-selected-row) !important;
-}
-
-.main-yourLibraryX-navLinkActive,
-.main-yourLibraryX-navLinkActive:hover {
-  background-color: var(--spice-selected-row) !important;
-  color: var(--spice-text) !important;
-}
-
-/* Selected entry points (Liked Songs, etc.) get the accent instead of the
-   stock white-on-black inversion. */
-.main-yourLibraryX-navLinkActive .main-yourLibraryX-icon,
-.main-yourLibraryX-navLinkActive svg {
-  color: var(--spice-button-active) !important;
-  fill: var(--spice-button-active) !important;
-}
-
+.main-navBar-navBarLink,
 .main-collectionLinkButton-collectionLinkButton,
+.main-rootlist-rootlistItemLink,
 .main-createPlaylistButton-button {
-  border-radius: var(--radius-sm) !important;
-  transition: background-color var(--transition);
+  border-radius: var(--br-1) !important;
 }
-
+.main-navBar-navBarLink:hover,
 .main-collectionLinkButton-collectionLinkButton:hover,
+.main-rootlist-rootlistItemLink:hover,
 .main-createPlaylistButton-button:hover {
-  background-color: var(--spice-selected-row) !important;
+  background: var(--spice-button-disabled);
 }
-
-/* Cards & shelves */
-.main-card-card {
-  border: var(--hairline) !important;
-  border-radius: var(--radius) !important;
-  background-color: var(--spice-card) !important;
-  transition:
-    background-color var(--transition),
-    border-color var(--transition),
-    transform var(--transition);
+.main-rootlist-rootlistItem {
+  padding: 0 8px 0 calc(8px + var(--indentation) * 8px);
 }
-
-.main-card-card:hover,
-.main-card-card[data-context-menu-open="true"] {
-  border-color: var(--spice-border-active) !important;
-  background-color: var(--spice-selected-row) !important;
-  transform: translateY(-2px);
+.main-rootlist-rootlistItemLink {
+  padding: 0 16px;
 }
-
-.main-card-imageContainer,
-.main-card-imageContainerOld,
-.main-cardImage-imageWrapper,
-.main-cardImage-image,
-.main-cardImage-imageWrapper > div {
-  border-radius: var(--radius-sm) !important;
+.main-rootlist-statusIcons,
+.main-rootlist-expandArrow {
+  position: absolute;
+  top: 10px;
+  right: 24px;
 }
-
-.main-card-PlayButtonContainer button,
-.main-playButton-PlayButton button {
-  border-radius: var(--radius-pill) !important;
+.main-rootlist-expandArrow {
+  top: 8px;
+  color: var(--spice-subtext);
 }
-
-/* The `.main-playButton-PlayButton` element is just an always-present wrapper;
-   Spotify fades the real `<button>` inside it in on hover. Keep the wrapper
-   completely transparent so it can never show as an empty circle. */
-.main-playButton-PlayButton {
-  background-color: transparent !important;
+.main-rootlist-rootlistItemLinkActive + .main-rootlist-statusIcons .main-rootlist-playButton,
+.main-rootlist-rootlistItemLinkActive + .main-rootlist-expandArrow {
+  color: var(--spice-shadow) !important;
 }
-
-/* Play buttons & accent controls */
-/* Play/pause and card play buttons are `data-encore-id="buttonPrimary"`.
-   Spicetify already recolours them through `.encore-bright-accent-set`, and
-   Spotify fades the button in on hover. Do NOT paint the background directly:
-   an `!important` background makes the (otherwise transparent) button always
-   visible as an empty accent circle and stacks a second background on top of
-   the playbar's own circle. */
-
-/* Playbar play/pause: recolour the existing inner circle through the design
-   token instead, so only one surface is ever painted. */
-.main-nowPlayingBar-nowPlayingBar button[data-encore-id="buttonPrimary"],
-.main-nowPlayingBar-nowPlayingBar .main-playPauseButton-button {
-  --background-base: var(--spice-button);
-  --background-highlight: var(--spice-button-active);
-  --background-press: var(--spice-button-active);
-  --text-base: var(--spice-main);
-  color: var(--spice-main) !important;
+.main-navBar-navBarLink {
+  color: var(--spice-text);
 }
-
-.main-addButton-button.main-addButton-active,
-.main-addButton-active {
-  color: var(--spice-button-active) !important;
+.main-collectionLinkButton-collectionLinkButton > *,
+.main-createPlaylistButton-button {
+  opacity: 1 !important;
 }
-
-/* Progress / volume sliders */
-.progress-bar {
-  --bg-color: var(--spice-selected-row);
-  --fg-color: var(--spice-button);
-  --progress-bar-radius: var(--radius-pill);
+.main-rootlist-rootlist .os-scrollbar {
+  padding: 0 0 0 8px;
 }
-
-.x-progressBar-progressBarBg,
-.x-progressBar-sliderArea {
-  border-radius: var(--radius-pill) !important;
+/* player */
+.main-nowPlayingBar-center .playback-progressbar {
+  position: absolute;
+  left: 0;
+  bottom: 84px;
 }
-
-.x-progressBar-fillColor {
-  border-radius: var(--radius-pill) !important;
-  background-color: var(--spice-button) !important;
+.main-nowPlayingBar-nowPlayingBar:not(:only-child) .playback-progressbar {
+  bottom: 108px;
 }
-
+.playback-bar {
+  --bar: var(--spice-button);
+}
+.volume-bar {
+  --bar: var(--spice-subtext);
+  margin-right: 8px;
+}
+.playback-bar .progress-bar {
+  --progress-bar-radius: 0;
+}
+.playback-bar:hover .progress-bar,
+.playback-bar .DuvrswZugGajIFNXObAr {
+  --progress-bar-height: 8px;
+}
+.x-progressBar-progressBarBg {
+  background-color: var(--spice-button-disabled);
+}
+.DuvrswZugGajIFNXObAr .progress-bar__slider,
+.epWhU7hHGktzlO_dop6z {
+  background-color: var(--bar) !important;
+}
 .progress-bar__slider {
-  background-color: var(--spice-text) !important;
-  border: 2px solid var(--spice-main);
-  transform: scale(0);
-  transition: transform var(--transition);
+  display: block;
+  background-color: var(--spice-shadow);
+  border: 2px solid var(--bar);
+  height: 16px;
+  width: 16px;
 }
-
-.progress-bar:hover .progress-bar__slider {
-  transform: scale(1);
+.playback-bar .progress-bar__slider {
+  height: 20px;
+  width: 20px;
 }
-
-/* Now-playing bar */
-.main-nowPlayingWidget-coverArt .cover-art,
-.main-coverSlotCollapsed-container,
-.main-nowPlayingWidget-nowPlaying .cover-art {
-  border-radius: var(--radius-sm) !important;
+.playback-bar__progress-time-elapsed,
+.main-playbackBarRemainingTime-container {
+  color: var(--spice-subtext);
+  position: absolute;
+  margin-bottom: 30px;
+  right: 266px;
 }
-
-.main-nowPlayingWidget-nowPlaying a,
-.main-nowPlayingWidget-trackInfo a {
-  transition: color var(--transition);
+.playback-bar__progress-time-elapsed {
+  right: 308px;
 }
-
-.main-nowPlayingWidget-nowPlaying a:hover,
-.main-nowPlayingWidget-trackInfo a:hover {
-  color: var(--spice-button-active) !important;
+.playback-bar__progress-time-elapsed::after {
+  content: '  /';
 }
-
-.main-nowPlayingBar-extraControls button:hover,
-.main-nowPlayingBar-right button:hover {
+.player-controls__buttons {
+  margin: 0;
+}
+.player-controls__buttons button:not(.main-playPauseButton-button) {
+  color: var(--spice-button) !important;
+}
+.connect-device-list-content {
+  border-radius: var(--br-1);
+  border: 1px solid var(--spice-button-disabled);
+  padding: 12px;
+}
+.connect-device-list-item:hover {
+  background-color: var(--spice-button-disabled);
+  border-radius: var(--br-2);
+}
+.cover-art-image {
+  border-radius: calc(var(--br-2) / 2);
+}
+.main-coverSlotCollapsed-container[aria-hidden='true'] .cover-art-image {
+  border-radius: var(--br-1);
+}
+/* friends */
+.main-buddyFeed-addFriendsContainer {
+  background-color: var(--spice-sidebar);
+}
+.main-buddyFeed-friendActivity {
+  padding: 8px;
+  margin: 8px;
+  background: var(--spice-card);
+  border-radius: var(--br-1);
+}
+.HdRGC,
+.eEsqRZ,
+.main-buddyFeed-usernameAndTimestamp a {
   color: var(--spice-text) !important;
 }
-
-.main-connectBar-connectBar {
+.main-buddyFeed-activityMetadata > :not(:first-child) a,
+.main-buddyFeed-timestamp {
+  color: var(--spice-subtext) !important;
+}
+.main-avatar-avatar.vreGJrlRqoFkzlSQwvsJ:after {
+  background: var(--spice-text);
+  box-shadow: none;
+}
+/* cards */
+.main-card-card,
+.Z35BWOA10YGn5uc9YgAp,
+.main-heroCard-card,
+.a2ruVaZt_DdrdHz3GqgU,
+.x-categoryCard-CategoryCard {
+  background-color: var(--spice-card);
+  border-radius: var(--br-1);
+}
+.Z35BWOA10YGn5uc9YgAp:hover {
+  background: var(--spice-button-disabled);
+}
+.main-cardImage-imageWrapper:not(.main-cardImage-circular) {
+  border-radius: var(--br-2);
+}
+.Z35BWOA10YGn5uc9YgAp .main-image-image {
+  border-radius: var(--br-2) 0 0 var(--br-2);
+}
+.zXwER4Lsqq_e7fVVaPkZ {
   background-color: transparent !important;
-  color: var(--spice-subtext) !important;
 }
-
-/* Track lists */
-.main-trackList-trackListHeader,
-.main-trackList-trackListHeaderRow {
+.cSeieV {
+  background-color: var(--spice-button-active);
+}
+/* menus */
+.main-contextMenu-menu {
+  border: 1px solid var(--spice-button-disabled);
+  border-radius: var(--br-1);
+  padding: 8px;
+}
+.main-contextMenu-menuItemButton:hover {
+  background-color: var(--spice-button-disabled);
+}
+.main-contextMenu-menuItemButton {
+  border-radius: var(--br-2);
+}
+.main-contextMenu-menuItemButton::before,
+.main-contextMenu-menuItemButton::after {
+  display: none;
+}
+.main-contextMenu-menuItemButton {
+  color: var(--spice-text) !important;
+}
+/* input */
+.x-searchInput-searchInputInput,
+.x-proxySettings-proxyInput,
+.main-dropDown-dropDown,
+.QZhV0hWVKlExlKr266jo,
+.amTaUy6eMlbKh0wzrOnb {
+  background: var(--spice-card);
+  border-radius: var(--br-2);
+}
+.x-searchInput-searchInputSearchIcon,
+.x-searchInput-searchInputInput,
+.x-searchInput-searchInputClearButton {
+  color: var(--spice-text) !important;
+}
+/* buttons */
+.wCl7pMTEE68v1xuZeZiB:hover,
+.w6j_vX6SF5IxSXrrkYw5:hover,
+.w6j_vX6SF5IxSXrrkYw5[data-context-menu-open='true'],
+.fLS8v3_EfBadEerbGVoR:hover,
+.aAr9nYtPsG7P2LRzciXc {
+  background: var(--spice-button-disabled);
+  border-radius: var(--br-2);
+}
+.w6j_vX6SF5IxSXrrkYw5 {
+  background-color: transparent;
+}
+.main-actionBar-ActionBarRow button:not(.bqeOGM),
+.QhF9ZR7YOiJeFiEnfkOr button,
+.CpQBQL6M4D3bquNOpKd9,
+.player-controls__buttons button,
+.DbMYFmOEEz9PH1h1zK9n button,
+.main-moreButton-button,
+.w6j_vX6SF5IxSXrrkYw5,
+.gIobRDHAxkAvUaF4_OOL button {
+  color: var(--spice-button);
+}
+.bqeOGM:hover .ButtonInner-sc-14ud5tc-0,
+.dkGAhA:hover .ButtonInner-sc-14ud5tc-0,
+.fBTYgGyvIbHizHIj7AAX,
+.main-playPauseButton-button {
+  background-color: var(--spice-button);
+}
+.kxBVag {
+  color: var(--spice-subtext);
+}
+.main-button-primary,
+.fBTYgGyvIbHizHIj7AAX,
+.main-playPauseButton-button {
+  color: var(--spice-shadow) !important;
+}
+.aAr9nYtPsG7P2LRzciXc {
+  border: none;
+}
+.main-button-outlined {
+  border-color: var(--spice-button);
+}
+.rEx3EYgBzS8SoY7dmC6x rect {
+  fill: var(--spice-button);
+}
+/* scrollbar */
+.os-scrollbar {
+  display: var(--scrollbar);
+}
+.os-scrollbar-handle {
+  border-radius: 8px;
+  background: var(--spice-button-disabled) !important;
+}
+/* tab bar */
+.oaNVBli46GtVjaQKB15g,
+.marketplace-tabBar-active,
+.lyrics-tabBar-active {
+  color: var(--spice-shadow);
+  background: var(--spice-tab-active) !important;
+}
+.JdlKTdpMquftpMwwegZo,
+.marketplace-tabBar-headerItemLink,
+.lyrics-tabBar-headerItemLink {
+  border-radius: var(--br-2);
+}
+.JdlKTdpMquftpMwwegZo:hover,
+.marketplace-tabBar-headerItemLink:hover {
+  background: var(--spice-button-disabled);
+}
+/* marketplace */
+.main-navBar-navBarItem[data-id='/spicetify-marketplace'] svg {
+  vertical-align: middle;
+}
+.main-type-mestoBold {
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+.marketplace-card-desc {
+  font-size: 0.875rem;
+  line-height: 1rem;
+}
+.main-cardHeader-text {
+  font-weight: 700;
+}
+.marketplace-header {
+  height: 36px;
+}
+.marketplace-header__right {
+  position: fixed;
+}
+.marketplace-settings-button {
+  padding: 12px 12px 8px;
+  border-radius: var(--br-2);
+}
+.marketplace-settings-button:hover {
+  background-color: var(--spice-button-disabled);
+}
+.GenericModal > * {
   background-color: var(--spice-main) !important;
+  color: var(--spice-text);
 }
-
-.main-trackList-trackListRow {
-  border-radius: var(--radius-sm) !important;
-  transition: background-color var(--transition);
-}
-
-.main-trackList-trackListRow:hover {
-  background-color: var(--spice-selected-row) !important;
-}
-
-.main-trackList-trackListRow.main-trackList-selected,
-.main-trackList-trackListRow.main-trackList-selected:hover,
-.main-trackList-selected {
-  background-color: var(--spice-selected-row) !important;
-}
-
-.main-trackList-rowTitle,
-.main-trackList-trackListRow.main-trackList-selected .main-trackList-rowTitle {
-  color: var(--spice-text) !important;
-}
-
-.main-trackList-selected .main-trackList-rowTitle,
-.main-trackList-trackListRow.main-trackList-selected .main-trackList-rowTitle {
-  color: var(--spice-button-active) !important;
-}
-
-/* The little animated "now playing" equaliser. */
-.main-trackList-playingIcon,
-.view-homeShortcutsGrid-playingIcon,
-[src*="equaliser"] {
-  color: var(--spice-button-active) !important;
-  fill: var(--spice-button-active) !important;
-  background-color: var(--spice-button-active) !important;
-}
-
-/* Menus, modals, tooltips & popovers */
-.main-contextMenu-menu,
-.main-userWidget-dropDownMenu,
-.main-popupModal-container .main-popupModal-modal,
 .GenericModal,
-.GenericModal__overlay + .GenericModal,
-[role="menu"] {
-  border: var(--hairline) !important;
-  border-radius: var(--radius) !important;
-  background-color: var(--spice-card) !important;
+.GenericModal > * {
+  border-radius: var(--br-1);
 }
-
-.main-contextMenu-menuItemButton,
-.main-userWidget-dropDownMenuItemButton,
-.main-contextMenu-subMenuIcon {
-  border-radius: var(--radius-xs) !important;
-  transition: background-color var(--transition);
+.main-playButton-PlayButton {
+  color: var(--spice-shadow) !important;
 }
-
-.main-contextMenu-menuItemButton:hover,
-.main-userWidget-dropDownMenuItemButton:hover {
-  background-color: var(--spice-selected-row) !important;
+.marketplace-card--installed {
+  border: none;
 }
-
-.main-contextMenu-menuItemButton:focus-visible {
-  outline: 2px solid var(--spice-border-active);
-  outline-offset: -2px;
+/* headers */
+.CmkY1Ag0tJDfnFXbGgju:not(.hNTPwmaxPotdJ14dx2W9 *) {
+  border-radius: var(--br-1);
 }
-
-[data-tippy-root] .tippy-box,
-.main-tooltip-container,
-.main-tooltip-tooltip {
-  border: var(--hairline) !important;
-  border-radius: var(--radius-sm) !important;
-  background-color: var(--spice-card) !important;
+.main-entityHeader-gray,
+.main-entityHeader-metaData,
+.UyzJidwrGk3awngSGIwv,
+.main-entityHeader-divider {
   color: var(--spice-text) !important;
 }
-
-/* Chips, buttons & inputs */
-.ChipInnerComponent {
-  border: var(--hairline) !important;
-  background-color: var(--spice-card) !important;
+.main-entityHeader-background {
+  transform: none !important;
+  margin-top: 64px;
+  border-radius: var(--br-1);
+}
+.main-entityHeader-overlay {
+  background: none;
+}
+.main-entityHeader-withBackgroundImage,
+.main-entityHeader-withBackgroundImage + div {
+  transform: translateY(64px);
+}
+/* tracklist */
+.main-trackList-trackList .JUa6JJNj7R_Y3i4P8YUX {
+  background: var(--spice-card);
+  border-radius: var(--br-1);
+  padding: 8px;
+}
+.main-trackList-trackListHeaderRow {
+  border: none;
+}
+.main-trackList-trackListRow:hover,
+.jtZMR8Hj94od6BQce98P:hover {
+  background-color: var(--spice-button-disabled);
+}
+.main-trackList-trackListRow.main-trackList-selected,
+.jtZMR8Hj94od6BQce98P:active {
+  background-color: var(--spice-tab-active) !important;
+}
+.main-trackList-selected * {
+  color: var(--spice-shadow) !important;
+}
+.main-trackList-selected .main-trackList-playingIcon,
+.main-trackList-selected .main-tag-container {
+  background-color: var(--spice-shadow);
   color: var(--spice-text) !important;
-  transition: background-color var(--transition), border-color var(--transition);
 }
-
-.ChipInnerComponent:hover {
-  border-color: var(--spice-border-active) !important;
-  background-color: var(--spice-selected-row) !important;
+.main-trackList-trackListRow,
+.jtZMR8Hj94od6BQce98P {
+  border-radius: var(--br-2);
 }
-
-.ChipInnerComponent-selected,
-.ChipInnerComponent-selected:hover {
-  border-color: var(--spice-button-active) !important;
-  background-color: var(--spice-button) !important;
-  color: var(--spice-main) !important;
+.main-trackList-trackList {
+  border-radius: var(--br-1);
+  border-bottom: 16px solid var(--spice-card);
 }
-
-/* Lyrics */
-.lyrics-lyricsContainer-LyricsLine {
-  color: var(--spice-subtext) !important;
+.fcehhQ {
+  color: var(--spice-subtext);
 }
-
-.lyrics-lyricsContainer-LyricsLine.lyrics-lyricsContainer-LyricsLine-active,
-.lyrics-lyricsContainer-LyricsLineActive {
-  color: var(--spice-text) !important;
-}
-
-/* Scrollbars */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  border: 2px solid transparent;
-  border-radius: var(--radius-pill);
-  background-color: var(--spice-selected-row);
-  background-clip: content-box;
-}
-
-::-webkit-scrollbar-thumb:hover {
+.main-tag-container {
   background-color: var(--spice-subtext);
+}
+.main-trackList-playingIcon {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg id='playing-icon' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3Cstyle%3E %23playing-icon %7B fill: %2320BC54; %7D @keyframes play %7B 0%25 %7Btransform: scaleY(1);%7D 3.3%25 %7Btransform: scaleY(0.9583);%7D 6.6%25 %7Btransform: scaleY(0.9166);%7D 9.9%25 %7Btransform: scaleY(0.8333);%7D 13.3%25 %7Btransform: scaleY(0.7083);%7D 16.6%25 %7Btransform: scaleY(0.5416);%7D 19.9%25 %7Btransform: scaleY(0.4166);%7D 23.3%25 %7Btransform: scaleY(0.25);%7D 26.6%25 %7Btransform: scaleY(0.1666);%7D 29.9%25 %7Btransform: scaleY(0.125);%7D 33.3%25 %7Btransform: scaleY(0.125);%7D 36.6%25 %7Btransform: scaleY(0.1666);%7D 39.9%25 %7Btransform: scaleY(0.1666);%7D 43.3%25 %7Btransform: scaleY(0.2083);%7D 46.6%25 %7Btransform: scaleY(0.2916);%7D 49.9%25 %7Btransform: scaleY(0.375);%7D 53.3%25 %7Btransform: scaleY(0.5);%7D 56.6%25 %7Btransform: scaleY(0.5833);%7D 59.9%25 %7Btransform: scaleY(0.625);%7D 63.3%25 %7Btransform: scaleY(0.6666);%7D 66.6%25 %7Btransform: scaleY(0.6666);%7D 69.9%25 %7Btransform: scaleY(0.6666);%7D 73.3%25 %7Btransform: scaleY(0.6666);%7D 76.6%25 %7Btransform: scaleY(0.7083);%7D 79.9%25 %7Btransform: scaleY(0.75);%7D 83.3%25 %7Btransform: scaleY(0.8333);%7D 86.6%25 %7Btransform: scaleY(0.875);%7D 89.9%25 %7Btransform: scaleY(0.9166);%7D 93.3%25 %7Btransform: scaleY(0.9583);%7D 96.6%25 %7Btransform: scaleY(1);%7D %7D %23bar1 %7B transform-origin: bottom; animation: play 0.9s -0.51s infinite; %7D %23bar2 %7B transform-origin: bottom; animation: play 0.9s infinite; %7D %23bar3 %7B transform-origin: bottom; animation: play 0.9s -0.15s infinite; %7D %23bar4 %7B transform-origin: bottom; animation: play 0.9s -0.75s infinite; %7D %3C/style%3E%3C/defs%3E%3Ctitle%3Eplaying-icon%3C/title%3E%3Crect id='bar1' class='cls-1' width='4' height='24'/%3E%3Crect id='bar2' class='cls-1' x='6' width='4' height='24'/%3E%3Crect id='bar3' class='cls-1' x='12' width='4' height='24'/%3E%3Crect id='bar4' class='cls-1' x='18' width='4' height='24'/%3E%3C/svg%3E");
+  background: var(--spice-text);
+  content-visibility: hidden;
+}
+.main-trackList-filterHighlight {
+  background-color: var(--spice-button);
+  color: var(--spice-shadow);
+}
+/* podcasts */
+.main-yourEpisodes-coverContainer,
+.SpVoh9vvBN0kIwzfCiBh,
+.ltjunXlP2FwPEVF992n9 {
+  border-radius: var(--br-1);
+}
+.TT1tIewS2iI8Uz8kLuQB {
+  border-radius: var(--br-2);
+  margin: 0 8px;
+}
+.TT1tIewS2iI8Uz8kLuQB:hover {
+  background-color: var(--spice-button-disabled);
+}
+.Ng3dPPA2_1CFYkzPukjM {
+  background: var(--spice-text);
+}
+.Q3wDjXPNY4lACLUxARrd + div {
+  background-color: var(--spice-card);
+  padding: 8px 0;
+  border-radius: var(--br-1);
+}
+.knWBkA {
+  color: var(--spice-subtext);
+}
+.qfYkuLpETFW3axnfMntO,
+.poz9gZKE7xqFwgk231J4,
+.UyzJidwrGk3awngSGIwv,
+.xWm_uA0Co4SXVxaO7wlB {
+  color: var(--spice-text) !important;
+}
+path[fill='#1ed760'] {
+  fill: var(--spice-button) !important;
+}
+.E4I5I7G2CfW32hLWZaqE,
+.SpVoh9vvBN0kIwzfCiBh {
+  background-color: var(--spice-card);
+}
+.rFwxt8s8DYY8p1O7tYZW {
+  background: none;
+}
+/* settings */
+.x-toggle-indicator {
+  height: 18px;
+  width: 18px;
+  top: 3px;
+  left: 3px;
+  background: var(--spice-shadow) !important;
+}
+input:checked ~ .x-toggle-indicatorWrapper .x-toggle-indicator {
+  right: 3px;
+}
+.cOFYck {
+  color: var(--spice-subtext);
+}
+.main-playlistEditDetailsModal-textElement {
+  border-radius: var(--br-1);
+}
+/* fullscreen */
+.npv-main-container .npv-cross-fade-image {
+  border-radius: calc(var(--br-1) * 3);
+}
+.npv-main-container .playback-bar__progress-time-elapsed,
+.npv-main-container .main-playbackBarRemainingTime-container {
+  margin-bottom: -125px;
+  margin-right: -86px;
+}
+.npv-up-next {
+  background: var(--spice-card) !important;
+  border: none !important;
+  border-radius: var(--br-1);
+}
+.npv-up-next__image {
+  border-radius: var(--br-2);
+}
+.npv-header__metadata {
+  color: var(--spice-text);
+}
+/* misc */
+.hW9km7ku6_iggdWDR_Lg,
+.lyrics-lyricsContainer-LyricsContainer {
+  --lyrics-color-active: var(--spice-text) !important;
+  --lyrics-color-inactive: var(--spice-subtext) !important;
+  --lyrics-color-background: var(--spice-main) !important;
+}
+.lyrics-lyricsContainer-LyricsBackground {
+  background-image: none;
+}
+.jixVGx,
+.euRuBv {
+  color: var(--spice-text);
+}
+.XmR5VFpqXOcxRvhuf6OB {
+  border-radius: var(--br-1);
 }

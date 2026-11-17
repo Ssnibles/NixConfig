@@ -55,10 +55,6 @@
             "${builtins.getEnv "HOME"}/NixConfig";
 
         packages = with pkgs; [
-          # Rust extras (toolchain managed by languages.rust)
-          bacon
-          sea-orm-cli
-
           # Nix language tools
           nixfmt
           nil
@@ -69,6 +65,8 @@
           self'.packages.boilerplate
         ];
 
+        # Rust tooling and bacon live in the system profile so they are not
+        # limited to this repository.
         languages.rust.enable = true;
         languages.nix.enable = true;
 

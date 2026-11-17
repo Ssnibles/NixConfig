@@ -211,6 +211,7 @@ For language server wrappers, completion, DAP, and `:GenerateCompileFlags`, refe
   - `zls`: Wrapped with Wayland, wlroots, libxkbcommon, and libinput system headers for Wayland compositor development.
   - `vtsls`: Configured for TypeScript/JavaScript tooling.
 - **C/C++ Tooling & `:GenerateCompileFlags`**: Custom command generating project-local `compile_flags.txt` from active Nix shell flags (`CPATH`, `pkg-config`) for Clangd autocomplete.
+- **Rust Toolchain**: `rustc`, `cargo`, `rust-analyzer`, `rustfmt`, `clippy`, plus `bacon`, `cargo-nextest`, `cargo-edit`, `cargo-expand`, `cargo-outdated`, `cargo-audit`, `cargo-deny`, `sccache` and `sea-orm-cli` installed system-wide from [`development.nix`](modules/features/apps/development.nix). `sccache` only takes effect once `RUSTC_WRAPPER=sccache` is exported.
 - **Neovim Plugins**: Blink.cmp completion, Treesitter, FZF-Lua, Oil with clipboard image pasting (`OilPasteImage` / `<leader>p`), Gitsigns with diagnostic collision prevention, Grug-far find/replace, Flash jump motions, Rustaceanvim, Tiny Inline Diagnostics, and custom plugins (`sshinator`, `indentinator`, `zline`).
 - **SyncTeX Inverse Search**: Bidirectional sync between Zathura PDF reader and Neovim source lines powered by `neovim-remote` (`nvr`).
 - **Floating Jujutsu TUI (`<leader>gg`)**: Direct invocation of `jjui` inside a centred Neovim floating modal.
@@ -256,7 +257,7 @@ For hardware acceleration parameters, Modernz theming, SyncTeX setup, and audio 
 For stylesheet architecture, Sidebery selectors, and browser policies, refer to the **[Firefox & Sidebery Customisation Guide](docs/wiki/firefox.md)**:
 
 - **Firefox Developer Edition**: Browser configuration with FastFox optimisations, declarative `nixos.liveLinks` (`contents = true`) linking `userChrome.css`, `userContent.css`, and `startpage/` without git tree mutation, Sidebery vertical tab bar integration, and an embedded offline startpage WebExtension with Hjem-managed `colours.css`.
-- **Helium Browser**: Chromium-based Helium browser alternative ([`helium/default.nix`](modules/features/apps/helium/default.nix)) mirroring the Firefox theming and behaviour via enterprise policies, force-installed Web Store extensions, a themed startpage, and Wayland ozone acceleration. NVIDIA hosts use an ANGLE GL/VA-API path and the `helium-nvidia` wrapper; AMD hosts keep the Mesa defaults.
+- **Helium Browser**: Chromium-based Helium browser alternative ([`helium/default.nix`](modules/features/apps/helium/default.nix)) mirroring the Firefox theming and behaviour via enterprise policies, force-installed Web Store extensions, a themed startpage, and Wayland ozone acceleration. NVIDIA hosts also get a separate `helium-nvidia` launcher for the ANGLE GL/VA-API path, while the default launcher and AMD hosts keep the Mesa defaults.
 - **Centralised Default Applications**: Single source of truth ([`default-apps.nix`](modules/features/desktop-env/default-apps.nix)) managing systemwide MIME associations and default application preferences.
 
 ### Gaming Suite
@@ -766,7 +767,7 @@ direnv allow
 
 **Included Toolchains**:
 
-- **Rust**: `rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt`, `bacon`, `sea-orm-cli`
+- **Rust**: `rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt` (also installed system-wide, so `bacon` and the cargo helpers work outside this shell)
 - **Nix**: `nixfmt`, `nil` (Nix language server), `alejandra`
 - **Shell**: Unstable Fish 4+
 - **Scaffolding**: `boilerplate`

@@ -11,6 +11,21 @@
     let
       c = config.theme.colours;
       spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+
+      # NVIDIA's Chromium path blocklists some GPU work and explicit sync is
+      # disabled globally for WebKitGTK. Chromium supports explicit sync, so
+      # remove that workaround here and force the path used by Helium.
+      spotifyPackage =
+        if config.features.nvidia.enable then
+          pkgs.spotify.overrideAttrs (old: {
+            postFixup = (old.postFixup or "") + ''
+              wrapProgramShell $out/share/spotify/spotify \
+                --add-flags '--ignore-gpu-blocklist --enable-gpu-rasterization --use-gl=angle --use-angle=gl --force-prefers-reduced-motion' \
+                --unset __NV_DISABLE_EXPLICIT_SYNC
+            '';
+          })
+        else
+          pkgs.spotify;
     in
     {
       imports = [
@@ -30,53 +45,67 @@
           enable = true;
           wayland = lib.mkDefault true;
 
-          spotifyPackage = lib.mkDefault pkgs.spotify;
+          spotifyPackage = lib.mkDefault spotifyPackage;
 
-          # Theme built from the active palette. builtins.path copies it into
-          # the store for the theme's pathInStore option.
+          # Ziro with the active palette. user.css is the vendored upstream
+          # stylesheet, recoloured through the --spice-* properties below.
           theme = lib.mkDefault {
-            name = "Vague";
+            name = "Ziro";
             src = builtins.path {
               path = ./spicetify-theme;
-              name = "spicetify-vague";
+              name = "spicetify-ziro";
             };
             # Pure CSS theme, so there is no theme.js.
             injectThemeJs = false;
+
+            # Ziro leaves Spotify's own gradients and blurred surfaces in
+            # place. They repaint the whole window while scrolling, so drop
+            # them to keep frame times down on NVIDIA.
+            additionalCss = lib.mkDefault ''
+              *,
+              *::before,
+              *::after {
+                backdrop-filter: none !important;
+                text-shadow: none !important;
+              }
+
+              :root,
+              .encore-base-set,
+              .encore-dark-theme {
+                --background-noise: none;
+              }
+
+              .Root__main-view,
+              .main-entityHeader-container,
+              .main-entityHeader-background,
+              .main-home-homeHeader,
+              .main-nowPlayingBar-nowPlayingBar {
+                background-image: none !important;
+              }
+            '';
           };
 
           # Colours written to color.ini. Spicetify exposes each key as
           # --spice-<key> and --spice-rgb-<key>, which user.css uses.
+          # The mappings follow Ziro's own colour scheme: selected-row is the
+          # accent and shadow is the text drawn on top of it.
           customColorScheme = lib.mkDefault {
-            # Standard Spicetify keys.
             text = c.fg;
             subtext = c.fgMid;
             main = c.bg;
-            sidebar = c.bgRaised;
+            sidebar = c.bg;
             player = c.bg;
             card = c.bgRaised;
             shadow = c.bg;
-            selected-row = c.bgSubtle;
+            selected-row = c.accent;
             button = c.accent;
             button-active = c.accent;
-            button-disabled = c.fgDim;
+            # Hover backgrounds, borders and the seekbar track.
+            button-disabled = c.bgSubtle;
             tab-active = c.accent;
-            notification = c.teal;
+            notification = c.bgRaised;
             notification-error = c.red;
-            misc = c.bgSubtle;
-
-            # Extra keys used by this theme.
-            inherit (c)
-              accent
-              border
-              yellow
-              green
-              ;
-            accent-active = c.accent;
-            accent-inactive = c.bgSubtle;
-            border-active = c.accent;
-            border-inactive = c.border;
-            header = c.fgDim;
-            highlight = c.bgSubtle;
+            misc = c.bg;
           };
 
           enabledExtensions = lib.mkDefault (

@@ -28,6 +28,22 @@ map("i", "<C-j>", "<Down>", { desc = "Move caret down" })
 map("i", "<C-k>", "<Up>", { desc = "Move caret up" })
 map("i", "<C-l>", "<Right>", { desc = "Move caret right" })
 
+-- Line Insertion
+-- A count on o/O repeats the typed text on every new line (:help o). Create
+-- the extra lines first, then open one more with the built-in command, so the
+-- cursor lands at the far end of the block: bottom for o, top for O.
+local function counted_open(key)
+	return function()
+		local count = vim.v.count
+		if count < 2 then
+			return key
+		end
+		return "<Cmd>normal! " .. (count - 1) .. key .. "<CR>" .. key
+	end
+end
+map("n", "o", counted_open("o"), { expr = true, desc = "Open lines below (no repeated text)" })
+map("n", "O", counted_open("O"), { expr = true, desc = "Open lines above (no repeated text)" })
+
 -- Visual Indentation
 map("v", "<", "<gv", { desc = "Indent left (keep selection)" })
 map("v", ">", ">gv", { desc = "Indent right (keep selection)" })

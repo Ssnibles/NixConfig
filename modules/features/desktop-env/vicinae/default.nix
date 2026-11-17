@@ -85,6 +85,9 @@
                       "name": "nixconfig"
                     }
                   },
+                  "keybinds": {
+                    "toggle-action-panel": "control+return"
+                  },
                   "launcher_window": {
                     "layer_shell": {
                       "enabled": true,

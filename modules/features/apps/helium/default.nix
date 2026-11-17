@@ -103,12 +103,6 @@
         "VaapiVideoDecoder"
         "VaapiVideoEncodeAccelerator"
         "OverlayScrollbar"
-      ]
-      ++ lib.optionals isNvidia [
-        # The GL decoder and the NVIDIA VA-API backend replace the generic
-        # VaapiVideoDecoder path on recent Chromium.
-        "AcceleratedVideoDecodeLinuxGL"
-        "VaapiOnNvidiaGPUs"
       ];
 
       disabledFeatures = [
@@ -123,36 +117,11 @@
         "PrivacySandboxSettings4"
         "InterestFeedContentSuggestions"
         "AutofillServerCommunication"
-      ]
-      ++ lib.optionals isNvidia [
-        # Zero-copy is unreliable with NVIDIA's VA-API driver.
-        "AcceleratedVideoDecodeLinuxZeroCopyGL"
       ];
 
       # Flags that match the Firefox settings above. The upstream wrapper adds
       # --ozone-platform-hint=auto, so it is not repeated here.
-      defaultFlags = [
-        # Wayland.
-        "--enable-features=${lib.concatStringsSep "," enabledFeatures}"
-        "--disable-features=${lib.concatStringsSep "," disabledFeatures}"
-
-        # GPU acceleration.
-        "--ignore-gpu-blocklist"
-        "--enable-gpu-rasterization"
-        "--enable-accelerated-video-decode"
-      ]
-      ++ lib.optionals isNvidia [
-        # NVIDIA decodes through ANGLE's GL backend. The explicit platform
-        # avoids falling back to XWayland when --use-gl=angle is set.
-        "--ozone-platform=wayland"
-        "--use-gl=angle"
-        "--use-angle=gl"
-        "--disable-zero-copy"
-      ]
-      ++ lib.optionals (!isNvidia) [
-        "--enable-zero-copy"
-      ]
-      ++ [
+      commonFlags = [
         # Disable cosmetic animations.
         "--force-prefers-reduced-motion"
 
@@ -166,6 +135,46 @@
         "--disk-cache-size=52428800"
       ];
 
+      defaultFlags = [
+        # Wayland.
+        "--enable-features=${lib.concatStringsSep "," enabledFeatures}"
+        "--disable-features=${lib.concatStringsSep "," disabledFeatures}"
+
+        # GPU acceleration.
+        "--ignore-gpu-blocklist"
+        "--enable-gpu-rasterization"
+        "--enable-zero-copy"
+        "--enable-accelerated-video-decode"
+      ]
+      ++ commonFlags;
+
+      # NVIDIA path. Keep it out of the default launcher so external link
+      # opens keep the Mesa flags that already hand off cleanly.
+      nvidiaEnabledFeatures = enabledFeatures ++ [
+        "AcceleratedVideoDecodeLinuxGL"
+        "VaapiOnNvidiaGPUs"
+      ];
+
+      nvidiaDisabledFeatures = disabledFeatures ++ [
+        # Zero-copy is unreliable with NVIDIA's VA-API driver.
+        "AcceleratedVideoDecodeLinuxZeroCopyGL"
+      ];
+
+      nvidiaDefaultFlags = [
+        "--enable-features=${lib.concatStringsSep "," nvidiaEnabledFeatures}"
+        "--disable-features=${lib.concatStringsSep "," nvidiaDisabledFeatures}"
+
+        # ANGLE's GL backend is required for the NVIDIA VA-API path.
+        "--ignore-gpu-blocklist"
+        "--enable-gpu-rasterization"
+        "--enable-accelerated-video-decode"
+        "--ozone-platform=wayland"
+        "--use-gl=angle"
+        "--use-angle=gl"
+        "--disable-zero-copy"
+      ]
+      ++ commonFlags;
+
       # Helium only accepts a local new tab page through --custom-ntp.
       startpageFlags = lib.optionals cfg.enableCustomStartpage [
         "--custom-ntp=${cfg.newTabPage}"
@@ -173,24 +182,23 @@
 
       themeFlags = lib.optionals cfg.enableTheming [ "--load-extension=${themeExtension}" ];
 
+      userFlags = cfg.flags ++ cfg.extraFlags ++ cfgAlias.flags ++ cfgAlias.extraFlags;
+
+      effectiveFlags = defaultFlags ++ startpageFlags ++ themeFlags ++ userFlags;
+
       # The upstream module builds this same wrapper from cfg.package and the
-      # flags below. Reproduce it so helium-nvidia runs the identical binary.
+      # flags above, so this is the binary already installed as helium.
       heliumWithFlags = cfg.package.override { flags = effectiveFlags; };
 
+      # Reuse that binary instead of overriding the package again. A package
+      # override would copy the full 1.7 GB browser a second time just to
+      # change the wrapper flags. Chromium keeps the last value of a repeated
+      # switch, so the extra flags below override the baked defaults.
       heliumNvidiaLauncher = pkgs.writeShellScriptBin "helium-nvidia" ''
         export LIBVA_DRIVER_NAME="''${LIBVA_DRIVER_NAME:-nvidia}"
         export NVD_BACKEND="''${NVD_BACKEND:-direct}"
-        exec ${lib.getExe heliumWithFlags} "$@"
+        exec ${lib.getExe heliumWithFlags} ${lib.escapeShellArgs nvidiaDefaultFlags} "$@"
       '';
-
-      effectiveFlags =
-        defaultFlags
-        ++ startpageFlags
-        ++ themeFlags
-        ++ cfg.flags
-        ++ cfg.extraFlags
-        ++ cfgAlias.flags
-        ++ cfgAlias.extraFlags;
 
       # Startpage colours. The chrome uses the theme extension above.
       coloursCss = ''

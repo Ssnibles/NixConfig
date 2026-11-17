@@ -148,6 +148,7 @@
               p.c
               p.cpp
               p.zig
+              p.rust
               p.go
               p.json
               p.yaml
