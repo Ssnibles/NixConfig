@@ -31,7 +31,7 @@ startup.
 All line counts include comments. Files marked "data" are carried over.
 
 ```
-modules/features/nvim-src/                4482 lines
+modules/features/nvim-src/                4805 lines
 ├── init.lua                               29   leader, loader, ui2, requires
 ├── lsp/                                   one file per server, 17 total
 │   ├── clangd.lua                         43   Nix C flags via before_init
@@ -50,10 +50,17 @@ modules/features/nvim-src/                4482 lines
     ├── vcs.lua                            103  gitsigns, grug-far, jjui
     ├── theme/
     │   ├── init.lua                       82   palette, mini.base16, fold text
-    │   └── highlights.lua                 227  data
+    │   └── highlights.lua                 243  data
     ├── ui/
     │   ├── init.lua                       12
-    │   ├── statusline.lua                 153  built-in statusline
+    │   ├── statusline/
+    │   │   ├── init.lua                   64   assembly and width budget
+    │   │   ├── mode.lua                   82   mode, selection, macro
+    │   │   ├── context.lua                119  search, git, diagnostics
+    │   │   ├── info.lua                   58   dap, format, filetype, position
+    │   │   ├── filename.lua               101  headers and path truncation
+    │   │   ├── icons.lua                  27
+    │   │   └── util.lua                   10
     │   ├── cmdline.lua                    28   ui2 command bar
     │   ├── flash.lua                      34
     │   ├── splits.lua                     7
@@ -68,7 +75,7 @@ modules/features/nvim-src/                4482 lines
     ├── completion/
     │   ├── init.lua                       5
     │   ├── snippets.lua                   24
-    │   ├── blink.lua                      123
+    │   ├── blink.lua                      122
     │   ├── sources.lua                    58
     │   └── copilot.lua                    15
     ├── lsp/
@@ -142,17 +149,34 @@ cannot drift apart.
 The left-hand sides are unchanged from the previous configuration: 470 global
 left-hand sides per mode, compared with a dump taken before the rebuild.
 
+## Statusline
+
+`ui/statusline/` renders a zline-style statusline with the native 'statusline'
+expression:
+
+- Left: mode badge, visual selection size, macro register, search count, git
+  branch with coloured diff counters, and error and warning counts.
+- Right: DAP status, format and encoding warnings, filetype, pending keys and
+  position.
+- The filename segment handles quickfix, help, terminal, oil, man and grug-far
+  headers, and truncates long paths from the left so the tail stays visible.
+- Inactive windows get a dimmed path and their own line count.
+- File and filetype icons come from mini.icons. Spell and LSP client segments
+  are off, matching the previous zline configuration.
+
+`ui/statusline/init.lua` measures the left and right segments, gives the
+filename the remaining width with a margin, and leaves the command line alone.
+
 ## Command line
 
 `cmdheight=0` plus ui2 gives a full-width command bar above the statusline.
-`ui/cmdline.lua` styles the `cmd` window with the `CmdlineBar` background,
-clears the search highlights the way ui2 does, and raises `cmdwinheight` to 15
-for `q:`.
+`ui/cmdline.lua` styles the `cmd` window with `StlCmdText`, clears the search
+highlights the way ui2 does, and raises `cmdwinheight` to 15 for `q:`.
 
-The statusline badge switches between COMMAND and SEARCH, and shows the live
-match count while a `/` or `?` pattern is typed. The typed pattern is counted
-without replacing the last committed search pattern. Blink's command-line menu
-opens above the bar rather than below it.
+The typed command text stays in that bar, not in the statusline. While a `/` or
+`?` pattern is typed, the statusline search segment shows the live count and
+`FWD` or `BWD`, or `NO MATCH`. The typed pattern is counted without replacing
+the last committed search pattern.
 
 ## Toggles
 

@@ -113,8 +113,7 @@ cmp.setup({
 			["<C-c>"] = false,
 		},
 		completion = {
-			-- The bar sits at the bottom, so open the menu above it.
-			menu = { auto_show = true, direction_priority = { "n", "s" } },
+			menu = { auto_show = true },
 			ghost_text = { enabled = true },
 		},
 	},

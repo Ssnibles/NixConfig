@@ -1,7 +1,7 @@
 -- Command-line presentation. ui2 fires FileType cmd so its window can be styled
 -- locally; the search highlight clears are ui2's own defaults.
 local function style(win)
-	vim.wo[win].winhighlight = "Normal:CmdlineBar,MsgArea:CmdlineBar,Search:,CurSearch:,IncSearch:"
+	vim.wo[win].winhighlight = "Normal:StlCmdText,MsgArea:StlCmdText,Search:,CurSearch:,IncSearch:"
 	vim.wo[win].winblend = 0
 	vim.wo[win].scrolloff = 0
 	vim.wo[win].sidescrolloff = 0
