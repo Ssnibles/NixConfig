@@ -32,31 +32,35 @@ autocmd("FileType", {
 	callback = function(ev)
 		local buf = ev.buf
 		local ft = vim.bo[buf].filetype
-		-- Not every filetype has a parser installed.
-		if not vim.b[buf].large_file then
-			pcall(vim.treesitter.start, buf)
-		end
-		-- Keep 'r' so <CR> continues comments, drop 'o' so `o` does not insert
-		-- one, drop 'c' so textwidth does not wrap. Assign the string because
-		-- the ftplugin sets the option after this callback on 0.13 and
-		-- :remove() does not see it.
-		local fo = vim.bo[buf].formatoptions:gsub("[co]", "")
-		if not fo:find("r") then
-			fo = fo .. "r"
-		end
-		vim.bo[buf].formatoptions = fo
-		if fold_indent[ft] then
-			vim.wo.foldmethod = "indent"
-		end
-		if fold_off[ft] then
-			vim.wo.foldenable = false
-		end
-		if prose[ft] then
-			vim.wo.spell = true
-			vim.wo.wrap = true
-		end
-		if ft == "lua" or ft == "vim" then
-			vim.bo[buf].keywordprg = ":help"
+		-- Editor settings only make sense for file buffers. Plugin panes (help,
+		-- quickfix, oil, cmd, msg) keep their own options.
+		if vim.bo[buf].buftype == "" then
+			-- Not every filetype has a parser installed.
+			if not vim.b[buf].large_file then
+				pcall(vim.treesitter.start, buf)
+			end
+			-- Keep 'r' so <CR> continues comments, drop 'o' so `o` does not
+			-- insert one, drop 'c' so textwidth does not wrap. Assign the
+			-- string because the ftplugin sets the option after this callback
+			-- on 0.13 and :remove() does not see it.
+			local fo = vim.bo[buf].formatoptions:gsub("[co]", "")
+			if not fo:find("r") then
+				fo = fo .. "r"
+			end
+			vim.bo[buf].formatoptions = fo
+			if fold_indent[ft] then
+				vim.wo.foldmethod = "indent"
+			end
+			if fold_off[ft] then
+				vim.wo.foldenable = false
+			end
+			if prose[ft] then
+				vim.wo.spell = true
+				vim.wo.wrap = true
+			end
+			if ft == "lua" or ft == "vim" then
+				vim.bo[buf].keywordprg = ":help"
+			end
 		end
 		if close_with_q[ft] then
 			vim.keymap.set("n", "q", "<cmd>silent! close<CR>", { buffer = buf, desc = "Close window" })

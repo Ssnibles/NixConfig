@@ -39,7 +39,6 @@ function M.set(c, blend)
 		"FzfLuaPreviewNormal",
 		"FzfLuaPromptNormal",
 		"FzfLuaHelpNormal",
-		"MiniClueNormal",
 	}) do
 		hl(g, { link = "NormalFloat" })
 	end
@@ -71,8 +70,6 @@ function M.set(c, blend)
 		"FzfLuaPreviewBorder",
 		"FzfLuaPromptBorder",
 		"FzfLuaHelpBorder",
-		"MiniClueBorder",
-		"MiniClueSeparator",
 		"BlinkCmpMenuBorder",
 		"BlinkCmpDocBorder",
 		"BlinkCmpSignatureHelpBorder",
@@ -81,7 +78,7 @@ function M.set(c, blend)
 		hl(g, { link = "GlobalBorder" })
 	end
 	hl("FloatTitle", { fg = c.blue, bold = true })
-	for _, g in ipairs({ "LspInfoTitle", "FzfLuaTitle", "MiniClueTitle" }) do
+	for _, g in ipairs({ "LspInfoTitle", "FzfLuaTitle" }) do
 		hl(g, { link = "FloatTitle" })
 	end
 	hl("FloatFooter", { fg = c.comment })
@@ -92,9 +89,6 @@ function M.set(c, blend)
 	hl("FzfLuaPath", { fg = c.comment })
 	hl("FzfLuaDirPart", { fg = c.blue })
 	hl("FzfLuaFilePart", { fg = c.fg })
-	hl("MiniClueDescGroup", { fg = c.comment })
-	hl("MiniClueNextKey", { fg = c.blue, bold = true })
-	hl("MiniClueNextKeyWithPostkeys", { fg = c.blue, bold = true })
 	hl("BlinkCmpMenuSelection", { fg = c.fg, bg = c.selection, bold = true })
 	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
 	hl("BlinkCmpLabelDetail", { fg = c.comment, italic = true })
@@ -188,7 +182,6 @@ function M.set(c, blend)
 	hl("TabLineSel", { bg = c.bg, fg = c.fg, bold = true })
 	hl("QuickFixLine", { bg = c.selection, bold = true })
 	hl("ColorColumn", { bg = c.bgSubtle })
-	hl("CmdlineCursor", { fg = c.bg, bg = c.blue })
 	hl("SpellBad", { undercurl = true, sp = c.red })
 	hl("SpellCap", { undercurl = true, sp = c.yellow })
 	hl("SpellRare", { undercurl = true, sp = c.cyan })
@@ -217,7 +210,6 @@ function M.set(c, blend)
 	hl("StlGit", { fg = blend(c.blue, c.comment, 0.5) })
 	hl("StlDiag", { fg = c.comment })
 	hl("StlFile", { fg = c.fg })
-	hl("StlLSP", { fg = blend(c.comment, c.bg, 0.7) })
 	hl("StlFT", { fg = c.comment })
 	hl("StlPos", { fg = blend(c.comment, c.bg, 0.6) })
 	hl("StlBar", { link = "StatusLine" })
@@ -233,10 +225,6 @@ function M.set(c, blend)
 	hl("StlSelection", { link = "Visual" })
 	hl("StlDap", { link = "DiagnosticWarn" })
 	hl("StlCmdText", { link = "StlBar" })
-	hl("StlCmdInfo", { link = "Comment" })
-	hl("StlCmdPos", { link = "Cursor" })
-	hl("StlCmdPrompt", { fg = c.yellow, bold = true })
-	hl("StlSearchPrompt", { fg = c.blue, bold = true })
 	hl("IblIndent", { fg = indent })
 	hl("IblScope", { fg = blend(c.blue, c.comment, 0.3) })
 end

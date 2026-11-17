@@ -99,5 +99,7 @@ function M.jjui()
 			vim.cmd.checktime()
 		end,
 	})
+	-- Without a filetype the terminal toggle would adopt this buffer as its shell.
+	vim.bo[buf].filetype = "jj"
 end
 return M

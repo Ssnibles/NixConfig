@@ -5,27 +5,17 @@
 local lsp = vim.lsp
 local util = require("util")
 
--- A server is only enabled when its executable exists, so an optional server
--- that is not installed stays quiet. The list also drives :LspHealth.
-local servers = {
-	"clangd",
-	"cssls",
-	"emmet_ls",
-	"eslint",
-	"gopls",
-	"html",
-	"jsonls",
-	"kotlin_language_server",
-	"ltex_plus",
-	"lua_ls",
-	"marksman",
-	"nixd",
-	"pyright",
-	"qmlls",
-	"tinymist",
-	"vtsls",
-	"zls",
-}
+-- Servers are the lsp/<name>.lua files in the config directory. Deriving the
+-- list from the files means adding a server needs no second edit here. A
+-- server is only enabled when its executable exists, so an optional server
+-- that is not installed stays quiet.
+local servers = {}
+for name, kind in vim.fs.dir(vim.fs.joinpath(vim.fn.stdpath("config"), "lsp")) do
+	if kind == "file" and name:match("%.lua$") then
+		servers[#servers + 1] = (name:gsub("%.lua$", ""))
+	end
+end
+table.sort(servers)
 
 require("lsp.attach")
 require("lsp.ui")

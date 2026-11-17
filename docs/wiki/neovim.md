@@ -31,7 +31,7 @@ startup.
 All line counts include comments. Files marked "data" are carried over.
 
 ```
-modules/features/nvim-src/                4805 lines
+modules/features/nvim-src/                4774 lines
 ├── init.lua                               29   leader, loader, ui2, requires
 ├── lsp/                                   one file per server, 17 total
 │   ├── clangd.lua                         43   Nix C flags via before_init
@@ -42,15 +42,15 @@ modules/features/nvim-src/                4805 lines
     ├── options.lua                        84   all vim.opt and Neovide globals
     ├── filetypes.lua                      5
     ├── commands.lua                       3    :Mes
-    ├── autocmds.lua                       155  one augroup per feature
+    ├── autocmds.lua                       159  one augroup per feature
     ├── util.lua                           85   toggles, helper filetypes, capabilities, C flags
     ├── external.lua                       48   optional binaries, the only place they are named
     ├── terminal.lua                       86   reused shell buffer
     ├── diagnostics.lua                    76   vim.diagnostic, inline text, fidget
-    ├── vcs.lua                            103  gitsigns, grug-far, jjui
+    ├── vcs.lua                            105  gitsigns, grug-far, jjui
     ├── theme/
     │   ├── init.lua                       82   palette, mini.base16, fold text
-    │   └── highlights.lua                 243  data
+    │   └── highlights.lua                 231  data
     ├── ui/
     │   ├── init.lua                       12
     │   ├── statusline/
@@ -70,16 +70,16 @@ modules/features/nvim-src/                4805 lines
     │   ├── init.lua                       6
     │   ├── treesitter.lua                 24   textobjects and context
     │   ├── enter.lua                      115  list continuation
-    │   ├── mini.lua                       96   mini modules and mini.clue
+    │   ├── mini.lua                       60   mini modules
     │   └── replace.lua                    35   buffer find and replace
     ├── completion/
     │   ├── init.lua                       5
     │   ├── snippets.lua                   24
     │   ├── blink.lua                      122
     │   ├── sources.lua                    58
-    │   └── copilot.lua                    15
+    │   └── copilot.lua                    53
     ├── lsp/
-    │   ├── init.lua                       60   registration and :LspHealth
+    │   ├── init.lua                       50   registration and :LspHealth
     │   ├── attach.lua                     86   attach maps, inlay hints, codelens
     │   └── ui.lua                         17   aerial and goto-preview
     ├── tools/
@@ -88,7 +88,6 @@ modules/features/nvim-src/                4805 lines
     │   └── lint.lua                       84   nvim-lint
     ├── keymaps/                           global maps only, grouped by domain
     │   ├── init.lua                       9
-    │   ├── groups.lua                     17   leader labels for mini.clue
     │   ├── editor.lua                     67
     │   ├── motion.lua                     56
     │   ├── windows.lua                    70
@@ -127,10 +126,11 @@ a plugin or tool needs a rebuild because it is a Nix change.
 ## Language servers
 
 Server definitions are plain tables in `lsp/<server>.lua`, which `vim.lsp.config`
-resolves by name. A server is enabled only when its executable exists, so an
-optional server that is not installed stays quiet. `:LspHealth` lists every
-managed server and whether it was found, plus the clients attached to the
-current buffer.
+resolves by name. The managed server list is derived from those files, so adding
+a server means adding one file and nothing else. A server is enabled only when
+its executable exists, so an optional server that is not installed stays quiet.
+`:LspHealth` lists every managed server and whether it was found, plus the
+clients attached to the current buffer.
 
 `clangd.lua` injects the include flags from the current `nix develop` shell in
 `before_init`. `nixd.lua` detects the flake root and host at runtime.
@@ -142,12 +142,11 @@ import paths, and `zls` gets the Wayland, wlroots and pixman header paths.
 
 All global maps live under `lua/keymaps/`, one file per domain, and every map
 has a `desc`. Buffer-local maps live with the feature that owns the buffer:
-LSP attach, gitsigns, aerial, clangd, java and typst. Leader groups are defined
-once in `keymaps/groups.lua` and used by mini.clue, so the menu and the maps
-cannot drift apart.
+LSP attach, gitsigns, aerial, clangd, java and typst. mini.clue (which-key) is
+disabled, so no key popup appears; the leader group labels are removed with it.
 
-The left-hand sides are unchanged from the previous configuration: 470 global
-left-hand sides per mode, compared with a dump taken before the rebuild.
+469 explicit left-hand sides remain from the pre-rebuild dump. The only entry
+removed is mini.clue's `@` wrapper, and `@` still works as the built-in command.
 
 ## Statusline
 
