@@ -53,7 +53,7 @@ function M.render()
 
 	local left, left_width =
 		render_parts({ mode.mode, mode.selection, mode.macro, context.search, context.git, context.diagnostics })
-	local right, right_width = render_parts({ info.dap, info.format_warn, info.filetype, info.showcmd, info.position })
+	local right, right_width = render_parts({ info.dap, info.format_warn, info.filetype, info.position })
 	local columns = vim.o.laststatus == 3 and vim.o.columns or vim.api.nvim_win_get_width(current)
 	local available = math.max(10, columns - left_width - right_width - 7)
 	return "%#StlBar#" .. left .. "%<" .. "%#StlFile#" .. filename.render(available) .. "%#StlBar#%=" .. right

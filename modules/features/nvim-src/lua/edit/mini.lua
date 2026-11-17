@@ -24,8 +24,44 @@ require("mini.surround").setup({
 	},
 })
 
--- mini.clue (which-key) is intentionally not enabled: the key popup is not
--- wanted. Re-enable it here and restore keymaps/groups.lua to bring it back.
+-- mini.clue (which-key). Leader groups come from keymaps/groups.lua so the
+-- menu and the actual mappings cannot drift apart.
+local clue = require("mini.clue")
+local clues = {
+	clue.gen_clues.builtin_completion(),
+	clue.gen_clues.g(),
+	clue.gen_clues.marks(),
+	clue.gen_clues.registers(),
+	clue.gen_clues.windows(),
+	clue.gen_clues.z(),
+}
+for _, group in ipairs(require("keymaps.groups")) do
+	clues[#clues + 1] = { mode = "n", keys = group.keys, desc = group.desc }
+end
+for _, entry in ipairs({
+	{ mode = { "n", "x" }, keys = "s", desc = "+surround" },
+	{ mode = { "n", "x" }, keys = "sa", desc = "Add surrounding" },
+	{ mode = { "n", "x" }, keys = "sd", desc = "Delete surrounding" },
+	{ mode = { "n", "x" }, keys = "sr", desc = "Replace surrounding" },
+	{ mode = { "n", "x" }, keys = "sf", desc = "Find surrounding" },
+	{ mode = "n", keys = "sF", desc = "Find surrounding left" },
+	{ mode = { "n", "x" }, keys = "sh", desc = "Highlight surrounding" },
+	{ mode = "n", keys = "sn", desc = "Update n lines" },
+}) do
+	clues[#clues + 1] = entry
+end
+clue.setup({
+	clues = clues,
+	triggers = {
+		{ mode = "n", keys = "<Leader>" },
+		{ mode = "x", keys = "<Leader>" },
+		{ mode = "n", keys = "g" },
+		{ mode = "n", keys = "z" },
+		{ mode = "n", keys = "<C-w>" },
+		{ mode = "n", keys = "s" },
+	},
+	window = { delay = 300, config = { border = "rounded", width = "auto" } },
+})
 
 local hipatterns = require("mini.hipatterns")
 hipatterns.setup({

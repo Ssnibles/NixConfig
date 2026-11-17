@@ -39,6 +39,7 @@ function M.set(c, blend)
 		"FzfLuaPreviewNormal",
 		"FzfLuaPromptNormal",
 		"FzfLuaHelpNormal",
+		"MiniClueNormal",
 	}) do
 		hl(g, { link = "NormalFloat" })
 	end
@@ -74,11 +75,13 @@ function M.set(c, blend)
 		"BlinkCmpDocBorder",
 		"BlinkCmpSignatureHelpBorder",
 		"BlinkCmpScrollBarThumb",
+		"MiniClueBorder",
+		"MiniClueSeparator",
 	}) do
 		hl(g, { link = "GlobalBorder" })
 	end
 	hl("FloatTitle", { fg = c.blue, bold = true })
-	for _, g in ipairs({ "LspInfoTitle", "FzfLuaTitle" }) do
+	for _, g in ipairs({ "LspInfoTitle", "FzfLuaTitle", "MiniClueTitle" }) do
 		hl(g, { link = "FloatTitle" })
 	end
 	hl("FloatFooter", { fg = c.comment })
@@ -89,6 +92,9 @@ function M.set(c, blend)
 	hl("FzfLuaPath", { fg = c.comment })
 	hl("FzfLuaDirPart", { fg = c.blue })
 	hl("FzfLuaFilePart", { fg = c.fg })
+	hl("MiniClueDescGroup", { fg = c.comment })
+	hl("MiniClueNextKey", { fg = c.blue, bold = true })
+	hl("MiniClueNextKeyWithPostkeys", { fg = c.blue, bold = true })
 	hl("BlinkCmpMenuSelection", { fg = c.fg, bg = c.selection, bold = true })
 	hl("BlinkCmpLabelMatch", { fg = c.blue, bold = true })
 	hl("BlinkCmpLabelDetail", { fg = c.comment, italic = true })

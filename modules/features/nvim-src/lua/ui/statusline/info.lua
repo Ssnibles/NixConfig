@@ -46,10 +46,6 @@ function M.filetype()
 	return ("%%#StlFT# %s%s %%#StlBar#"):format(icon_text, util.escape(ft))
 end
 
-function M.showcmd()
-	return "%#StlPos#%S %#StlBar#"
-end
-
 function M.position()
 	local line = vim.api.nvim_win_get_cursor(0)[1]
 	return ("%%#StlPos# %d/%d %%#StlBar#"):format(line, vim.api.nvim_buf_line_count(0))

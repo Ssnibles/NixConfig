@@ -31,7 +31,7 @@ startup.
 All line counts include comments. Files marked "data" are carried over.
 
 ```
-modules/features/nvim-src/                4774 lines
+modules/features/nvim-src/                4830 lines
 ├── init.lua                               29   leader, loader, ui2, requires
 ├── lsp/                                   one file per server, 17 total
 │   ├── clangd.lua                         43   Nix C flags via before_init
@@ -50,14 +50,14 @@ modules/features/nvim-src/                4774 lines
     ├── vcs.lua                            105  gitsigns, grug-far, jjui
     ├── theme/
     │   ├── init.lua                       82   palette, mini.base16, fold text
-    │   └── highlights.lua                 231  data
+    │   └── highlights.lua                 237  data
     ├── ui/
     │   ├── init.lua                       12
     │   ├── statusline/
     │   │   ├── init.lua                   64   assembly and width budget
     │   │   ├── mode.lua                   82   mode, selection, macro
     │   │   ├── context.lua                119  search, git, diagnostics
-    │   │   ├── info.lua                   58   dap, format, filetype, position
+    │   │   ├── info.lua                   54   dap, format, filetype, position
     │   │   ├── filename.lua               101  headers and path truncation
     │   │   ├── icons.lua                  27
     │   │   └── util.lua                   10
@@ -70,7 +70,7 @@ modules/features/nvim-src/                4774 lines
     │   ├── init.lua                       6
     │   ├── treesitter.lua                 24   textobjects and context
     │   ├── enter.lua                      115  list continuation
-    │   ├── mini.lua                       60   mini modules
+    │   ├── mini.lua                       96   mini modules and mini.clue
     │   └── replace.lua                    35   buffer find and replace
     ├── completion/
     │   ├── init.lua                       5
@@ -88,6 +88,7 @@ modules/features/nvim-src/                4774 lines
     │   └── lint.lua                       84   nvim-lint
     ├── keymaps/                           global maps only, grouped by domain
     │   ├── init.lua                       9
+    │   ├── groups.lua                     18   leader labels for mini.clue
     │   ├── editor.lua                     67
     │   ├── motion.lua                     56
     │   ├── windows.lua                    70
@@ -143,10 +144,10 @@ import paths, and `zls` gets the Wayland, wlroots and pixman header paths.
 All global maps live under `lua/keymaps/`, one file per domain, and every map
 has a `desc`. Buffer-local maps live with the feature that owns the buffer:
 LSP attach, gitsigns, aerial, clangd, java and typst. mini.clue (which-key) is
-disabled, so no key popup appears; the leader group labels are removed with it.
+enabled: leader groups are defined in `keymaps/groups.lua` and used by the
+menu, so the menu and the maps cannot drift apart.
 
-469 explicit left-hand sides remain from the pre-rebuild dump. The only entry
-removed is mini.clue's `@` wrapper, and `@` still works as the built-in command.
+470 explicit left-hand sides, matching the pre-rebuild dump.
 
 ## Statusline
 
@@ -155,13 +156,14 @@ expression:
 
 - Left: mode badge, visual selection size, macro register, search count, git
   branch with coloured diff counters, and error and warning counts.
-- Right: DAP status, format and encoding warnings, filetype, pending keys and
-  position.
+- Right: DAP status, format and encoding warnings, filetype and position.
 - The filename segment handles quickfix, help, terminal, oil, man and grug-far
   headers, and truncates long paths from the left so the tail stays visible.
 - Inactive windows get a dimmed path and their own line count.
 - File and filetype icons come from mini.icons. Spell and LSP client segments
   are off, matching the previous zline configuration.
+- `showcmd` is off, so pending keys such as operators and counts never appear
+  in the statusline. mini.clue still shows the key menu after a prefix.
 
 `ui/statusline/init.lua` measures the left and right segments, gives the
 filename the remaining width with a margin, and leaves the command line alone.
