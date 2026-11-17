@@ -68,7 +68,7 @@
           ++ (with pkgs; [
             antigravity-cli
             # opencode
-            android-studio
+            # android-studio
           ]);
 
         hjem.users."${config.username}" = {
