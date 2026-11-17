@@ -1,0 +1,52 @@
+-- Debugger keys. nvim-dap and nvim-dap-view are configured in debug/init.lua;
+-- the keys are here with the rest of the global maps.
+
+local map = vim.keymap.set
+
+local function dap()
+	return require("dap")
+end
+
+local function view()
+	return require("dap-view")
+end
+
+map("n", "<leader>mb", function()
+	dap().toggle_breakpoint()
+end, { desc = "Toggle breakpoint" })
+map("n", "<leader>mB", function()
+	dap().set_breakpoint(vim.fn.input("Breakpoint condition: "))
+end, { desc = "Conditional breakpoint" })
+map("n", "<leader>mc", function()
+	dap().continue()
+end, { desc = "Continue/start" })
+map("n", "<leader>mi", function()
+	dap().step_into()
+end, { desc = "Step into" })
+map("n", "<leader>mo", function()
+	dap().step_over()
+end, { desc = "Step over" })
+map("n", "<leader>mO", function()
+	dap().step_out()
+end, { desc = "Step out" })
+map("n", "<leader>mr", function()
+	view().jump_to_view("repl")
+end, { desc = "REPL" })
+map("n", "<leader>mu", function()
+	view().toggle()
+end, { desc = "DAP view toggle" })
+map("n", "<leader>mw", function()
+	view().add_expr()
+end, { desc = "Watch expression" })
+map("n", "<leader>mh", function()
+	view().hover()
+end, { desc = "Evaluate expression under cursor" })
+map("n", "<leader>mt", function()
+	dap().terminate()
+end, { desc = "Terminate" })
+map("n", "<leader>mj", function()
+	dap().down()
+end, { desc = "Go down in stack" })
+map("n", "<leader>mk", function()
+	dap().up()
+end, { desc = "Go up in stack" })

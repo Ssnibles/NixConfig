@@ -1,9 +1,15 @@
--- Flash (search jumps) and the guard that keeps it out of plugin panes.
+-- Flash search jumps, with a guard that keeps it out of plugin panes.
 
-local flash = require("flash")
 local util = require("util")
+local flash = require("flash")
 
-local function is_main_editor(win)
+local M = {}
+
+--- True when `win` is an ordinary editor window: not a float and not a plugin
+--- pane, so flash does not label pickers or tool panes.
+--- @param win integer?
+--- @return boolean
+function M.is_main_editor(win)
 	local w = win or vim.api.nvim_get_current_win()
 	local buf = vim.api.nvim_win_get_buf(w)
 	if vim.bo[buf].buftype ~= "" or util.is_helper_ft(vim.bo[buf].filetype) then
@@ -17,20 +23,12 @@ flash.setup({
 		multi_window = true,
 		exclude = {
 			function(win)
-				return not is_main_editor(win)
+				return not M.is_main_editor(win)
 			end,
 		},
 	},
 })
 
-vim.keymap.set({ "n", "x", "o" }, "<leader><leader>", function()
-	if is_main_editor() then
-		flash.jump()
-	end
-end, { desc = "Flash jump" })
+M.flash = flash
 
-vim.keymap.set({ "n", "x", "o" }, "S", function()
-	if is_main_editor() then
-		flash.treesitter()
-	end
-end, { desc = "Flash treesitter" })
+return M

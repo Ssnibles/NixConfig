@@ -1,0 +1,44 @@
+-- Find, open and replace.
+
+local map = vim.keymap.set
+
+-- Pickers (fzf-lua)
+map("n", "<C-p>", "<cmd>FzfLua files<CR>", { desc = "File picker" })
+map("n", "<leader>/", "<cmd>FzfLua live_grep<CR>", { desc = "Search project" })
+map("n", "<leader>ff", "<cmd>FzfLua files<CR>", { desc = "Find files" })
+map("n", "<leader>fo", "<cmd>FzfLua oldfiles<CR>", { desc = "Recent files" })
+map("n", "<leader>fb", "<cmd>FzfLua buffers<CR>", { desc = "Buffers" })
+map("n", "<leader>fg", "<cmd>FzfLua live_grep<CR>", { desc = "Live grep" })
+map("n", "<leader>fw", "<cmd>FzfLua grep_cword<CR>", { desc = "Grep word" })
+map("n", "<leader>fW", "<cmd>FzfLua grep_cWORD<CR>", { desc = "Grep WORD" })
+map("n", "<leader>f/", "<cmd>FzfLua blines<CR>", { desc = "Search buffer" })
+map("n", "<leader>fs", "<cmd>FzfLua lsp_document_symbols<CR>", { desc = "Document symbols" })
+map("n", "<leader>fS", "<cmd>FzfLua lsp_workspace_symbols<CR>", { desc = "Workspace symbols" })
+map("n", "<leader>fd", "<cmd>FzfLua diagnostics_document<CR>", { desc = "Diagnostics" })
+map("n", "<leader>fh", "<cmd>FzfLua help_tags<CR>", { desc = "Help" })
+map("n", "<leader>fk", "<cmd>FzfLua keymaps<CR>", { desc = "Keymaps" })
+map("n", "<leader>f.", "<cmd>FzfLua resume<CR>", { desc = "Resume last picker" })
+map("n", "<leader>fR", "<cmd>GrugFar<CR>", { desc = "Find and replace (project)" })
+
+-- Git pickers
+map("n", "<leader>gl", "<cmd>FzfLua git_commits<CR>", { desc = "Git log" })
+map("n", "<leader>gS", "<cmd>FzfLua git_status<CR>", { desc = "Git status (picker)" })
+map("n", "<leader>gL", "<cmd>FzfLua git_bcommits<CR>", { desc = "Git log (current file)" })
+map("n", "<leader>gB", "<cmd>FzfLua git_branches<CR>", { desc = "Git branches" })
+map("n", "<leader>gF", "<cmd>FzfLua git_stash<CR>", { desc = "Git stash" })
+
+-- Buffer find and replace
+map("n", "<leader>fr", function()
+	require("edit.replace").word()
+end, { desc = "Find and replace (buffer)" })
+map("x", "<leader>fr", function()
+	require("edit.replace").selection()
+end, { desc = "Find and replace selection (buffer)" })
+
+-- Files and version control panes
+map("n", "<leader>e", function()
+	require("nav.files").toggle()
+end, { desc = "Explorer (Oil)" })
+map("n", "<leader>gg", function()
+	require("vcs").jjui()
+end, { desc = "Open jjui (Jujutsu TUI)" })
