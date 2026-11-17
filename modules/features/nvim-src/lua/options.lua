@@ -60,6 +60,9 @@ opt.confirm = true
 opt.swapfile = false
 opt.writebackup = false
 opt.undofile = true
+-- Persist the oldfiles list. The default here omits '%', so without this the
+-- recent-files picker never gains new entries.
+opt.shada:append("%")
 opt.virtualedit = "block"
 opt.mouse = "a"
 opt.mousemodel = "extend"

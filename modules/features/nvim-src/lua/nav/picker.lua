@@ -38,7 +38,12 @@ fzf.setup({
 			treesitter = { enabled = true, disabled = { "markdown", "markdown_inline" }, context = false },
 		},
 	},
-	oldfiles = { include_current_session = false, cwd_only = true, stat_file = false },
+	oldfiles = {
+		include_current_session = false,
+		cwd_only = true,
+		-- Stat entries so missing files and non-files are dropped.
+		stat_file = true,
+	},
 	buffers = {
 		filter = function(bufnr)
 			if not vim.api.nvim_buf_is_valid(bufnr) or not vim.bo[bufnr].buflisted then
@@ -61,3 +66,20 @@ fzf.setup({
 })
 
 fzf.register_ui_select()
+
+-- :checkhealth records a "health://" entry in shada oldfiles and Neovim
+-- keeps re-reading it. Shada is read after init, so filter on VimEnter, once
+-- the list has been filled. This cleans :oldfiles and every picker.
+vim.api.nvim_create_autocmd("VimEnter", {
+	group = vim.api.nvim_create_augroup("UserOldfiles", { clear = true }),
+	once = true,
+	callback = function()
+		local files = {}
+		for _, file in ipairs(vim.v.oldfiles) do
+			if not file:match("^%a[%w+.-]*://") then
+				files[#files + 1] = file
+			end
+		end
+		vim.v.oldfiles = files
+	end,
+})

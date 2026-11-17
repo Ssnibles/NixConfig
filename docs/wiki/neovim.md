@@ -31,7 +31,7 @@ startup.
 All line counts include comments. Files marked "data" are carried over.
 
 ```
-modules/features/nvim-src/                4830 lines
+modules/features/nvim-src/                4855 lines
 ├── init.lua                               29   leader, loader, ui2, requires
 ├── lsp/                                   one file per server, 17 total
 │   ├── clangd.lua                         43   Nix C flags via before_init
@@ -98,7 +98,7 @@ modules/features/nvim-src/                4830 lines
     │   └── lang.lua                       24
     ├── nav/
     │   ├── init.lua                       5
-    │   ├── picker.lua                     63   fzf-lua and vim.ui.select
+    │   ├── picker.lua                     85   fzf-lua and vim.ui.select
     │   ├── files.lua                      73   oil and image paste
     │   └── rename.lua                     70   :SmartRename
     ├── debugger/
