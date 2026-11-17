@@ -202,7 +202,13 @@ ls.add_snippets("typst", {
 	}),
 
 	-- NOTE BLOCKS & CALLOUTS (With icons, names, and background fills)
-	make_callout("note", "Note", "📝", "#3182ce", "Note callout box with blue border, 📝 icon, and background fill"),
+	make_callout(
+		"note",
+		"Note",
+		"📝",
+		"#3182ce",
+		"Note callout box with blue border, 📝 icon, and background fill"
+	),
 	make_callout("info", "Info", "ℹ", "#3182ce", "Info callout box with blue border, ℹ icon, and background fill"),
 	make_callout("tip", "Tip", "💡", "#38a169", "Tip callout box with green border, 💡 icon, and background fill"),
 	make_callout("warning", "Warning", "⚠", "#dd6b20", "Warning callout box (alias)"),

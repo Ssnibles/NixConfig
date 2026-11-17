@@ -25,10 +25,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nvf.url = "github:NotAShelf/nvf";
-    nvf.inputs.nixpkgs.follows = "nixpkgs";
-
-    # Nightly Neovim, wired into NVF through `programs.nvf.settings.vim`.
+    # Nightly Neovim. neovim.nix wraps it and adds the plugins from Nix.
     neovim-nightly = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
