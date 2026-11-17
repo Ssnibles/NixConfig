@@ -13,3 +13,5 @@ require("vim._core.ui2").enable({ msg = { targets = { default = "msg" } } })
 
 require("options")
 require("filetypes")
+require("theme").setup()
+require("ui")
