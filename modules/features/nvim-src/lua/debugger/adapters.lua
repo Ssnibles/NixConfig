@@ -2,10 +2,12 @@
 local dap = require("dap")
 local dap_utils = require("dap.utils")
 local external = require("external")
+
 local function prompt_args(prompt)
 	local line = vim.trim(vim.fn.input(prompt))
 	return line == "" and {} or vim.split(line, "%s+")
 end
+
 -- Python
 local debugpy = external.debugpy()
 if debugpy then
@@ -41,6 +43,7 @@ if debugpy then
 		},
 	}
 end
+
 -- Go
 local delve = external.delve()
 if delve then
@@ -56,6 +59,7 @@ if delve then
 		{ type = "go", name = "Debug test", request = "launch", mode = "test", program = "${file}" },
 	}
 end
+
 -- C, C++ and Rust (LLDB)
 local lldb_adapter = external.lldb_dap_adapter()
 if lldb_adapter then
@@ -92,6 +96,7 @@ if lldb_adapter then
 		return cwd .. "/target/debug/" .. vim.fn.fnamemodify(cwd, ":t")
 	end)
 end
+
 -- JavaScript and TypeScript
 local js_debug = external.js_debug()
 if js_debug then

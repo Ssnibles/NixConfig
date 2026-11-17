@@ -17,14 +17,12 @@ g.neovide_scroll_animation_length = 0.08
 g.neovide_floating_blur = false
 g.neovide_confirm_quit = true
 g.neovide_remember_window_size = true
--- Indentation
 opt.shiftwidth = 2
 opt.tabstop = 2
 opt.expandtab = true
 opt.autoindent = true
 opt.smartindent = true
 opt.shiftround = true
--- Appearance
 opt.termguicolors = true
 opt.cursorline = true
 opt.cursorlineopt = "line"
@@ -39,11 +37,9 @@ opt.number = true
 opt.relativenumber = true
 opt.signcolumn = "yes"
 opt.statuscolumn = "%s%=%{&relativenumber && v:relnum ? v:relnum : v:lnum} %#WinSeparator#▏%*"
--- Wrapping
 opt.wrap = false
 opt.linebreak = true
 opt.breakindent = true
--- Splits and windows
 opt.splitright = true
 opt.splitbelow = true
 opt.laststatus = 3
@@ -52,17 +48,14 @@ opt.showcmdloc = "statusline"
 opt.scrolloff = 999
 opt.sidescrolloff = 8
 opt.smoothscroll = true
--- Folding
 opt.foldmethod = "expr"
 opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 opt.foldlevelstart = 99
 opt.foldtext = "v:lua.require('theme').fold_text()"
--- Search
 opt.inccommand = "split"
 opt.ignorecase = true
 opt.smartcase = true
 opt.grepprg = "rg --vimgrep --smart-case --hidden"
--- Editing behaviour
 opt.confirm = true
 opt.swapfile = false
 opt.writebackup = false
@@ -71,7 +64,6 @@ opt.virtualedit = "block"
 opt.mouse = "a"
 opt.mousemodel = "extend"
 opt.clipboard = "unnamedplus"
--- Command line and messages
 opt.wildmode = "longest:full,full"
 opt.wildoptions = "fuzzy"
 opt.wildignorecase = true
@@ -81,11 +73,9 @@ opt.shortmess = "sIcWFoOuCF"
 -- `wait` is required whenever `hit-enter` is omitted. `timeout` is how long a
 -- message stays in the ui2 message window (ms).
 opt.messagesopt = "history:200,wait:0,timeout:4000,maxheight:50,pager:<CR>"
--- Timing
 opt.updatetime = 250
 opt.timeoutlen = 500
 opt.ttimeoutlen = 10
--- Misc
 opt.jumpoptions = "view"
 opt.diffopt:append("vertical")
 opt.diffopt:append("linematch:60")

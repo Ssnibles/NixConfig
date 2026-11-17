@@ -5,6 +5,7 @@ icons.setup()
 icons.mock_nvim_web_devicons()
 
 require("ui.statusline")
+require("ui.cmdline")
 require("ui.render")
 require("ui.flash")
 require("ui.splits")

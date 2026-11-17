@@ -31,7 +31,7 @@ startup.
 All line counts include comments. Files marked "data" are carried over.
 
 ```
-modules/features/nvim-src/                4450 lines
+modules/features/nvim-src/                4482 lines
 ├── init.lua                               29   leader, loader, ui2, requires
 ├── lsp/                                   one file per server, 17 total
 │   ├── clangd.lua                         43   Nix C flags via before_init
@@ -39,7 +39,7 @@ modules/features/nvim-src/                4450 lines
 │   └── <server>.lua                            declarative tables
 ├── snippets/                              data: java 18, nix 91, typst 979
 └── lua/
-    ├── options.lua                        94   all vim.opt and Neovide globals
+    ├── options.lua                        84   all vim.opt and Neovide globals
     ├── filetypes.lua                      5
     ├── commands.lua                       3    :Mes
     ├── autocmds.lua                       155  one augroup per feature
@@ -50,10 +50,11 @@ modules/features/nvim-src/                4450 lines
     ├── vcs.lua                            103  gitsigns, grug-far, jjui
     ├── theme/
     │   ├── init.lua                       82   palette, mini.base16, fold text
-    │   └── highlights.lua                 249  data
+    │   └── highlights.lua                 227  data
     ├── ui/
-    │   ├── init.lua                       11
-    │   ├── statusline.lua                 127  built-in statusline
+    │   ├── init.lua                       12
+    │   ├── statusline.lua                 153  built-in statusline
+    │   ├── cmdline.lua                    28   ui2 command bar
     │   ├── flash.lua                      34
     │   ├── splits.lua                     7
     │   ├── dial.lua                       19
@@ -67,7 +68,7 @@ modules/features/nvim-src/                4450 lines
     ├── completion/
     │   ├── init.lua                       5
     │   ├── snippets.lua                   24
-    │   ├── blink.lua                      119
+    │   ├── blink.lua                      123
     │   ├── sources.lua                    58
     │   └── copilot.lua                    15
     ├── lsp/
@@ -95,7 +96,7 @@ modules/features/nvim-src/                4450 lines
     │   └── rename.lua                     70   :SmartRename
     ├── debugger/
     │   ├── init.lua                       12   dap-view
-    │   └── adapters.lua                   124  Python, Go, LLDB, JS
+    │   └── adapters.lua                   129  Python, Go, LLDB, JS
     └── lang/
         ├── init.lua                       6
         ├── rust.lua                       38
@@ -140,6 +141,18 @@ cannot drift apart.
 
 The left-hand sides are unchanged from the previous configuration: 470 global
 left-hand sides per mode, compared with a dump taken before the rebuild.
+
+## Command line
+
+`cmdheight=0` plus ui2 gives a full-width command bar above the statusline.
+`ui/cmdline.lua` styles the `cmd` window with the `CmdlineBar` background,
+clears the search highlights the way ui2 does, and raises `cmdwinheight` to 15
+for `q:`.
+
+The statusline badge switches between COMMAND and SEARCH, and shows the live
+match count while a `/` or `?` pattern is typed. The typed pattern is counted
+without replacing the last committed search pattern. Blink's command-line menu
+opens above the bar rather than below it.
 
 ## Toggles
 

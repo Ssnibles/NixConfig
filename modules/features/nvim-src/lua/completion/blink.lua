@@ -112,7 +112,11 @@ cmp.setup({
 			["<Esc>"] = false,
 			["<C-c>"] = false,
 		},
-		completion = { menu = { auto_show = true }, ghost_text = { enabled = true } },
+		completion = {
+			-- The bar sits at the bottom, so open the menu above it.
+			menu = { auto_show = true, direction_priority = { "n", "s" } },
+			ghost_text = { enabled = true },
+		},
 	},
 })
 

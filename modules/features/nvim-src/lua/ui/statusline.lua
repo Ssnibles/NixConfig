@@ -28,6 +28,10 @@ local function mode()
 	if current:sub(1, 2) == "nt" then
 		return "TERMINAL", "StlModeT"
 	end
+	if current:sub(1, 1) == "c" then
+		local kind = vim.fn.getcmdtype()
+		return ((kind == "/" or kind == "?") and "SEARCH" or "COMMAND"), "StlModeC"
+	end
 	local entry = modes[current:sub(1, 1)] or modes.n
 	return entry[1], entry[2]
 end
@@ -68,16 +72,38 @@ local function clients()
 	end
 	return table.concat(names, ",")
 end
+local computing_search_count = false
+
 local function search()
-	if vim.v.hlsearch == 0 then
+	if computing_search_count then
 		return ""
 	end
-	local count = vim.fn.searchcount({ maxcount = 999, timeout = 100 })
-	local current, total = count.current, count.total
-	if not current or not total or total == 0 then
+	local kind = vim.fn.getcmdtype()
+	local pattern = (kind == "/" or kind == "?") and vim.fn.getcmdline() or nil
+	if pattern == "" then
 		return ""
 	end
-	return ("%d/%s"):format(current, count.incomplete == 2 and (total .. "+") or tostring(total))
+	if not pattern and vim.v.hlsearch == 0 then
+		return ""
+	end
+
+	-- searchcount() with a pattern also writes @/. Save and restore it so a
+	-- typed-but-not-entered search does not replace the last real one.
+	computing_search_count = true
+	local previous = pattern and vim.fn.getreg("/") or nil
+	local ok, count = pcall(vim.fn.searchcount, { maxcount = 999, timeout = 50, pattern = pattern })
+	if pattern then
+		vim.fn.setreg("/", previous or "")
+	end
+	computing_search_count = false
+
+	if not ok or not count or not count.current or not count.total then
+		return ""
+	end
+	if count.total == 0 and not pattern then
+		return ""
+	end
+	return ("%d/%s"):format(count.current, count.incomplete == 2 and (count.total .. "+") or tostring(count.total))
 end
 local function debugging()
 	if package.loaded.dap and require("dap").session() then
