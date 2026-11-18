@@ -14,62 +14,79 @@ dirs=(
   "$HOME/.local/share/flatpak/exports/share"
 )
 
+# Collect the files once so one awk pass covers all of them. A process per
+# entry costs about 0.8s of CPU, and the launcher reruns this on every open.
+files=()
 declare -A seen
+for dir in "${dirs[@]}"; do
+  [[ -d "$dir/applications" ]] || continue
+  for file in "$dir/applications"/*.desktop; do
+    [[ -e "$file" ]] || continue
+    base="${file##*/}"
+    [[ -n "${seen[$base]:-}" ]] && continue
+    seen[$base]=1
+    files+=("$file")
+  done
+done
 
-parse_file() {
-  awk -v file="$1" '
-    function esc(s) {
-      gsub(/\\/, "\\\\", s)
-      gsub(/"/, "\\\"", s)
-      gsub(/\t/, "\\t", s)
-      gsub(/\r/, "\\r", s)
-      gsub(/\n/, "\\n", s)
-      return s
-    }
-    BEGIN {
-      section = ""
-      actionId = ""
-      actionList = ""
-      name = ""
-      exec = ""
-      icon = ""
-      comment = ""
-      terminal = ""
-      nodisplay = ""
-      hidden = ""
-      type = ""
-    }
-    /^\[Desktop Action / {
-      actionId = $0
-      sub(/^\[Desktop Action /, "", actionId)
-      sub(/\]$/, "", actionId)
-      section = "action"
-      next
-    }
-    /^\[/ { section = $0; actionId = ""; next }
-    section == "[Desktop Entry]" {
-      line = $0
-      sub(/\r$/, "", line)
-      if (line ~ /^Name=/) name = substr(line, 6)
-      else if (line ~ /^Exec=/) exec = substr(line, 6)
-      else if (line ~ /^Icon=/) icon = substr(line, 6)
-      else if (line ~ /^Comment=/) comment = substr(line, 9)
-      else if (line ~ /^Terminal=/) terminal = tolower(substr(line, 10))
-      else if (line ~ /^NoDisplay=/) nodisplay = tolower(substr(line, 11))
-      else if (line ~ /^Hidden=/) hidden = tolower(substr(line, 8))
-      else if (line ~ /^Actions=/) actionList = substr(line, 9)
-      else if (line ~ /^Type=/) type = substr(line, 6)
-    }
-    section == "action" {
-      line = $0
-      sub(/\r$/, "", line)
-      if (line ~ /^Name=/) actionName[actionId] = substr(line, 6)
-      else if (line ~ /^Exec=/) actionExec[actionId] = substr(line, 6)
-    }
-    END {
-      if (type != "Application") exit
-      if (name == "" || exec == "") exit
-      if (nodisplay == "true" || hidden == "true") exit
+[[ ${#files[@]} -eq 0 ]] && exit 0
+
+# BEGINFILE/ENDFILE keep the per-file state that the old parse_file call got
+# from a fresh awk process. actionName and actionExec must be cleared too, or
+# one entry's actions leak into the next one that names them.
+exec awk '
+  function esc(s) {
+    gsub(/\\/, "\\\\", s)
+    gsub(/"/, "\\\"", s)
+    gsub(/\t/, "\\t", s)
+    gsub(/\r/, "\\r", s)
+    gsub(/\n/, "\\n", s)
+    return s
+  }
+  BEGINFILE {
+    section = ""
+    actionId = ""
+    actionList = ""
+    name = ""
+    exec = ""
+    icon = ""
+    comment = ""
+    terminal = ""
+    nodisplay = ""
+    hidden = ""
+    type = ""
+    split("", actionName)
+    split("", actionExec)
+  }
+  /^\[Desktop Action / {
+    actionId = $0
+    sub(/^\[Desktop Action /, "", actionId)
+    sub(/\]$/, "", actionId)
+    section = "action"
+    next
+  }
+  /^\[/ { section = $0; actionId = ""; next }
+  section == "[Desktop Entry]" {
+    line = $0
+    sub(/\r$/, "", line)
+    if (line ~ /^Name=/) name = substr(line, 6)
+    else if (line ~ /^Exec=/) exec = substr(line, 6)
+    else if (line ~ /^Icon=/) icon = substr(line, 6)
+    else if (line ~ /^Comment=/) comment = substr(line, 9)
+    else if (line ~ /^Terminal=/) terminal = tolower(substr(line, 10))
+    else if (line ~ /^NoDisplay=/) nodisplay = tolower(substr(line, 11))
+    else if (line ~ /^Hidden=/) hidden = tolower(substr(line, 8))
+    else if (line ~ /^Actions=/) actionList = substr(line, 9)
+    else if (line ~ /^Type=/) type = substr(line, 6)
+  }
+  section == "action" {
+    line = $0
+    sub(/\r$/, "", line)
+    if (line ~ /^Name=/) actionName[actionId] = substr(line, 6)
+    else if (line ~ /^Exec=/) actionExec[actionId] = substr(line, 6)
+  }
+  ENDFILE {
+    if (type == "Application" && name != "" && exec != "" && nodisplay != "true" && hidden != "true") {
       gsub(/%[fFuUick]/, "", exec)
       gsub(/%%/, "%", exec)
 
@@ -85,20 +102,9 @@ parse_file() {
         actionJson = actionJson "{\"name\":\"" esc(actionName[aid]) "\",\"exec\":\"" esc(aexec) "\"}"
       }
 
-      appId = file
+      appId = FILENAME
       sub(/.*\//, "", appId)
-      printf "{\"name\":\"%s\",\"exec\":\"%s\",\"icon\":\"%s\",\"comment\":\"%s\",\"terminal\":%s,\"actions\":[%s],\"file\":\"%s\",\"id\":\"%s\"}\n", esc(name), esc(exec), esc(icon), esc(comment), (terminal == "true" ? "true" : "false"), actionJson, esc(file), esc(appId)
+      printf "{\"name\":\"%s\",\"exec\":\"%s\",\"icon\":\"%s\",\"comment\":\"%s\",\"terminal\":%s,\"actions\":[%s],\"file\":\"%s\",\"id\":\"%s\"}\n", esc(name), esc(exec), esc(icon), esc(comment), (terminal == "true" ? "true" : "false"), actionJson, esc(FILENAME), esc(appId)
     }
-  ' "$1"
-}
-
-for dir in "${dirs[@]}"; do
-  [[ -d "$dir/applications" ]] || continue
-  for file in "$dir/applications"/*.desktop; do
-    [[ -e "$file" ]] || continue
-    base="$(basename "$file")"
-    [[ -n "${seen[$base]:-}" ]] && continue
-    seen[$base]=1
-    parse_file "$file"
-  done
-done
+  }
+' "${files[@]}"
