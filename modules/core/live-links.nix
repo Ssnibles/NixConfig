@@ -2,9 +2,8 @@
 # Links from the NixConfig checkout into the home directory. They point at the
 # working tree, so edits take effect without a rebuild. Consumers register an
 # entry in nixos.liveLinks and this module writes one activation script.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       config,
       lib,
@@ -25,6 +24,28 @@
         fi
       '';
 
+      # Create the parent chain and hand it to the user. Activation runs as
+      # root, so an unchowned parent stays root-owned and Hjem, which runs as
+      # the user, cannot write its own files beside the link. Existing
+      # directories are chowned too, which repairs older activations.
+      ownParents =
+        {
+          user,
+          owner,
+          target,
+        }:
+        let
+          home = config.users.users.${user}.home;
+        in
+        ''
+          dir=${q (builtins.dirOf target)}
+          while [ "$dir" != ${q home} ] && [ "$dir" != / ]; do
+            mkdir -p "$dir"
+            chown ${q owner} "$dir"
+            dir=$(dirname "$dir")
+          done
+        '';
+
       # Link one file and replace anything already at the target.
       fileLink =
         link:
@@ -41,7 +62,10 @@
             echo "live-links: refusing to replace directory: ${q target}" >&2
             exit 1
           fi
-          mkdir -p ${q (builtins.dirOf target)}
+          ${ownParents {
+            inherit (link) user;
+            inherit owner target;
+          }}
           rm -f ${q target}
           ln -sfn ${q link.source} ${q target}
           chown -h ${q owner} ${q target} || true
@@ -61,8 +85,12 @@
           # Remove a directory symlink left by an older activation script, so
           # the links below are not written through it into the source tree.
           if [ -L ${q target} ]; then rm -f ${q target}; fi
+          ${ownParents {
+            inherit (link) user;
+            inherit owner target;
+          }}
           mkdir -p ${q target}
-          chown ${q owner} ${q target} || true
+          chown ${q owner} ${q target}
           for entry in ${q link.source}/*; do
             [ -e "$entry" ] || continue
             base=$(basename "$entry")
@@ -122,7 +150,8 @@
       };
 
       config = lib.mkIf (cfg != { }) {
-        system.activationScripts.live-links = lib.concatStringsSep "\n" (lib.mapAttrsToList render cfg);
+        system.activationScripts.live-links =
+          "set -eu\n" + lib.concatStringsSep "\n" (lib.mapAttrsToList render cfg);
       };
     };
 }
