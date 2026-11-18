@@ -117,7 +117,7 @@ flowchart TD
     Tree --> Packages
 
     subgraph Composition["Deferred Module Group"]
-        Shared["nixos.modules.shared<br/>(Base OS, Shell, Audio, Networking, Desktop Apps)"]
+        Shared["flake.nixosModules.shared<br/>(Base OS, Shell, Audio, Networking, Desktop Apps)"]
     end
 
     Core --> Composition

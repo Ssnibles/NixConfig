@@ -11,11 +11,11 @@ The terminal environment is engineered for low latency, memory efficiency, and f
 | Layer | Component | Key Highlights | Configuration File |
 | :--- | :--- | :--- | :--- |
 | **Terminal** | **Kitty** | Single-instance server mode, shared GPU sprite cache, Maple Mono font | `modules/features/apps/kitty.nix` |
-| **Alternative** | **Foot** | Lightweight Wayland native terminal | `modules/packages/foot/default.nix` |
+| **Alternative** | **Foot** | Lightweight Wayland native terminal | `modules/features/apps/foot.nix` |
 | **Multiplexer** | **Tmux** | Backtick prefix, Sesh session picker, resurrect path sanitiser, floating popups | `modules/features/shell/tmux.nix` |
 | **Multiplexer (Alt)** | **Zellij** | Custom Rust WASI status bar (`zjbar`) & command palette (`zjcmd`), stable permissions cache | `modules/features/shell/zellij.nix` |
 | **File Manager** | **Yazi** | Async Rust file manager, image previews, Neovim directory opening | `modules/features/apps/development.nix` |
-| **Cheatsheets** | **Navi** | Fuzzy command cheatsheet insertion bound to `Ctrl+P` | `modules/packages/navi/default.nix` |
+| **Cheatsheets** | **Navi** | Fuzzy command cheatsheet insertion bound to `Ctrl+P` | `modules/features/shell/navi/default.nix` |
 | **Coreutils** | **eza, bat, ripgrep, fd** | `ls`, `cat`, `grep`, and `find` mapped to Rust tools; GNU originals stay reachable | `modules/features/shell/shell.nix` |
 | **Shell** | **Fish 4+** | 5-minute cached FZF search (`__fzf_cache_fd`), Starship prompt | `modules/features/shell/shell.nix` |
 
@@ -204,7 +204,7 @@ scrolloff         = 5
 
 ## Navi Cheatsheet Manager
 
-Navi is a command-line cheatsheet picker (an actively maintained Rust alternative to the now-idle `pet`) configured in `modules/packages/navi/default.nix`.
+Navi is a command-line cheatsheet picker (an actively maintained Rust alternative to the now-idle `pet`) configured in `modules/features/shell/navi/default.nix`.
 
 ### Fish Interactive Picker (`Ctrl + P`)
 
@@ -218,7 +218,7 @@ The picker rows lead with the command, followed by its tags, so the thing you ar
 
 ### Declarative Cheatsheet Library (`~/.config/navi/`)
 
-The library is **declared in Nix**, not edited with an editor. `modules/packages/navi/default.nix` defines every cheat as typed Nix data and renders it to navi `.cheat` files under `~/.config/navi/cheats/` (`core`, `nix`, `git`, `jj`, `tmux`, `files`, `system`, `mango`, `on-demand`); `~/.config/navi/config.yaml` points navi at that directory. The generated files are read-only store symlinks, so add or change cheats in the Nix module and rebuild.
+The library is **declared in Nix**, not edited with an editor. `modules/features/shell/navi/_snippets.nix` defines every cheat as typed Nix data and renders it to navi `.cheat` files under `~/.config/navi/cheats/` (`core`, `nix`, `git`, `jj`, `tmux`, `files`, `system`, `mango`, `on-demand`); `~/.config/navi/config.yaml` points navi at that directory. The generated files are read-only store symlinks, so add or change cheats in the Nix module and rebuild.
 
 Placeholders use navi's `<name>` syntax; a default is supplied by a following `$ name: echo 'default'` suggestion line. Defaults that were themselves shell commands, such as `$(git branch --show-current)`, become `$ name: git branch --show-current` so navi evaluates them for suggestions.
 

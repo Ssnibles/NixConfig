@@ -39,20 +39,20 @@ modules/features/nvim-src/                4855 lines
 │   └── <server>.lua                            declarative tables
 ├── snippets/                              data: java 18, nix 91, typst 979
 └── lua/
-    ├── options.lua                        84   all vim.opt and Neovide globals
+    ├── options.lua                        98   all vim.opt and Neovide globals
     ├── filetypes.lua                      5
     ├── commands.lua                       3    :Mes
     ├── autocmds.lua                       159  one augroup per feature
     ├── util.lua                           85   toggles, helper filetypes, capabilities, C flags
     ├── external.lua                       48   optional binaries, the only place they are named
-    ├── terminal.lua                       86   reused shell buffer
-    ├── diagnostics.lua                    76   vim.diagnostic, inline text, fidget
+    ├── terminal.lua                       93   reused shell buffer
+    ├── diagnostics.lua                    87   vim.diagnostic, inline text, fidget progress
     ├── vcs.lua                            105  gitsigns, grug-far, jjui
     ├── theme/
     │   ├── init.lua                       82   palette, mini.base16, fold text
     │   └── highlights.lua                 237  data
     ├── ui/
-    │   ├── init.lua                       12
+    │   ├── init.lua                       13
     │   ├── statusline/
     │   │   ├── init.lua                   64   assembly and width budget
     │   │   ├── mode.lua                   82   mode, selection, macro
@@ -62,6 +62,7 @@ modules/features/nvim-src/                4855 lines
     │   │   ├── icons.lua                  27
     │   │   └── util.lua                   10
     │   ├── cmdline.lua                    28   ui2 command bar
+    │   ├── msg.lua                        36   ui2 message and pager frames
     │   ├── flash.lua                      34
     │   ├── splits.lua                     7
     │   ├── dial.lua                       19
@@ -178,6 +179,13 @@ The typed command text stays in that bar, not in the statusline. While a `/` or
 `?` pattern is typed, the statusline search segment shows the live count and
 `FWD` or `BWD`, or `NO MATCH`. The typed pattern is counted without replacing
 the last committed search pattern.
+
+`vim.notify` is not overridden, so notifications are ordinary messages. They
+appear in the message window, are kept in `:messages`, and expire after the
+`messagesopt` timeout. fidget only draws LSP progress, in a framed window of its
+own. `ui/msg.lua` frames the message window with a full border and gives the
+pager and dialog the `msgsep` rule on top, since those fill the screen and have
+no room for the other edges.
 
 ## Toggles
 

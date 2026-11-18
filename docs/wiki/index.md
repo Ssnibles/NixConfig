@@ -15,6 +15,8 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
   Terminal stack optimisations: Kitty in single-instance shared GPU memory mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Navi fuzzy cheatsheet picker (`Ctrl+P`), and Fish shell with cached FZF directory indexing.
 
 ### Developer Toolchains & Editors
+- **[Developer Environments](devenv.md)**
+  `dev-init` project templates for Python, Rust, Go, web, and C, plus the NixConfig devenv shell, Fish entry, and flake checks.
 - **[Declarative Neovim & Lua Plugins](neovim.md)**  
   Declarative Neovim built from the nightly overlay and customised via modular Lua files in `modules/features/nvim-src/`. Covers language servers (`qmlls` and `zls` wrappers), Blink.cmp, Conform formatters, Gitsigns, Oil image pasting, and floating `jjui` integration.
 - **[Jujutsu (jj) Cheat Sheet](jujutsu.md)**  
@@ -57,7 +59,8 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 | **Compositors** | `modules/features/desktop-env/` | `mangowc/`, `niri/`, `hyprland/`, `shikane/`, `vicinae/` | [compositors.md](compositors.md) |
 | **Quickshell UI** | `modules/features/desktop-env/quickshell/` | `modules/features/desktop-env/quickshell/config/` | [quickshell.md](quickshell.md) |
 | **Live Link Registry** | `modules/core/live-links.nix` | Declarative symlink engine with `contents = true` | [neovim.md](neovim.md) / [quickshell.md](quickshell.md) |
-| **Terminal & Multiplexers** | `modules/features/apps/kitty.nix`, `modules/features/shell/` | `modules/packages/navi/`, `tmux.nix`, `zellij.nix`, `zellij-plugin/` | [terminal-workflow.md](terminal-workflow.md) |
+| **Terminal & Multiplexers** | `modules/features/apps/kitty.nix`, `modules/features/shell/` | `modules/features/shell/navi/`, `tmux.nix`, `zellij.nix`, `zellij-plugin/` | [terminal-workflow.md](terminal-workflow.md) |
+| **Developer Environments** | `modules/core/devshell.nix`, `modules/core/checks.nix` | `modules/packages/dev-init/`, `modules/packages/boilerplate/` | [devenv.md](devenv.md) |
 | **Declarative Neovim** | `modules/features/apps/neovim.nix` | `modules/features/nvim-src/` | [neovim.md](neovim.md) |
 | **Jujutsu (jj)** | `modules/features/shell/cli.nix` | `~/.config/jj/config.toml` | [jujutsu.md](jujutsu.md) |
 | **Pi Agent & Hermes** | `modules/features/apps/pi-agent.nix`, `hermes.nix` | `pi-agent/skills/`, `~/.hermes/config.yaml`, `pi.nix` | [ai-tools.md](ai-tools.md) |

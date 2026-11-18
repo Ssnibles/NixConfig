@@ -70,6 +70,7 @@ User environments and dotfiles are managed declaratively using **[hjem](https://
   - [ESP32 Arduino Template (`esp32-arduino`)](#esp32-arduino-template-esp32-arduino)
   - [Generic Dendritic Template (`generic`)](#generic-dendritic-template-generic)
 - [Scaffolding with `boilerplate`](#scaffolding-with-boilerplate)
+- [Initialising Language Projects with `dev-init`](#initialising-language-projects-with-dev-init)
 - [Troubleshooting & Maintenance](#troubleshooting--maintenance)
 - [Learning Resources](#learning-resources)
 
@@ -79,7 +80,7 @@ User environments and dotfiles are managed declaratively using **[hjem](https://
 
 The configuration is organised around one deferred module group defined in [`modules/hosts/default.nix`](modules/hosts/default.nix):
 
-- **`config.nixos.modules.shared`**: every module writes here. It holds the base configuration, kernel tuning, systemd services, shell environment, desktop applications, and the feature options that machines switch on.
+- **`flake.nixosModules.shared`**: every module writes here. It holds the base configuration, kernel tuning, systemd services, shell environment, desktop applications, and the feature options that machines switch on.
 
 Each directory in `modules/hosts/` is one host, and the directory name becomes the flake attribute and the hostname. A host directory holds only the settings that differ from the shared defaults. Feature options such as `features.nvidia.enable`, `features.gaming.enable`, and `features.minecraft.enable` live in the shared group and default to off, so a host turns on the hardware it actually has.
 
@@ -89,7 +90,7 @@ Files starting with an underscore in a host directory (`_hardware-generated.nix`
 ```mermaid
 flowchart TD
     subgraph Flake["flake.nix (Flake-Parts Entry Point)"]
-        Inputs["Inputs: nixpkgs (unstable default), stable, flake-parts, import-tree, hjem, nix-flatpak, mangowc, pi-agent..."]
+        Inputs["Inputs: nixpkgs (unstable default), stable, flake-parts, import-tree, hjem, nix-flatpak, nvf, mangowc, pi-agent..."]
     end
 
     Tree["inputs.import-tree ./modules<br/>(Filesystem Auto-Discovery)"]
@@ -98,7 +99,7 @@ flowchart TD
     subgraph Modules["Dendritic Modules Structure"]
         Core["modules/core/<br/>helpers, live-links, options, parts, devshell, templates"]
         Features["modules/features/<br/>apps, desktop-env, nvim-src, shell, system"]
-        Packages["modules/packages/<br/>boilerplate, dualsense-pair, foot, html-server, instrument-serif, maple-mono, navi, plsfail, sf-pro, tuxedo, uni-notes"]
+        Packages["modules/packages/<br/>boilerplate, dev-init, dualsense-pair, html-server, instrument-serif, maple-mono, plsfail, sf-pro, tuxedo, uni-notes"]
     end
 
     Tree --> Core
@@ -106,7 +107,7 @@ flowchart TD
     Tree --> Packages
 
     subgraph Composition["Deferred Module Group"]
-        Shared["nixos.modules.shared<br/>(Base OS, Shell, Audio, Networking, Desktop Apps)"]
+        Shared["flake.nixosModules.shared<br/>(Base OS, Shell, Audio, Networking, Desktop Apps)"]
     end
 
     Core --> Composition
@@ -129,7 +130,7 @@ flowchart TD
 ```
 <!-- DIAGRAM:END -->
 
-Every module declares its settings inside `nixos.modules.shared`, eliminating cross-file imports and cyclic dependencies.
+Every module declares its settings inside `flake.nixosModules.shared`, eliminating cross-file imports and cyclic dependencies.
 
 ---
 
@@ -182,7 +183,7 @@ For architecture diagrams, singletons, widgets, and IPC commands, refer to the *
 For single-instance terminal performance, Tmux session management, Yazi openers, and Navi shortcuts, refer to the **[Terminal Workflow Guide](docs/wiki/terminal-workflow.md)**:
 
 - **Kitty in Single-Instance Mode**: GPU-accelerated terminal emulator ([`kitty.nix`](modules/features/apps/kitty.nix)) running in shared server mode (`kitty --single-instance`), drastically reducing per-window RAM by sharing GPU texture caches. Features Maple Mono font, capped scrollback, and dynamic theme palette colours.
-- **Foot Terminal Alternative**: Lightweight Wayland terminal emulator ([`modules/packages/foot/default.nix`](modules/packages/foot/default.nix)) pre-configured with theme palette integration.
+- **Foot Terminal Alternative**: Lightweight Wayland terminal emulator ([`modules/features/apps/foot.nix`](modules/features/apps/foot.nix)) pre-configured with theme palette integration.
 - **Tmux Multiplexer & Sesh**: Advanced terminal multiplexer ([`tmux.nix`](modules/features/shell/tmux.nix)) with backtick prefix, running as a systemd user daemon:
   - Sesh session manager (`Prefix + K`) with interactive FZF filtering across sessions, configs, and Git repos.
   - Floating interactive window picker (`Prefix + o`) with live pane preview.
@@ -196,7 +197,7 @@ For single-instance terminal performance, Tmux session management, Yazi openers,
   - `zjcmd`: Floating command palette with explicit ANSI attribute resets to prevent formatting bleed.
   - Stable user plugin directory (`~/.local/share/zellij/plugins/`) with writable copy-mode permissions cache (`~/.cache/zellij/permissions.kdl`).
 - **Yazi File Manager**: Async terminal file manager configured with custom image and text openers, hidden file toggles, preview maximisation, and Neovim directory opening.
-- **Navi Cheatsheet Manager**: Interactive cheatsheet fuzzy search bound to `Ctrl + P` in Fish (`navi-pick`) with an fzf preview pane showing the command and tags. Also available in a floating tmux popup via `Prefix + Ctrl-g`, which pastes the chosen cheat unexecuted into the invoking pane (works over SSH). The library is declared in Nix (`modules/packages/navi/default.nix`) and rendered to per-topic `.cheat` files under `~/.config/navi/cheats/`, covering NixOS, Git/GitHub, Jujutsu, Tmux, files, system, MangoWC, and on-demand tools.
+- **Navi Cheatsheet Manager**: Interactive cheatsheet fuzzy search bound to `Ctrl + P` in Fish (`navi-pick`) with an fzf preview pane showing the command and tags. Also available in a floating tmux popup via `Prefix + Ctrl-g`, which pastes the chosen cheat unexecuted into the invoking pane (works over SSH). The library is declared in Nix (`modules/features/shell/navi/default.nix`) and rendered to per-topic `.cheat` files under `~/.config/navi/cheats/`, covering NixOS, Git/GitHub, Jujutsu, Tmux, files, system, MangoWC, and on-demand tools.
 - **Fish Shell 4+ & Cached FZF Traversal**: Fast Fish shell with a custom caching engine (`__fzf_cache_fd`) caching `fd` traversal in `$XDG_RUNTIME_DIR/fzf_fd_cache` for 5 minutes with atomic file replacement.
 - **Modern Coreutils**: Interactive aliases map the familiar names onto Rust rewrites: `ls`/`tree` to eza, `cat` to bat, `grep` to ripgrep, `find` to fd, `du` to dust, `df` to duf, `ps` to procs, `diff` to difftastic, `xxd` to hexyl, `man` to tldr (with a real man page fallback), and `ping` to gping. `sd`, `ouch`, and `viddy` are installed under their own names. Scripts are untouched because the aliases only exist in interactive shells.
 - **Starship Prompt**: Transient prompt (`>>`) with indicators for Git status, Nix shell, Node.js, Rust, Python, battery levels, and command execution duration.
@@ -309,10 +310,10 @@ Generated by `assets/update_diagram.sh`; run it after adding or removing files.
 │       └── stardew-valley-night.png
 ├── build.sh
 ├── docs/
-│   ├── devenv-example.nix
 │   └── wiki/
 │       ├── ai-tools.md
 │       ├── compositors.md
+│       ├── devenv.md
 │       ├── esp32-arduino.md
 │       ├── firefox.md
 │       ├── flatpak.md
@@ -331,6 +332,7 @@ Generated by `assets/update_diagram.sh`; run it after adding or removing files.
 ├── install.sh
 ├── modules/
 │   ├── core/
+│   │   ├── checks.nix
 │   │   ├── devshell.nix
 │   │   ├── helpers.nix
 │   │   ├── live-links.nix
@@ -343,11 +345,13 @@ Generated by `assets/update_diagram.sh`; run it after adding or removing files.
 │   │   │   ├── content-creation.nix
 │   │   │   ├── development.nix
 │   │   │   ├── firefox/
+│   │   │   ├── foot.nix
 │   │   │   ├── frame.nix
 │   │   │   ├── gaming.nix
 │   │   │   ├── helium/
 │   │   │   ├── hermes.nix
 │   │   │   ├── kitty.nix
+│   │   │   ├── media/
 │   │   │   ├── media.nix
 │   │   │   ├── minecraft.nix
 │   │   │   ├── neovim.nix
@@ -369,11 +373,16 @@ Generated by `assets/update_diagram.sh`; run it after adding or removing files.
 │   │   │   └── vicinae/
 │   │   ├── nvim-src/
 │   │   │   ├── init.lua
-│   │   │   └── lua/
+│   │   │   ├── lsp/
+│   │   │   ├── lua/
+│   │   │   └── snippets/
 │   │   ├── shell/
 │   │   │   ├── cli.nix
+│   │   │   ├── navi/
 │   │   │   ├── shell.nix
+│   │   │   ├── tmux/
 │   │   │   ├── tmux.nix
+│   │   │   ├── zellij/
 │   │   │   ├── zellij-plugin/
 │   │   │   └── zellij.nix
 │   │   └── system/
@@ -383,6 +392,7 @@ Generated by `assets/update_diagram.sh`; run it after adding or removing files.
 │   │       ├── journal-error-notify.nix
 │   │       ├── nvidia.nix
 │   │       ├── openssh.nix
+│   │       ├── pipewire/
 │   │       ├── pipewire.nix
 │   │       ├── podman-vm.nix
 │   │       ├── startup.nix
@@ -405,11 +415,13 @@ Generated by `assets/update_diagram.sh`; run it after adding or removing files.
 │   │   ├── boilerplate/
 │   │   │   ├── boilerplate.py
 │   │   │   └── default.nix
+│   │   ├── dev-init/
+│   │   │   ├── _templates/
+│   │   │   ├── default.nix
+│   │   │   └── dev-init.py
 │   │   ├── dualsense-pair/
 │   │   │   ├── default.nix
 │   │   │   └── dualsense-pair.sh
-│   │   ├── foot/
-│   │   │   └── default.nix
 │   │   ├── html-server/
 │   │   │   ├── default.nix
 │   │   │   ├── go.mod
@@ -421,8 +433,6 @@ Generated by `assets/update_diagram.sh`; run it after adding or removing files.
 │   │   │   ├── config.json
 │   │   │   ├── default.nix
 │   │   │   └── fonts/
-│   │   ├── navi/
-│   │   │   └── default.nix
 │   │   ├── plsfail/
 │   │   │   ├── default.nix
 │   │   │   └── plsfail.py
@@ -439,6 +449,7 @@ Generated by `assets/update_diagram.sh`; run it after adding or removing files.
 ├── screenshots/
 │   ├── image_20260911_130931.png
 │   └── image_20260911_132149.png
+├── statix.toml
 ├── templates/
 │   ├── esp32-arduino/
 │   │   ├── README.md
@@ -739,12 +750,11 @@ Whenever compositors declare `wallpaper-destinations = [ "Pictures/wallpaper" ];
 This repository exports custom packages under `self.packages.${system}`:
 
 - **`boilerplate`**: Python CLI utility for rapid scaffolding of layers, features, hosts, and packages.
+- **`dev-init`**: Creates ready-to-use devenv projects for Python, Rust, Go, web, and C. See [Developer Environments](docs/wiki/devenv.md).
 - **`dualsense-pair`**: Bluetooth helper script to scan, pair, trust, and configure Sony PlayStation 5 DualSense controllers. See [Gaming Guide](docs/wiki/gaming.md).
-- **`foot`**: Pre-configured Foot terminal emulator with active palette colour schemes. See [Terminal Workflow Guide](docs/wiki/terminal-workflow.md).
 - **`html-server`**: High-performance Go web server with live reloading for quick local HTML/CSS previews.
 - **`instrument-serif`**: Custom font derivation packaging Google's Instrument Serif.
 - **`maple-mono`**: Custom font derivation packaging Maple Mono.
-- **`navi`**: Interactive fuzzy command cheatsheet picker (maintained Rust replacement for pet). Cheats are declared in the Nix module and rendered to `~/.config/navi/cheats/*.cheat`. See [Terminal Workflow Guide](docs/wiki/terminal-workflow.md).
 - **`plsfail`**: Diagnostic utility that runs a command repeatedly in a loop until it encounters an error.
 - **`sf-pro`**: Custom font derivation packaging Apple's San Francisco Pro font family.
 - **`tuxedo`**: Rust-based `todo.txt` terminal UI client.
@@ -755,22 +765,25 @@ This repository exports custom packages under `self.packages.${system}`:
 
 ### Developer Shell (`nix develop`)
 
-Enter the complete development environment with Rust and Nix language servers:
+Enter the development environment for this repository:
 
 ```bash
 # Enter the developer shell
 nix develop
 
+# Or use devenv directly
+devenv shell
+
 # Or automatically load with direnv:
 direnv allow
 ```
 
-**Included Toolchains**:
+**Included tools**:
 
-- **Rust**: `rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt` (also installed system-wide, so `bacon` and the cargo helpers work outside this shell)
-- **Nix**: `nixfmt`, `nil` (Nix language server), `alejandra`
-- **Shell**: Unstable Fish 4+
-- **Scaffolding**: `boilerplate`
+- **Nix**: `nixfmt`, `statix`, `deadnix`, and `nil`
+- **Rust**: `rustc`, `cargo`, `rust-analyzer`, `clippy`, and `rustfmt`
+- **Shell**: Fish, entered automatically
+- **Scaffolding**: `boilerplate` and `dev-init`
 
 ### ESP32 Arduino Template (`esp32-arduino`)
 
@@ -827,6 +840,38 @@ boilerplate package my-daemon -t python    # Python 3 binary script
 boilerplate package my-crate -t rust       # Rust buildRustPackage derivation
 boilerplate package custom-tool -t stdenv  # stdenvNoCC derivation
 ```
+
+---
+
+## Initialising Language Projects with `dev-init`
+
+The `dev-init` command creates a complete devenv project outside this repository, including a starter source tree and a short README:
+
+```bash
+# List the supported languages
+dev-init --list
+
+# Create a Python project
+dev-init my-app -l python
+
+# Create a Rust, Go, web, or C project
+dev-init my-app -l rust
+dev-init my-app -l go
+dev-init my-app -l web
+dev-init my-app -l c
+```
+
+Each project has a `devenv.yaml`, `devenv.nix`, `.envrc`, `.gitignore`, and language starter files. Enter it with direnv and devenv:
+
+```bash
+cd my-app
+direnv allow
+devenv shell
+```
+
+Use `--dry-run` to preview the files, `--git` to run `git init`, and `--force` to add files to a non-empty directory. Existing files are never overwritten.
+
+See the [Developer Environments Guide](docs/wiki/devenv.md) for the full command list and template details.
 
 ---
 
