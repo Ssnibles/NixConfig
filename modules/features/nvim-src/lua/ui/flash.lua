@@ -21,7 +21,17 @@ end
 flash.setup({
 	search = {
 		multi_window = true,
+		-- Spell out flash's own list. tbl_deep_extend merges lists by index,
+		-- so a lone function would replace "notify" and inherit the rest.
 		exclude = {
+			"notify",
+			"cmp_menu",
+			"noice",
+			"flash_prompt",
+			-- fzf-lua runs fzf in a terminal buffer of filetype "fzf". Its
+			-- preview panes are scratch buffers, so the window guard covers
+			-- those.
+			"fzf",
 			function(win)
 				return not M.is_main_editor(win)
 			end,
