@@ -1,0 +1,80 @@
+# Fit the page width when it opens.
+set adjust-open "best-fit"
+
+# Ctrl+click opens Neovim at the matching line.
+set synctex-editor-command "nvr --remote-silent +%{line} %{input}"
+
+# Reading.
+set pages-per-row 1
+set scroll-step 50
+set zoom-min 50
+set zoom-max 400
+set font "monospace 10"
+set window-title-home-tilde true
+set selection-clipboard clipboard
+
+set scroll-page-aware true
+set scroll-full-overlap 0.1
+set link-zoom false
+set abort-clear-search true
+
+# Status bar.
+set statusbar-page-percent true
+set statusbar-home-tilde true
+
+# Avoid a white flash while a page loads.
+set render-loading false
+set render-loading-bg "#@bg@"
+set render-loading-fg "#@fg@"
+
+# Dark mode recolouring.
+set recolor true
+set recolor-keephue true
+set recolor-reverse-video true
+
+# Key bindings.
+map t recolor
+map Y copy_filepath
+map b toggle_statusbar
+
+# Layout colours.
+set default-bg "#@bg@"
+set default-fg "#@fg@"
+set recolor-lightcolor "#@bg@"
+set recolor-darkcolor "#@fg@"
+
+# Status bar colours.
+set statusbar-bg "#@bg@"
+set statusbar-fg "#@fg@"
+
+# Input bar colours.
+set inputbar-bg "#@bg@"
+set inputbar-fg "#@fg@"
+
+# Completion menu colours.
+set completion-bg "#@bgRaised@"
+set completion-fg "#@fg@"
+set completion-highlight-bg "#@accent@"
+set completion-highlight-fg "#@bg@"
+set completion-group-bg "#@bg@"
+set completion-group-fg "#@fgDim@"
+
+# Notifications and errors.
+set notification-bg "#@bgRaised@"
+set notification-fg "#@fg@"
+set notification-error-bg "#@bgRaised@"
+set notification-error-fg "#@red@"
+set notification-warning-bg "#@bgRaised@"
+set notification-warning-fg "#@yellow@"
+
+# Highlight colours. The fill is translucent so search results
+# stay readable.
+set highlight-color "@highlight-yellow@"
+set highlight-active-color "@highlight-orange@"
+set highlight-fg "#@fg@"
+
+# Index colours.
+set index-bg "#@bg@"
+set index-fg "#@fg@"
+set index-active-bg "#@accent@"
+set index-active-fg "#@bg@"

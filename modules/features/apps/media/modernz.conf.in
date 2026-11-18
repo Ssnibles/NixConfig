@@ -1,0 +1,30 @@
+# Hide the window controls.
+window_controls=no
+
+# Theme colours.
+osc_color=#@bgRaised@
+window_title_color=#@fg@
+window_controls_color=#@fg@
+windowcontrols_close_hover=#@red@
+windowcontrols_max_hover=#@yellow@
+windowcontrols_min_hover=#@green@
+title_color=#@fg@
+cache_info_color=#@fgMid@
+seekbar_cache_color=#@fgDim@
+seekbarfg_color=#@accent@
+seekbarbg_color=#@bgSubtle@
+seek_handle_color=#@accent@
+seek_handle_border_color=#@accent@
+volumebar_match_seek_color=yes
+time_color=#@fg@
+chapter_title_color=#@fg@
+side_buttons_color=#@fg@
+middle_buttons_color=#@fg@
+playpause_color=#@fg@
+held_element_color=#@fgMid@
+hover_effect_color=#@accent@
+thumbnail_box_color=#@bg@
+thumbnail_box_outline=#@border@
+nibble_color=#@accent@
+nibble_current_color=#@fg@
+ab_loop_color=#@purple@
