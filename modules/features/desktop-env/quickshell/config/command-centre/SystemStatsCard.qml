@@ -48,19 +48,17 @@ Card {
     if (total > 0) root.memPercent = Math.round(100 * (total - available) / total)
   }
 
+  // Both files come from one read so a tick costs one process, not two. cat
+  // concatenates without a separator, which is fine: the CPU sample only looks
+  // at the first line and meminfo is found by keyword.
   Process {
-    id: statProc
-    command: ["cat", "/proc/stat"]
+    id: usageProc
+    command: ["cat", "/proc/stat", "/proc/meminfo"]
     stdout: StdioCollector {
-      onStreamFinished: root.sampleCpu(this.text)
-    }
-  }
-
-  Process {
-    id: memProc
-    command: ["cat", "/proc/meminfo"]
-    stdout: StdioCollector {
-      onStreamFinished: root.sampleMemory(this.text)
+      onStreamFinished: {
+        root.sampleCpu(this.text)
+        root.sampleMemory(this.text)
+      }
     }
   }
 
@@ -69,10 +67,7 @@ Card {
     running: true
     repeat: true
     triggeredOnStart: true
-    onTriggered: {
-      statProc.exec(["cat", "/proc/stat"])
-      memProc.exec(["cat", "/proc/meminfo"])
-    }
+    onTriggered: usageProc.exec(["cat", "/proc/stat", "/proc/meminfo"])
   }
 
   // A tick gauge and a value for each load. Kept local: this is the only user.
