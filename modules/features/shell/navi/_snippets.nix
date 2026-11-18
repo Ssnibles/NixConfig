@@ -391,10 +391,10 @@
           "security"
         ]
       )
-      (mk "Reload Quickshell UI in-place" "qs -c default ipc call quickshell reload all" [
+      (mk "Restart the Quickshell shell" "qs-restart" [
         "system"
         "quickshell"
-        "reload"
+        "restart"
       ])
       (mk "Allow direnv in current directory" "direnv allow" [
         "system"

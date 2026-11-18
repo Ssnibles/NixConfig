@@ -33,6 +33,18 @@ _: {
       config = lib.mkIf cfg.enable {
         environment.systemPackages = with pkgs; [
           quickshell
+
+          # Restart helper. A script rather than an inline command because
+          # keybinds and navi entries run through `sh -c`, so their own command
+          # line holds "quickshell" and pkill would kill the wrapper first.
+          (writeShellScriptBin "qs-restart" ''
+            set -eu
+
+            # Nothing to kill still leaves a fresh instance behind, so a failed
+            # match is not an error.
+            ${pkgs.procps}/bin/pkill -f quickshell || true
+            ${pkgs.util-linux}/bin/setsid quickshell >/dev/null 2>&1 &
+          '')
         ];
 
         hjem.users."${config.username}" = {
