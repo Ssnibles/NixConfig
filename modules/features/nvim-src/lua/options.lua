@@ -84,4 +84,15 @@ opt.diffopt:append("vertical")
 opt.diffopt:append("linematch:60")
 opt.whichwrap:append("<,>,[,],h,l")
 opt.sessionoptions:append("globals")
-opt.fillchars = { eob = " ", foldopen = "▾", foldclose = "▸", foldsep = "│", diff = "╱", lastline = "…" }
+-- msgsep is the rule ui2 draws above the pager, dialog and expanded command
+-- line. The default is a blank cell, which the MsgSeparator highlight cannot
+-- show, so use a real character.
+opt.fillchars = {
+	eob = " ",
+	foldopen = "▾",
+	foldclose = "▸",
+	foldsep = "│",
+	diff = "╱",
+	lastline = "…",
+	msgsep = "─",
+}

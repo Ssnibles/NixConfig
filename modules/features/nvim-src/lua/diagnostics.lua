@@ -54,7 +54,18 @@ tid.setup({
 	},
 })
 
-require("fidget").setup({ notification = { override_vim_notify = true } })
+-- Only the LSP progress display is used. Notifications are ordinary messages,
+-- so they reach `:messages` and the message window like anything else. Progress
+-- is drawn in the notification window, so frame that like the other floats.
+require("fidget").setup({
+	notification = {
+		window = {
+			normal_hl = "",
+			winblend = 0,
+			border = "rounded",
+		},
+	},
+})
 
 --- Toggle diagnostics for every buffer, including the inline text.
 function M.toggle()

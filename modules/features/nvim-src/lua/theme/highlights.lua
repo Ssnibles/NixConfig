@@ -17,7 +17,6 @@ function M.set(c, blend)
 		"WinBar",
 		"WinBarNC",
 		"MsgArea",
-		"MsgSeparator",
 		"PmenuSbar",
 		"PmenuThumb",
 		"TreesitterContext",
@@ -63,6 +62,7 @@ function M.set(c, blend)
 	hl("LineNrAbove", { fg = c.comment })
 	hl("LineNrBelow", { fg = c.comment })
 	hl("WinSeparator", { fg = separator })
+	hl("MsgSeparator", { link = "WinSeparator" })
 	hl("GlobalBorder", { fg = c.border })
 	for _, g in ipairs({
 		"FloatBorder",
@@ -74,7 +74,6 @@ function M.set(c, blend)
 		"BlinkCmpMenuBorder",
 		"BlinkCmpDocBorder",
 		"BlinkCmpSignatureHelpBorder",
-		"BlinkCmpScrollBarThumb",
 		"MiniClueBorder",
 		"MiniClueSeparator",
 	}) do
@@ -103,7 +102,8 @@ function M.set(c, blend)
 	hl("BlinkCmpKind", { fg = c.comment })
 	hl("BlinkCmpGhostText", { fg = c.comment })
 	hl("BlinkCmpSignatureHelpActiveParameter", { fg = c.blue, bold = true })
-	hl("BlinkCmpScrollBarGutter", { fg = c.bgSubtle })
+	hl("BlinkCmpScrollBarGutter", { bg = c.bgSubtle })
+	hl("BlinkCmpScrollBarThumb", { bg = blend(c.fg, c.bg, 0.25) })
 	local kind_colours = {
 		Field = c.purple,
 		Variable = c.fg,

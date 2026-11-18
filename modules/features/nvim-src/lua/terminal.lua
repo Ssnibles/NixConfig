@@ -73,8 +73,15 @@ vim.api.nvim_create_autocmd({ "TermOpen", "BufWinEnter" }, {
 		if vim.bo[ev.buf].buftype ~= "terminal" then
 			return
 		end
-		-- 'number', 'relativenumber' and 'signcolumn' are already forced off by
-		-- the default TermOpen autocmd; these two are not.
+		-- The default TermOpen autocmd sets these once, in the window that opened
+		-- the buffer. A buffer shown again in a new window gets the editor
+		-- defaults back, so set them on every display.
+		vim.wo.number = false
+		vim.wo.relativenumber = false
+		vim.wo.signcolumn = "no"
+		vim.wo.foldcolumn = "0"
+		vim.wo.wrap = false
+		vim.wo.list = false
 		vim.wo.cursorline = false
 		vim.wo.statuscolumn = ""
 		if ev.event == "TermOpen" then

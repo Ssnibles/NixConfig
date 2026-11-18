@@ -3,7 +3,7 @@
 # into the home directory, so Lua edits need no rebuild.
 { inputs, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,
@@ -187,24 +187,26 @@
 
       # wrapRc = false keeps VIMINIT unset, so Neovim loads ~/.config/nvim like
       # any normal install. The plugins are injected through packpath instead.
-      neovim = pkgs.wrapNeovimUnstable inputs.neovim-nightly.packages.${pkgs.stdenv.hostPlatform.system}.neovim {
-        wrapRc = false;
-        viAlias = true;
-        vimAlias = true;
-        inherit plugins;
-        wrapperArgs = [
-          "--prefix"
-          "PATH"
-          ":"
-          (lib.makeBinPath extraPackages)
-          "--set"
-          "NVIM_JAVA_BUNDLES"
-          (lib.concatStringsSep ":" javaBundles)
-        ];
-      };
+      neovim =
+        pkgs.wrapNeovimUnstable inputs.neovim-nightly.packages.${pkgs.stdenv.hostPlatform.system}.neovim
+          {
+            wrapRc = false;
+            viAlias = true;
+            vimAlias = true;
+            inherit plugins;
+            wrapperArgs = [
+              "--prefix"
+              "PATH"
+              ":"
+              (lib.makeBinPath extraPackages)
+              "--set"
+              "NVIM_JAVA_BUNDLES"
+              (lib.concatStringsSep ":" javaBundles)
+            ];
+          };
     in
     {
-      environment.variables.EDITOR = lib.mkOverride 900 "nvim";
+      environment.variables.EDITOR = lib.mkDefault "nvim";
 
       environment.systemPackages = [
         neovim
