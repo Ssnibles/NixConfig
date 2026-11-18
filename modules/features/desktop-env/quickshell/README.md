@@ -51,6 +51,7 @@ config/
 ├── launcher/            # Application launcher and calculator
 ├── command-centre/      # Command Centre and its cards
 ├── notifications/       # Notification overlay
+├── screenshot/          # Frozen-screen capture overlay
 ├── lock/                # Lock screen components
 └── osd/                 # On-screen display overlay
 ```
@@ -61,7 +62,7 @@ Every subdirectory adds `import ".."` so it can use the root manifest. The manif
 
 ## 2. Entry Point & Architecture (`shell.qml`)
 
-`shell.qml` serves as the top-level application root (`Scope`), instantiating the active status bar, notification manager, command centre, and lock screen:
+`shell.qml` serves as the top-level application root (`Scope`), instantiating the active status bar, notification manager, command centre, screenshot overlay, and lock screen:
 
 ```qml
 Scope {
@@ -71,6 +72,7 @@ Scope {
   NotificationOverlay { }
   OsdOverlay { }
   CommandCentre { }
+  ScreenshotOverlay { }
   LockScreen { }
 }
 ```
@@ -78,6 +80,7 @@ Scope {
 - **Unified Status Bar (`bar.qml`)**: Automatically adapts between a horizontal top bar (MangoWC, Hyprland) and a vertical left/right side bar (Niri, or when `QS_BAR=niri`), powered by the `WmService` singleton.
 - **Notification Overlay**: Global notification stack present on the active display (or all displays).
 - **OSD Overlay (`OsdOverlay.qml`)**: Floating bottom-centre On-Screen Display pill for volume, microphone mute, and screen brightness changes.
+- **Screenshot Overlay (`ScreenshotOverlay.qml`)**: Frozen-screen capture. `SUPER + S` grabs the whole screen at once, `SUPER + Shift + S` opens the drag selection, and `SUPER + Ctrl + S` does the same but copies text; see the overlay section below.
 - **Command Centre**: Edge panel or centred bento dashboard, controllable via IPC.
 - **Lock Screen**: Wayland session lock (`WlSessionLock`) with PAM authentication.
 
@@ -298,19 +301,24 @@ Visibility lives in `UiState.commandCentreVisible` and is driven by IPC or the b
 | `osdSlideOffset` | `10` | Entry slide distance (px) |
 | `osdMarginX` / `osdMarginY` | `26` / `68` | Gap from the screen edge (px) |
 
-### 3.9 External Commands
+### 3.9 Screenshots
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `screenshotDimOpacity` | `0.55` | Dimming over the frozen frame outside the selection |
+
+### 3.10 External Commands
 | Property | Default | Purpose |
 | --- | --- | --- |
 | `cmdMixer` | `["pavucontrol"]` | Audio mixer |
 | `cmdNetworkManager` | `["kitty", "--single-instance", "-e", "nmtui"]` | Network tool |
 | `cmdBluetoothManager` | `["blueman-manager"]` | Bluetooth manager |
-| `cmdScreenshot` | `["sh", "-c", "$HOME/.config/mango/screenshot.sh"]` | Screenshot tool used by the Command Centre header button |
+| `cmdScreenshot` | `["quickshell", "ipc", "call", "screenshot", "region"]` | Screenshot tool used by the Command Centre header button |
 | `cmdLock` | `["quickshell", "ipc", "call", "lockscreen", "lock"]` | Lock action |
 | `cmdSleep` / `cmdReboot` / `cmdPoweroff` | `["systemctl", ...]` | Power actions |
 | `cmdTerminal` | `["kitty", "-e"]` | Prefix used by the launcher's "run in terminal" and by `.desktop` terminal entries |
 | `cmdClipboard` | `["wl-copy"]` | Clipboard writer used by the calculator and copy actions |
 
-### 3.10 Runtime State (`UiState.qml`)
+### 3.11 Runtime State (`UiState.qml`)
 Nothing here is configuration; it all resets when the shell restarts.
 
 | Property | Default | Purpose |
@@ -444,11 +452,20 @@ Nothing here is configuration; it all resets when the shell restarts.
 - **Layouts**: set `Config.commandCentreLayout` to `"sidebar"` for the edge panel or `"bento"` for a centred widget board. In the bento the left card holds the clock, status pills, system sliders, the now-playing panel and power controls. The middle column is the notification history. The right column stacks the weather card above the calendar. The bento board dims the desktop behind it and is sized as a fraction of the screen.
 - **Now playing**: `MediaCard` draws a horizontal row by default for the bar popover and the sidebar panel. The bento sets `vertical: true` and `coverCard: true`, so the cover fills the whole card with a dimmed scrim behind the centred title, controls and seek bar.
 - **Keyboard**: Escape closes the panel. Power actions stay click-only to avoid accidental activation.
-- **Screenshot**: the header screenshot button closes the panel, waits for the fade-out, then runs the configured screenshot tool.
+- **Screenshot**: the header screenshot button closes the panel, waits for the fade-out, then runs `Config.cmdScreenshot`, which asks the screenshot overlay to open.
 - **Board surface**: `Config.commandCentreBentoSurface` (off by default) puts one raised surface behind the whole board with the cards inset on top. Set it to true to sit the cards on a single panel.
 - **Bento sizing**: the board takes `commandCentreBentoWidthRatio` and `commandCentreBentoHeightRatio` of the screen, so it keeps the same proportions on a laptop and an external monitor. The screen margins clamp it inwards. The three columns share the height, and the notification and weather/calendar columns take their `commandCentreBento*Ratio` share of the board width; the left card gets the rest. The now-playing panel grows in the left card. The calendar cells take their size from the side column width, with side padding to match the weather card above, and are capped by the column height so the calendar and the system card below it fit on a short screen. The system card fills whatever height is left, so the column ends on the board's bottom edge. Every card uses `commandCentreCardPadding` and `commandCentreCardSpacing` for its interior, so the weather, notification, calendar, media and system cards share one rhythm. On a short screen the board falls back to the height its content needs.
 - **Duplication**: the board deliberately avoids second copies of the bar and notification controls. Network, Bluetooth and battery live in `StatusPills`; mute, microphone and Do Not Disturb sit in the sliders and the notification card; the audio mixer leads the sink picker.
 - **Shared sections**: `CommandCentreSliders.qml` and `StatusPills.qml` keep the two layouts identical, so a change to the volume, microphone or brightness controls only happens once.
+
+#### `ScreenshotOverlay.qml`
+- **Role**: Frozen-screen capture. `grim` grabs the target output once, so a playing video or a moving cursor does not change what you selected. The overlay draws that still frame; a whole-screen capture skips the drawing entirely.
+- **IPC Target**: `"screenshot"` (functions: `output()`, `region()`, `text()`, `close()`). `output()` captures immediately with no overlay; `region()` opens the drag selection and saves a PNG; `text()` opens it and copies the recognised text instead.
+- **Tools**: Region drags a box (a click without dragging takes the whole window under the pointer), Window takes the clicked window, and Output takes the full screen. `R`, `W` and `O` switch tools; Escape cancels; Enter confirms.
+- **Window snapping**: `mmsg get all-clients` supplies the visible clients on the target monitor, converted to screen-local coordinates. Only MangoWC exposes that geometry, so on Hyprland and Niri only freeform dragging and Output are available.
+- **Capture path**: the overlay passes the frozen frame and a device-pixel crop to the `qs-screenshot` package, which crops with ImageMagick, saves under `~/Pictures/Screenshots`, copies to the clipboard and deletes the frame. Keeping that in a script means no shell quoting in QML.
+- **Surface**: `ScreenshotSurface.qml` is the layer surface for one screen. It draws the frozen frame, dims around the selection with four rectangles, and draws the window highlight, the size readout and the hint bar. All capture decisions stay in `ScreenshotOverlay.qml`.
+- **Multi-monitor**: the overlay covers the display under the pointer only. Selections do not span outputs.
 
 #### `OsdOverlay.qml`
 - **Role**: Floating bottom-centre On-Screen Display pill driven by `SystemService`.
@@ -723,6 +740,11 @@ Quickshell includes built-in IPC mechanisms. You can trigger overlays or inspect
 ```bash
 # Toggle Command Centre overlay
 quickshell ipc call command-centre toggle
+
+# Screenshot overlay: whole screen, area selection, or text
+quickshell ipc call screenshot output
+quickshell ipc call screenshot region
+quickshell ipc call screenshot text
 
 # Lock screen
 quickshell ipc call lockscreen lock

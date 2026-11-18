@@ -6,7 +6,7 @@ This document details the [Quickshell](https://quickshell.outfoxxed.me/) QML des
 
 ## Architecture Overview
 
-Quickshell powers the unified horizontal/vertical status bar (`bar.qml`), the **Command Centre** quick-settings dashboard, the **Launcher**, the Wayland **Lock Screen**, the desktop **Notification daemon and overlay**, and shared UI primitives.
+Quickshell powers the unified horizontal/vertical status bar (`bar.qml`), the **Command Centre** quick-settings dashboard, the **Launcher**, the frozen-screen **Screenshot overlay**, the Wayland **Lock Screen**, the desktop **Notification daemon and overlay**, and shared UI primitives.
 
 All QML source files live in `modules/features/desktop-env/quickshell/config/` and are symlinked directly to `~/.config/quickshell/` via `nixos.liveLinks` (`contents = true`), while generated theme files (`Colours.qml`) are managed declaratively by Hjem:
 
@@ -102,6 +102,9 @@ modules/features/desktop-env/quickshell/
     │   └── WeatherCard.qml
     ├── notifications/
     │   └── NotificationOverlay.qml
+    ├── screenshot/              # Frozen-screen capture overlay
+    │   ├── ScreenshotOverlay.qml
+    │   └── ScreenshotSurface.qml
     ├── lock/                     # Lock screen components
     │   ├── LockScreen.qml
     │   ├── LockAuthCard.qml
@@ -160,6 +163,17 @@ Quickshell does not hardcode compositor dependencies into individual UI widgets.
 `WmService`, `NiriService`, and the hardware services process CLI output using `StdioCollector` hooked to `onStreamFinished` rather than `onDataChanged`, ensuring complete JSON streams and hardware states are collected before parsing.
 
 This enables swapping between Wayland compositors while keeping the exact same status bar, notification centre, lock screen, and styling.
+
+---
+
+## Screenshots
+
+`SUPER + S` captures the whole screen at once. `SUPER + Shift + S` opens the overlay (`config/screenshot/ScreenshotOverlay.qml`) to select an area, and `SUPER + Ctrl + S` opens the same overlay but copies the recognised text instead of an image.
+
+- **Freeze**: `grim` captures the output under the pointer once. The overlay draws that still frame, so moving video, animations and the pointer cannot change what you selected. The whole-screen binding skips the drawing and hands the frame straight over.
+- **Tools**: Region drags a box and treats a click without dragging as the whole window under the pointer; Window takes the clicked window; Output takes the full screen. `R`, `W` and `O` switch tools, Escape cancels, Enter confirms.
+- **Snapping**: `mmsg get all-clients` supplies the visible clients on the target monitor, which the overlay converts to screen-local rectangles. Only MangoWC exposes that geometry, so Hyprland and Niri get freeform dragging and Output only.
+- **Finish**: `qs-screenshot` (`modules/packages/qs-screenshot/`) crops the frozen frame at device-pixel scale with ImageMagick, saves under `~/Pictures/Screenshots`, and copies the PNG or `tesseract` text with `wl-copy`.
 
 ---
 
@@ -237,6 +251,11 @@ You can trigger Quickshell overlays programmatically or via keybindings using `q
 # Toggle Command Centre overlay
 quickshell ipc call command-centre toggle
 
+# Screenshot overlay: whole screen, area selection, or text
+quickshell ipc call screenshot output
+quickshell ipc call screenshot region
+quickshell ipc call screenshot text
+
 # Lock screen immediately
 quickshell ipc call lockscreen lock
 
@@ -244,7 +263,7 @@ quickshell ipc call lockscreen lock
 quickshell ipc call bar toggle
 ```
 
-`qs ipc show` lists the targets the running build actually exposes: `bar`, `media`, `system`, `launcher`, `command-centre`, `lockscreen` and `tray`. There is no `quickshell` target, so no in-place reload over IPC.
+`qs ipc show` lists the targets the running build actually exposes: `bar`, `media`, `system`, `launcher`, `command-centre`, `screenshot`, `lockscreen` and `tray`. There is no `quickshell` target, so no in-place reload over IPC.
 
 Editing QML here does not apply by itself either. The live config is a tree of symlinks into this repository, and Quickshell does not notice a change made to the target of a symlink: a real `shell.qml` reloads the configuration when edited, but the target of a symlinked one does not. Apply changes by restarting:
 

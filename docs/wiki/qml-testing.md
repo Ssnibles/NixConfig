@@ -198,6 +198,8 @@ lint modules/features/desktop-env/quickshell/config/common/SliderControl.qml
 
 Two warnings are expected and not your fault. `Warnings occurred while importing ...` and `Colours.qml is listed as component in .../qmldir but does not exist` both come from linting the *source* tree, where the Nix-generated `Colours.qml` is absent. Lint the copy in `/tmp/qs-test` if you want a clean run.
 
+A third shows up on any file whose root is a `PanelWindow` and which imports `Quickshell.Wayland`: `Type PanelWindow is not creatable`. Quickshell ships `PanelWindow` as a QML file but its type information declares the interface (`PanelWindowInterface`) under the same name, and qmllint resolves the latter. The shell runs it fine; ignore the warning.
+
 ---
 
 ## Gotchas

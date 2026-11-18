@@ -8,7 +8,7 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 
 ### Core Desktop & Shell Frameworks
 - **[Wayland Compositors Guide](compositors.md)**  
-  Architecture and configuration for MangoWC (DWM-style tiling, gestures, OCR screenshots), Niri (infinite scrollable tiling), Hyprland (Lua configuration), Shikane multi-monitor display daemon, and Vicinae application launcher.
+  Architecture and configuration for MangoWC (DWM-style tiling, gestures, screenshots), Niri (infinite scrollable tiling), Hyprland (Lua configuration), Shikane multi-monitor display daemon, and Vicinae application launcher.
 - **[Quickshell Desktop Shell Bar](quickshell.md)**  
   Modular QML desktop shell architecture: singletons (`Colours.qml`, `Config.qml`, `WmService.qml`, `AudioService.qml`, `BrightnessService.qml`, `NetworkService.qml`, `BatteryService.qml`, `BluetoothService.qml`, `TrayService.qml`, `SystemService.qml`, `ClockService.qml`, `NotificationService.qml`, `MediaService.qml`), unified status bar (`bar.qml`), Command Centre dashboard, session lock screen, and notification daemon.
 - **[QML Component Testing](qml-testing.md)**  

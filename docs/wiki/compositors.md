@@ -77,17 +77,23 @@ Mango expands `$name` and `${name}` in option values and bind keys, so `variable
 - **3-Finger Swipe Up**: Toggle jump
 - **3-Finger Swipe Down**: Toggle special scratchpad workspace
 
-### Intelligent Screenshots & OCR Script (`screenshot.sh`)
+### Screenshots and OCR
 
-Triggered via keybindings:
-- **`SUPER + s`**: Interactive area screenshot
-- **`SUPER + Shift + s`**: Interactive area screenshot with instant OCR text recognition
+Screenshots are drawn and captured by the Quickshell overlay
+(`modules/features/desktop-env/quickshell/config/screenshot/`), not by a
+compositor script. The bindings are the same on every compositor:
 
-The custom script (`modules/features/desktop-env/mangowc/screenshot.sh`) is built with `set -euo pipefail` and includes several advanced behaviours:
-1. **Zero-Border Capture**: When running under MangoWC, queries options via `mmsg`, temporarily sets `border_px` and `border_radius` to 0, and restores them immediately upon completion.
-2. **Window Snapping**: Queries visible client geometry via `mmsg get all-clients` and passes coordinates to `slurp` for one-click window boundary selection.
-3. **Robust Cursor Warping**: Uses `wlrctl pointer move --` to temporarily warp the mouse pointer off-screen, preventing software cursor artefacts in screenshots. The warp is guarded strictly when `IS_MANGO = true` and supports negative monitor offsets (`-?[0-9]+`), preventing stranded cursor positions under Hyprland or Niri.
-4. **OCR Extraction**: For `SUPER + Shift + s`, pipes cropped image data directly into `tesseract` and copies the resulting text to `wl-copy`.
+- **`SUPER + s`**: Whole screen, saved and copied
+- **`SUPER + Shift + s`**: Select an area, saved and copied
+- **`SUPER + Ctrl + s`**: Select an area, copy the recognised text
+
+How it works:
+
+1. **Freeze**: `grim` captures the output under the pointer once. The overlay then draws that still frame, so video, animations and the cursor cannot change what you selected. The whole-screen binding skips the drawing and saves the frame directly.
+2. **Selection**: drag a box, click a window to take the whole window, or pick Output for the full screen. Window bounds come from `mmsg get all-clients`, so snapping to a window does not depend on pixel-perfect dragging.
+3. **Finish**: the frozen frame and a device-pixel crop go to `qs-screenshot`, which crops with ImageMagick, saves under `~/Pictures/Screenshots`, and copies the PNG or the OCR text.
+
+Only MangoWC exposes client geometry, so window snapping is MangoWC-only. Dragging and Output work on Hyprland and Niri too, and the overlay covers the display under the pointer rather than every output.
 
 ---
 
