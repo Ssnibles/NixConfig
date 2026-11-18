@@ -162,12 +162,19 @@ _: {
                 # Navi pads and truncates fields 1-3; fields 4-6 are the full
                 # tags, description and command. Show the full ones so
                 # commands keep their width. Ctrl-/ toggles the preview.
+                # Full screen with the search line at the bottom and no
+                # border, padding or margin, matching skim.
                 overrides: >-
                   --with-nth '6,4,5'
                   --no-hscroll
                   --height=100%
+                  --layout=default
+                  --no-scrollbar
+                  --border=none
+                  --padding=0
+                  --margin=0
                   --preview '${previewScript} {5} {6}'
-                  --preview-window 'down,32%,wrap,border-top,noinfo'
+                  --preview-window 'right,45%,wrap,border-left,noinfo'
                   --bind 'ctrl-/:toggle-preview'
                 # A lone suggestion is accepted without asking when
                 # --select-1 is on, so the nix shell prompts never appear.
@@ -177,7 +184,10 @@ _: {
                   --no-info
                   --no-separator
                   --pointer=' '
-                  --height=70%
+                  --height=100%
+                  --border=none
+                  --padding=0
+                  --margin=0
                   --preview-window=noinfo
                   --preview-border=none
             '';
