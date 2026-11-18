@@ -1,5 +1,6 @@
 # Quickshell.
-_: {
+{ self, ... }:
+{
   flake.nixosModules.shared =
     {
       pkgs,
@@ -33,6 +34,10 @@ _: {
       config = lib.mkIf cfg.enable {
         environment.systemPackages = with pkgs; [
           quickshell
+          # Crops the frozen frame in qs-screenshot.
+          imagemagick
+          # Exposed as a package so the overlay never depends on PATH alone.
+          self.packages.${pkgs.stdenv.hostPlatform.system}.qs-screenshot
 
           # Restart helper. A script rather than an inline command because
           # keybinds and navi entries run through `sh -c`, so their own command

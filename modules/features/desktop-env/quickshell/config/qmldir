@@ -96,3 +96,7 @@ LockStatusCluster 1.0 lock/LockStatusCluster.qml
 
 # osd
 OsdOverlay 1.0 osd/OsdOverlay.qml
+
+# screenshot
+ScreenshotOverlay 1.0 screenshot/ScreenshotOverlay.qml
+ScreenshotSurface 1.0 screenshot/ScreenshotSurface.qml

@@ -34,5 +34,7 @@ Scope {
 
   Launcher { }
 
+  ScreenshotOverlay { }
+
   LockScreen { }
 }

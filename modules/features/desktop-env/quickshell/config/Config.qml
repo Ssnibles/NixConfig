@@ -291,7 +291,6 @@ Singleton {
             "backlight": "󰃠",
             "screenshot": "󰄄",
             "grim": "󰄄",
-            "slurp": "󰄄",
             "package": "󰏗",
             "nix": "󰏗",
             "system": "󰍹"
@@ -364,11 +363,15 @@ Singleton {
     readonly property bool trayShowAppIdInMenu: true
     readonly property bool trayAllowSessionHide: true
 
+    // Screenshots
+    // The overlay dims the frozen frame by this much outside the selection.
+    readonly property real screenshotDimOpacity: 0.55
+
     // External apps and system commands
     readonly property var cmdMixer: ["pavucontrol"]
     readonly property var cmdNetworkManager: ["kitty", "--single-instance", "-e", "nmtui"]
     readonly property var cmdBluetoothManager: ["blueman-manager"]
-    readonly property var cmdScreenshot: ["sh", "-c", "$HOME/.config/mango/screenshot.sh"]
+    readonly property var cmdScreenshot: ["quickshell", "ipc", "call", "screenshot", "region"]
     readonly property var cmdLock: ["quickshell", "ipc", "call", "lockscreen", "lock"]
     readonly property var cmdSleep: ["systemctl", "suspend"]
     readonly property var cmdReboot: ["systemctl", "reboot"]
