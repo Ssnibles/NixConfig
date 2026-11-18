@@ -209,6 +209,12 @@ fi
 # Build
 if [[ "$DO_BUILD" == true ]]; then
   step "Rebuilding $HOST"
+  # Nix reads the git index to decide which files belong to the flake, and jj
+  # only refreshes that index when a jj command runs. Stage first so files
+  # added since the last jj command are visible to the build.
+  if [[ "$USE_JJ" == true && -d "$REPO_ROOT/.git" ]]; then
+    git -C "$REPO_ROOT" add -A
+  fi
   if [[ "$USE_NH" == true ]]; then
     nh_args=(os "$ACTION" "$REPO_ROOT" --hostname "$HOST")
     [[ "$DO_UPDATE" == true ]] && nh_args+=(--update)
