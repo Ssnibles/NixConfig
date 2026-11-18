@@ -105,7 +105,7 @@
         install -m 0444 ${./pi-agent/skills/typst-snippets/references/page-preamble.typ} $out/references/page-preamble.typ
         install -m 0444 ${../../packages/uni-notes/theme.typ} $out/references/theme.typ
         install -m 0444 ${./pi-agent/skills/typst-snippets/references/example.typ} $out/references/example.typ
-        install -m 0444 ${../nvim-src/lua/snippets/typst.lua} $out/references/typst.lua
+        install -m 0444 ${../nvim-src/snippets/typst.lua} $out/references/typst.lua
 
         # Fail if the theme, page snippet, and page-preamble.typ drift.
         bash ${./pi-agent/skills/typst-snippets/check-sync.sh} $out/references

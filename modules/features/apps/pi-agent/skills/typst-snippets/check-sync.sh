@@ -15,7 +15,7 @@ if [ $# -ge 1 ]; then
 else
   base="$(cd "$(dirname "$0")" && pwd)"
   repo="$(cd "$base/../../../../../.." && pwd)"
-  lua="$repo/modules/features/nvim-src/lua/snippets/typst.lua"
+  lua="$repo/modules/features/nvim-src/snippets/typst.lua"
   typ="$base/references/page-preamble.typ"
   theme="$repo/modules/packages/uni-notes/theme.typ"
 fi

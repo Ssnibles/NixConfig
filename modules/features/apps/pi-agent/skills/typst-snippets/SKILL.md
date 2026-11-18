@@ -470,7 +470,7 @@ and the Greek triggers `alpha` `beta` `gamma` `delta` `epsilon` `zeta` `eta` `th
 ## Maintenance
 
 `references/typst.lua` is copied at build time from
-`modules/features/nvim-src/lua/snippets/typst.lua`, which is the single source of
+`modules/features/nvim-src/snippets/typst.lua`, which is the single source of
 truth. Edit that file (not the copy) when snippets change; the bundled copy
 refreshes on the next rebuild.
 
