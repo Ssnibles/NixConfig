@@ -91,6 +91,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Same devenv container output. Removing this breaks container-shell.
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
 
     spicetify-nix = {

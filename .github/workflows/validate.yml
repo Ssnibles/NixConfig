@@ -45,12 +45,12 @@ jobs:
           ./assets/update_diagram.sh --check
           echo "✓ Architecture diagram is up to date"
 
-      # nixfmt and deadnix are exposed as flake checks. Generated files such as
-      # _hardware-generated.nix are excluded.
-      - name: Check formatting and dead code
+      # nixfmt, deadnix, and statix are exposed as flake checks. Generated
+      # files such as _hardware-generated.nix are excluded.
+      - name: Check formatting, dead code, and lint
         run: |
           nix flake check
-          echo "✓ Formatting and dead code checks pass"
+          echo "✓ Formatting, dead code, and lint checks pass"
 
       # Evaluate both host configurations. This is the gating check for the
       # workflow. The flake inputs default to public repositories, so the
