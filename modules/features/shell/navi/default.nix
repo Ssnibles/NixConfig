@@ -125,15 +125,15 @@ _: {
         }
       ) allSnippets;
 
-      # fzf preview for the cheatsheet picker: the full command at the top,
-      # the description on the last line of the pane.
+      # fzf preview: the command wrapped to the pane width, then the
+      # description in dim text. Padding to the bottom overflows once the
+      # command wraps, so the text flows from the top instead.
       previewScript = pkgs.writeShellScript "navi-preview" ''
         export PATH=${lib.makeBinPath [ pkgs.coreutils ]}:$PATH
 
         comment=$1
         snippet=$2
         cols=''${FZF_PREVIEW_COLUMNS:-80}
-        rows=''${FZF_PREVIEW_LINES:-20}
 
         snippet=$(printf '%s' "$snippet" | tr '\025' ' ')
         comment=$(printf '%s' "$comment" | tr '\025' ' ')
@@ -141,19 +141,10 @@ _: {
         body=$(printf '%s\n' "$snippet" | fold -s -w "$cols")
         footer=$(printf '%s\n' "$comment" | fold -s -w "$cols")
 
-        body_lines=$(printf '%s\n' "$body" | wc -l)
-        footer_lines=$(printf '%s\n' "$footer" | wc -l)
-        pad=$((rows - body_lines - footer_lines))
-        if [ "$pad" -lt 0 ]; then
-          pad=0
-        fi
-
         printf '%s\n' "$body"
-        while [ "$pad" -gt 0 ]; do
-          printf '\n'
-          pad=$((pad - 1))
-        done
-        printf '\033[2m%s\033[0m\n' "$footer"
+        if [ -n "$comment" ]; then
+          printf '\n\033[2m%s\033[0m\n' "$footer"
+        fi
       '';
     in
     {
@@ -166,23 +157,29 @@ _: {
               cheats:
                 paths:
                   - ${cheatsDir}
-              # Navi orders its columns as tags, comment, command. Give the
-              # command most of the width so it stays readable with the
-              # preview open.
-              style:
-                tag:
-                  width_percentage: 20
-                  min_width: 12
-                snippet:
-                  width_percentage: 45
-                  min_width: 30
               finder:
                 command: fzf
-                # Show the command first, then its tags. The description sits
-                # at the bottom of the preview pane. fzf still searches every
-                # column, so tags and descriptions keep filtering the list.
-                # Ctrl-/ toggles the preview.
-                overrides: --with-nth '3,1' --preview '${previewScript} {5} {6}' --preview-window 'right:55%' --bind 'ctrl-/:toggle-preview'
+                # Navi pads and truncates fields 1-3; fields 4-6 are the full
+                # tags, description and command. Show the full ones so
+                # commands keep their width. Ctrl-/ toggles the preview.
+                overrides: >-
+                  --with-nth '6,4,5'
+                  --no-hscroll
+                  --height=100%
+                  --preview '${previewScript} {5} {6}'
+                  --preview-window 'down,32%,wrap,border-top,noinfo'
+                  --bind 'ctrl-/:toggle-preview'
+                # A lone suggestion is accepted without asking when
+                # --select-1 is on, so the nix shell prompts never appear.
+                # Drop the empty list chrome to keep the prompt one form.
+                overrides_var: >-
+                  --no-select-1
+                  --no-info
+                  --no-separator
+                  --pointer=' '
+                  --height=70%
+                  --preview-window=noinfo
+                  --preview-border=none
             '';
           };
         }

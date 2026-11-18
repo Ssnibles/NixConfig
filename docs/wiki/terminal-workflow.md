@@ -208,9 +208,9 @@ Navi is a command-line cheatsheet picker (an actively maintained Rust alternativ
 
 ### Fish Interactive Picker (`Ctrl + P`)
 
-Pressing `Ctrl + P` in any interactive Fish session opens navi's FZF picker. Selecting a cheat inserts the command directly into the active prompt line for editing or immediate execution. Navi then prompts for each `<variable>`; variables that had a default in the old pet library are pre-filled through a `$ name: ...` suggestion line.
+Pressing `Ctrl + P` in any interactive Fish session opens navi's FZF picker. Selecting a cheat inserts the command into the active prompt line for editing or immediate execution, then asks for each `<variable>`. A default is offered as a one-entry suggestion list: press Enter to keep it, or type to replace it. Variables without a default start with an empty query.
 
-The picker rows lead with the command, followed by its tags, so the thing you are choosing is the first thing you see. fzf still searches every column, so typing a tag or a word from the description filters the list. The right-hand preview wraps the full command to the pane width and puts the description on the bottom line. A small generated preview script does the wrapping, and `style` plus `finder.overrides` in `config.yaml` size the columns and bind `Ctrl-/` to toggle the preview.
+Each row shows the command, then its tags, then the description, so the thing you are choosing leads the line. fzf searches all three fields, so a tag or a word from the description still filters the list, and `--no-hscroll` keeps rows aligned instead of scrolling to a match in the hidden tail. The preview sits under the list and wraps the full command to the pane width, with the description in dim text below it; `Ctrl-/` toggles the preview. The variable prompt is a second fzf run: `finder.overrides_var` drops `--select-1` (otherwise a lone suggestion is accepted without asking), hides the empty result list, and removes the preview border so the snippet, the filled variables and the input line read as one form.
 
 ### Tmux Popup (`Prefix + Ctrl-g`)
 
