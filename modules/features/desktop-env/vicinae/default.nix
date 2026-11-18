@@ -1,7 +1,6 @@
 # Vicinae launcher.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,

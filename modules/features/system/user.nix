@@ -1,7 +1,6 @@
 # Primary user account.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       config,
       ...

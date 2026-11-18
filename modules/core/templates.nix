@@ -1,7 +1,6 @@
 # Flake templates.
 # Templates exported by this repository.
-{ ... }:
-{
+_: {
   flake.templates = {
     generic = {
       path = ../../templates/generic;

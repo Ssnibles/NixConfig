@@ -1,7 +1,7 @@
 # Theme options.
 { lib, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     { config, ... }:
     let
       colourNames = [

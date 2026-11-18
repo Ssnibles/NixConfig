@@ -1,7 +1,6 @@
 # Podman containers and virtualisation.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,

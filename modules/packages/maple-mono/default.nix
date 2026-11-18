@@ -1,5 +1,5 @@
 # Maple Mono font with Nerd Font icons and the selected stylistic features.
-{ ... }:
+_:
 let
   mkMapleMono =
     pkgs:
@@ -33,7 +33,7 @@ in
       packages.maple-mono-custom = mkMapleMono pkgs;
     };
 
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     { pkgs, ... }:
     {
       fonts.packages = [ (mkMapleMono pkgs) ];

@@ -1,7 +1,6 @@
 # Desktop fonts.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     { pkgs, config, ... }:
     {
       fonts.packages = with pkgs; [

@@ -1,9 +1,8 @@
 # Global options and shared defaults.
 # Values here use lib.mkDefault, so a host can override them normally. Only put a
 # value in a host file when it really differs between hosts.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     { lib, ... }:
     {
       options = {

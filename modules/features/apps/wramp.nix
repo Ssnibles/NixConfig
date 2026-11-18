@@ -1,7 +1,6 @@
 # WRAMP toolchain in Distrobox.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,

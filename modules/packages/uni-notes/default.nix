@@ -1,7 +1,7 @@
 # Shared Typst theme for the notes repositories. The typst-snippets skill
 # bundles a copy for reference, and uni-notes-theme copies it into a notes
 # repository as templates/theme.typ.
-{ ... }:
+_:
 let
   mkUniNotesTheme =
     pkgs:
@@ -47,7 +47,7 @@ in
     packages.uni-notes-theme = mkUniNotesTheme pkgs;
   };
 
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     { pkgs, ... }:
     {
       environment.systemPackages = [ (mkUniNotesTheme pkgs) ];

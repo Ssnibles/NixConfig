@@ -1,9 +1,8 @@
 # OpenSSH server.
 # Password login is disabled. sshd is only reachable over trusted interfaces
 # such as tailscale0.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     { config, ... }:
     {
       services.openssh = {

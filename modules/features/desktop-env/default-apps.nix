@@ -1,7 +1,6 @@
 # Default applications and MIME types.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       lib,
       config,

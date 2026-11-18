@@ -2,7 +2,7 @@
 # Java Edition uses PrismLauncher. Bedrock Edition uses BedrockOnLinux.
 { inputs, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,
@@ -36,7 +36,7 @@
 
             modrinth-app =
               (prev.modrinth-app.override {
-                modrinth-app-unwrapped = final.modrinth-app-unwrapped;
+                inherit (final) modrinth-app-unwrapped;
               }).overrideAttrs
                 (old: {
                   runtimeDependencies = "${old.runtimeDependencies}:${

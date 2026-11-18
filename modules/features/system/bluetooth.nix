@@ -1,7 +1,6 @@
 # Bluetooth support.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     { lib, config, ... }:
     {
       options.features.bluetooth.enable = lib.mkEnableOption "the system Bluetooth stack and Blueman applet";

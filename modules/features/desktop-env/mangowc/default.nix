@@ -1,7 +1,6 @@
 # Mango Wayland compositor.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,

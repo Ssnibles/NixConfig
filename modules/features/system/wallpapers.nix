@@ -1,7 +1,6 @@
 # Wallpaper deployment.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       lib,
       config,

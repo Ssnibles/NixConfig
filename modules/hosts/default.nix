@@ -23,7 +23,7 @@ let
   # A hostname may not contain an underscore or a dot, but a directory name can.
   toHostName = name: builtins.replaceStrings [ "_" "." ] [ "-" "-" ] name;
 
-  hostFiles = name: [
+  hostFiles = [
     "configuration.nix"
     "_hardware-generated.nix"
     "_installer-options.nix"
@@ -32,22 +32,17 @@ let
   hostModules =
     name:
     map (file: ./. + "/${name}/${file}") (
-      builtins.filter (file: builtins.pathExists (./. + "/${name}/${file}")) (hostFiles name)
+      builtins.filter (file: builtins.pathExists (./. + "/${name}/${file}")) hostFiles
     );
 in
 {
-  options.nixos.modules.shared = lib.mkOption {
-    type = lib.types.deferredModule;
-    default = { };
-    description = "NixOS module merged into every host configuration.";
-  };
-
+  # Features contribute to flake.nixosModules.shared. Every host imports it.
   config.flake.nixosConfigurations = lib.genAttrs hosts (
     name:
     inputs.nixpkgs.lib.nixosSystem {
       specialArgs = { inherit inputs; };
       modules = [
-        config.nixos.modules.shared
+        config.flake.nixosModules.shared
         { networking.hostName = lib.mkDefault (toHostName name); }
       ]
       ++ hostModules name;

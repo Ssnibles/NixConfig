@@ -1,4 +1,4 @@
-{ ... }:
+_:
 let
   mkSFPro =
     pkgs:
@@ -38,7 +38,7 @@ in
     packages.sf-pro = mkSFPro pkgs;
   };
 
-  nixos.modules.shared = { pkgs, ... }: {
+  flake.nixosModules.shared = { pkgs, ... }: {
     fonts.packages = [ (mkSFPro pkgs) ];
   };
 }

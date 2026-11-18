@@ -1,7 +1,7 @@
 # Spotify with Spicetify.
 { inputs, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,

@@ -1,9 +1,8 @@
 # Frame remote desktop.
 # The client runs in a Distrobox container. This module provides the launcher
 # and desktop entry.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,

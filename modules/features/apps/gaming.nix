@@ -1,7 +1,7 @@
 # Gaming stack. Hosts with a GPU and a controller enable features.gaming.
 { self, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,

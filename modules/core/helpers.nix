@@ -33,7 +33,7 @@
       };
     };
 
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     { config, pkgs, ... }:
     {
       # Run a tool inside a Distrobox container, failing with setup advice when

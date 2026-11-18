@@ -3,7 +3,7 @@
 # Quickshell, and the other themed modules.
 { lib, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     { config, ... }:
     let
       schemes = {

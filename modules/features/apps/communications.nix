@@ -1,7 +1,6 @@
 # Chat clients.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     { pkgs, ... }:
     {
       config = {

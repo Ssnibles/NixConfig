@@ -1,4 +1,4 @@
-{ ... }:
+_:
 let
   mkInstrumentSerif =
     pkgs:
@@ -43,7 +43,7 @@ in
     packages.instrument-serif = mkInstrumentSerif pkgs;
   };
 
-  nixos.modules.shared = { pkgs, ... }: {
+  flake.nixosModules.shared = { pkgs, ... }: {
     fonts.packages = [ (mkInstrumentSerif pkgs) ];
   };
 }
