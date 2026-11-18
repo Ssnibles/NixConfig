@@ -1,7 +1,7 @@
 # Command line tools, Git, and Jujutsu.
 { inputs, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     {
       pkgs,
       config,
@@ -51,11 +51,16 @@
           typst
         ];
 
-        programs.git.enable = true;
+        programs = {
+          git.enable = true;
 
-        programs.gnupg.agent = {
-          enable = true;
-          enableSSHSupport = true;
+          gnupg.agent = {
+            enable = true;
+            enableSSHSupport = true;
+          };
+
+          nix-index.package =
+            inputs.nix-index-database.packages.${pkgs.stdenv.hostPlatform.system}.nix-index-with-small-db;
         };
 
         hjem.users.${config.username}.files = {
@@ -156,8 +161,6 @@
           };
         };
 
-        programs.nix-index.package =
-          inputs.nix-index-database.packages.${pkgs.stdenv.hostPlatform.system}.nix-index-with-small-db;
       };
     };
 }

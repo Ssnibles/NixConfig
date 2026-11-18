@@ -1,7 +1,6 @@
 # Interactive shell setup.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       pkgs,
       config,
@@ -13,16 +12,209 @@
     {
       users.users."${config.username}".shell = pkgs.fish;
 
-      environment.systemPackages = with pkgs; [
-        any-nix-shell
-        fishPlugins.fzf-fish
-        fishPlugins.autopair
-        fishPlugins.bass
-      ];
+      environment = {
+        systemPackages = with pkgs; [
+          any-nix-shell
+          fishPlugins.fzf-fish
+          fishPlugins.autopair
+          fishPlugins.bass
+        ];
+        shellAliases =
+          let
+            eza = "eza --group-directories-first";
+            ezaLong = "${eza} --long --git --time-style=long-iso";
+          in
+          {
+            # eza stands in for ls. Deliberately separate aliases so extra flags
+            # can be added without making the short listing noisy.
+            ls = eza;
+            l = "${ezaLong} --all";
+            ll = ezaLong;
+            la = "${ezaLong} --all";
+            lt = "${ezaLong} --sort=modified --reverse";
+            tree = "eza --tree --group-directories-first";
 
-      programs.zoxide = {
-        enable = true;
-        enableFishIntegration = true;
+            # bat stands in for cat. Plain style and no pager keep cat semantics.
+            cat = "bat --style=plain --paging=never";
+
+            # Flags differ from the originals in places, so `command <tool>` is
+            # the escape hatch when a real GNU utility is needed.
+            grep = "rg";
+            find = "fd";
+            du = "dust";
+            df = "duf";
+            ps = "procs";
+            diff = "difft";
+            xxd = "hexyl";
+
+            j = "jj";
+            jl = "jj log";
+            jd = "jj diff";
+            js = "jj status";
+            jc = "jj commit";
+            jn = "jj new";
+            je = "jj edit";
+            jb = "jj bookmark";
+            jp = "jj git push";
+            jf = "jj git fetch";
+            jup = "jj new 'trunk()'";
+            jpull = "jj git fetch && jj new 'trunk()'";
+            n = "nvim";
+            t = "tmux";
+            imv = "imv-dir";
+            build-nixconf = "$HOME/NixConfig/build.sh";
+          };
+        # man and ping are fish functions rather than aliases: both need to fall
+        # back to the real utility instead of breaking common invocations.
+        sessionVariables = {
+          MANPAGER = "sh -c 'col -bx | bat -l man -p'";
+          # The ansi theme follows the terminal palette, so bat matches the theme.
+          BAT_THEME = "ansi";
+          EZA_ICONS_AUTO = "1";
+        };
+      };
+
+      programs = {
+        zoxide = {
+          enable = true;
+          enableFishIntegration = true;
+        };
+        fish = {
+          enable = true;
+          package = pkgs.fish;
+          generateCompletions = false;
+
+          shellAbbrs = {
+            y = "yazi";
+            nixclean = "sudo nix-collect-garbage --delete-older-than 30d";
+          };
+
+          interactiveShellInit = ''
+            set -g fish_greeting
+            stty -ixon 2>/dev/null
+
+            # Cheatsheet picker.
+            bind \cp navi-pick
+            bind -M insert \cp navi-pick
+
+            # Alt+Z opens the zoxide directory picker.
+            bind \ez zi
+            bind -M insert \ez zi
+
+            # Ctrl+L clears the screen and redraws the prompt.
+            bind \cl 'clear; commandline -f repaint'
+
+            # Ctrl+Backspace deletes the previous word.
+            bind \c_ backward-kill-word
+            bind \x1f backward-kill-word
+            bind \e\[127\;5u backward-kill-word
+            bind \e\[8\;5u backward-kill-word
+
+            any-nix-shell fish | source
+          '';
+        };
+        direnv = {
+          enable = true;
+          nix-direnv.enable = true;
+        };
+        starship = {
+          enable = true;
+          package = pkgs.starship;
+          settings = {
+            add_newline = false;
+
+            format = "$username$directory$git_branch$git_status\n$character";
+            right_format = "$nix_shell$nodejs$rust$python$battery$cmd_duration";
+
+            character = {
+              success_symbol = "[╰──>>](bold green)";
+              error_symbol = "[╰──>>](bold red)";
+            };
+
+            directory.truncation_length = 3;
+
+            username = {
+              show_always = true;
+              format = "[$user](bold blue) ";
+            };
+
+            git_branch.format = "[$symbol$branch]($style) ";
+            git_branch.style = "bold purple";
+
+            git_status = {
+              format = "[($all_status$ahead_behind)]($style) ";
+              style = "bold yellow";
+              conflicted = "×";
+              up_to_date = "";
+              untracked = "…";
+              ahead = "⇡\${count}";
+              behind = "⇣\${count}";
+              stashed = "\$";
+              modified = "!";
+              staged = "+";
+              renamed = "~";
+              deleted = "-";
+            };
+
+            cmd_duration = {
+              min_time = 2000;
+              format = "[ $duration]($style) ";
+              style = "bold yellow";
+            };
+
+            nodejs = {
+              format = "[ v$version]($style) ";
+              style = "bold green";
+              detect_files = [
+                "package.json"
+                "node_modules"
+              ];
+              detect_folders = [ "node_modules" ];
+            };
+
+            rust = {
+              format = "[ v$version]($style) ";
+              style = "bold red";
+              detect_files = [ "Cargo.toml" ];
+              detect_folders = [ "target" ];
+            };
+
+            python = {
+              format = "[ v$version]($style) ";
+              style = "bold yellow";
+              detect_files = [
+                "pyproject.toml"
+                "requirements.txt"
+                ".python-version"
+                "setup.py"
+                "Pipfile"
+              ];
+            };
+
+            nix_shell = {
+              format = "❄ [$state($name)]($style) ";
+              style = "bold blue";
+            };
+
+            battery = {
+              full_symbol = "●";
+              charging_symbol = "↑";
+              discharging_symbol = "↓";
+              display = [
+                {
+                  threshold = 20;
+                  style = "bold red";
+                }
+              ];
+            };
+          };
+
+          transientPrompt = {
+            enable = true;
+            left = "echo -n '>> '";
+            right = "";
+          };
+        };
       };
 
       hjem.users.${config.username}.files = {
@@ -222,200 +414,6 @@
                 end
             end
           '';
-        };
-      };
-
-      environment.shellAliases =
-        let
-          eza = "eza --group-directories-first";
-          ezaLong = "${eza} --long --git --time-style=long-iso";
-        in
-        {
-          # eza stands in for ls. Deliberately separate aliases so extra flags
-          # can be added without making the short listing noisy.
-          ls = eza;
-          l = "${ezaLong} --all";
-          ll = ezaLong;
-          la = "${ezaLong} --all";
-          lt = "${ezaLong} --sort=modified --reverse";
-          tree = "eza --tree --group-directories-first";
-
-          # bat stands in for cat. Plain style and no pager keep cat semantics.
-          cat = "bat --style=plain --paging=never";
-
-          # Flags differ from the originals in places, so `command <tool>` is
-          # the escape hatch when a real GNU utility is needed.
-          grep = "rg";
-          find = "fd";
-          du = "dust";
-          df = "duf";
-          ps = "procs";
-          diff = "difft";
-          xxd = "hexyl";
-
-          j = "jj";
-          jl = "jj log";
-          jd = "jj diff";
-          js = "jj status";
-          jc = "jj commit";
-          jn = "jj new";
-          je = "jj edit";
-          jb = "jj bookmark";
-          jp = "jj git push";
-          jf = "jj git fetch";
-          jup = "jj new 'trunk()'";
-          jpull = "jj git fetch && jj new 'trunk()'";
-          n = "nvim";
-          t = "tmux";
-          imv = "imv-dir";
-          build-nixconf = "$HOME/NixConfig/build.sh";
-        };
-
-      # man and ping are fish functions rather than aliases: both need to fall
-      # back to the real utility instead of breaking common invocations.
-      environment.sessionVariables = {
-        MANPAGER = "sh -c 'col -bx | bat -l man -p'";
-        # The ansi theme follows the terminal palette, so bat matches the theme.
-        BAT_THEME = "ansi";
-        EZA_ICONS_AUTO = "1";
-      };
-
-      programs.fish = {
-        enable = true;
-        package = pkgs.fish;
-        generateCompletions = false;
-
-        shellAbbrs = {
-          y = "yazi";
-          nixclean = "sudo nix-collect-garbage --delete-older-than 30d";
-        };
-
-        interactiveShellInit = ''
-          set -g fish_greeting
-          stty -ixon 2>/dev/null
-
-          # Cheatsheet picker.
-          bind \cp navi-pick
-          bind -M insert \cp navi-pick
-
-          # Alt+Z opens the zoxide directory picker.
-          bind \ez zi
-          bind -M insert \ez zi
-
-          # Ctrl+L clears the screen and redraws the prompt.
-          bind \cl 'clear; commandline -f repaint'
-
-          # Ctrl+Backspace deletes the previous word.
-          bind \c_ backward-kill-word
-          bind \x1f backward-kill-word
-          bind \e\[127\;5u backward-kill-word
-          bind \e\[8\;5u backward-kill-word
-
-          any-nix-shell fish | source
-        '';
-      };
-
-      programs.direnv = {
-        enable = true;
-        nix-direnv.enable = true;
-      };
-
-      programs.starship = {
-        enable = true;
-        package = pkgs.starship;
-        settings = {
-          add_newline = false;
-
-          format = "$username$directory$git_branch$git_status\n$character";
-          right_format = "$nix_shell$nodejs$rust$python$battery$cmd_duration";
-
-          character = {
-            success_symbol = "[╰──>>](bold green)";
-            error_symbol = "[╰──>>](bold red)";
-          };
-
-          directory.truncation_length = 3;
-
-          username = {
-            show_always = true;
-            format = "[$user](bold blue) ";
-          };
-
-          git_branch.format = "[$symbol$branch]($style) ";
-          git_branch.style = "bold purple";
-
-          git_status = {
-            format = "[($all_status$ahead_behind)]($style) ";
-            style = "bold yellow";
-            conflicted = "×";
-            up_to_date = "";
-            untracked = "…";
-            ahead = "⇡\${count}";
-            behind = "⇣\${count}";
-            stashed = "\$";
-            modified = "!";
-            staged = "+";
-            renamed = "~";
-            deleted = "-";
-          };
-
-          cmd_duration = {
-            min_time = 2000;
-            format = "[ $duration]($style) ";
-            style = "bold yellow";
-          };
-
-          nodejs = {
-            format = "[ v$version]($style) ";
-            style = "bold green";
-            detect_files = [
-              "package.json"
-              "node_modules"
-            ];
-            detect_folders = [ "node_modules" ];
-          };
-
-          rust = {
-            format = "[ v$version]($style) ";
-            style = "bold red";
-            detect_files = [ "Cargo.toml" ];
-            detect_folders = [ "target" ];
-          };
-
-          python = {
-            format = "[ v$version]($style) ";
-            style = "bold yellow";
-            detect_files = [
-              "pyproject.toml"
-              "requirements.txt"
-              ".python-version"
-              "setup.py"
-              "Pipfile"
-            ];
-          };
-
-          nix_shell = {
-            format = "❄ [$state($name)]($style) ";
-            style = "bold blue";
-          };
-
-          battery = {
-            full_symbol = "●";
-            charging_symbol = "↑";
-            discharging_symbol = "↓";
-            display = [
-              {
-                threshold = 20;
-                style = "bold red";
-              }
-            ];
-          };
-        };
-
-        transientPrompt = {
-          enable = true;
-          left = "echo -n '>> '";
-          right = "";
         };
       };
     };
