@@ -56,16 +56,20 @@
     sigil
   ];
 
-  # Local discovery and streaming.
-  networking.firewall.allowedTCPPorts = [
-    5353
-    9090
-  ];
-  networking.firewall.allowedUDPPorts = [ 5353 ];
+  networking = {
+    # Local discovery and streaming.
+    firewall = {
+      allowedTCPPorts = [
+        5353
+        9090
+      ];
+      allowedUDPPorts = [ 5353 ];
+    };
 
-  # The only access point in range is below iwd's roaming threshold, so
-  # roam scans find nothing and only add latency. This desktop does not move.
-  networking.wireless.iwd.settings.Scan.DisableRoamingScan = true;
+    # The only access point in range is below iwd's roaming threshold, so
+    # roam scans find nothing and only add latency. This desktop does not move.
+    wireless.iwd.settings.Scan.DisableRoamingScan = true;
+  };
 
   system.stateVersion = "26.05";
 }

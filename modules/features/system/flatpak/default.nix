@@ -4,7 +4,7 @@
 # release checksums.
 { inputs, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,
@@ -157,42 +157,44 @@
         ];
 
         # Hosts can append to these lists. Use lib.mkForce to replace a set.
-        features.flatpak.packages = [
-          # Community Roblox client, sandboxed by Flatpak.
-          "org.vinegarhq.Sober"
-          "app.twintaillauncher.ttl"
-        ];
+        features.flatpak = {
+          packages = [
+            # Community Roblox client, sandboxed by Flatpak.
+            "org.vinegarhq.Sober"
+            "app.twintaillauncher.ttl"
+          ];
 
-        features.flatpak.bundles = {
-          # Nuvio Desktop is not on Flathub, so track its latest GitHub release.
-          "com.nuvio.media.desktop" = {
-            owner = "NuvioMedia";
-            repo = "NuvioDesktop";
-            asset = "Nuvio-Linux-x86_64-{version}.flatpak";
+          bundles = {
+            # Nuvio Desktop is not on Flathub, so track its latest GitHub release.
+            "com.nuvio.media.desktop" = {
+              owner = "NuvioMedia";
+              repo = "NuvioDesktop";
+              asset = "Nuvio-Linux-x86_64-{version}.flatpak";
+            };
+
+            # Spotifast is also a GitHub release bundle. Its tag starts with v,
+            # so the asset name uses the full tag.
+            "rocks.spotifast.Spotifast" = {
+              owner = "crmne";
+              repo = "spotifast";
+              asset = "spotifast-{tag}-x86_64.flatpak";
+              checksums = "checksums.txt";
+            };
           };
 
-          # Spotifast is also a GitHub release bundle. Its tag starts with v,
-          # so the asset name uses the full tag.
-          "rocks.spotifast.Spotifast" = {
-            owner = "crmne";
-            repo = "spotifast";
-            asset = "spotifast-{tag}-x86_64.flatpak";
-            checksums = "checksums.txt";
-          };
-        };
-
-        features.flatpak.overrides = {
-          # Flatpak apps do not inherit session variables. Twintail Launcher
-          # sets WEBKIT_DISABLE_COMPOSITING_MODE on NVIDIA, which forces CPU
-          # rendering and makes the window slow. Skip its NVIDIA fixes, then
-          # apply only the DMA-BUF workaround, and use the Wayland socket.
-          # If the window misbehaves on Wayland, remove Context.sockets. If it
-          # renders blank, also remove WEBKIT_DISABLE_DMABUF_RENDERER.
-          "app.twintaillauncher.ttl" = {
-            Context.sockets = [ "wayland" ];
-            Environment = {
-              TTL_BYPASS_NVIDIA_FIXES = "1";
-              WEBKIT_DISABLE_DMABUF_RENDERER = "1";
+          overrides = {
+            # Flatpak apps do not inherit session variables. Twintail Launcher
+            # sets WEBKIT_DISABLE_COMPOSITING_MODE on NVIDIA, which forces CPU
+            # rendering and makes the window slow. Skip its NVIDIA fixes, then
+            # apply only the DMA-BUF workaround, and use the Wayland socket.
+            # If the window misbehaves on Wayland, remove Context.sockets. If it
+            # renders blank, also remove WEBKIT_DISABLE_DMABUF_RENDERER.
+            "app.twintaillauncher.ttl" = {
+              Context.sockets = [ "wayland" ];
+              Environment = {
+                TTL_BYPASS_NVIDIA_FIXES = "1";
+                WEBKIT_DISABLE_DMABUF_RENDERER = "1";
+              };
             };
           };
         };
@@ -224,46 +226,50 @@
         # in ExecCondition (exiting 1 skips the run cleanly while offline) and
         # order after flatpak-managed-install so both services do not touch
         # /var/lib/flatpak at the same time.
-        systemd.services."flatpak-managed-install-timer" = {
-          after = [
-            "multi-user.target"
-            "network-online.target"
-            "flatpak-managed-install.service"
-          ];
-          wants = [ "network-online.target" ];
-          serviceConfig.ExecCondition = lib.getExe waitForFlathub;
-        };
+        systemd = {
+          services = {
+            "flatpak-managed-install-timer" = {
+              after = [
+                "multi-user.target"
+                "network-online.target"
+                "flatpak-managed-install.service"
+              ];
+              wants = [ "network-online.target" ];
+              serviceConfig.ExecCondition = lib.getExe waitForFlathub;
+            };
 
-        # Install or update the bundles in features.flatpak.bundles. Start after
-        # the nix-flatpak installer so a bundle that used to be in packages is
-        # not removed and reinstalled at the same time.
-        systemd.services."flatpak-bundles" = lib.mkIf (cfg.bundles != { }) {
-          description = "Install or update Flatpak bundles from GitHub releases";
-          wantedBy = [ "default.target" ];
-          wants = [ "flatpak-managed-install.service" ];
-          after = [ "flatpak-managed-install.service" ];
-          unitConfig = {
-            # Limit retries for a broken asset or checksum. The daily timer is
-            # the final retry.
-            StartLimitIntervalSec = "1h";
-            StartLimitBurst = 3;
+            # Install or update the bundles in features.flatpak.bundles. Start
+            # after the nix-flatpak installer so a bundle that used to be in
+            # packages is not removed and reinstalled at the same time.
+            "flatpak-bundles" = lib.mkIf (cfg.bundles != { }) {
+              description = "Install or update Flatpak bundles from GitHub releases";
+              wantedBy = [ "default.target" ];
+              wants = [ "flatpak-managed-install.service" ];
+              after = [ "flatpak-managed-install.service" ];
+              unitConfig = {
+                # Limit retries for a broken asset or checksum. The daily timer
+                # is the final retry.
+                StartLimitIntervalSec = "1h";
+                StartLimitBurst = 3;
+              };
+              serviceConfig = {
+                Type = "oneshot";
+                ExecStart = lib.getExe bundleInstaller;
+                StateDirectory = "flatpak-bundles";
+                PrivateTmp = true;
+                Restart = "on-failure";
+                RestartSec = "5min";
+              };
+            };
           };
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = lib.getExe bundleInstaller;
-            StateDirectory = "flatpak-bundles";
-            PrivateTmp = true;
-            Restart = "on-failure";
-            RestartSec = "5min";
-          };
-        };
 
-        systemd.timers."flatpak-bundles" = lib.mkIf (cfg.bundles != { }) {
-          description = "Daily check for new Flatpak bundle releases";
-          wantedBy = [ "timers.target" ];
-          timerConfig = {
-            OnCalendar = "daily";
-            Persistent = true;
+          timers."flatpak-bundles" = lib.mkIf (cfg.bundles != { }) {
+            description = "Daily check for new Flatpak bundle releases";
+            wantedBy = [ "timers.target" ];
+            timerConfig = {
+              OnCalendar = "daily";
+              Persistent = true;
+            };
           };
         };
       };

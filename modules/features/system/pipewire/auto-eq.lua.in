@@ -1,0 +1,114 @@
+log = Log.open_topic ("s-auto-eq")
+
+local nutils = require ("node-utils")
+
+local profiles = {
+@PROFILES@}
+
+local latch_key = "default.auto-eq"
+
+local function is_eq_sink (name)
+  for _, profile in ipairs (profiles) do
+    if profile.sink == name then
+      return true
+    end
+  end
+  return false
+end
+
+local function matches (profile, props)
+  local fields = {
+    props ["node.name"],
+    props ["node.description"],
+    props ["device.name"],
+    props ["device.description"],
+  }
+  for _, field in ipairs (fields) do
+    if field then
+      local value = string.lower (tostring (field))
+      for _, needle in ipairs (profile.match) do
+        if string.find (value, needle, 1, true) then
+          return true
+        end
+      end
+    end
+  end
+  return false
+end
+
+local function get_metadata (source)
+  local om = source:call ("get-object-manager", "metadata")
+  return om and om:lookup { Constraint { "metadata.name", "=", "default" } }
+end
+
+-- Wake the default-nodes policy when the latch is set or cleared.
+SimpleEventHook {
+  name = "auto-eq/rescan-on-latch",
+  interests = {
+    EventInterest {
+      Constraint { "event.type", "=", "metadata-changed" },
+      Constraint { "metadata.name", "=", "default" },
+    },
+  },
+  execute = function (event)
+    local key = event:get_properties ()["event.subject.key"]
+    if key == latch_key or key == nil then
+      event:get_source ():call ("schedule-rescan", "default-nodes")
+    end
+  end,
+}:register ()
+
+SimpleEventHook {
+  name = "auto-eq/select-eq-sink",
+  after = {
+    "default-nodes/find-best-default-node",
+    "default-nodes/find-selected-default-node",
+    "default-nodes/find-stored-default-node",
+  },
+  before = { "default-nodes/apply-default-node" },
+  interests = {
+    EventInterest { Constraint { "event.type", "=", "select-default-node" } },
+  },
+  execute = function (event)
+    if event:get_properties ()["default-node.type"] ~= "audio.sink" then
+      return
+    end
+
+    local source = event:get_source ()
+    local metadata = get_metadata (source)
+    if metadata and metadata:find (0, latch_key) then
+      return
+    end
+
+    local available = event:get_data ("available-nodes")
+    available = available and available:parse ()
+    if not available then
+      return
+    end
+
+    local best, best_prio
+    for _, node in ipairs (available) do
+      local name = node ["node.name"]
+      if name and not is_eq_sink (name) and node ["device.id"] then
+        local prio = nutils.get_session_priority (node)
+        if not best_prio or prio > best_prio then
+          best, best_prio = node, prio
+        end
+      end
+    end
+    if not best then
+      return
+    end
+
+    for _, profile in ipairs (profiles) do
+      if matches (profile, best) then
+        event:set_data ("selected-node", profile.sink)
+        event:set_data ("selected-node-priority", 100000)
+        return
+      end
+    end
+
+    event:set_data ("selected-node", best ["node.name"])
+    event:set_data ("selected-node-priority", best_prio)
+  end,
+}:register ()

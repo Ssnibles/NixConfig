@@ -1,7 +1,6 @@
 # Syncthing file synchronisation.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       config,
       lib,
@@ -19,7 +18,9 @@
           enable = true;
           user = config.username;
           group = "users";
-          dataDir = "${home}/Sync";
+          # Base path for synchronised folders. The database lives in
+          # configDir, which is set below.
+          dataDir = home;
           configDir = "${home}/.config/syncthing";
           guiAddress = "127.0.0.1:8384";
           openDefaultPorts = true;
@@ -63,11 +64,14 @@
           };
         };
 
-        systemd.services.syncthing.serviceConfig.WorkingDirectory = home;
-
-        # Start at graphical.target so early boot is not delayed.
-        systemd.services.syncthing.wantedBy = lib.mkForce [ "graphical.target" ];
-        systemd.services.syncthing-init.wantedBy = lib.mkForce [ "graphical.target" ];
+        systemd.services = {
+          syncthing = {
+            serviceConfig.WorkingDirectory = home;
+            # Start at graphical.target so early boot is not delayed.
+            wantedBy = lib.mkForce [ "graphical.target" ];
+          };
+          syncthing-init.wantedBy = lib.mkForce [ "graphical.target" ];
+        };
       };
     };
 }

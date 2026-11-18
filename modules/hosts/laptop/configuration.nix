@@ -71,43 +71,46 @@
     })
   ];
 
-  services.tlp = {
-    enable = true;
-    settings = {
-      CPU_BOOST_ON_AC = 1;
-      CPU_BOOST_ON_BAT = 0;
-      CPU_SCALING_GOVERNOR_ON_AC = "performance";
-      CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
-      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
-      CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
-      CPU_MAX_PERF_ON_BAT = 70;
-      WIFI_PWR_ON_AC = "off";
-      WIFI_PWR_ON_BAT = "off";
-      USB_AUTOSUSPEND = 1;
-      AHCI_RUNTIME_PM_ON_BAT = "auto";
-      RUNTIME_PM_ON_BAT = "auto";
-      RUNTIME_PM_ON_AC = "auto";
-      PCIE_ASPM_ON_AC = "performance";
-      PCIE_ASPM_ON_BAT = "powersupersave";
-      AMDGPU_ABM_LEVEL_ON_BAT = 3;
-      SOUND_POWER_SAVE_ON_BAT = 1;
-      SOUND_POWER_SAVE_CONTROLLER = "Y";
+  services = {
+    tlp = {
+      enable = true;
+      settings = {
+        CPU_BOOST_ON_AC = 1;
+        CPU_BOOST_ON_BAT = 0;
+        CPU_SCALING_GOVERNOR_ON_AC = "performance";
+        CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+        CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+        CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+        CPU_MAX_PERF_ON_BAT = 70;
+        WIFI_PWR_ON_AC = "off";
+        WIFI_PWR_ON_BAT = "off";
+        USB_AUTOSUSPEND = 1;
+        AHCI_RUNTIME_PM_ON_BAT = "auto";
+        RUNTIME_PM_ON_BAT = "auto";
+        RUNTIME_PM_ON_AC = "auto";
+        PCIE_ASPM_ON_AC = "performance";
+        PCIE_ASPM_ON_BAT = "powersupersave";
+        AMDGPU_ABM_LEVEL_ON_BAT = 3;
+        SOUND_POWER_SAVE_ON_BAT = 1;
+        SOUND_POWER_SAVE_CONTROLLER = "Y";
+      };
+    };
+
+    udev = {
+      packages = [ pkgs.openocd ];
+      # Rules for DFU devices and Meshtastic hardware.
+      extraRules = ''
+        SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0666", GROUP="dialout"
+        SUBSYSTEM=="usb", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", MODE="0666", GROUP="dialout"
+        ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0666", GROUP="plugdev"
+        ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", MODE="0666", GROUP="plugdev"
+      '';
     };
   };
 
   environment.systemPackages = with pkgs; [
     openocd
   ];
-
-  services.udev.packages = [ pkgs.openocd ];
-
-  # Rules for DFU devices and Meshtastic hardware.
-  services.udev.extraRules = ''
-    SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0666", GROUP="dialout"
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", MODE="0666", GROUP="dialout"
-    ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0666", GROUP="plugdev"
-    ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", MODE="0666", GROUP="plugdev"
-  '';
 
   system.stateVersion = "26.05";
 }

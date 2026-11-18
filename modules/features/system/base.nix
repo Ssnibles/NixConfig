@@ -2,7 +2,7 @@
 # Nix, caches, locale, networking, base packages, and maintenance.
 { self, inputs, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     {
       pkgs,
       config,
@@ -81,9 +81,32 @@
           stalled-download-timeout = 60;
         };
 
-        # Keep NIXPKGS_ALLOW_UNFREE for nix-shell and other impure commands.
-        environment.sessionVariables = {
-          NIXPKGS_ALLOW_UNFREE = "1";
+        environment = {
+          # Keep NIXPKGS_ALLOW_UNFREE for nix-shell and other impure commands.
+          sessionVariables = {
+            NIXPKGS_ALLOW_UNFREE = "1";
+          };
+
+          systemPackages = with pkgs; [
+            swaybg
+            wl-clipboard
+            brightnessctl
+            playerctl
+            grim
+            slurp
+            wlrctl
+            tesseract
+            jq
+            networkmanagerapplet
+            adwaita-icon-theme
+            self.packages.${pkgs.stdenv.hostPlatform.system}.html-server
+            self.packages.${pkgs.stdenv.hostPlatform.system}.boilerplate
+            self.packages.${pkgs.stdenv.hostPlatform.system}.dev-init
+            inputs.ytplay.packages.${pkgs.stdenv.hostPlatform.system}.default
+          ];
+
+          # Add ~/.local/bin to the session PATH for uv, cargo, and pipx tools.
+          localBinInPath = true;
         };
 
         hjem.users.${config.username}.files = {
@@ -120,9 +143,11 @@
           modemmanager.enable = false;
           networkmanager = {
             enable = true;
-            wifi.backend = "iwd";
-            wifi.powersave = false;
-            wifi.macAddress = "stable";
+            wifi = {
+              backend = "iwd";
+              powersave = false;
+              macAddress = "stable";
+            };
             dns = "systemd-resolved";
           };
 
@@ -162,23 +187,6 @@
           "net.ipv4.tcp_mtu_probing" = 1;
         };
 
-        environment.systemPackages = with pkgs; [
-          swaybg
-          wl-clipboard
-          brightnessctl
-          playerctl
-          grim
-          slurp
-          wlrctl
-          tesseract
-          jq
-          networkmanagerapplet
-          adwaita-icon-theme
-          self.packages.${pkgs.stdenv.hostPlatform.system}.html-server
-          self.packages.${pkgs.stdenv.hostPlatform.system}.boilerplate
-          inputs.ytplay.packages.${pkgs.stdenv.hostPlatform.system}.default
-        ];
-
         xdg.portal = {
           enable = true;
           # Do not set xdgOpenUsePortal. It sends xdg-open through the portal,
@@ -192,41 +200,40 @@
 
         hardware.enableRedistributableFirmware = true;
 
-        programs.nh = {
-          enable = true;
-          flake = config.nixos.configRepo;
-          clean.enable = true;
-          clean.extraArgs = "--keep-since 30d --keep 3";
+        programs = {
+          nh = {
+            enable = true;
+            flake = config.nixos.configRepo;
+            clean.enable = true;
+            clean.extraArgs = "--keep-since 30d --keep 3";
+          };
+
+          # Let prebuilt binaries that are not packaged in Nix run. This covers
+          # Android Studio tools, editor debug adapters, game mods, and uv or
+          # cargo installed programs.
+          nix-ld = {
+            enable = true;
+            libraries = with pkgs; [
+              stdenv.cc.cc.lib
+              zlib
+              zstd
+              openssl
+              curl
+              libxml2
+              icu
+              nss
+              nspr
+              libGL
+              libgbm
+              vulkan-loader
+              libxkbcommon
+              fontconfig
+              freetype
+            ];
+          };
+
+          dconf.enable = true;
         };
-
-        # Let prebuilt binaries that are not packaged in Nix run. This covers
-        # Android Studio tools, editor debug adapters, game mods, and uv or
-        # cargo installed programs.
-        programs.nix-ld = {
-          enable = true;
-          libraries = with pkgs; [
-            stdenv.cc.cc.lib
-            zlib
-            zstd
-            openssl
-            curl
-            libxml2
-            icu
-            nss
-            nspr
-            libGL
-            libgbm
-            vulkan-loader
-            libxkbcommon
-            fontconfig
-            freetype
-          ];
-        };
-
-        programs.dconf.enable = true;
-
-        # Add ~/.local/bin to the session PATH for uv, cargo, and pipx tools.
-        environment.localBinInPath = true;
 
         # Firmware updates through fwupdmgr. It is D-Bus activated, so no service
         # runs in the background.

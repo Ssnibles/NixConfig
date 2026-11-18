@@ -1,7 +1,6 @@
 # NVIDIA GPU setup. Hosts with an NVIDIA card enable features.nvidia.
-{ ... }:
-{
-  nixos.modules.shared =
+_: {
+  flake.nixosModules.shared =
     {
       pkgs,
       config,
@@ -15,17 +14,19 @@
       options.features.nvidia.enable = lib.mkEnableOption "the NVIDIA proprietary driver";
 
       config = lib.mkIf cfg.enable {
-        boot.blacklistedKernelModules = [ "nouveau" ];
-        boot.kernelModules = [
-          "nvidia"
-          "nvidia_modeset"
-          "nvidia_uvm"
-          "nvidia_drm"
-        ];
-        boot.kernelParams = [
-          "nvidia-drm.modeset=1"
-          "nvidia-drm.fbdev=1"
-        ];
+        boot = {
+          blacklistedKernelModules = [ "nouveau" ];
+          kernelModules = [
+            "nvidia"
+            "nvidia_modeset"
+            "nvidia_uvm"
+            "nvidia_drm"
+          ];
+          kernelParams = [
+            "nvidia-drm.modeset=1"
+            "nvidia-drm.fbdev=1"
+          ];
+        };
 
         services.xserver.videoDrivers = [ "nvidia" ];
 
