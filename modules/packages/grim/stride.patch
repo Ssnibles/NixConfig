@@ -1,0 +1,24 @@
+--- a/render.c
++++ b/render.c
+@@ -93,9 +93,20 @@
+ 	return get_pixman_format(fmt) != 0;
+ }
+ 
++static uint32_t gcd(uint32_t a, uint32_t b) {
++	while (b > 0) {
++		uint32_t tmp = a % b;
++		a = b;
++		b = tmp;
++	}
++	return a;
++}
++
+ uint32_t get_format_min_stride(enum wl_shm_format fmt, uint32_t width) {
+ 	uint32_t bits_per_pixel = PIXMAN_FORMAT_BPP(get_pixman_format(fmt));
+-	return ((width * bits_per_pixel + 0x1f) >> 5) * sizeof(uint32_t);
++	uint32_t bytes_per_pixel = bits_per_pixel / 8;
++	uint32_t lcm = 4 * bytes_per_pixel / gcd(4, bytes_per_pixel);
++	return ((width * bytes_per_pixel + (lcm - 1)) / lcm) * lcm;
+ }
+ 
+ static void compute_composite_region(const struct pixman_f_transform *out2com,

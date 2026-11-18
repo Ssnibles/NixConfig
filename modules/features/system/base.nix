@@ -92,8 +92,8 @@
             wl-clipboard
             brightnessctl
             playerctl
-            grim
-            slurp
+            # Patched so window capture works on MangoWC; see packages/grim.
+            self.packages.${pkgs.stdenv.hostPlatform.system}.grim
             wlrctl
             tesseract
             jq
