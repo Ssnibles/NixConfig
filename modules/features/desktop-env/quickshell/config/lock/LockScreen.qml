@@ -283,11 +283,20 @@ Scope {
             sourceSize: Qt.size(parent.width > 0 ? parent.width : 1920, parent.height > 0 ? parent.height : 1080)
             smooth: true
 
+            // The blur renders into a half-size texture and blurMax halves with
+            // it, which keeps the radius the same on screen: the radius is in
+            // texture pixels. The wallpaper rasterises a quarter of the pixels,
+            // the texture is a quarter of the size, and the blur takes half the
+            // taps. The dimming layer hides the softer upscale.
             layer.enabled: Config.lockBlurPercentage > 0
+            layer.textureSize: Qt.size(
+              Math.max(1, Math.round(width / 2)),
+              Math.max(1, Math.round(height / 2))
+            )
             layer.effect: MultiEffect {
               blurEnabled: Config.lockBlurPercentage > 0
               blur: Config.lockBlurPercentage
-              blurMax: 64
+              blurMax: 32
             }
 
             // Translucent dark overlay to elevate UI contrast (configurable via Config.lockBackgroundDimming)
