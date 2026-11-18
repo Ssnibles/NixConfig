@@ -106,9 +106,11 @@
 "$mod+Ctrl+9" = "tagsilent,9,0"
 "$mod+Ctrl+0" = "tagsilent,10,0"
 
-# Screenshots
+# Screenshots, drawn and captured by the Quickshell overlay.
+# Mod+S is the whole screen, Mod+Shift+S selects an area, Mod+Ctrl+S copies text.
 "$mod+s" = "spawn_shell,$screenshot"
-"$mod+Shift+s" = "spawn_shell,$screenshot ocr"
+"$mod+Shift+s" = "spawn_shell,$screenshot_area"
+"$mod+Ctrl+s" = "spawn_shell,$screenshot_text"
 
 # Volume Control
 "XF86AudioRaiseVolume" = "spawn,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ $volume_step+"

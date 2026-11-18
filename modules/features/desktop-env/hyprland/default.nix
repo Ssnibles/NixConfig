@@ -85,7 +85,6 @@ _: {
                 M.isDesktop = ${if config.nixos.hostRole == "desktop" then "true" else "false"}
                 M.isLaptop = ${if config.nixos.hostRole == "laptop" then "true" else "false"}
                 M.wallpaper = "~/Pictures/wallpaper"
-                M.screenshot_dir = "~/Pictures/Screenshots"
                 M.special_workspace = "special"
 
                 return M

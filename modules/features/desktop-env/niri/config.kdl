@@ -224,11 +224,14 @@ binds {
     Mod+Shift+K         { move-column-to-workspace-up; }
 
     // System Utilities
-    // Normal screenshot: Saves PNG file and copies image to clipboard
-    Mod+S { spawn "sh" "-c" "$HOME/.config/mango/screenshot.sh"; }
+    // Screenshots are drawn and captured by the Quickshell overlay
+    Mod+S { spawn "quickshell" "ipc" "call" "screenshot" "output"; }
 
-    // OCR screenshot: Runs Tesseract and copies text to clipboard
-    Mod+Shift+S { spawn "sh" "-c" "$HOME/.config/mango/screenshot.sh ocr"; }
+    // Area selection through the same overlay
+    Mod+Shift+S { spawn "quickshell" "ipc" "call" "screenshot" "region"; }
+
+    // Area selection, copying the recognised text instead of an image
+    Mod+Ctrl+S { spawn "quickshell" "ipc" "call" "screenshot" "text"; }
 
     // Brightness Control
     XF86MonBrightnessDown { spawn "brightnessctl" "set" "5%-"; }

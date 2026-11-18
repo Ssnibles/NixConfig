@@ -180,17 +180,14 @@ _: {
             source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/variables.toml";
             target = ".config/mango/variables.toml";
           };
-          "mango-screenshot" = {
-            source = "${config.nixos.configRepo}/modules/features/desktop-env/mangowc/screenshot.sh";
-            target = ".config/mango/screenshot.sh";
-          };
         };
 
         # Mango reads config.conf before config.toml, so old links left by the
-        # pre-TOML layout would hide the new file. Only remove symlinks; a real
-        # file is still the user's own config.
-        system.activationScripts.mango-toml-migration = ''
-          for old in config.conf binds.conf colours.conf; do
+        # pre-TOML layout would hide the new file. screenshot.sh is here because
+        # the Quickshell overlay replaced it, and its link now dangles. Only
+        # remove symlinks; a real file is still the user's own config.
+        system.activationScripts.mango-stale-links = ''
+          for old in config.conf binds.conf colours.conf screenshot.sh; do
             path="${home}/.config/mango/$old"
             if [ -L "$path" ]; then rm -f "$path"; fi
           done

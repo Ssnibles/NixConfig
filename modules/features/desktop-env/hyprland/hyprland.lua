@@ -1,7 +1,6 @@
 local G = require("generated")
 
 local mod = "SUPER"
-local screenshotDir = G.screenshot_dir
 local specialWS = G.special_workspace
 
 -- Input Configuration
@@ -169,16 +168,6 @@ hl.window_rule({
 	suppress_event = "maximize",
 })
 
-hl.layer_rule({
-	name = "slurp-noanim",
-	match = { namespace = "selection" },
-	no_anim = true,
-})
-
--- Screenshot & OCR Commands
-local screenshotCmd = "$HOME/.config/mango/screenshot.sh"
-local screenshotOcrCmd = "$HOME/.config/mango/screenshot.sh ocr"
-
 -- Keybindings (Unified with Mango & Niri)
 -- Application Launchers
 hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("kitty --single-instance"))
@@ -260,9 +249,10 @@ hl.bind(mod .. " + TAB", hl.dsp.focus({ workspace = "previous" }))
 hl.bind(mod .. " + W", hl.dsp.workspace.toggle_special(specialWS))
 hl.bind(mod .. " + SHIFT + W", hl.dsp.window.move({ workspace = "special:" .. specialWS }))
 
--- Screenshots & OCR
-hl.bind(mod .. " + S", hl.dsp.exec_cmd("sh -c '" .. screenshotCmd .. "'"))
-hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd("sh -c '" .. screenshotOcrCmd .. "'"))
+-- Screenshots, drawn and captured by the Quickshell overlay
+hl.bind(mod .. " + S", hl.dsp.exec_cmd("quickshell ipc call screenshot output"))
+hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd("quickshell ipc call screenshot region"))
+hl.bind(mod .. " + CTRL + S", hl.dsp.exec_cmd("quickshell ipc call screenshot text"))
 
 -- Mouse Binds
 hl.bind(mod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
