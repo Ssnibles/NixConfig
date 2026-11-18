@@ -5,8 +5,8 @@ local util = require("util")
 
 fzf.setup({
 	winopts = {
-		height = 0.85,
-		width = 0.85,
+		height = 0.90,
+		width = 0.90,
 		row = 0.50,
 		col = 0.50,
 		border = "rounded",
@@ -15,11 +15,13 @@ fzf.setup({
 			layout = "flex",
 			flip_columns = 100,
 			vertical = "down:50%",
-			horizontal = "right:50%",
+			horizontal = "right:45%",
 			border = "rounded",
 			title = false,
 		},
 	},
+	-- Search line at the bottom, matching the navi picker.
+	fzf_opts = { ["--layout"] = "default" },
 	helptags = { previewer = false },
 	keymaps = { previewer = false },
 	hl = {
