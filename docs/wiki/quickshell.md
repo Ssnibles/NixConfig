@@ -225,6 +225,8 @@ The test runner validates core JavaScript helpers in `Utils.js` inside an isolat
 - Battery icon state mapping (0% through 100%, plugged, charging, discharging).
 - `goToSource` window activation rules and multi-output target screen resolution (`resolveActiveScreen`).
 
+These cover the JavaScript only. QML components are checked in a throwaway shell instance instead, because changing one means restarting the real shell. See [QML Component Testing](qml-testing.md) for that loop.
+
 ---
 
 ## IPC Commands & Controls
@@ -240,9 +242,14 @@ quickshell ipc call lockscreen lock
 
 # Toggle top bar visibility
 quickshell ipc call bar toggle
+```
 
-# Reload Quickshell UI in-place (also available in navi cheats)
-qs -c default ipc call quickshell reload all
-# Or restart process:
+`qs ipc show` lists the targets the running build actually exposes: `bar`, `media`, `system`, `launcher`, `command-centre`, `lockscreen` and `tray`. There is no `quickshell` target, so no in-place reload over IPC.
+
+Editing QML here does not apply by itself either. The live config is a tree of symlinks into this repository, and Quickshell does not notice a change made to the target of a symlink: a real `shell.qml` reloads the configuration when edited, but the target of a symlinked one does not. Apply changes by restarting the process:
+
+```bash
 pkill quickshell; quickshell &
 ```
+
+To iterate on a single component without restarting, use the throwaway-shell loop in [QML Component Testing](qml-testing.md).

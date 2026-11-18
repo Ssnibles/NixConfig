@@ -736,16 +736,20 @@ To reload Quickshell after editing existing QML files:
 pkill quickshell; quickshell &
 ```
 
-Quickshell normally reloads by itself when a file it has compiled changes. Two
-caveats, both easy to trip over:
+Quickshell reloads the configuration when `shell.qml` itself changes, but that
+is the only trigger. Measured on 0.3.2:
 
-- Only a content change triggers the reload. `touch` alone does not.
-- Only compiled files are watched. A component that has never been shown, such
-  as a popup you have not opened yet, is not watched, so a new or heavily
-  edited file can appear to be ignored.
+- A real-file `shell.qml` reloads the configuration and logs
+  `Reloading configuration...`.
+- Editing a component the shell imported (`sub/SubComp.qml`) does not reload.
+- Editing the target of a *symlinked* `shell.qml` does not reload.
 
-When in doubt, save an unrelated file such as `shell.qml` (even adding and
-removing a newline) to force a full reload, or restart the process.
+Both limits apply here, because `nixos.liveLinks` makes `~/.config/quickshell`
+a tree of symlinks into this repository. A QML edit therefore never applies
+until the process restarts, and there is no `quickshell` IPC target to trigger
+the reload either (`qs ipc show` lists the rest). Do not rely on saving a file
+to see a change; restart, or iterate in a throwaway instance as described in
+`docs/wiki/qml-testing.md`.
 
 ---
 
@@ -756,6 +760,8 @@ removing a newline) to force a full reload, or restart the process.
   node --test modules/features/desktop-env/quickshell/tests/*.test.js
   ```
   These also run in the `Validate Nix Flake` GitHub Actions workflow and need no Nix or Qt.
+
+- **Component testing**: QML is checked in a throwaway `qs -p` instance rather than by restarting the live shell. The loop (copy the config, a minimal `shell.qml`, screenshots, pixel measurement, `qmllint` with the shell's own import paths) is documented in `docs/wiki/qml-testing.md`.
 
 - **Editor / LSP support**: `config/qmldir` is the real manifest for the config module. It lists every shared type and its path, so `qmllint` and `qmlls` can resolve components across directories. Quickshell also uses it at runtime; a new cross-directory type must be added there.
 

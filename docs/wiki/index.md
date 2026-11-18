@@ -11,6 +11,8 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
   Architecture and configuration for MangoWC (DWM-style tiling, gestures, OCR screenshots), Niri (infinite scrollable tiling), Hyprland (Lua configuration), Shikane multi-monitor display daemon, and Vicinae application launcher.
 - **[Quickshell Desktop Shell Bar](quickshell.md)**  
   Modular QML desktop shell architecture: singletons (`Colours.qml`, `Config.qml`, `WmService.qml`, `AudioService.qml`, `BrightnessService.qml`, `NetworkService.qml`, `BatteryService.qml`, `BluetoothService.qml`, `TrayService.qml`, `SystemService.qml`, `ClockService.qml`, `NotificationService.qml`, `MediaService.qml`), unified status bar (`bar.qml`), Command Centre dashboard, session lock screen, and notification daemon.
+- **[QML Component Testing](qml-testing.md)**  
+  Throwaway-shell workflow for changing one Quickshell component without restarting the live shell: a copied config, a minimal `shell.qml`, `qs -p`, screenshots and pixel measurement, `qmllint` with the shell's own import paths, and the traps that make a test instance lie to you.
 - **[Terminal Workflow: Kitty, Tmux, Yazi & Navi](terminal-workflow.md)**  
   Terminal stack optimisations: Kitty in single-instance shared GPU memory mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Navi fuzzy cheatsheet picker (`Ctrl+P`), and Fish shell with cached FZF directory indexing.
 
