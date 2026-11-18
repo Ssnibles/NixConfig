@@ -1,7 +1,8 @@
-# Hermes AI agent.
-{ ... }:
-{
-  nixos.modules.shared =
+# Hermes AI agent. Opt-in.
+# The launcher resolves hermes-agent with uvx at runtime, so the Python
+# package is not pinned by this module.
+_: {
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,
@@ -13,7 +14,7 @@
 
       model = "qwen2.5:7b";
       # MagicDNS name is more robust than a fixed Tailscale address.
-      ollamaHost = cfg.ollamaHost;
+      inherit (cfg) ollamaHost;
       ollamaPort = 11434;
 
       hermesLauncher = pkgs.writeShellScriptBin "hermes" ''

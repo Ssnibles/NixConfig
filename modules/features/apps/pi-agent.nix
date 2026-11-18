@@ -1,7 +1,7 @@
 # Pi coding agent.
 { inputs, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,
@@ -141,11 +141,10 @@
         else
           # toFile adds the concatenated rules to the store during evaluation.
           # A derivation would be rejected: the option takes text or a path.
-          builtins.toFile "pi-rules.md" (
+          builtins.toFile "pi-rules.md"
             "${builtins.readFile baseRules}\n\n${
               if builtins.isPath cfg.rules then builtins.readFile cfg.rules else cfg.rules
-            }"
-          );
+            }";
 
       defaultSettings = {
         inherit (cfg) defaultProvider defaultModel;

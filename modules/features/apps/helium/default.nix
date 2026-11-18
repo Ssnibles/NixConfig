@@ -4,7 +4,7 @@
 # theme, and a local startpage.
 { inputs, ... }:
 {
-  nixos.modules.shared =
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,
@@ -13,9 +13,6 @@
     }:
     let
       cfg = config.features.helium;
-      cfgAlias = config.features.helium-browser;
-      enabled = cfg.enable || cfgAlias.enable;
-      isDefaultBrowser = cfg.defaultBrowser || cfgAlias.defaultBrowser;
 
       # NVIDIA needs a different VA-API path. The AMD host keeps the Mesa
       # defaults, so every NVIDIA-only flag and the wrapper are gated here.
@@ -182,7 +179,7 @@
 
       themeFlags = lib.optionals cfg.enableTheming [ "--load-extension=${themeExtension}" ];
 
-      userFlags = cfg.flags ++ cfg.extraFlags ++ cfgAlias.flags ++ cfgAlias.extraFlags;
+      userFlags = cfg.flags ++ cfg.extraFlags;
 
       effectiveFlags = defaultFlags ++ startpageFlags ++ themeFlags ++ userFlags;
 
@@ -358,13 +355,9 @@
         DeveloperToolsAvailability = 0; # Allow DevTools.
       };
 
-      effectivePolicies =
-        lib.recursiveUpdate (lib.recursiveUpdate defaultPolicies (extensionPolicies // startupPolicies))
-          (
-            lib.recursiveUpdate cfg.policies (
-              lib.recursiveUpdate cfg.extraPolicies (lib.recursiveUpdate cfgAlias.policies cfgAlias.extraPolicies)
-            )
-          );
+      effectivePolicies = lib.recursiveUpdate (lib.recursiveUpdate defaultPolicies (
+        extensionPolicies // startupPolicies
+      )) (lib.recursiveUpdate cfg.policies cfg.extraPolicies);
     in
     {
       imports = [
@@ -490,43 +483,8 @@
         };
       };
 
-      # Alias options for convenience (features.helium-browser.*)
-      options.features.helium-browser = {
-        enable = lib.mkEnableOption "Helium Browser (alias for features.helium)";
-
-        defaultBrowser = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Alias for features.helium.defaultBrowser.";
-        };
-
-        flags = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          default = [ ];
-          description = "Alias for features.helium.flags.";
-        };
-
-        extraFlags = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          default = [ ];
-          description = "Alias for features.helium.extraFlags.";
-        };
-
-        policies = lib.mkOption {
-          type = lib.types.attrs;
-          default = { };
-          description = "Alias for features.helium.policies.";
-        };
-
-        extraPolicies = lib.mkOption {
-          type = lib.types.attrs;
-          default = { };
-          description = "Alias for features.helium.extraPolicies.";
-        };
-      };
-
       config = lib.mkMerge [
-        (lib.mkIf enabled {
+        (lib.mkIf cfg.enable {
           programs.helium = {
             enable = true;
             inherit (cfg) package;
@@ -538,12 +496,12 @@
           # place and let this wrapper only add the environment.
           environment.systemPackages = lib.optionals isNvidia [ heliumNvidiaLauncher ];
 
-          features.default-apps.browser = lib.mkIf isDefaultBrowser (lib.mkDefault "helium");
+          features.default-apps.browser = lib.mkIf cfg.defaultBrowser (lib.mkDefault "helium");
         })
 
         # Themed startpage. The page files are live links, and colours.css is
         # written by Hjem in the same directory.
-        (lib.mkIf (enabled && cfg.enableCustomStartpage) {
+        (lib.mkIf (cfg.enable && cfg.enableCustomStartpage) {
           hjem.users."${config.username}" = {
             enable = true;
             files.".config/helium/startpage/colours.css".text = coloursCss;

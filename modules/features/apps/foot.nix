@@ -1,10 +1,6 @@
-{ ... }:
-{
-  perSystem = { pkgs, ... }: {
-    packages.foot = pkgs.foot;
-  };
-
-  nixos.modules.shared =
+# Foot terminal.
+_: {
+  flake.nixosModules.shared =
     {
       pkgs,
       lib,
@@ -30,13 +26,7 @@
         ;
     in
     {
-      options.features.foot = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Enable Foot terminal emulator with the foot-server systemd service.";
-        };
-      };
+      options.features.foot.enable = lib.mkEnableOption "the Foot terminal emulator with the foot-server service";
 
       config = lib.mkIf cfg.enable {
         environment.systemPackages = [ pkgs.foot ];
