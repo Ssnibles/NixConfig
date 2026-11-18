@@ -3,7 +3,6 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import ".."
 import "Calc.js" as Calc
@@ -439,8 +438,6 @@ Scope {
               boundsBehavior: Flickable.StopAtBounds
               onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
 
-              ScrollBar.vertical: ThinScrollBar { id: resultsBar }
-
               delegate: Rectangle {
                 id: row
                 required property var modelData
@@ -537,6 +534,11 @@ Scope {
               }
             }
 
+            ThinScrollBar {
+              id: resultsBar
+              view: list
+            }
+
             ListView {
               id: actionList
               visible: root.actionMenuVisible
@@ -547,8 +549,6 @@ Scope {
               interactive: true
               boundsBehavior: Flickable.StopAtBounds
               onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
-
-              ScrollBar.vertical: ThinScrollBar { id: actionsBar }
 
               delegate: Rectangle {
                 id: actionRow
@@ -607,6 +607,11 @@ Scope {
                   onClicked: root.executeAction(actionRow.index)
                 }
               }
+            }
+
+            ThinScrollBar {
+              id: actionsBar
+              view: actionList
             }
 
             Text {

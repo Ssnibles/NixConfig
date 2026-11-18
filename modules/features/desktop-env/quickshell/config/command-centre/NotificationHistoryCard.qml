@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import ".."
 
@@ -156,8 +155,6 @@ Card {
         spacing: Config.notifSpacing
         model: NotificationService.historyModel
 
-        ScrollBar.vertical: ThinScrollBar { id: historyBar }
-
         // New cards are inserted at index 0. Follow them when the list is at
         // the top, but leave the reader's position alone when it is scrolled.
         Connections {
@@ -171,6 +168,11 @@ Card {
           width: notifHistList.width - root.scrollBarGutter
           isHistory: true
         }
+      }
+
+      ThinScrollBar {
+        id: historyBar
+        view: notifHistList
       }
     }
   }

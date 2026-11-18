@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import "../Utils.js" as Utils
 import ".."
@@ -77,8 +76,6 @@ ColumnLayout {
       spacing: Config.spaceSm
       model: NetworkService.wifiNetworks
 
-      ScrollBar.vertical: ThinScrollBar { id: networkBar }
-
       delegate: Rectangle {
         id: networkRow
         required property var modelData
@@ -136,6 +133,11 @@ ColumnLayout {
           onClicked: root.selectNetwork(networkRow.modelData)
         }
       }
+    }
+
+    ThinScrollBar {
+      id: networkBar
+      view: networkList
     }
 
     Text {

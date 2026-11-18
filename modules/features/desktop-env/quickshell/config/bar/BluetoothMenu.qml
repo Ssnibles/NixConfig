@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import ".."
 
@@ -48,8 +47,6 @@ ColumnLayout {
       clip: true
       spacing: Config.spaceSm
       model: BluetoothService.btDevices
-
-      ScrollBar.vertical: ThinScrollBar { id: deviceBar }
 
       delegate: Rectangle {
         id: deviceRow
@@ -108,6 +105,11 @@ ColumnLayout {
           onClicked: BluetoothService.toggleBtDevice(deviceRow.modelData)
         }
       }
+    }
+
+    ThinScrollBar {
+      id: deviceBar
+      view: deviceList
     }
 
     Text {
