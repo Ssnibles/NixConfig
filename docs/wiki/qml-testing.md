@@ -6,7 +6,7 @@ How to change a single Quickshell component and check it without restarting the 
 
 ## Why isolate at all
 
-Editing QML in the live shell does not apply by itself. The live config at `~/.config/quickshell` is a tree of symlinks into this repository, and Quickshell does not notice a change made to the target of a symlink. The only way to see a change is to restart, which drops the bar, closes any open panel and re-registers the notification daemon.
+Editing QML in the live shell does not apply by itself. The live config at `~/.config/quickshell` is a tree of symlinks into this repository, and Quickshell does not notice a change made to the target of a symlink. The only way to see a change is to restart with `qs-restart`, which drops the bar, closes any open panel and re-registers the notification daemon.
 
 Even without symlinks the reload is narrower than it looks: on 0.3.2, editing `shell.qml` reloads the whole configuration, and editing a component it imported does not. Measured three ways on this machine:
 
@@ -104,7 +104,11 @@ grep -iE "error|warn" /tmp/qs-test.log
 
 `-p` selects a config by path, which is what gives the instance its own shell ID. `-c default` would run *your* config and duplicate every bar.
 
-To apply an edit you just copied in, kill the instance and launch it again. A reload happens only when `shell.qml` itself changes, not when a component does.
+To apply an edit you just copied in, kill the instance and launch it again. A reload happens only when `shell.qml` itself changes, not when a component does. Do not use `qs-restart` here: it kills every process whose command line contains `quickshell`, test windows included. Kill by PID or by the config path:
+
+```bash
+pkill -f 'qs-tes[t]'
+```
 
 ### 5. Capture the result
 
@@ -253,4 +257,4 @@ ps -eo pid,args | grep 'qs -p' | grep -v grep
 
 - **Pure JavaScript.** `node --test modules/features/desktop-env/quickshell/tests/*.test.js` covers `Utils.js` and the launcher calculator. No Qt involved.
 - **Hardware state.** Audio sinks, brightness and tray icons depend on real devices and services. Check those in the live shell after a restart, and revert if it misbehaves.
-- **One-line geometry tweaks.** If you can predict the outcome exactly, restart the shell once and look. The harness earns its keep when the thing moves, animates, or is measured.
+- **One-line geometry tweaks.** If you can predict the outcome exactly, restart the shell once with `qs-restart` and look. The harness earns its keep when the thing moves, animates, or is measured.

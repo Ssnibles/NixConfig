@@ -246,10 +246,10 @@ quickshell ipc call bar toggle
 
 `qs ipc show` lists the targets the running build actually exposes: `bar`, `media`, `system`, `launcher`, `command-centre`, `lockscreen` and `tray`. There is no `quickshell` target, so no in-place reload over IPC.
 
-Editing QML here does not apply by itself either. The live config is a tree of symlinks into this repository, and Quickshell does not notice a change made to the target of a symlink: a real `shell.qml` reloads the configuration when edited, but the target of a symlinked one does not. Apply changes by restarting the process:
+Editing QML here does not apply by itself either. The live config is a tree of symlinks into this repository, and Quickshell does not notice a change made to the target of a symlink: a real `shell.qml` reloads the configuration when edited, but the target of a symlinked one does not. Apply changes by restarting:
 
 ```bash
-pkill quickshell; quickshell &
+qs-restart
 ```
 
-To iterate on a single component without restarting, use the throwaway-shell loop in [QML Component Testing](qml-testing.md).
+That helper runs `pkill -f quickshell` and then `setsid quickshell >/dev/null 2>&1 &`, so the new instance outlives the shell that launched it. To iterate on a single component without restarting, use the throwaway-shell loop in [QML Component Testing](qml-testing.md).

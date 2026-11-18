@@ -731,10 +731,17 @@ quickshell ipc call lockscreen lock
 quickshell ipc call lockscreen unlock
 ```
 
-To reload Quickshell after editing existing QML files:
+To apply QML changes, restart the shell:
 ```bash
-pkill quickshell; quickshell &
+qs-restart
 ```
+
+`qs-restart` is installed by this module. It runs `pkill -f quickshell` and then
+`setsid quickshell >/dev/null 2>&1 &`, so the replacement outlives the terminal,
+keybind or navi entry that launched it. Keep the two commands in the script
+rather than inline: a keybind or navi entry runs through `sh -c`, whose own
+command line contains `quickshell`, so `pkill` would kill the wrapper before it
+reached the restart.
 
 Quickshell reloads the configuration when `shell.qml` itself changes, but that
 is the only trigger. Measured on 0.3.2:
