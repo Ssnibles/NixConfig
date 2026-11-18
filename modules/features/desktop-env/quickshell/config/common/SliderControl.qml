@@ -40,7 +40,8 @@ Item {
   readonly property int _waveAmplitude: Config.space2xs
   readonly property int _waveWavelength: Config.spaceLg
 
-  // Phase of the squiggle, stepped by the animation below so the wave travels.
+  // How far the painted squiggle is shifted, in pixels. The animation below
+  // sweeps it over exactly one wavelength so the translate loops cleanly.
   property real wavePhase: 0
 
   // Internal drag state: _dragValue is live during drag, _pendingValue
@@ -78,8 +79,10 @@ Item {
     onTriggered: root._pendingValue = -1
   }
 
-  // One sine of the wavy track. Both the track and the fill draw the same curve
-  // from the left edge, so the filled part lines up with the track.
+  // One sine of the wavy track, plus a second wavelength past the right edge so
+  // the canvas can slide sideways without leaving a gap. Both the track and the
+  // fill draw the same curve from the left edge, so the filled part lines up
+  // with the track.
   function paintWave(canvas, colour) {
     var ctx = canvas.getContext("2d")
     ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -91,14 +94,17 @@ Item {
     var mid = canvas.height / 2
     var amplitude = root.animated ? root._waveAmplitude : 0
     for (var x = 0; x <= canvas.width; x++) {
-      var y = mid + Math.sin((x + root.wavePhase) / root._waveWavelength * Math.PI * 2) * amplitude
+      var y = mid + Math.sin(x / root._waveWavelength * Math.PI * 2) * amplitude
       if (x === 0) ctx.moveTo(x, y)
       else ctx.lineTo(x, y)
     }
     ctx.stroke()
   }
 
-  // The wave travels one wavelength per cycle, so the restart is seamless.
+  // Travel is a translate of the painted canvas, not a redraw: the curve is
+  // periodic, so shifting it by one wavelength lands on the same pixels and the
+  // restart is seamless. A repaint per frame was the only continuous work the
+  // panel did while playing.
   NumberAnimation {
     target: root
     property: "wavePhase"
@@ -342,17 +348,21 @@ Item {
 
     Item {
       id: waveArea
+      // The canvases widen by a wavelength, so the track has to clip them.
+      clip: true
 
       Canvas {
         id: waveBack
-        anchors.fill: parent
+        // One wavelength wider than the track, shifted left by the phase.
+        x: -root.wavePhase
+        width: waveArea.width + root._waveWavelength
+        height: waveArea.height
         onPaint: root.paintWave(waveBack, root.trackColour)
         onWidthChanged: requestPaint()
         onHeightChanged: requestPaint()
 
         Connections {
           target: root
-          function onWavePhaseChanged() { waveBack.requestPaint() }
           function onAnimatedChanged() { waveBack.requestPaint() }
           function onTrackColourChanged() { waveBack.requestPaint() }
         }
@@ -365,7 +375,8 @@ Item {
 
         Canvas {
           id: waveFill
-          width: waveArea.width
+          x: -root.wavePhase
+          width: waveArea.width + root._waveWavelength
           height: waveArea.height
           onPaint: root.paintWave(waveFill, root.fillColour)
           onWidthChanged: requestPaint()
@@ -374,7 +385,6 @@ Item {
           Connections {
             target: root
             function onFillColourChanged() { waveFill.requestPaint() }
-            function onWavePhaseChanged() { waveFill.requestPaint() }
             function onAnimatedChanged() { waveFill.requestPaint() }
           }
         }
