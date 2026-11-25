@@ -391,6 +391,23 @@
           "security"
         ]
       )
+      # Tilde does not expand after --flag=, so the paths use $HOME.
+      (mk "Mount a server over SFTP with rclone"
+        ''rclone mount ":sftp:<remote=/home/admin/>" ~/mnt/<mount=home-server> --sftp-host=<host=192.168.0.223> --sftp-user=<user=admin> --sftp-port=<port=22> --sftp-key-file=$HOME/.ssh/<key=desktop> --vfs-cache-mode writes --dir-cache-time 5m --transfers 4 --checkers 8 --no-checksum --daemon --log-file=$HOME/.cache/sshinator/rclone/<mount>.log --sftp-shell-type=unix --sftp-set-modtime=false --sftp-md5sum-command=none --sftp-sha1sum-command=none''
+        [
+          "system"
+          "ssh"
+          "rclone"
+        ]
+      )
+      (mk "Copy a directory to a server with rsync"
+        "rsync -av --progress <source=~/Music/> <user=admin>@<host=192.168.0.223>:<dest=/var/lib/music/>"
+        [
+          "system"
+          "ssh"
+          "rsync"
+        ]
+      )
       (mk "Restart the Quickshell shell" "qs-restart" [
         "system"
         "quickshell"
