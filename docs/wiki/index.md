@@ -36,7 +36,9 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 
 ### Media, Audio & Applications
 - **[Media, Document Viewer & Audio Stack](media-audio.md)**  
-  High-performance media tools: MPV video player with Vulkan `gpu-next` pipeline and custom scripts (`modernz`, `thumbfast`), Zathura PDF reader with theme-aware dark mode and SyncTeX Neovim jumping, PipeWire low-latency audio, and `ytplay`.
+  High-performance media tools: MPV video player with Vulkan `gpu-next` pipeline and custom scripts (`modernz`, `thumbfast`), Zathura PDF reader with theme-aware dark mode and SyncTeX Neovim jumping, PipeWire low-latency audio with AutoEq equaliser sinks, the beets music library manager, the themed Fooyin library player, and `ytplay`.
+- **[Fooyin Player & Theming Guide](fooyin.md)**  
+  Fooyin module, palette-driven Qt theme, `.fyt` format, `FyTheme` storage, colour-role mapping, `Minimal` layout, layout state, library requirements, and troubleshooting.
 - **[Firefox & Sidebery Customisation](firefox.md)**  
   Guide for customising Firefox Developer Edition native UI (`userChrome.css`), Sidebery vertical tab bar (`userContent.css`), offline startpage WebExtension, and Helium browser alternative.
 - **[Gaming, Steam & DualSense Controllers](gaming.md)**  
@@ -46,7 +48,7 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 
 ### Application Packaging & Sandboxing
 - **[Flatpak & Sandboxed Applications](flatpak.md)**  
-  Declarative Flatpak management via `nix-flatpak`: the Flathub remote, remote-backed apps such as Sober (Roblox), GitHub-release bundle tracking for Nuvio Desktop and Spotifast without Nix pins, activation-time installation, update behaviour, overrides, and troubleshooting.
+  Declarative Flatpak management via `nix-flatpak`: the Flathub remote, remote-backed apps such as Sober (Roblox), GitHub-release bundle tracking for Nuvio Desktop, Spotifast and Antra without Nix pins, activation-time installation, update behaviour, overrides, and troubleshooting.
 
 ### Networking & Synchronisation
 - **[Networking, Tailscale & Syncthing Synchronisation](networking-sync.md)**  
@@ -68,7 +70,8 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 | **Pi Agent & Hermes** | `modules/features/apps/pi-agent.nix`, `hermes.nix` | `pi-agent/skills/`, `~/.hermes/config.yaml`, `pi.nix` | [ai-tools.md](ai-tools.md) |
 | **ESP32 & Arduino** | `modules/features/apps/development.nix` | `templates/esp32-arduino/` | [esp32-arduino.md](esp32-arduino.md) |
 | **WRAMP Toolchain** | `modules/features/apps/wramp.nix` | `assets/setup_wramp.sh` | [wramp.md](wramp.md) |
-| **Media, Notes & Audio** | `modules/features/apps/media.nix`, `system/pipewire.nix` | `modules/packages/uni-notes/`, `mpv.conf`, `zathurarc` | [media-audio.md](media-audio.md) |
+| **Media, Notes & Audio** | `modules/features/apps/media.nix`, `apps/beets.nix`, `system/pipewire.nix` | `modules/packages/uni-notes/`, `mpv.conf`, `zathurarc`, `~/.config/beets/config.yaml` | [media-audio.md](media-audio.md) |
+| **Fooyin Player** | `modules/features/apps/fooyin.nix` | `apps/fooyin/theme-writer.cpp`, `apps/fooyin/minimal.fyl`, `~/.config/fooyin`, `~/.local/state/fooyin` | [fooyin.md](fooyin.md) |
 | **Firefox & Helium** | `modules/features/apps/firefox/`, `apps/helium/` | `userChrome.css`, `userContent.css`, `startpage/` | [firefox.md](firefox.md) |
 | **Gaming & Minecraft** | `modules/features/apps/gaming.nix`, `apps/minecraft.nix` | `dualsense-pair/`, Prism Launcher, BedrockOnLinux | [gaming.md](gaming.md) |
 | **Frame Remote Desktop** | `modules/features/apps/frame.nix` | `assets/setup_frame.sh` | [frame.md](frame.md) |

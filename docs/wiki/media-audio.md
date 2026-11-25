@@ -19,8 +19,11 @@ The media stack is optimised for hardware acceleration, low latency, and aesthet
 | **Spotify** | **Spicetify & spotatui** | Themed desktop Spotify client and terminal TUI | `modules/features/apps/spotify.nix` & `media.nix` |
 | **Spotifast** | **Flatpak bundle** | Native Rust Spotify client (`rocks.spotifast.Spotifast`) installed from a GitHub-release `.flatpak` bundle tracked at the latest release | `modules/features/system/flatpak/` |
 | **Nuvio Desktop** | **Flatpak bundle** | Stremio-addon media player (`com.nuvio.media.desktop`) installed from a GitHub-release `.flatpak` bundle tracked at the latest release | `modules/features/system/flatpak/` |
+| **Antra** | **Flatpak bundle** | Music library builder (`io.github.anandprtp.Antra`) that tags and files tracks into artist and album folders, installed from a GitHub-release `.flatpak` bundle tracked at the latest release | `modules/features/system/flatpak/` |
+| **Music Library** | **Beets** | Tags imports from MusicBrainz, files them into `Artist/Album/Track Title`, and fills in cover art, lyrics, genres, and ReplayGain | `modules/features/apps/beets.nix` |
+| **Music Player** | **Fooyin** | Customisable Qt player with a palette-matched theme, track list, album cover grid, and artwork and metadata sidebar | `modules/features/apps/fooyin.nix` |
 
-> **Spotifast** and **Nuvio Desktop** are delivered as sandboxed Flatpaks rather than Nix packages because they are not published on Flathub. Installation, GitHub-release tracking, and updates are covered in the [Flatpak & Sandboxed Applications Guide](flatpak.md).
+> **Spotifast**, **Nuvio Desktop** and **Antra** are delivered as sandboxed Flatpaks rather than Nix packages because they are not published on Flathub. Installation, GitHub-release tracking, and updates are covered in the [Flatpak & Sandboxed Applications Guide](flatpak.md).
 
 ---
 
@@ -183,6 +186,89 @@ AutoEq also publishes Jaytiss and Super Review measurements for the Aria 2, so t
 4. Run `nixos-rebuild switch`, then run `pipewire-eq on` if a manual profile is active.
 
 The filter list is read when the chain is created, so a rebuild is required. Bands, gain and Q all come straight from the file.
+
+---
+
+## Fooyin music player
+
+fooyin is the graphical library player. The module is [`modules/features/apps/fooyin.nix`](../../modules/features/apps/fooyin.nix) and is enabled by default through `features.fooyin.enable`.
+
+The interface uses the active desktop palette and the `Minimal` layout: a track list, an album cover grid, artwork with selection info, and a full-width seekbar above the bottom transport row. The album grid only includes tracks that belong to a fooyin library, so add the music folder from **Settings > Library** first.
+
+For the palette role mapping, `.fyt` theme format, `FyTheme` storage, layout state, and troubleshooting, see the **[Fooyin Player & Theming Guide](fooyin.md)**.
+
+---
+
+## Music library with beets
+
+beets tags and files a local music library. The module is [`modules/features/apps/beets.nix`](../../modules/features/apps/beets.nix), and the generated config lives at `~/.config/beets/config.yaml`. The library database and state file sit beside it, so `~/.config/beets` holds the whole library index.
+
+The music itself stays in `~/Music` by default. Change `features.beets.directory` in a host file to use another folder.
+
+`config.yaml` is a read-only symlink into the Nix store, so change settings in the module and rebuild instead of editing the file. The library database and state file are written at runtime and stay in `~/.config/beets`.
+
+### Importing
+
+```bash
+# Tag and file a download or album folder
+beet import ~/Downloads/some-album
+
+# Re-check files already in the library, ignoring the import memory
+beet import -I ~/Music
+```
+
+Imports move files into the library (`import.move: yes`, `import.copy: no`), so the source folder is emptied as each album is filed. A dry run is available with `beet import --pretend`.
+
+`import.incremental: yes` records each import, so running the same folder again skips albums that are already in the library. Pass `-I` to import the folder again anyway.
+
+### Folder layout
+
+| Path setting | Layout |
+| :--- | :--- |
+| `default` | `$albumartist/$album%aunique{}/$track $title` |
+| `singleton` | `Non-Album/$artist/$title` |
+| `comp` | `Compilations/$album%aunique{}/$track $title` |
+
+`%aunique{}` adds a disambiguator such as the year or label only when two albums would otherwise share a folder. `art_filename: cover` writes downloaded art as `cover.jpg`.
+
+### Enabled plugins
+
+| Plugin | Effect |
+| :--- | :--- |
+| `chroma` | Fingerprints tracks with AcoustID to improve autotag matches |
+| `fetchart` | Downloads art from the album folder, Cover Art Archive, iTunes, or Wikipedia, resized to at most 1200 px |
+| `embedart` | Embeds art into files that have none, and leaves existing art alone |
+| `lyrics` | Fetches lyrics from LRCLIB and Genius |
+| `lastgenre` | Writes the most specific Last.fm genre that survives canonicalisation and the genre whitelist |
+| `replaygain` | Writes ReplayGain tags with the ffmpeg backend |
+| `ftintitle` | Moves `feat.` artists from the artist field into the title |
+| `scrub` | Strips stray tag frames that other tools leave behind |
+| `convert` | Adds `beet convert`, which writes an Opus copy to `~/Music-converted` at 128 kbps and copies lossy files unchanged |
+| `duplicates`, `missing`, `badfiles` | Find duplicate tracks, missing album tracks, and corrupt files |
+| `unimported` | Lists files in the library folder that are not in the database |
+| `info`, `edit`, `mbsync` | Inspect, interactively edit, and refresh metadata from MusicBrainz |
+
+Art, lyrics, genre, and ReplayGain fetching all run automatically on import. They need network access, and a lookup that fails only logs a warning. A large import therefore takes longer than the tagging step alone.
+
+### Everyday commands
+
+```bash
+beet ls                       # list the library
+beet ls -a artist:radiohead   # query albums
+beet modify title="..."       # change tags in the database and in the files
+beet move                     # re-file files after a paths change
+beet fetchart -f              # force fresh cover art
+beet replaygain               # write ReplayGain tags
+beet duplicates -a            # list duplicate albums
+beet missing -a               # list albums with missing tracks
+beet unimported ~/Music       # show files not in the database
+beet bad                      # check files for corruption
+beet mbsync                   # refresh metadata from MusicBrainz
+beet convert                  # Opus copies in ~/Music-converted
+beet convert -d ~/phone-music # make an Opus copy for a phone
+```
+
+`beet modify` and `beet move` write to the files, so import a few albums first and check the result before running either over the whole library.
 
 ---
 
