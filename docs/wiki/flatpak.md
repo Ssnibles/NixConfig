@@ -18,7 +18,8 @@ Flatpak support is enabled through a dedicated feature module, [`modules/feature
 | **Launcher** | **Twintail Launcher** (`app.twintaillauncher.ttl`) | Game launcher | Flathub (auto-updated) |
 | **Media player** | **Nuvio Desktop** (`com.nuvio.media.desktop`) | Stremio-addon media player | GitHub `releases/latest` (tracked, checksum-verified) |
 | **Music player** | **Spotifast** (`rocks.spotifast.Spotifast`) | Native, lightweight Spotify client | GitHub `releases/latest` (tracked, checksum-verified) |
-| **Runtime** | `org.gnome.Platform//50`, `org.freedesktop.Platform//25.08` | Sandbox runtimes pulled by Nuvio and Spotifast | Flathub (automatic) |
+| **Library builder** | **Antra** (`io.github.anandprtp.Antra`) | Builds a tagged local music library from streaming links | GitHub `releases/latest` (tracked, no upstream checksums) |
+| **Runtime** | `org.gnome.Platform//50`, `org.freedesktop.Platform//25.08` | Sandbox runtimes pulled by Nuvio, Spotifast and Antra | Flathub (automatic) |
 
 Both hosts (`desktop` and `laptop`) enable the feature:
 
@@ -61,7 +62,7 @@ Enabling the feature merges the `nix-flatpak` NixOS module and configures `servi
 4. **State tracking** — nix-flatpak serialises its desired state to `/nix/var/nix/gcroots/flatpak-state.json`. Bundle state is tracked separately by the tag files above; a bundle already at the latest tag and still installed is not downloaded again.
 5. **Portal assertion** — the stock Flatpak module asserts that `xdg.portal.enable = true`. This is already satisfied globally in [`modules/features/system/base.nix`](../../modules/features/system/base.nix).
 
-> **Convergent, not exhaustive.** `services.flatpak.uninstallUnmanaged` defaults to `false`, so apps you install manually with `flatpak install` are left alone. Nuvio and Spotifast are intentionally *not* in `services.flatpak.packages`; they are unmanaged by nix-flatpak and owned by the `flatpak-bundles` service instead. Leave `uninstallUnmanaged = false` (the module asserts this when bundles are declared), otherwise nix-flatpak would remove tracked bundles on every activation.
+> **Convergent, not exhaustive.** `services.flatpak.uninstallUnmanaged` defaults to `false`, so apps you install manually with `flatpak install` are left alone. Nuvio, Spotifast and Antra are intentionally *not* in `services.flatpak.packages`; they are unmanaged by nix-flatpak and owned by the `flatpak-bundles` service instead. Leave `uninstallUnmanaged = false` (the module asserts this when bundles are declared), otherwise nix-flatpak would remove tracked bundles on every activation.
 
 Installed apps are exposed on the session `PATH` through `environment.profiles` (`/var/lib/flatpak/exports`), and Flatpak content lives in `/var/lib/flatpak` — **not** the Nix store, so `nix-collect-garbage` never reclaims it.
 
@@ -89,6 +90,13 @@ features.flatpak.bundles."rocks.spotifast.Spotifast" = {
   asset = "spotifast-{tag}-x86_64.flatpak";
   checksums = "checksums.txt";
 };
+
+features.flatpak.bundles."io.github.anandprtp.Antra" = {
+  owner = "anandprtp";
+  repo = "Antra";
+  asset = "Antra-Linux.flatpak";
+  checksums = null;
+};
 ```
 
 ### Sober (Roblox)
@@ -106,6 +114,12 @@ Rather than pinning a release in Nix, the module tracks the upstream latest rele
 ### Spotifast
 
 Spotifast (`rocks.spotifast.Spotifast`) is a native Rust Spotify client that is **not published on Flathub**. It ships a Flatpak bundle on [`crmne/spotifast` releases](https://github.com/crmne/spotifast/releases) and lists its checksums in `checksums.txt`. Playback requires Spotify Premium; free accounts can browse but not play through Spotifast. The module tracks its latest release in the same way as Nuvio.
+
+### Antra
+
+Antra (`io.github.anandprtp.Antra`) is a desktop music library builder. It is **not published on Flathub**, so it is installed from the `Antra-Linux.flatpak` asset on [`anandprtp/Antra` releases](https://github.com/anandprtp/Antra/releases). The asset keeps the same filename across releases, so no template is needed.
+
+The release publishes no checksum file, so `checksums = null` is required. The bundle is downloaded over TLS from GitHub but not verified, and it is not signed. The Flatpak build is also marked `continue-on-error` upstream, so a release can appear without the asset; the installer logs that as a download failure and the timer retries the next day.
 
 ---
 
@@ -161,7 +175,7 @@ Both update paths are scheduled daily and catch up after the machine was off:
 | Behaviour | Scope | Timer |
 | :--- | :--- | :--- |
 | Flathub app updates | Remote-backed apps such as **Sober** and **Twintail** | `flatpak-managed-install-timer` |
-| GitHub-release bundle updates | Bundles such as **Nuvio** and **Spotifast** | `flatpak-bundles.timer` |
+| GitHub-release bundle updates | Bundles such as **Nuvio**, **Spotifast** and **Antra** | `flatpak-bundles.timer` |
 
 ```nix
 # Flathub side (nix-flatpak)
@@ -173,7 +187,7 @@ update.auto = {
 
 The bundle installer is idempotent: if the recorded tag matches `releases/latest` and the app is still installed, it exits without downloading the (large) `.flatpak` again.
 
-> Unlike most Nix-managed software, Flatpak apps update over the network independently of `nixos-rebuild`. This is a deliberate trade-off so Sober keeps matching the live Roblox version and GitHub-release apps like Nuvio and Spotifast can be tracked without constant hash bumps.
+> Unlike most Nix-managed software, Flatpak apps update over the network independently of `nixos-rebuild`. This is a deliberate trade-off so Sober keeps matching the live Roblox version and GitHub-release apps like Nuvio, Spotifast and Antra can be tracked without constant hash bumps.
 
 ---
 
@@ -189,6 +203,7 @@ flatpak --system info com.nuvio.media.desktop
 # Run an app directly
 flatpak run com.nuvio.media.desktop
 flatpak run rocks.spotifast.Spotifast
+flatpak run io.github.anandprtp.Antra
 flatpak run org.vinegarhq.Sober
 
 # Search / browse Flathub
@@ -244,6 +259,7 @@ sudo systemctl start flatpak-bundles
 # See which upstream tag was last installed
 cat /var/lib/flatpak-bundles/com.nuvio.media.desktop.tag
 cat /var/lib/flatpak-bundles/rocks.spotifast.Spotifast.tag
+cat /var/lib/flatpak-bundles/io.github.anandprtp.Antra.tag
 ```
 
 Common failures:
@@ -265,7 +281,7 @@ sudo ls -l /var/lib/flatpak-bundles
 
 ### A bundle fails to launch / missing runtime
 
-Nuvio needs `org.gnome.Platform//50` and Spotifast needs `org.freedesktop.Platform//25.08` from Flathub. Confirm the remote is reachable and the runtimes are present:
+Nuvio and Antra need `org.gnome.Platform//50` and Spotifast needs `org.freedesktop.Platform//25.08` from Flathub. Confirm the remote is reachable and the runtimes are present:
 
 ```bash
 flatpak --system remotes
