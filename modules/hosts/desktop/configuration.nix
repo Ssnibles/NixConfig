@@ -51,7 +51,6 @@
 
   environment.systemPackages = with pkgs; [
     musicpod
-    nicotine-plus
     pkgs.stable.calibre
     sigil
   ];
