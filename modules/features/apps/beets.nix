@@ -1,0 +1,132 @@
+# Beets music library manager.
+_: {
+  flake.nixosModules.shared =
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
+    let
+      cfg = config.features.beets;
+
+      # Beets resolves relative paths against the config directory, so the
+      # database and state file stay beside config.yaml in ~/.config/beets.
+      # The music itself lives in cfg.directory.
+      beetsConfig = ''
+        directory: ${cfg.directory}
+        library: library.db
+        statefile: state.pickle
+
+        plugins:
+          - musicbrainz
+          - chroma
+          - fetchart
+          - embedart
+          - lyrics
+          - lastgenre
+          - replaygain
+          - ftintitle
+          - scrub
+          - convert
+          - duplicates
+          - missing
+          - unimported
+          - badfiles
+          - info
+          - edit
+          - mbsync
+
+        import:
+          # Move downloads into the library instead of copying them, so the
+          # library is the only copy and the download folder stays clean.
+          move: yes
+          copy: no
+          write: yes
+          autotag: yes
+          incremental: yes
+
+        paths:
+          default: $albumartist/$album%aunique{}/$track $title
+          singleton: Non-Album/$artist/$title
+          comp: Compilations/$album%aunique{}/$track $title
+
+        art_filename: cover
+
+        chroma:
+          auto: yes
+
+        fetchart:
+          auto: yes
+          # Only trust folder images with a cover-like name, so a stray
+          # screenshot cannot become the album art.
+          cautious: yes
+          minwidth: 500
+          maxwidth: 1200
+          quality: 90
+          sources:
+            - filesystem
+            - coverart
+            - itunes
+            - wikipedia
+
+        embedart:
+          auto: yes
+          # Never replace art that a file already carries.
+          ifempty: yes
+
+        lyrics:
+          auto: yes
+          sources:
+            - lrclib
+            - genius
+
+        lastgenre:
+          auto: yes
+          canonical: yes
+          source: album
+          # Keep the most precise genre rather than its broad parent.
+          prefer_specific: yes
+
+        replaygain:
+          auto: yes
+          backend: ffmpeg
+
+        ftintitle:
+          auto: yes
+
+        scrub:
+          auto: yes
+
+        convert:
+          auto: no
+          # Converted copies live outside the library so they are never
+          # picked up as unimported files or re-imported as duplicates.
+          dest: ~/Music-converted
+          format: opus
+          never_convert_lossy_files: yes
+          embed: yes
+          formats:
+            opus:
+              command: ffmpeg -i $source -y -vn -c:a libopus -b:a 128k $dest
+              extension: opus
+      '';
+    in
+    {
+      options.features.beets = {
+        enable = lib.mkEnableOption "beets music library management";
+
+        directory = lib.mkOption {
+          type = lib.types.str;
+          default = "~/Music";
+          description = "Folder that holds the organised music library.";
+        };
+      };
+
+      config = lib.mkIf cfg.enable {
+        environment.systemPackages = [ pkgs.beets ];
+
+        hjem.users.${config.username}.files.".config/beets/config.yaml".text = beetsConfig;
+      };
+    };
+}
