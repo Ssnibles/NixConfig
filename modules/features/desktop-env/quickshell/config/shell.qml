@@ -32,7 +32,8 @@ Scope {
 
   StatusMenu { }
 
-  Launcher { }
+  // Parked, not removed: the built-in launcher is unused while Vicinae covers
+  // it. Add `Launcher { }` back here to load it again.
 
   ScreenshotOverlay { }
 

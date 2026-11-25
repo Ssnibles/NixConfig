@@ -199,6 +199,8 @@ This enables swapping between Wayland compositors while keeping the exact same s
 
 ## Launcher
 
+The launcher is currently parked: `shell.qml` does not instantiate it, because Vicinae covers the same ground and the extra scope only did start-up work. The code stays in `config/launcher/`, so adding `Launcher { }` back to `shell.qml` restores it. The `SUPER + Shift + Space` binds still point at it and do nothing until then.
+
 The Quickshell launcher (`config/launcher/Launcher.qml`) is a lightweight alternative to Vicinae. It is a starting point rather than a full replacement:
 - **Open**: `SUPER + Shift + Space` in MangoWC, Hyprland, and Niri, or `quickshell ipc call launcher toggle`.
 - **Window**: A fixed 760 x 500 card centred on the active screen, reusing `WmService.resolveTargetScreen(...)` and the `Card` primitive. The result list scrolls and keeps the selected row visible.
