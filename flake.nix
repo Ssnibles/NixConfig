@@ -45,11 +45,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    scenefx = {
-      url = "github:wlrfx/scenefx";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Local development checkouts. The default is the public fork so a fresh
     # clone evaluates anywhere; build.sh adds --override-input when the local
     # checkout exists. The runtime mango-dev wrapper also prefers

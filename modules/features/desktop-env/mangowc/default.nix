@@ -21,27 +21,29 @@ _: {
       #
       # The scenefx patch fixes broken borders on the NVIDIA driver. Remove it
       # when the upstream fix is released.
-      scenefx =
-        inputs.scenefx.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
-          (oldAttrs: {
-            postPatch = (oldAttrs.postPatch or "") + ''
-              substituteInPlace render/egl.c \
-                --replace-fail 'attribs[atti++] = 2;' 'attribs[atti++] = 3;'
-              substituteInPlace render/fx_renderer/shaders.c \
-                --replace-fail 'glShaderSource(shader, 1, &src, NULL);' \
-                  'const char *prefix = (type == GL_FRAGMENT_SHADER) ? "#ifndef GL_FRAGMENT_PRECISION_HIGH\n#define GL_FRAGMENT_PRECISION_HIGH 1\n#endif\n" : ""; const GLchar *sources[] = { prefix, src }; glShaderSource(shader, 2, sources, NULL);'
-            '';
-          });
+      patchScenefx =
+        scenefx:
+        scenefx.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (oldAttrs: {
+          postPatch = (oldAttrs.postPatch or "") + ''
+            substituteInPlace render/egl.c \
+              --replace-fail 'attribs[atti++] = 2;' 'attribs[atti++] = 3;'
+            substituteInPlace render/fx_renderer/shaders.c \
+              --replace-fail 'glShaderSource(shader, 1, &src, NULL);' \
+                'const char *prefix = (type == GL_FRAGMENT_SHADER) ? "#ifndef GL_FRAGMENT_PRECISION_HIGH\n#define GL_FRAGMENT_PRECISION_HIGH 1\n#endif\n" : ""; const GLchar *sources[] = { prefix, src }; glShaderSource(shader, 2, sources, NULL);'
+          '';
+        });
 
+      # Scenefx's scene API changes between revisions, so each mango build has
+      # to use the scenefx revision its own input pins rather than a shared one.
       mango-remote = inputs.mangowc.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
-        inherit scenefx;
+        scenefx = patchScenefx inputs.mangowc.inputs.scenefx;
       };
 
       # Local development build from the checked-in input.
       mango-local-base =
         inputs.mangowc-local.packages.${pkgs.stdenv.hostPlatform.system}.default.override
           {
-            inherit scenefx;
+            scenefx = patchScenefx inputs.mangowc-local.inputs.scenefx;
           };
 
       # Prefer a freshly built binary in ~/mango/result at runtime, so a local
