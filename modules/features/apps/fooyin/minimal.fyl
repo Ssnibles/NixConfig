@@ -1,0 +1,95 @@
+{
+    "Name": "Minimal",
+    "Widgets": [
+        {
+            "SplitterVertical": {
+                "Locked": [
+                    false,
+                    true
+                ],
+                "State": "AAAA/wAAAAEAAAACAAAD6AAAAEAB/////wEAAAACAA==",
+                "Widgets": [
+                    {
+                        "SplitterHorizontal": {
+                            "Locked": [
+                                false,
+                                false,
+                                true
+                            ],
+                            "State": "AAAA/wAAAAEAAAADAAACWAAAAyAAAAH0Af////8BAAAAAQA=",
+                            "Widgets": [
+                                {
+                                    "Playlist": {}
+                                },
+                                {
+                                    "LibraryFilter": {
+                                        "Columns": "3|1",
+                                        "Group": "Default",
+                                        "Index": 0,
+                                        "Display": 1,
+                                        "Captions": 1,
+                                        "ShowSummary": false
+                                    }
+                                },
+                                {
+                                    "SplitterVertical": {
+                                        "Locked": [
+                                            false,
+                                            true
+                                        ],
+                                        "State": "AAAA/wAAAAEAAAACAAAB9AAAAfQB/////wEAAAACAA==",
+                                        "Widgets": [
+                                            {
+                                                "ArtworkPanel": {}
+                                            },
+                                            {
+                                                "SelectionInfo": {}
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "SplitterVertical": {
+                            "Locked": [
+                                true,
+                                false
+                            ],
+                            "State": "AAAA/wAAAAEAAAACAAAAGAAAACgB/////wEAAAACAA==",
+                            "Widgets": [
+                                {
+                                    "SeekBar": {}
+                                },
+                                {
+                                    "SplitterHorizontal": {
+                                        "Locked": [
+                                            true,
+                                            false,
+                                            true
+                                        ],
+                                        "State": "AAAA/wAAAAEAAAADAAAAtAAABXgAAAC0Af////8BAAAAAQA=",
+                                        "Widgets": [
+                                            {
+                                                "PlayerControls": {}
+                                            },
+                                            {
+                                                "ScriptDisplay": {
+                                                    "Script": "%artist% - %title%"
+                                                }
+                                            },
+                                            {
+                                                "VolumeControls": {}
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
