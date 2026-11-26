@@ -60,9 +60,11 @@
           # cache.nixos.org is already the default, so only add extra caches.
           substituters = [
             "https://nix-community.cachix.org"
+            "https://sonora.cachix.org"
           ];
           trusted-public-keys = [
             "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+            "sonora.cachix.org-1:qbPeDsvZPbwUWHpQS5Oe0bjz5oHAVscHem+MCzwrc9Q="
           ];
           download-buffer-size = 524288000;
           auto-optimise-store = true;

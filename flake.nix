@@ -94,6 +94,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Built against its own pinned nixpkgs on purpose. Following nixpkgs
+    # changes the derivation and misses the upstream binary cache, so a rebuild
+    # would compile the whole Rust tree. The cache is added in
+    # modules/features/system/base.nix.
+    sonora.url = "github:sonorahq/sonora";
+
     # Declarative Flatpak manager. Adds services.flatpak.remotes/.packages on
     # top of NixOS' built-in module (which only provides `enable`).
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.7.0";

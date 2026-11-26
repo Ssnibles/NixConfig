@@ -22,6 +22,7 @@ The media stack is optimised for hardware acceleration, low latency, and aesthet
 | **Antra** | **Flatpak bundle** | Music library builder (`io.github.anandprtp.Antra`) that tags and files tracks into artist and album folders, installed from a GitHub-release `.flatpak` bundle tracked at the latest release | `modules/features/system/flatpak/` |
 | **Music Library** | **Beets** | Tags imports from MusicBrainz, files them into `Artist/Album/Track Title`, and fills in cover art, lyrics, genres, and ReplayGain | `modules/features/apps/beets.nix` |
 | **Music Player** | **Fooyin** | Customisable Qt player with a palette-matched theme, track list, album cover grid, and artwork and metadata sidebar | `modules/features/apps/fooyin.nix` |
+| **Streaming Client** | **Sonora** | Native Rust client for streaming services and local files, built from the upstream flake and substituted from its own binary cache | `modules/features/apps/sonora.nix` |
 
 > **Spotifast**, **Nuvio Desktop** and **Antra** are delivered as sandboxed Flatpaks rather than Nix packages because they are not published on Flathub. Installation, GitHub-release tracking, and updates are covered in the [Flatpak & Sandboxed Applications Guide](flatpak.md).
 
@@ -196,6 +197,16 @@ fooyin is the graphical library player. The module is [`modules/features/apps/fo
 The interface uses the active desktop palette and the `Minimal` layout: a track list, an album cover grid, artwork with selection info, and a full-width seekbar above the bottom transport row. The album grid only includes tracks that belong to a fooyin library, so add the music folder from **Settings > Library** first.
 
 For the palette role mapping, `.fyt` theme format, `FyTheme` storage, layout state, and troubleshooting, see the **[Fooyin Player & Theming Guide](fooyin.md)**.
+
+---
+
+## Sonora music client
+
+Sonora is the streaming and local-file client. The module is [`modules/features/apps/sonora.nix`](../../modules/features/apps/sonora.nix) and is enabled by default through `features.sonora.enable`. It imports the upstream NixOS module, so `programs.sonora` owns the package, the WebKit, GStreamer and ALSA environment the binary needs, and an optional `settings.json` write.
+
+Nothing is packaged in nixpkgs, so the flake input builds it with crane against its own pinned nixpkgs. Upstream CI pushes every build to `https://sonora.cachix.org`, and the cache is trusted in `modules/features/system/base.nix`. The input deliberately does not follow the repo's nixpkgs: a follow changes the derivation hash and turns a download into a full Rust build, so leave `flake.nix` alone if you are tempted to tidy it.
+
+The input tracks upstream `main`, where CI caches each push. The `stable` ref was not in the cache when this was written, so check `curl -o /dev/null -w '%{http_code}' https://sonora.cachix.org/<hash>.narinfo` on the store path before switching refs. The first switch after adding the cache still needs the cache in `/etc/nix/nix.conf`, because the running system evaluates with the old settings.
 
 ---
 

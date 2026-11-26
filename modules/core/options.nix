@@ -86,6 +86,7 @@ _: {
 
           spotify.enable = true;
           fooyin.enable = true;
+          sonora.enable = true;
           beets.enable = true;
           frame.enable = true;
           hermes.enable = false;
