@@ -52,7 +52,7 @@ _: {
         environment.systemPackages = with pkgs; [
           zathura
           nicotine-plus
-          tauon
+          # tauon
           imv
           (mpv.override {
             scripts = [
