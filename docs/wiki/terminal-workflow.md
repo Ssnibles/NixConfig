@@ -1,6 +1,6 @@
 # Terminal Workflow: Kitty, Tmux, Yazi, Navi & Shell Environment
 
-This guide documents the terminal environment in NixConfig, covering the Kitty terminal emulator, Tmux multiplexer, Yazi file manager, Navi cheatsheet picker, and the Fish shell with Starship prompt.
+This guide documents the terminal environment in NixConfig, covering the Kitty terminal emulator, Tmux multiplexer, Yazi file manager, Navi cheatsheet picker, and the Fish shell with Starship prompt and synced Atuin history.
 
 ---
 
@@ -18,6 +18,7 @@ The terminal environment is engineered for low latency, memory efficiency, and f
 | **Cheatsheets** | **Navi** | Fuzzy command cheatsheet insertion bound to `Ctrl+P` | `modules/features/shell/navi/default.nix` |
 | **Coreutils** | **eza, bat, ripgrep, fd** | `ls`, `cat`, `grep`, and `find` mapped to Rust tools; GNU originals stay reachable | `modules/features/shell/shell.nix` |
 | **Shell** | **Fish 4+** | 5-minute cached FZF search (`__fzf_cache_fd`), Starship prompt | `modules/features/shell/shell.nix` |
+| **History** | **Atuin** | Synced history on the self-hosted server, Up-arrow search | `modules/features/shell/atuin.nix` |
 
 ---
 
@@ -287,6 +288,14 @@ NixConfig implements a custom caching function `__fzf_cache_fd`:
 - **`y`**: Abbreviation for `yazi`.
 - **`nixclean`**: Abbreviation for `sudo nix-collect-garbage --delete-older-than 30d`.
 - **`j` / `jl` / `jd` / `js` / `jc` / `jn` / `jp` / `jf`**: Full suite of Jujutsu VCS shortcuts (see [Jujutsu Guide](jujutsu.md)).
+
+### Atuin History Sync
+
+`modules/features/shell/atuin.nix` installs Atuin and hooks it into Fish with `atuin init fish --disable-ai | source`. History syncs to `https://atuin.ssnibles.xyz`; the address is set in `~/.config/atuin/config.toml`, while the sync key and session stay in `~/.local/share/atuin` because they are per-machine secrets. The AI binding is disabled because no provider is configured and its `?` binding would intercept a bare question mark at an empty prompt.
+
+Up-arrow and `Ctrl + R` open Atuin's history search. Fish sources package snippets before the system config, so Atuin loads after fzf-fish and overrides fzf's `Ctrl + R` history search; `Ctrl + T` and `Alt + C` still use fzf.
+
+Enrolment, the server-side `openRegistration` toggle, and the login flow are documented in the [Networking Guide](networking-sync.md#atuin-history-sync).
 
 ### Starship Prompt
 

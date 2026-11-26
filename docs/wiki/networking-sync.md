@@ -1,6 +1,6 @@
-# Networking, Tailscale & Syncthing Synchronisation
+# Networking, Tailscale, Syncthing & Atuin Synchronisation
 
-This guide documents the networking stack, Tailscale mesh VPN, Syncthing peer-to-peer file synchronisation, and encrypted DNS configurations in NixConfig.
+This guide documents the networking stack, Tailscale mesh VPN, Syncthing peer-to-peer file synchronisation, Atuin history sync, and encrypted DNS configurations in NixConfig.
 
 ---
 
@@ -12,6 +12,7 @@ The network architecture is designed for secure inter-device connectivity, priva
 | :--- | :--- | :--- | :--- |
 | **Mesh VPN** | **Tailscale** | Zero-config WireGuard mesh network between hosts | `modules/features/system/tailscale.nix` |
 | **File Sync** | **Syncthing** | Continuous peer-to-peer sync with homeserver | `modules/features/system/syncthing.nix` |
+| **History Sync** | **Atuin** | Shell history synced through the self-hosted server | `modules/features/shell/atuin.nix` |
 | **Encrypted DNS** | **systemd-resolved** | DNS-over-TLS with Cloudflare and Google fallbacks | `modules/features/system/base.nix` |
 | **Wireless Stack** | **iwd + NetworkManager** | High-performance Wi-Fi with Opportunistic Wireless Encryption | `modules/features/system/base.nix` |
 
@@ -93,6 +94,42 @@ This defers Syncthing startup until after the graphical environment has initiali
 Syncthing includes a local web management interface:
 - **URL**: `http://127.0.0.1:8384`
 - **Theme**: Dark mode configured by default.
+
+---
+
+## Atuin History Sync
+
+Atuin keeps shell history in a local database and syncs it to the self-hosted server at `https://atuin.ssnibles.xyz`. The client module is `modules/features/shell/atuin.nix`, which installs the `atuin` package, hooks Fish, and writes `sync_address` to `~/.config/atuin/config.toml`. The shell hook and keybindings are covered in the [Terminal Workflow Guide](terminal-workflow.md#atuin-history-sync).
+
+The sync key and session are created on the machine and stored in `~/.local/share/atuin`. They are deliberately unmanaged because they are per-machine secrets.
+
+### Enrolling the First Machine
+
+Registration is opened on the server only for as long as it takes to create the first account. In the homeserver repository, set `openRegistration = true` in `nixos/modules/atuin.nix` and rebuild the server, then run:
+
+```bash
+atuin register -u <username> -e <email>
+atuin import auto
+```
+
+Set `openRegistration = false` again and rebuild the server so no further accounts can be created.
+
+### Enrolling Every Other Machine
+
+On the first machine, print the sync key:
+
+```bash
+atuin key
+```
+
+On the new machine, log in with that key when prompted, then import the existing local history:
+
+```bash
+atuin login -u <username>
+atuin import auto
+```
+
+The key is the only credential needed. Do not commit it or copy it into the Nix configuration.
 
 ---
 

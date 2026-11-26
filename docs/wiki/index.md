@@ -14,7 +14,7 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 - **[QML Component Testing](qml-testing.md)**  
   Throwaway-shell workflow for changing one Quickshell component without restarting the live shell: a copied config, a minimal `shell.qml`, `qs -p`, screenshots and pixel measurement, `qmllint` with the shell's own import paths, and the traps that make a test instance lie to you.
 - **[Terminal Workflow: Kitty, Tmux, Yazi & Navi](terminal-workflow.md)**  
-  Terminal stack optimisations: Kitty in single-instance shared GPU memory mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Navi fuzzy cheatsheet picker (`Ctrl+P`), and Fish shell with cached FZF directory indexing.
+  Terminal stack optimisations: Kitty in single-instance shared GPU memory mode, Tmux multiplexer with Sesh and floating popups, Yazi file manager, Navi fuzzy cheatsheet picker (`Ctrl+P`), Fish shell with cached FZF directory indexing, and synced Atuin history.
 
 ### Developer Toolchains & Editors
 - **[Developer Environments](devenv.md)**
@@ -51,8 +51,8 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
   Declarative Flatpak management via `nix-flatpak`: the Flathub remote, remote-backed apps such as Sober (Roblox), GitHub-release bundle tracking for Nuvio Desktop, Spotifast and Antra without Nix pins, activation-time installation, update behaviour, overrides, and troubleshooting.
 
 ### Networking & Synchronisation
-- **[Networking, Tailscale & Syncthing Synchronisation](networking-sync.md)**  
-  Encrypted mesh networking with Tailscale, battery-optimised peer-to-peer folder synchronisation with Syncthing, systemd-resolved DNS-over-TLS, and iwd wireless configuration with Opportunistic Wireless Encryption.
+- **[Networking, Tailscale, Syncthing & Atuin Synchronisation](networking-sync.md)**  
+  Encrypted mesh networking with Tailscale, battery-optimised peer-to-peer folder synchronisation with Syncthing, Atuin shell history sync through the self-hosted server (including first-machine registration and per-machine login), systemd-resolved DNS-over-TLS, and iwd wireless configuration with Opportunistic Wireless Encryption.
 
 ---
 
@@ -76,4 +76,4 @@ Welcome to the **NixConfig Feature Wiki**. This collection of guides provides in
 | **Gaming & Minecraft** | `modules/features/apps/gaming.nix`, `apps/minecraft.nix` | `dualsense-pair/`, Prism Launcher, BedrockOnLinux | [gaming.md](gaming.md) |
 | **Frame Remote Desktop** | `modules/features/apps/frame.nix` | `assets/setup_frame.sh` | [frame.md](frame.md) |
 | **Flatpak & Sandboxed Apps** | `modules/features/system/flatpak/` | `nix-flatpak`, Flathub remote | [flatpak.md](flatpak.md) |
-| **Tailscale & Syncthing** | `modules/features/system/tailscale.nix`, `syncthing.nix` | Tailscale client, Syncthing service | [networking-sync.md](networking-sync.md) |
+| **Tailscale, Syncthing & Atuin** | `modules/features/system/tailscale.nix`, `syncthing.nix`, `modules/features/shell/atuin.nix` | Tailscale client, Syncthing service, Atuin server at `atuin.ssnibles.xyz` | [networking-sync.md](networking-sync.md) |
