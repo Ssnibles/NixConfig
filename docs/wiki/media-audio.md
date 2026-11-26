@@ -232,6 +232,8 @@ Imports move files into the library (`import.move: yes`, `import.copy: no`), so 
 
 `import.incremental: yes` records each import, so running the same folder again skips albums that are already in the library. Pass `-I` to import the folder again anyway.
 
+`import.incremental_skip_later: yes` keeps skipped albums out of that record. Without it, an album declined once, or one that quiet mode (`-q`) skips for a weak match, is remembered as imported and never offered again.
+
 ### Folder layout
 
 | Path setting | Layout |

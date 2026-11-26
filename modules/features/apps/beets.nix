@@ -18,6 +18,19 @@ _: {
         library: library.db
         statefile: state.pickle
 
+        # Soulseek leaves unfinished downloads behind as INCOMPLETE<hash>
+        # folders. Beets would otherwise walk into them and import the
+        # partial tracks. Setting ignore replaces the built-in list, so the
+        # rest of the defaults are repeated. Hidden files stay excluded by
+        # ignore_hidden.
+        ignore:
+          - '*~'
+          - System Volume Information
+          - lost+found
+          - INCOMPLETE*
+
+        ignore_hidden: yes
+
         plugins:
           - musicbrainz
           - chroma
@@ -45,6 +58,9 @@ _: {
           write: yes
           autotag: yes
           incremental: yes
+          # A skipped album is still written to the incremental history, which
+          # then hides the folder from every later import. Do not record skips.
+          incremental_skip_later: yes
 
         paths:
           default: $albumartist/$album%aunique{}/$track $title
