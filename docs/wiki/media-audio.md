@@ -251,12 +251,12 @@ Imports move files into the library (`import.move: yes`, `import.copy: no`), so 
 | `chroma` | Fingerprints tracks with AcoustID to improve autotag matches |
 | `fetchart` | Downloads art from the album folder, Cover Art Archive, iTunes, or Wikipedia, resized to at most 1200 px |
 | `embedart` | Embeds art into files that have none, and leaves existing art alone |
-| `lyrics` | Fetches lyrics from LRCLIB and Genius |
+| `lyrics` | Fetches lyrics from LRCLIB and lrcmux, keeping the timestamps when the source has them. Genius is left out because it rate-limits the shared key that ships with beets and stalls imports |
 | `lastgenre` | Writes the most specific Last.fm genre that survives canonicalisation and the genre whitelist |
 | `replaygain` | Writes ReplayGain tags with the ffmpeg backend |
 | `ftintitle` | Moves `feat.` artists from the artist field into the title |
 | `scrub` | Strips stray tag frames that other tools leave behind |
-| `convert` | Adds `beet convert`, which writes an Opus copy to `~/Music-converted` at 128 kbps and copies lossy files unchanged |
+| `convert` | Adds `beet convert`, which writes an Opus copy to `~/Music-converted` at 160 kbps with opusenc and copies lossy files unchanged |
 | `duplicates`, `missing`, `badfiles` | Find duplicate tracks, missing album tracks, and corrupt files |
 | `unimported` | Lists files in the library folder that are not in the database |
 | `info`, `edit`, `mbsync` | Inspect, interactively edit, and refresh metadata from MusicBrainz |

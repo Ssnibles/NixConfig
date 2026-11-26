@@ -93,9 +93,14 @@ _: {
 
         lyrics:
           auto: yes
+          # Keep the timestamps LRCLIB returns instead of stripping them to
+          # plain text.
+          synced: yes
+          # Genius is left out on purpose. It rate-limits the shared key that
+          # ships with beets and its lookups stall an import for minutes.
           sources:
             - lrclib
-            - genius
+            - lrcmux
 
         lastgenre:
           auto: yes
@@ -124,7 +129,10 @@ _: {
           embed: yes
           formats:
             opus:
-              command: ffmpeg -i $source -y -vn -c:a libopus -b:a 128k $dest
+              # opusenc only reads WAV, AIFF, FLAC and Ogg, so forcing the
+              # conversion of an MP3 or M4A with -F will fail. Lossy files are
+              # skipped unless that flag is used.
+              command: opusenc --bitrate 160 $source $dest
               extension: opus
       '';
     in
@@ -140,7 +148,12 @@ _: {
       };
 
       config = lib.mkIf cfg.enable {
-        environment.systemPackages = [ pkgs.beets ];
+        environment.systemPackages = [
+          pkgs.beets
+          pkgs.opus-tools
+          # badfiles shells out to mp3val for MP3s and flac for FLACs.
+          pkgs.mp3val
+        ];
 
         hjem.users.${config.username}.files.".config/beets/config.yaml".text = beetsConfig;
       };
