@@ -196,7 +196,7 @@ For single-instance terminal performance, Tmux session management, Yazi openers,
   - `zjbar`: Custom status bar displaying session state, mode indicators, git branch, and dynamic user home path prefix truncation (`~`).
   - `zjcmd`: Floating command palette with explicit ANSI attribute resets to prevent formatting bleed.
   - Stable user plugin directory (`~/.local/share/zellij/plugins/`) with writable copy-mode permissions cache (`~/.cache/zellij/permissions.kdl`).
-- **Yazi File Manager**: Async terminal file manager configured with custom image and text openers, hidden file toggles, preview maximisation, and Neovim directory opening.
+- **Yazi File Manager**: Async terminal file manager themed from the active palette ([`yazi.nix`](modules/features/apps/yazi.nix)), with custom image and text openers, hidden entries off by default (`Space` selects, `R` renames in Neovim), and Neovim directory opening.
 - **Navi Cheatsheet Manager**: Interactive cheatsheet fuzzy search bound to `Ctrl + P` in Fish (`navi-pick`) with an fzf preview pane showing the command and tags. Also available in a floating tmux popup via `Prefix + Ctrl-g`, which pastes the chosen cheat unexecuted into the invoking pane (works over SSH). The library is declared in Nix (`modules/features/shell/navi/default.nix`) and rendered to per-topic `.cheat` files under `~/.config/navi/cheats/`, covering NixOS, Git/GitHub, Jujutsu, Tmux, files, system, MangoWC, and on-demand tools.
 - **Fish Shell 4+ & Cached FZF Traversal**: Fast Fish shell with a custom caching engine (`__fzf_cache_fd`) caching `fd` traversal in `$XDG_RUNTIME_DIR/fzf_fd_cache` for 5 minutes with atomic file replacement.
 - **Atuin History Sync**: Shell history synced to the self-hosted server at `atuin.ssnibles.xyz` ([`atuin.nix`](modules/features/shell/atuin.nix)), with Up bound to the synced history search.
@@ -697,7 +697,7 @@ Defined in [`modules/features/shell/shell.nix`](modules/features/shell/shell.nix
 | `update` | Alias | `sudo nixos-rebuild switch --flake ~/NixConfig#<host> --upgrade` |
 | `clean` | Alias | `nh clean all` (Automated generation cleanup) |
 | `nixclean` | Abbreviation | `sudo nix-collect-garbage --delete-older-than 30d` |
-| `y` | Abbreviation | `yazi` (Terminal file manager) |
+| `y` | Function | Browse with yazi, then `cd` into the last directory |
 | `nixconf` | Function | Jump to `~/NixConfig` directory and print Git/jj status |
 | `nixup` | Function | Pull upstream changes and rebuild using `nh os switch` |
 | `mkcd <dir>` | Function | Create directory `<dir>` and `cd` into it immediately |

@@ -14,7 +14,7 @@ The terminal environment is engineered for low latency, memory efficiency, and f
 | **Alternative** | **Foot** | Lightweight Wayland native terminal | `modules/features/apps/foot.nix` |
 | **Multiplexer** | **Tmux** | Backtick prefix, Sesh session picker, resurrect path sanitiser, floating popups | `modules/features/shell/tmux.nix` |
 | **Multiplexer (Alt)** | **Zellij** | Custom Rust WASI status bar (`zjbar`) & command palette (`zjcmd`), stable permissions cache | `modules/features/shell/zellij.nix` |
-| **File Manager** | **Yazi** | Async Rust file manager, image previews, Neovim directory opening | `modules/features/apps/development.nix` |
+| **File Manager** | **Yazi** | Async Rust file manager, palette-themed, image previews, Neovim bulk rename | `modules/features/apps/yazi.nix` |
 | **Cheatsheets** | **Navi** | Fuzzy command cheatsheet insertion bound to `Ctrl+P` | `modules/features/shell/navi/default.nix` |
 | **Coreutils** | **eza, bat, ripgrep, fd** | `ls`, `cat`, `grep`, and `find` mapped to Rust tools; GNU originals stay reachable | `modules/features/shell/shell.nix` |
 | **Shell** | **Fish 4+** | 5-minute cached FZF search (`__fzf_cache_fd`), Starship prompt | `modules/features/shell/shell.nix` |
@@ -155,7 +155,9 @@ NixConfig solves this:
 
 ## Yazi Terminal File Manager
 
-Yazi is configured in `modules/features/apps/development.nix` and is available from the shell (`y`). It is intentionally **not** the default `inode/directory` handler: that is Thunar (`modules/features/apps/media.nix`), so graphical applications asking the session to open or reveal a folder always get a window instead of trying to spawn a terminal app and hanging.
+Yazi is configured in `modules/features/apps/yazi.nix` and is available from the shell (`y`). Its theme is generated from `config.theme.colours`, so it follows the active scheme. It is intentionally **not** the default `inode/directory` handler: that is Thunar (`modules/features/apps/media.nix`), so graphical applications asking the session to open or reveal a folder always get a window instead of trying to spawn a terminal app and hanging.
+
+Hidden entries are off by default; press `.` to show them. Pane borders, tabs, modes, the status bar, popups and file colours all come from the palette. Navigation keeps the stock vim motions, so `l` only enters a directory and never opens a file.
 
 ### Custom Opener Rules
 
@@ -167,7 +169,7 @@ Yazi is configured in `modules/features/apps/development.nix` and is available f
 ```toml
 [opener]
 edit = [
-  { run = '${EDITOR:-nvim} %s', block = true, desc = "Edit in $EDITOR" }
+  { run = "${EDITOR:-nvim} %s", block = true, desc = "Edit in $EDITOR" }
 ]
 imv = [
   { run = "imv-dir %s", orphan = true, desc = "Open images with imv-dir" }
@@ -182,13 +184,13 @@ prepend_rules = [
 ]
 
 [mgr]
+ratio             = [ 1, 4, 3 ]
 linemode          = "size"
-show_hidden       = true
+show_hidden       = false
 show_symlink      = true
 sort_by           = "natural"
 sort_sensitive    = false
 sort_dir_first    = true
-sort_translit     = false
 scrolloff         = 5
 ```
 
@@ -198,7 +200,8 @@ scrolloff         = 5
 - **`.`**: Toggle hidden files and directories.
 - **`e`**: Open the hovered file (`open --hover`).
 - **`E`**: Open the current directory as a project in Neovim (`shell 'nvim .' --block`).
-- **`y`**: Fish shell abbreviation expanding to `yazi`.
+- **`R`**: Select files with `Space`, then `R`. Yazi writes the selected names to a temporary file, opens it in Neovim (`block` opener), and applies the edited names when the buffer is closed.
+- **`y`**: Fish function that runs `yazi --cwd-file`, then `cd`s the shell into the last directory browsed. Pass a path (`y ~/src`) to start there.
 - **SUPER + e**: Compositor keybinding launching `kitty --single-instance -e yazi`.
 
 ---
@@ -285,7 +288,7 @@ NixConfig implements a custom caching function `__fzf_cache_fd`:
 - **`mkcd <dir>`**: Creates directory and enters it in one command.
 - **`man <tool>`**: Shows the tldr page, falling back to the real man page when tldr has nothing for it.
 - **`ping <host>`**: Graphs latency with gping. Invocations using ping's own flags (`-c`, `-W`, `-i`, `-n`, and similar) are handed to the real ping instead.
-- **`y`**: Abbreviation for `yazi`.
+- **`y`**: Function that browses with yazi, then `cd`s into the last directory.
 - **`nixclean`**: Abbreviation for `sudo nix-collect-garbage --delete-older-than 30d`.
 - **`j` / `jl` / `jd` / `js` / `jc` / `jn` / `jp` / `jf`**: Full suite of Jujutsu VCS shortcuts (see [Jujutsu Guide](jujutsu.md)).
 

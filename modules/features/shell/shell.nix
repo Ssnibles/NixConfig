@@ -85,7 +85,6 @@ _: {
           generateCompletions = false;
 
           shellAbbrs = {
-            y = "yazi";
             nixclean = "sudo nix-collect-garbage --delete-older-than 30d";
           };
 
@@ -321,6 +320,20 @@ _: {
                 end
 
                 command cat "$cache_file"
+            end
+          '';
+        };
+
+        ".config/fish/functions/y.fish" = {
+          text = ''
+            function y --description "Browse with yazi, then cd into the last directory"
+                set -l tmp (mktemp -t yazi-cwd.XXXXXX)
+                command yazi $argv --cwd-file="$tmp"
+                set cwd (command cat -- "$tmp")
+                if test -n "$cwd"; and test "$cwd" != "$PWD"
+                    builtin cd -- "$cwd"
+                end
+                rm -f -- "$tmp"
             end
           '';
         };

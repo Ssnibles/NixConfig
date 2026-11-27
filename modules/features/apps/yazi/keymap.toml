@@ -1,0 +1,7 @@
+[mgr]
+prepend_keymap = [
+  { on = ".", run = "hidden toggle", desc = "Toggle hidden files" },
+  { on = "e", run = "open --hover", desc = "Open hovered file in $EDITOR" },
+  { on = "E", run = "shell 'nvim .' --block", desc = "Open current directory in Neovim" },
+  { on = "R", run = "bulk_rename", desc = "Rename selected files in $EDITOR" }
+]
