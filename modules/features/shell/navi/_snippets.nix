@@ -401,7 +401,7 @@
         ]
       )
       (mk "Copy a directory to a server with rsync"
-        "rsync -av --progress <source=~/Music/> <user=admin>@<host=192.168.0.223>:<dest=/var/lib/music/>"
+        "rsync -av --progress <source=~/data/Media/Music-converted/> <user=admin>@<host=192.168.0.223>:<dest=/var/lib/music/>"
         [
           "system"
           "ssh"
