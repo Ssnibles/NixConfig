@@ -123,7 +123,7 @@ _: {
           auto: no
           # Converted copies live outside the library so they are never
           # picked up as unimported files or re-imported as duplicates.
-          dest: ~/Music-converted
+          dest: ${cfg.convertDest}
           format: opus
           never_convert_lossy_files: yes
           embed: yes
@@ -144,6 +144,15 @@ _: {
           type = lib.types.str;
           default = "~/Music";
           description = "Folder that holds the organised music library.";
+        };
+
+        convertDest = lib.mkOption {
+          type = lib.types.str;
+          default = "~/Music-converted";
+          description = ''
+            Folder that holds converted copies. Keep it outside the library
+            directory so beets does not import the copies as duplicates.
+          '';
         };
       };
 
