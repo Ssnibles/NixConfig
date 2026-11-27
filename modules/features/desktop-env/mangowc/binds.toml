@@ -3,7 +3,6 @@
 "$mod+Return" = "spawn,$term"
 "$mod+Space" = "spawn,$launcher"
 "$mod+d" = "spawn,$command_centre"
-"$mod+Shift+Space" = "spawn,$launcher_shell"
 "$mod+Alt+L" = "spawn,$lockscreen"
 "$mod+e" = "spawn,$file_manager"
 
@@ -129,6 +128,7 @@
 "$mod+Ctrl+Right" = "spawn,playerctl position $media_step+"
 "$mod+Up" = "spawn,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ $volume_step+"
 "$mod+Down" = "spawn,wpctl set-volume @DEFAULT_AUDIO_SINK@ $volume_step-"
+"$mod+Shift+Space" = "spawn,playerctl play-pause"
 
 # Brightness Control. brightnessctl takes a decrement as a suffix (5%-), not
 # a prefix (-5%), which it would read as an option.
