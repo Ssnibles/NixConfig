@@ -133,6 +133,7 @@ Scope {
   function setTool(value: string): void {
     root.tool = value
     root.selection = null
+    root.hoveredWindow = null
     root.dragging = false
     root.dragOrigin = null
   }
@@ -156,15 +157,24 @@ Scope {
     }
   }
 
-  // Last match wins, which puts the topmost window of an overlapping stack on
-  // top. The compositor lists clients in stacking order.
+  // all-clients is tiling order, not stacking order, so hit testing ranks by
+  // Mango's scene layers before geometry. The ranks follow client_target_layer()
+  // with float_full_to_top set, which is what this config uses.
+  function layerRank(c: var): int {
+    var special = (c.tags || []).indexOf(0) !== -1
+    if (c.is_overlay) return special ? 6 : 3
+    if (c.is_floating || c.is_fullscreen) return 2
+    if (special) return c.is_maximized ? 5 : 4
+    return c.is_maximized ? 1 : 0
+  }
+
+  // root.windows is ordered topmost last, so the first hit walking back wins.
   function windowAt(x: real, y: real): var {
-    var hit = null
-    for (var i = 0; i < root.windows.length; i++) {
+    for (var i = root.windows.length - 1; i >= 0; i--) {
       var w = root.windows[i]
-      if (x >= w.x && x < w.x + w.width && y >= w.y && y < w.y + w.height) hit = w
+      if (x >= w.x && x < w.x + w.width && y >= w.y && y < w.y + w.height) return w
     }
-    return hit
+    return null
   }
 
   function pointerMoved(x: real, y: real): void {
@@ -257,17 +267,33 @@ Scope {
         var c = clients[i]
         if (!c.is_visible || c.is_swallowedby || c.is_minimized) continue
         if (c.monitor !== screen.name) continue
-        if (!(c.width > 0) || !(c.height > 0)) continue
+
+        // Clamp to the output, so a window dragged past an edge cannot ask
+        // for pixels the frozen frame does not have.
+        var left = Math.max(0, c.x - screen.x)
+        var top = Math.max(0, c.y - screen.y)
+        var right = Math.min(screen.width, c.x - screen.x + c.width)
+        var bottom = Math.min(screen.height, c.y - screen.y + c.height)
+        if (right <= left || bottom <= top) continue
+
         list.push({
-          x: c.x - screen.x,
-          y: c.y - screen.y,
-          width: c.width,
-          height: c.height
+          x: left,
+          y: top,
+          width: right - left,
+          height: bottom - top,
+          // Nearer the viewer is higher: layer, then focus, which Mango raises
+          // inside a layer. The list position breaks the remaining ties.
+          rank: root.layerRank(c) * 2 + (c.is_focused === true ? 1 : 0),
+          order: i
         })
       }
     } catch (e) {
       list = []
     }
+    // Ascending rank, so the topmost window ends up last.
+    list.sort(function (a, b) {
+      return a.rank === b.rank ? a.order - b.order : a.rank - b.rank
+    })
     root.windows = list
   }
 
